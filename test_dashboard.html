@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Dashboard TRS</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>Test Dashboard TRS</h1>
+    
+    <div class="test-section info">
+        <h3>Tests de Fonctionnalités</h3>
+        <p>Cette page teste les fonctionnalités principales de l'application TRS.</p>
+    </div>
+
+    <div class="test-section">
+        <h3>1. Test de Parsing CSV</h3>
+        <div id="csv-test-result">En cours...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test de Chargement des Fichiers</h3>
+        <div id="file-test-result">En cours...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test des Calculs</h3>
+        <div id="calc-test-result">En cours...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Test des Graphiques</h3>
+        <div id="chart-test-result">En cours...</div>
+    </div>
+
+    <script>
+        // Test de parsing CSV
+        function testCSVParsing() {
+            const testCSV = `Nom;Initiales;Division;Grade;Heures
+Jean;JDO;Tax;SENIOR;40
+Marie;MAM;Audit;MANAGER;35`;
+            
+            try {
+                const lines = testCSV.split('\n');
+                const headers = lines[0].split(';');
+                const data = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const row = lines[i].split(';');
+                    if (row.length === headers.length) {
+                        const dataRow = {};
+                        for (let j = 0; j < headers.length; j++) {
+                            dataRow[headers[j]] = row[j] ? row[j].trim() : '';
+                        }
+                        data.push(dataRow);
+                    }
+                }
+                
+                if (data.length === 2 && data[0]['Nom'] === 'Jean') {
+                    document.getElementById('csv-test-result').innerHTML = 
+                        '<span class="success">✅ Parsing CSV réussi</span>';
+                } else {
+                    throw new Error('Données incorrectes');
+                }
+            } catch (error) {
+                document.getElementById('csv-test-result').innerHTML = 
+                    '<span class="error">❌ Erreur parsing CSV: ' + error.message + '</span>';
+            }
+        }
+
+        // Test de chargement des fichiers
+        async function testFileLoading() {
+            const files = [
+                'données_TRS.csv',
+                'liste des missions.csv',
+                'liste des factures.csv',
+                'Taux horaire par grade.csv',
+                'initiales.csv',
+                'liste des opportunités.csv'
+            ];
+            
+            let successCount = 0;
+            let totalCount = files.length;
+            
+            for (let file of files) {
+                try {
+                    const response = await fetch(file);
+                    if (response.ok) {
+                        const text = await response.text();
+                        if (text.length > 0) {
+                            successCount++;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erreur fichier:', file, error);
+                }
+            }
+            
+            if (successCount === totalCount) {
+                document.getElementById('file-test-result').innerHTML = 
+                    '<span class="success">✅ Tous les fichiers chargés (' + successCount + '/' + totalCount + ')</span>';
+            } else {
+                document.getElementById('file-test-result').innerHTML = 
+                    '<span class="error">❌ Erreur chargement fichiers (' + successCount + '/' + totalCount + ')</span>';
+            }
+        }
+
+        // Test des calculs
+        function testCalculations() {
+            const testData = [
+                { 'Heures': '40', 'Division': 'Tax' },
+                { 'Heures': '35', 'Division': 'Audit' },
+                { 'Heures': '25', 'Division': 'Tax' }
+            ];
+            
+            try {
+                // Test calcul total heures
+                const totalHeures = testData.reduce((sum, row) => sum + (parseFloat(row['Heures']) || 0), 0);
+                if (totalHeures !== 100) throw new Error('Calcul total heures incorrect');
+                
+                // Test groupement par division
+                const byDivision = {};
+                testData.forEach(row => {
+                    const division = row['Division'];
+                    byDivision[division] = (byDivision[division] || 0) + (parseFloat(row['Heures']) || 0);
+                });
+                
+                if (byDivision['Tax'] !== 65 || byDivision['Audit'] !== 35) {
+                    throw new Error('Groupement par division incorrect');
+                }
+                
+                document.getElementById('calc-test-result').innerHTML = 
+                    '<span class="success">✅ Calculs corrects</span>';
+            } catch (error) {
+                document.getElementById('calc-test-result').innerHTML = 
+                    '<span class="error">❌ Erreur calculs: ' + error.message + '</span>';
+            }
+        }
+
+        // Test des graphiques
+        function testCharts() {
+            try {
+                // Vérifier si Chart.js est disponible
+                if (typeof Chart === 'undefined') {
+                    throw new Error('Chart.js non chargé');
+                }
+                
+                document.getElementById('chart-test-result').innerHTML = 
+                    '<span class="success">✅ Chart.js disponible</span>';
+            } catch (error) {
+                document.getElementById('chart-test-result').innerHTML = 
+                    '<span class="error">❌ Erreur Chart.js: ' + error.message + '</span>';
+            }
+        }
+
+        // Exécution des tests
+        window.addEventListener('load', () => {
+            testCSVParsing();
+            testFileLoading();
+            testCalculations();
+            testCharts();
+        });
+    </script>
+</body>
+</html> 

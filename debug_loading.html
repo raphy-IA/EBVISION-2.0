@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Chargement TRS</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Debug Chargement TRS</h1>
+    
+    <div class="debug-section info">
+        <h3>Test de Chargement des Fichiers CSV</h3>
+        <p>Cette page teste le chargement et le parsing de tous les fichiers CSV.</p>
+    </div>
+
+    <div class="debug-section">
+        <h3>1. Test TRS</h3>
+        <div id="trs-result">En cours...</div>
+        <pre id="trs-data"></pre>
+    </div>
+
+    <div class="debug-section">
+        <h3>2. Test Missions</h3>
+        <div id="missions-result">En cours...</div>
+        <pre id="missions-data"></pre>
+    </div>
+
+    <div class="debug-section">
+        <h3>3. Test Factures</h3>
+        <div id="factures-result">En cours...</div>
+        <pre id="factures-data"></pre>
+    </div>
+
+    <div class="debug-section">
+        <h3>4. Test Taux Horaires</h3>
+        <div id="taux-result">En cours...</div>
+        <pre id="taux-data"></pre>
+    </div>
+
+    <div class="debug-section">
+        <h3>5. Test Initiales</h3>
+        <div id="initiales-result">En cours...</div>
+        <pre id="initiales-data"></pre>
+    </div>
+
+    <div class="debug-section">
+        <h3>6. Test Opportunités</h3>
+        <div id="opportunites-result">En cours...</div>
+        <pre id="opportunites-data"></pre>
+    </div>
+
+    <script>
+        // Parsing CSV robuste
+        function parseCSV(csvText) {
+            let data = [];
+            let lines = csvText.split('\n');
+            if (lines.length < 2) return data;
+            
+            // Détecter le séparateur
+            let separator = ';';
+            if (lines[0].includes(',')) separator = ',';
+            
+            let headers = lines[0].split(separator).map(h => h.replace(/"/g, '').trim());
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue;
+                
+                let row = lines[i].split(separator);
+                if (row.length === headers.length) {
+                    let dataRow = {};
+                    for (let j = 0; j < headers.length; j++) {
+                        dataRow[headers[j]] = row[j] ? row[j].replace(/"/g, '').trim() : '';
+                    }
+                    data.push(dataRow);
+                }
+            }
+            return data;
+        }
+
+        // Test de chargement d'un fichier
+        async function testFile(filename, resultId, dataId) {
+            try {
+                const response = await fetch(filename);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const text = await response.text();
+                const data = parseCSV(text);
+                
+                document.getElementById(resultId).innerHTML = 
+                    `<span class="success">✅ ${filename} chargé: ${data.length} lignes</span>`;
+                
+                document.getElementById(dataId).textContent = 
+                    `Headers: ${JSON.stringify(Object.keys(data[0] || {}), null, 2)}\n\n` +
+                    `Premières lignes:\n${JSON.stringify(data.slice(0, 3), null, 2)}`;
+                
+                return data;
+            } catch (error) {
+                document.getElementById(resultId).innerHTML = 
+                    `<span class="error">❌ Erreur ${filename}: ${error.message}</span>`;
+                document.getElementById(dataId).textContent = `Erreur: ${error.message}`;
+                return null;
+            }
+        }
+
+        // Tests de tous les fichiers
+        async function runAllTests() {
+            console.log('Début des tests...');
+            
+            await testFile('données_TRS.csv', 'trs-result', 'trs-data');
+            await testFile('liste des missions.csv', 'missions-result', 'missions-data');
+            await testFile('liste des factures.csv', 'factures-result', 'factures-data');
+            await testFile('Taux horaire par grade.csv', 'taux-result', 'taux-data');
+            await testFile('initiales.csv', 'initiales-result', 'initiales-data');
+            await testFile('liste des opportunités.csv', 'opportunites-result', 'opportunites-data');
+            
+            console.log('Tests terminés');
+        }
+
+        // Exécution des tests au chargement
+        window.addEventListener('load', runAllTests);
+    </script>
+</body>
+</html> 
