@@ -443,104 +443,146 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Styles pour les filtres des opportunités */
+        /* Styles pour les filtres des opportunités et facturation */
         .filters-section {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #dee2e6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.2);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
         }
 
         .filters-section .filter-group {
-            display: inline-block;
-            margin-right: 15px;
-            margin-bottom: 10px;
-            vertical-align: top;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 180px;
+            flex: 1;
         }
 
         .filters-section label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             font-weight: 600;
-            color: #495057;
-            font-size: 0.9em;
+            color: white;
+            font-size: 0.95em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
         .filters-section select,
         .filters-section input[type="date"] {
-            padding: 8px 12px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            background-color: white;
+            padding: 10px 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.95);
+            color: #495057;
             font-size: 0.9em;
-            min-width: 150px;
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            min-width: 160px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
         .filters-section select:focus,
         .filters-section input[type="date"]:focus {
-            border-color: #80bdff;
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: none;
+            border-color: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+            background: white;
+            transform: translateY(-1px);
         }
 
         .filters-section select:hover,
         .filters-section input[type="date"]:hover {
-            border-color: #86b7fe;
+            border-color: white;
+            background: white;
+            transform: translateY(-1px);
         }
 
-        /* S'assurer que les filtres généraux gardent leur style */
+        .filters-section select option {
+            background: white;
+            color: #495057;
+            padding: 8px;
+        }
+
+        /* Styles pour les filtres généraux */
         .filters-bar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 25px;
             box-shadow: 0 4px 15px rgba(102,126,234,0.15);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
         }
 
         .filters-bar .filter-group {
-            display: inline-block;
-            margin-right: 20px;
-            margin-bottom: 10px;
-            vertical-align: top;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 160px;
+            flex: 1;
         }
 
         .filters-bar label {
             display: block;
-            margin-bottom: 8px;
-            color: white;
+            margin-bottom: 4px;
             font-weight: 600;
+            color: white;
             font-size: 0.95em;
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
         .filters-bar select,
         .filters-bar input {
-            padding: 10px 15px;
-            border: none;
+            padding: 10px 14px;
+            border: 2px solid rgba(255,255,255,0.2);
             border-radius: 8px;
             background: rgba(255,255,255,0.95);
-            color: #333;
+            color: #495057;
             font-size: 0.9em;
             min-width: 160px;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
         }
 
         .filters-bar select:focus,
         .filters-bar input:focus {
             outline: none;
+            border-color: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
             background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             transform: translateY(-1px);
         }
 
         .filters-bar select:hover,
         .filters-bar input:hover {
+            border-color: white;
             background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            transform: translateY(-1px);
         }
+
+        .filters-bar select option {
+            background: white;
+            color: #495057;
+            padding: 8px;
+        }
+
+        .filters-bar .date-range {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filters-bar .date-range input {
+            flex: 1;
+        }
+
+
     </style>
 </head>
 <body>
@@ -568,7 +610,9 @@
             <button class="tab" data-tab="opportunites">Opportunités</button>
         </div>
 
-        <div class="filters-bar">
+
+        <!-- Filtres généraux pour les onglets TRS -->
+        <div class="filters-bar" id="general-filters">
             <div class="filter-group">
                 <label for="yearFilter">Année</label>
                 <select id="yearFilter">
@@ -758,6 +802,9 @@
                 
                 // Initialiser l'interface
                 setupFilters();
+                
+
+                
                 applyFilters();
                 console.log('Interface initialisée');
 
@@ -867,7 +914,7 @@
                 years = [...new Set(years)].filter(y => y).sort();
                 months = [...new Set(months)].filter(m => m).sort();
                 
-                // Remplir les filtres
+                // Remplir les filtres généraux
                 fillSelect(document.getElementById('yearFilter'), years, 'Toutes les années');
                 fillSelect(document.getElementById('monthFilter'), months, 'Tous les mois', (month) => {
                     const moisNoms = {
@@ -898,17 +945,17 @@
             
             try {
                 // Masquer/Afficher les filtres généraux selon l'onglet
-                const filtersBar = document.querySelector('.filters-bar');
-                if (filtersBar) {
-                    if (currentTab === 'opportunites') {
-                        filtersBar.style.display = 'none';
+                const generalFilters = document.getElementById('general-filters');
+                if (generalFilters) {
+                    if (currentTab === 'facturation' || currentTab === 'opportunites') {
+                        generalFilters.style.display = 'none';
                     } else {
-                        filtersBar.style.display = 'block';
+                        generalFilters.style.display = 'block';
                     }
                 }
                 
-                // Si ce n'est pas l'onglet opportunités, mettre à jour les filtres TRS
-                if (currentTab !== 'opportunites') {
+                // Si ce n'est pas l'onglet facturation ou opportunités, mettre à jour les filtres TRS
+                if (currentTab !== 'facturation' && currentTab !== 'opportunites') {
                     let bus = [];
                     let collabs = [];
                     let missions = [];
@@ -963,7 +1010,9 @@
             window.isApplyingFilters = true;
             
             try {
-                // Toujours utiliser les données TRS comme base
+                
+                
+                // Toujours utiliser les données TRS comme base pour les autres onglets
                 let sourceData = trsData;
                 let dateField = 'Mois';
                 
@@ -976,15 +1025,95 @@
                 
                 console.log('Filtrage de', sourceData.length, 'lignes pour', currentTab);
                 
+                // Pour les onglets avec filtres généraux, appliquer les filtres
+                if (currentTab === 'dashboard' || currentTab === 'missions' || currentTab === 'rentabilite' || currentTab === 'performance') {
+                    // Appliquer les filtres généraux
+                    filteredData = sourceData.filter(row => {
+                        let yearFilter = document.getElementById('yearFilter')?.value || '';
+                        let monthFilter = document.getElementById('monthFilter')?.value || '';
+                        let startDate = document.getElementById('startDate')?.value || '';
+                        let endDate = document.getElementById('endDate')?.value || '';
+                        let buFilter = document.getElementById('buFilter')?.value || '';
+                        let collabFilter = document.getElementById('collabFilter')?.value || '';
+                        let missionFilter = document.getElementById('missionFilter')?.value || '';
+                        let typeHeureFilter = document.getElementById('typeHeureFilter')?.value || '';
+
+                        // Filtre par année
+                        if (yearFilter && dateField && dateField !== '') {
+                            let rowDate = row[dateField];
+                            let rowYear = '';
+                            
+                            if (rowDate) {
+                                let match = rowDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                if (match) {
+                                    rowYear = match[3];
+                                } else {
+                                    let normalizedRowDate = normalizeDate(rowDate);
+                                    rowYear = extractYearFromDate(normalizedRowDate);
+                                }
+                                
+                                if (rowYear !== yearFilter) {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }
+                        
+                        // Filtre par mois
+                        if (monthFilter && dateField && dateField !== '') {
+                            let rowDate = row[dateField];
+                            let rowMonth = '';
+                            
+                            if (rowDate) {
+                                let match = rowDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                if (match) {
+                                    rowMonth = match[2];
+                                } else {
+                                    let normalizedRowDate = normalizeDate(rowDate);
+                                    rowMonth = extractMonthFromDate(normalizedRowDate);
+                                }
+                                
+                                if (rowMonth !== monthFilter) {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }
+                        
+                        // Filtres spécifiques
+                        if (buFilter && row['Division'] !== buFilter) {
+                            return false;
+                        }
+                        if (collabFilter && row['Nom'] !== collabFilter) {
+                            return false;
+                        }
+                        if (missionFilter && row['Missions'] !== missionFilter) {
+                            return false;
+                        }
+                        if (typeHeureFilter && row['Type Heure'] !== typeHeureFilter) {
+                            return false;
+                        }
+
+                        return true;
+                    });
+                    
+                    console.log('Données filtrées avec filtres généraux:', filteredData.length, 'pour l\'onglet:', currentTab);
+                    renderCurrentTab();
+                    return;
+                }
+                
+                // Ancienne logique de filtrage (gardée pour compatibilité)
                 filteredData = sourceData.filter(row => {
-                    let yearFilter = document.getElementById('yearFilter').value;
-                    let monthFilter = document.getElementById('monthFilter').value;
-                    let startDate = document.getElementById('startDate').value;
-                    let endDate = document.getElementById('endDate').value;
-                    let buFilter = document.getElementById('buFilter').value;
-                    let collabFilter = document.getElementById('collabFilter').value;
-                    let missionFilter = document.getElementById('missionFilter').value;
-                    let typeHeureFilter = document.getElementById('typeHeureFilter').value;
+                    let yearFilter = document.getElementById('yearFilter')?.value || '';
+                    let monthFilter = document.getElementById('monthFilter')?.value || '';
+                    let startDate = document.getElementById('startDate')?.value || '';
+                    let endDate = document.getElementById('endDate')?.value || '';
+                    let buFilter = document.getElementById('buFilter')?.value || '';
+                    let collabFilter = document.getElementById('collabFilter')?.value || '';
+                    let missionFilter = document.getElementById('missionFilter')?.value || '';
+                    let typeHeureFilter = document.getElementById('typeHeureFilter')?.value || '';
 
                     // Filtre par année
                     if (yearFilter && dateField && dateField !== '') {
@@ -1079,6 +1208,7 @@
                         renderMissionsTab();
                         break;
                     case 'facturation':
+                        // L'onglet Facturation utilise ses propres filtres
                         renderFacturationTab();
                         break;
                     case 'rentabilite':
@@ -1121,6 +1251,16 @@
                     // Mettre à jour l'onglet actif
                     currentTab = tab.dataset.tab;
                     
+                    // Masquer/afficher les filtres généraux selon l'onglet
+                    const generalFilters = document.getElementById('general-filters');
+                    if (generalFilters) {
+                        if (currentTab === 'facturation' || currentTab === 'opportunites') {
+                            generalFilters.style.display = 'none';
+                        } else {
+                            generalFilters.style.display = 'block';
+                        }
+                    }
+                    
                     // Mettre à jour les filtres pour le nouvel onglet
                     updateFiltersForCurrentTab();
                     
@@ -1139,16 +1279,26 @@
             }
         }
 
-        document.querySelectorAll('select').forEach(select => {
-            select.addEventListener('change', handleFilterChange);
+        // Event listeners pour les filtres généraux
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterElements = [
+                'yearFilter',
+                'monthFilter', 
+                'startDate',
+                'endDate',
+                'buFilter',
+                'collabFilter',
+                'missionFilter',
+                'typeHeureFilter'
+            ];
+            
+            filterElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', handleFilterChange);
+                }
+            });
         });
-        
-        // Gestion spécifique du filtre type d'heure
-        document.getElementById('typeHeureFilter').addEventListener('change', handleFilterChange);
-        
-        // Gestion des filtres de dates
-        document.getElementById('startDate').addEventListener('change', handleFilterChange);
-        document.getElementById('endDate').addEventListener('change', handleFilterChange);
 
         // Gestion du bouton de mise à jour
         document.getElementById('refreshBtn').addEventListener('click', refreshData);
@@ -1675,9 +1825,95 @@
                 return;
             }
 
-            let facturationStats = calculateFacturationStats();
+            // Appliquer les filtres spécifiques aux factures
+            let filteredFactures = applyFacturationFilters();
+
+            let facturationStats = calculateFacturationStats(filteredFactures);
 
             let facturationHTML = `
+                <div class="filters-section">
+                    <div class="filter-group">
+                        <label>Client:</label>
+                        <select id="facturation-client-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['Client']).filter(Boolean))].sort().map(client => 
+                                `<option value="${client}">${client}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Division:</label>
+                        <select id="facturation-division-filter">
+                            <option value="">Toutes</option>
+                            ${[...new Set(facturesData.map(f => f['Division']).filter(Boolean))].sort().map(div => 
+                                `<option value="${div}">${div}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Manager:</label>
+                        <select id="facturation-manager-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['Manager']).filter(Boolean))].sort().map(manager => 
+                                `<option value="${manager}">${manager}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Partner:</label>
+                        <select id="facturation-partner-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['Partner']).filter(Boolean))].sort().map(partner => 
+                                `<option value="${partner}">${partner}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>État:</label>
+                        <select id="facturation-etat-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['État']).filter(Boolean))].sort().map(etat => 
+                                `<option value="${etat}">${etat}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Année:</label>
+                        <select id="facturation-annee-filter">
+                            <option value="">Toutes</option>
+                            ${[...new Set(facturesData.map(f => {
+                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[3] : '';
+                            }).filter(annee => annee))].sort().map(annee => 
+                                `<option value="${annee}">${annee}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Mois:</label>
+                        <select id="facturation-mois-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => {
+                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[2] : '';
+                            }).filter(mois => mois))].sort().map(mois => {
+                                const moisNoms = {
+                                    '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                                    '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                                    '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                                };
+                                return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group" style="flex: 2;">
+                        <label>Période personnalisée:</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="date" id="facturation-date-debut" placeholder="Date début" style="flex: 1;">
+                            <input type="date" id="facturation-date-fin" placeholder="Date fin" style="flex: 1;">
+                        </div>
+                    </div>
+                </div>
                 <div class="kpi-cards">
                     <div class="kpi-card">
                         <span class="kpi-icon">📄</span>
@@ -1699,6 +1935,26 @@
                         <div class="kpi-label">Taux d'Encaissement</div>
                         <div class="kpi-value">${facturationStats.tauxEncaissement.toFixed(1)}%</div>
                     </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📈</span>
+                        <div class="kpi-label">Montant Moyen</div>
+                        <div class="kpi-value">${facturationStats.montantMoyen.toLocaleString()} XAF</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">⏰</span>
+                        <div class="kpi-label">Délai Moyen</div>
+                        <div class="kpi-value">${facturationStats.delaiMoyen.toFixed(0)} jours</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">⚠️</span>
+                        <div class="kpi-label">En Retard</div>
+                        <div class="kpi-value">${facturationStats.facturesEnRetard}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">🎯</span>
+                        <div class="kpi-label">Top Client</div>
+                        <div class="kpi-value">${facturationStats.topClient}</div>
+                    </div>
                 </div>
                 <div class="charts-row">
                     <div class="chart-container">
@@ -1710,6 +1966,16 @@
                         <canvas id="facturationChartEtat"></canvas>
                     </div>
                 </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Top Clients</div>
+                        <canvas id="facturationChartTopClients"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Facturation par Manager</div>
+                        <canvas id="facturationChartManager"></canvas>
+                    </div>
+                </div>
                 <div class="chart-container" style="margin-top: 20px;">
                     <div class="section-title">Détail des Factures</div>
                     <div class="table-container">
@@ -1719,15 +1985,17 @@
                                     <th>Client</th>
                                     <th>Mission</th>
                                     <th>Division</th>
+                                    <th>Manager</th>
                                     <th>Montant Facturé</th>
                                     <th>Montant Encaissé</th>
                                     <th>Solde</th>
                                     <th>État</th>
+                                    <th>Délai</th>
                                     <th>Date</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${generateFacturationTable()}
+                                ${generateFacturationTable(filteredFactures)}
                             </tbody>
                         </table>
                     </div>
@@ -1737,33 +2005,203 @@
             document.getElementById('tab-facturation').innerHTML = facturationHTML;
 
             // Rendu des graphiques
-            renderChart('facturationChartDivision', getFacturationByDivision(), 'bar', 'Division', 'Montant (XAF)');
-            renderChart('facturationChartEtat', getFacturationByEtat(), 'doughnut', 'État', 'Nombre');
+            renderChart('facturationChartDivision', getFacturationByDivision(filteredFactures), 'bar', 'Division', 'Montant (XAF)');
+            renderChart('facturationChartEtat', getFacturationByEtat(filteredFactures), 'doughnut', 'État', 'Nombre');
+            renderChart('facturationChartTopClients', getFacturationByClient(filteredFactures), 'bar', 'Client', 'Montant (XAF)');
+            renderChart('facturationChartManager', getFacturationByManager(filteredFactures), 'bar', 'Manager', 'Montant (XAF)');
+
+            // Ajouter les event listeners pour les filtres
+            addFacturationFilterListeners();
         }
 
-        function calculateFacturationStats() {
-            let totalFactures = facturesData.length;
-            let montantFacture = facturesData.reduce((sum, facture) => {
+        function applyFacturationFilters() {
+            let filtered = facturesData;
+            
+            let clientFilter = document.getElementById('facturation-client-filter')?.value;
+            let divisionFilter = document.getElementById('facturation-division-filter')?.value;
+            let managerFilter = document.getElementById('facturation-manager-filter')?.value;
+            let partnerFilter = document.getElementById('facturation-partner-filter')?.value;
+            let etatFilter = document.getElementById('facturation-etat-filter')?.value;
+            let anneeFilter = document.getElementById('facturation-annee-filter')?.value;
+            let moisFilter = document.getElementById('facturation-mois-filter')?.value;
+            let dateDebut = document.getElementById('facturation-date-debut')?.value;
+            let dateFin = document.getElementById('facturation-date-fin')?.value;
+
+            if (clientFilter) {
+                filtered = filtered.filter(f => f['Client'] === clientFilter);
+            }
+            if (divisionFilter) {
+                filtered = filtered.filter(f => f['Division'] === divisionFilter);
+            }
+            if (managerFilter) {
+                filtered = filtered.filter(f => f['Manager'] === managerFilter);
+            }
+            if (partnerFilter) {
+                filtered = filtered.filter(f => f['Partner'] === partnerFilter);
+            }
+            if (etatFilter) {
+                filtered = filtered.filter(f => f['État'] === etatFilter);
+            }
+            if (anneeFilter) {
+                filtered = filtered.filter(f => {
+                    let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    return match && match[3] === anneeFilter;
+                });
+            }
+            if (moisFilter) {
+                filtered = filtered.filter(f => {
+                    let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    return match && match[2] === moisFilter;
+                });
+            }
+            if (dateDebut) {
+                filtered = filtered.filter(f => {
+                    let factureDate = f['Date'];
+                    if (!factureDate) return false;
+                    let match = factureDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (!match) return false;
+                    let factureDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
+                    return factureDateFormatted >= dateDebut;
+                });
+            }
+            if (dateFin) {
+                filtered = filtered.filter(f => {
+                    let factureDate = f['Date'];
+                    if (!factureDate) return false;
+                    let match = factureDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (!match) return false;
+                    let factureDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
+                    return factureDateFormatted <= dateFin;
+                });
+            }
+
+            return filtered;
+        }
+
+        function addFacturationFilterListeners() {
+            const filterIds = [
+                'facturation-client-filter',
+                'facturation-division-filter',
+                'facturation-manager-filter',
+                'facturation-partner-filter',
+                'facturation-etat-filter',
+                'facturation-annee-filter',
+                'facturation-mois-filter'
+            ];
+
+            filterIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    // Restaurer la valeur précédente si elle existe
+                    const savedValue = sessionStorage.getItem(id);
+                    if (savedValue) {
+                        element.value = savedValue;
+                    }
+                    
+                    element.addEventListener('change', () => {
+                        // Sauvegarder la valeur sélectionnée
+                        sessionStorage.setItem(id, element.value);
+                        renderFacturationTab();
+                    });
+                }
+            });
+
+            // Gestion des filtres de dates
+            const dateDebut = document.getElementById('facturation-date-debut');
+            const dateFin = document.getElementById('facturation-date-fin');
+            
+            if (dateDebut) {
+                const savedDateDebut = sessionStorage.getItem('facturation-date-debut');
+                if (savedDateDebut) {
+                    dateDebut.value = savedDateDebut;
+                }
+                dateDebut.addEventListener('change', () => {
+                    sessionStorage.setItem('facturation-date-debut', dateDebut.value);
+                    renderFacturationTab();
+                });
+            }
+            
+            if (dateFin) {
+                const savedDateFin = sessionStorage.getItem('facturation-date-fin');
+                if (savedDateFin) {
+                    dateFin.value = savedDateFin;
+                }
+                dateFin.addEventListener('change', () => {
+                    sessionStorage.setItem('facturation-date-fin', dateFin.value);
+                    renderFacturationTab();
+                });
+            }
+        }
+
+        function calculateFacturationStats(data = facturesData) {
+            let totalFactures = data.length;
+            let montantFacture = data.reduce((sum, facture) => {
                 let montant = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
                 return sum + montant;
             }, 0);
-            let montantEncaisse = facturesData.reduce((sum, facture) => {
+            let montantEncaisse = data.reduce((sum, facture) => {
                 let montant = parseFloat(facture['Montant Encaissé']?.replace(/\s/g, '') || '0');
                 return sum + montant;
             }, 0);
             let tauxEncaissement = montantFacture > 0 ? (montantEncaisse / montantFacture) * 100 : 0;
+            let montantMoyen = totalFactures > 0 ? montantFacture / totalFactures : 0;
+
+            // Calcul du délai moyen et des factures en retard
+            let totalDelai = 0;
+            let facturesAvecDelai = 0;
+            let facturesEnRetard = 0;
+            let aujourdhui = new Date();
+
+            data.forEach(facture => {
+                let montantFacture = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
+                let montantEncaisse = parseFloat(facture['Montant Encaissé']?.replace(/\s/g, '') || '0');
+                let solde = montantFacture - montantEncaisse;
+                
+                if (solde > 0 && facture['Date']) {
+                    let match = facture['Date'].match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (match) {
+                        let dateFacture = new Date(match[3], match[2] - 1, match[1]);
+                        let delai = Math.floor((aujourdhui - dateFacture) / (1000 * 60 * 60 * 24));
+                        totalDelai += delai;
+                        facturesAvecDelai++;
+                        
+                        if (delai > 30) {
+                            facturesEnRetard++;
+                        }
+                    }
+                }
+            });
+
+            let delaiMoyen = facturesAvecDelai > 0 ? totalDelai / facturesAvecDelai : 0;
+
+            // Top client par montant facturé
+            let clientStats = {};
+            data.forEach(facture => {
+                let client = facture['Client'] || 'Non défini';
+                let montant = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
+                clientStats[client] = (clientStats[client] || 0) + montant;
+            });
+
+            let topClient = Object.entries(clientStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 1)
+                .map(([client, montant]) => client)[0] || 'N/A';
 
             return {
                 totalFactures,
                 montantFacture,
                 montantEncaisse,
-                tauxEncaissement
+                tauxEncaissement,
+                montantMoyen,
+                delaiMoyen,
+                facturesEnRetard,
+                topClient
             };
         }
 
-        function getFacturationByDivision() {
+        function getFacturationByDivision(data = facturesData) {
             let divisionStats = {};
-            facturesData.forEach(facture => {
+            data.forEach(facture => {
                 let division = facture['Division'] || 'Non défini';
                 let montant = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
                 
@@ -1773,12 +2211,15 @@
                 divisionStats[division] += montant;
             });
 
-            return divisionStats;
+            return Object.entries(divisionStats).map(([division, montant]) => ({
+                label: division,
+                value: montant
+            }));
         }
 
-        function getFacturationByEtat() {
+        function getFacturationByEtat(data = facturesData) {
             let etatStats = {};
-            facturesData.forEach(facture => {
+            data.forEach(facture => {
                 let montantFacture = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
                 let montantEncaisse = parseFloat(facture['Montant Encaissé']?.replace(/\s/g, '') || '0');
                 let solde = montantFacture - montantEncaisse;
@@ -1790,11 +2231,46 @@
                 etatStats[etat]++;
             });
 
-            return etatStats;
+            return Object.entries(etatStats).map(([etat, count]) => ({
+                label: etat,
+                value: count
+            }));
         }
 
-        function generateFacturationTable() {
-            return facturesData.map(facture => {
+        function getFacturationByClient(data = facturesData) {
+            let clientStats = {};
+            data.forEach(facture => {
+                let client = facture['Client'] || 'Non défini';
+                let montant = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
+                clientStats[client] = (clientStats[client] || 0) + montant;
+            });
+            return Object.entries(clientStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .map(([client, montant]) => ({
+                    label: client.length > 20 ? client.substring(0, 20) + '...' : client,
+                    value: montant
+                }));
+        }
+
+        function getFacturationByManager(data = facturesData) {
+            let managerStats = {};
+            data.forEach(facture => {
+                let manager = facture['Manager'] || 'Non défini';
+                let montant = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
+                managerStats[manager] = (managerStats[manager] || 0) + montant;
+            });
+            return Object.entries(managerStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .map(([manager, montant]) => ({
+                    label: manager.length > 15 ? manager.substring(0, 15) + '...' : manager,
+                    value: montant
+                }));
+        }
+
+        function generateFacturationTable(data = facturesData) {
+            return data.map(facture => {
                 let montantFacture = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
                 let montantEncaisse = parseFloat(facture['Montant Encaissé']?.replace(/\s/g, '') || '0');
                 let solde = montantFacture - montantEncaisse;
@@ -1802,15 +2278,29 @@
                 
                 let rowClass = etat === 'En attente' ? 'alert-low-rentability' : '';
                 
+                // Calcul du délai
+                let delai = 'N/A';
+                if (solde > 0 && facture['Date']) {
+                    let match = facture['Date'].match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (match) {
+                        let dateFacture = new Date(match[3], match[2] - 1, match[1]);
+                        let aujourdhui = new Date();
+                        let delaiJours = Math.floor((aujourdhui - dateFacture) / (1000 * 60 * 60 * 24));
+                        delai = delaiJours > 0 ? `${delaiJours} jours` : 'À jour';
+                    }
+                }
+                
                 return `
                     <tr class="${rowClass}">
                         <td>${facture['Client'] || ''}</td>
                         <td>${facture['Mission'] || ''}</td>
                         <td>${facture['Division'] || ''}</td>
+                        <td>${facture['Manager'] || ''}</td>
                         <td>${montantFacture.toLocaleString()} XAF</td>
                         <td>${montantEncaisse.toLocaleString()} XAF</td>
                         <td>${solde.toLocaleString()} XAF</td>
                         <td>${etat}</td>
+                        <td>${delai}</td>
                         <td>${facture['Date'] || ''}</td>
                     </tr>
                 `;
