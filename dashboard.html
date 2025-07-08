@@ -442,6 +442,105 @@
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* Styles pour les filtres des opportunités */
+        .filters-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        .filters-section .filter-group {
+            display: inline-block;
+            margin-right: 15px;
+            margin-bottom: 10px;
+            vertical-align: top;
+        }
+
+        .filters-section label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9em;
+        }
+
+        .filters-section select,
+        .filters-section input[type="date"] {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background-color: white;
+            font-size: 0.9em;
+            min-width: 150px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .filters-section select:focus,
+        .filters-section input[type="date"]:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .filters-section select:hover,
+        .filters-section input[type="date"]:hover {
+            border-color: #86b7fe;
+        }
+
+        /* S'assurer que les filtres généraux gardent leur style */
+        .filters-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.15);
+        }
+
+        .filters-bar .filter-group {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 10px;
+            vertical-align: top;
+        }
+
+        .filters-bar label {
+            display: block;
+            margin-bottom: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .filters-bar select,
+        .filters-bar input {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            font-size: 0.9em;
+            min-width: 160px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .filters-bar select:focus,
+        .filters-bar input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
+        }
+
+        .filters-bar select:hover,
+        .filters-bar input:hover {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
     </style>
 </head>
 <body>
@@ -640,10 +739,15 @@
                 // Charger Opportunités
                 console.log('Chargement Opportunités...');
                 const opportunitesResponse = await fetch('liste des opportunités.csv?v=' + Date.now());
-                if (!opportunitesResponse.ok) throw new Error('Fichier opportunités non trouvé');
+                if (!opportunitesResponse.ok) {
+                    console.error('Erreur lors du chargement des opportunités:', opportunitesResponse.status, opportunitesResponse.statusText);
+                    throw new Error('Fichier opportunités non trouvé');
+                }
                 const opportunitesText = await opportunitesResponse.text();
+                console.log('Texte des opportunités reçu, longueur:', opportunitesText.length);
                 opportunitesData = parseCSV(opportunitesText);
                 console.log('Opportunités chargées:', opportunitesData.length, 'lignes');
+                console.log('Première ligne opportunités:', opportunitesData[0]);
 
                 // Construire les mappings
                 buildMappings();
@@ -793,20 +897,33 @@
             window.isUpdatingFilters = true;
             
             try {
-                let bus = [];
-                let collabs = [];
-                let missions = [];
+                // Masquer/Afficher les filtres généraux selon l'onglet
+                const filtersBar = document.querySelector('.filters-bar');
+                if (filtersBar) {
+                    if (currentTab === 'opportunites') {
+                        filtersBar.style.display = 'none';
+                    } else {
+                        filtersBar.style.display = 'block';
+                    }
+                }
                 
-                // Pour tous les onglets, utiliser les données TRS comme base
-                bus = [...new Set(trsData.map(row => row['Division']))].filter(b => b);
-                collabs = [...new Set(trsData.map(row => row['Nom']))].filter(c => c);
-                missions = [...new Set(trsData.map(row => row['Missions']))].filter(m => m);
-                let typesHeure = [...new Set(trsData.map(row => row['Type Heure']))].filter(t => t);
-                
-                fillSelect(document.getElementById('buFilter'), bus, 'Tous les pôles');
-                fillSelect(document.getElementById('collabFilter'), collabs, 'Tous les collaborateurs');
-                fillSelect(document.getElementById('missionFilter'), missions, 'Toutes les missions');
-                fillSelect(document.getElementById('typeHeureFilter'), typesHeure, 'Tous les types');
+                // Si ce n'est pas l'onglet opportunités, mettre à jour les filtres TRS
+                if (currentTab !== 'opportunites') {
+                    let bus = [];
+                    let collabs = [];
+                    let missions = [];
+                    
+                    // Pour tous les onglets, utiliser les données TRS comme base
+                    bus = [...new Set(trsData.map(row => row['Division']))].filter(b => b);
+                    collabs = [...new Set(trsData.map(row => row['Nom']))].filter(c => c);
+                    missions = [...new Set(trsData.map(row => row['Missions']))].filter(m => m);
+                    let typesHeure = [...new Set(trsData.map(row => row['Type Heure']))].filter(t => t);
+                    
+                    fillSelect(document.getElementById('buFilter'), bus, 'Tous les pôles');
+                    fillSelect(document.getElementById('collabFilter'), collabs, 'Tous les collaborateurs');
+                    fillSelect(document.getElementById('missionFilter'), missions, 'Toutes les missions');
+                    fillSelect(document.getElementById('typeHeureFilter'), typesHeure, 'Tous les types');
+                }
             } finally {
                 window.isUpdatingFilters = false;
             }
@@ -2256,14 +2373,111 @@
 
         // ===== ONGLET OPPORTUNITÉS =====
         function renderOpportunitesTab() {
-            if (!opportunitesData.length) {
+            console.log('renderOpportunitesTab appelé, opportunitesData.length:', opportunitesData.length);
+            console.log('opportunitesData:', opportunitesData);
+            
+            if (!opportunitesData || !opportunitesData.length) {
+                console.log('Aucune donnée d\'opportunités disponible');
                 document.getElementById('tab-opportunites').innerHTML = '<div class="no-data">Aucune donnée d\'opportunités disponible</div>';
                 return;
             }
 
-            let opportunitesStats = calculateOpportunitesStats();
+            // Appliquer les filtres spécifiques aux opportunités
+            let filteredOpportunites = applyOpportunitesFilters();
+
+            let opportunitesStats = calculateOpportunitesStats(filteredOpportunites);
 
             let opportunitesHTML = `
+                <div class="filters-section">
+                    <div class="filter-group">
+                        <label>Division:</label>
+                        <select id="opportunites-division-filter">
+                            <option value="">Toutes</option>
+                            ${getUniqueValues(opportunitesData, 'Division').map(div => 
+                                `<option value="${div}">${div}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Statut:</label>
+                        <select id="opportunites-statut-filter">
+                            <option value="">Tous</option>
+                            ${getUniqueValues(opportunitesData, 'Statut').map(statut => 
+                                `<option value="${statut}">${statut}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Responsable:</label>
+                        <select id="opportunites-responsable-filter">
+                            <option value="">Tous</option>
+                            ${getUniqueValues(opportunitesData, 'Responsable').map(resp => 
+                                `<option value="${resp}">${resp}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Secteur:</label>
+                        <select id="opportunites-secteur-filter">
+                            <option value="">Tous</option>
+                            ${getUniqueValues(opportunitesData, 'Secteur').map(secteur => 
+                                `<option value="${secteur}">${secteur}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Type:</label>
+                        <select id="opportunites-type-filter">
+                            <option value="">Tous</option>
+                            ${getUniqueValues(opportunitesData, 'Type').map(type => 
+                                `<option value="${type}">${type}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Initiative:</label>
+                        <select id="opportunites-initiative-filter">
+                            <option value="">Toutes</option>
+                            ${getUniqueValues(opportunitesData, 'Initiative').map(init => 
+                                `<option value="${init}">${init}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Année:</label>
+                        <select id="opportunites-annee-filter">
+                            <option value="">Toutes</option>
+                            ${[...new Set(getUniqueValues(opportunitesData, 'Date Insertion').map(date => {
+                                let match = date.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[3] : '';
+                            }).filter(annee => annee))].sort().map(annee => 
+                                `<option value="${annee}">${annee}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Mois:</label>
+                        <select id="opportunites-mois-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(getUniqueValues(opportunitesData, 'Date Insertion').map(date => {
+                                let match = date.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[2] : '';
+                            }).filter(mois => mois))].sort().map(mois => {
+                                const moisNoms = {
+                                    '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                                    '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                                    '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                                };
+                                return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Période:</label>
+                        <input type="date" id="opportunites-date-debut" placeholder="Date début">
+                        <input type="date" id="opportunites-date-fin" placeholder="Date fin">
+                    </div>
+                </div>
                 <div class="kpi-cards">
                     <div class="kpi-card">
                         <span class="kpi-icon">🎯</span>
@@ -2306,6 +2520,16 @@
                         <canvas id="opportunitesChartStatut"></canvas>
                     </div>
                 </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Opportunités par Secteur</div>
+                        <canvas id="opportunitesChartSecteur"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Top Responsables</div>
+                        <canvas id="opportunitesChartResponsable"></canvas>
+                    </div>
+                </div>
                 <div class="chart-container" style="margin-top: 20px;">
                     <div class="section-title">Pipeline Commercial</div>
                     <div class="table-container">
@@ -2313,19 +2537,21 @@
                             <thead>
                                 <tr>
                                     <th>Opportunité</th>
+                                    <th>Client</th>
                                     <th>Division</th>
                                     <th>Statut</th>
                                     <th>Responsable</th>
                                     <th>Secteur</th>
                                     <th>Type</th>
                                     <th>Valeur</th>
+                                    <th>Probabilité</th>
                                     <th>Date Insertion</th>
                                     <th>Dernière Action</th>
                                     <th>Prochaine Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${generateOpportunitesTable()}
+                                ${generateOpportunitesTable(filteredOpportunites)}
                             </tbody>
                         </table>
                     </div>
@@ -2335,21 +2561,171 @@
             document.getElementById('tab-opportunites').innerHTML = opportunitesHTML;
 
             // Rendu des graphiques
-            renderChart('opportunitesChartDivision', getOpportunitesByDivision(), 'bar', 'Division', 'Nombre');
-            renderChart('opportunitesChartStatut', getOpportunitesByStatut(), 'doughnut', 'Statut', 'Nombre');
+            renderChart('opportunitesChartDivision', getOpportunitesByDivision(filteredOpportunites), 'bar', 'Division', 'Nombre');
+            renderChart('opportunitesChartStatut', getOpportunitesByStatut(filteredOpportunites), 'doughnut', 'Statut', 'Nombre');
+            renderChart('opportunitesChartSecteur', getOpportunitesBySecteur(filteredOpportunites), 'bar', 'Secteur', 'Nombre');
+            renderChart('opportunitesChartResponsable', getOpportunitesByResponsable(filteredOpportunites), 'bar', 'Responsable', 'Nombre');
+
+            // Ajouter les event listeners pour les filtres
+            addOpportunitesFilterListeners();
+            
+            // Restaurer les valeurs des filtres après le rendu
+            setTimeout(() => {
+                const filterIds = [
+                    'opportunites-division-filter',
+                    'opportunites-statut-filter', 
+                    'opportunites-responsable-filter',
+                    'opportunites-secteur-filter',
+                    'opportunites-type-filter',
+                    'opportunites-initiative-filter'
+                ];
+
+                filterIds.forEach(id => {
+                    const element = document.getElementById(id);
+                    const savedValue = sessionStorage.getItem(id);
+                    if (element && savedValue) {
+                        element.value = savedValue;
+                    }
+                });
+            }, 100);
         }
 
-        function calculateOpportunitesStats() {
-            let totalOpportunites = opportunitesData.length;
-            let valeurTotale = opportunitesData.reduce((sum, opp) => {
-                let valeur = parseFloat(opp['Valeur']?.replace(/\s/g, '') || '0');
+        function applyOpportunitesFilters() {
+            let filtered = opportunitesData;
+            
+            let divisionFilter = document.getElementById('opportunites-division-filter')?.value;
+            let statutFilter = document.getElementById('opportunites-statut-filter')?.value;
+            let responsableFilter = document.getElementById('opportunites-responsable-filter')?.value;
+            let secteurFilter = document.getElementById('opportunites-secteur-filter')?.value;
+            let typeFilter = document.getElementById('opportunites-type-filter')?.value;
+            let initiativeFilter = document.getElementById('opportunites-initiative-filter')?.value;
+            let anneeFilter = document.getElementById('opportunites-annee-filter')?.value;
+            let moisFilter = document.getElementById('opportunites-mois-filter')?.value;
+            let dateDebut = document.getElementById('opportunites-date-debut')?.value;
+            let dateFin = document.getElementById('opportunites-date-fin')?.value;
+
+            if (divisionFilter) {
+                filtered = filtered.filter(opp => opp['Division'] === divisionFilter);
+            }
+            if (statutFilter) {
+                filtered = filtered.filter(opp => opp['Statut'] === statutFilter);
+            }
+            if (responsableFilter) {
+                filtered = filtered.filter(opp => opp['Responsable'] === responsableFilter);
+            }
+            if (secteurFilter) {
+                filtered = filtered.filter(opp => opp['Secteur'] === secteurFilter);
+            }
+            if (typeFilter) {
+                filtered = filtered.filter(opp => opp['Type'] === typeFilter);
+            }
+            if (initiativeFilter) {
+                filtered = filtered.filter(opp => opp['Initiative'] === initiativeFilter);
+            }
+            if (anneeFilter) {
+                filtered = filtered.filter(opp => {
+                    let match = opp['Date Insertion']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    return match && match[3] === anneeFilter;
+                });
+            }
+            if (moisFilter) {
+                filtered = filtered.filter(opp => {
+                    let match = opp['Date Insertion']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    return match && match[2] === moisFilter;
+                });
+            }
+            if (dateDebut) {
+                filtered = filtered.filter(opp => {
+                    let oppDate = opp['Date Insertion'];
+                    if (!oppDate) return false;
+                    let match = oppDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (!match) return false;
+                    let oppDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
+                    return oppDateFormatted >= dateDebut;
+                });
+            }
+            if (dateFin) {
+                filtered = filtered.filter(opp => {
+                    let oppDate = opp['Date Insertion'];
+                    if (!oppDate) return false;
+                    let match = oppDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (!match) return false;
+                    let oppDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
+                    return oppDateFormatted <= dateFin;
+                });
+            }
+
+            return filtered;
+        }
+
+        function addOpportunitesFilterListeners() {
+            const filterIds = [
+                'opportunites-division-filter',
+                'opportunites-statut-filter', 
+                'opportunites-responsable-filter',
+                'opportunites-secteur-filter',
+                'opportunites-type-filter',
+                'opportunites-initiative-filter',
+                'opportunites-annee-filter',
+                'opportunites-mois-filter'
+            ];
+
+            filterIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    // Restaurer la valeur précédente si elle existe
+                    const savedValue = sessionStorage.getItem(id);
+                    if (savedValue) {
+                        element.value = savedValue;
+                    }
+                    
+                    element.addEventListener('change', () => {
+                        // Sauvegarder la valeur sélectionnée
+                        sessionStorage.setItem(id, element.value);
+                        renderOpportunitesTab();
+                    });
+                }
+            });
+
+            // Gestion des filtres de dates
+            const dateDebut = document.getElementById('opportunites-date-debut');
+            const dateFin = document.getElementById('opportunites-date-fin');
+            
+            if (dateDebut) {
+                const savedDateDebut = sessionStorage.getItem('opportunites-date-debut');
+                if (savedDateDebut) {
+                    dateDebut.value = savedDateDebut;
+                }
+                dateDebut.addEventListener('change', () => {
+                    sessionStorage.setItem('opportunites-date-debut', dateDebut.value);
+                    renderOpportunitesTab();
+                });
+            }
+            
+            if (dateFin) {
+                const savedDateFin = sessionStorage.getItem('opportunites-date-fin');
+                if (savedDateFin) {
+                    dateFin.value = savedDateFin;
+                }
+                dateFin.addEventListener('change', () => {
+                    sessionStorage.setItem('opportunites-date-fin', dateFin.value);
+                    renderOpportunitesTab();
+                });
+            }
+        }
+
+        function calculateOpportunitesStats(data = opportunitesData) {
+            let totalOpportunites = data.length;
+            let valeurTotale = data.reduce((sum, opp) => {
+                let valeur = parseFloat(opp['cout']?.replace(/\s/g, '') || '0');
                 return sum + valeur;
             }, 0);
             let valeurMoyenne = totalOpportunites > 0 ? valeurTotale / totalOpportunites : 0;
             
-            let oppGagnees = opportunitesData.filter(opp => 
+            let oppGagnees = data.filter(opp => 
                 opp['Statut']?.toLowerCase().includes('win') || 
-                opp['Statut']?.toLowerCase().includes('gagné')
+                opp['Statut']?.toLowerCase().includes('gagné') ||
+                opp['Statut']?.toLowerCase().includes('4-win')
             ).length;
             let tauxConversion = totalOpportunites > 0 ? (oppGagnees / totalOpportunites) * 100 : 0;
 
@@ -2363,39 +2739,88 @@
             };
         }
 
-        function getOpportunitesByDivision() {
+        function getOpportunitesByDivision(data = opportunitesData) {
             let divisionStats = {};
-            opportunitesData.forEach(opp => {
+            data.forEach(opp => {
                 let division = opp['Division'] || 'Non défini';
                 divisionStats[division] = (divisionStats[division] || 0) + 1;
             });
             return divisionStats;
         }
 
-        function getOpportunitesByStatut() {
+        function getOpportunitesByStatut(data = opportunitesData) {
             let statutStats = {};
-            opportunitesData.forEach(opp => {
+            data.forEach(opp => {
                 let statut = opp['Statut'] || 'Non défini';
                 statutStats[statut] = (statutStats[statut] || 0) + 1;
             });
             return statutStats;
         }
 
-        function generateOpportunitesTable() {
-            return opportunitesData.map(opp => `
-                <tr>
-                    <td>${opp['Opportunité'] || ''}</td>
-                    <td>${opp['Division'] || ''}</td>
-                    <td>${opp['Statut'] || ''}</td>
-                    <td>${opp['Responsable'] || ''}</td>
-                    <td>${opp['Secteur'] || ''}</td>
-                    <td>${opp['Type'] || ''}</td>
-                    <td>${opp['Valeur'] ? parseFloat(opp['Valeur']).toLocaleString() + ' XAF' : ''}</td>
-                    <td>${opp['Date Insertion'] || ''}</td>
-                    <td>${opp['Date Dernière action'] || ''}</td>
-                    <td>${opp['Date prochaine action'] || ''}</td>
-                </tr>
-            `).join('');
+        function getOpportunitesBySecteur(data = opportunitesData) {
+            let secteurStats = {};
+            data.forEach(opp => {
+                let secteur = opp['Secteur'] || 'Non défini';
+                secteurStats[secteur] = (secteurStats[secteur] || 0) + 1;
+            });
+            return secteurStats;
+        }
+
+        function getOpportunitesByResponsable(data = opportunitesData) {
+            let responsableStats = {};
+            data.forEach(opp => {
+                let responsable = opp['Responsable'] || 'Non défini';
+                responsableStats[responsable] = (responsableStats[responsable] || 0) + 1;
+            });
+            
+            // Trier par nombre d'opportunités et prendre le top 10
+            return Object.entries(responsableStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .reduce((obj, [responsable, count]) => {
+                    obj[responsable] = count;
+                    return obj;
+                }, {});
+        }
+
+        // Fonction utilitaire pour obtenir les valeurs uniques d'une colonne
+        function getUniqueValues(data, columnName) {
+            if (!data || !data.length) return [];
+            return [...new Set(data.map(row => row[columnName]).filter(Boolean))];
+        }
+
+        function generateOpportunitesTable(data = opportunitesData) {
+            return data.map(opp => {
+                let valeur = opp['cout'] ? parseFloat(opp['cout'].replace(/\s/g, '')).toLocaleString() + ' XAF' : '0 XAF';
+                let probabilite = opp['% probabilité Succès'] || '0%';
+                
+                // Déterminer la classe d'alerte selon le statut
+                let alertClass = '';
+                if (opp['Statut']?.toLowerCase().includes('win') || opp['Statut']?.toLowerCase().includes('gagné')) {
+                    alertClass = 'alert-success';
+                } else if (opp['Statut']?.toLowerCase().includes('loss')) {
+                    alertClass = 'alert-danger';
+                } else if (opp['Statut']?.toLowerCase().includes('proposed')) {
+                    alertClass = 'alert-warning';
+                }
+                
+                return `
+                    <tr class="${alertClass}">
+                        <td>${opp['Opportunite'] || ''}</td>
+                        <td>${opp['Client'] || ''}</td>
+                        <td>${opp['Division'] || ''}</td>
+                        <td>${opp['Statut'] || ''}</td>
+                        <td>${opp['Responsable'] || ''}</td>
+                        <td>${opp['Secteur'] || ''}</td>
+                        <td>${opp['Type'] || ''}</td>
+                        <td>${valeur}</td>
+                        <td>${probabilite}</td>
+                        <td>${opp['Date Insertion'] || ''}</td>
+                        <td>${opp['Date Dernière action'] || ''}</td>
+                        <td>${opp['Date prochaine action'] || ''}</td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         // Chargement initial
