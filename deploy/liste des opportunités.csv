@@ -1,0 +1,760 @@
+﻿Division;Date Insertion;Client;Opportunite;Type;Initiative;cout;% probabilité Succès;Date Dernière action;Date prochaine action;Commentaires;Statut;Source;Pays;Secteur;Responsable;Associe;Date Limite Soumission;Date Reception AO;Confidentiel;Nouveau Client;Contact du Client;Net fees prob.
+Audit;10/06/2022;SIPAL;Commissariat aux comptes;Autre;Initiative Interne;2 200 000;80%;04/06/2022;;Lettre de mission transmises au client;4-Win;;Cameroun;CIM;Jean-Noel SONSANG;Emile Bitoungui;;;Non;Oui;696476959;0
+Audit;10/06/2022;BCL;BCL Commissariat aux comptes;Autre;Initiative Interne;2 200 000;80%;04/06/2022;;Lettres de missions transmises aux clients;4-Win;;Cameroun;CIM;Samira Vindjedou;Emile Bitoungui;;;Non;Oui;696 476 959;0
+Assistance Comptable et Révision (ACR);10/06/2022;PAD;Revue du traitement comptable et fiscale des immobilisations réalisées pour le compte de l'Etat;Autre;Initiative Interne;16 500 000;80%;03/06/2022;;Proposition de service en revue;3-Proposed;;Cameroun;IGH-GPS;Jean-Noel SONSANG;Emile Bitoungui;;;Non;Non;;13 200 000
+Tax;12/06/2022;SABC;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;30%;28/03/2022;;Non abouti;5-Loss;DRH;Cameroun;CIM-OI;Alvine Aoum;Emile Bitoungui;;;Non;Non;Mme BOUM;0
+Tax;12/06/2022;AIR LIQUID;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;30%;31/03/2022;;Non abouti;5-Loss;;Cameroun;CIM-OI;Admin Ebvision;Admin Ebvision;;;Non;Non;Alain DIBADJO;0
+Tax;12/06/2022;CADYST;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;30%;31/03/2022;;Still awaiting;2-Contacted;DAF;Cameroun;CIM;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;SOCOMAR;Finalisation de la procédure de dématérialisation des titres;Autre;Initiative Interne;0;50%;27/05/2022;;Still awaiting;2-Contacted;DG;Cameroun;IGH-T&L;Alvine Aoum;Emile Bitoungui;;;Non;Non;M VITALE;0
+Tax;12/06/2022;CIMENCAM;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;30%;31/05/2022;;Still awaiting;2-Contacted;DRH;Cameroun;CIM-OI;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;MTN;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;30%;;;Still awaiting;2-Contacted;DRH;Cameroun;TMT;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;ENEO;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;30%;;;Still awaiting;2-Contacted;DRH;Cameroun;ENR-P&U;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;WAFACASH;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;30%;;;Still awaiting;2-Contacted;DRH;Cameroun;FSI-OFS;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;CANAL +;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;30%;;;;2-Contacted;;Cameroun;FSI -PE;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;ADVANS;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;30%;;;;2-Contacted;;Cameroun;FSI-OFS;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;CFAO;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;30%;;;;2-Contacted;;Cameroun;IGH-IH;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;SGS;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;30%;28/06/2022;07/07/2022;Demande de RDV - Rencontre de la DRH;2-Contacted;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;CAMTEL;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;28/06/2022;07/07/2022;Suivi du courrier déposé et demande de RDV avec le DRH;2-Contacted;;Cameroun;TMT;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;CHANAS;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;29/06/2022;07/07/2022;Suivi du courrier déposé et demande de RDV avec le DRH;2-Contacted;;Cameroun;FSI-INS;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;AXA;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;28/06/2022;07/07/2022;Suivi du courrier déposé et demande de RDV avec le DRH;2-Contacted;;Cameroun;FSI-INS;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;ACTIVA;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;29/06/2022;07/07/2022;Suivi du courrier déposé et demande de RDV avec le DRH;2-Contacted;;Cameroun;FSI-INS;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;ALLIANZ;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;29/06/2022;07/07/2022;Suivi du courrier déposé et demande de RDV avec le DRH;2-Contacted;;Cameroun;FSI-INS;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;ASCOMA;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;30/06/2022;07/07/2022;Suivi du courrier déposé et demande de RDV avec le DRH;2-Contacted;;Cameroun;FSI-INS;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;ALC;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;28/06/2022;07/07/2022;Suivi du courrier déposé et demande de RDV avec le DRH;2-Contacted;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;APM;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;;;Courriel et demande de RDV à déposer;2-Contacted;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/06/2022;CEGELEC;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;;;Courriel et demande de RDV à déposer;2-Contacted;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;27/06/2022;SIPAL;Assistance juridique et fiscale permanente et revue fiscale trimestrielle;Autre;Initiative Interne;3 900 000;50%;;;;3-Proposed;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;03/06/2022;;Non;Oui;;1 950 000
+Tax;27/06/2022;BCL;Assistance juridique et fiscale permanente et revue fiscale trimestrielle;Autre;Initiative Interne;4 300 000;50%;;;;3-Proposed;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;03/06/2022;;Non;Oui;;2 150 000
+Tax;27/06/2022;CFAO;Audit fiscal et social de la paie;Autre;Initiative Interne;3 000 000;25%;;;;3-Proposed;;Cameroun;IM;Ashley Elang;Emile Bitoungui;01/04/2022;;Non;Oui;;750 000
+Tax;27/06/2022;DANGOTE;Audit fiscal et social de la paie;Autre;Initiative Interne;2 810 000;50%;;;;3-Proposed;;Cameroun;IM;Ashley Elang;Emile Bitoungui;01/04/2022;;Non;Oui;;1 405 000
+Tax;27/06/2022;PRODIFOODS;Assistance juridique et fiscale permanente et revue fiscale trimestrielle;Autre;Initiative Interne;2 600 000;50%;;;;3-Proposed;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;03/06/2022;;Non;Oui;;1 300 000
+Deal Advisory;30/06/2022;NHPC;Formations;Autre;Initiative Client;600 000;90%;30/06/2022;30/06/2022;Proposition de service envoyée en validation;3-Proposed;;Cameroun;ENR-O&G;Jean-Noel SONSANG;Samira Vindjedou;30/06/2022;;Non;Non;676 43 20 90 / 682 76 58 95;540 000
+Audit;30/06/2022;SONARA;Audit des frais bancaires;Autre;Initiative Interne;0;50%;21/06/2022;;Proposition envoyée en validation;1-Identified;;Cameroun;ENR-O&G;Jean-Noel SONSANG;Samira Vindjedou;;;Non;Oui;;0
+Deal Advisory;30/06/2022;SONARA;Formations;Autre;Initiative Interne;2 000 000;50%;21/06/2022;;Proposition envoyée en validation;3-Proposed;;Cameroun;ENR-O&G;Jean-Noel SONSANG;Samira Vindjedou;;;Non;Non;;1 000 000
+Assistance Comptable et Révision (ACR);30/06/2022;ASSOCIATION YUMMEN;Assictance comptable (Tenue de comptabilité);Autre;Initiative Client;250 000;90%;;;Lettre de mission en cours de redaction;2-Contacted;;Cameroun;P&NGO;Jean-Noel SONSANG;Samira Vindjedou;;;Non;Non;692 51 19 35;225 000
+Audit;30/06/2022;ASSOCIATION YUMMEN;Audit contractuel;Autre;Initiative Client;250 000;90%;;;Lettre de mission en cours;2-Contacted;;Cameroun;P&NGO;Jean-Noel SONSANG;Samira Vindjedou;;;Non;Non;692 51 19 35;225 000
+Tax;01/07/2022;PROMETAL S;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/07/2022;BOUYGUES;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;ALLIANZ;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;GULFIN;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/07/2022;CFAO;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/07/2022;ASCOMA;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/07/2022;POLYPHARMA;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IGH-IH;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/07/2022;ORANGE;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;TMT;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/07/2022;MTN;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;TMT;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/07/2022;ADDAX;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/07/2022;CAMLAIT;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;CIM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/07/2022;CFAO;Assistance à la résolution du litige relatif à la facturation de la TVA au client HYSAGAM;Autre;Initiative Interne;0;50%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;TRACTAFRIC EQUIPMENT CAMEROUN;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;GCSA;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;DHL;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;ALIOS;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;COMETAL;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;SOLEVO;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;MAERSK;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;SIC CACAOS;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;COLGATE;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;CHOCOCAM;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;BVS;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;CIM;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;UBA;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;NEXTTEL;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;TMT;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;NEPTUNE;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;GLOBELEQ;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;ACCESS;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;TRADEX;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/07/2022;LABOREX;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;03/07/2022;COLGATE;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;04/07/2022;;Courriel et demande de RDV à déposer;1-Identified;;Cameroun;CIM-OI;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;03/07/2022;CBC;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;04/07/2022;;Courriel et demande de RDV à déposer;1-Identified;;Cameroun;FSI-BNK;Admin Ebvision;Admin Ebvision;;;Non;Non;;0
+Tax;03/07/2022;ECOBANK;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;04/07/2022;;Courriel et demande de RDV à déposer;1-Identified;;Cameroun;FSI-BNK;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;03/07/2022;CORLAY;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;04/07/2022;;Courriel et demande de RDV à déposer;1-Identified;;Cameroun;IM;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;03/07/2022;DAMCO;Assistance à la souscription des déclarations de revenus (IRPP);Autre;Initiative Interne;0;0%;04/07/2022;;Courriel et demande de RDV à déposer;1-Identified;;Cameroun;IGH-T&L;Alvine Aoum;Emile Bitoungui;04/07/2022;;Non;Non;;0
+Tax;04/07/2022;BOUYGUES;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;04/07/2022;PAD;Audit fiscal des exercices 2019, 2020 et 2021;Autre;Initiative Interne;16 603 773;50%;;;;4-Win;;Cameroun;IGH-GPS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;04/07/2022;NHPC;Recrutement d'un cabinet de conseil fiscal;AO;Initiative Interne;0;50%;;;;7-Shortlisted;;Cameroun;IGH-IH;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;08/07/2022;AUTO 22;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;SCTM;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;FME-GAZ;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;FERMENCAM;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;SOURCE;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;CIMAF;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;SASEL;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;OK PLAST;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;ASQUINI;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;SMT;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;NOVA PLAST;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;SMALTO;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;ICRAFON;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;PERENCO;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;KALFRELEC;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;08/07/2022;CHANAS;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-INS;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;14/07/2022;ALUBASSA;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;14/07/2022;EDC;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;14/07/2022;ALIOS;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;14/07/2022;BOUYGUES;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;TMT;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;15/07/2022;UNALOR;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;15/07/2022;SOCAFER;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;15/07/2022;PLASTICAM;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;15/07/2022;FINANCIA;PROSPECTION;Autre;Initiative Interne;0;50%;;;;2-Contacted;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;18/07/2022;SABC;Expropriation des terrains de la SABC;Autre;Initiative Interne;0;50%;;;;3-Proposed;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;18/07/2022;SABC;Accompagnement en vue du réaménagement du cadre législatif et règlementaire des jeux de divertissement et publicité, applicable aux activités promotionnelles des boissons à contenance d’alcool;Autre;Initiative Interne;0;50%;;;;3-Proposed;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;22/07/2022;CAMWATER;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;CCH/W;Ashley Elang;Emile Bitoungui;;;Oui;Non;;0
+Tax;22/07/2022;ERICSON;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;TMT;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;22/07/2022;SGC;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;22/07/2022;CAMRAIL;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;22/07/2022;EURO;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;22/07/2022;INODA;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;22/07/2022;LGCCA;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;22/07/2022;HYSACAM;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;22/07/2022;MOULIN COQ;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Assistance Comptable et Révision (ACR);25/07/2022;PAREC;Assistance comptable et audit;Autre;Initiative Client;500 000;100%;;;;4-Win;Personal relationship;Cameroun;P&NGO;Jean-Noel SONSANG;Samira Vindjedou;25/07/2022;25/07/2022;Non;Oui;695967150;0
+Tax;29/07/2022;SUNU VIE;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-INS;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;29/07/2022;CIMENCAM;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Ashley Elang;;;Non;Oui;;0
+Tax;29/07/2022;SUNU IARD;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-INS;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;29/07/2022;SANLAM;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-INS;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/08/2022;UBC;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;01/08/2022;BATIMETAL;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Audit;04/08/2022;SEEF S.A.;AUDIT DUE DILIGENCE & EVALUATION UFA 10-062;AO;Initiative Interne;5 000 000;90%;;;;1-Identified;CONTACT PERSONEL;Cameroun;FORESTIER;Samira Vindjedou;Samira Vindjedou;04/08/2022;03/08/2022;Non;Oui;;4 500 000
+Tax;07/08/2022;BIA;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;07/08/2022;COLOR;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;07/08/2022;BLESSING;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;07/08/2022;GRAPHIC;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Alvine Aoum;;;Non;Oui;;0
+Audit;10/08/2022;BANGE;ASSISTANCE CONVERSION COBAC IFRS;AO;Initiative Interne;7 000 000;50%;;;;1-Identified;;Cameroun;FSI-BNK;Samira Vindjedou;Samira Vindjedou;10/08/2022;10/08/2022;Non;Oui;;3 500 000
+Tax;11/08/2022;BESIX;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;11/08/2022;BERNABE;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;11/08/2022;GAZ DU CAM;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;11/08/2022;ORANGE;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;11/08/2022;UNITED FOR;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FORESTIER;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;11/08/2022;BATISSEURS;PROSPECTION;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/08/2022;SPEED APRO;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/08/2022;SEPBC;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FORESTIER;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/08/2022;SOREPCO;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/08/2022;TMC;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/08/2022;NFC BANK;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/08/2022;TELCAR;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/08/2022;BIOPHARMA;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/08/2022;SEFECAM;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/08/2022;SMPC;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/08/2022;Tropik;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/08/2022;PRIMO;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/08/2022;TRACTAFRIC EQUIPMENT CAMEROUN;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;26/08/2022;FIRST;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;26/08/2022;AGROCHEM;Prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Audit;09/09/2022;AZUR;Formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;Relation Privée;Cameroun;CIM;Samira Vindjedou;Samira Vindjedou;;;Non;Oui;;1 000 000
+Audit;09/09/2022;ADVANS;Formation en analyse financière;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;FSI-BNK;Samira Vindjedou;Samira Vindjedou;01/08/2022;01/08/2022;Non;Non;;1 000 000
+Audit;09/09/2022;SONARA;REVUE DES FRAIS BANCAIRES;Autre;Initiative Interne;10 000 000;50%;;;;1-Identified;;Cameroun;ENR-O&G;Samira Vindjedou;Admin Ebvision;;01/08/2022;Non;Non;;5 000 000
+Audit;09/09/2022;SEEF SA;AUDIT CONTRACTUEL;Autre;Initiative Interne;3 500 000;50%;;;;4-Win;;Cameroun;FORESTIER;Mikael Kouam;Samira Vindjedou;;04/08/2022;Non;Oui;;0
+Audit;09/09/2022;BANGE;Assistance a la conversion au reporting IFRS COBAC;Autre;Initiative Interne;7 000 000;50%;;;;1-Identified;;Cameroun;FSI-BNK;Samira Vindjedou;Samira Vindjedou;;11/08/2022;Non;Non;;3 500 000
+Audit;09/09/2022;ENEO;Revue des frais bancaires;Autre;Initiative Interne;10 000 000;50%;;;;1-Identified;;Cameroun;ENR-O&G;Samira Vindjedou;Admin Ebvision;;09/08/2022;Non;Non;;5 000 000
+Audit;09/09/2022;CUK;offre de services - audit comptables et financier;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;P&NGO;Mikael Kouam;Samira Vindjedou;;;Non;Non;;0
+Audit;09/09/2022;SONARA;assistance a la mise a jour de la cartographie des risques ( hors risques industriel);Autre;Initiative Interne;75 000 000;50%;;;;1-Identified;;Cameroun;ENR-O&G;Admin Ebvision;Admin Ebvision;;07/09/2022;Non;Non;;37 500 000
+Audit;09/09/2022;PAK;offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;P&NGO;Samira Vindjedou;Admin Ebvision;;;Non;Non;;1 000 000
+Audit;09/09/2022;MTN;revue des frais bancaires;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;TMT;Samira Vindjedou;Admin Ebvision;;;Non;Non;;1 000 000
+Audit;09/09/2022;ORANGE;revue des frais bancaires;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IM;Samira Vindjedou;Admin Ebvision;;;Non;Non;;1 000 000
+Audit;09/09/2022;SABC;offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IM;Samira Vindjedou;Admin Ebvision;;09/09/2022;Non;Non;;1 000 000
+Audit;09/09/2022;BANGE;offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IM;Samira Vindjedou;Admin Ebvision;;;Non;Non;;1 000 000
+Audit;16/09/2022;PCADY;Audit des comptes (Projet PCADY Yde);Autre;Initiative Interne;500 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Mikael Kouam;Samira Vindjedou;;;Non;Oui;;250 000
+Audit;16/09/2022;AZUR;Offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM;Mikael Kouam;Samira Vindjedou;;;Non;Oui;;1 000 000
+Tax;16/09/2022;SOCATUR;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;LONG METAL;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;HYDRAC;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;SEEF SA;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;WOOD SENSE;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;BATIBOIS;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;MAHIMA;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;IMS;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;HAVEST;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;AMS GROUP;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;WISDOM;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;CREATIVE;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;AFRICA;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;CHASLES;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;16/09/2022;FLORE;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Audit;23/09/2022;PSFE;Audit financier et comptable des exercices 2019/2020;Autre;Initiative Interne;15 000 000;50%;;;;1-Identified;;Cameroun;FSI-BNK;Mikael Kouam;Samira Vindjedou;;;Non;Non;;7 500 000
+Audit;23/09/2022;EDF;Audit des coûts de developpement;Autre;Initiative Interne;12 000 000;50%;;;;4-Win;;Cameroun;ENR-O&G;Mikael Kouam;Samira Vindjedou;;;Non;Non;;0
+Audit;23/09/2022;MEDLOG;Offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-T&L;Hermann Cyrille tchapda;Samira Vindjedou;;;Non;Non;;1 000 000
+Tax;28/09/2022;METAFRIQUE;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;28/09/2022;CAMBUILD;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;28/09/2022;EMRALD;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;28/09/2022;SINCATEX;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Tax;28/09/2022;SOLEIL;prospection;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Oui;;0
+Audit;30/09/2022;SONARA;offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;ENR-O&G;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;30/09/2022;PAD;offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;30/09/2022;CIMENCAM;offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IM;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;30/09/2022;AGROCAM SA;offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;30/09/2022;BANQUE ATLANTIQUE CAMEROUN;offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;FSI-BNK;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;07/10/2022;NSIA;offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;FSI-INS;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;07/10/2022;SANLAM;offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;FSI-INS;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;07/10/2022;SANLAM LIF;offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;FSI-INS;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;07/10/2022;SOCAPALM;Inventaire physique des immobilisations;Autre;Initiative Interne;34 200 000;50%;;;;1-Identified;;Cameroun;IM;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;17 100 000
+Audit;07/10/2022;FNE;Elaboration budget et pilotage de la performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;07/10/2022;CIRCB;Elaboration du budget;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;07/10/2022;ANAFOR;Etats financiers et Analyse financière des investissements à réaliser;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;07/10/2022;NHPC;Reconstitution des couts des jalons techniques et données comptables;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;ENR-O&G;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;07/10/2022;BANGE;Manuel de procédure IT;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;FSI-BNK;Raphaël Ngos;Samira Vindjedou;;;Non;Non;;1 000 000
+RH;07/10/2022;ALIOS;Formation;AO;Initiative Interne;2 000 000;50%;;;;2-Contacted;Relation Privée;Cameroun;Hôtellerie;Admin Ebvision;Admin Ebvision;;;Non;Non;;1 000 000
+Audit;17/10/2022;SUNU VIE;Revue des frais financiers;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;FSI-INS;Raphaël Ngos;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;25/10/2022;CAMWATER;Offre de formation : Gestion des projets;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CCH/W;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;25/10/2022;TRADEX;Offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;ENR-O&G;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;25/10/2022;CAA;Offre de formation;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;25/10/2022;LONGSTAR;Offre de services : Commissariat aux comptes/Révision comptable trimetrielle;Autre;Initiative Client;5 000 000;50%;;;;1-Identified;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;2 500 000
+Audit;25/10/2022;BANGE;Accompagnement adaptation procédure IT;Autre;Initiative Interne;8 000 000;50%;;;;1-Identified;;Cameroun;FSI-BNK;Raphaël Ngos;Samira Vindjedou;;;Non;Non;;4 000 000
+Audit;07/11/2022;EB-TAX;MFE/Tenue de comptabilité Webb Fontaine;Autre;Initiative Interne;1 350 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Samira Vindjedou;;;Non;Non;;0
+Audit;14/11/2022;PAD;Revue du traitement comptable et fiscal des investissements réalisés pour le compte de Etat;Autre;Initiative Interne;15 000 000;50%;;;;4-Win;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;14/11/2022;SANLAM LIF;Acquisition et implémentation d'un logiciel;AO;Initiative Interne;16 403 910;50%;;;;1-Identified;;Cameroun;FSI-INS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;8 201 955
+Audit;18/11/2022;GLOBELEQ;Supervision des inventaires de stocks;AO;Initiative Interne;8 000 000;50%;;;;4-Win;;Cameroun;ENR-P&U;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;18/11/2022;GLOBELEQ;Rédaction du manuel de procédure;AO;Initiative Interne;15 000 000;50%;;;;1-Identified;;Cameroun;ENR-P&U;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;7 500 000
+Audit;18/11/2022;YOUMEE;Commissariat aux comptes;Autre;Initiative Interne;5 000 000;50%;;;;1-Identified;;Cameroun;TMT;Mikael Kouam;Samira Vindjedou;;;Non;Non;;2 500 000
+Tax;12/12/2022;NHPC;"Formation sous le thème ""Gestion des contrats : Planification et suivi de l'exécution";Autre;Initiative Client;900 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;12/12/2022;WF CAM;Assistance fiscale et comptable;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;12/12/2022;MSF;Assistance à contrôle CNPS;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;P&NGO;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;12/12/2022;SABC;Assistance à obtention des cartes de séjour;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;IM;Admin Ebvision;Admin Ebvision;;;Non;Non;;0
+Tax;12/12/2022;ABAM SA;Assistance juridique et fiscale permanente;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;12/12/2022;ABS S.A;Assistance juridique et fiscale permanente;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;12/12/2022;ELECNOR;Assistance à l'examen des arguments formulés par ELECNOR en vue du recouvrement du trop retenu de TSR et Médiation;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;12/12/2022;ELECNOR;Assistance à l'introduction d'un rescrit fiscal;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;12/12/2022;SABC;Assistance au renouvellement des visas de contrats de travail de 02 expatriés;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;CIM-OI;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;12/12/2022;NHPC;Assistance au renseignement des données fiscales dans le questionnaire adressé par l'API;Autre;Initiative Client;5 000 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;13/12/2022;NHPC;Veille fiscale permanente et audit fiscal trimestriel;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;13/12/2022;IHS;"Training under the topic ""Implementation and management of a tax risk map""";Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Audit;14/12/2022;CNCC;Offre de formation;Autre;Initiative Interne;2 200 000;100%;;;;4-Win;;Cameroun;IGH-GPS;Mikael Kouam;Samira Vindjedou;;;Non;Non;;0
+Audit;19/12/2022;CNPS;contrat de performane;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;FEICOM;contrat de performane;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CSPH;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;ART;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;ART;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Assistance Comptable et Révision (ACR);19/12/2022;CAMTEL;Audit indépendant en vue de l’élaboration des états financiers de référence pour contrats de performance;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Oui;(+237) 2 22 23 40 65;0
+Audit;19/12/2022;CCAA;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CRTV;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;ALUBASSA;Audit indépendant en vue de l’élaboration des états financiers de référence pour contrats de performance;Autre;Initiative Interne;0;50%;;;;5-Loss;;Cameroun;FSI -PE;Samira Vindjedou;Samira Vindjedou;;;Non;Oui;(+237) 233 37 15 19;0
+Audit;19/12/2022;CENAME;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;FODECC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;FNE;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CPC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CNCC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;GCE;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;HGD;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;HGY;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;INS;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;IRAD;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;OBC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;SODECAO;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;ANAFOOT;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;AER;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;API;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;APME;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;ASCNPD;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;ANOR;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;ANR;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;BUCREP;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;BUNEC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CAA;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CDENO;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CDENO;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CDEN;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CDPM;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CHRACERH;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CHU;contrat de performance;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;19/12/2022;CENEEMA;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CNRPH;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;FAOPAM;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;CONAC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;EIFORCES;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;ENAM;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;SUP'PTIC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;ENSTP;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;FR;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;HGOPD;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;HGOPY;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;IN;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;IRGM;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;IRMPM;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;INC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;INJS;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;ISMP;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;LANACOME;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;LANAVET;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;LINAFI;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;MIDENO;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;MIDIMA;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;MEAO;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;MEADEN;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Admin Ebvision;Admin Ebvision;;;Non;Non;;1 000 000
+Audit;19/12/2022;MEAO;contrat de performance;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;19/12/2022;MIPROMALO;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;19/12/2022;MIRAP;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;NASLA;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;ONCC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;OC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;ONAC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;ONCC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;PALAIS DES CONGRES;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;SOWEDA;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;UNDVA;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;UTAVA;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;ANTIC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;ARMP;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;CIRCB;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;CAMTEL;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;ALUCAM;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;SODECOTON;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;SNH;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;SONARA;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;CDC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;ADC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;CAMAIRCO;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;CAMWATER;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;CICAM;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;CFC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;PAD;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;PAK;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;SCDP;contrat de performance;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;20/12/2022;CNIC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;EDC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;PPPLc;contrat de performance;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;20/12/2022;SOPECAM;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;ANAFOR;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;CAMPOST;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;CPE;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;HYDROMEKIN;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;MAETUR;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;MIDEPECAM;contrat de performance;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;20/12/2022;MATGENIE;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;ALUBASSA;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;SODEPA;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;SEMRY;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;SIC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;CAMTAINER;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;SONATREL;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;SNI;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;20/12/2022;SRC;contrat de performance;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;MDC Sarl;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;CIM-OI;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;22/12/2022;PLASTICAM;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;AGROCAM SA;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;SCEFL SA;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;SOCAFER;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;COLGATE;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;SOCATUR;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;CIMENCAM;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;ICRAFON;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;BIOPHARMA;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;SPN;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;CMC SA;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;SAFCAM SA;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;PANZANI;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;SITRABCAM;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;CICAM;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;SOTICAM;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;TAC SARL;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;SOPROICAM;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;CFAO;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;TMT;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;AMAL SIMI;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;CIM-OI;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Audit;22/12/2022;METCH ELEC;proposition de services relative à l'inventaire physique des immobilisations et ou des stocks;Autre;Initiative Interne;2 000 000;50%;;;;1-Identified;;Cameroun;IGH-GPS;Mikael Kouam;Samira Vindjedou;;;Non;Non;;1 000 000
+Tax;29/12/2022;UMA;Tax assistance as part of the general accounting audit of FY 2017-2020;Autre;Initiative Client;12 000 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;29/12/2022;PAD;Fiscalisation des remboursements des investissements réalisés pour le compte de l'Etat par le PAD;Autre;Initiative Interne;16 500 000;100%;;;;4-Win;;Cameroun;IGH-GPS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Audit;19/01/2023;IFDD;Audit indépendant Validation des dépenses;Autre;Initiative Interne;12 299 194;50%;;;;1-Identified;;Cameroun;P&NGO;Samira Vindjedou;Admin Ebvision;;;Oui;Oui;4 186 925 727;6 149 597
+Audit;19/01/2023;IFDD;Mise en place de la comptabilité à double entrée;Autre;Initiative Interne;12 299 194;50%;;;;1-Identified;;Cameroun;P&NGO;Samira Vindjedou;Samira Vindjedou;;;Oui;Oui;4 186 925 727;6 149 597
+Audit;01/02/2023;EB-TAX;MFE/ASSSITANCE DSF 2022 WEBB FONTAINE;Autre;Initiative Client;1 000 000;100%;;;;4-Win;;Cameroun;IGH-T&L;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;01/02/2023;EB-TAX;MFE/REVISION COMPTABLE SIPAL;Autre;Initiative Interne;1 260 000;100%;;;;4-Win;;Cameroun;CIM;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;01/02/2023;EB-TAX;MFE/REVISION COMPTABLE BCL;Autre;Initiative Interne;1 260 000;100%;;;;4-Win;;Cameroun;CIM;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;01/02/2023;EB-TAX;MFE/REVISION COMPTABLE PRODIFOODS;Autre;Initiative Interne;1 260 000;100%;;;;4-Win;;Cameroun;CIM;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;01/02/2023;EB-TAX;MFE/REVISION COMPTABLE VESTALIA;Autre;Initiative Interne;1 260 000;100%;;;;4-Win;;Cameroun;MISC;Admin Ebvision;Admin Ebvision;;;Non;Non;;0
+Audit;06/02/2023;EB-TAX;MFE N°006/ASSISTANCE DSF 2022 - MSF;Autre;Initiative Interne;1 000 000;100%;;;;4-Win;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;06/02/2023;EB-TAX;MFE N°007 /AUDIT FINANCIER ET COMPTABLE 2022 - MSF;Autre;Initiative Interne;2 250 000;100%;;;;4-Win;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;06/02/2023;EB-TAX;MFE N°008/TENUE DE COMPTABILITE JANVIER 22 - WEBB FONTAINE;Autre;Initiative Interne;180 000;100%;;;;4-Win;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Tax;13/02/2023;MSF;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;600 000;100%;;;;4-Win;;Cameroun;P&NGO;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;CECEC;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;357 750;100%;;;;4-Win;;Cameroun;FSI-BNK;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;ENEO;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;1 228 500;100%;;;;4-Win;;Cameroun;ENR-O&G;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;CFAO;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;283 500;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;IHS;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;910 000;100%;;;;4-Win;;Cameroun;TMT;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;EDF;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;189 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Samira Vindjedou;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;PSK SARL;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;119 250;100%;;;;4-Win;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;SGC;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;FSI-BNK;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;BCL;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;CIM-CM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;MAÎTRE CHE;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;SABC;Participation au séminaire de la loi de finances 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;CIM-CM;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;CCN S.A.S;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;IGH-IH;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;TOTALENERG;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;SAE S.A;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;SAGRI;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;IM;Samira Vindjedou;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;RW KING;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;ASCA;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;DGF;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;GPCAM;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;IGH-T&L;Samira Vindjedou;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;HYDIAM;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;IBI S.A;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;IM;Samira Vindjedou;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;GREENFIL;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Samira Vindjedou;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;AZUR;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;IM;Samira Vindjedou;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;MAÎTRE CHE;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;13/02/2023;Me ESSONO;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Audit;17/02/2023;PRODIFOODS;Commissariat aux comptes;Autre;Initiative Interne;1 500 000;100%;;;;4-Win;;Cameroun;CIM-CM;Mikael Kouam;Samira Vindjedou;;;Non;Non;;0
+Douane;18/02/2023;EDF;"Formation sous le thème ""Notion de base et éléments de pratique douanière""";Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-O&G;Samson Bilangna;Samson Bilangna;;;Non;Oui;;0
+Douane;18/02/2023;DGF;Assistance douanière;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;MISC;Samson Bilangna;Samson Bilangna;;;Non;Oui;;0
+Douane;18/02/2023;IHS;"Training under the topic ""Customs and foreign exchange regulations controls";Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-P&U;Samson Bilangna;Samson Bilangna;;;Non;Oui;;0
+Douane;18/02/2023;SIC CACAOS;Assistance douanière;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IM;Samson Bilangna;Samson Bilangna;;;Non;Oui;;0
+Douane;18/02/2023;DGDDIT;Assistance à l'élaboration d'une fiche technique en préparation des rencontres à tenir avec la DGD du Cameroun et les acteurs de la chaîne logistique;Autre;Initiative Client;0;100%;;;;4-Win;;Tchad;IGH-GPS;Samson Bilangna;Samson Bilangna;;;Non;Oui;;0
+Tax;19/02/2023;ICM;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Oui;;0
+Tax;19/02/2023;BCL;Revue fiscale annuelle des comptes et montage de la DSF;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;CIM-CM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;19/02/2023;SIPAL;Revue fiscale annuelle des comptes et montage de la DSF;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;CIM-CM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;19/02/2023;PRODIFOODS;Revue fiscale annuelle des comptes et montage de la DSF;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;CIM-CM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;19/02/2023;SCI VESTAL;Revue fiscale annuelle des comptes et montage de la DSF;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;19/02/2023;REC;Assistance à contrôle sur pièces 2021;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;19/02/2023;WFG;Assistance juridique, fiscale et sociale ponctuelle;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Audit;01/03/2023;EB-TAX;MFE/Tenue de comptabilité Webb Fontaine Février 2023;Autre;Initiative Interne;180 000;100%;;;;4-Win;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;01/03/2023;EB-TAX;MFE/ASSSITANCE DSF 2022 LA REGIONAL;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;10/03/2023;EB-TAX;MFE N°10 Assistance élaboration DSF NHPC/EB-TAX;Autre;Initiative Interne;2 000 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Samira Vindjedou;Samira Vindjedou;;;Non;Non;;0
+Audit;10/03/2023;NHPC;Inventaires des immos;Autre;Initiative Interne;28 000 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Samira Vindjedou;Samira Vindjedou;08/03/2023;26/07/2023;Oui;Oui;;0
+Audit;13/03/2023;EB-TAX;MFE/Assistance au montage de la Déclaration Statistique et Fiscale  (DSF) de l’exercice 2022.;Autre;Initiative Interne;1 500 000;100%;;;;4-Win;;Cameroun;IM;Admin Ebvision;Samira Vindjedou;10/03/2023;10/03/2023;Oui;Non;;0
+Audit;13/03/2023;EB-TAX;MFE014_VESTALIA  - Assistance élaboration DSF Janv 2023;Autre;Initiative Interne;150 000;100%;;;;4-Win;;Cameroun;MISC;Admin Ebvision;Samira Vindjedou;10/03/2023;10/03/2023;Oui;Non;;0
+Audit;13/03/2023;EB-TAX;MFE011 SIPAL  - Assistance élaboration DSF Janv 2023;Autre;Initiative Interne;1 000 000;100%;;;;4-Win;;Cameroun;FMCG;Samira Vindjedou;Samira Vindjedou;10/03/2023;10/03/2023;Oui;Non;;0
+Audit;13/03/2023;EB-TAX;MFE012 PRODIFOODS - Assistance élaboration DSF Janv 2023;Autre;Initiative Interne;1 000 000;100%;;;;4-Win;;Cameroun;CIM;Samira Vindjedou;Samira Vindjedou;10/03/2022;10/03/2023;Oui;Non;;0
+Audit;13/03/2023;EB-TAX;MFE015 EB-PARTNERS TAX GLOBAL - Assistance élaboration DSF Janv 2023;Autre;Initiative Interne;300 000;100%;;;;4-Win;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;13/03/2023;13/03/2023;Oui;Non;690704059;0
+Audit;03/04/2023;EB-TAX;Assistance comptable à la production de la Balance générale  de l’exercice 2022.;Autre;Initiative Interne;2 500 000;100%;;;;4-Win;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;10/03/2023;10/03/2023;Oui;Non;233431109;0
+Audit;04/04/2023;EB-TAX;MFE/017/WEBFONTAINE -Tenue de comptabilité Mars 2023;Autre;Initiative Interne;180 000;100%;;;;4-Win;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;;;Oui;Non;78800314;0
+Audit;05/05/2023;MSF;Assitance montage DSF 2022;Autre;Initiative Client;1 000 000;100%;;;;4-Win;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;;;Oui;Oui;;0
+Douane;05/05/2023;KPDC;Assistance for Post Clearance Control;Autre;Initiative Interne;10 000 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Samson Bilangna;Samson Bilangna;;;Non;Oui;;0
+Tax;08/05/2023;WF CAM;Assistance au montage de la DSF de l'exercice 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Audit;08/05/2023;EB-TAX;Tenue de comptabilité Avril 2023;Autre;Initiative Interne;180 000;100%;;;;4-Win;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;04/05/2023;04/05/2023;Oui;Non;;0
+Audit;08/05/2023;IFDD;Validation des dépenses;Autre;Initiative Interne;12 299 194;50%;;;;1-Identified;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;18/01/2023;;Oui;Oui;;6 149 597
+Audit;08/05/2023;IFDD;Mise en place de la comptabilité à double entrée;Autre;Initiative Interne;12 299 194;50%;;;;1-Identified;;Cameroun;FSI-INS;Samira Vindjedou;Samira Vindjedou;18/01/2023;;Oui;Non;;6 149 597
+Audit;08/05/2023;AMS GROUP;"""- Due Dilligence '- Revue semestrielle compta '- Assistance dans le montage de la DSF""";Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-OFS;Samira Vindjedou;Samira Vindjedou;14/03/2023;;Oui;Oui;;0
+Audit;08/05/2023;CFC;Mise à jour de la Cartographie de risque;Autre;Initiative Interne;9 000 000;50%;;;;1-Identified;;Cameroun;FSI-OFS;Samira Vindjedou;Samira Vindjedou;;;Oui;Oui;;4 500 000
+Audit;08/05/2023;CFC;#NOM?;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;FSI-OFS;Samira Vindjedou;Samira Vindjedou;;;Oui;Oui;;0
+Audit;08/05/2023;NHPC;Inventaires des immos;Autre;Initiative Interne;24 000 000;50%;;;;4-Win;;Cameroun;P&NGO;Samira Vindjedou;Samira Vindjedou;08/03/2023;;Oui;Oui;;0
+Audit;08/05/2023;BANGE;Audit sécurité code source de Mobile Paiement;Autre;Initiative Interne;9 200 000;50%;;;;1-Identified;;Cameroun;FSI-BNK;Raphaël Ngos;Samira Vindjedou;15/03/2023;;Oui;Oui;;4 600 000
+Assurance;09/05/2023;SOA - SH;Assurance Auto 1 an - 2023;Autre;Initiative Interne;142 500;40%;;;;4-Win;Relation Privée;Cameroun;FSI-OFS;Leonelle Tinko;Samira Vindjedou;26/05/2023;;Non;Oui;696004516;0
+Assurance;09/05/2023;HUNTER;RC CHEF D'ENTREPRISE;Autre;Initiative Interne;250 000;100%;;;;1-Identified;;Cameroun;IGH-GPS;Leonelle Tinko;Samira Vindjedou;04/04/2023;05/04/2023;Non;Oui;695128027;250 000
+Tax;10/05/2023;ELECNOR;Frais de mission;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;10/05/2023;WF CAM;Evaluation des droits sociaux de rupture contractuelle;Autre;Initiative Client;650 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;10/05/2023;ELECNOR;Assistance  permanente limitée;Autre;Initiative Client;3 000 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;10/05/2023;ELECNOR SUCCURSALE;Assistance  permanente limitée;Autre;Initiative Client;3 000 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Alvine Aoum;;;Non;Non;;0
+Tax;10/05/2023;MSF;Assistance juridique et fiscale permanente;Autre;Initiative Client;4 500 000;100%;;;;4-Win;;Cameroun;P&NGO;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;10/05/2023;BOMS;Etudes des impacts fiscaux - Schémas contractuels;Autre;Initiative Interne;2 390 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;10/05/2023;HORUS;Assistance juridique et fiscale permanente;Autre;Initiative Client;30 000 000;100%;;;;4-Win;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;10/05/2023;NHPC;Assistance au montage de la DSF de l'exercice 2022;Autre;Initiative Client;3 500 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;10/05/2023;TELCAR;Etude juridique, fiscale et douanière;Autre;Initiative Client;10 000 000;100%;;;;4-Win;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;10/05/2023;HORUS;Assistance à contrôle et contentieux fiscal;Autre;Initiative Client;50 000 000;100%;;;;4-Win;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;10/05/2023;DANGOTE;Participation au séminaire de formation sur les innovations de la LF 2023;Autre;Initiative Client;3 300 000;100%;;;;4-Win;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;12/05/2023;LOXEA;Assistance à contrôle sur pièces des exercices 2019, 2020 et 2021;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;12/05/2023;CFAO;Assistance à contrôle et contentieux fiscal;Autre;Initiative Client;20 000 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;22/05/2023;ABAM SA;Etude des options juridiques et restructuration des capitaux propres;Autre;Initiative Client;5 504 000;100%;;;;4-Win;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;22/05/2023;ABAM SA;Analyse des incidences juridiques  et fiscales des options de correction de la SNC de la société ABAM;Autre;Initiative Client;1 000 000;100%;;;;4-Win;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;22/05/2023;ABS S.A;Projet ALPHA;Autre;Initiative Client;3 088 000;100%;;;;4-Win;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;22/05/2023;ABC;Avis juridique sur les contrats Partners;Autre;Initiative Client;600 000;100%;;;;4-Win;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Audit;24/05/2023;CECAW;assistance reduction du risque bancaire lies a l'infirmatique conformement a la lettre circulaire COBAC;Autre;Initiative Interne;0;0%;;;;1-Identified;;Cameroun;FSI-OFS;Raphaël Ngos;Samira Vindjedou;24/05/2023;24/05/2023;Oui;Oui;233411019;0
+Audit;02/06/2023;GLOBELEQ;Fixed assets count for KPDC, DPDC and GCMS;Autre;Initiative Interne;22 000 000;50%;;;;1-Identified;;Cameroun;ENR-P&U;Samira Vindjedou;Samira Vindjedou;11/05/2023;11/05/2023;Oui;Non;;11 000 000
+Audit;02/06/2023;NHPC;Formation - Excel – Tableau de Bord pour le pilotage de la performance »;Autre;Initiative Interne;1 000 000;50%;;;;1-Identified;;Cameroun;ENR-P&U;Samira Vindjedou;Samira Vindjedou;24/05/2023;24/05/2023;Oui;Non;690871872;500 000
+Audit;02/06/2023;NHPC;Formation - Excel – Excel avancé pour la finance et modélisation financière niveau I;Autre;Initiative Interne;3 000 000;50%;;;;1-Identified;;Cameroun;ENR-P&U;Samira Vindjedou;Samira Vindjedou;24/05/2023;;Oui;Non;690871872;1 500 000
+Audit;02/06/2023;NHPC;Formation - Excel – Etats fi et CAC;Autre;Initiative Interne;1 000 000;50%;;;;1-Identified;;Cameroun;ENR-P&U;Samira Vindjedou;Samira Vindjedou;24/05/2023;;Oui;Non;690871872;500 000
+Audit;02/06/2023;AGB;ASSISTANCE DANS L’ELABORATION D’UN PLAN STRATEGIQUE SUR UNE PERIODE DE CINQ (05) ANS;Autre;Initiative Interne;29 000 000;50%;;;;1-Identified;;Cameroun;FSI-BNK;Samira Vindjedou;Samira Vindjedou;26/05/2023;;Oui;Oui;;14 500 000
+Tax;09/06/2023;NHPC;Assistance à Vérification Générale de Comptabilité (VGC) 2020;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Douane;09/06/2023;DPDC S.A;Assistance with customs post clearance control;Autre;Initiative Client;8 500 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;23/06/2023;OTR;Formation sur « la facilitation des échanges et le temps nécessaire pour la mainlevée des marchandises »;Autre;Initiative Interne;6 000 000;100%;;;;4-Win;;Togo;MISC;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Tax;23/06/2023;CFAO;Audit fiscal et social de la paie;Autre;Initiative Interne;2 940 000;100%;;;;4-Win;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Legal Services;23/06/2023;SCI VESTAL;Assistance juridique (Ingénierie patrimoniale et secrétariat juridique);Autre;Initiative Client;12 000 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Audit;27/06/2023;SIPAL;Elaboration de enterprise;Autre;Initiative Interne;0;100%;;;;4-Win;3500000;Cameroun;CIM;Samira Vindjedou;Samira Vindjedou;19/06/2023;19/06/2023;Oui;Non;233421648;0
+Douane;17/07/2023;CFAO;Assistance à contrôle et contentieux douaniers;Autre;Initiative Client;12 000 000;100%;;;;4-Win;;Cameroun;TMT;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Audit;25/07/2023;EDF;Audit des coûts de  développement;Autre;Initiative Client;3 000 000;100%;;;;1-Identified;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;10/07/2023;20/07/2023;Oui;Non;;3 000 000
+Douane;11/08/2023;CFAO;Assistance à contrôle et contentieux douaniers;Autre;Initiative Interne;12 000 000;100%;;;;4-Win;;Cameroun;MISC;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Tax;11/08/2023;ABC;Analyse des modalités juridiques d'apposition des signatures électroniques sur les conventions d'ouverture de comptes titres;Autre;Initiative Client;13 000 000;100%;;;;4-Win;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;11/08/2023;LOXEA;Frais de mission;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;11/08/2023;TAM-TAM SO;Assistance au montage de la DSF 2022;Autre;Initiative Client;167 715;100%;;;;4-Win;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;11/08/2023;HORUS;Frais de mission;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;11/08/2023;ABS S.A;Analyse juridique de la capacité du FGIS à contracter un emprunt et à émettre des obligations;Autre;Initiative Client;2 944 000;100%;;;;4-Win;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;11/08/2023;EBP AUDIT;Assistance juridique et sociale : Août à Décembre 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;11/08/2023;EBP AUDIT;Rémunération avances de fonds consenties à EBP Audit;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;11/08/2023;EBP AUDIT;Revue fiscale de la DSF 2022 suivant MFE LA REGIONALE BANK S.A;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Audit;01/09/2023;ENEO;revue des agios et commissions bancaires pour la period allant;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;ENR-O&G;Samira Vindjedou;Samira Vindjedou;31/07/2023;31/07/2023;Oui;Oui;233430035;0
+Tax;01/09/2023;GCSA;Gestion de la paie des expatriés;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;IM;Admin Ebvision;Admin Ebvision;;;Non;Non;;0
+Audit;11/09/2023;ARNO SA;Mise en place et tenue de la comptabilité;Autre;Initiative Client;2 500 000;100%;;;;1-Identified;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;01/08/2023;29/08/2023;Oui;Oui;;2 500 000
+Audit;15/09/2023;PPPLc;Organisational Review;Autre;Initiative Client;7 700 000;50%;;;;1-Identified;;Cameroun;MISC;Samira Vindjedou;Samira Vindjedou;31/08/2023;;Oui;Oui;;3 850 000
+Audit;15/09/2023;GLOBELEQ;Fixed assets count for KPDC, DPDC and GCMS;Autre;Initiative Interne;15 000 000;0%;;;;1-Identified;;Cameroun;ENR-P&U;Samira Vindjedou;Samira Vindjedou;11/09/2023;;Oui;Non;;0
+Douane;26/09/2023;CFAO;Assistance à contrôle douanier;Autre;Initiative Interne;12 000 000;100%;;;;4-Win;;Cameroun;CIM-OI;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Tax;04/10/2023;ORANGE;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;800 000;100%;;;;4-Win;;Cameroun;TMT;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Audit;18/10/2023;ADC;Inventaires des immos;AMI;Initiative Client;250 000 000;0%;;;;1-Identified;;Cameroun;IGH-GPS;Emile Bitoungui;Emile Bitoungui;10/10/2023;;Oui;Oui;;0
+Audit;18/10/2023;ADC;Inventaires des immos;AMI;Initiative Client;250 000 000;0%;;;;1-Identified;;Cameroun;IGH-GPS;Emile Bitoungui;Emile Bitoungui;10/10/2023;;Oui;Oui;;0
+Audit;18/10/2023;TRANSFAGRI;AUDIT FINANCIER ET COMPTABLE  DU PROGRAMME INTEGRE DE VALORISATION ET TRANSFORMATION DES PRODUITS AGRICOLES ET AGROALIMENTAIRESPOUR LE COMPTE DES EXERCICES 2023 A 2024 ET CLOTURE. Financement: Convention CCM 1278 01S;AMI;Initiative Client;0;0%;;;;1-Identified;;Cameroun;IM;Samira Vindjedou;Samira Vindjedou;20/02/2023;09/10/2023;Oui;Oui;;0
+IT Advisory;23/10/2023;CUD;ELABORATION ET L’ACCOMPAGNEMENT DANS LA MISE EN ŒUVRE DE LA POLITIQUE DE SECURITE DU SYSTEME D’INFORMATION DE LA CUD;AO;Initiative Client;0;50%;;;;1-Identified;DG Market;Cameroun;TMT;Raphaël Ngos;Samira Vindjedou;10/11/2023;;Non;Non;;0
+IT Advisory;23/10/2023;CUD;ETUDE EN VUE DE L’AMELIORATION DE LA COUVERTURE FONCTIONNELLE... DE L’APPLICATION SIM_ba;AMI;Initiative Client;0;30%;;;;1-Identified;ARMP;Cameroun;TMT;Raphaël Ngos;Samira Vindjedou;23/10/2023;;Non;Non;;0
+IT Advisory;23/10/2023;PAD;EVALUATION ET LA MISE A JOUR DU SCHEMA DIRECTEUR INFORMATIQUE DU PORT AUTONOME DE DOUALA;AMI;Initiative Client;0;50%;;;;1-Identified;ARMP;Cameroun;TMT;Raphaël Ngos;Samira Vindjedou;09/11/2023;;Non;Non;;0
+IT Advisory;23/10/2023;MINFOPRA;LA REFONTE DE L’APPLICATION COMCAM OPERATION 2;AMI;Initiative Client;0;30%;;;;1-Identified;ARMP;Cameroun;FSI-OFS;Raphaël Ngos;Samira Vindjedou;07/11/2023;;Non;Oui;;0
+Audit;23/10/2023;CUD;"Réalisation des audits comptables et financiers externes des exercices 2023; 2024; 2025 et 2026 des Projets de Drainage Pluvial (PDP) et Douala, Ville Durable";AO;Initiative Client;0;30%;;;;1-Identified;ARMP;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;14/11/2023;20/10/2023;Non;Non;;0
+Audit;25/10/2023;CUD;"Réalisation des audits comptables et financiers externes des exercices 2023; 2024; 2025 et 2026 des Projets de Drainage Pluvial (PDP) et Douala, Ville Durable";AO;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;IGH-GPS;Samira Vindjedou;Samira Vindjedou;14/11/2023;19/10/2023;Oui;Oui;;0
+Audit;25/10/2023;CCAA;Réalisation de l'audit comptable et financier du projet de développement du secteur des transports(PDST) pour les exercices 2023 et 2024;AO;Initiative Client;0;0%;;;;1-Identified;;Cameroun;IGH-T&L;Samira Vindjedou;Samira Vindjedou;03/11/2023;;Oui;Oui;;0
+Audit;25/10/2023;GLOBELEQ;Recrutement d'un cabinet d'audit et d'expertise comptable pour la réalisation de l'inventaire physique des stocks;AO;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-O&G;Samira Vindjedou;Samira Vindjedou;20/10/2023;;Oui;Non;;0
+Douane;15/11/2023;GLOBELEQ;Assistance for post clearance control;Autre;Initiative Client;6 500 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;15/11/2023;TRACTAFRIC EQUIPMENT CAMEROUN;Assistance à contrôle douanier à postériori;Autre;Initiative Client;10 000 000;100%;;;;4-Win;;Cameroun;CIM-OI;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;15/11/2023;TRADEX;Assistance à contrôle et contentieux douaniers;Autre;Initiative Client;19 500 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;15/11/2023;LONGSTAR;Assistance à obtention d'une facilité douanière (entrepôt) et assistance douanière permanente;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;CIM-OI;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Tax;15/11/2023;DGF;Assistance à contrôle sur pièces des exercices 2019, 2020 et 2021;Autre;Initiative Client;4 500 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;15/11/2023;GCSA;Assistance à obtention des visas de contrat de travail des expatriés;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;IM;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;15/11/2023;KBC S.A;Assistance à rédaction d'un protocole d'accord portant modalités de cession mutuelle des participations;Autre;Initiative Client;1 800 000;100%;;;;4-Win;;Gabon;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Legal Services;23/02/2024;COMETAL;assistance fiscale;Autre;Initiative Interne;1 000 000;70%;;;;4-Win;contact personnel;Cameroun;FSI-BNK;Raphaël Ngos;Emile Bitoungui;30/03/2024;23/02/2024;Non;Oui;23300000000;0
+Legal Services;07/03/2024;CIA CAPITAL INVEST;Assistance juridique (Rédaction d'un protocole d'accord et d'une convention d'avance de trésorerie);Autre;Initiative Client;1 000 000;100%;;;;4-Win;;Cameroun;FSI-OFS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/03/2024;DGF;Assistance à contentieux fiscal des exercices 2021 & 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/03/2024;AMT CAMEROUN S.A;Assistance à l'élaboration de la DSF rectificative de l'exercice2022 et de la DSF de l'exercice 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+EB Service;07/03/2024;DJILO NGASSOP IRENE;DEDOUANEMENT;Autre;Initiative Interne;0;70%;;;;4-Win;;Cameroun;IGH-GPS;Robert Songo Songo;Samson Bilangna;;;Non;Oui;;0
+EB Service;07/03/2024;SHOW OFF SARL;DEDOUANEMENT;Autre;Initiative Interne;0;70%;;;;4-Win;;Cameroun;CIM-OI;Robert Songo Songo;Samson Bilangna;;;Non;Oui;;0
+Tax;07/03/2024;JOCCIDALO PETROLEUM;Assistance au montage de la DSF 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/03/2024;SIPAL;Assistance à Vérification Générale de Comptabilité (VGC) 2020-2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;CIM-CM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;08/03/2024;LABOREX;Assistance à Vérification Générale de Comptabilité (VGC) 2019-2021;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;IGH-IH;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;08/03/2024;CFAO;Assistance aux opérations de régularisation des impôts et taxes sur salaires au titre de l’exercice 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;08/03/2024;REC;Assistance à contrôle CNPS 2022;Autre;Initiative Client;1 500 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;08/03/2024;TCHARITRANS;Assistance à contrôle et contentieux fiscal;Autre;Initiative Client;0;50%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Legal Services;08/03/2024;KBC PLC;Assistance juridique (Structuration d'une prise de participation et secrétariat juridique);Autre;Initiative Client;0;50%;;;;4-Win;;Cameroun;IM;Grégoire ODODI BEYEKE;Emile Bitoungui;;;Non;Non;;0
+Tax;08/03/2024;NHPC;Assistance à l'évaluation de la dépense fiscale de la société NHPC au titre de l'exercice 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Alvine Aoum;;;Non;Non;;0
+Douane;08/03/2024;TRACTAFRIC EQUIPMENT CAMEROUN;Assistance à contrôle et contentieux douaniers;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;CIM-OI;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Show OFF;19/04/2024;DJILO NGASSOP IRENE;Dédouanement de marchandises;Autre;Initiative Interne;0;85%;;;;1-Identified;;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;25/11/2023;10/10/2023;Non;Oui;;0
+Show OFF;19/04/2024;SHOW OFF SARL;Dédouanement de marchandises;Autre;Initiative Interne;0;85%;;;;1-Identified;;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;12/07/2023;24/08/2024;Non;Non;;0
+EB Service;19/04/2024;DJOUFACK NGOUNE SUZANNE;Dédouanement CAMION;Autre;Initiative Client;0;85%;;;;4-Win;;Cameroun;MISC;Robert Songo Songo;Emile Bitoungui;;;Non;Non;;0
+Show OFF;24/04/2024;SHOW OFF SARL;Dédouanement Vehicule F-150;Autre;Initiative Interne;4 940 983;85%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;4 199 836
+Assistance Comptable et Révision (ACR);24/04/2024;SHOW OFF SARL;Dédouanement Vehicules HONDA / RAV4;Autre;Initiative Interne;0;85%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+Tax;25/04/2024;GRACEDOM INVEST S.A;Due diligence juridique, fiscale et sociale;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;CIM-CM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;25/04/2024;AMT CAMEROUN S.A;Assistance juridique et fiscale permanente;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+EB Service;25/04/2024;3S M;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Robert Songo Songo;Emile Bitoungui;;;Non;Non;;0
+EB Service;25/04/2024;TOTAL ENERGIES;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Robert Songo Songo;Emile Bitoungui;;;Non;Non;;0
+EB Service;25/04/2024;ENEO;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Robert Songo Songo;Emile Bitoungui;;;Non;Non;;0
+EB Service;25/04/2024;PAD;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Robert Songo Songo;Emile Bitoungui;;;Non;Non;;0
+EB Service;25/04/2024;HYSACAM;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;25/04/2024;PLASTICAM;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;5-Loss;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;25/04/2024;POLYPHARMA;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+Tax;25/04/2024;SEMC;Gestion de la paie des expatriés;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;CIM-CM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;25/04/2024;SOCAVER;Gestion de la paie des expatriés;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;CIM-CM;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;25/04/2024;DGF;Assistance à contentieux fiscal des exercices 2021 & 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;26/04/2024;REC;Assistance au montage de la DSF de l'exercice 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;SIC CACAOS;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;TRACTAFRIC EQUIPMENT CAMEROUN;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;2-Contacted;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;PANZANI;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;PANZANI;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;ORCA;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;MAHIMA;GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;Tractafric;GO TO MARKET;AO;Initiative Interne;0;20%;;;;2-Contacted;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;SCTB SA;GO TO MARKET;AO;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;MAYA CAM (quincaillerie MBOPPI);GO TO MARKET;AO;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;GRAND ZONG SARL;GO TO MARKET;AO;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;SON ET IMAGE;GO TO MARKET;AO;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;STANDART MARKET;GO TO MARKET;AO;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;SAPRES SARL;GO TO MARKET;AO;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;FRIPPERIE MBOPPI (BOUTIQUE N°1);GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;FRIPPERIE MBOPPI (BOUTIQUE N°2);GO TO MARKET;AO;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;FRIPPERIE MBOPPI (BOUTIQUE N°3);GO TO MARKET;AO;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;FRIPPERIE MBOPPI(BOUTIQUE N°4);GO TO MARKET;AO;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;FRIPPERIE MBOPPI (BOUTIQUE N°5);GO TO MARKET;AO;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;FRIPPERIE MBOPPI(BOUTIQUE N°6);GO TO MARKET;AO;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;26/04/2024;FRIPPERIE MBOPPI(BOUTIQUE N°7);GO TO MARKET;Autre;Initiative Interne;0;20%;;;;1-Identified;interne;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+Tax;26/04/2024;CFAO;Assistance à la déclaration préremplie;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;26/04/2024;NHPC;Frais de mission : Assistance à VGC 2020 à 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;IGH-GPS;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Douane;28/04/2024;LONGSTAR;Etude relative aux régimes économiques et douaniers applicables au secteur automobile;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;28/04/2024;LONGSTAR;Structuration du plan d'affaires (Projet portant d'une usine de montage d'engins lourds et de camions à Yassa);Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;28/04/2024;SME;Assistance à obtention des avantages fiscaux et douaniers prévues par le Code minier;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;ENR-O&G;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;29/04/2024;DGDDIT;Assistance permanente, conseil et suivi de la mise en œuvre de l'antenne DGDDI su Tchad au Cameroun;Autre;Initiative Interne;0;100%;;;;4-Win;;Tchad;IGH-GPS;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;29/04/2024;LONGSTAR;Assistance douanière permanente;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;29/04/2024;LONGSTAR;Audit préalable des acquit-à-caution;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;29/04/2024;AMT CAMEROUN S.A;Assistance à l'élaboration d'un manuel de procédures-Douane;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Tax;29/04/2024;AMT CAMEROUN S.A;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;0;100%;;;;1-Identified;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;29/04/2024;KHPC;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;0;100%;;;;1-Identified;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Audit;30/04/2024;OHADA;recrutement d'un consultant chargé de la réalisation de la mission de conseil stratégique pour la création d'une société en charge du développement et de la fournitur;AMI;Initiative Client;0;25%;;;;1-Identified;cameroon tribune;Cameroun;P&NGO;Cyrille Djiki;Brian Metuge;22/03/2024;22/03/2024;Non;Oui;;0
+Audit;02/05/2024;MIOD;ASSISTANCE COMPTABLE;Autre;Initiative Client;3 500 000;100%;;;;4-Win;;Cameroun;P&NGO;Alyssa Molom;Brian Metuge;;;Non;Non;;0
+Audit;03/05/2024;BCL;DSF 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;IM;Cyrille Djiki;Brian Metuge;;;Non;Non;;0
+Audit;03/05/2024;SIPAL;DSF 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI -PE;Cyrille Djiki;Brian Metuge;;;Non;Non;;0
+Audit;03/05/2024;MSF;DSF 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;P&NGO;Cyrille Djiki;Brian Metuge;;;Non;Non;;0
+Audit;03/05/2024;GRACEDOM INVEST S.A;Analyse financière;Autre;Initiative Client;3 500 000;100%;;;;4-Win;;Cameroun;IM;Alyssa Molom;Brian Metuge;;;Non;Non;;0
+Audit;03/05/2024;AMT CAMEROUN S.A;DSF & ANALYSE DES COMPTES;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;IGH-T&L;Alyssa Molom;Brian Metuge;;;Non;Non;;0
+Audit;03/05/2024;EBP AUDIT;DSF 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI -PE;Cyrille Djiki;Brian Metuge;;;Non;Non;;0
+Audit;03/05/2024;EB-TAX;DSF 2022 & 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI -PE;Cyrille Djiki;Brian Metuge;;;Non;Non;;0
+Audit;03/05/2024;SHOW OFF SARL;DSF 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI -PE;Cyrille Djiki;Brian Metuge;;;Non;Non;;0
+Audit;03/05/2024;SOA;DSF 2023;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI-INS;Cyrille Djiki;Brian Metuge;;;Non;Non;;0
+EB Service;03/05/2024;TCHOUTCHUI DJONDI EPSE TANKEU BAYU Emilienne;DEDOUANEMENT;Autre;Initiative Interne;0;40%;;;;1-Identified;;Cameroun;MISC;Robert Songo Songo;Emile Bitoungui;;;Non;Non;;0
+EB Service;03/05/2024;ARYSTA LifeScience;GO TO MARKET;Autre;Initiative Interne;0;40%;;;;2-Contacted;;Cameroun;CIM;Robert Songo Songo;Robert Songo Songo;;;Non;Non;;0
+EB Service;03/05/2024;DJOUFACK NGOUNE SUZANNE;DEDOUANEMENT;Autre;Initiative Client;0;70%;;;;4-Win;;Cameroun;MISC;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;05/05/2024;SOCARTO;GO TO MARKET;Autre;Initiative Interne;0;10%;;;;5-Loss;;Cameroun;IM;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+EB Service;05/05/2024;PMUC;GO TO MARKET;Autre;Initiative Interne;0;30%;;;;1-Identified;;Cameroun;IGH-T&L;Robert Songo Songo;Emile Bitoungui;;;Non;Non;;0
+EB Service;05/05/2024;CAMCI;GO TO MARKET;Autre;Initiative Interne;0;40%;;;;3-Proposed;;Cameroun;MISC;Robert Songo Songo;Emile Bitoungui;;;Non;Non;;0
+EB Service;05/05/2024;CAMWATER;GO TO MARKET;Autre;Initiative Interne;0;70%;;;;1-Identified;;Cameroun;CIM;Robert Songo Songo;Emile Bitoungui;;;Non;Non;;0
+EB Service;06/05/2024;DJOUFACK NGOUNE SUZANNE;DEDOUANEMENT;Autre;Initiative Interne;0;85%;;;;4-Win;;Cameroun;IGH-T&L;Franck Wafeu;Emile Bitoungui;;;Non;Non;;0
+Finances;08/05/2024;GRACEDOM INVEST S.A;Levee de fonds;Autre;Initiative Interne;500 000 000;85%;;;;4-Win;document;Cameroun;FSI-BNK;Admin Ebvision;Léopold Tchako;;;Non;Oui;699003099;0
+Finances;08/05/2024;JOCCIDALO PETROLEUM;Levee de fonds;Autre;Initiative Interne;0;85%;;;;4-Win;document;Cameroun;FSI-BNK;Léopold Tchako;Léopold Tchako;;;Non;Oui;;0
+Finances;08/05/2024;AFRI@FINAN;Levee de fonds;Autre;Initiative Interne;0;85%;;;;4-Win;document;Cameroun;FSI-BNK;Admin Ebvision;Léopold Tchako;;;Non;Oui;;0
+EB Service;21/05/2024;EXCELLENCE EQUIPMENT & MOTORS NGAOUNDERE SARL;DEDOUANEMENT;Autre;Initiative Interne;0;85%;;;;4-Win;;Cameroun;IGH-T&L;Robert Songo Songo;Emile Bitoungui;;;Non;Non;;0
+Audit;21/05/2024;OHADA;AVIS A MANIFESTATION D’INTERET GENERAL N°001/DRHMAG/DFC/SPO/OHADA/2024 EN VUE DE CONSTITUER UNE BASE DE DONNEES DES FOURNISSEURS ET DES PRESTATAIRES POUR L’ANNEE 2024.;AMI;Initiative Client;0;60%;;;;1-Identified;ARMP;Cameroun;FSI -PE;Manuella Khomy;Brian Metuge;22/03/2024;22/03/2024;Oui;Non;;0
+Audit;21/05/2024;OHADA;AVIS A MANIFESTATION D’INTERET GENERAL N°001/DRHMAG/DFC/SPO/OHADA/2024 EN VUE DE CONSTITUER UNE BASE DE DONNEES DES FOURNISSEURS ET DES PRESTATAIRES POUR L’ANNEE 2024.;AMI;Initiative Client;0;60%;;;;1-Identified;ARMP;Cameroun;FSI -PE;Manuella Khomy;Brian Metuge;22/03/2024;22/03/2024;Oui;Non;;0
+Audit;21/05/2024;PAK;Recrutement d'un consultant chargé de la réalisation de la mission de conseil stratégique pour la création d'une société en charge du développement et de la fourniture de services informatiques, numériques et de télécommunications au Port de Kribi.;AO;Initiative Client;0;65%;;;;1-Identified;;Cameroun;P&NGO;Manuella Khomy;Brian Metuge;08/04/2024;08/04/2024;Oui;Non;;0
+Audit;21/05/2024;PAK;la mission de conseil stratégique pour la création d'une société en charge du développement et de la fourniture de services Liés à l'exploitation des réseaux de distribution d'énergie électrique, d'eau potable, d'assainissement et de gaz au Port de Kribi;AO;Initiative Client;0;50%;;;;1-Identified;ARMP;Cameroun;P&NGO;Manuella Khomy;Brian Metuge;08/04/2024;08/04/2024;Oui;Non;;0
+Audit;21/05/2024;PMUD;RECRUTEMENT  D’UN AUDITEUR EXTERNE DE LA MISSION RELATIVE A L’AUDIT FINANCIER ET COMPTABLE DES COMPTES DU PROJET DE MOBILITE URBAINE DE DOUALA (PMUD) POUR LES EXERCICES 2020, 2021, 2022, 2023 ET 2024;AMI;Initiative Client;0;50%;;;;1-Identified;ARMP;Cameroun;P&NGO;Manuella Khomy;Brian Metuge;11/04/2024;11/04/2024;Oui;Non;;0
+Audit;21/05/2024;CCAA;LE RECRUTEMENT D'UN CABINET D'AUDIT ET D'EXPERTISE COMPTABLE INDEPENDANT CHARGE DE LA REALISATION DE L'AUDIT COMPTABLE ET FINANCIER DU PROJET D'ELECTRICIFICATION RURALE ET d'ACCES A L'ELECTRICITE DANS LES REGIONS SOUS DESSERVIES DU CAMEROUN (PERACE);AMI;Initiative Client;0;50%;;;;1-Identified;ARMP;Cameroun;P&NGO;Manuella Khomy;Brian Metuge;20/03/2024;20/03/2024;Oui;Non;;0
+Audit;21/05/2024;MINDCAF;ELABORATION DU SCHEMA DIRECTEUR INFORMATIQUE DANS LES SERVICES CENTRAUX DU MINISTERE DES DOMAINES DU CADASTRE ET DES AFFAIRES FONCIERES;AO;Initiative Client;0;50%;;;;1-Identified;ARMP;Cameroun;IGH-GPS;Manuella Khomy;Brian Metuge;13/03/2024;13/03/2024;Oui;Non;;0
+Audit;21/05/2024;FODECC;AUDIT COMPTABLE ET FINANCIER DES EXERCICES 2023, 2024 ET 2025 DU FONS DE DEVELOPPEMENT DES FILIERES CACAO ET CAFE . PRE-QUALIFICATION DES ENTREPRISES POUR LA MISE A NIVEAU DU SCHEMA DIRECTEUR INFORMATIQUE AU FONDS DE DEVELOPPEMENTS DES FILIERES CACAO ET C;AMI;Initiative Client;0;85%;;;;1-Identified;;Cameroun;FSI-BNK;Manuella Khomy;Brian Metuge;26/04/2024;26/04/2024;Oui;Non;;0
+Audit;21/05/2024;MIOD;Assistance comptable;Autre;Initiative Client;0;100%;;;;1-Identified;;Cameroun;FSI -PE;Manuella Khomy;Brian Metuge;;;Non;Oui;;0
+Audit;21/05/2024;GRACEDOM INVEST S.A;Analyse financière et reporting;Autre;Initiative Client;0;100%;;;;1-Identified;;Cameroun;IM;Manuella Khomy;Brian Metuge;;;Non;Oui;;0
+Audit;21/05/2024;EBP AUDIT;DSF;Autre;Initiative Interne;0;100%;;;;1-Identified;;Cameroun;FSI -PE;Manuella Khomy;Brian Metuge;;;Oui;Non;;0
+Legal Services;21/05/2024;TSG CAMEROUN S.A;Assistance à secrétariat juridique;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;ENR-O&G;Grégoire ODODI BEYEKE;Emile Bitoungui;;;Non;Non;;0
+Tax;21/05/2024;AMT CAMEROUN S.A;Assistance à Vérification Générale de Comptabilité (VGC) 2020-2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Douane;22/05/2024;CFAO;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;CIM-OI;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;22/05/2024;MSF;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;0;100%;;;;1-Identified;;Cameroun;P&NGO;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;22/05/2024;AMT CAMEROUN S.A;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;0;100%;;;;1-Identified;;Cameroun;MISC;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;22/05/2024;KHPC;Participation au séminaire de la loi de finances 2023;Autre;Initiative Interne;0;100%;;;;1-Identified;;Cameroun;ENR-O&G;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;22/05/2024;NHPC;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;0;100%;;;;1-Identified;;Cameroun;ENR- MIN;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;22/05/2024;MSF;Assistance à contrôle douanier;Autre;Initiative Client;0;100%;;;;1-Identified;;Cameroun;P&NGO;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;22/05/2024;SOREPCO;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;0;100%;;;;1-Identified;;Cameroun;MISC;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;22/05/2024;TELCAR;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;0;100%;;;;1-Identified;;Cameroun;CIM-OI;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;22/05/2024;SGC;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;0;100%;;;;1-Identified;;Cameroun;FSI-BNK;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;22/05/2024;TRACTAFRIC EQUIPMENT CAMEROUN;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;0;100%;;;;1-Identified;;Cameroun;MISC;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Douane;22/05/2024;HEVECAM;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;0;100%;;;;1-Identified;;Cameroun;CIM-OI;Samson Bilangna;Samson Bilangna;;;Non;Non;;0
+Tax;31/05/2024;MEN GROUP;Assistance à Vérification Générale de Comptabilité (VGC) 2019-2022;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;04/06/2024;CALLENS CAMEROUN S.A;Assistance à la régularisation de la paie des employés;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Finances;07/06/2024;SCI PYRAMIDE;Levee de fonds;Autre;Initiative Client;30 000 000;85%;;;;1-Identified;document;Cameroun;CIM-CM;Léopold Tchako;Léopold Tchako;;;Non;Oui;;25 500 000
+Finances;07/06/2024;MUTUELLE  FINANCE DES FEMMES DYNAMIQUE;Levee de fonds;Autre;Initiative Client;50 000 000;85%;;;;1-Identified;document;Cameroun;FSI-BNK;Léopold Tchako;Léopold Tchako;;;Non;Oui;;42 500 000
+Finances;07/06/2024;FOSTEMA TCHAD;Levee de fonds;Autre;Initiative Client;30 000 000;85%;;;;1-Identified;document;Cameroun;IM;Léopold Tchako;Léopold Tchako;;;Non;Oui;;25 500 000
+Finances;07/06/2024;DOSSIER D' INPORTATION DU SUCRE;Levee de fonds;Autre;Initiative Client;30 000 000;85%;;;;1-Identified;document;Cameroun;IM;Léopold Tchako;Léopold Tchako;;;Non;Oui;;25 500 000
+Finances;28/06/2024;J2N CONSEIL SARL;Assistance à recherche de financement;Autre;Initiative Interne;10 000 000;100%;;;;4-Win;document;Cameroun;FSI-BNK;Léopold Tchako;Salomée Ngomsu;;19/06/2024;Non;Oui;;0
+Audit;04/07/2024;ADAC;AVIS A MANIFESTATION D’INTERET POUR LE RECRUTEMENT D’UN CABINET D’AUDIT COMPTABLE ET FINANCIER DE L’AUTORITE DE L’AVIATION CIVILE DU TCHAD (ADAC);AMI;Initiative Client;55 514 000;25%;;;;1-Identified;INTERNET;Tchad;P&NGO;Cyrille Djiki;Brian Metuge;04/07/2024;03/07/2024;Non;Oui;N/A;13 878 500
+Audit;04/07/2024;KAKOTEL;ASSISTANCE COMPTABLE;Autre;Initiative Client;15 000 000;100%;;;;4-Win;SP;Cameroun;TMT;Alyssa Molom;Brian Metuge;20/06/2024;20/06/2024;Non;Oui;N/A;0
+Audit;04/07/2024;AMT CAMEROUN S.A;AUDIT DES CREANCES;Autre;Initiative Client;15 000 000;100%;;;;4-Win;SP;Cameroun;IGH-T&L;Alyssa Molom;Brian Metuge;02/07/2024;02/07/2024;Non;Oui;N/A;0
+EB Service;30/07/2024;MSF;DEDOUANEMENT;Autre;Initiative Client;0;85%;;;;4-Win;;Cameroun;P&NGO;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+EB Service;30/07/2024;MSF;DEDOUANEMENT;Autre;Initiative Client;0;85%;;;;1-Identified;;Cameroun;P&NGO;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+EB Service;30/07/2024;MSF;DEDOUANEMENT;Autre;Initiative Client;0;85%;;;;4-Win;;Cameroun;P&NGO;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+Tax;26/08/2024;PAD;Assistance à VGC 2020 à 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;26/08/2024;KHPC;Assistance fiscale et sociale permanente;AO;Initiative Client;0;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;26/08/2024;KHPC;Assistance à contrôle de régularisation CNPS 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;26/08/2024;CFAO;Assistance à souscription de la déclaration annuelle de revenus;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;26/08/2024;CFAO;Revue du paramétrage de l'IRPP sur le revenu exceptionnel;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Admin Ebvision;Admin Ebvision;;;Non;Non;;0
+Tax;26/08/2024;MEN GROUP;Assistance juridique et fiscale permanente;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;26/08/2024;CALLENS CAMEROUN S.A;Assistance à la régularisation de la paie des employés;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FORESTIER;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;26/08/2024;REC;Assistance à VGC 2020 à 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;23/09/2024;KHPC;Assistance à l'optimisation de la paie;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Finances;23/09/2024;ORAPROR;Assistance à recherche de financement;Autre;Initiative Client;950 000 000;90%;;;;4-Win;document;Cameroun;FSI-BNK;Jean Daniel Youmbi;Léopold Tchako;08/08/2024;;Non;Oui;;0
+Finances;23/09/2024;GROUPE KEDE SARL;Assistance à recherche de financement;AMI;Initiative Client;100 000 000;90%;;;;4-Win;document;Cameroun;FSI-BNK;Jean Daniel Youmbi;Léopold Tchako;25/07/2024;;Non;Oui;;0
+Finances;23/09/2024;GROUPE KEDE SARL;Assistance à recherche de financement;Autre;Initiative Client;1 000 000;90%;;;;4-Win;document;Cameroun;FSI-BNK;Jean Daniel Youmbi;Léopold Tchako;;;Non;Oui;;0
+Finances;23/09/2024;DAVINCI INVESTMENT GROUP SARL;Assistance à recherche de financement;Autre;Initiative Client;500 000 000;50%;;;;4-Win;document;Cameroun;FSI-BNK;Jean Daniel Youmbi;Léopold Tchako;;;Non;Oui;;0
+Finances;29/10/2024;EXE TRANSF;Transfert à l'international;Autre;Initiative Client;100 000 000;95%;;;;4-Win;document;Sénégal;FSI-BNK;Jean Daniel Youmbi;Léopold Tchako;05/09/2024;12/10/2024;Non;Oui;;0
+EB Service;30/10/2024;SAMSON BILANGNA;DEDOUANEMENT D'UNE TOYOTA LANDCRUISER ET UNE TOYOTA VX;Autre;Initiative Interne;0;95%;;;;4-Win;;Cameroun;CIM-OI;Robert Songo Songo;Samson Bilangna;;03/10/2024;Non;Non;;0
+EB Service;30/10/2024;EB-TAX;DEDOUANEMENT DE DEUX TOYOTA LANDCRUISER;Autre;Initiative Interne;0;95%;;;;4-Win;;Cameroun;CIM-OI;Robert Songo Songo;Alvine Aoum;;09/10/2024;Non;Non;;0
+EB Service;30/10/2024;MSF;REEXPORTATION VERS RCA DE 5 VEHICULES;Autre;Initiative Client;0;95%;;;;4-Win;;Cameroun;P&NGO;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+Finances;31/10/2024;CAMEROON INTERNATIONALE TRADE SARL;Assistance à recherche de financement;Autre;Initiative Client;500 000;100%;;;;4-Win;document;Cameroun;CIM-CM;Salomée Ngomsu;Léopold Tchako;23/10/2024;30/10/2024;Non;Oui;699824932;0
+Finances;07/11/2024;CAMEROON INTERNATIONALE TRADE SARL 2;Assistance à recherche de financement;Autre;Initiative Client;500 000;85%;;;;4-Win;document;Cameroun;CIM-CM;Jean Daniel Youmbi;Léopold Tchako;26/10/2024;31/10/2024;Non;Oui;;0
+Finances;07/11/2024;ARCHIBAT PLUS DESIGN;Assistance à Elaboration d’un Business Plan;Autre;Initiative Client;600 000;95%;;;;4-Win;document;Cameroun;Hôtellerie;Jean Daniel Youmbi;Léopold Tchako;10/10/2024;16/10/2024;Non;Oui;;0
+Finances;07/11/2024;NOTICAM SA;Assistance à recherche de financement;Autre;Initiative Client;1 000 000;95%;;;;4-Win;document;Cameroun;ENR-O&G;Jean Daniel Youmbi;Léopold Tchako;02/11/2024;04/11/2024;Non;Oui;;0
+Finances;21/11/2024;AMT;Assistance à la recherche de financement;Autre;Initiative Client;150 000 000;95%;;;;4-Win;document;Cameroun;IGH-T&L;Jean Daniel Youmbi;Léopold Tchako;;08/10/2024;Non;Oui;;0
+Audit;06/01/2025;BEST WIN;ASSISTANCE COMPTABLE;Autre;Initiative Client;0;80%;;;;4-Win;SP;Cameroun;CIM-OI;Cyrille Djiki;Brian Metuge;03/01/2024;03/10/2024;Non;Oui;;0
+Audit;14/01/2025;BEST WIN;ASSISTANCE COMPTABLE;Autre;Initiative Client;0;100%;;;;1-Identified;SP;Cameroun;FSI -PE;Cyrille Djiki;Brian Metuge;05/01/2024;03/01/2024;Non;Oui;;0
+Finances;17/02/2025;CAMFISH;Assistance à recherche de financement;Autre;Initiative Client;2 147 483 647;90%;;;;4-Win;document;Cameroun;CCH/W;Salomée Ngomsu;Léopold Tchako;20/01/2025;05/02/2025;Non;Oui;;0
+Douane;19/02/2025;SCBC;Assistance à régularisation des opérations d'importation des logiciels, cartes et chequiers;Autre;Initiative Interne;3 500 000;100%;;;;4-Win;Lettre de mission;Cameroun;FSI-BNK;Seraphin Doumbe;Samson Bilangna;06/10/2024;06/12/2024;Non;Oui;699612994;0
+Douane;19/02/2025;SCBC;Assistance à controle et contentieux douanier;Autre;Initiative Interne;3 500 000;100%;;;;4-Win;Lettre de mission;Cameroun;FSI-BNK;Seraphin Doumbe;Samson Bilangna;06/11/2024;06/12/2024;Non;Oui;;0
+Douane;19/02/2025;DAFMA & FORTRANS;Assistance à controle et contentieux douanier;Autre;Initiative Interne;2 000 000;45%;;;;4-Win;Intervention;Cameroun;MISC;Seraphin Doumbe;Samson Bilangna;05/02/2023;14/10/2024;Oui;Non;670613270;0
+Douane;19/02/2025;CHEC;Assistance à obtention des facilités douanières dans le cadre des APEC;Autre;Initiative Interne;3 000 000;5%;;;;4-Win;Lettre de mission;Cameroun;MISC;Seraphin Doumbe;Samson Bilangna;12/05/2024;24/06/2024;Non;Oui;687434469;0
+Douane;19/02/2025;SHOW OFF SARL;Assistance à controle et contentieux douanier;Autre;Initiative Client;2 000 000;55%;;;;4-Win;Autre;Cameroun;MISC;Seraphin Doumbe;Samson Bilangna;10/02/2023;17/04/2023;Oui;Non;690632925;0
+Assistance Comptable et Révision (ACR);19/02/2025;NOVIA INDUSTRIES;Assistance fiscale et douanière;Autre;Initiative Client;2 000 000;55%;;;;1-Identified;Autre;Cameroun;FSI-BNK;Seraphin Doumbe;Samson Bilangna;02/04/2024;03/06/2024;Oui;Non;;1 100 000
+Douane;19/02/2025;ADIALEA;Assistance à controle douanier;Autre;Initiative Interne;2 000 000;55%;;;;4-Win;Autre;Cameroun;MISC;Seraphin Doumbe;Samson Bilangna;04/10/2024;09/12/2024;Non;Non;;0
+Douane;19/02/2025;LONGSTAR;Assistance à controle douanier;Autre;Initiative Interne;4 000 000;98%;;;;4-Win;Autre;Cameroun;MISC;Seraphin Doumbe;Samson Bilangna;02/02/2024;12/06/2024;Oui;Non;;0
+Douane;19/02/2025;MTTS;Assistance fiscale et douanière;Autre;Initiative Client;6 000 000;82%;;;;4-Win;Autre;Cameroun;IGH-T&L;Seraphin Doumbe;Samson Bilangna;;;Non;Non;;0
+Douane;19/02/2025;EWERWELL;Assistance fiscale et douanière;Autre;Initiative Interne;2 500 000;100%;;;;4-Win;Autre;Cameroun;MISC;Seraphin Doumbe;Samson Bilangna;;;Non;Non;;0
+Audit;19/02/2025;AMT CAMEROUN S.A;Commissariat Aux comptes;Autre;Initiative Client;6 000 000;100%;;;;4-Win;SP;Cameroun;IGH-T&L;Cyrille Djiki;Brian Metuge;01/03/2025;01/01/2055;Non;Oui;;0
+EB Service;19/02/2025;MSF;DEDOUANEMENT DE TROIS CONTENEURS FRIGORIFIQUES P/C MSF;Autre;Initiative Client;0;90%;;;;4-Win;;Cameroun;P&NGO;Robert Songo Songo;Samson Bilangna;;26/12/2024;Non;Non;;0
+EB Service;02/03/2025;MSF;DEDOUANEMENT DE DEUX CONTENEUR FRIGORIFIQUE P/C MSF;Autre;Initiative Client;0;40%;;;;4-Win;;Cameroun;P&NGO;Robert Songo Songo;Samson Bilangna;06/12/2024;26/02/2025;Non;Non;;0
+EB Service;02/03/2025;MSF;DEDOUANEMENT D'UN CONTENEUR FRIGORIFIQUE P/C MSF;Autre;Initiative Client;0;70%;;;;4-Win;;Cameroun;P&NGO;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+EB Service;02/03/2025;NGOLLE 4 ISSAC RICHARD;DEDOUANEMENT D'1 VEHICULE TIGGO 9 DANS TC 20';Autre;Initiative Client;0;70%;;;;4-Win;;Cameroun;IGH-GPS;Robert Songo Songo;Samson Bilangna;;03/01/2025;Non;Non;;0
+Assistance Comptable et Révision (ACR);02/03/2025;CCMM SA;DEDOUANEMENT;Autre;Initiative Client;0;35%;;;;1-Identified;;Cameroun;FSI-BNK;Robert Songo Songo;Samson Bilangna;03/03/2025;;Non;Non;;0
+EB Service;02/03/2025;SOCIETE DE DISTRIBUTION ET DE NEGOCE INTERNATIONAL(SODISNI);DEDOUANEMENT;Autre;Initiative Client;0;35%;;;;1-Identified;;Cameroun;CIM-OI;Admin Ebvision;Admin Ebvision;;;Non;Non;;0
+EB Service;02/03/2025;AXA ASSURANCES;DEDOUANEMENT;Autre;Initiative Client;0;35%;;;;1-Identified;;Cameroun;FSI-INS;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+EB Service;02/03/2025;INODA;DEDOUANEMENT;Autre;Initiative Client;0;75%;;;;1-Identified;;Cameroun;CIM-OI;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+EB Service;02/03/2025;PSL;DEDOUANEMENT;Autre;Initiative Interne;0;45%;;;;1-Identified;;Cameroun;IGH-T&L;Admin Ebvision;Admin Ebvision;;;Non;Non;;0
+EB Service;02/03/2025;MIA;DEDOUANEMENT;Autre;Initiative Interne;0;45%;;;;1-Identified;;Cameroun;CIM-OI;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+EB Service;02/03/2025;SOCAVER;DEDOUANEMENT;Autre;Initiative Interne;0;35%;;;;1-Identified;;Cameroun;IM;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+EB Service;11/03/2025;SIGMA INC LTD;DEDOUANEMENT;Autre;Initiative Client;0;35%;;;;4-Win;;Cameroun;CIM-OI;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+Tax;21/03/2025;REC;Assistance à VGC des exercices 2021 et 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;21/03/2025;DHL;Assistance à VGC des exercices 2020 2021 et 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;21/03/2025;DGF;Assistance à VGC des exercices 2021 et 2022;Autre;Initiative Client;0;100%;;;;1-Identified;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;21/03/2025;DGF;Assistance à VGC des exercices 2021 et 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;21/03/2025;LOXEA;Assistance à VGC des exercices 2020, 2021 et 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;21/03/2025;ACCESS;Assistance à VGC des exercices 2020, 2021 et 2022;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;21/03/2025;KHPC;Assistance à optimisation fiscale et sociale de la paie des employés de KHPC;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;21/03/2025;MEN GROUP;Veille fiscale permanente et revue des déclarations fiscales et sociales;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;21/03/2025;ACCESS;Assistance juridique et fiscale permanente;Autre;Initiative Client;0;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;27/03/2025;ACCESS;Revue de la liasse fiscale annuelle (DSF) de l'exercice 2024;Autre;Initiative Client;2 000 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;27/03/2025;AMT CAMEROUN S.A;Revue de la liasse fiscale annuelle (DSF) de l'exercice 2024;Autre;Initiative Client;3 000 000;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;27/03/2025;KHPC;Assistance juridique et fiscale permanente complémentaire;Autre;Initiative Client;32 500 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;28/03/2025;REC;Revue de la liasse fiscale annuelle (DSF) de l'exercice 2024;Autre;Initiative Client;3 000 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Finances;01/04/2025;SITRAB-CAM;Assistance du dossier API;AOR;Initiative Client;3 000 000;85%;;;;4-Win;document;Cameroun;CIM-CM;Salomée Ngomsu;Léopold Tchako;05/03/2026;05/03/2025;Non;Oui;;0
+Tax;01/04/2025;MSF;Assistance au montage et à la revue de la DSF de l'exercice 2024;Autre;Initiative Client;2 000 000;100%;;;;4-Win;;Cameroun;P&NGO;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/04/2025;REC;Assistance à contrôle CNPS de l'exercice 2023;Autre;Initiative Client;2 500 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/04/2025;NHPC;Assistance à évaluation de la dépense fiscale de l'exercice 2024;Autre;Initiative Client;4 000 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/04/2025;DHL;Assistance à insertion dans la liste des entreprises habilitées à opérer la retenue à la source de la TVA et de l’AIR au titre de l’exercice 2025;Autre;Initiative Client;3 500 000;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/04/2025;KHPC;Formation paie : Détermination de l’allocation congés payés et paramétrage dans le logiciel SAGE PAIE;Autre;Initiative Client;1 500 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/04/2025;KHPC;Assistance à obtention de contrat de travail expatrié;Autre;Initiative Client;250 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;01/04/2025;KHPC;Assistance à obtention Carte de Séjour expatrié;Autre;Initiative Client;400 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;02/04/2025;NHPC;Assistance à saisine du DGI d’une réclamation contentieuse suite à VGC des exercices 2020, 2021 et 2022;Autre;Initiative Client;6 380 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;AMT CAMEROUN S.A;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;1 220 000;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;COTRAF;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;200 000;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;CFAO;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;400 000;100%;;;;4-Win;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;LOXEA;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;200 000;100%;;;;4-Win;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;MSF;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;400 000;100%;;;;4-Win;;Cameroun;P&NGO;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;HEVECAM;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;1 080 000;100%;;;;4-Win;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;BRIGHT;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;200 000;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;TELCAR;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;400 000;100%;;;;4-Win;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;OCEAN;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;200 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;ENGINE OIL;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;720 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Jean Daniel Youmbi;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;KHPC;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;360 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;SGC;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;540 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;TRACTAFRIC EQUIPMENT CAMEROUN;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;CIM-OI;Samson Bilangna;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;EVERWELL CAMEROUN CABLES and ENGINEERING SA;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;200 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;CECEC;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;200 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;SABC;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;IM;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;AVD;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;167 715;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;ASCA;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;400 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;NHPC;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;1 780 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;ENEO;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;360 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Alvine Aoum;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;TOTAL;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;700 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;ARTS ET METIERS SARL;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;MISC;Jean Daniel Youmbi;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;MAÎTRE CHE;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;Etude Me Grâce NKAKE BOLLANGA;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;MISC;Larissa Ndome;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;ACCESS;Participation au séminaire de la loi de finances 2025;Autre;Initiative Interne;300 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Legal Services;03/04/2025;MERMO OIL;Assistance à secrétariat juridique;Autre;Initiative Client;1 000 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Grégoire ODODI BEYEKE;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;PAD;Assistance à obtention d'une remise totale ou d'une modération des pénalités et intérêts de retard;Autre;Initiative Interne;16 771 488;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;03/04/2025;NHPC;"Formation sous le thème : ""Fiscalité des fournisseurs, de la paie et des sociétés""";Autre;Initiative Interne;1 300 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Legal Services;03/04/2025;JOCCIDALO PETROLEUM;Assistance à secrétariat juridique et à rédaction des contrats;Autre;Initiative Client;3 174 603;100%;;;;4-Win;;Cameroun;ENR-O&G;Grégoire ODODI BEYEKE;Emile Bitoungui;;;Non;Non;;0
+Legal Services;03/04/2025;BEST WIN;Assistance juridique : ingénierie juridique;Autre;Initiative Interne;8 000 000;100%;;;;4-Win;;Cameroun;MISC;Grégoire ODODI BEYEKE;Emile Bitoungui;;;Non;Non;;0
+Audit;04/04/2025;PATNUC;Sélection d'un cabinet d'audit financier et comptable du projet d'accélération de la transformation numérique au Cameroun (PATNUC) pour les exercices 2024, 2025 2026 et la période du 01er Janvier au 31 juillet 2027;AMI;Initiative Client;0;25%;;;;1-Identified;ARMP;Cameroun;P&NGO;Cyrille Djiki;Brian Metuge;03/04/2025;03/04/2025;Non;Oui;;0
+Audit;04/04/2025;MINSANTE;Sélection d'un cabinet chargé de réaliser l'audit financier et comptable des subventions de GAVI au programme de vaccination (PEV) du ministère de la santé publique du Cameroun, exercice 2024,2025 et 2026;AMI;Initiative Client;0;10%;;;;1-Identified;ARMP;Cameroun;P&NGO;Cyrille Djiki;Brian Metuge;04/04/2025;02/04/2025;Non;Oui;;0
+Audit;04/04/2025;MINFI;Sélection d'un cabinet chargé de réaliser l'audit comptable et financier du programme de renforcement de l'Etat-civil et restitution des droits (record), exercices 2023 à 2026 et clôture;AMI;Initiative Client;0;10%;;;;1-Identified;ARMP;Cameroun;P&NGO;Cyrille Djiki;Brian Metuge;20/02/2025;20/02/2025;Non;Oui;;0
+Audit;04/04/2025;MINSANTE;Recrutement d'un consultant pour l'audit financier et comptable du projet de renfoncement du système National de transfusion sanguine (PRESYNATS);AMI;Initiative Client;0;10%;;;;1-Identified;ARMP;Cameroun;P&NGO;Cyrille Djiki;Brian Metuge;22/04/2025;;Non;Oui;;0
+Audit;04/04/2025;MSF;Certification des comptes de l'organisation et de ses différents projets pour la période de trois ans renouvelables;AO;Initiative Client;0;10%;;;;1-Identified;INTERNET;Cameroun;P&NGO;Cyrille Djiki;Brian Metuge;24/01/2025;24/01/2025;Non;Non;;0
+Finances;04/04/2025;CAMLAIT;Assistance au développement;Autre;Initiative Client;65 000 000;85%;;;;4-Win;document;Cameroun;CIM-CM;Jean Daniel Youmbi;Léopold Tchako;25/03/2025;14/04/2025;Non;Oui;;0
+Finances;04/04/2025;CONNECTION CAMEROUN;Assistance à recherche de financement;Autre;Initiative Client;0;85%;;;;1-Identified;document;Cameroun;TMT;Jean Daniel Youmbi;Léopold Tchako;25/03/2025;04/04/2025;Non;Oui;;0
+Finances;04/04/2025;SAPI SA;Assistance à recherche de financement;Autre;Initiative Client;0;85%;;;;1-Identified;document;Cameroun;CIM-CM;Jean Daniel Youmbi;Léopold Tchako;25/03/2025;04/04/2025;Non;Oui;;0
+Tax;04/04/2025;AMT CAMEROUN S.A;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;300 000;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;04/04/2025;AMT;Assistance à la signature d'un protocole d'accord;Autre;Initiative Client;5 705 146;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Douane;07/04/2025;SIAP;Assistance ponctuelle à contrôle douanier;Autre;Initiative Client;2 500 000;100%;;;;1-Identified;;Cameroun;CIM-OI;Admin Ebvision;Admin Ebvision;;;Non;Oui;693522684;2 500 000
+Tax;07/04/2025;KHPC;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;SAE;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;MSF;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;300 000;100%;;;;4-Win;;Cameroun;P&NGO;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;AVD;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;SIPAL;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;CFAO;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;300 000;100%;;;;4-Win;;Cameroun;CIM-OI;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;TELCAR;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;200 000;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;SGC;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;200 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;SABC;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;200 000;100%;;;;4-Win;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;ASCA;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;200 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;MAÎTRE CHE;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;MISC;Admin Ebvision;Admin Ebvision;;;Non;Non;;0
+Tax;07/04/2025;NHPC;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;800 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;TOTAL;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;CECEC;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;HEVECAM;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;800 000;100%;;;;4-Win;;Cameroun;IM;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;BCL;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;100 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;07/04/2025;KAKOTEL;Participation au séminaire de la loi de finances 2024;Autre;Initiative Interne;300 000;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Finances;17/04/2025;MERMO OIL;Assistance à recherche de financement;Autre;Initiative Client;10 000 000;85%;;;;4-Win;document;Cameroun;ENR-O&G;Jean Daniel Youmbi;Léopold Tchako;16/03/2025;17/03/2025;Non;Oui;;0
+Douane;24/04/2025;SIAP;Assistance à controle dounaier;Autre;Initiative Client;6 000 000;100%;;;;4-Win;DOCUMENTS;Cameroun;CIM-OI;Seraphin Doumbe;Samson Bilangna;08/01/2025;08/01/2025;Non;Oui;;0
+Finances;05/05/2025;SEIAC;Assistance à recherche de financement;Autre;Initiative Client;10 000 000;85%;;;;4-Win;document;Cameroun;CIM-OI;Jean Daniel Youmbi;Léopold Tchako;30/04/2025;30/04/2025;Non;Oui;;0
+EB Service;05/05/2025;DJILO NGASSOP IRENE;DEDOUANEMENT TOYOTA HIGHLANDER 2020;Autre;Initiative Client;0;75%;;;;4-Win;;Cameroun;IGH-GPS;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+EB Service;05/05/2025;TRADEX;DEDOUANEMENT PRODUITS PETROLIERS ET AUTRES;Autre;Initiative Interne;0;50%;;;;1-Identified;;Cameroun;ENR-O&G;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+EB Service;05/05/2025;MEN LOGISTICS SA;LEVEE DI + DEDOUANEMENT DE 13 TRACTEURS ROUTIERS;Autre;Initiative Interne;0;68%;;;;4-Win;;Cameroun;IM;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+EB Service;05/05/2025;MEN LOGISTICS SA;dédouanement de 3 camions bennes;Autre;Initiative Interne;0;63%;;;;1-Identified;;Cameroun;IM;Robert Songo Songo;Admin Ebvision;;;Non;Non;;0
+EB Service;05/05/2025;MEN LOGISTICS SA;dédouanement de 2 niveleuses dans 1 Conteneur 40';Autre;Initiative Interne;0;63%;;;;1-Identified;;Cameroun;IM;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+Tax;12/05/2025;TSG CAMEROUN S.A;Assistance à rédaction des actes juridiques;Autre;Initiative Client;1 500 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;04/06/2025;MONSIEUR BAHA Robert;Assistance à déclaration préremplie de l’impôt sur les Sociétés et l’Impôt sur le Revenu des Personnes Physiques;Autre;Initiative Client;4 192 872;100%;;;;4-Win;;Cameroun;MISC;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+Tax;04/06/2025;EMRALD;Revue fiscale des opérations des exercices non prescrits (2021_2024);Autre;Initiative Client;3 700 000;100%;;;;4-Win;;Cameroun;FSI-BNK;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+EB Service;18/06/2025;2NI SARL;DEDOUANEMENT D'1 TOYOTA HIGHLANDER 2022 PAR UNE MISE A LA CONSOMMATION SUITE ENTREPOT;Autre;Initiative Client;0;80%;;;;1-Identified;;Cameroun;IGH-GPS;Robert Songo Songo;Robert Songo Songo;;;Non;Non;;0
+Tax;27/06/2025;ENEO;Avis juridique et fiscal relatif au statut des avances sur consommation et éligibilité au transfert à la CDEC;Autre;Initiative Client;4 000 000;100%;;;;4-Win;;Cameroun;ENR-P&U;Ashley Elang;Emile Bitoungui;0000-12-30;;Non;Non;;0
+Legal Services;27/06/2025;TSG CAMEROUN S.A;Assistance à la tenue du secrétariat juridique : Approbation des comptes de l'exercice 2024;Autre;Initiative Client;1 200 000;100%;;;;4-Win;;Cameroun;ENR-O&G;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+EB Service;01/07/2025;IMPLANTS & SERVICES SARL;DEDOUANEMENT D'1 CAMION PLATEAU MERCEDES BENZ AVEC GRUE ANNEE: 1977 PAR UNE MISE A LA CONSOMMATION;Autre;Initiative Client;0;50%;;;;4-Win;;Cameroun;MISC;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+EB Service;01/07/2025;NORBERT GWEM;DEDOUANEMENT D'1 D7H ANNEE: 1986 + 1 PORTE-ENGINSANNEE: 1974 + 1 TRACTEUR ROUTIER ANNEE: 2007;Autre;Initiative Interne;0;80%;;;;4-Win;;Cameroun;IGH-IH;Robert Songo Songo;Samson Bilangna;;;Non;Non;;0
+Finances;02/07/2025;JL2M MULTISERVICES SARL;Assistance à recherche de financement;Autre;Initiative Client;100 000 000;85%;;;;4-Win;document;Cameroun;FSI-BNK;Admin Ebvision;Admin Ebvision;24/06/2025;24/06/2025;Non;Oui;;0
+RH;03/07/2025;AMT CAMEROUN S.A;Mise à disposition et gestion de la paie du personnel détaché près des entités locales d'ADDAX PETROLEUM;Autre;Initiative Interne;0;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0
+RH;03/07/2025;AMT;Formation du personnel en rédaction administrative;Autre;Initiative Interne;2 250 000;100%;;;;4-Win;;Cameroun;IGH-T&L;Ashley Elang;Emile Bitoungui;;;Non;Non;;0

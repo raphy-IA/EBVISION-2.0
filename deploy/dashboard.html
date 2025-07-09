@@ -664,7 +664,6 @@
             <button class="tab" data-tab="rentabilite">Rentabilité</button>
             <button class="tab" data-tab="performance">Performance</button>
             <button class="tab" data-tab="opportunites">Opportunités</button>
-            <button class="tab" data-tab="feuilles">Feuilles de temps</button>
         </div>
 
 
@@ -745,10 +744,6 @@
         <!-- Opportunités Tab -->
         <div id="tab-opportunites" class="tab-content">
             <div class="loading">Chargement des opportunités...</div>
-        </div>
-        <!-- Feuilles de temps Tab -->
-        <div id="tab-feuilles" class="tab-content">
-            <div class="loading">Chargement des feuilles de temps...</div>
         </div>
     </div>
 
@@ -1290,9 +1285,6 @@
                         break;
                     case 'opportunites':
                         renderOpportunitesTab();
-                        break;
-                    case 'feuilles':
-                        renderFeuillesTab();
                         break;
                     default:
                         renderDashboard();
@@ -3430,95 +3422,6 @@
             }).join('');
         }
 
-        // ===== ONGLET FEUILLES DE TEMPS =====
-        function renderFeuillesTab() {
-            // Protection contre les appels multiples
-            if (window.isRenderingFeuilles) {
-                console.log('Feuilles déjà en cours de rendu, ignoré');
-                return;
-            }
-            window.isRenderingFeuilles = true;
-            try {
-                if (!trsData.length) {
-                    document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Aucune donnée disponible</div>';
-                    return;
-                }
-                // Extraire la liste unique des collaborateurs et des mois
-                const collaborateurs = [...new Set(trsData.map(row => row['Nom']).filter(Boolean))].sort();
-                const mois = [...new Set(trsData.map(row => row['Mois']).filter(Boolean))].sort((a, b) => {
-                    // Trier les mois par année/mois
-                    const [ma, ya] = a.split('/').map(Number);
-                    const [mb, yb] = b.split('/').map(Number);
-                    return yb !== ya ? ya - yb : ma - mb;
-                });
-                // Construire un mapping (collaborateur, mois) => statut
-                const statutMap = {};
-                trsData.forEach(row => {
-                    const nom = row['Nom'];
-                    const moisVal = row['Mois'];
-                    const statut = row['Statut'] || '';
-                    if (nom && moisVal) {
-                        statutMap[`${nom}__${moisVal}`] = statut;
-                    }
-                });
-                // Générer le tableau HTML
-                let tableHTML = '<div class="table-container"><table><thead><tr><th>Collaborateur</th>';
-                mois.forEach(moisVal => {
-                    tableHTML += `<th>${moisVal}</th>`;
-                });
-                tableHTML += '</tr></thead><tbody>';
-                collaborateurs.forEach(nom => {
-                    tableHTML += `<tr><td>${nom}</td>`;
-                    mois.forEach(moisVal => {
-                        let statut = statutMap[`${nom}__${moisVal}`] || '';
-                        let color = '';
-                        let displayText = statut;
-                        // Gestion des couleurs et textes
-                        if (!statut) {
-                            displayText = 'Non transmis';
-                            color = 'background:#f8d7da;color:#721c24;font-weight:bold;';
-                        } else if (/attente.*validation/i.test(statut)) {
-                            color = 'background:#e5e7e9;color:#555;font-weight:bold;'; // argenté
-                        } else if (/^(validé|approuvé)/i.test(statut) || /approuv/i.test(statut) || /valid/i.test(statut)) {
-                            color = 'background:#28a745;color:#fff;font-weight:bold;'; // vert bien visible
-                        } else if (/en cours d'édition/i.test(statut)) {
-                            // Extraire mois/année de la cellule
-                            const [cellMonth, cellYear] = moisVal.split('/').map(Number);
-                            const now = new Date();
-                            const currentMonth = now.getMonth() + 1;
-                            const currentYear = now.getFullYear();
-                            if (cellYear > currentYear || (cellYear === currentYear && cellMonth >= currentMonth)) {
-                                displayText = "En cours d'édition";
-                                color = 'background:#d4edda;color:#155724;font-weight:bold;'; // vert clair
-                            } else {
-                                // Mois < mois courant : vérifier le total des heures
-                                const totalHeures = trsData.filter(row => row['Nom'] === nom && row['Mois'] === moisVal)
-                                    .reduce((sum, row) => sum + (parseFloat(row['Heures'].replace(',', '.')) || 0), 0);
-                                if (totalHeures === 0) {
-                                    displayText = 'Non Rempli';
-                                    color = 'background:#c82333;color:#fff;font-weight:bold;'; // rouge foncé, texte blanc
-                                } else {
-                                    displayText = 'Non Soumis';
-                                    color = 'background:#ffe5b4;color:#b36b00;font-weight:bold;'; // orange clair
-                                }
-                            }
-                        } else {
-                            color = 'background:#f8d7da;color:#721c24;font-weight:bold;';
-                        }
-                        tableHTML += `<td style="${color}">${displayText}</td>`;
-                    });
-                    tableHTML += '</tr>';
-                });
-                tableHTML += '</tbody></table></div>';
-                document.getElementById('tab-feuilles').innerHTML = tableHTML;
-            } catch (error) {
-                console.error('Erreur lors du rendu des feuilles de temps:', error);
-                document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Erreur lors du rendu des feuilles de temps</div>';
-            } finally {
-                window.isRenderingFeuilles = false;
-            }
-        }
-
         // Chargement initial
         loadAllCSVs();
 
@@ -3577,9 +3480,6 @@
                         break;
                     case 'opportunites':
                         renderOpportunitesTab();
-                        break;
-                    case 'feuilles':
-                        renderFeuillesTab();
                         break;
                     default:
                         renderDashboard();
