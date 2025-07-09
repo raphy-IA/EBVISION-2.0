@@ -667,56 +667,6 @@
             <button class="tab" data-tab="feuilles">Feuilles de temps</button>
         </div>
 
-
-        <!-- Filtres généraux pour les onglets TRS -->
-        <div class="filters-section" id="general-filters">
-          <div class="filters-row">
-            <div class="filter-group">
-              <label for="yearFilter">Année</label>
-              <select id="yearFilter">
-                <option value="">Toutes les années</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label for="monthFilter">Mois</label>
-              <select id="monthFilter">
-                <option value="">Tous les mois</option>
-              </select>
-            </div>
-            <div class="filter-group" style="flex:2;min-width:220px;max-width:320px;">
-              <label for="startDate">Période personnalisée</label>
-              <div style="display:flex;gap:10px;">
-                <input type="date" id="startDate" placeholder="Date début" style="flex:1;">
-                <input type="date" id="endDate" placeholder="Date fin" style="flex:1;">
-              </div>
-            </div>
-            <div class="filter-group">
-              <label for="buFilter">Pôle</label>
-              <select id="buFilter">
-                <option value="">Tous les pôles</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label for="collabFilter">Collaborateur</label>
-              <select id="collabFilter">
-                <option value="">Tous les collaborateurs</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label for="missionFilter">Mission</label>
-              <select id="missionFilter">
-                <option value="">Toutes les missions</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label for="typeHeureFilter">Type d'heure</label>
-              <select id="typeHeureFilter">
-                <option value="">Tous les types</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
         <!-- Dashboard Tab -->
         <div id="tab-dashboard" class="tab-content active">
             <div class="loading">Chargement des données...</div>
@@ -817,64 +767,92 @@
         // Chargement des données
         async function loadAllCSVs() {
             try {
-                console.log('Début du chargement des CSV...');
+                // Générer un timestamp unique pour éviter le cache
+                const timestamp = Date.now();
                 
                 // Charger TRS
-                console.log('Chargement TRS...');
-                const trsResponse = await fetch('données_TRS.csv?v=' + Date.now());
+                const trsResponse = await fetch(`données_TRS.csv?v=${timestamp}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
                 if (!trsResponse.ok) throw new Error('Fichier TRS non trouvé');
                 const trsText = await trsResponse.text();
                 trsData = parseCSV(trsText);
-                console.log('TRS chargé:', trsData.length, 'lignes');
 
                 // Charger Missions
-                console.log('Chargement Missions...');
-                const missionsResponse = await fetch('liste des missions.csv?v=' + Date.now());
+                const missionsResponse = await fetch(`liste des missions.csv?v=${timestamp}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
                 if (!missionsResponse.ok) throw new Error('Fichier missions non trouvé');
                 const missionsText = await missionsResponse.text();
                 missionsData = parseCSV(missionsText);
-                console.log('Missions chargées:', missionsData.length, 'lignes');
 
                 // Charger Factures
-                console.log('Chargement Factures...');
-                const facturesResponse = await fetch('liste des factures.csv?v=' + Date.now());
+                const facturesResponse = await fetch(`liste des factures.csv?v=${timestamp}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
                 if (!facturesResponse.ok) throw new Error('Fichier factures non trouvé');
                 const facturesText = await facturesResponse.text();
                 facturesData = parseCSV(facturesText);
-                console.log('Factures chargées:', facturesData.length, 'lignes');
 
                 // Charger Taux horaires
-                console.log('Chargement Taux horaires...');
-                const tauxResponse = await fetch('Taux horaire par grade.csv?v=' + Date.now());
+                const tauxResponse = await fetch(`Taux horaire par grade.csv?v=${timestamp}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
                 if (!tauxResponse.ok) throw new Error('Fichier taux horaires non trouvé');
                 const tauxText = await tauxResponse.text();
                 tauxHorairesData = parseCSV(tauxText);
                 console.log('Taux horaires chargés:', tauxHorairesData.length, 'lignes');
 
                 // Charger Initiales
-                console.log('Chargement Initiales...');
-                const initialesResponse = await fetch('initiales.csv?v=' + Date.now());
+                const initialesResponse = await fetch(`initiales.csv?v=${timestamp}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
                 if (!initialesResponse.ok) throw new Error('Fichier initiales non trouvé');
                 const initialesText = await initialesResponse.text();
                 initialesData = parseCSV(initialesText);
-                console.log('Initiales chargées:', initialesData.length, 'lignes');
 
                 // Charger Opportunités
-                console.log('Chargement Opportunités...');
-                const opportunitesResponse = await fetch('liste des opportunités.csv?v=' + Date.now());
+                const opportunitesResponse = await fetch(`liste des opportunités.csv?v=${timestamp}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
                 if (!opportunitesResponse.ok) {
-                    console.error('Erreur lors du chargement des opportunités:', opportunitesResponse.status, opportunitesResponse.statusText);
                     throw new Error('Fichier opportunités non trouvé');
                 }
                 const opportunitesText = await opportunitesResponse.text();
-                console.log('Texte des opportunités reçu, longueur:', opportunitesText.length);
                 opportunitesData = parseCSV(opportunitesText);
-                console.log('Opportunités chargées:', opportunitesData.length, 'lignes');
-                console.log('Première ligne opportunités:', opportunitesData[0]);
 
                 // Construire les mappings
                 buildMappings();
-                console.log('Mappings construits');
                 
                 // Initialiser l'onglet actif
                 currentTab = 'dashboard';
@@ -885,17 +863,17 @@
                 // S'assurer que les filtres généraux sont correctement masqués/affichés au démarrage
                 const generalFilters = document.getElementById('general-filters');
                 if (generalFilters) {
-                    if (currentTab === 'facturation' || currentTab === 'opportunites') {
+                    if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles') {
                         generalFilters.style.display = 'none';
-                        console.log('Initialisation: Filtres généraux masqués pour:', currentTab);
                     } else {
                         generalFilters.style.display = 'block';
-                        console.log('Initialisation: Filtres généraux affichés pour:', currentTab);
                     }
                 }
                 
                 applyFilters();
-                console.log('Interface initialisée');
+
+                // Ajout : forcer le rendu des filtres de l'onglet Feuilles de temps après chargement des CSV
+                renderFeuillesTab();
 
             } catch (error) {
                 console.error('Erreur lors du chargement des données:', error);
@@ -944,11 +922,8 @@
 
         // Configuration des filtres
         function setupFilters() {
-            console.log('Setup filters avec données:', trsData.length);
-            
             // Protection contre les appels récursifs
             if (window.isSettingUpFilters) {
-                console.log('Setup filters déjà en cours, ignoré');
                 return;
             }
             window.isSettingUpFilters = true;
@@ -956,7 +931,6 @@
             try {
                 // Vérifier que le DOM est prêt
                 if (!document.getElementById('buFilter')) {
-                    console.error('DOM pas encore prêt, retry dans 100ms');
                     setTimeout(() => {
                         window.isSettingUpFilters = false;
                         setupFilters();
@@ -1023,11 +997,8 @@
 
         // Fonction pour mettre à jour les filtres selon l'onglet actif
         function updateFiltersForCurrentTab() {
-            console.log('updateFiltersForCurrentTab - currentTab:', currentTab);
-            
             // Protection contre les appels récursifs
             if (window.isUpdatingFilters) {
-                console.log('Update filters déjà en cours, ignoré');
                 return;
             }
             window.isUpdatingFilters = true;
@@ -1036,15 +1007,11 @@
                 // Masquer/Afficher les filtres généraux selon l'onglet
                 const generalFilters = document.getElementById('general-filters');
                 if (generalFilters) {
-                    if (currentTab === 'facturation' || currentTab === 'opportunites') {
+                    if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles') {
                         generalFilters.style.display = 'none';
-                        console.log('updateFiltersForCurrentTab: Filtres généraux masqués pour:', currentTab);
                     } else {
                         generalFilters.style.display = 'block';
-                        console.log('updateFiltersForCurrentTab: Filtres généraux affichés pour:', currentTab);
                     }
-                } else {
-                    console.error('updateFiltersForCurrentTab: Élément general-filters non trouvé');
                 }
                 
                 // Si ce n'est pas l'onglet facturation ou opportunités, mettre à jour les filtres TRS
@@ -1070,6 +1037,7 @@
         }
 
         function fillSelect(select, values, allLabel, formatter = null) {
+            if (!select) return; // Sécurité anti-erreur
             console.log('fillSelect - select:', select.id, 'values:', values, 'allLabel:', allLabel);
             
             // Désactiver temporairement les événements pour éviter les appels récursifs
@@ -1288,17 +1256,21 @@
             
             try {
                 // Masquer le filtre général uniquement pour l'onglet Feuilles de temps
-                const generalFilters = document.getElementById('general-filters');
-                if (generalFilters) {
-                    if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles') {
+                // Gestion des filtres généraux selon l'onglet
+                if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles') {
+                    // Pour ces onglets, les filtres généraux ne doivent pas être présents dans le DOM
+                    const generalFilters = document.getElementById('general-filters');
+                    if (generalFilters) {
                         generalFilters.style.display = 'none';
                         console.log('Filtres généraux masqués pour:', currentTab);
-                    } else {
+                    }
+                } else {
+                    // Pour les autres onglets, les filtres généraux doivent être visibles
+                    const generalFilters = document.getElementById('general-filters');
+                    if (generalFilters) {
                         generalFilters.style.display = 'block';
                         console.log('Filtres généraux affichés pour:', currentTab);
                     }
-                } else {
-                    console.error('Élément general-filters non trouvé');
                 }
                 switch (currentTab) {
                     case 'dashboard':
@@ -1336,45 +1308,22 @@
         // Gestion des onglets avec protection
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                // Protection contre les clics multiples
                 if (window.isChangingTab) {
-                    console.log('Changement d\'onglet déjà en cours, ignoré');
                     return;
                 }
                 window.isChangingTab = true;
-                
                 try {
-                    // Retirer la classe active de tous les onglets
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    
-                    // Ajouter la classe active à l'onglet cliqué
                     tab.classList.add('active');
                     const tabId = 'tab-' + tab.dataset.tab;
                     document.getElementById(tabId).classList.add('active');
-                    
-                    // Mettre à jour l'onglet actif
                     currentTab = tab.dataset.tab;
-                    
-                    // Masquer/afficher les filtres généraux selon l'onglet
-                    const generalFilters = document.getElementById('general-filters');
-                    if (generalFilters) {
-                        if (currentTab === 'facturation' || currentTab === 'opportunites') {
-                            generalFilters.style.display = 'none';
-                            console.log('Filtres généraux masqués pour:', currentTab);
-                        } else {
-                            generalFilters.style.display = 'block';
-                            console.log('Filtres généraux affichés pour:', currentTab);
-                        }
-                    } else {
-                        console.error('Élément general-filters non trouvé');
-                    }
-                    
-                    // Mettre à jour les filtres pour le nouvel onglet
+                    // Ordre strict :
+                    updateFiltersVisibility();
                     updateFiltersForCurrentTab();
-                    
-                    // Appliquer les filtres pour l'onglet actif
                     applyFilters();
+                    renderCurrentTab();
                 } finally {
                     window.isChangingTab = false;
                 }
@@ -1431,7 +1380,6 @@
             
             // Éviter les clics multiples
             if (refreshBtn.classList.contains('loading')) {
-                console.log('Rafraîchissement déjà en cours...');
                 return;
             }
             
@@ -1440,25 +1388,37 @@
             refreshBtn.disabled = true;
             
             try {
-                console.log('Début du rafraîchissement des données...');
+                // Vider les données actuelles pour forcer le rechargement
+                trsData = [];
+                missionsData = [];
+                facturesData = [];
+                tauxHorairesData = [];
+                initialesData = [];
+                opportunitesData = [];
+                filteredData = [];
                 
-                // Recharger tous les CSV
+                // Recharger tous les CSV avec un timestamp unique pour éviter le cache
                 await loadAllCSVs();
+                
+                // Réinitialiser les filtres avec les nouvelles données
+                setupFilters();
                 
                 // Appliquer les filtres actuels
                 applyFilters();
                 
+                // Forcer la mise à jour de l'affichage des filtres selon l'onglet actuel
+                updateFiltersVisibility();
+                
                 // Rafraîchir l'onglet actuel
                 renderCurrentTab();
                 
-                console.log('Rafraîchissement terminé avec succès');
-                
-                // Message de succès temporaire
+                // Créer le message de confirmation avec les détails
+                const message = `✅ Mise à jour effectuée !\n\n📊 Données chargées :\n• TRS : ${trsData.length} lignes\n• Missions : ${missionsData.length} lignes\n• Factures : ${facturesData.length} lignes\n• Taux horaires : ${tauxHorairesData.length} lignes\n• Initiales : ${initialesData.length} lignes\n• Opportunités : ${opportunitesData.length} lignes\n\n🔄 Fichiers mis à jour : données_TRS.csv, liste des missions.csv, liste des factures.csv, Taux horaire par grade.csv, initiales.csv, liste des opportunités.csv`;
+                alert(message);
                 refreshBtn.textContent = '✅ Terminé';
                 setTimeout(() => {
                     refreshBtn.textContent = '🔄 Mise à jour';
                 }, 2000);
-                
             } catch (error) {
                 console.error('Erreur lors du rafraîchissement:', error);
                 refreshBtn.textContent = '❌ Erreur';
@@ -1473,11 +1433,8 @@
 
         // Rendu du dashboard principal
         function renderDashboard() {
-            console.log('renderDashboard - filteredData.length:', filteredData.length);
-            
             // Protection contre les appels multiples
             if (window.isRenderingDashboard) {
-                console.log('Dashboard déjà en cours de rendu, ignoré');
                 return;
             }
             window.isRenderingDashboard = true;
@@ -1975,85 +1932,85 @@
             let facturationHTML = `
                 <div class="filters-section">
                     <div class="filters-row">
-                        <div class="filter-group">
-                            <label>Client:</label>
-                            <select id="facturation-client-filter">
-                                <option value="">Tous</option>
-                                ${[...new Set(facturesData.map(f => f['Client']).filter(Boolean))].sort().map(client => 
-                                    `<option value="${client}">${client}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Division:</label>
-                            <select id="facturation-division-filter">
-                                <option value="">Toutes</option>
-                                ${[...new Set(facturesData.map(f => f['Division']).filter(Boolean))].sort().map(div => 
-                                    `<option value="${div}">${div}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Manager:</label>
-                            <select id="facturation-manager-filter">
-                                <option value="">Tous</option>
-                                ${[...new Set(facturesData.map(f => f['Manager']).filter(Boolean))].sort().map(manager => 
-                                    `<option value="${manager}">${manager}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Partner:</label>
-                            <select id="facturation-partner-filter">
-                                <option value="">Tous</option>
-                                ${[...new Set(facturesData.map(f => f['Partner']).filter(Boolean))].sort().map(partner => 
-                                    `<option value="${partner}">${partner}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>État:</label>
-                            <select id="facturation-etat-filter">
-                                <option value="">Tous</option>
-                                ${[...new Set(facturesData.map(f => f['État']).filter(Boolean))].sort().map(etat => 
-                                    `<option value="${etat}">${etat}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Année:</label>
-                            <select id="facturation-annee-filter">
-                                <option value="">Toutes</option>
-                                ${[...new Set(facturesData.map(f => {
-                                    let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                    return match ? match[3] : '';
-                                }).filter(annee => annee))].sort().map(annee => 
-                                    `<option value="${annee}">${annee}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Mois:</label>
-                            <select id="facturation-mois-filter">
-                                <option value="">Tous</option>
-                                ${[...new Set(facturesData.map(f => {
-                                    let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                    return match ? match[2] : '';
-                                }).filter(mois => mois))].sort().map(mois => {
-                                    const moisNoms = {
-                                        '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
-                                        '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
-                                        '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
-                                    };
-                                    return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
-                                }).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group" style="flex: 2;">
-                            <label>Période personnalisée:</label>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="date" id="facturation-date-debut" placeholder="Date début" style="flex: 1;">
-                                <input type="date" id="facturation-date-fin" placeholder="Date fin" style="flex: 1;">
+                    <div class="filter-group">
+                        <label>Client:</label>
+                        <select id="facturation-client-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['Client']).filter(Boolean))].sort().map(client => 
+                                `<option value="${client}">${client}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Division:</label>
+                        <select id="facturation-division-filter">
+                            <option value="">Toutes</option>
+                            ${[...new Set(facturesData.map(f => f['Division']).filter(Boolean))].sort().map(div => 
+                                `<option value="${div}">${div}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Manager:</label>
+                        <select id="facturation-manager-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['Manager']).filter(Boolean))].sort().map(manager => 
+                                `<option value="${manager}">${manager}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Partner:</label>
+                        <select id="facturation-partner-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['Partner']).filter(Boolean))].sort().map(partner => 
+                                `<option value="${partner}">${partner}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>État:</label>
+                        <select id="facturation-etat-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['État']).filter(Boolean))].sort().map(etat => 
+                                `<option value="${etat}">${etat}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Année:</label>
+                        <select id="facturation-annee-filter">
+                            <option value="">Toutes</option>
+                            ${[...new Set(facturesData.map(f => {
+                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[3] : '';
+                            }).filter(annee => annee))].sort().map(annee => 
+                                `<option value="${annee}">${annee}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Mois:</label>
+                        <select id="facturation-mois-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => {
+                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[2] : '';
+                            }).filter(mois => mois))].sort().map(mois => {
+                                const moisNoms = {
+                                    '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                                    '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                                    '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                                };
+                                return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group" style="flex: 2;">
+                        <label>Période personnalisée:</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="date" id="facturation-date-debut" placeholder="Date début" style="flex: 1;">
+                            <input type="date" id="facturation-date-fin" placeholder="Date fin" style="flex: 1;">
                             </div>
                         </div>
                     </div>
@@ -3024,91 +2981,91 @@
             let opportunitesHTML = `
                 <div class="filters-section">
                     <div class="filters-row">
-                        <div class="filter-group">
-                            <label>Division:</label>
-                            <select id="opportunites-division-filter">
-                                <option value="">Toutes</option>
-                                ${getUniqueValues(opportunitesData, 'Division').map(div => 
-                                    `<option value="${div}">${div}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Statut:</label>
-                            <select id="opportunites-statut-filter">
-                                <option value="">Tous</option>
-                                ${getUniqueValues(opportunitesData, 'Statut').map(statut => 
-                                    `<option value="${statut}">${statut}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Responsable:</label>
-                            <select id="opportunites-responsable-filter">
-                                <option value="">Tous</option>
-                                ${getUniqueValues(opportunitesData, 'Responsable').map(resp => 
-                                    `<option value="${resp}">${resp}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Secteur:</label>
-                            <select id="opportunites-secteur-filter">
-                                <option value="">Tous</option>
-                                ${getUniqueValues(opportunitesData, 'Secteur').map(secteur => 
-                                    `<option value="${secteur}">${secteur}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Type:</label>
-                            <select id="opportunites-type-filter">
-                                <option value="">Tous</option>
-                                ${getUniqueValues(opportunitesData, 'Type').map(type => 
-                                    `<option value="${type}">${type}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Initiative:</label>
-                            <select id="opportunites-initiative-filter">
-                                <option value="">Toutes</option>
-                                ${getUniqueValues(opportunitesData, 'Initiative').map(init => 
-                                    `<option value="${init}">${init}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Année:</label>
-                            <select id="opportunites-annee-filter">
-                                <option value="">Toutes</option>
-                                ${[...new Set(getUniqueValues(opportunitesData, 'Date Insertion').map(date => {
-                                    let match = date.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                    return match ? match[3] : '';
-                                }).filter(annee => annee))].sort().map(annee => 
-                                    `<option value="${annee}">${annee}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Mois:</label>
-                            <select id="opportunites-mois-filter">
-                                <option value="">Tous</option>
-                                ${[...new Set(getUniqueValues(opportunitesData, 'Date Insertion').map(date => {
-                                    let match = date.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                    return match ? match[2] : '';
-                                }).filter(mois => mois))].sort().map(mois => {
-                                    const moisNoms = {
-                                        '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
-                                        '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
-                                        '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
-                                    };
-                                    return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
-                                }).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Période:</label>
+                    <div class="filter-group">
+                        <label>Division:</label>
+                        <select id="opportunites-division-filter">
+                            <option value="">Toutes</option>
+                            ${getUniqueValues(opportunitesData, 'Division').map(div => 
+                                `<option value="${div}">${div}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Statut:</label>
+                        <select id="opportunites-statut-filter">
+                            <option value="">Tous</option>
+                            ${getUniqueValues(opportunitesData, 'Statut').map(statut => 
+                                `<option value="${statut}">${statut}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Responsable:</label>
+                        <select id="opportunites-responsable-filter">
+                            <option value="">Tous</option>
+                            ${getUniqueValues(opportunitesData, 'Responsable').map(resp => 
+                                `<option value="${resp}">${resp}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Secteur:</label>
+                        <select id="opportunites-secteur-filter">
+                            <option value="">Tous</option>
+                            ${getUniqueValues(opportunitesData, 'Secteur').map(secteur => 
+                                `<option value="${secteur}">${secteur}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Type:</label>
+                        <select id="opportunites-type-filter">
+                            <option value="">Tous</option>
+                            ${getUniqueValues(opportunitesData, 'Type').map(type => 
+                                `<option value="${type}">${type}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Initiative:</label>
+                        <select id="opportunites-initiative-filter">
+                            <option value="">Toutes</option>
+                            ${getUniqueValues(opportunitesData, 'Initiative').map(init => 
+                                `<option value="${init}">${init}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Année:</label>
+                        <select id="opportunites-annee-filter">
+                            <option value="">Toutes</option>
+                            ${[...new Set(getUniqueValues(opportunitesData, 'Date Insertion').map(date => {
+                                let match = date.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[3] : '';
+                            }).filter(annee => annee))].sort().map(annee => 
+                                `<option value="${annee}">${annee}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Mois:</label>
+                        <select id="opportunites-mois-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(getUniqueValues(opportunitesData, 'Date Insertion').map(date => {
+                                let match = date.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[2] : '';
+                            }).filter(mois => mois))].sort().map(mois => {
+                                const moisNoms = {
+                                    '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                                    '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                                    '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                                };
+                                return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Période:</label>
                             <div style="display: flex; gap: 10px;">
                                 <input type="date" id="opportunites-date-debut" placeholder="Date début" style="flex: 1;">
                                 <input type="date" id="opportunites-date-fin" placeholder="Date fin" style="flex: 1;">
@@ -3464,24 +3421,25 @@
         // ===== ONGLET FEUILLES DE TEMPS =====
         function renderFeuillesTab() {
             if (window.isRenderingFeuilles) {
-                console.log('Feuilles déjà en cours de rendu, ignoré');
                 return;
             }
             window.isRenderingFeuilles = true;
             try {
                 if (!trsData.length) {
-                    document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Aucune donnée disponible</div>';
+                    document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Chargement des données en cours... Veuillez patienter."</div>';
                     return;
                 }
                 const feuillesFilters = document.getElementById('feuilles-filters');
                 // 1. Récupérer les selects
                 const divisionSelect = document.getElementById('feuilles-division-filter');
                 const collabSelect = document.getElementById('feuilles-collab-filter');
+                // Sauvegarder la sélection AVANT de remplir les selects
+                const previousDivision = divisionSelect.value;
+                const previousCollab = collabSelect.value;
                 // 2. Remplir la liste des pôles
                 const divisions = [...new Set(trsData.map(row => row['Division']).filter(Boolean))].sort();
-                const previousDivision = divisionSelect.value;
                 divisionSelect.innerHTML = '<option value="">Tous les pôles</option>' + divisions.map(d => `<option value="${d}">${d}</option>`).join('');
-                if (previousDivision) divisionSelect.value = previousDivision;
+                if (previousDivision && divisions.includes(previousDivision)) divisionSelect.value = previousDivision;
                 // 3. Remplir la liste des collaborateurs selon le pôle sélectionné
                 const selectedDivision = divisionSelect.value;
                 let collaborateurs = trsData
@@ -3489,27 +3447,21 @@
                     .map(row => row['Nom'])
                     .filter(Boolean);
                 collaborateurs = [...new Set(collaborateurs)].sort();
-                const previousCollab = collabSelect.value;
                 collabSelect.innerHTML = '<option value="">Tous les collaborateurs</option>' + collaborateurs.map(c => `<option value="${c}">${c}</option>`).join('');
                 if (previousCollab && collaborateurs.includes(previousCollab)) collabSelect.value = previousCollab;
-                // 4. Listeners
+                // 4. Listeners (toujours réinitialisés)
                 divisionSelect.onchange = () => {
-                    collabSelect.value = '';
                     renderFeuillesTab();
                 };
                 collabSelect.onchange = () => {
                     renderFeuillesTab();
                 };
-                // 5. Déterminer les collaborateurs à afficher
+                // 5. Lire les valeurs sélectionnées APRÈS avoir rempli les selects
                 const selectedCollab = collabSelect.value;
                 let collaborateursAffiches = collaborateurs;
                 if (selectedCollab) {
                     collaborateursAffiches = [selectedCollab];
                 }
-                // DEBUG : logs détaillés
-                console.log('[DEBUG FEUILLES] Pôle sélectionné :', selectedDivision);
-                console.log('[DEBUG FEUILLES] Collaborateur sélectionné :', selectedCollab);
-                console.log('[DEBUG FEUILLES] Collaborateurs affichés :', collaborateursAffiches);
                 // Extraire la liste unique des mois (inchangée)
                 const mois = [...new Set(trsData.map(row => row['Mois']).filter(Boolean))].sort((a, b) => {
                     const [ma, ya] = a.split('/').map(Number);
@@ -3530,8 +3482,6 @@
                     }
                 });
                 // Générer le tableau HTML
-                let debugHTML = `<div style='margin-bottom:10px;padding:8px;background:#f3f3f3;border-radius:6px;font-size:0.95em;'>\
-<strong>DEBUG :</strong> Pôle sélectionné : <b>${selectedDivision || 'Tous'}</b> | Collaborateur sélectionné : <b>${selectedCollab || 'Tous'}</b> | Collaborateurs affichés : <b>${collaborateursAffiches.length}</b></div>`;
                 let tableHTML = '<div class="table-container"><table><thead><tr><th>Collaborateur</th>';
                 mois.forEach(moisVal => {
                     tableHTML += `<th>${moisVal}</th>`;
@@ -3581,7 +3531,7 @@
                 document.getElementById('tab-feuilles').innerHTML = '';
                 feuillesFilters.style.display = 'block';
                 document.getElementById('tab-feuilles').appendChild(feuillesFilters);
-                document.getElementById('tab-feuilles').innerHTML += debugHTML + tableHTML;
+                document.getElementById('tab-feuilles').innerHTML += tableHTML;
             } catch (error) {
                 console.error('Erreur lors du rendu des feuilles de temps:', error, error.stack);
                 document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Erreur lors du rendu des feuilles de temps : ' + error + '</div>';
@@ -3600,7 +3550,7 @@
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach(mutation => {
                     if (mutation.attributeName === 'style') {
-                        console.log('[DEBUG] MutationObserver: general-filters style changed:', generalFilters.style.display);
+                        // Observer silencieux pour maintenir la fonctionnalité
                     }
                 });
             });
@@ -3616,72 +3566,88 @@
             const generalFilters = document.getElementById('general-filters');
             if (generalFilters && (currentTab === 'facturation' || currentTab === 'opportunites')) {
                 generalFilters.style.display = 'none';
-                console.log('[DEBUG] Forçage: general-filters masqué pour', currentTab);
             }
         }
 
-        // Ajoutons ce forçage après chaque rendu d'onglet
-        function renderCurrentTab() {
-            console.log('renderCurrentTab - currentTab:', currentTab);
-            console.log('renderCurrentTab - filteredData.length:', filteredData.length);
-            if (window.isRenderingTab) {
-                console.log('Rendu d\'onglet déjà en cours, ignoré');
-                return;
-            }
-            window.isRenderingTab = true;
-            try {
-                // Masquer le filtre général uniquement pour l'onglet Feuilles de temps
-                const generalFilters = document.getElementById('general-filters');
-                if (generalFilters) {
-                    if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles') {
-                        generalFilters.style.display = 'none';
-                        console.log('Filtres généraux masqués pour:', currentTab);
-                    } else {
-                        generalFilters.style.display = 'block';
-                        console.log('Filtres généraux affichés pour:', currentTab);
-                    }
-                } else {
-                    console.error('Élément general-filters non trouvé');
-                }
-                switch (currentTab) {
-                    case 'dashboard':
-                        renderDashboard();
-                        break;
-                    case 'missions':
-                        renderMissionsTab();
-                        break;
-                    case 'facturation':
-                        renderFacturationTab();
-                        break;
-                    case 'rentabilite':
-                        renderRentabiliteTab();
-                        break;
-                    case 'performance':
-                        renderPerformanceTab();
-                        break;
-                    case 'opportunites':
-                        renderOpportunitesTab();
-                        break;
-                    case 'feuilles':
-                        renderFeuillesTab();
-                        break;
-                    default:
-                        renderDashboard();
-                }
-                // Forçage du masquage après chaque rendu
-                forceHideGeneralFiltersIfNeeded();
-            } finally {
-                window.isRenderingTab = false;
-            }
-        }
+        // 1. Définir le template en dur en JS (au tout début du script)
+        const generalFiltersHTML = `
+        <div class="filters-section" id="general-filters">
+          <div class="filters-row">
+            <div class="filter-group">
+                <label for="yearFilter">Année</label>
+                <select id="yearFilter"><option value="">Toutes les années</option></select>
+            </div>
+            <div class="filter-group">
+                <label for="monthFilter">Mois</label>
+                <select id="monthFilter"><option value="">Tous les mois</option></select>
+            </div>
+            <div class="filter-group" style="flex:2;min-width:220px;max-width:320px;">
+                <label for="startDate">Période personnalisée</label>
+                <div style="display:flex;gap:10px;">
+                    <input type="date" id="startDate" placeholder="Date début" style="flex:1;">
+                    <input type="date" id="endDate" placeholder="Date fin" style="flex:1;">
+                </div>
+            </div>
+            <div class="filter-group">
+                <label for="buFilter">Pôle</label>
+                <select id="buFilter"><option value="">Tous les pôles</option></select>
+            </div>
+            <div class="filter-group">
+                <label for="collabFilter">Collaborateur</label>
+                <select id="collabFilter"><option value="">Tous les collaborateurs</option></select>
+            </div>
+            <div class="filter-group">
+                <label for="missionFilter">Mission</label>
+                <select id="missionFilter"><option value="">Toutes les missions</option></select>
+            </div>
+            <div class="filter-group">
+                <label for="typeHeureFilter">Type d'heure</label>
+                <select id="typeHeureFilter"><option value="">Tous les types</option></select>
+            </div>
+          </div>
+        </div>
+        `;
 
-        // DEBUG : log de la largeur du parent de #general-filters
-        window.addEventListener('DOMContentLoaded', () => {
-            const gf = document.getElementById('general-filters');
-            if (gf && gf.parentElement) {
-                console.log('[DEBUG] Largeur parent de #general-filters:', gf.parentElement.offsetWidth + 'px');
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            updateFiltersVisibility();
+            updateFiltersForCurrentTab();
+            applyFilters();
+            renderCurrentTab();
         });
+
+        // Ajouter la fonction updateFiltersVisibility ici :
+        function updateFiltersVisibility() {
+            const tabsWithGeneralFilters = ['dashboard', 'missions', 'facturation', 'rentabilite', 'performance'];
+            const generalFilters = document.getElementById('general-filters');
+            if (!tabsWithGeneralFilters.includes(currentTab)) {
+                if (generalFilters) generalFilters.remove();
+            } else {
+                if (!generalFilters) {
+                    const tabs = document.querySelector('.tabs');
+                    if (tabs) {
+                        tabs.insertAdjacentHTML('afterend', generalFiltersHTML);
+                        // Réattacher les listeners sur les nouveaux éléments
+                        const filterElements = [
+                            'yearFilter',
+                            'monthFilter',
+                            'startDate',
+                            'endDate',
+                            'buFilter',
+                            'collabFilter',
+                            'missionFilter',
+                            'typeHeureFilter'
+                        ];
+                        filterElements.forEach(id => {
+                            const element = document.getElementById(id);
+                            if (element) {
+                                element.addEventListener('change', handleFilterChange);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
     </script>
 </body>
 </html> 

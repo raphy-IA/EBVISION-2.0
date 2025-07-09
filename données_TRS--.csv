@@ -1,4 +1,4 @@
-﻿Nom;Initiales;Division;Grade;Code Mission;Missions;Heures;Perdiem;Transport;Hotel;Restaurant;Divers;Type Heure;Mois;Statut
+﻿Nom;Initiales;BU;Division;Code Mission;Missions;Heures;Perdiem;Transport;Hotel;Restaurant;Divers;Type Heure;Mois;Statut
 Joseph Ndoumbe;JON;Law;SUPERVISOR;11;Autres Temps Disponibles;9;;;;;;HNC;01/01/2025;En Attente Validation
 Raphaël Ngos;RAN;Audit;MANAGER;15;Information Technology;74;;;;;;HNC;01/04/2025;APPROUVE
 Joseph Ndoumbe;JON;Law;SUPERVISOR;<No Code>;HEVECAM - Tax - Participation au séminaire de la loi de finances 2025;1;;;;;;HC;01/01/2025;En Attente Validation
