@@ -748,6 +748,22 @@
         </div>
         <!-- Feuilles de temps Tab -->
         <div id="tab-feuilles" class="tab-content">
+            <div class="filters-section" id="feuilles-filters" style="margin-bottom:20px;">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label for="feuilles-division-filter">Pôle</label>
+                        <select id="feuilles-division-filter">
+                            <option value="">Tous les pôles</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="feuilles-collab-filter">Collaborateur</label>
+                        <select id="feuilles-collab-filter">
+                            <option value="">Tous les collaborateurs</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
             <div class="loading">Chargement des feuilles de temps...</div>
         </div>
     </div>
@@ -1271,6 +1287,19 @@
             window.isRenderingTab = true;
             
             try {
+                // Masquer le filtre général uniquement pour l'onglet Feuilles de temps
+                const generalFilters = document.getElementById('general-filters');
+                if (generalFilters) {
+                    if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles') {
+                        generalFilters.style.display = 'none';
+                        console.log('Filtres généraux masqués pour:', currentTab);
+                    } else {
+                        generalFilters.style.display = 'block';
+                        console.log('Filtres généraux affichés pour:', currentTab);
+                    }
+                } else {
+                    console.error('Élément general-filters non trouvé');
+                }
                 switch (currentTab) {
                     case 'dashboard':
                         renderDashboard();
@@ -1297,6 +1326,8 @@
                     default:
                         renderDashboard();
                 }
+                // Forçage du masquage après chaque rendu
+                forceHideGeneralFiltersIfNeeded();
             } finally {
                 window.isRenderingTab = false;
             }
@@ -3432,7 +3463,6 @@
 
         // ===== ONGLET FEUILLES DE TEMPS =====
         function renderFeuillesTab() {
-            // Protection contre les appels multiples
             if (window.isRenderingFeuilles) {
                 console.log('Feuilles déjà en cours de rendu, ignoré');
                 return;
@@ -3443,37 +3473,77 @@
                     document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Aucune donnée disponible</div>';
                     return;
                 }
-                // Extraire la liste unique des collaborateurs et des mois
-                const collaborateurs = [...new Set(trsData.map(row => row['Nom']).filter(Boolean))].sort();
+                const feuillesFilters = document.getElementById('feuilles-filters');
+                // 1. Récupérer les selects
+                const divisionSelect = document.getElementById('feuilles-division-filter');
+                const collabSelect = document.getElementById('feuilles-collab-filter');
+                // 2. Remplir la liste des pôles
+                const divisions = [...new Set(trsData.map(row => row['Division']).filter(Boolean))].sort();
+                const previousDivision = divisionSelect.value;
+                divisionSelect.innerHTML = '<option value="">Tous les pôles</option>' + divisions.map(d => `<option value="${d}">${d}</option>`).join('');
+                if (previousDivision) divisionSelect.value = previousDivision;
+                // 3. Remplir la liste des collaborateurs selon le pôle sélectionné
+                const selectedDivision = divisionSelect.value;
+                let collaborateurs = trsData
+                    .filter(row => !selectedDivision || row['Division'] === selectedDivision)
+                    .map(row => row['Nom'])
+                    .filter(Boolean);
+                collaborateurs = [...new Set(collaborateurs)].sort();
+                const previousCollab = collabSelect.value;
+                collabSelect.innerHTML = '<option value="">Tous les collaborateurs</option>' + collaborateurs.map(c => `<option value="${c}">${c}</option>`).join('');
+                if (previousCollab && collaborateurs.includes(previousCollab)) collabSelect.value = previousCollab;
+                // 4. Listeners
+                divisionSelect.onchange = () => {
+                    collabSelect.value = '';
+                    renderFeuillesTab();
+                };
+                collabSelect.onchange = () => {
+                    renderFeuillesTab();
+                };
+                // 5. Déterminer les collaborateurs à afficher
+                const selectedCollab = collabSelect.value;
+                let collaborateursAffiches = collaborateurs;
+                if (selectedCollab) {
+                    collaborateursAffiches = [selectedCollab];
+                }
+                // DEBUG : logs détaillés
+                console.log('[DEBUG FEUILLES] Pôle sélectionné :', selectedDivision);
+                console.log('[DEBUG FEUILLES] Collaborateur sélectionné :', selectedCollab);
+                console.log('[DEBUG FEUILLES] Collaborateurs affichés :', collaborateursAffiches);
+                // Extraire la liste unique des mois (inchangée)
                 const mois = [...new Set(trsData.map(row => row['Mois']).filter(Boolean))].sort((a, b) => {
-                    // Trier les mois par année/mois
                     const [ma, ya] = a.split('/').map(Number);
                     const [mb, yb] = b.split('/').map(Number);
                     return yb !== ya ? ya - yb : ma - mb;
                 });
-                // Construire un mapping (collaborateur, mois) => statut
+                // Construire un mapping (collaborateur, mois) => statut (prendre le premier trouvé)
                 const statutMap = {};
                 trsData.forEach(row => {
                     const nom = row['Nom'];
                     const moisVal = row['Mois'];
                     const statut = row['Statut'] || '';
                     if (nom && moisVal) {
-                        statutMap[`${nom}__${moisVal}`] = statut;
+                        const key = `${nom}__${moisVal}`;
+                        if (!(key in statutMap)) {
+                            statutMap[key] = statut;
+                        }
                     }
                 });
                 // Générer le tableau HTML
+                let debugHTML = `<div style='margin-bottom:10px;padding:8px;background:#f3f3f3;border-radius:6px;font-size:0.95em;'>\
+<strong>DEBUG :</strong> Pôle sélectionné : <b>${selectedDivision || 'Tous'}</b> | Collaborateur sélectionné : <b>${selectedCollab || 'Tous'}</b> | Collaborateurs affichés : <b>${collaborateursAffiches.length}</b></div>`;
                 let tableHTML = '<div class="table-container"><table><thead><tr><th>Collaborateur</th>';
                 mois.forEach(moisVal => {
                     tableHTML += `<th>${moisVal}</th>`;
                 });
                 tableHTML += '</tr></thead><tbody>';
-                collaborateurs.forEach(nom => {
+                collaborateursAffiches.forEach(nom => {
                     tableHTML += `<tr><td>${nom}</td>`;
                     mois.forEach(moisVal => {
                         let statut = statutMap[`${nom}__${moisVal}`] || '';
                         let color = '';
                         let displayText = statut;
-                        // Gestion des couleurs et textes
+                        // Gestion des couleurs et textes (inchangée)
                         if (!statut) {
                             displayText = 'Non transmis';
                             color = 'background:#f8d7da;color:#721c24;font-weight:bold;';
@@ -3482,7 +3552,6 @@
                         } else if (/^(validé|approuvé)/i.test(statut) || /approuv/i.test(statut) || /valid/i.test(statut)) {
                             color = 'background:#28a745;color:#fff;font-weight:bold;'; // vert bien visible
                         } else if (/en cours d'édition/i.test(statut)) {
-                            // Extraire mois/année de la cellule
                             const [cellMonth, cellYear] = moisVal.split('/').map(Number);
                             const now = new Date();
                             const currentMonth = now.getMonth() + 1;
@@ -3491,7 +3560,6 @@
                                 displayText = "En cours d'édition";
                                 color = 'background:#d4edda;color:#155724;font-weight:bold;'; // vert clair
                             } else {
-                                // Mois < mois courant : vérifier le total des heures
                                 const totalHeures = trsData.filter(row => row['Nom'] === nom && row['Mois'] === moisVal)
                                     .reduce((sum, row) => sum + (parseFloat(row['Heures'].replace(',', '.')) || 0), 0);
                                 if (totalHeures === 0) {
@@ -3510,10 +3578,13 @@
                     tableHTML += '</tr>';
                 });
                 tableHTML += '</tbody></table></div>';
-                document.getElementById('tab-feuilles').innerHTML = tableHTML;
+                document.getElementById('tab-feuilles').innerHTML = '';
+                feuillesFilters.style.display = 'block';
+                document.getElementById('tab-feuilles').appendChild(feuillesFilters);
+                document.getElementById('tab-feuilles').innerHTML += debugHTML + tableHTML;
             } catch (error) {
-                console.error('Erreur lors du rendu des feuilles de temps:', error);
-                document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Erreur lors du rendu des feuilles de temps</div>';
+                console.error('Erreur lors du rendu des feuilles de temps:', error, error.stack);
+                document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Erreur lors du rendu des feuilles de temps : ' + error + '</div>';
             } finally {
                 window.isRenderingFeuilles = false;
             }
@@ -3559,6 +3630,19 @@
             }
             window.isRenderingTab = true;
             try {
+                // Masquer le filtre général uniquement pour l'onglet Feuilles de temps
+                const generalFilters = document.getElementById('general-filters');
+                if (generalFilters) {
+                    if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles') {
+                        generalFilters.style.display = 'none';
+                        console.log('Filtres généraux masqués pour:', currentTab);
+                    } else {
+                        generalFilters.style.display = 'block';
+                        console.log('Filtres généraux affichés pour:', currentTab);
+                    }
+                } else {
+                    console.error('Élément general-filters non trouvé');
+                }
                 switch (currentTab) {
                     case 'dashboard':
                         renderDashboard();
