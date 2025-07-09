@@ -1875,85 +1875,87 @@
 
             let facturationHTML = `
                 <div class="filters-section">
-                    <div class="filter-group">
-                        <label>Client:</label>
-                        <select id="facturation-client-filter">
-                            <option value="">Tous</option>
-                            ${[...new Set(facturesData.map(f => f['Client']).filter(Boolean))].sort().map(client => 
-                                `<option value="${client}">${client}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Division:</label>
-                        <select id="facturation-division-filter">
-                            <option value="">Toutes</option>
-                            ${[...new Set(facturesData.map(f => f['Division']).filter(Boolean))].sort().map(div => 
-                                `<option value="${div}">${div}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Manager:</label>
-                        <select id="facturation-manager-filter">
-                            <option value="">Tous</option>
-                            ${[...new Set(facturesData.map(f => f['Manager']).filter(Boolean))].sort().map(manager => 
-                                `<option value="${manager}">${manager}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Partner:</label>
-                        <select id="facturation-partner-filter">
-                            <option value="">Tous</option>
-                            ${[...new Set(facturesData.map(f => f['Partner']).filter(Boolean))].sort().map(partner => 
-                                `<option value="${partner}">${partner}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>État:</label>
-                        <select id="facturation-etat-filter">
-                            <option value="">Tous</option>
-                            ${[...new Set(facturesData.map(f => f['État']).filter(Boolean))].sort().map(etat => 
-                                `<option value="${etat}">${etat}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Année:</label>
-                        <select id="facturation-annee-filter">
-                            <option value="">Toutes</option>
-                            ${[...new Set(facturesData.map(f => {
-                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                return match ? match[3] : '';
-                            }).filter(annee => annee))].sort().map(annee => 
-                                `<option value="${annee}">${annee}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Mois:</label>
-                        <select id="facturation-mois-filter">
-                            <option value="">Tous</option>
-                            ${[...new Set(facturesData.map(f => {
-                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                return match ? match[2] : '';
-                            }).filter(mois => mois))].sort().map(mois => {
-                                const moisNoms = {
-                                    '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
-                                    '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
-                                    '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
-                                };
-                                return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
-                            }).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group" style="flex: 2;">
-                        <label>Période personnalisée:</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="date" id="facturation-date-debut" placeholder="Date début" style="flex: 1;">
-                            <input type="date" id="facturation-date-fin" placeholder="Date fin" style="flex: 1;">
+                    <div class="filters-row">
+                        <div class="filter-group">
+                            <label>Client:</label>
+                            <select id="facturation-client-filter">
+                                <option value="">Tous</option>
+                                ${[...new Set(facturesData.map(f => f['Client']).filter(Boolean))].sort().map(client => 
+                                    `<option value="${client}">${client}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Division:</label>
+                            <select id="facturation-division-filter">
+                                <option value="">Toutes</option>
+                                ${[...new Set(facturesData.map(f => f['Division']).filter(Boolean))].sort().map(div => 
+                                    `<option value="${div}">${div}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Manager:</label>
+                            <select id="facturation-manager-filter">
+                                <option value="">Tous</option>
+                                ${[...new Set(facturesData.map(f => f['Manager']).filter(Boolean))].sort().map(manager => 
+                                    `<option value="${manager}">${manager}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Partner:</label>
+                            <select id="facturation-partner-filter">
+                                <option value="">Tous</option>
+                                ${[...new Set(facturesData.map(f => f['Partner']).filter(Boolean))].sort().map(partner => 
+                                    `<option value="${partner}">${partner}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>État:</label>
+                            <select id="facturation-etat-filter">
+                                <option value="">Tous</option>
+                                ${[...new Set(facturesData.map(f => f['État']).filter(Boolean))].sort().map(etat => 
+                                    `<option value="${etat}">${etat}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Année:</label>
+                            <select id="facturation-annee-filter">
+                                <option value="">Toutes</option>
+                                ${[...new Set(facturesData.map(f => {
+                                    let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                    return match ? match[3] : '';
+                                }).filter(annee => annee))].sort().map(annee => 
+                                    `<option value="${annee}">${annee}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Mois:</label>
+                            <select id="facturation-mois-filter">
+                                <option value="">Tous</option>
+                                ${[...new Set(facturesData.map(f => {
+                                    let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                    return match ? match[2] : '';
+                                }).filter(mois => mois))].sort().map(mois => {
+                                    const moisNoms = {
+                                        '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                                        '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                                        '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                                    };
+                                    return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
+                                }).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group" style="flex: 2;">
+                            <label>Période personnalisée:</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="date" id="facturation-date-debut" placeholder="Date début" style="flex: 1;">
+                                <input type="date" id="facturation-date-fin" placeholder="Date fin" style="flex: 1;">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2922,93 +2924,97 @@
 
             let opportunitesHTML = `
                 <div class="filters-section">
-                    <div class="filter-group">
-                        <label>Division:</label>
-                        <select id="opportunites-division-filter">
-                            <option value="">Toutes</option>
-                            ${getUniqueValues(opportunitesData, 'Division').map(div => 
-                                `<option value="${div}">${div}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Statut:</label>
-                        <select id="opportunites-statut-filter">
-                            <option value="">Tous</option>
-                            ${getUniqueValues(opportunitesData, 'Statut').map(statut => 
-                                `<option value="${statut}">${statut}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Responsable:</label>
-                        <select id="opportunites-responsable-filter">
-                            <option value="">Tous</option>
-                            ${getUniqueValues(opportunitesData, 'Responsable').map(resp => 
-                                `<option value="${resp}">${resp}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Secteur:</label>
-                        <select id="opportunites-secteur-filter">
-                            <option value="">Tous</option>
-                            ${getUniqueValues(opportunitesData, 'Secteur').map(secteur => 
-                                `<option value="${secteur}">${secteur}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Type:</label>
-                        <select id="opportunites-type-filter">
-                            <option value="">Tous</option>
-                            ${getUniqueValues(opportunitesData, 'Type').map(type => 
-                                `<option value="${type}">${type}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Initiative:</label>
-                        <select id="opportunites-initiative-filter">
-                            <option value="">Toutes</option>
-                            ${getUniqueValues(opportunitesData, 'Initiative').map(init => 
-                                `<option value="${init}">${init}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Année:</label>
-                        <select id="opportunites-annee-filter">
-                            <option value="">Toutes</option>
-                            ${[...new Set(getUniqueValues(opportunitesData, 'Date Insertion').map(date => {
-                                let match = date.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                return match ? match[3] : '';
-                            }).filter(annee => annee))].sort().map(annee => 
-                                `<option value="${annee}">${annee}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Mois:</label>
-                        <select id="opportunites-mois-filter">
-                            <option value="">Tous</option>
-                            ${[...new Set(getUniqueValues(opportunitesData, 'Date Insertion').map(date => {
-                                let match = date.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                return match ? match[2] : '';
-                            }).filter(mois => mois))].sort().map(mois => {
-                                const moisNoms = {
-                                    '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
-                                    '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
-                                    '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
-                                };
-                                return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
-                            }).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Période:</label>
-                        <input type="date" id="opportunites-date-debut" placeholder="Date début">
-                        <input type="date" id="opportunites-date-fin" placeholder="Date fin">
+                    <div class="filters-row">
+                        <div class="filter-group">
+                            <label>Division:</label>
+                            <select id="opportunites-division-filter">
+                                <option value="">Toutes</option>
+                                ${getUniqueValues(opportunitesData, 'Division').map(div => 
+                                    `<option value="${div}">${div}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Statut:</label>
+                            <select id="opportunites-statut-filter">
+                                <option value="">Tous</option>
+                                ${getUniqueValues(opportunitesData, 'Statut').map(statut => 
+                                    `<option value="${statut}">${statut}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Responsable:</label>
+                            <select id="opportunites-responsable-filter">
+                                <option value="">Tous</option>
+                                ${getUniqueValues(opportunitesData, 'Responsable').map(resp => 
+                                    `<option value="${resp}">${resp}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Secteur:</label>
+                            <select id="opportunites-secteur-filter">
+                                <option value="">Tous</option>
+                                ${getUniqueValues(opportunitesData, 'Secteur').map(secteur => 
+                                    `<option value="${secteur}">${secteur}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Type:</label>
+                            <select id="opportunites-type-filter">
+                                <option value="">Tous</option>
+                                ${getUniqueValues(opportunitesData, 'Type').map(type => 
+                                    `<option value="${type}">${type}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Initiative:</label>
+                            <select id="opportunites-initiative-filter">
+                                <option value="">Toutes</option>
+                                ${getUniqueValues(opportunitesData, 'Initiative').map(init => 
+                                    `<option value="${init}">${init}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Année:</label>
+                            <select id="opportunites-annee-filter">
+                                <option value="">Toutes</option>
+                                ${[...new Set(getUniqueValues(opportunitesData, 'Date Insertion').map(date => {
+                                    let match = date.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                    return match ? match[3] : '';
+                                }).filter(annee => annee))].sort().map(annee => 
+                                    `<option value="${annee}">${annee}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Mois:</label>
+                            <select id="opportunites-mois-filter">
+                                <option value="">Tous</option>
+                                ${[...new Set(getUniqueValues(opportunitesData, 'Date Insertion').map(date => {
+                                    let match = date.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                    return match ? match[2] : '';
+                                }).filter(mois => mois))].sort().map(mois => {
+                                    const moisNoms = {
+                                        '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                                        '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                                        '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                                    };
+                                    return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
+                                }).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Période:</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="date" id="opportunites-date-debut" placeholder="Date début" style="flex: 1;">
+                                <input type="date" id="opportunites-date-fin" placeholder="Date fin" style="flex: 1;">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="kpi-cards">
