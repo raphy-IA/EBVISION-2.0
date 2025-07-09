@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord TRS</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="auth.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -396,6 +397,32 @@
             box-shadow: 0 4px 12px rgba(40,167,69,0.3);
         }
         .refresh-btn:active {
+            transform: translateY(0);
+        }
+        
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .logout-btn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            padding: 9px 20px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 1em;
+            margin-left: 10px;
+        }
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231,76,60,0.3);
+        }
+        .logout-btn:active {
             transform: translateY(0);
         }
         .refresh-btn.loading {
@@ -1360,16 +1387,49 @@
         }
 
         // Fonction de rafraîchissement des données
-        function refreshData() {
+        async function refreshData() {
             const refreshBtn = document.getElementById('refreshBtn');
+            
+            // Éviter les clics multiples
+            if (refreshBtn.classList.contains('loading')) {
+                console.log('Rafraîchissement déjà en cours...');
+                return;
+            }
+            
             refreshBtn.classList.add('loading');
             refreshBtn.textContent = '🔄 Chargement...';
+            refreshBtn.disabled = true;
             
-            setTimeout(() => {
-                loadAllCSVs();
+            try {
+                console.log('Début du rafraîchissement des données...');
+                
+                // Recharger tous les CSV
+                await loadAllCSVs();
+                
+                // Appliquer les filtres actuels
+                applyFilters();
+                
+                // Rafraîchir l'onglet actuel
+                renderCurrentTab();
+                
+                console.log('Rafraîchissement terminé avec succès');
+                
+                // Message de succès temporaire
+                refreshBtn.textContent = '✅ Terminé';
+                setTimeout(() => {
+                    refreshBtn.textContent = '🔄 Mise à jour';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Erreur lors du rafraîchissement:', error);
+                refreshBtn.textContent = '❌ Erreur';
+                setTimeout(() => {
+                    refreshBtn.textContent = '🔄 Mise à jour';
+                }, 3000);
+            } finally {
                 refreshBtn.classList.remove('loading');
-                refreshBtn.textContent = '🔄 Mise à jour';
-            }, 1000);
+                refreshBtn.disabled = false;
+            }
         }
 
         // Rendu du dashboard principal

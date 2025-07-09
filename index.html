@@ -3,485 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRS - Analyse Structurée</title>
+    <title>Connexion - TRS Analyse</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .login-container {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        .header h1 {
-            font-size: 2.2em;
-            margin-bottom: 10px;
-            font-weight: 300;
-        }
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        .upload-section {
-            padding: 30px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
-            margin: 20px 0;
-        }
-        .file-input {
-            position: absolute;
-            opacity: 0;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            padding: 50px;
             width: 100%;
-            height: 100%;
-            cursor: pointer;
+            max-width: 400px;
+            text-align: center;
         }
-        .file-input-button {
+        .logo {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+        .title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .login-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 15px 30px;
             border: none;
-            border-radius: 25px;
+            border-radius: 10px;
             font-size: 1.1em;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .file-input-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        }
-        .filters-section {
-            padding: 20px 30px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #eee;
-        }
-        .filters-grid {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-        }
-        .filter-group label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-        }
-        .filter-group select, .filter-group input {
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s ease;
-        }
-        .filter-group select:focus, .filter-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        .summary-section {
-            padding: 20px 30px;
-            background: #e9ecef;
-            border-bottom: 1px solid #ddd;
-        }
-        .summary-grid {
-            display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
-        }
-        .summary-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            min-width: 220px;
-            flex: 1;
-        }
-        .summary-title {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-        }
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .summary-item:last-child {
-            border-bottom: none;
-            font-weight: bold;
-            color: #667eea;
-        }
-        .table-section {
-            padding: 30px;
-            overflow-x: auto;
-        }
-        .data-table {
             width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 10px;
         }
-        .data-table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.3);
         }
-        .data-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
+        .error-message {
+            color: #e74c3c;
+            margin-top: 15px;
+            font-size: 0.9em;
+            display: none;
         }
-        .data-table tr:hover {
-            background-color: #f8f9fa;
+        .success-message {
+            color: #27ae60;
+            margin-top: 15px;
+            font-size: 0.9em;
+            display: none;
         }
-        .data-table tr:nth-child(even) {
-            background-color: #fafafa;
-        }
-        .hours-cell {
-            font-weight: bold;
-            color: #667eea;
-        }
-        .no-data {
-            text-align: center;
-            padding: 50px;
-            color: #666;
-            font-size: 1.2em;
-        }
-        .loading {
-            text-align: center;
-            padding: 30px;
-            color: #667eea;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                border-radius: 10px;
-            }
-            .header h1 {
-                font-size: 2em;
-            }
-            .filters-grid, .summary-grid {
-                flex-direction: column;
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 20px;
+                padding: 30px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>TRS - Analyse Structurée</h1>
-            <p>Navigation : BU → Collaborateur → Missions</p>
-        </div>
-        <div class="upload-section" id="uploadSection">
-            <div class="file-input-wrapper">
-                <input type="file" id="csvFile" class="file-input" accept=".csv" />
-                <button class="file-input-button">📁 Choisir un fichier CSV</button>
+    <div class="login-container">
+        <div class="logo">📊</div>
+        <h1 class="title">TRS Analyse</h1>
+        <p class="subtitle">Tableau de bord des temps de réalisation</p>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Identifiant</label>
+                <input type="text" id="username" name="username" required>
             </div>
-            <p style="margin-top: 15px; color: #666;">
-                Sélectionnez votre fichier CSV exporté depuis Excel<br>
-                <span id="autoLoadMsg" style="color:#667eea;"></span>
-            </p>
-        </div>
-        <div class="filters-section">
-            <div class="filters-grid">
-                <div class="filter-group">
-                    <label for="moisFilter">Mois :</label>
-                    <select id="moisFilter"><option value="">Tous les mois</option></select>
-                </div>
-                <div class="filter-group">
-                    <label for="buFilter">Business Unit :</label>
-                    <select id="buFilter"><option value="">Toutes les BU</option></select>
-                </div>
-                <div class="filter-group">
-                    <label for="collaborateurFilter">Collaborateur :</label>
-                    <select id="collaborateurFilter"><option value="">Tous</option></select>
-                </div>
+            
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" required>
             </div>
+            
+            <button type="submit" class="login-btn">Se connecter</button>
+        </form>
+        
+        <div id="errorMessage" class="error-message">
+            Identifiant ou mot de passe incorrect
         </div>
-        <div class="summary-section" id="summarySection" style="display:none">
-            <div class="summary-grid" id="summaryGrid"></div>
-        </div>
-        <div class="table-section">
-            <div id="loading" class="loading" style="display: none;">
-                <div class="spinner"></div>
-                <p>Chargement des données...</p>
-            </div>
-            <div id="noData" class="no-data" style="display: none;">
-                <p>📋 Aucune donnée à afficher</p>
-                <p>Sélectionnez un fichier CSV pour commencer</p>
-            </div>
-            <table id="dataTable" class="data-table" style="display: none;"></table>
+        
+        <div id="successMessage" class="success-message">
+            Connexion réussie, redirection...
         </div>
     </div>
+
+    <script src="auth.js"></script>
     <script>
-        let allData = [];
-        let filteredData = [];
-        let currentBU = '';
-        let currentCollaborateur = '';
-        // DOM
-        const csvFileInput = document.getElementById('csvFile');
-        const dataTable = document.getElementById('dataTable');
-        const noData = document.getElementById('noData');
-        const loading = document.getElementById('loading');
-        const summarySection = document.getElementById('summarySection');
-        const summaryGrid = document.getElementById('summaryGrid');
-        const buFilter = document.getElementById('buFilter');
-        const collaborateurFilter = document.getElementById('collaborateurFilter');
-        const moisFilter = document.getElementById('moisFilter');
-        const uploadSection = document.getElementById('uploadSection');
-        const autoLoadMsg = document.getElementById('autoLoadMsg');
-
-        // Tentative de chargement automatique du CSV
-        window.addEventListener('DOMContentLoaded', () => {
-            showLoading();
-            fetch('données_TRS.csv')
-                .then(resp => {
-                    if (!resp.ok) throw new Error('Fichier non trouvé');
-                    return resp.text();
-                })
-                .then(csvText => {
-                    autoLoadMsg.textContent = 'Chargement automatique du fichier réussi !';
-                    parseCSV(csvText);
-                    uploadSection.style.display = 'none';
-                })
-                .catch(() => {
-                    autoLoadMsg.textContent = 'Chargement automatique impossible. Veuillez sélectionner le fichier manuellement.';
-                    hideLoading();
-                });
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        
+        // Vérifier si l'utilisateur est déjà connecté
+        if (Auth.isAuthenticated()) {
+            const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || 'dashboard.html';
+            sessionStorage.removeItem('redirectAfterLogin');
+            window.location.href = redirectUrl;
+        }
+        
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Vérification des identifiants avec le nouveau système
+            if (Auth.authenticateUser(username, password)) {
+                // Connexion réussie
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'block';
+                
+                // Redirection vers le dashboard ou l'URL sauvegardée
+                setTimeout(() => {
+                    const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || 'dashboard.html';
+                    sessionStorage.removeItem('redirectAfterLogin');
+                    window.location.href = redirectUrl;
+                }, 1000);
+            } else {
+                // Connexion échouée
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                document.getElementById('password').value = '';
+            }
         });
-
-        // Fichier CSV manuel
-        csvFileInput.addEventListener('change', handleFileUpload);
-        buFilter.addEventListener('change', () => {
-            currentBU = buFilter.value;
-            updateCollaborateurFilter();
-            currentCollaborateur = '';
-            collaborateurFilter.value = '';
-            displayStructured();
+        
+        // Permettre la connexion avec la touche Entrée
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginForm.dispatchEvent(new Event('submit'));
+            }
         });
-        collaborateurFilter.addEventListener('change', () => {
-            currentCollaborateur = collaborateurFilter.value;
-            displayStructured();
-        });
-        moisFilter.addEventListener('change', () => {
-            displayStructured();
-        });
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            showLoading();
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const csvText = e.target.result;
-                    parseCSV(csvText);
-                } catch (error) {
-                    hideLoading();
-                    showNoData();
-                }
-            };
-            reader.readAsText(file, 'UTF-8');
-        }
-        function parseCSV(csvText) {
-            const lines = csvText.split('\n').filter(line => line.trim() !== '');
-            if (lines.length === 0) {
-                hideLoading();
-                showNoData();
-                return;
-            }
-            const firstLine = lines[0];
-            let separator = ',';
-            if (firstLine.includes(';')) separator = ';';
-            else if (firstLine.includes('\t')) separator = '\t';
-            const headers = lines[0].split(separator).map(h => h.trim().replace(/"/g, ''));
-            allData = [];
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(separator).map(v => v.trim().replace(/"/g, ''));
-                if (values.length === headers.length && values.some(v => v !== '')) {
-                    const row = {};
-                    headers.forEach((header, index) => {
-                        row[header] = values[index] || '';
-                    });
-                    allData.push(row);
-                }
-            }
-            setupFiltersAndDisplay();
-        }
-        function setupFiltersAndDisplay() {
-            // Mois
-            const mois = [...new Set(allData.map(row => row['Mois'] || ''))].filter(m => m);
-            moisFilter.innerHTML = '<option value="">Tous les mois</option>';
-            mois.forEach(m => {
-                const option = document.createElement('option');
-                option.value = m;
-                option.textContent = m;
-                moisFilter.appendChild(option);
-            });
-            // BU
-            const bus = [...new Set(allData.map(row => row['BU'] || ''))].filter(b => b);
-            buFilter.innerHTML = '<option value="">Toutes les BU</option>';
-            bus.forEach(bu => {
-                const option = document.createElement('option');
-                option.value = bu;
-                option.textContent = bu;
-                buFilter.appendChild(option);
-            });
-            updateCollaborateurFilter();
-            displayStructured();
-            hideLoading();
-        }
-        function updateCollaborateurFilter() {
-            let data = allData;
-            if (buFilter.value) {
-                data = data.filter(row => row['BU'] === buFilter.value);
-            }
-            const collaborateurs = [...new Set(data.map(row => row['Nom'] || ''))].filter(c => c);
-            collaborateurFilter.innerHTML = '<option value="">Tous</option>';
-            collaborateurs.forEach(collab => {
-                const option = document.createElement('option');
-                option.value = collab;
-                option.textContent = collab;
-                collaborateurFilter.appendChild(option);
-            });
-        }
-        function displayStructured() {
-            filteredData = allData.filter(row => {
-                if (moisFilter.value && row['Mois'] !== moisFilter.value) return false;
-                if (buFilter.value && row['BU'] !== buFilter.value) return false;
-                if (collaborateurFilter.value && row['Nom'] !== collaborateurFilter.value) return false;
-                return true;
-            });
-            if (!buFilter.value) {
-                showSummaryByBU();
-                showNoTable();
-                return;
-            }
-            if (buFilter.value && !collaborateurFilter.value) {
-                showSummaryByCollaborateur();
-                showNoTable();
-                return;
-            }
-            if (buFilter.value && collaborateurFilter.value) {
-                showDetailMissions();
-                return;
-            }
-        }
-        function showSummaryByBU() {
-            summarySection.style.display = '';
-            summaryGrid.innerHTML = '';
-            const buMap = {};
-            filteredData.forEach(row => {
-                const bu = row['BU'] || 'Non défini';
-                const heures = parseFloat(row['Heures'] || 0);
-                if (!buMap[bu]) buMap[bu] = 0;
-                buMap[bu] += heures;
-            });
-            summaryGrid.innerHTML = Object.entries(buMap).map(([bu, heures]) => `
-                <div class="summary-card">
-                    <div class="summary-title">${bu}</div>
-                    <div class="summary-item"><span>Total heures</span><span>${heures.toFixed(1)}h</span></div>
-                    <div class="summary-item"><span>Collaborateurs</span><span>${[...new Set(filteredData.filter(r => r['BU'] === bu).map(r => r['Nom']))].length}</span></div>
-                </div>
-            `).join('');
-        }
-        function showSummaryByCollaborateur() {
-            summarySection.style.display = '';
-            summaryGrid.innerHTML = '';
-            const collabMap = {};
-            filteredData.forEach(row => {
-                const nom = row['Nom'] || 'Non défini';
-                const heures = parseFloat(row['Heures'] || 0);
-                if (!collabMap[nom]) collabMap[nom] = 0;
-                collabMap[nom] += heures;
-            });
-            summaryGrid.innerHTML = Object.entries(collabMap).map(([nom, heures]) => `
-                <div class="summary-card">
-                    <div class="summary-title">${nom}</div>
-                    <div class="summary-item"><span>Total heures</span><span>${heures.toFixed(1)}h</span></div>
-                    <div class="summary-item"><span>Missions</span><span>${[...new Set(filteredData.filter(r => r['Nom'] === nom).map(r => r['Missions']))].length}</span></div>
-                </div>
-            `).join('');
-        }
-        function showDetailMissions() {
-            summarySection.style.display = 'none';
-            dataTable.style.display = 'table';
-            noData.style.display = 'none';
-            const headers = ['Missions', 'Code Mission', 'Heures', 'Type Heure', 'Mois', 'Statut'];
-            let tableHTML = '<thead><tr>';
-            headers.forEach(header => {
-                tableHTML += `<th>${header}</th>`;
-            });
-            tableHTML += '</tr></thead><tbody>';
-            filteredData.forEach(row => {
-                tableHTML += '<tr>';
-                headers.forEach(header => {
-                    let value = row[header] || '';
-                    if (header === 'Heures') value = `<span class="hours-cell">${value}</span>`;
-                    tableHTML += `<td>${value}</td>`;
-                });
-                tableHTML += '</tr>';
-            });
-            tableHTML += '</tbody>';
-            dataTable.innerHTML = tableHTML;
-        }
-        function showNoTable() {
-            dataTable.style.display = 'none';
-            noData.style.display = 'none';
-        }
-        function showNoData() {
-            dataTable.style.display = 'none';
-            noData.style.display = 'block';
-            summarySection.style.display = 'none';
-        }
-        function showLoading() {
-            loading.style.display = 'block';
-            dataTable.style.display = 'none';
-            noData.style.display = 'none';
-            summarySection.style.display = 'none';
-        }
-        function hideLoading() {
-            loading.style.display = 'none';
-        }
     </script>
 </body>
 </html> 
