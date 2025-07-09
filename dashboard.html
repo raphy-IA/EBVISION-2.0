@@ -73,12 +73,15 @@
             background: #fff;
         }
         .filters-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.2);
             display: flex;
-            gap: 24px;
-            padding: 22px 36px 12px 36px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #eee;
             flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
         }
         .filter-group {
             display: flex;
@@ -447,13 +450,9 @@
         .filters-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(102,126,234,0.2);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: center;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.07);
         }
 
         .filters-section .filter-group {
@@ -476,30 +475,25 @@
         .filters-section select,
         .filters-section input[type="date"] {
             padding: 10px 14px;
-            border: 2px solid rgba(255,255,255,0.2);
+            border: 2px solid #ddd;
             border-radius: 8px;
-            background: rgba(255,255,255,0.95);
+            background: #fff;
             color: #495057;
             font-size: 0.9em;
             min-width: 160px;
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
         }
 
         .filters-section select:focus,
         .filters-section input[type="date"]:focus {
             outline: none;
-            border-color: white;
-            box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
-            background: white;
-            transform: translateY(-1px);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
         }
 
         .filters-section select:hover,
         .filters-section input[type="date"]:hover {
-            border-color: white;
-            background: white;
-            transform: translateY(-1px);
+            border-color: #667eea;
         }
 
         .filters-section select option {
@@ -508,25 +502,40 @@
             padding: 8px;
         }
 
-        /* Styles pour les filtres généraux */
-        .filters-bar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(102,126,234,0.15);
+        /* Styles pour les filtres généraux avec alignement horizontal */
+        .filters-row {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
-            align-items: center;
+            align-items: flex-end;
+        }
+
+        .filters-row .filter-group {
+            flex: 1 1 220px;
+            min-width: 180px;
+            max-width: 260px;
+        }
+
+        @media (max-width: 900px) {
+            .filters-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filters-row .filter-group {
+                max-width: 100%;
+                min-width: 0;
+                flex: 1 1 100%;
+            }
         }
 
         .filters-bar .filter-group {
             display: flex;
             flex-direction: column;
             gap: 8px;
-            min-width: 160px;
-            flex: 1;
+            flex: 0 1 220px;
+            min-width: 180px;
+            max-width: 260px;
+            margin-bottom: 0;
         }
 
         .filters-bar label {
@@ -539,7 +548,7 @@
         }
 
         .filters-bar select,
-        .filters-bar input {
+        .filters-bar input[type="date"] {
             padding: 10px 14px;
             border: 2px solid rgba(255,255,255,0.2);
             border-radius: 8px;
@@ -547,12 +556,13 @@
             color: #495057;
             font-size: 0.9em;
             min-width: 160px;
+            box-sizing: border-box;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
         }
 
         .filters-bar select:focus,
-        .filters-bar input:focus {
+        .filters-bar input[type="date"]:focus {
             outline: none;
             border-color: white;
             box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
@@ -561,7 +571,7 @@
         }
 
         .filters-bar select:hover,
-        .filters-bar input:hover {
+        .filters-bar input[type="date"]:hover {
             border-color: white;
             background: white;
             transform: translateY(-1px);
@@ -576,11 +586,30 @@
         .filters-bar .date-range {
             display: flex;
             gap: 10px;
+            width: 100%;
+            min-width: 220px;
+            max-width: 320px;
         }
 
         .filters-bar .date-range input {
             flex: 1;
         }
+
+        @media (max-width: 700px) {
+            .filters-bar {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .filters-bar .filter-group {
+                max-width: 100%;
+                min-width: 0;
+            }
+            .filters-bar .date-range {
+                max-width: 100%;
+                min-width: 0;
+            }
+        }
+
 
 
     </style>
@@ -612,50 +641,52 @@
 
 
         <!-- Filtres généraux pour les onglets TRS -->
-        <div class="filters-bar" id="general-filters">
+        <div class="filters-section" id="general-filters">
+          <div class="filters-row">
             <div class="filter-group">
-                <label for="yearFilter">Année</label>
-                <select id="yearFilter">
-                    <option value="">Toutes les années</option>
-                </select>
+              <label for="yearFilter">Année</label>
+              <select id="yearFilter">
+                <option value="">Toutes les années</option>
+              </select>
             </div>
             <div class="filter-group">
-                <label for="monthFilter">Mois</label>
-                <select id="monthFilter">
-                    <option value="">Tous les mois</option>
-                </select>
+              <label for="monthFilter">Mois</label>
+              <select id="monthFilter">
+                <option value="">Tous les mois</option>
+              </select>
+            </div>
+            <div class="filter-group" style="flex:2;min-width:220px;max-width:320px;">
+              <label for="startDate">Période personnalisée</label>
+              <div style="display:flex;gap:10px;">
+                <input type="date" id="startDate" placeholder="Date début" style="flex:1;">
+                <input type="date" id="endDate" placeholder="Date fin" style="flex:1;">
+              </div>
             </div>
             <div class="filter-group">
-                <label for="startDate">Période personnalisée</label>
-                <div class="date-range">
-                    <input type="date" id="startDate" placeholder="Date début">
-                    <input type="date" id="endDate" placeholder="Date fin">
-                </div>
+              <label for="buFilter">Pôle</label>
+              <select id="buFilter">
+                <option value="">Tous les pôles</option>
+              </select>
             </div>
             <div class="filter-group">
-                <label for="buFilter">Pôle</label>
-                <select id="buFilter">
-                    <option value="">Tous les pôles</option>
-                </select>
+              <label for="collabFilter">Collaborateur</label>
+              <select id="collabFilter">
+                <option value="">Tous les collaborateurs</option>
+              </select>
             </div>
             <div class="filter-group">
-                <label for="collabFilter">Collaborateur</label>
-                <select id="collabFilter">
-                    <option value="">Tous les collaborateurs</option>
-                </select>
+              <label for="missionFilter">Mission</label>
+              <select id="missionFilter">
+                <option value="">Toutes les missions</option>
+              </select>
             </div>
             <div class="filter-group">
-                <label for="missionFilter">Mission</label>
-                <select id="missionFilter">
-                    <option value="">Toutes les missions</option>
-                </select>
+              <label for="typeHeureFilter">Type d'heure</label>
+              <select id="typeHeureFilter">
+                <option value="">Tous les types</option>
+              </select>
             </div>
-            <div class="filter-group">
-                <label for="typeHeureFilter">Type d'heure</label>
-                <select id="typeHeureFilter">
-                    <option value="">Tous les types</option>
-                </select>
-            </div>
+          </div>
         </div>
 
         <!-- Dashboard Tab -->
@@ -803,7 +834,17 @@
                 // Initialiser l'interface
                 setupFilters();
                 
-
+                // S'assurer que les filtres généraux sont correctement masqués/affichés au démarrage
+                const generalFilters = document.getElementById('general-filters');
+                if (generalFilters) {
+                    if (currentTab === 'facturation' || currentTab === 'opportunites') {
+                        generalFilters.style.display = 'none';
+                        console.log('Initialisation: Filtres généraux masqués pour:', currentTab);
+                    } else {
+                        generalFilters.style.display = 'block';
+                        console.log('Initialisation: Filtres généraux affichés pour:', currentTab);
+                    }
+                }
                 
                 applyFilters();
                 console.log('Interface initialisée');
@@ -949,9 +990,13 @@
                 if (generalFilters) {
                     if (currentTab === 'facturation' || currentTab === 'opportunites') {
                         generalFilters.style.display = 'none';
+                        console.log('updateFiltersForCurrentTab: Filtres généraux masqués pour:', currentTab);
                     } else {
                         generalFilters.style.display = 'block';
+                        console.log('updateFiltersForCurrentTab: Filtres généraux affichés pour:', currentTab);
                     }
+                } else {
+                    console.error('updateFiltersForCurrentTab: Élément general-filters non trouvé');
                 }
                 
                 // Si ce n'est pas l'onglet facturation ou opportunités, mettre à jour les filtres TRS
@@ -1104,12 +1149,10 @@
                     return;
                 }
                 
-                // Ancienne logique de filtrage (gardée pour compatibilité)
+                // Logique de filtrage pour les autres onglets
                 filteredData = sourceData.filter(row => {
                     let yearFilter = document.getElementById('yearFilter')?.value || '';
                     let monthFilter = document.getElementById('monthFilter')?.value || '';
-                    let startDate = document.getElementById('startDate')?.value || '';
-                    let endDate = document.getElementById('endDate')?.value || '';
                     let buFilter = document.getElementById('buFilter')?.value || '';
                     let collabFilter = document.getElementById('collabFilter')?.value || '';
                     let missionFilter = document.getElementById('missionFilter')?.value || '';
@@ -1121,12 +1164,10 @@
                         let rowYear = '';
                         
                         if (rowDate) {
-                            // Vérifier si c'est au format DD/MM/YYYY
                             let match = rowDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                             if (match) {
                                 rowYear = match[3];
                             } else {
-                                // Fallback pour l'ancien format
                                 let normalizedRowDate = normalizeDate(rowDate);
                                 rowYear = extractYearFromDate(normalizedRowDate);
                             }
@@ -1135,7 +1176,7 @@
                                 return false;
                             }
                         } else {
-                            return false; // Pas de date
+                            return false;
                         }
                     }
                     
@@ -1145,12 +1186,10 @@
                         let rowMonth = '';
                         
                         if (rowDate) {
-                            // Vérifier si c'est au format DD/MM/YYYY
                             let match = rowDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                             if (match) {
                                 rowMonth = match[2];
                             } else {
-                                // Fallback pour l'ancien format
                                 let normalizedRowDate = normalizeDate(rowDate);
                                 rowMonth = extractMonthFromDate(normalizedRowDate);
                             }
@@ -1159,11 +1198,11 @@
                                 return false;
                             }
                         } else {
-                            return false; // Pas de date
+                            return false;
                         }
                     }
                     
-                    // Filtres spécifiques - toujours utiliser les colonnes TRS
+                    // Filtres spécifiques
                     if (buFilter && row['Division'] !== buFilter) {
                         return false;
                     }
@@ -1256,9 +1295,13 @@
                     if (generalFilters) {
                         if (currentTab === 'facturation' || currentTab === 'opportunites') {
                             generalFilters.style.display = 'none';
+                            console.log('Filtres généraux masqués pour:', currentTab);
                         } else {
                             generalFilters.style.display = 'block';
+                            console.log('Filtres généraux affichés pour:', currentTab);
                         }
+                    } else {
+                        console.error('Élément general-filters non trouvé');
                     }
                     
                     // Mettre à jour les filtres pour le nouvel onglet
@@ -3315,6 +3358,80 @@
 
         // Chargement initial
         loadAllCSVs();
+
+        // Ajout d'un observer pour détecter toute modification du style du filtre général
+        function observeGeneralFilters() {
+            const generalFilters = document.getElementById('general-filters');
+            if (!generalFilters) return;
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach(mutation => {
+                    if (mutation.attributeName === 'style') {
+                        console.log('[DEBUG] MutationObserver: general-filters style changed:', generalFilters.style.display);
+                    }
+                });
+            });
+            observer.observe(generalFilters, { attributes: true, attributeFilter: ['style'] });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            observeGeneralFilters();
+        });
+
+        // Forçage du masquage après chaque rendu d'onglet personnalisé
+        function forceHideGeneralFiltersIfNeeded() {
+            const generalFilters = document.getElementById('general-filters');
+            if (generalFilters && (currentTab === 'facturation' || currentTab === 'opportunites')) {
+                generalFilters.style.display = 'none';
+                console.log('[DEBUG] Forçage: general-filters masqué pour', currentTab);
+            }
+        }
+
+        // Ajoutons ce forçage après chaque rendu d'onglet
+        function renderCurrentTab() {
+            console.log('renderCurrentTab - currentTab:', currentTab);
+            console.log('renderCurrentTab - filteredData.length:', filteredData.length);
+            if (window.isRenderingTab) {
+                console.log('Rendu d\'onglet déjà en cours, ignoré');
+                return;
+            }
+            window.isRenderingTab = true;
+            try {
+                switch (currentTab) {
+                    case 'dashboard':
+                        renderDashboard();
+                        break;
+                    case 'missions':
+                        renderMissionsTab();
+                        break;
+                    case 'facturation':
+                        renderFacturationTab();
+                        break;
+                    case 'rentabilite':
+                        renderRentabiliteTab();
+                        break;
+                    case 'performance':
+                        renderPerformanceTab();
+                        break;
+                    case 'opportunites':
+                        renderOpportunitesTab();
+                        break;
+                    default:
+                        renderDashboard();
+                }
+                // Forçage du masquage après chaque rendu
+                forceHideGeneralFiltersIfNeeded();
+            } finally {
+                window.isRenderingTab = false;
+            }
+        }
+
+        // DEBUG : log de la largeur du parent de #general-filters
+        window.addEventListener('DOMContentLoaded', () => {
+            const gf = document.getElementById('general-filters');
+            if (gf && gf.parentElement) {
+                console.log('[DEBUG] Largeur parent de #general-filters:', gf.parentElement.offsetWidth + 'px');
+            }
+        });
     </script>
 </body>
 </html> 
