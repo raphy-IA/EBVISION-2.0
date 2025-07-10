@@ -938,12 +938,26 @@
                     return;
                 }
                 
+                console.log('setupFilters - Données disponibles:', {
+                    trs: trsData.length,
+                    factures: facturesData.length,
+                    opportunites: opportunitesData.length
+                });
+                
                 // Collecter toutes les dates de tous les fichiers
                 let allDates = [];
                 
-                // Dates TRS
-                let trsDates = trsData.map(row => row['Mois']).filter(d => d);
-                allDates = allDates.concat(trsDates);
+                // Dates TRS - vérifier plusieurs champs possibles
+                if (trsData && trsData.length > 0) {
+                    // Chercher dans différents champs de dates
+                    let trsDates = [];
+                    trsData.forEach(row => {
+                        if (row['Mois']) trsDates.push(row['Mois']);
+                        if (row['Date']) trsDates.push(row['Date']);
+                        if (row['Date Insertion']) trsDates.push(row['Date Insertion']);
+                    });
+                    allDates = allDates.concat(trsDates.filter(d => d));
+                }
                 
                 // Dates Factures
                 if (facturesData && facturesData.length > 0) {
@@ -956,6 +970,8 @@
                     let opportunitesDates = opportunitesData.map(row => row['Date Insertion']).filter(d => d);
                     allDates = allDates.concat(opportunitesDates);
                 }
+                
+                console.log('setupFilters - Dates trouvées:', allDates.length);
                 
                 // Extraire directement les années et mois des dates DD/MM/YYYY
                 let years = [];
@@ -976,6 +992,9 @@
                 // Dédupliquer et trier
                 years = [...new Set(years)].filter(y => y).sort();
                 months = [...new Set(months)].filter(m => m).sort();
+                
+                console.log('setupFilters - Années trouvées:', years);
+                console.log('setupFilters - Mois trouvés:', months);
                 
                 // Remplir les filtres généraux
                 fillSelect(document.getElementById('yearFilter'), years, 'Toutes les années');
@@ -1004,6 +1023,8 @@
             window.isUpdatingFilters = true;
             
             try {
+                console.log('updateFiltersForCurrentTab - onglet actuel:', currentTab);
+                
                 // Masquer/Afficher les filtres généraux selon l'onglet
                 const generalFilters = document.getElementById('general-filters');
                 if (generalFilters) {
@@ -1016,6 +1037,66 @@
                 
                 // Si ce n'est pas l'onglet facturation ou opportunités, mettre à jour les filtres TRS
                 if (currentTab !== 'facturation' && currentTab !== 'opportunites') {
+                    // Recharger les années et mois
+                    let allDates = [];
+                    
+                    // Dates TRS - vérifier plusieurs champs possibles
+                    if (trsData && trsData.length > 0) {
+                        let trsDates = [];
+                        trsData.forEach(row => {
+                            if (row['Mois']) trsDates.push(row['Mois']);
+                            if (row['Date']) trsDates.push(row['Date']);
+                            if (row['Date Insertion']) trsDates.push(row['Date Insertion']);
+                        });
+                        allDates = allDates.concat(trsDates.filter(d => d));
+                    }
+                    
+                    // Dates Factures
+                    if (facturesData && facturesData.length > 0) {
+                        let facturesDates = facturesData.map(row => row['Date']).filter(d => d);
+                        allDates = allDates.concat(facturesDates);
+                    }
+                    
+                    // Dates Opportunités
+                    if (opportunitesData && opportunitesData.length > 0) {
+                        let opportunitesDates = opportunitesData.map(row => row['Date Insertion']).filter(d => d);
+                        allDates = allDates.concat(opportunitesDates);
+                    }
+                    
+                    // Extraire années et mois
+                    let years = [];
+                    let months = [];
+                    
+                    allDates.forEach(dateStr => {
+                        let match = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                        if (match) {
+                            let jour = match[1];
+                            let mois = match[2];
+                            let annee = match[3];
+                            years.push(annee);
+                            months.push(mois);
+                        }
+                    });
+                    
+                    // Dédupliquer et trier
+                    years = [...new Set(years)].filter(y => y).sort();
+                    months = [...new Set(months)].filter(m => m).sort();
+                    
+                    console.log('updateFiltersForCurrentTab - Années trouvées:', years);
+                    console.log('updateFiltersForCurrentTab - Mois trouvés:', months);
+                    
+                    // Remplir les filtres année et mois
+                    fillSelect(document.getElementById('yearFilter'), years, 'Toutes les années');
+                    fillSelect(document.getElementById('monthFilter'), months, 'Tous les mois', (month) => {
+                        const moisNoms = {
+                            '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                            '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                            '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                        };
+                        return moisNoms[month] || month;
+                    });
+                    
+                    // Mettre à jour les autres filtres
                     let bus = [];
                     let collabs = [];
                     let missions = [];
@@ -3511,6 +3592,8 @@
                     <input type="date" id="endDate" placeholder="Date fin" style="flex:1;">
                 </div>
             </div>
+          </div>
+          <div class="filters-row" style="margin-top: 15px;">
             <div class="filter-group">
                 <label for="buFilter">Pôle</label>
                 <select id="buFilter"><option value="">Tous les pôles</option></select>
@@ -3533,13 +3616,22 @@
 
         // Nouvelle version centralisée de updateFiltersVisibility
         function updateFiltersVisibility() {
+            console.log('updateFiltersVisibility appelée pour onglet:', currentTab);
+            
             // Onglets où le bloc général-filters doit être présent UNIQUEMENT
             const tabsWithGeneralFilters = ['dashboard', 'missions', 'rentabilite', 'performance'];
             const generalFilters = document.getElementById('general-filters');
+            
             if (!tabsWithGeneralFilters.includes(currentTab)) {
-                if (generalFilters) generalFilters.remove();
+                // Onglet avec filtres personnalisés - supprimer le bloc général
+                if (generalFilters) {
+                    console.log('Suppression du bloc general-filters pour onglet:', currentTab);
+                    generalFilters.remove();
+                }
             } else {
+                // Onglet avec filtres généraux - s'assurer que le bloc existe
                 if (!generalFilters) {
+                    console.log('Ajout du bloc general-filters pour onglet:', currentTab);
                     const tabs = document.querySelector('.tabs');
                     if (tabs) {
                         tabs.insertAdjacentHTML('afterend', generalFiltersHTML);
@@ -3612,6 +3704,10 @@
             refreshBtn.textContent = '🔄 Chargement...';
             refreshBtn.disabled = true;
             try {
+                // Sauvegarder l'onglet actuel
+                const currentTabBeforeRefresh = currentTab;
+                console.log('Rafraîchissement - onglet avant:', currentTabBeforeRefresh);
+                
                 trsData = [];
                 missionsData = [];
                 facturesData = [];
@@ -3621,7 +3717,11 @@
                 filteredData = [];
                 await loadAllCSVs();
                 setupFilters();
-                updateFiltersVisibility(); // Toujours ici, avant le rendu
+                
+                // Restaurer l'onglet actuel avant de mettre à jour les filtres
+                currentTab = currentTabBeforeRefresh;
+                console.log('Rafraîchissement - onglet restauré:', currentTab);
+                updateFiltersVisibility(); // Maintenant avec le bon onglet
                 renderCurrentTab();
             } catch (error) {
                 console.error('Erreur lors du rafraîchissement:', error);
