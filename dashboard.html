@@ -3548,7 +3548,8 @@
 
         // ===== ONGLET FEUILLES DE TEMPS =====
         function renderFeuillesTab() {
-            if (!filteredData.length) {
+            console.log('renderFeuillesTab appelée');
+            if (!trsData.length) {
                 document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
                 return;
             }
@@ -3565,35 +3566,176 @@
                 // 1. Récupérer les selects
                 const divisionSelect = document.getElementById('feuilles-division-filter');
                 const collabSelect = document.getElementById('feuilles-collab-filter');
+                
+                // Restaurer les valeurs sauvegardées
+                const savedDivision = sessionStorage.getItem('feuilles-division-filter');
+                const savedCollab = sessionStorage.getItem('feuilles-collab-filter');
+                
+                console.log('Valeurs sauvegardées:', { savedDivision, savedCollab });
+                
                 // Sauvegarder la sélection AVANT de remplir les selects
-                const previousDivision = divisionSelect.value;
-                const previousCollab = collabSelect.value;
+                const previousDivision = savedDivision !== null ? savedDivision : '';
+                const previousCollab = savedCollab !== null ? savedCollab : '';
                 // 2. Remplir la liste des pôles
                 const divisions = [...new Set(trsData.map(row => row['Division']).filter(Boolean))].sort();
                 divisionSelect.innerHTML = '<option value="">Tous les pôles</option>' + divisions.map(d => `<option value="${d}">${d}</option>`).join('');
-                if (previousDivision && divisions.includes(previousDivision)) divisionSelect.value = previousDivision;
+                
+                // Valider et restaurer la valeur de division
+                if (previousDivision && previousDivision !== '' && divisions.includes(previousDivision)) {
+                    divisionSelect.value = previousDivision;
+                    console.log('Valeur division restaurée:', previousDivision);
+                } else if (previousDivision && previousDivision !== '') {
+                    // Si la valeur sauvegardée n'est plus valide, la supprimer
+                    sessionStorage.removeItem('feuilles-division-filter');
+                    console.log('Valeur division invalide supprimée:', previousDivision);
+                    divisionSelect.value = '';
+                } else {
+                    // S'assurer que la valeur est vide si aucune valeur sauvegardée
+                    divisionSelect.value = '';
+                }
+                
+                // S'assurer que la valeur est bien affichée
+                console.log('Valeur division finale:', divisionSelect.value);
+                console.log('Options division disponibles:', Array.from(divisionSelect.options).map(opt => opt.value));
+                
+                // Forcer la mise à jour visuelle de l'interface
+                if (divisionSelect.value) {
+                    const savedValue = divisionSelect.value; // Sauvegarder la valeur
+                    requestAnimationFrame(() => {
+                        // Réinitialiser toutes les options
+                        Array.from(divisionSelect.options).forEach(option => {
+                            option.selected = false;
+                        });
+                        // Sélectionner la bonne option
+                        const targetOption = Array.from(divisionSelect.options).find(opt => opt.value === savedValue);
+                        if (targetOption) {
+                            targetOption.selected = true;
+                        }
+                        console.log('Valeur division forcée après animation frame:', savedValue);
+                    });
+                }
                 // 3. Remplir la liste des collaborateurs selon le pôle sélectionné
-                const selectedDivision = divisionSelect.value;
+                let selectedDivision = divisionSelect.value;
                 let collaborateurs = trsData
                     .filter(row => !selectedDivision || row['Division'] === selectedDivision)
                     .map(row => row['Nom'])
                     .filter(Boolean);
                 collaborateurs = [...new Set(collaborateurs)].sort();
                 collabSelect.innerHTML = '<option value="">Tous les collaborateurs</option>' + collaborateurs.map(c => `<option value="${c}">${c}</option>`).join('');
-                if (previousCollab && collaborateurs.includes(previousCollab)) collabSelect.value = previousCollab;
-                // 4. Listeners (toujours réinitialisés)
-                divisionSelect.onchange = () => {
-                    renderFeuillesTab();
+                
+                // Valider et restaurer la valeur de collaborateur
+                if (previousCollab && previousCollab !== '' && collaborateurs.includes(previousCollab)) {
+                    collabSelect.value = previousCollab;
+                    console.log('Valeur collaborateur restaurée:', previousCollab);
+                } else if (previousCollab && previousCollab !== '') {
+                    // Si la valeur sauvegardée n'est plus valide, la supprimer
+                    sessionStorage.removeItem('feuilles-collab-filter');
+                    console.log('Valeur collaborateur invalide supprimée:', previousCollab);
+                    collabSelect.value = '';
+                } else {
+                    // S'assurer que la valeur est vide si aucune valeur sauvegardée
+                    collabSelect.value = '';
+                }
+                
+                // S'assurer que la valeur est bien affichée
+                console.log('Valeur collaborateur finale:', collabSelect.value);
+                console.log('Options collaborateur disponibles:', Array.from(collabSelect.options).map(opt => opt.value));
+                
+                // Forcer la mise à jour visuelle de l'interface
+                if (collabSelect.value) {
+                    const savedValue = collabSelect.value; // Sauvegarder la valeur
+                    requestAnimationFrame(() => {
+                        // Réinitialiser toutes les options
+                        Array.from(collabSelect.options).forEach(option => {
+                            option.selected = false;
+                        });
+                        // Sélectionner la bonne option
+                        const targetOption = Array.from(collabSelect.options).find(opt => opt.value === savedValue);
+                        if (targetOption) {
+                            targetOption.selected = true;
+                        }
+                        console.log('Valeur collaborateur forcée après animation frame:', savedValue);
+                    });
+                }
+                // 4. Listeners - utiliser la délégation d'événements au niveau du document
+                // Supprimer les anciens listeners s'ils existent
+                if (window.feuiillesDivisionHandler) {
+                    document.removeEventListener('change', window.feuiillesDivisionHandler);
+                }
+                if (window.feuiillesCollabHandler) {
+                    document.removeEventListener('change', window.feuiillesCollabHandler);
+                }
+                
+                // Créer de nouveaux handlers avec délégation d'événements
+                window.feuiillesDivisionHandler = (event) => {
+                    if (event.target.id === 'feuilles-division-filter') {
+                        console.log('Filtre division changé:', event.target.value);
+                        // Sauvegarder la valeur (même si c'est vide pour "Tous")
+                        if (event.target.value === '') {
+                            sessionStorage.removeItem('feuilles-division-filter');
+                        } else {
+                            sessionStorage.setItem('feuilles-division-filter', event.target.value);
+                        }
+                        renderFeuillesTab();
+                    }
                 };
-                collabSelect.onchange = () => {
-                    renderFeuillesTab();
+                window.feuiillesCollabHandler = (event) => {
+                    if (event.target.id === 'feuilles-collab-filter') {
+                        console.log('Filtre collaborateur changé:', event.target.value);
+                        // Sauvegarder la valeur (même si c'est vide pour "Tous")
+                        if (event.target.value === '') {
+                            sessionStorage.removeItem('feuilles-collab-filter');
+                        } else {
+                            sessionStorage.setItem('feuilles-collab-filter', event.target.value);
+                        }
+                        renderFeuillesTab();
+                    }
                 };
+                
+                // Attacher les listeners au document
+                document.addEventListener('change', window.feuiillesDivisionHandler);
+                document.addEventListener('change', window.feuiillesCollabHandler);
+                
+                // Debug - vérifier que les éléments existent
+                console.log('Éléments des filtres trouvés:', {
+                    divisionSelect: !!divisionSelect,
+                    collabSelect: !!collabSelect,
+                    divisionValue: divisionSelect.value,
+                    collabValue: collabSelect.value
+                });
+                
+                // Debug - vérifier les valeurs après restauration
+                console.log('Valeurs finales des filtres:', {
+                    divisionValue: divisionSelect.value,
+                    collabValue: collabSelect.value,
+                    previousDivision,
+                    previousCollab
+                });
                 // 5. Lire les valeurs sélectionnées APRÈS avoir rempli les selects
+                selectedDivision = divisionSelect.value;
                 const selectedCollab = collabSelect.value;
+                
+                console.log('Valeurs sélectionnées après remplissage:', { selectedDivision, selectedCollab });
+                
                 let collaborateursAffiches = collaborateurs;
-                if (selectedCollab) {
+                if (selectedCollab && selectedCollab !== '') {
                     collaborateursAffiches = [selectedCollab];
                 }
+                
+                // Filtrer les données selon les filtres personnalisés
+                console.log('Filtres appliqués - Division:', selectedDivision, 'Collaborateur:', selectedCollab);
+                let donneesFiltrees = trsData.filter(row => {
+                    // Filtre par division (seulement si une valeur est sélectionnée)
+                    if (selectedDivision && selectedDivision !== '' && row['Division'] !== selectedDivision) {
+                        return false;
+                    }
+                    // Filtre par collaborateur (seulement si une valeur est sélectionnée)
+                    if (selectedCollab && selectedCollab !== '' && row['Nom'] !== selectedCollab) {
+                        return false;
+                    }
+                    return true;
+                });
+                console.log('Données filtrées:', donneesFiltrees.length, 'sur', trsData.length, 'total');
                 // Extraire la liste unique des mois (inchangée)
                 const mois = [...new Set(trsData.map(row => row['Mois']).filter(Boolean))].sort((a, b) => {
                     const [ma, ya] = a.split('/').map(Number);
@@ -3602,7 +3744,7 @@
                 });
                 // Construire un mapping (collaborateur, mois) => statut (prendre le premier trouvé)
                 const statutMap = {};
-                trsData.forEach(row => {
+                donneesFiltrees.forEach(row => {
                     const nom = row['Nom'];
                     const moisVal = row['Mois'];
                     const statut = row['Statut'] || '';
@@ -3642,7 +3784,7 @@
                                 displayText = "En cours d'édition";
                                 color = 'background:#d4edda;color:#155724;font-weight:bold;'; // vert clair
                             } else {
-                                const totalHeures = trsData.filter(row => row['Nom'] === nom && row['Mois'] === moisVal)
+                                const totalHeures = donneesFiltrees.filter(row => row['Nom'] === nom && row['Mois'] === moisVal)
                                     .reduce((sum, row) => sum + (parseFloat(row['Heures'].replace(',', '.')) || 0), 0);
                                 if (totalHeures === 0) {
                                     displayText = 'Non Rempli';
@@ -3745,9 +3887,11 @@
             
             // Onglets où le bloc général-filters doit être présent UNIQUEMENT
             const tabsWithGeneralFilters = ['dashboard', 'missions', 'rentabilite', 'performance'];
+            // Onglets avec filtres personnalisés (pas de filtres généraux)
+            const tabsWithCustomFilters = ['facturation', 'opportunites', 'feuilles'];
             const generalFilters = document.getElementById('general-filters');
             
-            if (!tabsWithGeneralFilters.includes(currentTab)) {
+            if (tabsWithCustomFilters.includes(currentTab)) {
                 // Onglet avec filtres personnalisés - supprimer le bloc général
                 if (generalFilters) {
                     console.log('Suppression du bloc general-filters pour onglet:', currentTab);
