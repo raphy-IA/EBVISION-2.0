@@ -93,7 +93,7 @@
         @media (max-width: 480px) {
             .login-container {
                 margin: 20px;
-                padding: 30px;
+            padding: 30px;
             }
         }
     </style>
@@ -132,7 +132,7 @@
         const loginForm = document.getElementById('loginForm');
         const errorMessage = document.getElementById('errorMessage');
         const successMessage = document.getElementById('successMessage');
-        
+
         // Vérifier si l'utilisateur est déjà connecté
         if (Auth.isAuthenticated()) {
             const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || 'dashboard.html';
@@ -170,7 +170,7 @@
         document.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 loginForm.dispatchEvent(new Event('submit'));
-            }
+        }
         });
     </script>
 </body>

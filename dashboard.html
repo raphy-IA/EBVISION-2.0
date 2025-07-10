@@ -1433,8 +1433,8 @@
             } catch (error) {
                 console.error('Erreur lors du rafraîchissement:', error);
                 refreshBtn.textContent = '❌ Erreur';
-                setTimeout(() => {
-                    refreshBtn.textContent = '🔄 Mise à jour';
+            setTimeout(() => {
+                refreshBtn.textContent = '🔄 Mise à jour';
                 }, 3000);
             } finally {
                 refreshBtn.classList.remove('loading');
@@ -1939,207 +1939,227 @@
         // ===== ONGLET FACTURATION =====
         function renderFacturationTab() {
             console.debug('renderFacturationTab called');
+            console.log('renderFacturationTab - facturesData.length:', facturesData.length);
+            
+            // Nettoyer les filtres invalides
+            cleanInvalidFacturationFilters();
+            
             try {
-                if (!facturesData.length) {
-                    document.getElementById('tab-facturation').innerHTML = '<div class="no-data">Aucune donnée de facturation disponible</div>';
-                    return;
-                }
-                let filteredFactures = applyFacturationFilters();
+            if (!facturesData.length) {
+                document.getElementById('tab-facturation').innerHTML = '<div class="no-data">Aucune donnée de facturation disponible</div>';
+                return;
+            }
+            let filteredFactures = applyFacturationFilters();
+                console.log('renderFacturationTab - filteredFactures.length:', filteredFactures.length);
                 if (!filteredFactures.length) {
                     document.getElementById('tab-facturation').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
                     return;
                 }
-                let facturationStats = calculateFacturationStats(filteredFactures);
+            let facturationStats = calculateFacturationStats(filteredFactures);
                 let alertHTML = '';
                 if (facturationStats.invalids > 0) {
                     alertHTML = `<div style='color:#b00;background:#ffe5e5;padding:8px 12px;margin-bottom:10px;border-radius:5px;'>Attention : ${facturationStats.invalids} valeur(s) non numérique(s) détectée(s) dans les montants. Vérifiez votre CSV.</div>`;
                 }
 
-                let facturationHTML = `
-                    <div class="filters-section">
+            let facturationHTML = `
+                <div class="filters-section">
                         <div class="filters-row">
-                        <div class="filter-group">
-                            <label>Client:</label>
-                            <select id="facturation-client-filter">
-                                <option value="">Tous</option>
-                                ${[...new Set(facturesData.map(f => f['Client']).filter(Boolean))].sort().map(client => 
-                                    `<option value="${client}">${client}</option>`
-                                ).join('')}
-                            </select>
+                    <div class="filter-group">
+                        <label>Client:</label>
+                        <select id="facturation-client-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['Client']).filter(Boolean))].sort().map(client => 
+                                `<option value="${client}">${client}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Division:</label>
+                        <select id="facturation-division-filter">
+                            <option value="">Toutes</option>
+                            ${[...new Set(facturesData.map(f => f['Division']).filter(Boolean))].sort().map(div => 
+                                `<option value="${div}">${div}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Manager:</label>
+                        <select id="facturation-manager-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['Manager']).filter(Boolean))].sort().map(manager => 
+                                `<option value="${manager}">${manager}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Partner:</label>
+                        <select id="facturation-partner-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['Partner']).filter(Boolean))].sort().map(partner => 
+                                `<option value="${partner}">${partner}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>État:</label>
+                        <select id="facturation-etat-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['État']).filter(Boolean))].sort().map(etat => 
+                                `<option value="${etat}">${etat}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Année:</label>
+                        <select id="facturation-annee-filter">
+                            <option value="">Toutes</option>
+                            ${[...new Set(facturesData.map(f => {
+                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[3] : '';
+                            }).filter(annee => annee))].sort().map(annee => 
+                                `<option value="${annee}">${annee}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Mois:</label>
+                        <select id="facturation-mois-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => {
+                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[2] : '';
+                            }).filter(mois => mois))].sort().map(mois => {
+                                const moisNoms = {
+                                    '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                                    '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                                    '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                                };
+                                return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group" style="flex: 2;">
+                        <label>Période personnalisée:</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="date" id="facturation-date-debut" placeholder="Date début" style="flex: 1;">
+                            <input type="date" id="facturation-date-fin" placeholder="Date fin" style="flex: 1;">
                         </div>
-                        <div class="filter-group">
-                            <label>Division:</label>
-                            <select id="facturation-division-filter">
-                                <option value="">Toutes</option>
-                                ${[...new Set(facturesData.map(f => f['Division']).filter(Boolean))].sort().map(div => 
-                                    `<option value="${div}">${div}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Manager:</label>
-                            <select id="facturation-manager-filter">
-                                <option value="">Tous</option>
-                                ${[...new Set(facturesData.map(f => f['Manager']).filter(Boolean))].sort().map(manager => 
-                                    `<option value="${manager}">${manager}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Partner:</label>
-                            <select id="facturation-partner-filter">
-                                <option value="">Tous</option>
-                                ${[...new Set(facturesData.map(f => f['Partner']).filter(Boolean))].sort().map(partner => 
-                                    `<option value="${partner}">${partner}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>État:</label>
-                            <select id="facturation-etat-filter">
-                                <option value="">Tous</option>
-                                ${[...new Set(facturesData.map(f => f['État']).filter(Boolean))].sort().map(etat => 
-                                    `<option value="${etat}">${etat}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Année:</label>
-                            <select id="facturation-annee-filter">
-                                <option value="">Toutes</option>
-                                ${[...new Set(facturesData.map(f => {
-                                    let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                    return match ? match[3] : '';
-                                }).filter(annee => annee))].sort().map(annee => 
-                                    `<option value="${annee}">${annee}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Mois:</label>
-                            <select id="facturation-mois-filter">
-                                <option value="">Tous</option>
-                                ${[...new Set(facturesData.map(f => {
-                                    let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                    return match ? match[2] : '';
-                                }).filter(mois => mois))].sort().map(mois => {
-                                    const moisNoms = {
-                                        '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
-                                        '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
-                                        '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
-                                    };
-                                    return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
-                                }).join('')}
-                            </select>
-                        </div>
-                        <div class="filter-group" style="flex: 2;">
-                            <label>Période personnalisée:</label>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="date" id="facturation-date-debut" placeholder="Date début" style="flex: 1;">
-                                <input type="date" id="facturation-date-fin" placeholder="Date fin" style="flex: 1;">
-                                </div>
-                            </div>
-                        </div>
+                    </div>
+                </div>
                     </div>
                     ${alertHTML}
-                    <div class="kpi-cards">
-                        <div class="kpi-card">
-                            <span class="kpi-icon">📄</span>
-                            <div class="kpi-label">Total Factures</div>
-                            <div class="kpi-value">${facturationStats.totalFactures}</div>
-                        </div>
-                        <div class="kpi-card">
-                            <span class="kpi-icon">💰</span>
-                            <div class="kpi-label">Montant Facturé</div>
-                            <div class="kpi-value">${facturationStats.montantFacture.toLocaleString()} XAF</div>
-                        </div>
-                        <div class="kpi-card">
-                            <span class="kpi-icon">💳</span>
-                            <div class="kpi-label">Montant Encaissé</div>
-                            <div class="kpi-value">${facturationStats.montantEncaisse.toLocaleString()} XAF</div>
-                        </div>
-                        <div class="kpi-card">
-                            <span class="kpi-icon">📊</span>
-                            <div class="kpi-label">Taux d'Encaissement</div>
-                            <div class="kpi-value">${facturationStats.tauxEncaissement.toFixed(1)}%</div>
-                        </div>
-                        <div class="kpi-card">
-                            <span class="kpi-icon">📈</span>
-                            <div class="kpi-label">Montant Moyen</div>
-                            <div class="kpi-value">${facturationStats.montantMoyen.toLocaleString()} XAF</div>
-                        </div>
-                        <div class="kpi-card">
-                            <span class="kpi-icon">⏰</span>
-                            <div class="kpi-label">Délai Moyen</div>
-                            <div class="kpi-value">${facturationStats.delaiMoyen.toFixed(0)} jours</div>
-                        </div>
-                        <div class="kpi-card">
-                            <span class="kpi-icon">⚠️</span>
-                            <div class="kpi-label">En Retard</div>
-                            <div class="kpi-value">${facturationStats.facturesEnRetard}</div>
-                        </div>
-                        <div class="kpi-card">
-                            <span class="kpi-icon">🎯</span>
-                            <div class="kpi-label">Top Client</div>
-                            <div class="kpi-value">${facturationStats.topClient}</div>
-                        </div>
+                <div class="kpi-cards">
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📄</span>
+                        <div class="kpi-label">Total Factures</div>
+                        <div class="kpi-value">${facturationStats.totalFactures}</div>
                     </div>
-                    <div class="charts-row">
-                        <div class="chart-container">
-                            <div class="section-title">Facturation par Division</div>
-                            <canvas id="facturationChartDivision"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <div class="section-title">État des Factures</div>
-                            <canvas id="facturationChartEtat"></canvas>
-                        </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">💰</span>
+                        <div class="kpi-label">Montant Facturé</div>
+                        <div class="kpi-value">${facturationStats.montantFacture.toLocaleString()} XAF</div>
                     </div>
-                    <div class="charts-row">
-                        <div class="chart-container">
-                            <div class="section-title">Top Clients</div>
-                            <canvas id="facturationChartTopClients"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <div class="section-title">Facturation par Manager</div>
-                            <canvas id="facturationChartManager"></canvas>
-                        </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">💳</span>
+                        <div class="kpi-label">Montant Encaissé</div>
+                        <div class="kpi-value">${facturationStats.montantEncaisse.toLocaleString()} XAF</div>
                     </div>
-                    <div class="chart-container" style="margin-top: 20px;">
-                        <div class="section-title">Détail des Factures</div>
-                        <div class="table-container">
-                            <table id="facturationTable">
-                                <thead>
-                                    <tr>
-                                        <th>Client</th>
-                                        <th>Mission</th>
-                                        <th>Division</th>
-                                        <th>Manager</th>
-                                        <th>Montant Facturé</th>
-                                        <th>Montant Encaissé</th>
-                                        <th>Solde</th>
-                                        <th>État</th>
-                                        <th>Délai</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${generateFacturationTable(filteredFactures)}
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📊</span>
+                        <div class="kpi-label">Taux d'Encaissement</div>
+                        <div class="kpi-value">${facturationStats.tauxEncaissement.toFixed(1)}%</div>
                     </div>
-                `;
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📈</span>
+                        <div class="kpi-label">Montant Moyen</div>
+                        <div class="kpi-value">${facturationStats.montantMoyen.toLocaleString()} XAF</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">⏰</span>
+                        <div class="kpi-label">Délai Moyen</div>
+                        <div class="kpi-value">${facturationStats.delaiMoyen.toFixed(0)} jours</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">⚠️</span>
+                        <div class="kpi-label">En Retard</div>
+                        <div class="kpi-value">${facturationStats.facturesEnRetard}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">🎯</span>
+                        <div class="kpi-label">Top Client</div>
+                        <div class="kpi-value">${facturationStats.topClient}</div>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Facturation par Division</div>
+                        <canvas id="facturationChartDivision"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">État des Factures</div>
+                        <canvas id="facturationChartEtat"></canvas>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Top Clients</div>
+                        <canvas id="facturationChartTopClients"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Facturation par Manager</div>
+                        <canvas id="facturationChartManager"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container" style="margin-top: 20px;">
+                    <div class="section-title">Détail des Factures</div>
+                    <div class="table-container">
+                        <table id="facturationTable">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Mission</th>
+                                    <th>Division</th>
+                                    <th>Manager</th>
+                                    <th>Montant Facturé</th>
+                                    <th>Montant Encaissé</th>
+                                    <th>Solde</th>
+                                    <th>État</th>
+                                    <th>Délai</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${generateFacturationTable(filteredFactures)}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
 
-                document.getElementById('tab-facturation').innerHTML = facturationHTML;
+            document.getElementById('tab-facturation').innerHTML = facturationHTML;
 
-                // Rendu des graphiques
-                renderChart('facturationChartDivision', getFacturationByDivision(filteredFactures), 'bar', 'Division', 'Montant (XAF)');
-                renderChart('facturationChartEtat', getFacturationByEtat(filteredFactures), 'doughnut', 'État', 'Nombre');
-                renderChart('facturationChartTopClients', getFacturationByClient(filteredFactures), 'bar', 'Client', 'Montant (XAF)');
-                renderChart('facturationChartManager', getFacturationByManager(filteredFactures), 'bar', 'Manager', 'Montant (XAF)');
+            // Rendu des graphiques
+                console.log('Rendu des graphiques de facturation avec', filteredFactures.length, 'factures filtrées');
+                
+                let divisionData = getFacturationByDivision(filteredFactures);
+                let etatData = getFacturationByEtat(filteredFactures);
+                let clientData = getFacturationByClient(filteredFactures);
+                let managerData = getFacturationByManager(filteredFactures);
+                
+                console.log('Données pour graphiques:', {
+                    division: Object.keys(divisionData).length,
+                    etat: Object.keys(etatData).length,
+                    client: Object.keys(clientData).length,
+                    manager: Object.keys(managerData).length
+                });
+                
+                renderChart('facturationChartDivision', divisionData, 'bar', 'Division', 'Montant (XAF)');
+                renderChart('facturationChartEtat', etatData, 'doughnut', 'État', 'Nombre');
+                renderChart('facturationChartTopClients', clientData, 'bar', 'Client', 'Montant (XAF)');
+                renderChart('facturationChartManager', managerData, 'bar', 'Manager', 'Montant (XAF)');
 
-                // Ajouter les event listeners pour les filtres
-                addFacturationFilterListeners();
+            // Ajouter les event listeners pour les filtres
+            addFacturationFilterListeners();
             } catch (error) {
                 document.getElementById('tab-facturation').innerHTML = `<div class='error-message'>Erreur lors de l'affichage de la facturation : ${error}</div>`;
                 console.error('Erreur renderFacturationTab:', error);
@@ -2148,6 +2168,7 @@
 
         function applyFacturationFilters() {
             let filtered = facturesData;
+            console.log('applyFacturationFilters - Données initiales:', filtered.length);
             
             let clientFilter = document.getElementById('facturation-client-filter')?.value;
             let divisionFilter = document.getElementById('facturation-division-filter')?.value;
@@ -2158,33 +2179,52 @@
             let moisFilter = document.getElementById('facturation-mois-filter')?.value;
             let dateDebut = document.getElementById('facturation-date-debut')?.value;
             let dateFin = document.getElementById('facturation-date-fin')?.value;
+            
+            console.log('Filtres actifs:', {
+                clientFilter,
+                divisionFilter,
+                managerFilter,
+                partnerFilter,
+                etatFilter,
+                anneeFilter,
+                moisFilter,
+                dateDebut,
+                dateFin
+            });
 
             if (clientFilter) {
                 filtered = filtered.filter(f => f['Client'] === clientFilter);
+                console.log('Après filtre client:', filtered.length);
             }
             if (divisionFilter) {
                 filtered = filtered.filter(f => f['Division'] === divisionFilter);
+                console.log('Après filtre division:', filtered.length);
             }
             if (managerFilter) {
                 filtered = filtered.filter(f => f['Manager'] === managerFilter);
+                console.log('Après filtre manager:', filtered.length);
             }
             if (partnerFilter) {
                 filtered = filtered.filter(f => f['Partner'] === partnerFilter);
+                console.log('Après filtre partner:', filtered.length);
             }
             if (etatFilter) {
                 filtered = filtered.filter(f => f['État'] === etatFilter);
+                console.log('Après filtre état:', filtered.length);
             }
             if (anneeFilter) {
                 filtered = filtered.filter(f => {
                     let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                     return match && match[3] === anneeFilter;
                 });
+                console.log('Après filtre année:', filtered.length);
             }
             if (moisFilter) {
                 filtered = filtered.filter(f => {
                     let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                     return match && match[2] === moisFilter;
                 });
+                console.log('Après filtre mois:', filtered.length);
             }
             if (dateDebut) {
                 filtered = filtered.filter(f => {
@@ -2195,6 +2235,7 @@
                     let factureDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
                     return factureDateFormatted >= dateDebut;
                 });
+                console.log('Après filtre date début:', filtered.length);
             }
             if (dateFin) {
                 filtered = filtered.filter(f => {
@@ -2205,9 +2246,48 @@
                     let factureDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
                     return factureDateFormatted <= dateFin;
                 });
+                console.log('Après filtre date fin:', filtered.length);
             }
 
+            console.log('applyFacturationFilters - Données finales:', filtered.length);
             return filtered;
+        }
+
+        function cleanInvalidFacturationFilters() {
+            // Nettoyer les filtres invalides du sessionStorage
+            const filterKeys = [
+                'facturation-client-filter',
+                'facturation-division-filter',
+                'facturation-manager-filter',
+                'facturation-partner-filter',
+                'facturation-etat-filter',
+                'facturation-annee-filter',
+                'facturation-mois-filter',
+                'facturation-date-debut',
+                'facturation-date-fin'
+            ];
+            
+            filterKeys.forEach(key => {
+                const savedValue = sessionStorage.getItem(key);
+                if (savedValue) {
+                    let isValidValue = false;
+                    if (key === 'facturation-division-filter') {
+                        isValidValue = facturesData.some(f => f['Division'] === savedValue);
+                    } else if (key === 'facturation-annee-filter') {
+                        isValidValue = facturesData.some(f => {
+                            let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                            return match && match[3] === savedValue;
+                        });
+                    } else {
+                        isValidValue = true;
+                    }
+                    
+                    if (!isValidValue) {
+                        sessionStorage.removeItem(key);
+                        console.log('Filtre invalide supprimé:', key, savedValue);
+                    }
+                }
+            });
         }
 
         function addFacturationFilterListeners() {
@@ -2227,7 +2307,26 @@
                     // Restaurer la valeur précédente si elle existe
                     const savedValue = sessionStorage.getItem(id);
                     if (savedValue) {
-                        element.value = savedValue;
+                        // Vérifier que la valeur sauvegardée correspond aux données disponibles
+                        let isValidValue = false;
+                        if (id === 'facturation-division-filter') {
+                            isValidValue = facturesData.some(f => f['Division'] === savedValue);
+                        } else if (id === 'facturation-annee-filter') {
+                            isValidValue = facturesData.some(f => {
+                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match && match[3] === savedValue;
+                            });
+                        } else {
+                            isValidValue = true; // Pour les autres filtres, on accepte la valeur
+                        }
+                        
+                        if (isValidValue) {
+                            element.value = savedValue;
+                        } else {
+                            // Si la valeur n'est pas valide, on la supprime du sessionStorage
+                            sessionStorage.removeItem(id);
+                            element.value = '';
+                        }
                     }
                     
                     element.addEventListener('change', () => {
@@ -2266,14 +2365,31 @@
         }
 
         function calculateFacturationStats(data = facturesData) {
+            console.log('=== DEBUG FACTURATION ===');
+            console.log('Données reçues:', data.length, 'factures');
+            if (data.length > 0) {
+                console.log('Première facture:', data[0]);
+            }
+            
             let totalFactures = data.length;
             let montantFacture = 0, montantEncaisse = 0, invalids = 0;
             let totalDelai = 0, facturesEnRetard = 0;
             let clientStats = {};
             
-            data.forEach(facture => {
-                let mf = safeParseMontant(facture['Montant Facturé']);
-                let me = safeParseMontant(facture['Montant Encaissé']);
+            data.forEach((facture, index) => {
+                let mf = safeParseMontant(facture['Montant facturé']);
+                let me = safeParseMontant(facture['Montant payé']);
+                
+                // Debug pour les premières factures
+                if (index < 5) {
+                    console.log(`Facture ${index + 1}:`, {
+                        original: facture['Montant facturé'],
+                        parsed: mf,
+                        originalEncaisse: facture['Montant payé'],
+                        parsedEncaisse: me
+                    });
+                }
+                
                 if (isNaN(mf) || isNaN(me)) invalids++;
                 montantFacture += mf;
                 montantEncaisse += me;
@@ -2300,7 +2416,7 @@
                 let sortedClients = Object.entries(clientStats).sort((a, b) => b[1] - a[1]);
                 topClient = sortedClients[0][0];
             }
-            
+
             return {
                 totalFactures,
                 montantFacture,
@@ -2315,20 +2431,23 @@
         }
 
         function getFacturationByDivision(data = facturesData) {
+            console.log('getFacturationByDivision appelée avec', data.length, 'factures');
             let divisionStats = {};
             data.forEach(facture => {
                 let division = facture['Division'] || 'Non défini';
-                let montant = safeParseMontant(facture['Montant Facturé']);
+                let montant = safeParseMontant(facture['Montant facturé']);
                 divisionStats[division] = (divisionStats[division] || 0) + montant;
             });
-            return Object.entries(divisionStats).map(([division, montant]) => ({ label: division, value: montant }));
+            console.log('getFacturationByDivision retourne', Object.keys(divisionStats).length, 'divisions');
+            return divisionStats;
         }
 
         function getFacturationByEtat(data = facturesData) {
+            console.log('getFacturationByEtat appelée avec', data.length, 'factures');
             let etatStats = {};
             data.forEach(facture => {
-                let montantFacture = safeParseMontant(facture['Montant Facturé']);
-                let montantEncaisse = safeParseMontant(facture['Montant Encaissé']);
+                let montantFacture = safeParseMontant(facture['Montant facturé']);
+                let montantEncaisse = safeParseMontant(facture['Montant payé']);
                 let solde = montantFacture - montantEncaisse;
                 let etat = solde === 0 ? 'Payé' : solde > 0 ? 'En attente' : 'Surpayé';
                 
@@ -2338,48 +2457,54 @@
                 etatStats[etat]++;
             });
 
-            return Object.entries(etatStats).map(([etat, count]) => ({
-                label: etat,
-                value: count
-            }));
+            console.log('getFacturationByEtat retourne', Object.keys(etatStats).length, 'états');
+            return etatStats;
         }
 
         function getFacturationByClient(data = facturesData) {
+            console.log('getFacturationByClient appelée avec', data.length, 'factures');
             let clientStats = {};
             data.forEach(facture => {
                 let client = facture['Client'] || 'Non défini';
-                let montant = safeParseMontant(facture['Montant Facturé']);
+                let montant = safeParseMontant(facture['Montant facturé']);
                 clientStats[client] = (clientStats[client] || 0) + montant;
             });
-            return Object.entries(clientStats)
+            // Trier et prendre les top 10
+            let topClients = Object.entries(clientStats)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10)
-                .map(([client, montant]) => ({
-                    label: client.length > 20 ? client.substring(0, 20) + '...' : client,
-                    value: montant
-                }));
+                .reduce((obj, [client, montant]) => {
+                    obj[client.length > 20 ? client.substring(0, 20) + '...' : client] = montant;
+                    return obj;
+                }, {});
+            console.log('getFacturationByClient retourne', Object.keys(topClients).length, 'clients');
+            return topClients;
         }
 
         function getFacturationByManager(data = facturesData) {
+            console.log('getFacturationByManager appelée avec', data.length, 'factures');
             let managerStats = {};
             data.forEach(facture => {
                 let manager = facture['Manager'] || 'Non défini';
-                let montant = safeParseMontant(facture['Montant Facturé']);
+                let montant = safeParseMontant(facture['Montant facturé']);
                 managerStats[manager] = (managerStats[manager] || 0) + montant;
             });
-            return Object.entries(managerStats)
+            // Trier et prendre les top 10
+            let topManagers = Object.entries(managerStats)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10)
-                .map(([manager, montant]) => ({
-                    label: manager.length > 15 ? manager.substring(0, 15) + '...' : manager,
-                    value: montant
-                }));
+                .reduce((obj, [manager, montant]) => {
+                    obj[manager.length > 15 ? manager.substring(0, 15) + '...' : manager] = montant;
+                    return obj;
+                }, {});
+            console.log('getFacturationByManager retourne', Object.keys(topManagers).length, 'managers');
+            return topManagers;
         }
 
         function generateFacturationTable(data = facturesData) {
             return data.map(facture => {
-                let montantFacture = safeParseMontant(facture['Montant Facturé']);
-                let montantEncaisse = safeParseMontant(facture['Montant Encaissé']);
+                let montantFacture = safeParseMontant(facture['Montant facturé']);
+                let montantEncaisse = safeParseMontant(facture['Montant payé']);
                 let solde = montantFacture - montantEncaisse;
                 let etat = solde === 0 ? 'Payé' : solde > 0 ? 'En attente' : 'Surpayé';
                 
@@ -3759,71 +3884,15 @@
         // ... existing code ...
         function safeParseMontant(val) {
             if (typeof val !== 'string') return 0;
-            let cleaned = val.replace(/\s/g, '').replace(/[-–—N/Ana]/gi, '0');
+            // Nettoyer les espaces et remplacer les caractères invalides
+            let cleaned = val.replace(/\s/g, '').replace(/[-–—N\/Ana]/gi, '0');
+            // Gérer les formats avec virgules comme séparateurs décimaux
+            cleaned = cleaned.replace(/,/g, '.');
             let num = parseFloat(cleaned);
             return isNaN(num) ? 0 : num;
         }
 
-        function calculateFacturationStats(data = facturesData) {
-            let totalFactures = data.length;
-            let montantFacture = 0, montantEncaisse = 0, invalids = 0;
-            let totalDelai = 0, facturesEnRetard = 0;
-            let clientStats = {};
-            
-            data.forEach(facture => {
-                let mf = safeParseMontant(facture['Montant Facturé']);
-                let me = safeParseMontant(facture['Montant Encaissé']);
-                if (isNaN(mf) || isNaN(me)) invalids++;
-                montantFacture += mf;
-                montantEncaisse += me;
-                
-                // Calcul du délai (si disponible)
-                if (facture['Délai']) {
-                    let delai = parseInt(facture['Délai']) || 0;
-                    totalDelai += delai;
-                    if (delai > 30) facturesEnRetard++; // Considérer en retard si > 30 jours
-                }
-                
-                // Stats par client
-                let client = facture['Client'] || 'Non défini';
-                clientStats[client] = (clientStats[client] || 0) + mf;
-            });
-            
-            let tauxEncaissement = montantFacture > 0 ? (montantEncaisse / montantFacture) * 100 : 0;
-            let montantMoyen = totalFactures > 0 ? montantFacture / totalFactures : 0;
-            let delaiMoyen = totalFactures > 0 ? totalDelai / totalFactures : 0;
-            
-            // Top client
-            let topClient = 'N/A';
-            if (Object.keys(clientStats).length > 0) {
-                let sortedClients = Object.entries(clientStats).sort((a, b) => b[1] - a[1]);
-                topClient = sortedClients[0][0];
-            }
-            
-            return {
-                totalFactures,
-                montantFacture,
-                montantEncaisse,
-                tauxEncaissement,
-                montantMoyen,
-                delaiMoyen,
-                facturesEnRetard,
-                topClient,
-                invalids
-            };
-        }
 
-
-
-        function getFacturationByDivision(data = facturesData) {
-            let divisionStats = {};
-            data.forEach(facture => {
-                let division = facture['Division'] || 'Non défini';
-                let montant = safeParseMontant(facture['Montant Facturé']);
-                divisionStats[division] = (divisionStats[division] || 0) + montant;
-            });
-            return Object.entries(divisionStats).map(([division, montant]) => ({ label: division, value: montant }));
-        }
         // ... même correction pour getFacturationByEtat, getFacturationByClient, getFacturationByManager ...
         // ... dans renderChart, si data.length === 0 ou tout à 0, afficher un message "Aucune donnée exploitable pour ce graphique" à la place du canvas ...
         // ... existing code ...
