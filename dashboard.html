@@ -746,7 +746,7 @@
             if (lines[0].includes(',')) separator = ',';
             
             let headers = lines[0].split(separator).map(h => h.replace(/"/g, '').trim());
-            console.log('Headers détectés:', headers);
+    
             
             for (let i = 1; i < lines.length; i++) {
                 if (lines[i].trim() === '') continue;
@@ -760,7 +760,7 @@
                     data.push(dataRow);
                 }
             }
-            console.log('Données parsées:', data.length, 'lignes');
+    
             return data;
         }
 
@@ -821,7 +821,7 @@
                 if (!tauxResponse.ok) throw new Error('Fichier taux horaires non trouvé');
                 const tauxText = await tauxResponse.text();
                 tauxHorairesData = parseCSV(tauxText);
-                console.log('Taux horaires chargés:', tauxHorairesData.length, 'lignes');
+
 
                 // Charger Initiales
                 const initialesResponse = await fetch(`initiales.csv?v=${timestamp}`, {
@@ -876,7 +876,7 @@
                 renderFeuillesTab();
 
             } catch (error) {
-                console.error('Erreur lors du chargement des données:', error);
+                
                 document.querySelectorAll('.loading').forEach(el => {
                     el.innerHTML = 'Erreur lors du chargement des données. Vérifiez que tous les fichiers CSV sont présents.';
                 });
@@ -1038,7 +1038,7 @@
 
         function fillSelect(select, values, allLabel, formatter = null) {
             if (!select) return; // Sécurité anti-erreur
-            console.log('fillSelect - select:', select.id, 'values:', values, 'allLabel:', allLabel);
+            
             
             // Désactiver temporairement les événements pour éviter les appels récursifs
             const originalOnChange = select.onchange;
@@ -1052,7 +1052,7 @@
                     option.textContent = formatter ? formatter(value) : value;
                     select.appendChild(option);
                 });
-                console.log('fillSelect - options ajoutées:', select.options.length);
+                
             } finally {
                 // Restaurer l'événement
                 select.onchange = originalOnChange;
@@ -1061,11 +1061,11 @@
 
         // Application des filtres
         function applyFilters() {
-            console.log('Application des filtres pour l\'onglet:', currentTab);
+            
             
             // Protection contre les appels récursifs
             if (window.isApplyingFilters) {
-                console.log('Filtres déjà en cours d\'application, ignoré');
+                
                 return;
             }
             window.isApplyingFilters = true;
@@ -1078,13 +1078,13 @@
                 let dateField = 'Mois';
                 
                 if (!sourceData || sourceData.length === 0) {
-                    console.error('Aucune donnée disponible pour l\'onglet:', currentTab);
+                    
                     filteredData = [];
                     renderCurrentTab();
                     return;
                 }
                 
-                console.log('Filtrage de', sourceData.length, 'lignes pour', currentTab);
+                
                 
                 // Pour les onglets avec filtres généraux, appliquer les filtres
                 if (currentTab === 'dashboard' || currentTab === 'missions' || currentTab === 'rentabilite' || currentTab === 'performance') {
@@ -1160,7 +1160,7 @@
                         return true;
                     });
                     
-                    console.log('Données filtrées avec filtres généraux:', filteredData.length, 'pour l\'onglet:', currentTab);
+                    
                     renderCurrentTab();
                     return;
                 }
@@ -1235,7 +1235,7 @@
                     return true;
                 });
 
-                console.log('Données filtrées:', filteredData.length, 'pour l\'onglet:', currentTab);
+                
                 renderCurrentTab();
             } finally {
                 window.isApplyingFilters = false;
@@ -1244,12 +1244,13 @@
 
         // Fonction pour rendre l'onglet actif
         function renderCurrentTab() {
-            console.log('renderCurrentTab - currentTab:', currentTab);
-            console.log('renderCurrentTab - filteredData.length:', filteredData.length);
+            console.debug('renderCurrentTab - currentTab:', currentTab);
+            
+            
             
             // Protection contre les appels récursifs
             if (window.isRenderingTab) {
-                console.log('Rendu d\'onglet déjà en cours, ignoré');
+                
                 return;
             }
             window.isRenderingTab = true;
@@ -1262,14 +1263,14 @@
                     const generalFilters = document.getElementById('general-filters');
                     if (generalFilters) {
                         generalFilters.style.display = 'none';
-                        console.log('Filtres généraux masqués pour:', currentTab);
+                        
                     }
                 } else {
                     // Pour les autres onglets, les filtres généraux doivent être visibles
                     const generalFilters = document.getElementById('general-filters');
                     if (generalFilters) {
                         generalFilters.style.display = 'block';
-                        console.log('Filtres généraux affichés pour:', currentTab);
+                        
                     }
                 }
                 switch (currentTab) {
@@ -1305,30 +1306,7 @@
             }
         }
 
-        // Gestion des onglets avec protection
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                if (window.isChangingTab) {
-                    return;
-                }
-                window.isChangingTab = true;
-                try {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    tab.classList.add('active');
-                    const tabId = 'tab-' + tab.dataset.tab;
-                    document.getElementById(tabId).classList.add('active');
-                    currentTab = tab.dataset.tab;
-                    // Ordre strict :
-                    updateFiltersVisibility();
-                    updateFiltersForCurrentTab();
-                    applyFilters();
-                    renderCurrentTab();
-                } finally {
-                    window.isChangingTab = false;
-                }
-            });
-        });
+
 
         // Gestion des filtres avec protection
         function handleFilterChange() {
@@ -1336,30 +1314,6 @@
                 applyFilters();
             }
         }
-
-        // Event listeners pour les filtres généraux
-        document.addEventListener('DOMContentLoaded', () => {
-            const filterElements = [
-                'yearFilter',
-                'monthFilter', 
-                'startDate',
-                'endDate',
-                'buFilter',
-                'collabFilter',
-                'missionFilter',
-                'typeHeureFilter'
-            ];
-            
-            filterElements.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.addEventListener('change', handleFilterChange);
-                }
-            });
-        });
-
-        // Gestion du bouton de mise à jour
-        document.getElementById('refreshBtn').addEventListener('click', refreshData);
 
         // Fonctions utilitaires pour les dates
         function extractYearFromDate(dateStr) {
@@ -1377,18 +1331,13 @@
         // Fonction de rafraîchissement des données
         async function refreshData() {
             const refreshBtn = document.getElementById('refreshBtn');
-            
-            // Éviter les clics multiples
             if (refreshBtn.classList.contains('loading')) {
                 return;
             }
-            
             refreshBtn.classList.add('loading');
             refreshBtn.textContent = '🔄 Chargement...';
             refreshBtn.disabled = true;
-            
             try {
-                // Vider les données actuelles pour forcer le rechargement
                 trsData = [];
                 missionsData = [];
                 facturesData = [];
@@ -1396,29 +1345,10 @@
                 initialesData = [];
                 opportunitesData = [];
                 filteredData = [];
-                
-                // Recharger tous les CSV avec un timestamp unique pour éviter le cache
                 await loadAllCSVs();
-                
-                // Réinitialiser les filtres avec les nouvelles données
                 setupFilters();
-                
-                // Appliquer les filtres actuels
-                applyFilters();
-                
-                // Forcer la mise à jour de l'affichage des filtres selon l'onglet actuel
                 updateFiltersVisibility();
-                
-                // Rafraîchir l'onglet actuel
                 renderCurrentTab();
-                
-                // Créer le message de confirmation avec les détails
-                const message = `✅ Mise à jour effectuée !\n\n📊 Données chargées :\n• TRS : ${trsData.length} lignes\n• Missions : ${missionsData.length} lignes\n• Factures : ${facturesData.length} lignes\n• Taux horaires : ${tauxHorairesData.length} lignes\n• Initiales : ${initialesData.length} lignes\n• Opportunités : ${opportunitesData.length} lignes\n\n🔄 Fichiers mis à jour : données_TRS.csv, liste des missions.csv, liste des factures.csv, Taux horaire par grade.csv, initiales.csv, liste des opportunités.csv`;
-                alert(message);
-                refreshBtn.textContent = '✅ Terminé';
-                setTimeout(() => {
-                    refreshBtn.textContent = '🔄 Mise à jour';
-                }, 2000);
             } catch (error) {
                 console.error('Erreur lors du rafraîchissement:', error);
                 refreshBtn.textContent = '❌ Erreur';
@@ -1433,6 +1363,10 @@
 
         // Rendu du dashboard principal
         function renderDashboard() {
+            if (!filteredData.length) {
+                document.getElementById('tab-dashboard').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
+                return;
+            }
             // Protection contre les appels multiples
             if (window.isRenderingDashboard) {
                 return;
@@ -1498,18 +1432,18 @@
                 try {
                     renderChart('chartByBU', getHoursByField(filteredData, 'Division'), 'bar', 'Pôle', 'Heures');
                 } catch (error) {
-                    console.error('Erreur graphique chartByBU:', error);
+                    
                 }
             }, 100);
             setTimeout(() => {
                 try {
                     renderChart('chartTopCollab', getTopN('Nom', 5), 'bar', 'Collaborateur', 'Heures');
                 } catch (error) {
-                    console.error('Erreur graphique chartTopCollab:', error);
+                    
                 }
             }, 200);
             } catch (error) {
-                console.error('Erreur lors du rendu du dashboard:', error);
+                
             } finally {
                 window.isRenderingDashboard = false;
             }
@@ -1550,7 +1484,7 @@
         function renderChart(canvasId, data, type, xLabel, yLabel) {
             const canvas = document.getElementById(canvasId);
             if (!canvas) {
-                console.error('Canvas non trouvé:', canvasId);
+                
                 return;
             }
 
@@ -1624,7 +1558,7 @@
                     }
                 });
             } catch (error) {
-                console.error('Erreur lors du rendu du graphique:', canvasId, error);
+                
             } finally {
                 window.isRenderingChart = null;
             }
@@ -1632,9 +1566,13 @@
 
         // ===== ONGLET MISSIONS =====
         function renderMissionsTab() {
+            if (!filteredData.length) {
+                document.getElementById('tab-missions').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
+                return;
+            }
             // Protection contre les appels multiples
             if (window.isRenderingMissions) {
-                console.log('Missions déjà en cours de rendu, ignoré');
+                
                 return;
             }
             window.isRenderingMissions = true;
@@ -1748,7 +1686,7 @@
             renderChart('missionsChartCollaborateurs', getTopCollaborateurs(), 'bar', 'Collaborateur', 'Heures');
             renderChart('missionsChartDivision', getCostByDivision(), 'bar', 'Division', 'Coût (XAF)');
             } catch (error) {
-                console.error('Erreur lors du rendu des missions:', error);
+                
             } finally {
                 window.isRenderingMissions = false;
             }
@@ -1919,200 +1857,212 @@
 
         // ===== ONGLET FACTURATION =====
         function renderFacturationTab() {
-            if (!facturesData.length) {
-                document.getElementById('tab-facturation').innerHTML = '<div class="no-data">Aucune donnée de facturation disponible</div>';
-                return;
-            }
+            console.debug('renderFacturationTab called');
+            try {
+                if (!facturesData.length) {
+                    document.getElementById('tab-facturation').innerHTML = '<div class="no-data">Aucune donnée de facturation disponible</div>';
+                    return;
+                }
+                let filteredFactures = applyFacturationFilters();
+                if (!filteredFactures.length) {
+                    document.getElementById('tab-facturation').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
+                    return;
+                }
+                let facturationStats = calculateFacturationStats(filteredFactures);
+                let alertHTML = '';
+                if (facturationStats.invalids > 0) {
+                    alertHTML = `<div style='color:#b00;background:#ffe5e5;padding:8px 12px;margin-bottom:10px;border-radius:5px;'>Attention : ${facturationStats.invalids} valeur(s) non numérique(s) détectée(s) dans les montants. Vérifiez votre CSV.</div>`;
+                }
 
-            // Appliquer les filtres spécifiques aux factures
-            let filteredFactures = applyFacturationFilters();
-
-            let facturationStats = calculateFacturationStats(filteredFactures);
-
-            let facturationHTML = `
-                <div class="filters-section">
-                    <div class="filters-row">
-                    <div class="filter-group">
-                        <label>Client:</label>
-                        <select id="facturation-client-filter">
-                            <option value="">Tous</option>
-                            ${[...new Set(facturesData.map(f => f['Client']).filter(Boolean))].sort().map(client => 
-                                `<option value="${client}">${client}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Division:</label>
-                        <select id="facturation-division-filter">
-                            <option value="">Toutes</option>
-                            ${[...new Set(facturesData.map(f => f['Division']).filter(Boolean))].sort().map(div => 
-                                `<option value="${div}">${div}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Manager:</label>
-                        <select id="facturation-manager-filter">
-                            <option value="">Tous</option>
-                            ${[...new Set(facturesData.map(f => f['Manager']).filter(Boolean))].sort().map(manager => 
-                                `<option value="${manager}">${manager}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Partner:</label>
-                        <select id="facturation-partner-filter">
-                            <option value="">Tous</option>
-                            ${[...new Set(facturesData.map(f => f['Partner']).filter(Boolean))].sort().map(partner => 
-                                `<option value="${partner}">${partner}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>État:</label>
-                        <select id="facturation-etat-filter">
-                            <option value="">Tous</option>
-                            ${[...new Set(facturesData.map(f => f['État']).filter(Boolean))].sort().map(etat => 
-                                `<option value="${etat}">${etat}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Année:</label>
-                        <select id="facturation-annee-filter">
-                            <option value="">Toutes</option>
-                            ${[...new Set(facturesData.map(f => {
-                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                return match ? match[3] : '';
-                            }).filter(annee => annee))].sort().map(annee => 
-                                `<option value="${annee}">${annee}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Mois:</label>
-                        <select id="facturation-mois-filter">
-                            <option value="">Tous</option>
-                            ${[...new Set(facturesData.map(f => {
-                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                return match ? match[2] : '';
-                            }).filter(mois => mois))].sort().map(mois => {
-                                const moisNoms = {
-                                    '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
-                                    '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
-                                    '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
-                                };
-                                return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
-                            }).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group" style="flex: 2;">
-                        <label>Période personnalisée:</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="date" id="facturation-date-debut" placeholder="Date début" style="flex: 1;">
-                            <input type="date" id="facturation-date-fin" placeholder="Date fin" style="flex: 1;">
+                let facturationHTML = `
+                    <div class="filters-section">
+                        <div class="filters-row">
+                        <div class="filter-group">
+                            <label>Client:</label>
+                            <select id="facturation-client-filter">
+                                <option value="">Tous</option>
+                                ${[...new Set(facturesData.map(f => f['Client']).filter(Boolean))].sort().map(client => 
+                                    `<option value="${client}">${client}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Division:</label>
+                            <select id="facturation-division-filter">
+                                <option value="">Toutes</option>
+                                ${[...new Set(facturesData.map(f => f['Division']).filter(Boolean))].sort().map(div => 
+                                    `<option value="${div}">${div}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Manager:</label>
+                            <select id="facturation-manager-filter">
+                                <option value="">Tous</option>
+                                ${[...new Set(facturesData.map(f => f['Manager']).filter(Boolean))].sort().map(manager => 
+                                    `<option value="${manager}">${manager}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Partner:</label>
+                            <select id="facturation-partner-filter">
+                                <option value="">Tous</option>
+                                ${[...new Set(facturesData.map(f => f['Partner']).filter(Boolean))].sort().map(partner => 
+                                    `<option value="${partner}">${partner}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>État:</label>
+                            <select id="facturation-etat-filter">
+                                <option value="">Tous</option>
+                                ${[...new Set(facturesData.map(f => f['État']).filter(Boolean))].sort().map(etat => 
+                                    `<option value="${etat}">${etat}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Année:</label>
+                            <select id="facturation-annee-filter">
+                                <option value="">Toutes</option>
+                                ${[...new Set(facturesData.map(f => {
+                                    let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                    return match ? match[3] : '';
+                                }).filter(annee => annee))].sort().map(annee => 
+                                    `<option value="${annee}">${annee}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Mois:</label>
+                            <select id="facturation-mois-filter">
+                                <option value="">Tous</option>
+                                ${[...new Set(facturesData.map(f => {
+                                    let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                    return match ? match[2] : '';
+                                }).filter(mois => mois))].sort().map(mois => {
+                                    const moisNoms = {
+                                        '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                                        '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                                        '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                                    };
+                                    return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
+                                }).join('')}
+                            </select>
+                        </div>
+                        <div class="filter-group" style="flex: 2;">
+                            <label>Période personnalisée:</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="date" id="facturation-date-debut" placeholder="Date début" style="flex: 1;">
+                                <input type="date" id="facturation-date-fin" placeholder="Date fin" style="flex: 1;">
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="kpi-cards">
-                    <div class="kpi-card">
-                        <span class="kpi-icon">📄</span>
-                        <div class="kpi-label">Total Factures</div>
-                        <div class="kpi-value">${facturationStats.totalFactures}</div>
+                    ${alertHTML}
+                    <div class="kpi-cards">
+                        <div class="kpi-card">
+                            <span class="kpi-icon">📄</span>
+                            <div class="kpi-label">Total Factures</div>
+                            <div class="kpi-value">${facturationStats.totalFactures}</div>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-icon">💰</span>
+                            <div class="kpi-label">Montant Facturé</div>
+                            <div class="kpi-value">${facturationStats.montantFacture.toLocaleString()} XAF</div>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-icon">💳</span>
+                            <div class="kpi-label">Montant Encaissé</div>
+                            <div class="kpi-value">${facturationStats.montantEncaisse.toLocaleString()} XAF</div>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-icon">📊</span>
+                            <div class="kpi-label">Taux d'Encaissement</div>
+                            <div class="kpi-value">${facturationStats.tauxEncaissement.toFixed(1)}%</div>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-icon">📈</span>
+                            <div class="kpi-label">Montant Moyen</div>
+                            <div class="kpi-value">${facturationStats.montantMoyen.toLocaleString()} XAF</div>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-icon">⏰</span>
+                            <div class="kpi-label">Délai Moyen</div>
+                            <div class="kpi-value">${facturationStats.delaiMoyen.toFixed(0)} jours</div>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-icon">⚠️</span>
+                            <div class="kpi-label">En Retard</div>
+                            <div class="kpi-value">${facturationStats.facturesEnRetard}</div>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-icon">🎯</span>
+                            <div class="kpi-label">Top Client</div>
+                            <div class="kpi-value">${facturationStats.topClient}</div>
+                        </div>
                     </div>
-                    <div class="kpi-card">
-                        <span class="kpi-icon">💰</span>
-                        <div class="kpi-label">Montant Facturé</div>
-                        <div class="kpi-value">${facturationStats.montantFacture.toLocaleString()} XAF</div>
+                    <div class="charts-row">
+                        <div class="chart-container">
+                            <div class="section-title">Facturation par Division</div>
+                            <canvas id="facturationChartDivision"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <div class="section-title">État des Factures</div>
+                            <canvas id="facturationChartEtat"></canvas>
+                        </div>
                     </div>
-                    <div class="kpi-card">
-                        <span class="kpi-icon">💳</span>
-                        <div class="kpi-label">Montant Encaissé</div>
-                        <div class="kpi-value">${facturationStats.montantEncaisse.toLocaleString()} XAF</div>
+                    <div class="charts-row">
+                        <div class="chart-container">
+                            <div class="section-title">Top Clients</div>
+                            <canvas id="facturationChartTopClients"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <div class="section-title">Facturation par Manager</div>
+                            <canvas id="facturationChartManager"></canvas>
+                        </div>
                     </div>
-                    <div class="kpi-card">
-                        <span class="kpi-icon">📊</span>
-                        <div class="kpi-label">Taux d'Encaissement</div>
-                        <div class="kpi-value">${facturationStats.tauxEncaissement.toFixed(1)}%</div>
+                    <div class="chart-container" style="margin-top: 20px;">
+                        <div class="section-title">Détail des Factures</div>
+                        <div class="table-container">
+                            <table id="facturationTable">
+                                <thead>
+                                    <tr>
+                                        <th>Client</th>
+                                        <th>Mission</th>
+                                        <th>Division</th>
+                                        <th>Manager</th>
+                                        <th>Montant Facturé</th>
+                                        <th>Montant Encaissé</th>
+                                        <th>Solde</th>
+                                        <th>État</th>
+                                        <th>Délai</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${generateFacturationTable(filteredFactures)}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="kpi-card">
-                        <span class="kpi-icon">📈</span>
-                        <div class="kpi-label">Montant Moyen</div>
-                        <div class="kpi-value">${facturationStats.montantMoyen.toLocaleString()} XAF</div>
-                    </div>
-                    <div class="kpi-card">
-                        <span class="kpi-icon">⏰</span>
-                        <div class="kpi-label">Délai Moyen</div>
-                        <div class="kpi-value">${facturationStats.delaiMoyen.toFixed(0)} jours</div>
-                    </div>
-                    <div class="kpi-card">
-                        <span class="kpi-icon">⚠️</span>
-                        <div class="kpi-label">En Retard</div>
-                        <div class="kpi-value">${facturationStats.facturesEnRetard}</div>
-                    </div>
-                    <div class="kpi-card">
-                        <span class="kpi-icon">🎯</span>
-                        <div class="kpi-label">Top Client</div>
-                        <div class="kpi-value">${facturationStats.topClient}</div>
-                    </div>
-                </div>
-                <div class="charts-row">
-                    <div class="chart-container">
-                        <div class="section-title">Facturation par Division</div>
-                        <canvas id="facturationChartDivision"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <div class="section-title">État des Factures</div>
-                        <canvas id="facturationChartEtat"></canvas>
-                    </div>
-                </div>
-                <div class="charts-row">
-                    <div class="chart-container">
-                        <div class="section-title">Top Clients</div>
-                        <canvas id="facturationChartTopClients"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <div class="section-title">Facturation par Manager</div>
-                        <canvas id="facturationChartManager"></canvas>
-                    </div>
-                </div>
-                <div class="chart-container" style="margin-top: 20px;">
-                    <div class="section-title">Détail des Factures</div>
-                    <div class="table-container">
-                        <table id="facturationTable">
-                            <thead>
-                                <tr>
-                                    <th>Client</th>
-                                    <th>Mission</th>
-                                    <th>Division</th>
-                                    <th>Manager</th>
-                                    <th>Montant Facturé</th>
-                                    <th>Montant Encaissé</th>
-                                    <th>Solde</th>
-                                    <th>État</th>
-                                    <th>Délai</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${generateFacturationTable(filteredFactures)}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
+                `;
 
-            document.getElementById('tab-facturation').innerHTML = facturationHTML;
+                document.getElementById('tab-facturation').innerHTML = facturationHTML;
 
-            // Rendu des graphiques
-            renderChart('facturationChartDivision', getFacturationByDivision(filteredFactures), 'bar', 'Division', 'Montant (XAF)');
-            renderChart('facturationChartEtat', getFacturationByEtat(filteredFactures), 'doughnut', 'État', 'Nombre');
-            renderChart('facturationChartTopClients', getFacturationByClient(filteredFactures), 'bar', 'Client', 'Montant (XAF)');
-            renderChart('facturationChartManager', getFacturationByManager(filteredFactures), 'bar', 'Manager', 'Montant (XAF)');
+                // Rendu des graphiques
+                renderChart('facturationChartDivision', getFacturationByDivision(filteredFactures), 'bar', 'Division', 'Montant (XAF)');
+                renderChart('facturationChartEtat', getFacturationByEtat(filteredFactures), 'doughnut', 'État', 'Nombre');
+                renderChart('facturationChartTopClients', getFacturationByClient(filteredFactures), 'bar', 'Client', 'Montant (XAF)');
+                renderChart('facturationChartManager', getFacturationByManager(filteredFactures), 'bar', 'Manager', 'Montant (XAF)');
 
-            // Ajouter les event listeners pour les filtres
-            addFacturationFilterListeners();
+                // Ajouter les event listeners pour les filtres
+                addFacturationFilterListeners();
+            } catch (error) {
+                document.getElementById('tab-facturation').innerHTML = `<div class='error-message'>Erreur lors de l'affichage de la facturation : ${error}</div>`;
+                console.error('Erreur renderFacturationTab:', error);
+            }
         }
 
         function applyFacturationFilters() {
@@ -2236,58 +2186,40 @@
 
         function calculateFacturationStats(data = facturesData) {
             let totalFactures = data.length;
-            let montantFacture = data.reduce((sum, facture) => {
-                let montant = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
-                return sum + montant;
-            }, 0);
-            let montantEncaisse = data.reduce((sum, facture) => {
-                let montant = parseFloat(facture['Montant Encaissé']?.replace(/\s/g, '') || '0');
-                return sum + montant;
-            }, 0);
+            let montantFacture = 0, montantEncaisse = 0, invalids = 0;
+            let totalDelai = 0, facturesEnRetard = 0;
+            let clientStats = {};
+            
+            data.forEach(facture => {
+                let mf = safeParseMontant(facture['Montant Facturé']);
+                let me = safeParseMontant(facture['Montant Encaissé']);
+                if (isNaN(mf) || isNaN(me)) invalids++;
+                montantFacture += mf;
+                montantEncaisse += me;
+                
+                // Calcul du délai (si disponible)
+                if (facture['Délai']) {
+                    let delai = parseInt(facture['Délai']) || 0;
+                    totalDelai += delai;
+                    if (delai > 30) facturesEnRetard++; // Considérer en retard si > 30 jours
+                }
+                
+                // Stats par client
+                let client = facture['Client'] || 'Non défini';
+                clientStats[client] = (clientStats[client] || 0) + mf;
+            });
+            
             let tauxEncaissement = montantFacture > 0 ? (montantEncaisse / montantFacture) * 100 : 0;
             let montantMoyen = totalFactures > 0 ? montantFacture / totalFactures : 0;
-
-            // Calcul du délai moyen et des factures en retard
-            let totalDelai = 0;
-            let facturesAvecDelai = 0;
-            let facturesEnRetard = 0;
-            let aujourdhui = new Date();
-
-            data.forEach(facture => {
-                let montantFacture = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
-                let montantEncaisse = parseFloat(facture['Montant Encaissé']?.replace(/\s/g, '') || '0');
-                let solde = montantFacture - montantEncaisse;
-                
-                if (solde > 0 && facture['Date']) {
-                    let match = facture['Date'].match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                    if (match) {
-                        let dateFacture = new Date(match[3], match[2] - 1, match[1]);
-                        let delai = Math.floor((aujourdhui - dateFacture) / (1000 * 60 * 60 * 24));
-                        totalDelai += delai;
-                        facturesAvecDelai++;
-                        
-                        if (delai > 30) {
-                            facturesEnRetard++;
-                        }
-                    }
-                }
-            });
-
-            let delaiMoyen = facturesAvecDelai > 0 ? totalDelai / facturesAvecDelai : 0;
-
-            // Top client par montant facturé
-            let clientStats = {};
-            data.forEach(facture => {
-                let client = facture['Client'] || 'Non défini';
-                let montant = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
-                clientStats[client] = (clientStats[client] || 0) + montant;
-            });
-
-            let topClient = Object.entries(clientStats)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 1)
-                .map(([client, montant]) => client)[0] || 'N/A';
-
+            let delaiMoyen = totalFactures > 0 ? totalDelai / totalFactures : 0;
+            
+            // Top client
+            let topClient = 'N/A';
+            if (Object.keys(clientStats).length > 0) {
+                let sortedClients = Object.entries(clientStats).sort((a, b) => b[1] - a[1]);
+                topClient = sortedClients[0][0];
+            }
+            
             return {
                 totalFactures,
                 montantFacture,
@@ -2296,7 +2228,8 @@
                 montantMoyen,
                 delaiMoyen,
                 facturesEnRetard,
-                topClient
+                topClient,
+                invalids
             };
         }
 
@@ -2304,25 +2237,17 @@
             let divisionStats = {};
             data.forEach(facture => {
                 let division = facture['Division'] || 'Non défini';
-                let montant = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
-                
-                if (!divisionStats[division]) {
-                    divisionStats[division] = 0;
-                }
-                divisionStats[division] += montant;
+                let montant = safeParseMontant(facture['Montant Facturé']);
+                divisionStats[division] = (divisionStats[division] || 0) + montant;
             });
-
-            return Object.entries(divisionStats).map(([division, montant]) => ({
-                label: division,
-                value: montant
-            }));
+            return Object.entries(divisionStats).map(([division, montant]) => ({ label: division, value: montant }));
         }
 
         function getFacturationByEtat(data = facturesData) {
             let etatStats = {};
             data.forEach(facture => {
-                let montantFacture = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
-                let montantEncaisse = parseFloat(facture['Montant Encaissé']?.replace(/\s/g, '') || '0');
+                let montantFacture = safeParseMontant(facture['Montant Facturé']);
+                let montantEncaisse = safeParseMontant(facture['Montant Encaissé']);
                 let solde = montantFacture - montantEncaisse;
                 let etat = solde === 0 ? 'Payé' : solde > 0 ? 'En attente' : 'Surpayé';
                 
@@ -2342,7 +2267,7 @@
             let clientStats = {};
             data.forEach(facture => {
                 let client = facture['Client'] || 'Non défini';
-                let montant = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
+                let montant = safeParseMontant(facture['Montant Facturé']);
                 clientStats[client] = (clientStats[client] || 0) + montant;
             });
             return Object.entries(clientStats)
@@ -2358,7 +2283,7 @@
             let managerStats = {};
             data.forEach(facture => {
                 let manager = facture['Manager'] || 'Non défini';
-                let montant = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
+                let montant = safeParseMontant(facture['Montant Facturé']);
                 managerStats[manager] = (managerStats[manager] || 0) + montant;
             });
             return Object.entries(managerStats)
@@ -2372,8 +2297,8 @@
 
         function generateFacturationTable(data = facturesData) {
             return data.map(facture => {
-                let montantFacture = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
-                let montantEncaisse = parseFloat(facture['Montant Encaissé']?.replace(/\s/g, '') || '0');
+                let montantFacture = safeParseMontant(facture['Montant Facturé']);
+                let montantEncaisse = safeParseMontant(facture['Montant Encaissé']);
                 let solde = montantFacture - montantEncaisse;
                 let etat = solde === 0 ? 'Payé' : solde > 0 ? 'En attente' : 'Surpayé';
                 
@@ -2411,7 +2336,7 @@
         // ===== ONGLET RENTABILITÉ =====
         function renderRentabiliteTab() {
             if (!filteredData.length) {
-                document.getElementById('tab-rentabilite').innerHTML = '<div class="no-data">Aucune donnée de rentabilité disponible</div>';
+                document.getElementById('tab-rentabilite').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
                 return;
             }
 
@@ -2592,7 +2517,7 @@
             // Ajouter les CA par mission depuis les factures
             facturesData.forEach(facture => {
                 let mission = facture['Mission'] || 'Non défini';
-                let montant = parseFloat(facture['Montant Facturé']?.replace(/\s/g, '') || '0');
+                let montant = safeParseMontant(facture['Montant Facturé']);
                 
                 if (!missionStats[mission]) {
                     missionStats[mission] = { 
@@ -2648,7 +2573,7 @@
         // ===== ONGLET PERFORMANCE =====
         function renderPerformanceTab() {
             if (!filteredData.length) {
-                document.getElementById('tab-performance').innerHTML = '<div class="no-data">Aucune donnée de performance disponible</div>';
+                document.getElementById('tab-performance').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
                 return;
             }
 
@@ -2964,21 +2889,18 @@
 
         // ===== ONGLET OPPORTUNITÉS =====
         function renderOpportunitesTab() {
-            console.log('renderOpportunitesTab appelé, opportunitesData.length:', opportunitesData.length);
-            console.log('opportunitesData:', opportunitesData);
-            
             if (!opportunitesData || !opportunitesData.length) {
-                console.log('Aucune donnée d\'opportunités disponible');
                 document.getElementById('tab-opportunites').innerHTML = '<div class="no-data">Aucune donnée d\'opportunités disponible</div>';
                 return;
             }
-
-            // Appliquer les filtres spécifiques aux opportunités
             let filteredOpportunites = applyOpportunitesFilters();
-
             let opportunitesStats = calculateOpportunitesStats(filteredOpportunites);
-
-            let opportunitesHTML = `
+            let infoHTML = `<div style='margin-bottom:10px;font-size:14px;color:#555;'>Opportunités chargées : <b>${opportunitesData.length}</b> &nbsp;|&nbsp; Opportunités après filtre : <b>${filteredOpportunites.length}</b></div>`;
+            if (filteredOpportunites.length === 0) {
+                document.getElementById('tab-opportunites').innerHTML = infoHTML + '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
+                return;
+            }
+            let opportunitesHTML = infoHTML + `
                 <div class="filters-section">
                     <div class="filters-row">
                     <div class="filter-group">
@@ -3420,6 +3342,10 @@
 
         // ===== ONGLET FEUILLES DE TEMPS =====
         function renderFeuillesTab() {
+            if (!filteredData.length) {
+                document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
+                return;
+            }
             if (window.isRenderingFeuilles) {
                 return;
             }
@@ -3533,15 +3459,14 @@
                 document.getElementById('tab-feuilles').appendChild(feuillesFilters);
                 document.getElementById('tab-feuilles').innerHTML += tableHTML;
             } catch (error) {
-                console.error('Erreur lors du rendu des feuilles de temps:', error, error.stack);
+                
                 document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Erreur lors du rendu des feuilles de temps : ' + error + '</div>';
             } finally {
                 window.isRenderingFeuilles = false;
             }
         }
 
-        // Chargement initial
-        loadAllCSVs();
+
 
         // Ajout d'un observer pour détecter toute modification du style du filtre général
         function observeGeneralFilters() {
@@ -3557,9 +3482,7 @@
             observer.observe(generalFilters, { attributes: true, attributeFilter: ['style'] });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            observeGeneralFilters();
-        });
+
 
         // Forçage du masquage après chaque rendu d'onglet personnalisé
         function forceHideGeneralFiltersIfNeeded() {
@@ -3608,16 +3531,10 @@
         </div>
         `;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateFiltersVisibility();
-            updateFiltersForCurrentTab();
-            applyFilters();
-            renderCurrentTab();
-        });
-
-        // Ajouter la fonction updateFiltersVisibility ici :
+        // Nouvelle version centralisée de updateFiltersVisibility
         function updateFiltersVisibility() {
-            const tabsWithGeneralFilters = ['dashboard', 'missions', 'facturation', 'rentabilite', 'performance'];
+            // Onglets où le bloc général-filters doit être présent UNIQUEMENT
+            const tabsWithGeneralFilters = ['dashboard', 'missions', 'rentabilite', 'performance'];
             const generalFilters = document.getElementById('general-filters');
             if (!tabsWithGeneralFilters.includes(currentTab)) {
                 if (generalFilters) generalFilters.remove();
@@ -3648,6 +3565,256 @@
             }
         }
 
+        // Nettoyer renderCurrentTab : ne plus toucher au bloc general-filters ici
+        function renderCurrentTab() {
+            if (window.isRenderingTab) {
+                return;
+            }
+            window.isRenderingTab = true;
+            try {
+                switch (currentTab) {
+                    case 'dashboard':
+                        renderDashboard();
+                        break;
+                    case 'missions':
+                        renderMissionsTab();
+                        break;
+                    case 'facturation':
+                        renderFacturationTab();
+                        break;
+                    case 'rentabilite':
+                        renderRentabiliteTab();
+                        break;
+                    case 'performance':
+                        renderPerformanceTab();
+                        break;
+                    case 'opportunites':
+                        renderOpportunitesTab();
+                        break;
+                    case 'feuilles':
+                        renderFeuillesTab();
+                        break;
+                    default:
+                        renderDashboard();
+                }
+            } finally {
+                window.isRenderingTab = false;
+            }
+        }
+
+        // Nettoyer refreshData : ne plus toucher au bloc general-filters ici
+        async function refreshData() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn.classList.contains('loading')) {
+                return;
+            }
+            refreshBtn.classList.add('loading');
+            refreshBtn.textContent = '🔄 Chargement...';
+            refreshBtn.disabled = true;
+            try {
+                trsData = [];
+                missionsData = [];
+                facturesData = [];
+                tauxHorairesData = [];
+                initialesData = [];
+                opportunitesData = [];
+                filteredData = [];
+                await loadAllCSVs();
+                setupFilters();
+                updateFiltersVisibility(); // Toujours ici, avant le rendu
+                renderCurrentTab();
+            } catch (error) {
+                console.error('Erreur lors du rafraîchissement:', error);
+                refreshBtn.textContent = '❌ Erreur';
+                setTimeout(() => {
+                    refreshBtn.textContent = '🔄 Mise à jour';
+                }, 3000);
+            } finally {
+                refreshBtn.classList.remove('loading');
+                refreshBtn.disabled = false;
+            }
+        }
+
+        function resetOpportunitesFilters() {
+            const filterIds = [
+                'opportunites-division-filter',
+                'opportunites-statut-filter',
+                'opportunites-responsable-filter',
+                'opportunites-secteur-filter',
+                'opportunites-type-filter',
+                'opportunites-initiative-filter',
+                'opportunites-annee-filter',
+                'opportunites-mois-filter',
+                'opportunites-date-debut',
+                'opportunites-date-fin'
+            ];
+            filterIds.forEach(id => {
+                sessionStorage.removeItem(id);
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        }
+
+
+        // ... existing code ...
+        function safeParseMontant(val) {
+            if (typeof val !== 'string') return 0;
+            let cleaned = val.replace(/\s/g, '').replace(/[-–—N/Ana]/gi, '0');
+            let num = parseFloat(cleaned);
+            return isNaN(num) ? 0 : num;
+        }
+
+        function calculateFacturationStats(data = facturesData) {
+            let totalFactures = data.length;
+            let montantFacture = 0, montantEncaisse = 0, invalids = 0;
+            let totalDelai = 0, facturesEnRetard = 0;
+            let clientStats = {};
+            
+            data.forEach(facture => {
+                let mf = safeParseMontant(facture['Montant Facturé']);
+                let me = safeParseMontant(facture['Montant Encaissé']);
+                if (isNaN(mf) || isNaN(me)) invalids++;
+                montantFacture += mf;
+                montantEncaisse += me;
+                
+                // Calcul du délai (si disponible)
+                if (facture['Délai']) {
+                    let delai = parseInt(facture['Délai']) || 0;
+                    totalDelai += delai;
+                    if (delai > 30) facturesEnRetard++; // Considérer en retard si > 30 jours
+                }
+                
+                // Stats par client
+                let client = facture['Client'] || 'Non défini';
+                clientStats[client] = (clientStats[client] || 0) + mf;
+            });
+            
+            let tauxEncaissement = montantFacture > 0 ? (montantEncaisse / montantFacture) * 100 : 0;
+            let montantMoyen = totalFactures > 0 ? montantFacture / totalFactures : 0;
+            let delaiMoyen = totalFactures > 0 ? totalDelai / totalFactures : 0;
+            
+            // Top client
+            let topClient = 'N/A';
+            if (Object.keys(clientStats).length > 0) {
+                let sortedClients = Object.entries(clientStats).sort((a, b) => b[1] - a[1]);
+                topClient = sortedClients[0][0];
+            }
+            
+            return {
+                totalFactures,
+                montantFacture,
+                montantEncaisse,
+                tauxEncaissement,
+                montantMoyen,
+                delaiMoyen,
+                facturesEnRetard,
+                topClient,
+                invalids
+            };
+        }
+
+
+
+        function getFacturationByDivision(data = facturesData) {
+            let divisionStats = {};
+            data.forEach(facture => {
+                let division = facture['Division'] || 'Non défini';
+                let montant = safeParseMontant(facture['Montant Facturé']);
+                divisionStats[division] = (divisionStats[division] || 0) + montant;
+            });
+            return Object.entries(divisionStats).map(([division, montant]) => ({ label: division, value: montant }));
+        }
+        // ... même correction pour getFacturationByEtat, getFacturationByClient, getFacturationByManager ...
+        // ... dans renderChart, si data.length === 0 ou tout à 0, afficher un message "Aucune donnée exploitable pour ce graphique" à la place du canvas ...
+        // ... existing code ...
+
+        // Initialisation centralisée
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Initialisation du dashboard...');
+            
+            try {
+                // Charger les données
+                await loadAllCSVs();
+                console.log('Données chargées:', {
+                    trs: trsData.length,
+                    missions: missionsData.length,
+                    factures: facturesData.length,
+                    opportunites: opportunitesData.length
+                });
+                
+                // Configurer les filtres
+                setupFilters();
+                
+                // Configurer la visibilité des filtres
+                updateFiltersVisibility();
+                
+                // Configurer les événements des onglets
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        console.log('Clic sur onglet:', tab.dataset.tab);
+                        if (window.isChangingTab) {
+                            return;
+                        }
+                        window.isChangingTab = true;
+                        try {
+                            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                            tab.classList.add('active');
+                            const tabId = 'tab-' + tab.dataset.tab;
+                            document.getElementById(tabId).classList.add('active');
+                            currentTab = tab.dataset.tab;
+                            
+                            // Reset des filtres pour opportunités
+                            if (tab.dataset.tab === 'opportunites') {
+                                resetOpportunitesFilters();
+                            }
+                            
+                            updateFiltersVisibility();
+                            updateFiltersForCurrentTab();
+                            applyFilters();
+                            renderCurrentTab();
+                        } finally {
+                            window.isChangingTab = false;
+                        }
+                    });
+                });
+                
+                // Configurer les événements des filtres généraux
+                const filterElements = [
+                    'yearFilter',
+                    'monthFilter', 
+                    'startDate',
+                    'endDate',
+                    'buFilter',
+                    'collabFilter',
+                    'missionFilter',
+                    'typeHeureFilter'
+                ];
+                
+                filterElements.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('change', handleFilterChange);
+                    }
+                });
+                
+                // Configurer le bouton de rafraîchissement
+                const refreshBtn = document.getElementById('refreshBtn');
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', refreshData);
+                }
+                
+                // Observer les filtres généraux
+                observeGeneralFilters();
+                
+                // Rendu initial
+                renderCurrentTab();
+                
+                console.log('Dashboard initialisé avec succès');
+            } catch (error) {
+                console.error('Erreur lors de l\'initialisation:', error);
+            }
+        });
     </script>
 </body>
 </html> 
