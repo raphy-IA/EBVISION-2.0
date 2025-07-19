@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRS Dashboard - Gestion des Clients</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin: 0.25rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            border: none;
+            border-radius: 25px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-active { background-color: #e8f5e8; color: #388e3c; }
+        .status-inactive { background-color: #ffebee; color: #d32f2f; }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard.html">
+                <i class="fas fa-clock me-2"></i>
+                TRS Dashboard
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i>
+                    Admin
+                </span>
+                <button onclick="logout()" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-sign-out-alt me-1"></i>
+                    Déconnexion
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Container -->
+            <div class="col-md-3 col-lg-2 px-0 sidebar-container">
+                <!-- La sidebar sera générée par JavaScript -->
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <div class="main-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-building me-2"></i>Gestion des Clients</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addClientModal">
+                            <i class="fas fa-plus me-2"></i>Nouveau Client
+                        </button>
+                    </div>
+
+                    <!-- Filtres -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="statusFilter" class="form-label">Statut</label>
+                                    <select class="form-select" id="statusFilter">
+                                        <option value="">Tous les statuts</option>
+                                        <option value="ACTIVE">Actif</option>
+                                        <option value="INACTIVE">Inactif</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="sectorFilter" class="form-label">Secteur</label>
+                                    <select class="form-select" id="sectorFilter">
+                                        <option value="">Tous les secteurs</option>
+                                        <option value="AUDIT">Audit</option>
+                                        <option value="COMPTABILITE">Comptabilité</option>
+                                        <option value="FINANCE">Finance</option>
+                                        <option value="JURIDIQUE">Juridique</option>
+                                        <option value="FISCALITE">Fiscalité</option>
+                                        <option value="GOUVERNANCE">Gouvernance</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="searchInput" class="form-label">Recherche</label>
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher un client...">
+                                </div>
+                                <div class="col-md-3 mb-3 d-flex align-items-end">
+                                    <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                                        <i class="fas fa-refresh me-2"></i>Réinitialiser
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tableau des clients -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-list me-2"></i>Liste des Clients
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Raison Sociale</th>
+                                            <th>Nom</th>
+                                            <th>Secteur</th>
+                                            <th>Email</th>
+                                            <th>Téléphone</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="clientsTableBody">
+                                        <tr>
+                                            <td colspan="8" class="text-center">
+                                                <div class="loading">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Chargement...</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ajout/Modification Client -->
+    <div class="modal fade" id="addClientModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="clientModalTitle">
+                        <i class="fas fa-plus me-2"></i>Nouveau Client
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="clientForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="clientCode" class="form-label">Code Client *</label>
+                                <input type="text" class="form-control" id="clientCode" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="clientRaisonSociale" class="form-label">Raison Sociale *</label>
+                                <input type="text" class="form-control" id="clientRaisonSociale" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="clientNom" class="form-label">Nom</label>
+                                <input type="text" class="form-control" id="clientNom">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="clientSector" class="form-label">Secteur d'activité</label>
+                                <select class="form-select" id="clientSector">
+                                    <option value="">Sélectionner un secteur</option>
+                                    <option value="AUDIT">Audit</option>
+                                    <option value="COMPTABILITE">Comptabilité</option>
+                                    <option value="FINANCE">Finance</option>
+                                    <option value="JURIDIQUE">Juridique</option>
+                                    <option value="FISCALITE">Fiscalité</option>
+                                    <option value="GOUVERNANCE">Gouvernance</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="clientEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="clientEmail">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="clientTelephone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="clientTelephone">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="clientAdresse" class="form-label">Adresse</label>
+                                <textarea class="form-control" id="clientAdresse" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="clientStatut" class="form-label">Statut</label>
+                                <select class="form-select" id="clientStatut">
+                                    <option value="ACTIVE">Actif</option>
+                                    <option value="INACTIVE">Inactif</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="clientNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="clientNotes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveClient()">
+                        <i class="fas fa-save me-2"></i>Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Sidebar Manager -->
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        // Variables globales
+        let clients = [];
+        let currentClientId = null;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadClients();
+            setupEventListeners();
+        });
+
+        // Configuration des événements
+        function setupEventListeners() {
+            document.getElementById('statusFilter').addEventListener('change', filterClients);
+            document.getElementById('sectorFilter').addEventListener('change', filterClients);
+            document.getElementById('searchInput').addEventListener('input', filterClients);
+        }
+
+        // Chargement des clients
+        async function loadClients() {
+            try {
+                const response = await fetch('/api/clients');
+                if (response.ok) {
+                    clients = await response.json();
+                    displayClients(clients);
+                } else {
+                    console.error('Erreur lors du chargement des clients');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Affichage des clients
+        function displayClients(clientsToShow) {
+            const tbody = document.getElementById('clientsTableBody');
+            
+            if (clientsToShow.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-3"></i>
+                            <p>Aucun client trouvé</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = clientsToShow.map(client => `
+                <tr>
+                    <td><strong>${client.code || 'N/A'}</strong></td>
+                    <td>${client.raison_sociale || 'N/A'}</td>
+                    <td>${client.nom || 'N/A'}</td>
+                    <td>${client.secteur_activite || 'N/A'}</td>
+                    <td>${client.email || 'N/A'}</td>
+                    <td>${client.telephone || 'N/A'}</td>
+                    <td><span class="status-badge status-${client.statut?.toLowerCase()}">${client.statut || 'N/A'}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editClient('${client.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteClient('${client.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Filtrage des clients
+        function filterClients() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const sectorFilter = document.getElementById('sectorFilter').value;
+            const searchFilter = document.getElementById('searchInput').value.toLowerCase();
+
+            let filteredClients = clients.filter(client => {
+                const statusMatch = !statusFilter || client.statut === statusFilter;
+                const sectorMatch = !sectorFilter || client.secteur_activite === sectorFilter;
+                const searchMatch = !searchFilter || 
+                    (client.nom && client.nom.toLowerCase().includes(searchFilter)) ||
+                    (client.raison_sociale && client.raison_sociale.toLowerCase().includes(searchFilter)) ||
+                    (client.code && client.code.toLowerCase().includes(searchFilter));
+
+                return statusMatch && sectorMatch && searchMatch;
+            });
+
+            displayClients(filteredClients);
+        }
+
+        // Réinitialisation des filtres
+        function resetFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('sectorFilter').value = '';
+            document.getElementById('searchInput').value = '';
+            displayClients(clients);
+        }
+
+        // Sauvegarde d'un client
+        async function saveClient() {
+            const formData = {
+                code: document.getElementById('clientCode').value,
+                raison_sociale: document.getElementById('clientRaisonSociale').value,
+                nom: document.getElementById('clientNom').value,
+                secteur_activite: document.getElementById('clientSector').value,
+                email: document.getElementById('clientEmail').value,
+                telephone: document.getElementById('clientTelephone').value,
+                adresse: document.getElementById('clientAdresse').value,
+                statut: document.getElementById('clientStatut').value,
+                notes: document.getElementById('clientNotes').value
+            };
+
+            try {
+                const url = currentClientId ? `/api/clients/${currentClientId}` : '/api/clients';
+                const method = currentClientId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addClientModal')).hide();
+                    loadClients();
+                    resetClientForm();
+                } else {
+                    console.error('Erreur lors de la sauvegarde');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Édition d'un client
+        function editClient(clientId) {
+            const client = clients.find(c => c.id === clientId);
+            if (client) {
+                currentClientId = clientId;
+                document.getElementById('clientModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Modifier le Client';
+                
+                document.getElementById('clientCode').value = client.code || '';
+                document.getElementById('clientRaisonSociale').value = client.raison_sociale || '';
+                document.getElementById('clientNom').value = client.nom || '';
+                document.getElementById('clientSector').value = client.secteur_activite || '';
+                document.getElementById('clientEmail').value = client.email || '';
+                document.getElementById('clientTelephone').value = client.telephone || '';
+                document.getElementById('clientAdresse').value = client.adresse || '';
+                document.getElementById('clientStatut').value = client.statut || 'ACTIVE';
+                document.getElementById('clientNotes').value = client.notes || '';
+
+                new bootstrap.Modal(document.getElementById('addClientModal')).show();
+            }
+        }
+
+        // Suppression d'un client
+        async function deleteClient(clientId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce client ?')) {
+                try {
+                    const response = await fetch(`/api/clients/${clientId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        loadClients();
+                    } else {
+                        console.error('Erreur lors de la suppression');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                }
+            }
+        }
+
+        // Réinitialisation du formulaire
+        function resetClientForm() {
+            currentClientId = null;
+            document.getElementById('clientModalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>Nouveau Client';
+            document.getElementById('clientForm').reset();
+        }
+
+        // Gestion du modal
+        document.getElementById('addClientModal').addEventListener('hidden.bs.modal', function () {
+            resetClientForm();
+        });
+    </script>
+</body>
+</html> 

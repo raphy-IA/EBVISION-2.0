@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Grades - TRS Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+    </style>
+    <link rel="stylesheet" href="/css/sidebar.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard.html">
+                <i class="fas fa-star me-2"></i>
+                Gestion des Grades
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a href="/dashboard.html" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Retour au Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Container -->
+            <div class="col-md-3 col-lg-2 px-0 sidebar-container">
+                <!-- La sidebar sera générée par JavaScript -->
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <div class="main-content">
+                    <!-- Header -->
+                    <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-star me-2"></i>Gestion des Grades</h2>
+                        <p class="text-muted">Gérez les grades et niveaux hiérarchiques des collaborateurs</p>
+                    </div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGradeModal">
+                        <i class="fas fa-plus me-2"></i>Nouveau Grade
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <div class="stat-number" id="total-grades">-</div>
+                        <div class="stat-label">Total Grades</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <div class="card-body text-center">
+                        <div class="stat-number" id="active-grades">-</div>
+                        <div class="stat-label">Grades Actifs</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="card-body text-center">
+                        <div class="stat-number" id="avg-salary">-</div>
+                        <div class="stat-label">Salaire Moyen</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="card-body text-center">
+                        <div class="stat-number" id="total-collaborators">-</div>
+                        <div class="stat-label">Collaborateurs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher un grade...">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" id="statusFilter">
+                    <option value="">Tous les statuts</option>
+                    <option value="actif">Actif</option>
+                    <option value="inactif">Inactif</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Grades Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Liste des Grades
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="gradesTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Code</th>
+                                <th>Niveau</th>
+                                <th>Salaire Base</th>
+                                <th>Taux Horaire</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gradesTableBody">
+                            <!-- Les données seront chargées ici -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <nav aria-label="Pagination des grades">
+                    <ul class="pagination justify-content-center" id="pagination">
+                        <!-- Pagination sera générée ici -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Grade Modal -->
+    <div class="modal fade" id="addGradeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>Nouveau Grade
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addGradeForm">
+                        <div class="mb-3">
+                            <label for="gradeName" class="form-label">Nom du Grade</label>
+                            <input type="text" class="form-control" id="gradeName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="gradeCode" class="form-label">Code</label>
+                            <input type="text" class="form-control" id="gradeCode" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="gradeLevel" class="form-label">Niveau</label>
+                            <input type="number" class="form-control" id="gradeLevel" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="baseSalary" class="form-label">Salaire de Base</label>
+                            <input type="number" class="form-control" id="baseSalary" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="hourlyRate" class="form-label">Taux Horaire</label>
+                            <input type="number" class="form-control" id="hourlyRate" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="gradeStatus" class="form-label">Statut</label>
+                            <select class="form-select" id="gradeStatus" required>
+                                <option value="actif">Actif</option>
+                                <option value="inactif">Inactif</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="saveGradeBtn">
+                        <i class="fas fa-save me-2"></i>Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Grade Modal -->
+    <div class="modal fade" id="editGradeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>Modifier le Grade
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editGradeForm">
+                        <input type="hidden" id="editGradeId">
+                        <div class="mb-3">
+                            <label for="editGradeName" class="form-label">Nom du Grade</label>
+                            <input type="text" class="form-control" id="editGradeName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editGradeCode" class="form-label">Code</label>
+                            <input type="text" class="form-control" id="editGradeCode" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editGradeLevel" class="form-label">Niveau</label>
+                            <input type="number" class="form-control" id="editGradeLevel" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editBaseSalary" class="form-label">Salaire de Base</label>
+                            <input type="number" class="form-control" id="editBaseSalary" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editHourlyRate" class="form-label">Taux Horaire</label>
+                            <input type="number" class="form-control" id="editHourlyRate" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editGradeStatus" class="form-label">Statut</label>
+                            <select class="form-select" id="editGradeStatus" required>
+                                <option value="actif">Actif</option>
+                                <option value="inactif">Inactif</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="updateGradeBtn">
+                        <i class="fas fa-save me-2"></i>Mettre à jour
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteGradeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer le grade <strong id="deleteGradeName"></strong> ?</p>
+                    <p class="text-muted">Cette action est irréversible.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                        <i class="fas fa-trash me-2"></i>Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Sidebar Manager -->
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        // Configuration
+        const API_BASE_URL = '/api';
+        let currentGrades = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGrades();
+            loadStatistics();
+            setupEventListeners();
+        });
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Search
+            document.getElementById('searchInput').addEventListener('input', function() {
+                currentPage = 1;
+                loadGrades();
+            });
+
+            // Status filter
+            document.getElementById('statusFilter').addEventListener('change', function() {
+                currentPage = 1;
+                loadGrades();
+            });
+
+            // Add grade
+            document.getElementById('saveGradeBtn').addEventListener('click', addGrade);
+
+            // Edit grade
+            document.getElementById('updateGradeBtn').addEventListener('click', updateGrade);
+
+            // Delete grade
+            document.getElementById('confirmDeleteBtn').addEventListener('click', deleteGrade);
+        }
+
+        // Load grades
+        async function loadGrades() {
+            try {
+                const searchTerm = document.getElementById('searchInput').value;
+                const statusFilter = document.getElementById('statusFilter').value;
+                
+                let url = `${API_BASE_URL}/grades?page=${currentPage}&limit=${itemsPerPage}`;
+                if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+                if (statusFilter) url += `&status=${statusFilter}`;
+
+                const response = await axios.get(url);
+                currentGrades = response.data.grades || [];
+                
+                renderGradesTable();
+                renderPagination(response.data.total || 0);
+            } catch (error) {
+                console.error('Erreur lors du chargement des grades:', error);
+                showAlert('Erreur lors du chargement des grades', 'danger');
+            }
+        }
+
+        // Render grades table
+        function renderGradesTable() {
+            const tbody = document.getElementById('gradesTableBody');
+            tbody.innerHTML = '';
+
+            if (currentGrades.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-2x mb-3"></i>
+                            <br>Aucun grade trouvé
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            currentGrades.forEach(grade => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${grade.nom}</strong></td>
+                    <td><span class="badge bg-secondary">${grade.code}</span></td>
+                    <td>Niveau ${grade.niveau}</td>
+                    <td>${formatCurrency(grade.salaire_base)}</td>
+                    <td>${formatCurrency(grade.taux_horaire)}/h</td>
+                    <td>
+                        <span class="badge ${grade.statut === 'actif' ? 'bg-success' : 'bg-secondary'}">
+                            ${grade.statut}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="editGrade('${grade.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="confirmDelete('${grade.id}', '${grade.nom}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Load statistics
+        async function loadStatistics() {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/grades/statistics`);
+                const stats = response.data;
+
+                document.getElementById('total-grades').textContent = stats.totalGrades || 0;
+                document.getElementById('active-grades').textContent = stats.activeGrades || 0;
+                document.getElementById('avg-salary').textContent = formatCurrency(stats.averageSalary || 0);
+                document.getElementById('total-collaborators').textContent = stats.totalCollaborators || 0;
+            } catch (error) {
+                console.error('Erreur lors du chargement des statistiques:', error);
+            }
+        }
+
+        // Add grade
+        async function addGrade() {
+            try {
+                const formData = {
+                    nom: document.getElementById('gradeName').value,
+                    code: document.getElementById('gradeCode').value,
+                    niveau: parseInt(document.getElementById('gradeLevel').value),
+                    salaire_base: parseFloat(document.getElementById('baseSalary').value),
+                    taux_horaire: parseFloat(document.getElementById('hourlyRate').value),
+                    statut: document.getElementById('gradeStatus').value
+                };
+
+                await axios.post(`${API_BASE_URL}/grades`, formData);
+                
+                // Close modal and reset form
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addGradeModal'));
+                modal.hide();
+                document.getElementById('addGradeForm').reset();
+                
+                // Reload data
+                loadGrades();
+                loadStatistics();
+                
+                showAlert('Grade ajouté avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur lors de l\'ajout du grade:', error);
+                showAlert('Erreur lors de l\'ajout du grade', 'danger');
+            }
+        }
+
+        // Edit grade
+        async function editGrade(gradeId) {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/grades/${gradeId}`);
+                const grade = response.data;
+
+                // Fill form
+                document.getElementById('editGradeId').value = grade.id;
+                document.getElementById('editGradeName').value = grade.nom;
+                document.getElementById('editGradeCode').value = grade.code;
+                document.getElementById('editGradeLevel').value = grade.niveau;
+                document.getElementById('editBaseSalary').value = grade.salaire_base;
+                document.getElementById('editHourlyRate').value = grade.taux_horaire;
+                document.getElementById('editGradeStatus').value = grade.statut;
+
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('editGradeModal'));
+                modal.show();
+            } catch (error) {
+                console.error('Erreur lors du chargement du grade:', error);
+                showAlert('Erreur lors du chargement du grade', 'danger');
+            }
+        }
+
+        // Update grade
+        async function updateGrade() {
+            try {
+                const gradeId = document.getElementById('editGradeId').value;
+                const formData = {
+                    nom: document.getElementById('editGradeName').value,
+                    code: document.getElementById('editGradeCode').value,
+                    niveau: parseInt(document.getElementById('editGradeLevel').value),
+                    salaire_base: parseFloat(document.getElementById('editBaseSalary').value),
+                    taux_horaire: parseFloat(document.getElementById('editHourlyRate').value),
+                    statut: document.getElementById('editGradeStatus').value
+                };
+
+                await axios.put(`${API_BASE_URL}/grades/${gradeId}`, formData);
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editGradeModal'));
+                modal.hide();
+                
+                // Reload data
+                loadGrades();
+                loadStatistics();
+                
+                showAlert('Grade mis à jour avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour du grade:', error);
+                showAlert('Erreur lors de la mise à jour du grade', 'danger');
+            }
+        }
+
+        // Confirm delete
+        function confirmDelete(gradeId, gradeName) {
+            document.getElementById('deleteGradeName').textContent = gradeName;
+            document.getElementById('confirmDeleteBtn').setAttribute('data-grade-id', gradeId);
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteGradeModal'));
+            modal.show();
+        }
+
+        // Delete grade
+        async function deleteGrade() {
+            try {
+                const gradeId = document.getElementById('confirmDeleteBtn').getAttribute('data-grade-id');
+                
+                await axios.delete(`${API_BASE_URL}/grades/${gradeId}`);
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteGradeModal'));
+                modal.hide();
+                
+                // Reload data
+                loadGrades();
+                loadStatistics();
+                
+                showAlert('Grade supprimé avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur lors de la suppression du grade:', error);
+                showAlert('Erreur lors de la suppression du grade', 'danger');
+            }
+        }
+
+        // Render pagination
+        function renderPagination(total) {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(total / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+            
+            // Previous button
+            paginationHTML += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            `;
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    paginationHTML += `
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                        </li>
+                    `;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    paginationHTML += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                }
+            }
+
+            // Next button
+            paginationHTML += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // Change page
+        function changePage(page) {
+            currentPage = page;
+            loadGrades();
+        }
+
+        // Utility functions
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(amount);
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertId = 'alert-' + Date.now();
+            
+            const alertHTML = `
+                <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            alertContainer.insertAdjacentHTML('beforeend', alertHTML);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                const alert = document.getElementById(alertId);
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 

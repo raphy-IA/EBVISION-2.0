@@ -1,0 +1,171 @@
+{
+  "timestamp": "2025-07-19T00:36:12.207Z",
+  "version": "2.0.0",
+  "summary": {
+    "grades": 6,
+    "collaborateurs": 5,
+    "missions": 3,
+    "feuilles_temps": 3,
+    "time_entries": 11,
+    "users": 1,
+    "clients": 5
+  },
+  "details": {
+    "time_entries_stats": {
+      "total_entries": "11",
+      "saisies": "8",
+      "soumises": "1",
+      "validees": "2",
+      "rejetees": "0",
+      "total_heures": "58.50",
+      "cout_total": "4972.5000",
+      "moyenne_heures_par_entry": "5.3181818181818182",
+      "types_heures_utilises": "5",
+      "utilisateurs_actifs": "1",
+      "missions_actives": "1"
+    },
+    "types_heures": [
+      {
+        "type_heures": "FERIE",
+        "nb_entries": "1",
+        "total_heures": "4.00",
+        "moyenne_heures": "4.0000000000000000",
+        "cout_total": "340.0000"
+      },
+      {
+        "type_heures": "NORMALES",
+        "nb_entries": "6",
+        "total_heures": "41.00",
+        "moyenne_heures": "6.8333333333333333",
+        "cout_total": "3485.0000"
+      },
+      {
+        "type_heures": "NUIT",
+        "nb_entries": "1",
+        "total_heures": "3.50",
+        "moyenne_heures": "3.5000000000000000",
+        "cout_total": "297.5000"
+      },
+      {
+        "type_heures": "SUPPLEMENTAIRES",
+        "nb_entries": "2",
+        "total_heures": "4.00",
+        "moyenne_heures": "2.0000000000000000",
+        "cout_total": "340.0000"
+      },
+      {
+        "type_heures": "WEEKEND",
+        "nb_entries": "1",
+        "total_heures": "6.00",
+        "moyenne_heures": "6.0000000000000000",
+        "cout_total": "510.0000"
+      }
+    ],
+    "users_stats": [
+      {
+        "nom": "Admin",
+        "prenom": "User",
+        "initiales": "AU",
+        "nb_entries": "11",
+        "total_heures": "58.50",
+        "cout_total": "4972.5000",
+        "entries_validees": "2"
+      }
+    ],
+    "missions_stats": [
+      {
+        "titre": "Audit Financier 2024",
+        "statut": "en_cours",
+        "nb_entries": "11",
+        "total_heures": "58.50",
+        "cout_total": "4972.5000"
+      },
+      {
+        "titre": "Conseil Stratégique",
+        "statut": "en_cours",
+        "nb_entries": "0",
+        "total_heures": "0",
+        "cout_total": "0"
+      },
+      {
+        "titre": "Optimisation Processus",
+        "statut": "planifiee",
+        "nb_entries": "0",
+        "total_heures": "0",
+        "cout_total": "0"
+      }
+    ],
+    "evolution_temporelle": [
+      {
+        "date_saisie": "2024-01-14T23:00:00.000Z",
+        "nb_entries": "2",
+        "total_heures": "16.00",
+        "cout_jour": "1360.0000"
+      },
+      {
+        "date_saisie": "2024-01-15T23:00:00.000Z",
+        "nb_entries": "2",
+        "total_heures": "13.00",
+        "cout_jour": "1105.0000"
+      },
+      {
+        "date_saisie": "2024-01-16T23:00:00.000Z",
+        "nb_entries": "2",
+        "total_heures": "4.00",
+        "cout_jour": "340.0000"
+      },
+      {
+        "date_saisie": "2024-01-17T23:00:00.000Z",
+        "nb_entries": "1",
+        "total_heures": "8.00",
+        "cout_jour": "680.0000"
+      },
+      {
+        "date_saisie": "2024-01-18T23:00:00.000Z",
+        "nb_entries": "1",
+        "total_heures": "4.00",
+        "cout_jour": "340.0000"
+      },
+      {
+        "date_saisie": "2024-01-19T23:00:00.000Z",
+        "nb_entries": "1",
+        "total_heures": "3.50",
+        "cout_jour": "297.5000"
+      },
+      {
+        "date_saisie": "2024-01-20T23:00:00.000Z",
+        "nb_entries": "1",
+        "total_heures": "6.00",
+        "cout_jour": "510.0000"
+      },
+      {
+        "date_saisie": "2024-01-21T23:00:00.000Z",
+        "nb_entries": "1",
+        "total_heures": "4.00",
+        "cout_jour": "340.0000"
+      }
+    ],
+    "performance": {
+      "total_entries": "11",
+      "total_heures": "58.50",
+      "cout_total": "4972.5000",
+      "moyenne_heures_par_entry": "5.3181818181818182",
+      "max_heures_par_entry": "8.00",
+      "min_heures_par_entry": "2.00",
+      "jours_actifs": "8",
+      "moyenne_heures_par_jour": "7.3125000000000000"
+    },
+    "alertes": [
+      {
+        "type": "warning",
+        "message": "8 time entries non validées depuis plus de 7 jours",
+        "action": "Revoir et valider les anciennes saisies"
+      },
+      {
+        "type": "info",
+        "message": "Types d'heures les plus utilisés: NORMALES (6)",
+        "action": "Analyser les patterns d'utilisation"
+      }
+    ]
+  }
+}

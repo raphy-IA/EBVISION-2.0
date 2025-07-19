@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRS Dashboard - Gestion des Missions</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin: 0.25rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            border: none;
+            border-radius: 25px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-active { background-color: #e8f5e8; color: #388e3c; }
+        .status-completed { background-color: #e3f2fd; color: #1976d2; }
+        .status-pending { background-color: #fff3e0; color: #f57c00; }
+        .status-cancelled { background-color: #ffebee; color: #d32f2f; }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard.html">
+                <i class="fas fa-clock me-2"></i>
+                TRS Dashboard
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i>
+                    Admin
+                </span>
+                <button onclick="logout()" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-sign-out-alt me-1"></i>
+                    Déconnexion
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Container -->
+            <div class="col-md-3 col-lg-2 px-0 sidebar-container">
+                <!-- La sidebar sera générée par JavaScript -->
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <div class="main-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-tasks me-2"></i>Gestion des Missions</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMissionModal">
+                            <i class="fas fa-plus me-2"></i>Nouvelle Mission
+                        </button>
+                    </div>
+
+                    <!-- Filtres -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="statusFilter" class="form-label">Statut</label>
+                                    <select class="form-select" id="statusFilter">
+                                        <option value="">Tous les statuts</option>
+                                        <option value="ACTIVE">Active</option>
+                                        <option value="COMPLETED">Terminée</option>
+                                        <option value="PENDING">En attente</option>
+                                        <option value="CANCELLED">Annulée</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="clientFilter" class="form-label">Client</label>
+                                    <select class="form-select" id="clientFilter">
+                                        <option value="">Tous les clients</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="searchInput" class="form-label">Recherche</label>
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher une mission...">
+                                </div>
+                                <div class="col-md-3 mb-3 d-flex align-items-end">
+                                    <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                                        <i class="fas fa-refresh me-2"></i>Réinitialiser
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tableau des missions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-list me-2"></i>Liste des Missions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Nom</th>
+                                            <th>Client</th>
+                                            <th>Date début</th>
+                                            <th>Date fin</th>
+                                            <th>Statut</th>
+                                            <th>Budget</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="missionsTableBody">
+                                        <tr>
+                                            <td colspan="8" class="text-center">
+                                                <div class="loading">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Chargement...</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ajout/Modification Mission -->
+    <div class="modal fade" id="addMissionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="missionModalTitle">
+                        <i class="fas fa-plus me-2"></i>Nouvelle Mission
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="missionForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="missionCode" class="form-label">Code Mission *</label>
+                                <input type="text" class="form-control" id="missionCode" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="missionName" class="form-label">Nom Mission *</label>
+                                <input type="text" class="form-control" id="missionName" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="missionClient" class="form-label">Client *</label>
+                                <select class="form-select" id="missionClient" required>
+                                    <option value="">Sélectionner un client</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="missionStatus" class="form-label">Statut</label>
+                                <select class="form-select" id="missionStatus">
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="PENDING">En attente</option>
+                                    <option value="COMPLETED">Terminée</option>
+                                    <option value="CANCELLED">Annulée</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="missionStartDate" class="form-label">Date de début</label>
+                                <input type="date" class="form-control" id="missionStartDate">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="missionEndDate" class="form-label">Date de fin</label>
+                                <input type="date" class="form-control" id="missionEndDate">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="missionDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="missionDescription" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="missionBudget" class="form-label">Budget (€)</label>
+                                <input type="number" class="form-control" id="missionBudget" min="0" step="0.01">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="missionRate" class="form-label">Taux horaire (€/h)</label>
+                                <input type="number" class="form-control" id="missionRate" min="0" step="0.01">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveMission()">
+                        <i class="fas fa-save me-2"></i>Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Sidebar Manager -->
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        // Variables globales
+        let missions = [];
+        let clients = [];
+        let currentMissionId = null;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMissions();
+            loadClients();
+            setupEventListeners();
+        });
+
+        // Configuration des événements
+        function setupEventListeners() {
+            document.getElementById('statusFilter').addEventListener('change', filterMissions);
+            document.getElementById('clientFilter').addEventListener('change', filterMissions);
+            document.getElementById('searchInput').addEventListener('input', filterMissions);
+        }
+
+        // Chargement des missions
+        async function loadMissions() {
+            try {
+                const response = await fetch('/api/missions');
+                if (response.ok) {
+                    missions = await response.json();
+                    displayMissions(missions);
+                } else {
+                    console.error('Erreur lors du chargement des missions');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Chargement des clients
+        async function loadClients() {
+            try {
+                const response = await fetch('/api/clients');
+                if (response.ok) {
+                    clients = await response.json();
+                    populateClientFilters();
+                } else {
+                    console.error('Erreur lors du chargement des clients');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Affichage des missions
+        function displayMissions(missionsToShow) {
+            const tbody = document.getElementById('missionsTableBody');
+            
+            if (missionsToShow.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-3"></i>
+                            <p>Aucune mission trouvée</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = missionsToShow.map(mission => `
+                <tr>
+                    <td><strong>${mission.code || 'N/A'}</strong></td>
+                    <td>${mission.nom || 'N/A'}</td>
+                    <td>${mission.client_nom || 'N/A'}</td>
+                    <td>${formatDate(mission.date_debut)}</td>
+                    <td>${formatDate(mission.date_fin)}</td>
+                    <td><span class="status-badge status-${mission.statut?.toLowerCase()}">${mission.statut || 'N/A'}</span></td>
+                    <td>${formatCurrency(mission.budget)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editMission('${mission.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteMission('${mission.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Filtrage des missions
+        function filterMissions() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const clientFilter = document.getElementById('clientFilter').value;
+            const searchFilter = document.getElementById('searchInput').value.toLowerCase();
+
+            let filteredMissions = missions.filter(mission => {
+                const statusMatch = !statusFilter || mission.statut === statusFilter;
+                const clientMatch = !clientFilter || mission.client_id === clientFilter;
+                const searchMatch = !searchFilter || 
+                    (mission.nom && mission.nom.toLowerCase().includes(searchFilter)) ||
+                    (mission.code && mission.code.toLowerCase().includes(searchFilter));
+
+                return statusMatch && clientMatch && searchMatch;
+            });
+
+            displayMissions(filteredMissions);
+        }
+
+        // Réinitialisation des filtres
+        function resetFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('clientFilter').value = '';
+            document.getElementById('searchInput').value = '';
+            displayMissions(missions);
+        }
+
+        // Remplissage des filtres clients
+        function populateClientFilters() {
+            const clientFilter = document.getElementById('clientFilter');
+            const missionClient = document.getElementById('missionClient');
+            
+            const clientOptions = clients.map(client => 
+                `<option value="${client.id}">${client.nom || client.raison_sociale}</option>`
+            ).join('');
+            
+            clientFilter.innerHTML = '<option value="">Tous les clients</option>' + clientOptions;
+            missionClient.innerHTML = '<option value="">Sélectionner un client</option>' + clientOptions;
+        }
+
+        // Sauvegarde d'une mission
+        async function saveMission() {
+            const formData = {
+                code: document.getElementById('missionCode').value,
+                nom: document.getElementById('missionName').value,
+                client_id: document.getElementById('missionClient').value,
+                statut: document.getElementById('missionStatus').value,
+                date_debut: document.getElementById('missionStartDate').value,
+                date_fin: document.getElementById('missionEndDate').value,
+                description: document.getElementById('missionDescription').value,
+                budget: parseFloat(document.getElementById('missionBudget').value) || 0,
+                taux_horaire: parseFloat(document.getElementById('missionRate').value) || 0
+            };
+
+            try {
+                const url = currentMissionId ? `/api/missions/${currentMissionId}` : '/api/missions';
+                const method = currentMissionId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addMissionModal')).hide();
+                    loadMissions();
+                    resetMissionForm();
+                } else {
+                    console.error('Erreur lors de la sauvegarde');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Édition d'une mission
+        function editMission(missionId) {
+            const mission = missions.find(m => m.id === missionId);
+            if (mission) {
+                currentMissionId = missionId;
+                document.getElementById('missionModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Modifier la Mission';
+                
+                document.getElementById('missionCode').value = mission.code || '';
+                document.getElementById('missionName').value = mission.nom || '';
+                document.getElementById('missionClient').value = mission.client_id || '';
+                document.getElementById('missionStatus').value = mission.statut || 'ACTIVE';
+                document.getElementById('missionStartDate').value = mission.date_debut || '';
+                document.getElementById('missionEndDate').value = mission.date_fin || '';
+                document.getElementById('missionDescription').value = mission.description || '';
+                document.getElementById('missionBudget').value = mission.budget || '';
+                document.getElementById('missionRate').value = mission.taux_horaire || '';
+
+                new bootstrap.Modal(document.getElementById('addMissionModal')).show();
+            }
+        }
+
+        // Suppression d'une mission
+        async function deleteMission(missionId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette mission ?')) {
+                try {
+                    const response = await fetch(`/api/missions/${missionId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        loadMissions();
+                    } else {
+                        console.error('Erreur lors de la suppression');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                }
+            }
+        }
+
+        // Réinitialisation du formulaire
+        function resetMissionForm() {
+            currentMissionId = null;
+            document.getElementById('missionModalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>Nouvelle Mission';
+            document.getElementById('missionForm').reset();
+        }
+
+        // Utilitaires
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleDateString('fr-FR');
+        }
+
+        function formatCurrency(amount) {
+            if (!amount) return 'N/A';
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(amount);
+        }
+
+        // Gestion du modal
+        document.getElementById('addMissionModal').addEventListener('hidden.bs.modal', function () {
+            resetMissionForm();
+        });
+    </script>
+</body>
+</html> 

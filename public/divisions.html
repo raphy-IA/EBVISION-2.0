@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Divisions - TRS Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border: none;
+            border-radius: 10px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #11998e;
+            box-shadow: 0 0 0 0.2rem rgba(17, 153, 142, 0.25);
+        }
+        
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border-radius: 15px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+    </style>
+    <link rel="stylesheet" href="/css/sidebar.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard.html">
+                <i class="fas fa-sitemap me-2"></i>
+                Gestion des Divisions
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a href="/dashboard.html" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Retour au Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Container -->
+            <div class="col-md-3 col-lg-2 px-0 sidebar-container">
+                <!-- La sidebar sera générée par JavaScript -->
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <div class="main-content">
+                    <!-- Header -->
+                    <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-sitemap me-2"></i>Gestion des Divisions</h2>
+                        <p class="text-muted">Gérez les divisions et départements de l'entreprise</p>
+                    </div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDivisionModal">
+                        <i class="fas fa-plus me-2"></i>Nouvelle Division
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <div class="stat-number" id="total-divisions">-</div>
+                        <div class="stat-label">Total Divisions</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card-body text-center">
+                        <div class="stat-number" id="active-divisions">-</div>
+                        <div class="stat-label">Divisions Actives</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="card-body text-center">
+                        <div class="stat-number" id="total-collaborators">-</div>
+                        <div class="stat-label">Collaborateurs</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="card-body text-center">
+                        <div class="stat-number" id="total-missions">-</div>
+                        <div class="stat-label">Missions Actives</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher une division...">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" id="statusFilter">
+                    <option value="">Tous les statuts</option>
+                    <option value="actif">Actif</option>
+                    <option value="inactif">Inactif</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Divisions Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Liste des Divisions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="divisionsTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Code</th>
+                                <th>Responsable</th>
+                                <th>Collaborateurs</th>
+                                <th>Missions</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="divisionsTableBody">
+                            <!-- Les données seront chargées ici -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <nav aria-label="Pagination des divisions">
+                    <ul class="pagination justify-content-center" id="pagination">
+                        <!-- Pagination sera générée ici -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Division Modal -->
+    <div class="modal fade" id="addDivisionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>Nouvelle Division
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addDivisionForm">
+                        <div class="mb-3">
+                            <label for="divisionName" class="form-label">Nom de la Division</label>
+                            <input type="text" class="form-control" id="divisionName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="divisionCode" class="form-label">Code</label>
+                            <input type="text" class="form-control" id="divisionCode" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="divisionDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="divisionDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="divisionManager" class="form-label">Responsable</label>
+                            <select class="form-select" id="divisionManager">
+                                <option value="">Sélectionner un responsable</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="divisionStatus" class="form-label">Statut</label>
+                            <select class="form-select" id="divisionStatus" required>
+                                <option value="actif">Actif</option>
+                                <option value="inactif">Inactif</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="saveDivisionBtn">
+                        <i class="fas fa-save me-2"></i>Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Division Modal -->
+    <div class="modal fade" id="editDivisionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>Modifier la Division
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editDivisionForm">
+                        <input type="hidden" id="editDivisionId">
+                        <div class="mb-3">
+                            <label for="editDivisionName" class="form-label">Nom de la Division</label>
+                            <input type="text" class="form-control" id="editDivisionName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDivisionCode" class="form-label">Code</label>
+                            <input type="text" class="form-control" id="editDivisionCode" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDivisionDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editDivisionDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDivisionManager" class="form-label">Responsable</label>
+                            <select class="form-select" id="editDivisionManager">
+                                <option value="">Sélectionner un responsable</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDivisionStatus" class="form-label">Statut</label>
+                            <select class="form-select" id="editDivisionStatus" required>
+                                <option value="actif">Actif</option>
+                                <option value="inactif">Inactif</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="updateDivisionBtn">
+                        <i class="fas fa-save me-2"></i>Mettre à jour
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteDivisionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer la division <strong id="deleteDivisionName"></strong> ?</p>
+                    <p class="text-muted">Cette action est irréversible.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                        <i class="fas fa-trash me-2"></i>Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Sidebar Manager -->
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        // Configuration
+        const API_BASE_URL = '/api';
+        let currentDivisions = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDivisions();
+            loadStatistics();
+            loadCollaborators();
+            setupEventListeners();
+        });
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Search
+            document.getElementById('searchInput').addEventListener('input', function() {
+                currentPage = 1;
+                loadDivisions();
+            });
+
+            // Status filter
+            document.getElementById('statusFilter').addEventListener('change', function() {
+                currentPage = 1;
+                loadDivisions();
+            });
+
+            // Add division
+            document.getElementById('saveDivisionBtn').addEventListener('click', addDivision);
+
+            // Edit division
+            document.getElementById('updateDivisionBtn').addEventListener('click', updateDivision);
+
+            // Delete division
+            document.getElementById('confirmDeleteBtn').addEventListener('click', deleteDivision);
+        }
+
+        // Load divisions
+        async function loadDivisions() {
+            try {
+                const searchTerm = document.getElementById('searchInput').value;
+                const statusFilter = document.getElementById('statusFilter').value;
+                
+                let url = `${API_BASE_URL}/divisions?page=${currentPage}&limit=${itemsPerPage}`;
+                if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+                if (statusFilter) url += `&status=${statusFilter}`;
+
+                const response = await axios.get(url);
+                currentDivisions = response.data.divisions || [];
+                
+                renderDivisionsTable();
+                renderPagination(response.data.total || 0);
+            } catch (error) {
+                console.error('Erreur lors du chargement des divisions:', error);
+                showAlert('Erreur lors du chargement des divisions', 'danger');
+            }
+        }
+
+        // Render divisions table
+        function renderDivisionsTable() {
+            const tbody = document.getElementById('divisionsTableBody');
+            tbody.innerHTML = '';
+
+            if (currentDivisions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-2x mb-3"></i>
+                            <br>Aucune division trouvée
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            currentDivisions.forEach(division => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${division.nom}</strong></td>
+                    <td><span class="badge bg-secondary">${division.code}</span></td>
+                    <td>${division.responsable || 'Non assigné'}</td>
+                    <td><span class="badge bg-info">${division.nombre_collaborateurs || 0}</span></td>
+                    <td><span class="badge bg-warning">${division.nombre_missions || 0}</span></td>
+                    <td>
+                        <span class="badge ${division.statut === 'actif' ? 'bg-success' : 'bg-secondary'}">
+                            ${division.statut}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="editDivision('${division.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="confirmDelete('${division.id}', '${division.nom}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Load statistics
+        async function loadStatistics() {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/divisions/statistics`);
+                const stats = response.data;
+
+                document.getElementById('total-divisions').textContent = stats.totalDivisions || 0;
+                document.getElementById('active-divisions').textContent = stats.activeDivisions || 0;
+                document.getElementById('total-collaborators').textContent = stats.totalCollaborators || 0;
+                document.getElementById('total-missions').textContent = stats.totalMissions || 0;
+            } catch (error) {
+                console.error('Erreur lors du chargement des statistiques:', error);
+            }
+        }
+
+        // Load collaborators for dropdown
+        async function loadCollaborators() {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/collaborateurs`);
+                const collaborators = response.data.collaborateurs || [];
+                
+                const managerSelects = [
+                    'divisionManager',
+                    'editDivisionManager'
+                ];
+                
+                managerSelects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    if (select) {
+                        select.innerHTML = '<option value="">Sélectionner un responsable</option>';
+                        collaborators.forEach(collaborator => {
+                            const option = document.createElement('option');
+                            option.value = collaborator.id;
+                            option.textContent = `${collaborator.nom} ${collaborator.prenom}`;
+                            select.appendChild(option);
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des collaborateurs:', error);
+            }
+        }
+
+        // Add division
+        async function addDivision() {
+            try {
+                const formData = {
+                    nom: document.getElementById('divisionName').value,
+                    code: document.getElementById('divisionCode').value,
+                    description: document.getElementById('divisionDescription').value,
+                    responsable_id: document.getElementById('divisionManager').value || null,
+                    statut: document.getElementById('divisionStatus').value
+                };
+
+                await axios.post(`${API_BASE_URL}/divisions`, formData);
+                
+                // Close modal and reset form
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addDivisionModal'));
+                modal.hide();
+                document.getElementById('addDivisionForm').reset();
+                
+                // Reload data
+                loadDivisions();
+                loadStatistics();
+                
+                showAlert('Division ajoutée avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur lors de l\'ajout de la division:', error);
+                showAlert('Erreur lors de l\'ajout de la division', 'danger');
+            }
+        }
+
+        // Edit division
+        async function editDivision(divisionId) {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/divisions/${divisionId}`);
+                const division = response.data;
+
+                // Fill form
+                document.getElementById('editDivisionId').value = division.id;
+                document.getElementById('editDivisionName').value = division.nom;
+                document.getElementById('editDivisionCode').value = division.code;
+                document.getElementById('editDivisionDescription').value = division.description || '';
+                document.getElementById('editDivisionManager').value = division.responsable_id || '';
+                document.getElementById('editDivisionStatus').value = division.statut;
+
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('editDivisionModal'));
+                modal.show();
+            } catch (error) {
+                console.error('Erreur lors du chargement de la division:', error);
+                showAlert('Erreur lors du chargement de la division', 'danger');
+            }
+        }
+
+        // Update division
+        async function updateDivision() {
+            try {
+                const divisionId = document.getElementById('editDivisionId').value;
+                const formData = {
+                    nom: document.getElementById('editDivisionName').value,
+                    code: document.getElementById('editDivisionCode').value,
+                    description: document.getElementById('editDivisionDescription').value,
+                    responsable_id: document.getElementById('editDivisionManager').value || null,
+                    statut: document.getElementById('editDivisionStatus').value
+                };
+
+                await axios.put(`${API_BASE_URL}/divisions/${divisionId}`, formData);
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editDivisionModal'));
+                modal.hide();
+                
+                // Reload data
+                loadDivisions();
+                loadStatistics();
+                
+                showAlert('Division mise à jour avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour de la division:', error);
+                showAlert('Erreur lors de la mise à jour de la division', 'danger');
+            }
+        }
+
+        // Confirm delete
+        function confirmDelete(divisionId, divisionName) {
+            document.getElementById('deleteDivisionName').textContent = divisionName;
+            document.getElementById('confirmDeleteBtn').setAttribute('data-division-id', divisionId);
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteDivisionModal'));
+            modal.show();
+        }
+
+        // Delete division
+        async function deleteDivision() {
+            try {
+                const divisionId = document.getElementById('confirmDeleteBtn').getAttribute('data-division-id');
+                
+                await axios.delete(`${API_BASE_URL}/divisions/${divisionId}`);
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteDivisionModal'));
+                modal.hide();
+                
+                // Reload data
+                loadDivisions();
+                loadStatistics();
+                
+                showAlert('Division supprimée avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur lors de la suppression de la division:', error);
+                showAlert('Erreur lors de la suppression de la division', 'danger');
+            }
+        }
+
+        // Render pagination
+        function renderPagination(total) {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(total / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+            
+            // Previous button
+            paginationHTML += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            `;
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    paginationHTML += `
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                        </li>
+                    `;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    paginationHTML += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                }
+            }
+
+            // Next button
+            paginationHTML += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // Change page
+        function changePage(page) {
+            currentPage = page;
+            loadDivisions();
+        }
+
+        // Utility functions
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertId = 'alert-' + Date.now();
+            
+            const alertHTML = `
+                <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            alertContainer.insertAdjacentHTML('beforeend', alertHTML);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                const alert = document.getElementById(alertId);
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 
