@@ -8,21 +8,23 @@ class Collaborateur {
         this.initiales = data.initiales;
         this.email = data.email;
         this.telephone = data.telephone;
+        this.business_unit_id = data.business_unit_id;
+        this.division_id = data.division_id;
         this.grade_actuel_id = data.grade_actuel_id;
         this.type_collaborateur_id = data.type_collaborateur_id;
         this.poste_actuel_id = data.poste_actuel_id;
         this.statut = data.statut || 'ACTIF';
         this.date_embauche = data.date_embauche;
         this.date_depart = data.date_depart;
-        this.division_id = data.division_id;
         this.notes = data.notes;
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
         // Relations
+        this.business_unit = data.business_unit;
+        this.division = data.division;
         this.grade = data.grade;
         this.type_collaborateur = data.type_collaborateur;
         this.poste = data.poste;
-        this.division = data.division;
     }
 
     validate() {
@@ -31,6 +33,10 @@ class Collaborateur {
         if (!this.prenom) { errors.push('Prénom requis'); }
         if (!this.initiales) { errors.push('Initiales requises'); }
         if (!this.email) { errors.push('Email requis'); }
+        if (!this.business_unit_id) { errors.push('Business Unit requise'); }
+        if (!this.grade_actuel_id) { errors.push('Grade requis'); }
+        if (!this.type_collaborateur_id) { errors.push('Type de collaborateur requis'); }
+        if (!this.poste_actuel_id) { errors.push('Poste requis'); }
         if (!this.date_embauche) { errors.push('Date d\'embauche requise'); }
         if (!['ACTIF', 'INACTIF', 'CONGE', 'DEPART'].includes(this.statut)) {
             errors.push('Statut invalide');
@@ -47,10 +53,10 @@ class Collaborateur {
 
         const query = `
             INSERT INTO collaborateurs (
-                nom, prenom, initiales, email, telephone, grade_actuel_id, 
-                type_collaborateur_id, poste_actuel_id, statut, date_embauche, 
-                date_depart, division_id, notes
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                nom, prenom, initiales, email, telephone, business_unit_id, division_id,
+                grade_actuel_id, type_collaborateur_id, poste_actuel_id, statut, 
+                date_embauche, date_depart, notes
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             RETURNING *
         `;
 
@@ -60,13 +66,14 @@ class Collaborateur {
             collaborateur.initiales,
             collaborateur.email,
             collaborateur.telephone,
+            collaborateur.business_unit_id,
+            collaborateur.division_id,
             collaborateur.grade_actuel_id,
             collaborateur.type_collaborateur_id,
             collaborateur.poste_actuel_id,
             collaborateur.statut,
             collaborateur.date_embauche,
             collaborateur.date_depart,
-            collaborateur.division_id,
             collaborateur.notes
         ]);
 
@@ -76,11 +83,13 @@ class Collaborateur {
     static async findById(id) {
         const query = `
             SELECT c.*, 
+                   bu.nom as business_unit_nom, bu.code as business_unit_code,
                    d.nom as division_nom, d.code as division_code,
                    g.nom as grade_nom, g.code as grade_code,
                    tc.nom as type_collaborateur_nom, tc.code as type_collaborateur_code,
                    p.nom as poste_nom, p.code as poste_code
             FROM collaborateurs c
+            LEFT JOIN business_units bu ON c.business_unit_id = bu.id
             LEFT JOIN divisions d ON c.division_id = d.id
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
             LEFT JOIN types_collaborateurs tc ON c.type_collaborateur_id = tc.id
@@ -148,11 +157,13 @@ class Collaborateur {
         const offset = (page - 1) * limit;
         const dataQuery = `
             SELECT c.*, 
+                   bu.nom as business_unit_nom, bu.code as business_unit_code,
                    d.nom as division_nom, d.code as division_code,
                    g.nom as grade_nom, g.code as grade_code,
                    tc.nom as type_collaborateur_nom, tc.code as type_collaborateur_code,
                    p.nom as poste_nom, p.code as poste_code
             FROM collaborateurs c
+            LEFT JOIN business_units bu ON c.business_unit_id = bu.id
             LEFT JOIN divisions d ON c.division_id = d.id
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
             LEFT JOIN types_collaborateurs tc ON c.type_collaborateur_id = tc.id
@@ -191,16 +202,17 @@ class Collaborateur {
                 initiales = $3,
                 email = $4,
                 telephone = $5,
-                grade_actuel_id = $6,
-                type_collaborateur_id = $7,
-                poste_actuel_id = $8,
-                statut = $9,
-                date_embauche = $10,
-                date_depart = $11,
-                division_id = $12,
-                notes = $13,
+                business_unit_id = $6,
+                division_id = $7,
+                grade_actuel_id = $8,
+                type_collaborateur_id = $9,
+                poste_actuel_id = $10,
+                statut = $11,
+                date_embauche = $12,
+                date_depart = $13,
+                notes = $14,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id = $14
+            WHERE id = $15
             RETURNING *
         `;
 
@@ -210,13 +222,14 @@ class Collaborateur {
             this.initiales,
             this.email,
             this.telephone,
+            this.business_unit_id,
+            this.division_id,
             this.grade_actuel_id,
             this.type_collaborateur_id,
             this.poste_actuel_id,
             this.statut,
             this.date_embauche,
             this.date_depart,
-            this.division_id,
             this.notes,
             this.id
         ]);

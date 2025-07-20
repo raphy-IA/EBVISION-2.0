@@ -4,10 +4,7 @@ const BusinessUnit = require('../models/BusinessUnit');
 const { businessUnitValidation } = require('../utils/validators');
 const { authenticateToken } = require('../middleware/auth');
 
-// Middleware d'authentification pour toutes les routes
-router.use(authenticateToken);
-
-// GET /api/business-units - Récupérer toutes les business units
+// GET /api/business-units - Récupérer toutes les business units (PUBLIC)
 router.get('/', async (req, res) => {
     try {
         const { page = 1, limit = 10, search = '', status = '' } = req.query;
@@ -24,7 +21,8 @@ router.get('/', async (req, res) => {
         res.json({
             success: true,
             message: 'Business units récupérées avec succès',
-            data: result
+            data: result.businessUnits,
+            pagination: result.pagination
         });
     } catch (error) {
         console.error('Erreur lors de la récupération des business units:', error);
@@ -36,7 +34,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET /api/business-units/active - Récupérer les business units actives
+// GET /api/business-units/active - Récupérer les business units actives (PUBLIC)
 router.get('/active', async (req, res) => {
     try {
         const businessUnits = await BusinessUnit.findActive();
@@ -56,7 +54,7 @@ router.get('/active', async (req, res) => {
     }
 });
 
-// GET /api/business-units/:id - Récupérer une business unit par ID
+// GET /api/business-units/:id - Récupérer une business unit par ID (PUBLIC)
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -84,7 +82,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// POST /api/business-units - Créer une nouvelle business unit
+// POST /api/business-units - Créer une nouvelle business unit (PUBLIC)
 router.post('/', async (req, res) => {
     try {
         // Validation des données
@@ -123,8 +121,8 @@ router.post('/', async (req, res) => {
     }
 });
 
-// PUT /api/business-units/:id - Mettre à jour une business unit
-router.put('/:id', async (req, res) => {
+// PUT /api/business-units/:id - Mettre à jour une business unit (PROTECTED)
+router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         
@@ -175,8 +173,8 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// DELETE /api/business-units/:id - Supprimer une business unit
-router.delete('/:id', async (req, res) => {
+// DELETE /api/business-units/:id - Supprimer une business unit (PROTECTED)
+router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         

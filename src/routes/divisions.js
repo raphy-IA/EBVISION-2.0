@@ -8,12 +8,20 @@ const router = express.Router();
 // Récupérer toutes les divisions
 router.get('/', async (req, res) => {
     try {
-        const divisions = await Division.findAll();
+        const { page = 1, limit = 12, search = '', statut = '', business_unit_id = '' } = req.query;
+        
+        const result = await Division.findAll({
+            page: parseInt(page),
+            limit: parseInt(limit),
+            search,
+            statut,
+            business_unit_id
+        });
 
         res.json({
             success: true,
             message: 'Divisions récupérées avec succès',
-            data: divisions
+            data: result
         });
 
     } catch (error) {

@@ -12,7 +12,11 @@ router.get('/', async (req, res) => {
             statut 
         });
         
-        res.json(result);
+        res.json({
+            success: true,
+            data: result.data,
+            pagination: result.pagination
+        });
     } catch (error) {
         console.error('Erreur lors de la récupération des types de collaborateurs:', error);
         res.status(500).json({ 
@@ -43,7 +47,10 @@ router.get('/:id', async (req, res) => {
         if (!typeCollaborateur) {
             return res.status(404).json({ error: 'Type de collaborateur non trouvé' });
         }
-        res.json(typeCollaborateur);
+        res.json({
+            success: true,
+            data: typeCollaborateur
+        });
     } catch (error) {
         console.error('Erreur lors de la récupération du type de collaborateur:', error);
         res.status(500).json({ 
@@ -58,7 +65,11 @@ router.post('/', async (req, res) => {
     try {
         const typeCollaborateur = new TypeCollaborateur(req.body);
         const created = await TypeCollaborateur.create(typeCollaborateur);
-        res.status(201).json(created);
+        res.status(201).json({
+            success: true,
+            data: created,
+            message: 'Type de collaborateur créé avec succès'
+        });
     } catch (error) {
         console.error('Erreur lors de la création du type de collaborateur:', error);
         res.status(400).json({ 
@@ -79,7 +90,11 @@ router.put('/:id', async (req, res) => {
         // Mettre à jour les propriétés
         Object.assign(typeCollaborateur, req.body);
         const updated = await typeCollaborateur.update();
-        res.json(updated);
+        res.json({
+            success: true,
+            data: updated,
+            message: 'Type de collaborateur mis à jour avec succès'
+        });
     } catch (error) {
         console.error('Erreur lors de la modification du type de collaborateur:', error);
         res.status(400).json({ 
@@ -93,7 +108,10 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         await TypeCollaborateur.delete(req.params.id);
-        res.json({ message: 'Type de collaborateur supprimé avec succès' });
+        res.json({
+            success: true,
+            message: 'Type de collaborateur supprimé avec succès'
+        });
     } catch (error) {
         console.error('Erreur lors de la suppression du type de collaborateur:', error);
         res.status(400).json({ 

@@ -80,7 +80,7 @@ class TypeCollaborateur {
         const types = dataResult.rows.map(row => new TypeCollaborateur(row));
 
         return {
-            types,
+            data: types,
             pagination: {
                 page,
                 limit,

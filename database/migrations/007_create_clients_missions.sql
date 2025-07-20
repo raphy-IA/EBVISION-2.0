@@ -107,19 +107,19 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER update_clients_modification 
+CREATE TRIGGER IF NOT EXISTS update_clients_modification 
     BEFORE UPDATE ON clients 
     FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
-CREATE TRIGGER update_missions_modification 
+CREATE TRIGGER IF NOT EXISTS update_missions_modification 
     BEFORE UPDATE ON missions 
     FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
-CREATE TRIGGER update_equipes_mission_modification 
+CREATE TRIGGER IF NOT EXISTS update_equipes_mission_modification 
     BEFORE UPDATE ON equipes_mission 
     FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
-CREATE TRIGGER update_opportunites_modification 
+CREATE TRIGGER IF NOT EXISTS update_opportunites_modification 
     BEFORE UPDATE ON opportunites 
     FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
@@ -166,14 +166,10 @@ ON CONFLICT DO NOTHING;
 
 -- Mise à jour de la table clients pour ajouter des collaborateurs responsables
 UPDATE clients 
-SET collaborateur_id = (SELECT id FROM collaborateurs LIMIT 1)
-WHERE collaborateur_id IS NULL
-LIMIT 3;
+SET collaborateur_id = (SELECT id FROM collaborateurs ORDER BY created_at LIMIT 1)
+WHERE collaborateur_id IS NULL;
 
 -- Mise à jour de la table missions pour ajouter des responsables
 UPDATE missions 
-SET responsable_id = (SELECT id FROM collaborateurs LIMIT 1)
-WHERE responsable_id IS NULL
-LIMIT 3;
-
-COMMIT; 
+SET responsable_id = (SELECT id FROM collaborateurs ORDER BY created_at LIMIT 1)
+WHERE responsable_id IS NULL; 

@@ -18,7 +18,6 @@ class Poste {
         const errors = [];
         if (!this.nom) { errors.push('Nom requis'); }
         if (!this.code) { errors.push('Code requis'); }
-        if (!this.type_collaborateur_id) { errors.push('Type de collaborateur requis'); }
         if (!['ACTIF', 'INACTIF'].includes(this.statut)) {
             errors.push('Statut invalide');
         }
@@ -33,15 +32,14 @@ class Poste {
 
         const query = `
             INSERT INTO postes (
-                nom, code, type_collaborateur_id, description, statut
-            ) VALUES ($1, $2, $3, $4, $5)
+                nom, code, description, statut
+            ) VALUES ($1, $2, $3, $4)
             RETURNING *
         `;
 
         const result = await pool.query(query, [
             poste.nom,
             poste.code,
-            poste.type_collaborateur_id,
             poste.description,
             poste.statut
         ]);
@@ -50,8 +48,7 @@ class Poste {
     }
 
     static async findAll(options = {}) {
-        const { page = 1, limit = 10, statut, type_collaborateur_id } = options;
-        const offset = (page - 1) * limit;
+        const { page, limit, statut, type_collaborateur_id } = options;
         const queryParams = [];
         let paramIndex = 1;
 
@@ -77,27 +74,37 @@ class Poste {
         const countResult = await pool.query(countQuery, queryParams);
         const total = parseInt(countResult.rows[0].total);
 
-        // Requête pour les données
-        const dataQuery = `
+        // Construire la requête pour les données
+        let dataQuery = `
             SELECT p.*, tc.nom as type_collaborateur_nom, tc.code as type_collaborateur_code
             FROM postes p
             LEFT JOIN types_collaborateurs tc ON p.type_collaborateur_id = tc.id
             ${whereClause}
             ORDER BY tc.nom, p.nom
-            LIMIT $${paramIndex++} OFFSET $${paramIndex++}
         `;
-        queryParams.push(limit, offset);
+
+        // Ajouter la pagination seulement si spécifiée
+        if (page && limit) {
+            const offset = (page - 1) * limit;
+            dataQuery += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+            queryParams.push(limit, offset);
+        }
 
         const dataResult = await pool.query(dataQuery, queryParams);
         const postes = dataResult.rows.map(row => new Poste(row));
 
         return {
-            postes,
-            pagination: {
+            data: postes,
+            pagination: page && limit ? {
                 page,
                 limit,
                 total,
                 pages: Math.ceil(total / limit)
+            } : {
+                page: 1,
+                limit: total,
+                total,
+                pages: 1
             }
         };
     }
@@ -149,18 +156,16 @@ class Poste {
             UPDATE postes SET
                 nom = $1,
                 code = $2,
-                type_collaborateur_id = $3,
-                description = $4,
-                statut = $5,
+                description = $3,
+                statut = $4,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id = $6
+            WHERE id = $5
             RETURNING *
         `;
 
         const result = await pool.query(query, [
             this.nom,
             this.code,
-            this.type_collaborateur_id,
             this.description,
             this.statut,
             this.id
