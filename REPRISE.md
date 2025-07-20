@@ -1,254 +1,225 @@
-# 📋 FICHIER DE REPRISE - TRS Dashboard
+# REPRISE DU PROJET TRS-AFFICHAGE
 
-## 🎯 **CONTEXTE GÉNÉRAL**
+## 📋 ÉTAT ACTUEL DE L'APPLICATION
 
-Application de gestion de temps et ressources (TRS) avec authentification JWT, base de données PostgreSQL, et interface web moderne.
+### ✅ **RÉFACTORISATION BUSINESS UNITS / DIVISIONS TERMINÉE**
 
-## 🏗️ **ARCHITECTURE**
+#### **Base de données**
+- ✅ Migration `012_refactor_business_units_divisions.sql` exécutée
+- ✅ Table `divisions` renommée en `business_units`
+- ✅ Nouvelle table `divisions` créée avec `business_unit_id` (FK)
+- ✅ Index et contraintes créés
+- ✅ Triggers pour `updated_at` configurés
+- ✅ Données existantes migrées
+- ✅ Données de test créées (4 Business Units, 8 Divisions)
 
-### **Backend (Node.js + Express)**
-- **Port** : 3000
-- **Base de données** : PostgreSQL
-- **Authentification** : JWT (JSON Web Tokens)
-- **Validation** : Joi schemas
-- **Hachage** : bcrypt pour les mots de passe
+#### **Backend - Modèles**
+- ✅ `src/models/BusinessUnit.js` - Modèle complet avec CRUD, statistiques, gestion des divisions
+- ✅ `src/models/Division.js` - Modèle mis à jour avec relation `business_unit_id`
+- ✅ Validation Joi mise à jour pour les deux entités
 
-### **Frontend**
-- **Pages statiques** : HTML + CSS + JavaScript
-- **Framework CSS** : Bootstrap 5.3.0
-- **Icônes** : Font Awesome 6.0.0
-- **Gestion d'état** : localStorage pour les tokens
+#### **Backend - Routes API**
+- ✅ `src/routes/business-units.js` - Routes complètes pour Business Units
+- ✅ `src/routes/divisions.js` - Routes mises à jour avec validation business unit
+- ✅ `server.js` - Intégration des nouvelles routes
+- ✅ Endpoints disponibles :
+  - `GET /api/business-units` - Liste avec pagination/filtres
+  - `GET /api/business-units/active` - Business Units actives
+  - `GET /api/business-units/:id` - Détail d'une BU
+  - `GET /api/business-units/:id/divisions` - Divisions d'une BU
+  - `GET /api/business-units/statistics/global` - Statistiques globales
+  - `POST /api/business-units` - Création
+  - `PUT /api/business-units/:id` - Modification
+  - `DELETE /api/business-units/:id` - Suppression
+  - `GET /api/divisions` - Liste avec filtres business unit
+  - `GET /api/divisions/statistics` - Statistiques divisions
+  - `POST /api/divisions` - Création avec validation BU
+  - `PUT /api/divisions/:id` - Modification
+  - `DELETE /api/divisions/:id` - Suppression
 
-## 📁 **STRUCTURE DES FICHIERS**
+#### **Frontend - Interfaces**
+- ✅ `public/business-units.html` - Interface complète de gestion des Business Units
+- ✅ `public/divisions.html` - Interface mise à jour avec relation Business Units
+- ✅ `public/js/sidebar.js` - Menu mis à jour avec Business Units
+- ✅ Design moderne avec Bootstrap 5.1.3
+- ✅ Fonctionnalités : CRUD, filtres, recherche, pagination, statistiques
 
-```
-TRS-Affichage/
-├── src/
-│   ├── routes/
-│   │   ├── auth.js          # Authentification (login, logout, etc.)
-│   │   ├── users.js         # Gestion des utilisateurs
-│   │   ├── divisions.js     # Gestion des divisions
-│   │   ├── grades.js        # Gestion des grades
-│   │   ├── clients.js       # Gestion des clients
-│   │   ├── missions.js      # Gestion des missions
-│   │   ├── time-entries.js  # Gestion des saisies de temps
-│   │   └── reports.js       # Rapports et statistiques
-│   ├── models/
-│   │   ├── User.js          # Modèle utilisateur
-│   │   ├── Division.js      # Modèle division
-│   │   └── ...
-│   ├── utils/
-│   │   ├── database.js      # Connexion PostgreSQL
-│   │   ├── validators.js    # Schémas de validation Joi
-│   │   └── auth.js          # Middleware d'authentification
-│   └── server.js            # Point d'entrée principal
-├── public/
-│   ├── dashboard.html       # Page principale
-│   ├── users.html          # Gestion utilisateurs
-│   ├── divisions.html      # Gestion divisions
-│   ├── grades.html         # Gestion grades
-│   ├── clients.html        # Gestion clients
-│   ├── missions.html       # Gestion missions
-│   ├── time-entries.html   # Saisies de temps
-│   ├── reports.html        # Rapports
-│   └── js/
-│       ├── auth.js         # Gestion authentification côté client
-│       └── sidebar.js      # Navigation
-└── package.json
-```
+### 🔧 **FONCTIONNALITÉS EXISTANTES**
 
-## 🔐 **AUTHENTIFICATION**
+#### **Authentification & Sécurité**
+- ✅ Système d'authentification JWT
+- ✅ Middleware d'autorisation
+- ✅ Gestion des sessions
+- ✅ Protection des routes
 
-### **Identifiants de test**
-- **Email** : `admin@example.com`
-- **Mot de passe** : `admin123`
+#### **Gestion des Temps (TRS)**
+- ✅ `time-entries.html` - Saisie des temps
+- ✅ `validation.html` - Validation des temps
+- ✅ `reports.html` - Rapports et statistiques
+- ✅ API complète pour les time entries
+- ✅ Export CSV des données
 
-### **Flux d'authentification**
-1. **Login** : POST `/api/auth/login` avec email/password
-2. **Token** : Retourne JWT token stocké dans localStorage
-3. **Vérification** : Middleware vérifie token sur routes protégées
-4. **Logout** : Supprime token et redirige vers login
+#### **Gestion des Missions**
+- ✅ `missions.html` - Interface de gestion des missions
+- ✅ API complète pour les missions
+- ✅ Relation avec clients et collaborateurs
 
-### **Pages d'authentification**
-- **Login** : `/` (racine) - page de connexion
-- **Dashboard** : `/dashboard.html` - page principale après connexion
+#### **Gestion des Clients**
+- ✅ `clients.html` - Interface de gestion des clients
+- ✅ API complète pour les clients
+- ✅ Gestion des contacts
 
-## 🗄️ **BASE DE DONNÉES**
+#### **Configuration**
+- ✅ `collaborateurs.html` - Gestion des collaborateurs
+- ✅ `grades.html` - Gestion des grades
+- ✅ `users.html` - Gestion des utilisateurs
+- ✅ API complètes pour toutes les entités
 
-### **Tables principales**
-- `users` - Utilisateurs du système
-- `divisions` - Divisions de l'entreprise
-- `grades` - Grades hiérarchiques
-- `clients` - Clients
-- `missions` - Missions/projets
-- `time_entries` - Saisies de temps
-- `contacts` - Contacts clients
+### ⚠️ **PROBLÈMES IDENTIFIÉS À CORRIGER**
 
-### **Relations**
-- `users.division_id` → `divisions.id`
-- `divisions.responsable_id` → `users.id`
-- `time_entries.user_id` → `users.id`
-- `time_entries.mission_id` → `missions.id`
+#### **Erreurs de Base de Données**
+1. **Table collaborateurs** : Colonne `grade` manquante
+   - Erreur : `la colonne « grade » de la relation « collaborateurs » n'existe pas`
+   - Solution : Ajouter la colonne `grade VARCHAR(50)` à la table `collaborateurs`
 
-## 🚀 **DÉMARRAGE**
+2. **Table time_entries** : Colonne `commentaire` manquante
+   - Erreur : `la colonne te.commentaire n'existe pas`
+   - Solution : Ajouter la colonne `commentaire TEXT` à la table `time_entries`
 
-### **Prérequis**
-- Node.js installé
-- PostgreSQL installé et configuré
-- Variables d'environnement configurées
+3. **Table missions** : Colonnes `nom` et `code` manquantes
+   - Erreur : `la colonne m.nom n'existe pas` et `la colonne m.code n'existe pas`
+   - Solution : Vérifier la structure de la table `missions`
 
-### **Commandes**
-```bash
-# Installer les dépendances
-npm install
+#### **Erreurs de Code**
+1. **Routes divisions** : Import express manquant
+   - Erreur : `Cannot read properties of undefined (reading 'create')`
+   - Solution : Ajouter `const express = require('express');` au début du fichier
 
-# Démarrer le serveur
-npm start
+### 🚀 **PROCHAINES ÉTAPES PRIORITAIRES**
 
-# Ou avec nodemon (développement)
-npm run dev
-```
-
-### **URLs**
-- **Application** : http://localhost:3000
-- **API Health** : http://localhost:3000/api/health
-- **Documentation API** : http://localhost:3000/api/health
-
-## ⚠️ **PROBLÈMES RÉSOLUS**
-
-### ✅ **1. Authentification**
-- **Problème** : `Cannot read properties of undefined (reading 'login')`
-- **Cause** : Serveur non redémarré après corrections
-- **Solution** : Redémarrage complet du serveur
-- **Statut** : ✅ RÉSOLU
-
-### ✅ **2. Page de login**
-- **Problème** : Redirection automatique vers dashboard
-- **Cause** : Token JWT valide dans localStorage
-- **Solution** : Navigation privée ou `localStorage.clear()`
-- **Statut** : ✅ RÉSOLU
-
-### ✅ **3. Bouton de déconnexion**
-- **Problème** : Bouton non réactif
-- **Cause** : Sélecteur CSS invalide `:contains()`
-- **Solution** : Remplacement par recherche manuelle du texte
-- **Statut** : ✅ RÉSOLU
-
-## 🔧 **PROBLÈMES EN COURS**
-
-### ❌ **1. Routes `/statistics`**
-- **Problème** : `/statistics` traité comme UUID par routes `/:id`
-- **Erreur** : `syntaxe en entrée invalide pour le type uuid : « statistics »`
-- **Fichiers concernés** : `src/routes/divisions.js`, `src/routes/users.js`
-- **Cause** : Ordre des routes incorrect
-- **Solution nécessaire** : Placer routes `/statistics` AVANT routes `/:id`
-
-### ❌ **2. Erreur SQL dans rapports**
-- **Problème** : `te.collaborateur_id n'existe pas`
-- **Fichier** : `src/routes/reports.js`
-- **Cause** : Nom de colonne incorrect
-- **Solution nécessaire** : Remplacer par `te.user_id`
-
-### ❌ **3. Modèles non définis**
-- **Problème** : `Cannot read properties of undefined (reading 'findAll')`
-- **Fichiers** : `src/routes/divisions.js`, `src/routes/users.js`
-- **Cause** : Import de modèles incorrect
-- **Solution nécessaire** : Vérifier les imports des modèles
-
-## 📝 **TÂCHES À ACCOMPLIR**
-
-### **Priorité 1 - Routes `/statistics`**
-```javascript
-// Dans src/routes/divisions.js et src/routes/users.js
-// PLACER CES ROUTES EN PREMIER :
-router.get('/statistics', auth, async (req, res) => { ... });
-
-// AVANT CES ROUTES :
-router.get('/:id', auth, async (req, res) => { ... });
-```
-
-### **Priorité 2 - Erreur SQL rapports**
+#### **1. CORRECTION DES ERREURS DE BASE DE DONNÉES (URGENT)**
 ```sql
--- Dans src/routes/reports.js
--- REMPLACER :
-te.collaborateur_id
--- PAR :
-te.user_id
+-- Script à exécuter pour corriger les erreurs
+ALTER TABLE collaborateurs ADD COLUMN IF NOT EXISTS grade VARCHAR(50);
+ALTER TABLE time_entries ADD COLUMN IF NOT EXISTS commentaire TEXT;
+-- Vérifier et corriger la table missions si nécessaire
 ```
 
-### **Priorité 3 - Imports des modèles**
-```javascript
-// Vérifier dans src/routes/divisions.js et src/routes/users.js
-const Division = require('../models/Division');
-const User = require('../models/User');
+#### **2. TEST COMPLET DES NOUVELLES FONCTIONNALITÉS**
+- [ ] Tester la création/modification/suppression de Business Units
+- [ ] Tester la création/modification/suppression de Divisions
+- [ ] Vérifier les relations Business Unit ↔ Division
+- [ ] Tester les filtres et la recherche
+- [ ] Vérifier les statistiques
+
+#### **3. INTÉGRATION AVEC LES AUTRES MODULES**
+- [ ] Mettre à jour les collaborateurs pour utiliser les nouvelles divisions
+- [ ] Adapter les missions pour référencer les divisions
+- [ ] Mettre à jour les rapports pour inclure la hiérarchie BU/Division
+- [ ] Adapter les time entries si nécessaire
+
+#### **4. AMÉLIORATIONS FRONTEND**
+- [ ] Ajouter des graphiques pour les statistiques Business Units
+- [ ] Améliorer l'interface de sélection Business Unit dans les divisions
+- [ ] Ajouter des tooltips et validations côté client
+- [ ] Optimiser la responsivité mobile
+
+#### **5. DOCUMENTATION ET TESTS**
+- [ ] Créer la documentation API pour Business Units et Divisions
+- [ ] Écrire des tests unitaires pour les nouveaux modèles
+- [ ] Créer des guides d'utilisation
+- [ ] Documenter la migration de données
+
+### 📁 **STRUCTURE DES FICHIERS IMPORTANTS**
+
+#### **Migrations**
+```
+database/migrations/012_refactor_business_units_divisions.sql
 ```
 
-## 🧪 **TESTS À EFFECTUER**
+#### **Modèles**
+```
+src/models/BusinessUnit.js
+src/models/Division.js
+```
 
-### **Test d'authentification**
+#### **Routes**
+```
+src/routes/business-units.js
+src/routes/divisions.js
+```
+
+#### **Frontend**
+```
+public/business-units.html
+public/divisions.html
+public/js/sidebar.js
+```
+
+#### **Scripts de Test**
+```
+scripts/test_business_units_api.js
+scripts/test_divisions_api.js
+scripts/check_db_status.js
+```
+
+### 🔧 **COMMANDES UTILES**
+
+#### **Démarrer l'application**
 ```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@example.com","password":"admin123"}'
-```
-
-### **Test des routes `/statistics`**
-```bash
-# Avec token d'authentification
-curl -X GET http://localhost:3000/api/divisions/statistics \
-  -H "Authorization: Bearer <TOKEN>"
-```
-
-### **Test du bouton de déconnexion**
-1. Se connecter
-2. Aller sur dashboard
-3. Cliquer sur "Déconnexion"
-4. Vérifier redirection vers login
-
-## 🔍 **DEBUGGING**
-
-### **Logs du serveur**
-- Les erreurs apparaissent dans la console du serveur
-- Logs détaillés des requêtes SQL
-- Logs de connexion/déconnexion base de données
-
-### **Outils de développement navigateur**
-- **Console** : Erreurs JavaScript
-- **Network** : Requêtes API
-- **Application** : localStorage pour tokens
-
-### **Commandes utiles**
-```bash
-# Redémarrer le serveur
-taskkill /F /IM node.exe
 npm start
-
-# Tester l'API
-Invoke-RestMethod -Uri "http://localhost:3000/api/health" -Method GET
+# ou
+node server.js
 ```
 
-## 📚 **RESSOURCES**
+#### **Tester les API Business Units**
+```bash
+node scripts/test_business_units_api.js
+```
 
-### **Documentation**
-- **Express.js** : https://expressjs.com/
-- **JWT** : https://jwt.io/
-- **PostgreSQL** : https://www.postgresql.org/docs/
-- **Joi Validation** : https://joi.dev/
+#### **Tester les API Divisions**
+```bash
+node scripts/test_divisions_api.js
+```
 
-### **Fichiers de configuration**
-- `package.json` : Dépendances et scripts
-- `.env` : Variables d'environnement (à créer)
-- `server.js` : Configuration Express
+#### **Vérifier l'état de la base de données**
+```bash
+node scripts/check_db_status.js
+```
 
-## 🎯 **OBJECTIFS SUIVANTS**
+### 📊 **DONNÉES DE TEST CRÉÉES**
 
-1. **Corriger les routes `/statistics`** (priorité haute)
-2. **Corriger l'erreur SQL des rapports** (priorité haute)
-3. **Vérifier les imports des modèles** (priorité moyenne)
-4. **Tester toutes les fonctionnalités** (priorité moyenne)
-5. **Optimiser les performances** (priorité basse)
+#### **Business Units**
+1. **Consulting** (BU-CON) - Actif
+2. **Audit** (BU-AUD) - Actif
+3. **Conseil Fiscal** (BU-FIS) - Actif
+4. **Services Juridiques** (BU-JUR) - Inactif
+
+#### **Divisions**
+- **Consulting** → Divisions : Stratégie, Opérations, Transformation
+- **Audit** → Divisions : Audit Interne, Audit Externe
+- **Conseil Fiscal** → Divisions : Fiscalité Entreprise, Fiscalité Personnelle
+- **Services Juridiques** → Divisions : Droit des Affaires, Droit Social
+
+### 🎯 **OBJECTIFS ATTEINTS**
+
+✅ **Hiérarchie Business Unit → Division** implémentée
+✅ **API REST complète** pour les deux entités
+✅ **Interfaces utilisateur modernes** et fonctionnelles
+✅ **Validation des données** côté serveur et client
+✅ **Statistiques et rapports** intégrés
+✅ **Migration des données existantes** réussie
+✅ **Intégration dans le menu** de navigation
+
+### 🔄 **PROCHAINES SESSIONS**
+
+1. **Corriger les erreurs de base de données**
+2. **Tester end-to-end les nouvelles fonctionnalités**
+3. **Intégrer avec les modules existants**
+4. **Optimiser et documenter**
 
 ---
 
-**Dernière mise à jour** : 19/07/2025 12:46
-**Statut global** : 70% fonctionnel (authentification OK, problèmes de routes à corriger) 
+**Dernière mise à jour :** 19/07/2025
+**Version :** 2.0.0
+**Statut :** Refactorisation Business Units/Divisions terminée, corrections mineures nécessaires 

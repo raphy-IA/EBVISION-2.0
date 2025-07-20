@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Taux Horaires - TRS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/sidebar.css" rel="stylesheet">
+    <style>
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.95);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .search-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+        }
+        
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: white;
+        }
+        
+        .search-box input::placeholder {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .filters-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+        }
+        
+        .filters-card select {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+        }
+        
+        .filters-card select option {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div id="sidebar"></div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h1 class="text-white mb-0">
+                            <i class="fas fa-euro-sign me-3"></i>
+                            Gestion des Taux Horaires
+                        </h1>
+                        <button class="btn btn-light" onclick="showNewTauxHoraireModal()">
+                            <i class="fas fa-plus me-2"></i>
+                            Nouveau Taux Horaire
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card text-center">
+                        <h3 id="total-taux">0</h3>
+                        <p class="mb-0">Total des taux</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card text-center">
+                        <h3 id="taux-moyen">0€</h3>
+                        <p class="mb-0">Taux horaire moyen</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card text-center">
+                        <h3 id="salaire-moyen">0€</h3>
+                        <p class="mb-0">Salaire de base moyen</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card text-center">
+                        <h3 id="combinaisons">0</h3>
+                        <p class="mb-0">Combinaisons actives</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="row mb-4">
+                <div class="col-md-8 mb-3">
+                    <div class="card search-box">
+                        <div class="card-body">
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-0 text-white">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control border-0 bg-transparent text-white" 
+                                       id="search-input" placeholder="Rechercher un taux horaire..."
+                                       onkeyup="filterTauxHoraires()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card filters-card">
+                        <div class="card-body">
+                            <select class="form-select" id="grade-filter" onchange="filterTauxHoraires()">
+                                <option value="">Tous les grades</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Taux Horaires Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-list me-2"></i>
+                                Liste des Taux Horaires
+                            </h5>
+                            <div>
+                                <button class="btn btn-outline-light btn-sm me-2" onclick="exportTauxHoraires()">
+                                    <i class="fas fa-file-excel me-1"></i>
+                                    Excel
+                                </button>
+                                <button class="btn btn-outline-light btn-sm" onclick="loadTauxHoraires()">
+                                    <i class="fas fa-sync-alt me-1"></i>
+                                    Actualiser
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="taux-horaires-loading" class="loading">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Chargement...</span>
+                                </div>
+                            </div>
+                            <div id="taux-horaires-content" style="display: none;">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Grade</th>
+                                                <th>Division</th>
+                                                <th>Taux Horaire</th>
+                                                <th>Salaire de Base</th>
+                                                <th>Date d'Effet</th>
+                                                <th>Statut</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="taux-horaires-table">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Taux Horaire Modal -->
+    <div class="modal fade" id="newTauxHoraireModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>
+                        Nouveau taux horaire
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newTauxHoraireForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="grade-select" class="form-label">Grade *</label>
+                                <select class="form-select" id="grade-select" required>
+                                    <option value="">Sélectionner un grade</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="division-select" class="form-label">Division *</label>
+                                <select class="form-select" id="division-select" required>
+                                    <option value="">Sélectionner une division</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="taux-horaire-input" class="form-label">Taux Horaire (€) *</label>
+                                <input type="number" class="form-control" id="taux-horaire-input" 
+                                       step="0.01" min="0" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="salaire-base-input" class="form-label">Salaire de Base (€) *</label>
+                                <input type="number" class="form-control" id="salaire-base-input" 
+                                       step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="date-effet-input" class="form-label">Date d'Effet *</label>
+                                <input type="date" class="form-control" id="date-effet-input" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="date-fin-effet-input" class="form-label">Date de Fin d'Effet</label>
+                                <input type="date" class="form-control" id="date-fin-effet-input">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="statut-select" class="form-label">Statut</label>
+                            <select class="form-select" id="statut-select">
+                                <option value="ACTIF">Actif</option>
+                                <option value="INACTIF">Inactif</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="submitTauxHoraire()">
+                        <i class="fas fa-save me-1"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmation de suppression</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer ce taux horaire ?</p>
+                    <p class="text-muted">Cette action est irréversible.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                        <i class="fas fa-trash me-1"></i>
+                        Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        const API_BASE_URL = '/api';
+        let tauxHoraires = [];
+        let filteredTauxHoraires = [];
+        let tauxHoraireToDelete = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTauxHoraires();
+            loadGrades();
+            loadDivisions();
+        });
+
+        async function loadTauxHoraires() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/taux-horaires`);
+                const data = await response.json();
+                
+                if (data.taux_horaires) {
+                    tauxHoraires = data.taux_horaires;
+                    filteredTauxHoraires = [...tauxHoraires];
+                    displayTauxHoraires();
+                    updateStatistics();
+                } else {
+                    showAlert('Erreur lors du chargement des taux horaires', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur de connexion', 'danger');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayTauxHoraires() {
+            const tbody = document.getElementById('taux-horaires-table');
+            tbody.innerHTML = '';
+            
+            if (filteredTauxHoraires.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="fas fa-euro-sign fa-2x mb-3"></i>
+                            <p>Aucun taux horaire trouvé</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            filteredTauxHoraires.forEach(tauxHoraire => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${tauxHoraire.grade_nom || '-'}</td>
+                    <td>${tauxHoraire.division_nom || '-'}</td>
+                    <td><strong>${tauxHoraire.taux_horaire}€</strong></td>
+                    <td><strong>${tauxHoraire.salaire_base}€</strong></td>
+                    <td>${formatDate(tauxHoraire.date_effet)}</td>
+                    <td><span class="badge bg-${tauxHoraire.statut === 'ACTIF' ? 'success' : 'secondary'}">${tauxHoraire.statut}</span></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-info" onclick="viewTauxHoraire('${tauxHoraire.id}')" title="Voir">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-warning" onclick="editTauxHoraire('${tauxHoraire.id}')" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteTauxHoraire('${tauxHoraire.id}')" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateStatistics() {
+            const total = tauxHoraires.length;
+            const actifs = tauxHoraires.filter(t => t.statut === 'ACTIF').length;
+            const tauxMoyen = total > 0 ? (tauxHoraires.reduce((sum, t) => sum + parseFloat(t.taux_horaire), 0) / total).toFixed(2) : 0;
+            const salaireMoyen = total > 0 ? (tauxHoraires.reduce((sum, t) => sum + parseFloat(t.salaire_base), 0) / total).toFixed(2) : 0;
+            
+            document.getElementById('total-taux').textContent = total;
+            document.getElementById('taux-moyen').textContent = `${tauxMoyen}€`;
+            document.getElementById('salaire-moyen').textContent = `${salaireMoyen}€`;
+            document.getElementById('combinaisons').textContent = actifs;
+        }
+
+        function filterTauxHoraires() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const gradeFilter = document.getElementById('grade-filter').value;
+            
+            filteredTauxHoraires = tauxHoraires.filter(tauxHoraire => {
+                const matchesSearch = !searchTerm || 
+                    (tauxHoraire.grade_nom && tauxHoraire.grade_nom.toLowerCase().includes(searchTerm)) ||
+                    (tauxHoraire.division_nom && tauxHoraire.division_nom.toLowerCase().includes(searchTerm));
+                
+                const matchesGrade = !gradeFilter || tauxHoraire.grade_id === gradeFilter;
+                
+                return matchesSearch && matchesGrade;
+            });
+            
+            displayTauxHoraires();
+        }
+
+        function showNewTauxHoraireModal() {
+            loadGrades();
+            loadDivisions();
+            document.getElementById('newTauxHoraireForm').reset();
+            document.getElementById('date-effet-input').value = new Date().toISOString().split('T')[0];
+            const modal = new bootstrap.Modal(document.getElementById('newTauxHoraireModal'));
+            modal.show();
+        }
+
+        async function loadGrades() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/grades`);
+                const data = await response.json();
+                
+                const selects = ['grade-select', 'grade-filter'];
+                selects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    if (select) {
+                        select.innerHTML = selectId === 'grade-filter' ? 
+                            '<option value="">Tous les grades</option>' : 
+                            '<option value="">Sélectionner un grade</option>';
+                        
+                        if (data.data && data.data.grades) {
+                            data.data.grades.forEach(grade => {
+                                const option = document.createElement('option');
+                                option.value = grade.id;
+                                option.textContent = grade.nom;
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des grades:', error);
+            }
+        }
+
+        async function loadDivisions() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/divisions`);
+                const data = await response.json();
+                
+                const select = document.getElementById('division-select');
+                select.innerHTML = '<option value="">Sélectionner une division</option>';
+                
+                if (data.data && data.data.divisions) {
+                    data.data.divisions.forEach(division => {
+                        const option = document.createElement('option');
+                        option.value = division.id;
+                        option.textContent = division.nom;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des divisions:', error);
+            }
+        }
+
+        async function submitTauxHoraire() {
+            const form = document.getElementById('newTauxHoraireForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const formData = {
+                grade_id: document.getElementById('grade-select').value,
+                division_id: document.getElementById('division-select').value,
+                taux_horaire: parseFloat(document.getElementById('taux-horaire-input').value),
+                salaire_base: parseFloat(document.getElementById('salaire-base-input').value),
+                date_effet: document.getElementById('date-effet-input').value,
+                date_fin_effet: document.getElementById('date-fin-effet-input').value || null,
+                statut: document.getElementById('statut-select').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/taux-horaires`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.id) {
+                    showAlert('Taux horaire créé avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('newTauxHoraireModal')).hide();
+                    loadTauxHoraires();
+                } else {
+                    showAlert('Erreur lors de la création du taux horaire', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la soumission:', error);
+                showAlert('Erreur lors de la soumission', 'danger');
+            }
+        }
+
+        function deleteTauxHoraire(id) {
+            tauxHoraireToDelete = id;
+            new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+        }
+
+        async function confirmDelete() {
+            if (!tauxHoraireToDelete) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/taux-horaires/${tauxHoraireToDelete}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.message) {
+                    showAlert('Taux horaire supprimé avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+                    loadTauxHoraires();
+                } else {
+                    showAlert('Erreur lors de la suppression', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression:', error);
+                showAlert('Erreur lors de la suppression', 'danger');
+            } finally {
+                tauxHoraireToDelete = null;
+            }
+        }
+
+        function viewTauxHoraire(id) {
+            showAlert(`Affichage détaillé du taux horaire ${id} - Fonctionnalité en cours de développement`, 'info');
+        }
+
+        function editTauxHoraire(id) {
+            showAlert(`Modification du taux horaire ${id} - Fonctionnalité en cours de développement`, 'info');
+        }
+
+        function exportTauxHoraires() {
+            showAlert('Export Excel en cours de développement', 'info');
+        }
+
+        function showLoading(show) {
+            document.getElementById('taux-horaires-loading').style.display = show ? 'flex' : 'none';
+            document.getElementById('taux-horaires-content').style.display = show ? 'none' : 'block';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            return new Date(dateString).toLocaleDateString('fr-FR');
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 

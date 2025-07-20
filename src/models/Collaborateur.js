@@ -7,13 +7,22 @@ class Collaborateur {
         this.prenom = data.prenom;
         this.initiales = data.initiales;
         this.email = data.email;
-        this.grade = data.grade;
-        this.taux_horaire = data.taux_horaire || 0;
+        this.telephone = data.telephone;
+        this.grade_actuel_id = data.grade_actuel_id;
+        this.type_collaborateur_id = data.type_collaborateur_id;
+        this.poste_actuel_id = data.poste_actuel_id;
         this.statut = data.statut || 'ACTIF';
         this.date_embauche = data.date_embauche;
+        this.date_depart = data.date_depart;
         this.division_id = data.division_id;
+        this.notes = data.notes;
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
+        // Relations
+        this.grade = data.grade;
+        this.type_collaborateur = data.type_collaborateur;
+        this.poste = data.poste;
+        this.division = data.division;
     }
 
     validate() {
@@ -22,14 +31,10 @@ class Collaborateur {
         if (!this.prenom) { errors.push('Prénom requis'); }
         if (!this.initiales) { errors.push('Initiales requises'); }
         if (!this.email) { errors.push('Email requis'); }
-        if (!this.grade) { errors.push('Grade requis'); }
-        if (!['ASSISTANT', 'SENIOR', 'MANAGER', 'DIRECTOR', 'PARTNER'].includes(this.grade)) {
-            errors.push('Grade invalide');
-        }
-        if (!['ACTIF', 'INACTIF', 'CONGE'].includes(this.statut)) {
+        if (!this.date_embauche) { errors.push('Date d\'embauche requise'); }
+        if (!['ACTIF', 'INACTIF', 'CONGE', 'DEPART'].includes(this.statut)) {
             errors.push('Statut invalide');
         }
-        if (this.taux_horaire < 0) { errors.push('Taux horaire doit être positif'); }
         return errors;
     }
 
@@ -42,9 +47,10 @@ class Collaborateur {
 
         const query = `
             INSERT INTO collaborateurs (
-                nom, prenom, initiales, email, grade, taux_horaire, 
-                statut, date_embauche, division_id
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                nom, prenom, initiales, email, telephone, grade_actuel_id, 
+                type_collaborateur_id, poste_actuel_id, statut, date_embauche, 
+                date_depart, division_id, notes
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             RETURNING *
         `;
 
@@ -53,11 +59,15 @@ class Collaborateur {
             collaborateur.prenom,
             collaborateur.initiales,
             collaborateur.email,
-            collaborateur.grade,
-            collaborateur.taux_horaire,
+            collaborateur.telephone,
+            collaborateur.grade_actuel_id,
+            collaborateur.type_collaborateur_id,
+            collaborateur.poste_actuel_id,
             collaborateur.statut,
             collaborateur.date_embauche,
-            collaborateur.division_id
+            collaborateur.date_depart,
+            collaborateur.division_id,
+            collaborateur.notes
         ]);
 
         return new Collaborateur(result.rows[0]);
@@ -65,9 +75,16 @@ class Collaborateur {
 
     static async findById(id) {
         const query = `
-            SELECT c.*, d.nom as division_nom
+            SELECT c.*, 
+                   d.nom as division_nom, d.code as division_code,
+                   g.nom as grade_nom, g.code as grade_code,
+                   tc.nom as type_collaborateur_nom, tc.code as type_collaborateur_code,
+                   p.nom as poste_nom, p.code as poste_code
             FROM collaborateurs c
             LEFT JOIN divisions d ON c.division_id = d.id
+            LEFT JOIN grades g ON c.grade_actuel_id = g.id
+            LEFT JOIN types_collaborateurs tc ON c.type_collaborateur_id = tc.id
+            LEFT JOIN postes p ON c.poste_actuel_id = p.id
             WHERE c.id = $1
         `;
         
@@ -90,7 +107,7 @@ class Collaborateur {
         let paramIndex = 1;
 
         if (grade) {
-            whereConditions.push(`c.grade = $${paramIndex++}`);
+            whereConditions.push(`g.nom = $${paramIndex++}`);
             queryParams.push(grade);
         }
 
@@ -130,9 +147,16 @@ class Collaborateur {
         // Requête pour les données
         const offset = (page - 1) * limit;
         const dataQuery = `
-            SELECT c.*, d.nom as division_nom
+            SELECT c.*, 
+                   d.nom as division_nom, d.code as division_code,
+                   g.nom as grade_nom, g.code as grade_code,
+                   tc.nom as type_collaborateur_nom, tc.code as type_collaborateur_code,
+                   p.nom as poste_nom, p.code as poste_code
             FROM collaborateurs c
             LEFT JOIN divisions d ON c.division_id = d.id
+            LEFT JOIN grades g ON c.grade_actuel_id = g.id
+            LEFT JOIN types_collaborateurs tc ON c.type_collaborateur_id = tc.id
+            LEFT JOIN postes p ON c.poste_actuel_id = p.id
             ${whereClause}
             ORDER BY c.nom, c.prenom
             LIMIT $${paramIndex++} OFFSET $${paramIndex++}
@@ -166,13 +190,17 @@ class Collaborateur {
                 prenom = $2,
                 initiales = $3,
                 email = $4,
-                grade = $5,
-                taux_horaire = $6,
-                statut = $7,
-                date_embauche = $8,
-                division_id = $9,
+                telephone = $5,
+                grade_actuel_id = $6,
+                type_collaborateur_id = $7,
+                poste_actuel_id = $8,
+                statut = $9,
+                date_embauche = $10,
+                date_depart = $11,
+                division_id = $12,
+                notes = $13,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id = $10
+            WHERE id = $14
             RETURNING *
         `;
 
@@ -181,11 +209,15 @@ class Collaborateur {
             this.prenom,
             this.initiales,
             this.email,
-            this.grade,
-            this.taux_horaire,
+            this.telephone,
+            this.grade_actuel_id,
+            this.type_collaborateur_id,
+            this.poste_actuel_id,
             this.statut,
             this.date_embauche,
+            this.date_depart,
             this.division_id,
+            this.notes,
             this.id
         ]);
 
@@ -214,16 +246,17 @@ class Collaborateur {
         const query = `
             SELECT 
                 COUNT(*) as total_collaborateurs,
-                COUNT(CASE WHEN statut = 'ACTIF' THEN 1 END) as actifs,
-                COUNT(CASE WHEN statut = 'INACTIF' THEN 1 END) as inactifs,
-                COUNT(CASE WHEN statut = 'CONGE' THEN 1 END) as en_conge,
-                AVG(taux_horaire) as taux_horaire_moyen,
-                COUNT(CASE WHEN grade = 'ASSISTANT' THEN 1 END) as assistants,
-                COUNT(CASE WHEN grade = 'SENIOR' THEN 1 END) as seniors,
-                COUNT(CASE WHEN grade = 'MANAGER' THEN 1 END) as managers,
-                COUNT(CASE WHEN grade = 'DIRECTOR' THEN 1 END) as directors,
-                COUNT(CASE WHEN grade = 'PARTNER' THEN 1 END) as partners
-            FROM collaborateurs
+                COUNT(CASE WHEN c.statut = 'ACTIF' THEN 1 END) as actifs,
+                COUNT(CASE WHEN c.statut = 'INACTIF' THEN 1 END) as inactifs,
+                COUNT(CASE WHEN c.statut = 'CONGE' THEN 1 END) as en_conge,
+                COUNT(CASE WHEN c.statut = 'DEPART' THEN 1 END) as departs,
+                COUNT(CASE WHEN g.nom = 'Assistant' THEN 1 END) as assistants,
+                COUNT(CASE WHEN g.nom = 'Senior Assistant' THEN 1 END) as seniors,
+                COUNT(CASE WHEN g.nom = 'Manager' THEN 1 END) as managers,
+                COUNT(CASE WHEN g.nom = 'Director' THEN 1 END) as directors,
+                COUNT(CASE WHEN g.nom = 'Partner' THEN 1 END) as partners
+            FROM collaborateurs c
+            LEFT JOIN grades g ON c.grade_actuel_id = g.id
         `;
         
         const result = await pool.query(query);

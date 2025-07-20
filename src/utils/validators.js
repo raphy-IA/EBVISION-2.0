@@ -93,6 +93,53 @@ const userValidation = {
     })
 };
 
+// Schémas de validation pour les business units
+const businessUnitValidation = {
+    create: Joi.object({
+        nom: Joi.string().min(2).max(100).required()
+            .messages({
+                'string.min': 'Le nom doit contenir au moins 2 caractères',
+                'string.max': 'Le nom ne peut pas dépasser 100 caractères',
+                'any.required': 'Le nom est requis'
+            }),
+        code: Joi.string().min(2).max(10).required()
+            .messages({
+                'string.min': 'Le code doit contenir au moins 2 caractères',
+                'string.max': 'Le code ne peut pas dépasser 10 caractères',
+                'any.required': 'Le code est requis'
+            }),
+        description: Joi.string().max(500).optional()
+            .messages({
+                'string.max': 'La description ne peut pas dépasser 500 caractères'
+            }),
+        statut: Joi.string().valid('ACTIF', 'INACTIF').default('ACTIF')
+            .messages({
+                'any.only': 'Statut invalide'
+            })
+    }),
+
+    update: Joi.object({
+        nom: Joi.string().min(2).max(100)
+            .messages({
+                'string.min': 'Le nom doit contenir au moins 2 caractères',
+                'string.max': 'Le nom ne peut pas dépasser 100 caractères'
+            }),
+        code: Joi.string().min(2).max(10)
+            .messages({
+                'string.min': 'Le code doit contenir au moins 2 caractères',
+                'string.max': 'Le code ne peut pas dépasser 10 caractères'
+            }),
+        description: Joi.string().max(500)
+            .messages({
+                'string.max': 'La description ne peut pas dépasser 500 caractères'
+            }),
+        statut: Joi.string().valid('ACTIF', 'INACTIF')
+            .messages({
+                'any.only': 'Statut invalide'
+            })
+    })
+};
+
 // Schémas de validation pour les divisions
 const divisionValidation = {
     create: Joi.object({
@@ -108,15 +155,18 @@ const divisionValidation = {
                 'string.max': 'Le code ne peut pas dépasser 10 caractères',
                 'any.required': 'Le code est requis'
             }),
-        responsable_id: Joi.string().uuid().required()
+        description: Joi.string().max(500).optional()
             .messages({
-                'string.guid': 'ID de responsable invalide',
-                'any.required': 'Le responsable est requis'
+                'string.max': 'La description ne peut pas dépasser 500 caractères'
             }),
-        budget_annuel: Joi.number().positive().required()
+        business_unit_id: Joi.string().uuid().required()
             .messages({
-                'number.positive': 'Le budget annuel doit être positif',
-                'any.required': 'Le budget annuel est requis'
+                'string.guid': 'ID de business unit invalide',
+                'any.required': 'La business unit est requise'
+            }),
+        statut: Joi.string().valid('ACTIF', 'INACTIF').default('ACTIF')
+            .messages({
+                'any.only': 'Statut invalide'
             })
     }),
 
@@ -131,13 +181,13 @@ const divisionValidation = {
                 'string.min': 'Le code doit contenir au moins 2 caractères',
                 'string.max': 'Le code ne peut pas dépasser 10 caractères'
             }),
-        responsable_id: Joi.string().uuid()
+        description: Joi.string().max(500)
             .messages({
-                'string.guid': 'ID de responsable invalide'
+                'string.max': 'La description ne peut pas dépasser 500 caractères'
             }),
-        budget_annuel: Joi.number().positive()
+        business_unit_id: Joi.string().uuid()
             .messages({
-                'number.positive': 'Le budget annuel doit être positif'
+                'string.guid': 'ID de business unit invalide'
             }),
         statut: Joi.string().valid('ACTIF', 'INACTIF')
             .messages({
@@ -375,6 +425,7 @@ const authValidation = {
 
 module.exports = {
     userValidation,
+    businessUnitValidation,
     divisionValidation,
     clientValidation,
     contactValidation,

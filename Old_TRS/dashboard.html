@@ -1,0 +1,4194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord TRS</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="auth.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e9eafc 0%, #f4f6fa 100%);
+            margin: 0;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 10px 40px rgba(102,126,234,0.10), 0 2px 8px rgba(118,75,162,0.06);
+            padding: 0 0 40px 0;
+            overflow: hidden;
+            min-height: calc(100vh - 60px);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px 30px 30px;
+            border-radius: 18px 18px 0 0;
+            box-shadow: 0 4px 24px rgba(102,126,234,0.10);
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .header-text {
+            flex: 1;
+        }
+        .header-actions {
+            flex-shrink: 0;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .header p {
+            font-size: 1.15em;
+            opacity: 0.96;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            background: #f8f9fa;
+        }
+        .tab {
+            padding: 18px 32px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #555;
+            border: none;
+            background: none;
+            outline: none;
+            transition: background 0.2s, color 0.2s;
+            font-size: 1.08em;
+        }
+        .tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            background: #fff;
+        }
+        .filters-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.2);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #333;
+            font-size: 1em;
+        }
+        .filter-group select, .filter-group input {
+            padding: 9px 14px;
+            border: 2px solid #ddd;
+            border-radius: 9px;
+            font-size: 1em;
+            min-width: 160px;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+        .filter-group select:focus, .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .date-range {
+            display: flex;
+            gap: 8px;
+        }
+        .date-range input {
+            padding: 9px 14px;
+            border: 2px solid #ddd;
+            border-radius: 9px;
+            font-size: 1em;
+            min-width: 140px;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+        .date-range input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .kpi-cards {
+            display: flex;
+            gap: 32px;
+            margin: 36px 0 24px 0;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .kpi-card {
+            background: linear-gradient(135deg, #f8f9fa 60%, #e9eafc 100%);
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(102,126,234,0.07);
+            padding: 32px 34px 28px 34px;
+            min-width: 220px;
+            flex: 1;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow 0.2s, transform 0.2s;
+            margin-bottom: 10px;
+            animation: fadeInUp 0.7s;
+        }
+        .kpi-card:hover {
+            box-shadow: 0 8px 32px rgba(102,126,234,0.13);
+            transform: translateY(-2px) scale(1.03);
+        }
+        .kpi-icon {
+            font-size: 2.1em;
+            margin-bottom: 8px;
+            color: #667eea;
+            display: block;
+            opacity: 0.85;
+        }
+        .kpi-label {
+            color: #888;
+            font-size: 1.08em;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .kpi-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #764ba2;
+            letter-spacing: 1px;
+        }
+        .charts-row {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+            margin: 36px 0 0 0;
+        }
+        .chart-container {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(102,126,234,0.07);
+            padding: 24px 18px 18px 18px;
+            flex: 1;
+            min-width: 340px;
+            height: 400px;
+            transition: box-shadow 0.2s;
+            animation: fadeInUp 0.8s;
+        }
+        .chart-container:hover {
+            box-shadow: 0 8px 32px rgba(102,126,234,0.13);
+        }
+        
+        .chart-container canvas {
+            max-height: 350px !important;
+            width: 100% !important;
+        }
+        
+        /* Styles pour les tableaux */
+        .table-container {
+            max-height: 500px;
+            overflow: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .table-container table {
+            width: 100%;
+            min-width: 800px;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.9em;
+        }
+        
+        .table-container th, .table-container td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+        
+        .table-container th {
+            background: linear-gradient(90deg, #e9eafc 60%, #f8f9fa 100%) !important;
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.05em;
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 2px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 12px 14px;
+        }
+        
+        .table-container thead {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(90deg, #e9eafc 60%, #f8f9fa 100%);
+        }
+        
+        .table-container tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        /* Conteneur principal avec padding pour éviter le débordement */
+        .tab-content {
+            padding: 0 30px 30px 30px;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        
+        /* Ajustement pour les conteneurs de graphiques avec tableaux */
+        .chart-container:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Alertes pour les tableaux */
+        .alert-low-chargeability {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .alert-low-rentability {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .alert-excellent-performance {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .alert-good-performance {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .alert-medium-performance {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .alert-low-performance {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .section-title {
+            font-size: 1.18em;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 18px;
+            letter-spacing: 0.5px;
+        }
+        .loading {
+            text-align: center;
+            color: #667eea;
+            padding: 40px;
+            font-size: 1.2em;
+        }
+        .no-data {
+            text-align: center;
+            color: #888;
+            padding: 40px;
+            font-size: 1.1em;
+        }
+        /* Styles généraux pour les tableaux (hors conteneurs) */
+        table:not(.table-container table) {
+            border-collapse: collapse;
+            width: 100%;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(102,126,234,0.07);
+            margin-top: 10px;
+        }
+        table:not(.table-container table) th, 
+        table:not(.table-container table) td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: left;
+        }
+        table:not(.table-container table) th {
+            background: linear-gradient(90deg, #e9eafc 60%, #f8f9fa 100%);
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+        table:not(.table-container table) tr:hover {
+            background: #f4f6fa;
+        }
+        table:not(.table-container table) tr:nth-child(even) {
+            background: #fafaff;
+        }
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .export-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin: 10px 0;
+            transition: transform 0.2s;
+        }
+        .export-btn:hover {
+            transform: translateY(-2px);
+        }
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #c33;
+        }
+        .info-message {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #1976d2;
+        }
+        .success-message {
+            background: #efe;
+            color: #363;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #363;
+        }
+        .refresh-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 9px 20px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 1em;
+        }
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+        }
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+        
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .logout-btn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            padding: 9px 20px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 1em;
+            margin-left: 10px;
+        }
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231,76,60,0.3);
+        }
+        .logout-btn:active {
+            transform: translateY(0);
+        }
+        .refresh-btn.loading {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            cursor: not-allowed;
+        }
+
+        .alert-low-chargeability {
+            background-color: #fff3cd !important;
+            border-left: 4px solid #ffc107;
+        }
+
+        .alert-low-chargeability:hover {
+            background-color: #ffeaa7 !important;
+        }
+
+        .alert-low-rentability {
+            background-color: #ffebee !important;
+            border-left: 4px solid #f44336;
+            color: #c62828 !important;
+        }
+
+        .alert-low-rentability:hover {
+            background-color: #ffcdd2 !important;
+        }
+
+        .alert-excellent-performance {
+            background-color: #e8f5e8 !important;
+            color: #2e7d32 !important;
+        }
+        
+        .alert-good-performance {
+            background-color: #f1f8e9 !important;
+            color: #558b2f !important;
+        }
+        
+        .alert-medium-performance {
+            background-color: #fff3e0 !important;
+            color: #ef6c00 !important;
+        }
+        
+        .alert-low-performance {
+            background-color: #ffebee !important;
+            color: #c62828 !important;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Styles pour les filtres des opportunités et facturation */
+        .filters-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.07);
+        }
+
+        .filters-section .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 180px;
+            flex: 1;
+        }
+
+        .filters-section label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+            color: white;
+            font-size: 0.95em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .filters-section select,
+        .filters-section input[type="date"] {
+            padding: 10px 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            color: #495057;
+            font-size: 0.9em;
+            min-width: 160px;
+            transition: all 0.3s ease;
+        }
+
+        .filters-section select:focus,
+        .filters-section input[type="date"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .filters-section select:hover,
+        .filters-section input[type="date"]:hover {
+            border-color: #667eea;
+        }
+
+        .filters-section select option {
+            background: white;
+            color: #495057;
+            padding: 8px;
+        }
+
+        /* Styles pour les filtres généraux avec alignement horizontal */
+        .filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+        }
+
+        .filters-row .filter-group {
+            flex: 1 1 220px;
+            min-width: 180px;
+            max-width: 260px;
+        }
+
+        @media (max-width: 900px) {
+            .filters-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filters-row .filter-group {
+                max-width: 100%;
+                min-width: 0;
+                flex: 1 1 100%;
+            }
+        }
+
+        .filters-bar .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 0 1 220px;
+            min-width: 180px;
+            max-width: 260px;
+            margin-bottom: 0;
+        }
+
+        .filters-bar label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+            color: white;
+            font-size: 0.95em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .filters-bar select,
+        .filters-bar input[type="date"] {
+            padding: 10px 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.95);
+            color: #495057;
+            font-size: 0.9em;
+            min-width: 160px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .filters-bar select:focus,
+        .filters-bar input[type="date"]:focus {
+            outline: none;
+            border-color: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+            background: white;
+            transform: translateY(-1px);
+        }
+
+        .filters-bar select:hover,
+        .filters-bar input[type="date"]:hover {
+            border-color: white;
+            background: white;
+            transform: translateY(-1px);
+        }
+
+        .filters-bar select option {
+            background: white;
+            color: #495057;
+            padding: 8px;
+        }
+
+        .filters-bar .date-range {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            min-width: 220px;
+            max-width: 320px;
+        }
+
+        .filters-bar .date-range input {
+            flex: 1;
+        }
+
+        @media (max-width: 700px) {
+            .filters-bar {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .filters-bar .filter-group {
+                max-width: 100%;
+                min-width: 0;
+            }
+            .filters-bar .date-range {
+                max-width: 100%;
+                min-width: 0;
+            }
+        }
+
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>Tableau de bord TRS</h1>
+                    <p>Visualisez et analysez la répartition du temps de vos équipes par Pôle, Collaborateur et Mission.</p>
+                </div>
+                <div class="header-actions">
+                </div>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="dashboard">Dashboard</button>
+            <button class="tab" data-tab="missions">Missions</button>
+            <button class="tab" data-tab="facturation">Facturation</button>
+            <button class="tab" data-tab="rentabilite">Rentabilité</button>
+            <button class="tab" data-tab="performance">Performance</button>
+            <button class="tab" data-tab="opportunites">Opportunités</button>
+            <button class="tab" data-tab="feuilles">Feuilles de temps</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="tab-dashboard" class="tab-content active">
+            <div class="loading">Chargement des données...</div>
+        </div>
+
+        <!-- Missions Tab -->
+        <div id="tab-missions" class="tab-content">
+            <div class="loading">Chargement des missions...</div>
+        </div>
+
+        <!-- Facturation Tab -->
+        <div id="tab-facturation" class="tab-content">
+            <div class="loading">Chargement de la facturation...</div>
+        </div>
+
+        <!-- Rentabilité Tab -->
+        <div id="tab-rentabilite" class="tab-content">
+            <div class="loading">Chargement de la rentabilité...</div>
+        </div>
+
+        <!-- Performance Tab -->
+        <div id="tab-performance" class="tab-content">
+            <div class="loading">Chargement de la performance...</div>
+        </div>
+
+        <!-- Opportunités Tab -->
+        <div id="tab-opportunites" class="tab-content">
+            <div class="loading">Chargement des opportunités...</div>
+        </div>
+        <!-- Feuilles de temps Tab -->
+        <div id="tab-feuilles" class="tab-content">
+            <div class="filters-section" id="feuilles-filters" style="margin-bottom:20px;">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label for="feuilles-division-filter">Pôle</label>
+                        <select id="feuilles-division-filter">
+                            <option value="">Tous les pôles</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="feuilles-collab-filter">Collaborateur</label>
+                        <select id="feuilles-collab-filter">
+                            <option value="">Tous les collaborateurs</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="loading">Chargement des feuilles de temps...</div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let trsData = [];
+        let missionsData = [];
+        let facturesData = [];
+        let tauxHorairesData = [];
+        let initialesData = [];
+        let opportunitesData = [];
+        let filteredData = [];
+        let charts = {};
+        let currentTab = 'dashboard';
+
+        // Mappings
+        let initialesToNom = {};
+        let nomToInitiales = {};
+        let gradeToTaux = {};
+
+        // Parsing CSV robuste avec gestion des séparateurs et encodage
+        function parseCSV(csvText) {
+            let data = [];
+            let lines = csvText.split('\n');
+            if (lines.length < 2) return data;
+            
+            // Détecter le séparateur (; ou ,)
+            let separator = ';';
+            if (lines[0].includes(',')) separator = ',';
+            
+            let headers = lines[0].split(separator).map(h => h.replace(/"/g, '').trim());
+    
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue;
+                
+                let row = lines[i].split(separator);
+                if (row.length === headers.length) {
+                    let dataRow = {};
+                    for (let j = 0; j < headers.length; j++) {
+                        dataRow[headers[j]] = row[j] ? row[j].replace(/"/g, '').trim() : '';
+                    }
+                    data.push(dataRow);
+                }
+            }
+    
+            return data;
+        }
+
+        // Chargement des données
+        async function loadAllCSVs() {
+            try {
+                // Générer un timestamp unique pour éviter le cache
+                const timestamp = Date.now();
+                
+                // Charger TRS
+                const trsResponse = await fetch(`données_TRS.csv?v=${timestamp}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+                if (!trsResponse.ok) throw new Error('Fichier TRS non trouvé');
+                const trsText = await trsResponse.text();
+                trsData = parseCSV(trsText);
+
+                // Charger Missions
+                const missionsResponse = await fetch(`liste des missions.csv?v=${timestamp}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+                if (!missionsResponse.ok) throw new Error('Fichier missions non trouvé');
+                const missionsText = await missionsResponse.text();
+                missionsData = parseCSV(missionsText);
+
+                // Charger Factures
+                const facturesResponse = await fetch(`liste des factures.csv?v=${timestamp}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+                if (!facturesResponse.ok) throw new Error('Fichier factures non trouvé');
+                const facturesText = await facturesResponse.text();
+                facturesData = parseCSV(facturesText);
+
+                // Charger Taux horaires
+                const tauxResponse = await fetch(`Taux horaire par grade.csv?v=${timestamp}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+                if (!tauxResponse.ok) throw new Error('Fichier taux horaires non trouvé');
+                const tauxText = await tauxResponse.text();
+                tauxHorairesData = parseCSV(tauxText);
+
+
+                // Charger Initiales
+                const initialesResponse = await fetch(`initiales.csv?v=${timestamp}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+                if (!initialesResponse.ok) throw new Error('Fichier initiales non trouvé');
+                const initialesText = await initialesResponse.text();
+                initialesData = parseCSV(initialesText);
+
+                // Charger Opportunités
+                const opportunitesResponse = await fetch(`liste des opportunités.csv?v=${timestamp}`, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+                if (!opportunitesResponse.ok) {
+                    throw new Error('Fichier opportunités non trouvé');
+                }
+                const opportunitesText = await opportunitesResponse.text();
+                opportunitesData = parseCSV(opportunitesText);
+
+                // Construire les mappings
+                buildMappings();
+                
+                // Initialiser l'onglet actif
+                currentTab = 'dashboard';
+                
+                // Initialiser l'interface
+                setupFilters();
+                
+                // S'assurer que les filtres généraux sont correctement masqués/affichés au démarrage
+                const generalFilters = document.getElementById('general-filters');
+                if (generalFilters) {
+                    if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles') {
+                        generalFilters.style.display = 'none';
+                    } else {
+                        generalFilters.style.display = 'block';
+                    }
+                }
+                
+                applyFilters();
+
+                // Ajout : forcer le rendu des filtres de l'onglet Feuilles de temps après chargement des CSV
+                renderFeuillesTab();
+
+            } catch (error) {
+                
+                document.querySelectorAll('.loading').forEach(el => {
+                    el.innerHTML = 'Erreur lors du chargement des données. Vérifiez que tous les fichiers CSV sont présents.';
+                });
+            }
+        }
+
+        // Construction des mappings
+        function buildMappings() {
+            // Mapping initiales ↔ noms
+            initialesData.forEach(row => {
+                if (row['Nom'] && row['Initiales 1']) {
+                    initialesToNom[row['Initiales 1']] = row['Nom'];
+                    nomToInitiales[row['Nom']] = row['Initiales 1'];
+                }
+            });
+
+            // Mapping grade ↔ taux horaire
+            tauxHorairesData.forEach(row => {
+                if (row['Grade'] && row['Taux horaire']) {
+                    let taux = parseFloat(row['Taux horaire'].replace(/\s/g, ''));
+                    if (!isNaN(taux)) {
+                        gradeToTaux[row['Grade']] = taux;
+                    }
+                }
+            });
+        }
+
+        // Fonction pour normaliser les dates (gère les formats DD/MM/YYYY et anciens formats français)
+        function normalizeDate(dateStr) {
+            if (!dateStr) return '';
+            
+            // Si c'est déjà au format DD/MM/YYYY, le convertir en YYYY-MM-DD
+            let match = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+            if (match) {
+                let jour = match[1];
+                let mois = match[2];
+                let annee = match[3];
+                return `${annee}-${mois}-${jour}`;
+            }
+            
+            return dateStr;
+        }
+
+        // Configuration des filtres
+        function setupFilters() {
+            // Protection contre les appels récursifs
+            if (window.isSettingUpFilters) {
+                return;
+            }
+            window.isSettingUpFilters = true;
+            
+            try {
+                // Vérifier que le DOM est prêt
+                if (!document.getElementById('buFilter')) {
+                    setTimeout(() => {
+                        window.isSettingUpFilters = false;
+                        setupFilters();
+                    }, 100);
+                    return;
+                }
+                
+                console.log('setupFilters - Données disponibles:', {
+                    trs: trsData.length,
+                    factures: facturesData.length,
+                    opportunites: opportunitesData.length
+                });
+                
+                // Collecter toutes les dates de tous les fichiers
+                let allDates = [];
+                
+                // Dates TRS - vérifier plusieurs champs possibles
+                if (trsData && trsData.length > 0) {
+                    // Chercher dans différents champs de dates
+                    let trsDates = [];
+                    trsData.forEach(row => {
+                        if (row['Mois']) trsDates.push(row['Mois']);
+                        if (row['Date']) trsDates.push(row['Date']);
+                        if (row['Date Insertion']) trsDates.push(row['Date Insertion']);
+                    });
+                    allDates = allDates.concat(trsDates.filter(d => d));
+                }
+                
+                // Dates Factures
+                if (facturesData && facturesData.length > 0) {
+                    let facturesDates = facturesData.map(row => row['Date']).filter(d => d);
+                    allDates = allDates.concat(facturesDates);
+                }
+                
+                // Dates Opportunités
+                if (opportunitesData && opportunitesData.length > 0) {
+                    let opportunitesDates = opportunitesData.map(row => row['Date Insertion']).filter(d => d);
+                    allDates = allDates.concat(opportunitesDates);
+                }
+                
+                console.log('setupFilters - Dates trouvées:', allDates.length);
+                
+                // Extraire directement les années et mois des dates DD/MM/YYYY
+                let years = [];
+                let months = [];
+                
+                allDates.forEach(dateStr => {
+                    // Vérifier si c'est au format DD/MM/YYYY
+                    let match = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (match) {
+                        let jour = match[1];
+                        let mois = match[2];
+                        let annee = match[3];
+                        years.push(annee);
+                        months.push(mois);
+                    }
+                });
+                
+                // Dédupliquer et trier
+                years = [...new Set(years)].filter(y => y).sort();
+                months = [...new Set(months)].filter(m => m).sort();
+                
+                console.log('setupFilters - Années trouvées:', years);
+                console.log('setupFilters - Mois trouvés:', months);
+                
+                // Remplir les filtres généraux
+                fillSelect(document.getElementById('yearFilter'), years, 'Toutes les années');
+                fillSelect(document.getElementById('monthFilter'), months, 'Tous les mois', (month) => {
+                    const moisNoms = {
+                        '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                        '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                        '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                    };
+                    return moisNoms[month] || month;
+                });
+
+                // Mettre à jour les filtres selon l'onglet actif
+                updateFiltersForCurrentTab();
+            } finally {
+                window.isSettingUpFilters = false;
+            }
+        }
+
+        // Fonction pour mettre à jour les filtres selon l'onglet actif
+        function updateFiltersForCurrentTab() {
+            // Protection contre les appels récursifs
+            if (window.isUpdatingFilters) {
+                return;
+            }
+            window.isUpdatingFilters = true;
+            
+            try {
+                console.log('updateFiltersForCurrentTab - onglet actuel:', currentTab);
+                
+                // Masquer/Afficher les filtres généraux selon l'onglet
+                const generalFilters = document.getElementById('general-filters');
+                if (generalFilters) {
+                    if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles') {
+                        generalFilters.style.display = 'none';
+                    } else {
+                        generalFilters.style.display = 'block';
+                    }
+                }
+                
+                // Si ce n'est pas l'onglet facturation ou opportunités, mettre à jour les filtres TRS
+                if (currentTab !== 'facturation' && currentTab !== 'opportunites') {
+                    // Recharger les années et mois
+                    let allDates = [];
+                    
+                    // Dates TRS - vérifier plusieurs champs possibles
+                    if (trsData && trsData.length > 0) {
+                        let trsDates = [];
+                        trsData.forEach(row => {
+                            if (row['Mois']) trsDates.push(row['Mois']);
+                            if (row['Date']) trsDates.push(row['Date']);
+                            if (row['Date Insertion']) trsDates.push(row['Date Insertion']);
+                        });
+                        allDates = allDates.concat(trsDates.filter(d => d));
+                    }
+                    
+                    // Dates Factures
+                    if (facturesData && facturesData.length > 0) {
+                        let facturesDates = facturesData.map(row => row['Date']).filter(d => d);
+                        allDates = allDates.concat(facturesDates);
+                    }
+                    
+                    // Dates Opportunités
+                    if (opportunitesData && opportunitesData.length > 0) {
+                        let opportunitesDates = opportunitesData.map(row => row['Date Insertion']).filter(d => d);
+                        allDates = allDates.concat(opportunitesDates);
+                    }
+                    
+                    // Extraire années et mois
+                    let years = [];
+                    let months = [];
+                    
+                    allDates.forEach(dateStr => {
+                        let match = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                        if (match) {
+                            let jour = match[1];
+                            let mois = match[2];
+                            let annee = match[3];
+                            years.push(annee);
+                            months.push(mois);
+                        }
+                    });
+                    
+                    // Dédupliquer et trier
+                    years = [...new Set(years)].filter(y => y).sort();
+                    months = [...new Set(months)].filter(m => m).sort();
+                    
+                    console.log('updateFiltersForCurrentTab - Années trouvées:', years);
+                    console.log('updateFiltersForCurrentTab - Mois trouvés:', months);
+                    
+                    // Remplir les filtres année et mois
+                    fillSelect(document.getElementById('yearFilter'), years, 'Toutes les années');
+                    fillSelect(document.getElementById('monthFilter'), months, 'Tous les mois', (month) => {
+                        const moisNoms = {
+                            '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                            '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                            '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                        };
+                        return moisNoms[month] || month;
+                    });
+                    
+                    // Mettre à jour les autres filtres
+                    let bus = [];
+                    let collabs = [];
+                    let missions = [];
+                    
+                    // Pour tous les onglets, utiliser les données TRS comme base
+                    bus = [...new Set(trsData.map(row => row['Division']))].filter(b => b);
+                    collabs = [...new Set(trsData.map(row => row['Nom']))].filter(c => c);
+                    missions = [...new Set(trsData.map(row => row['Missions']))].filter(m => m);
+                    let typesHeure = [...new Set(trsData.map(row => row['Type Heure']))].filter(t => t);
+                    
+                    fillSelect(document.getElementById('buFilter'), bus, 'Tous les pôles');
+                    fillSelect(document.getElementById('collabFilter'), collabs, 'Tous les collaborateurs');
+                    fillSelect(document.getElementById('missionFilter'), missions, 'Toutes les missions');
+                    fillSelect(document.getElementById('typeHeureFilter'), typesHeure, 'Tous les types');
+                }
+            } finally {
+                window.isUpdatingFilters = false;
+            }
+        }
+
+        function fillSelect(select, values, allLabel, formatter = null) {
+            if (!select) return; // Sécurité anti-erreur
+            
+            
+            // Désactiver temporairement les événements pour éviter les appels récursifs
+            const originalOnChange = select.onchange;
+            select.onchange = null;
+            
+            try {
+                select.innerHTML = `<option value="">${allLabel}</option>`;
+                values.forEach(value => {
+                    let option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = formatter ? formatter(value) : value;
+                    select.appendChild(option);
+                });
+                
+            } finally {
+                // Restaurer l'événement
+                select.onchange = originalOnChange;
+            }
+        }
+
+        // Application des filtres
+        function applyFilters() {
+            
+            
+            // Protection contre les appels récursifs
+            if (window.isApplyingFilters) {
+                
+                return;
+            }
+            window.isApplyingFilters = true;
+            
+            try {
+                
+                
+                // Toujours utiliser les données TRS comme base pour les autres onglets
+                let sourceData = trsData;
+                let dateField = 'Mois';
+                
+                if (!sourceData || sourceData.length === 0) {
+                    
+                    filteredData = [];
+                    renderCurrentTab();
+                    return;
+                }
+                
+                
+                
+                // Pour les onglets avec filtres généraux, appliquer les filtres
+                if (currentTab === 'dashboard' || currentTab === 'missions' || currentTab === 'rentabilite' || currentTab === 'performance') {
+                    // Appliquer les filtres généraux
+                    filteredData = sourceData.filter(row => {
+                        let yearFilter = document.getElementById('yearFilter')?.value || '';
+                        let monthFilter = document.getElementById('monthFilter')?.value || '';
+                        let startDate = document.getElementById('startDate')?.value || '';
+                        let endDate = document.getElementById('endDate')?.value || '';
+                        let buFilter = document.getElementById('buFilter')?.value || '';
+                        let collabFilter = document.getElementById('collabFilter')?.value || '';
+                        let missionFilter = document.getElementById('missionFilter')?.value || '';
+                        let typeHeureFilter = document.getElementById('typeHeureFilter')?.value || '';
+
+                        // Filtre par année
+                        if (yearFilter && dateField && dateField !== '') {
+                            let rowDate = row[dateField];
+                            let rowYear = '';
+                            
+                            if (rowDate) {
+                                let match = rowDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                if (match) {
+                                    rowYear = match[3];
+                                } else {
+                                    let normalizedRowDate = normalizeDate(rowDate);
+                                    rowYear = extractYearFromDate(normalizedRowDate);
+                                }
+                                
+                                if (rowYear !== yearFilter) {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }
+                        
+                        // Filtre par mois
+                        if (monthFilter && dateField && dateField !== '') {
+                            let rowDate = row[dateField];
+                            let rowMonth = '';
+                            
+                            if (rowDate) {
+                                let match = rowDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                if (match) {
+                                    rowMonth = match[2];
+                                } else {
+                                    let normalizedRowDate = normalizeDate(rowDate);
+                                    rowMonth = extractMonthFromDate(normalizedRowDate);
+                                }
+                                
+                                if (rowMonth !== monthFilter) {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }
+                        
+                        // Filtres spécifiques
+                        if (buFilter && row['Division'] !== buFilter) {
+                            return false;
+                        }
+                        if (collabFilter && row['Nom'] !== collabFilter) {
+                            return false;
+                        }
+                        if (missionFilter && row['Missions'] !== missionFilter) {
+                            return false;
+                        }
+                        if (typeHeureFilter && row['Type Heure'] !== typeHeureFilter) {
+                            return false;
+                        }
+
+                        return true;
+                    });
+                    
+                    
+                    renderCurrentTab();
+                    return;
+                }
+                
+                // Logique de filtrage pour les autres onglets
+                filteredData = sourceData.filter(row => {
+                    let yearFilter = document.getElementById('yearFilter')?.value || '';
+                    let monthFilter = document.getElementById('monthFilter')?.value || '';
+                    let buFilter = document.getElementById('buFilter')?.value || '';
+                    let collabFilter = document.getElementById('collabFilter')?.value || '';
+                    let missionFilter = document.getElementById('missionFilter')?.value || '';
+                    let typeHeureFilter = document.getElementById('typeHeureFilter')?.value || '';
+
+                    // Filtre par année
+                    if (yearFilter && dateField && dateField !== '') {
+                        let rowDate = row[dateField];
+                        let rowYear = '';
+                        
+                        if (rowDate) {
+                            let match = rowDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                            if (match) {
+                                rowYear = match[3];
+                            } else {
+                                let normalizedRowDate = normalizeDate(rowDate);
+                                rowYear = extractYearFromDate(normalizedRowDate);
+                            }
+                            
+                            if (rowYear !== yearFilter) {
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
+                    }
+                    
+                    // Filtre par mois
+                    if (monthFilter && dateField && dateField !== '') {
+                        let rowDate = row[dateField];
+                        let rowMonth = '';
+                        
+                        if (rowDate) {
+                            let match = rowDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                            if (match) {
+                                rowMonth = match[2];
+                            } else {
+                                let normalizedRowDate = normalizeDate(rowDate);
+                                rowMonth = extractMonthFromDate(normalizedRowDate);
+                            }
+                            
+                            if (rowMonth !== monthFilter) {
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
+                    }
+                    
+                    // Filtres spécifiques
+                    if (buFilter && row['Division'] !== buFilter) {
+                        return false;
+                    }
+                    if (collabFilter && row['Nom'] !== collabFilter) {
+                        return false;
+                    }
+                    if (missionFilter && row['Missions'] !== missionFilter) {
+                        return false;
+                    }
+                    if (typeHeureFilter && row['Type Heure'] !== typeHeureFilter) {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                
+                renderCurrentTab();
+            } finally {
+                window.isApplyingFilters = false;
+            }
+        }
+
+        // Fonction pour rendre l'onglet actif
+        function renderCurrentTab() {
+            console.debug('renderCurrentTab - currentTab:', currentTab);
+            
+            
+            
+            // Protection contre les appels récursifs
+            if (window.isRenderingTab) {
+                
+                return;
+            }
+            window.isRenderingTab = true;
+            
+            try {
+                // Masquer le filtre général uniquement pour l'onglet Feuilles de temps
+                // Gestion des filtres généraux selon l'onglet
+                if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles') {
+                    // Pour ces onglets, les filtres généraux ne doivent pas être présents dans le DOM
+                    const generalFilters = document.getElementById('general-filters');
+                    if (generalFilters) {
+                        generalFilters.style.display = 'none';
+                        
+                    }
+                } else {
+                    // Pour les autres onglets, les filtres généraux doivent être visibles
+                    const generalFilters = document.getElementById('general-filters');
+                    if (generalFilters) {
+                        generalFilters.style.display = 'block';
+                        
+                    }
+                }
+                switch (currentTab) {
+                    case 'dashboard':
+                        renderDashboard();
+                        break;
+                    case 'missions':
+                        renderMissionsTab();
+                        break;
+                    case 'facturation':
+                        // L'onglet Facturation utilise ses propres filtres
+                        renderFacturationTab();
+                        break;
+                    case 'rentabilite':
+                        renderRentabiliteTab();
+                        break;
+                    case 'performance':
+                        renderPerformanceTab();
+                        break;
+                    case 'opportunites':
+                        renderOpportunitesTab();
+                        break;
+                    case 'feuilles':
+                        renderFeuillesTab();
+                        break;
+                    default:
+                        renderDashboard();
+                }
+                // Forçage du masquage après chaque rendu
+                forceHideGeneralFiltersIfNeeded();
+            } finally {
+                window.isRenderingTab = false;
+            }
+        }
+
+
+
+        // Gestion des filtres avec protection
+        function handleFilterChange() {
+            if (!window.isApplyingFilters) {
+                applyFilters();
+            }
+        }
+
+        // Fonctions utilitaires pour les dates
+        function extractYearFromDate(dateStr) {
+            if (!dateStr) return '';
+            let match = dateStr.match(/(\d{4})/);
+            return match ? match[1] : '';
+        }
+
+        function extractMonthFromDate(dateStr) {
+            if (!dateStr) return '';
+            let match = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+            return match ? match[2] : '';
+        }
+
+        // Fonction de rafraîchissement des données
+        async function refreshData() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn.classList.contains('loading')) {
+                return;
+            }
+            refreshBtn.classList.add('loading');
+            refreshBtn.textContent = '🔄 Chargement...';
+            refreshBtn.disabled = true;
+            try {
+                trsData = [];
+                missionsData = [];
+                facturesData = [];
+                tauxHorairesData = [];
+                initialesData = [];
+                opportunitesData = [];
+                filteredData = [];
+                await loadAllCSVs();
+                setupFilters();
+                updateFiltersVisibility();
+                renderCurrentTab();
+            } catch (error) {
+                console.error('Erreur lors du rafraîchissement:', error);
+                refreshBtn.textContent = '❌ Erreur';
+                setTimeout(() => {
+                    refreshBtn.textContent = '🔄 Mise à jour';
+                }, 3000);
+            } finally {
+                refreshBtn.classList.remove('loading');
+                refreshBtn.disabled = false;
+            }
+        }
+
+        // Rendu du dashboard principal
+        function renderDashboard() {
+            if (!filteredData.length) {
+                document.getElementById('tab-dashboard').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
+                return;
+            }
+            // Protection contre les appels multiples
+            if (window.isRenderingDashboard) {
+                return;
+            }
+            window.isRenderingDashboard = true;
+            
+            try {
+                if (!filteredData.length) {
+                    document.getElementById('tab-dashboard').innerHTML = '<div class="no-data">Aucune donnée à afficher</div>';
+                    return;
+                }
+
+            // Calcul des KPIs
+            let totalHeures = filteredData.reduce((sum, row) => sum + (parseFloat(row['Heures']) || 0), 0);
+            let totalCollaborateurs = new Set(filteredData.map(row => row['Nom'])).size;
+            let totalMissions = new Set(filteredData.map(row => row['Missions'])).size;
+            let totalPoles = new Set(filteredData.map(row => row['Division'])).size;
+
+            // HTML des KPIs
+            let kpisHTML = `
+                <div class="kpi-cards">
+                    <div class="kpi-card">
+                        <span class="kpi-icon">⏰</span>
+                        <div class="kpi-label">Total Heures</div>
+                        <div class="kpi-value">${totalHeures.toFixed(1)}h</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">👥</span>
+                        <div class="kpi-label">Collaborateurs</div>
+                        <div class="kpi-value">${totalCollaborateurs}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📋</span>
+                        <div class="kpi-label">Missions</div>
+                        <div class="kpi-value">${totalMissions}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">🏢</span>
+                        <div class="kpi-label">Pôles</div>
+                        <div class="kpi-value">${totalPoles}</div>
+                    </div>
+                </div>
+            `;
+
+            // Graphiques
+            let chartsHTML = `
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Répartition par Pôle</div>
+                        <canvas id="chartByBU"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Top Collaborateurs</div>
+                        <canvas id="chartTopCollab"></canvas>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('tab-dashboard').innerHTML = kpisHTML + chartsHTML;
+
+            // Rendu des graphiques
+            setTimeout(() => {
+                try {
+                    renderChart('chartByBU', getHoursByField(filteredData, 'Division'), 'bar', 'Pôle', 'Heures');
+                } catch (error) {
+                    
+                }
+            }, 100);
+            setTimeout(() => {
+                try {
+                    renderChart('chartTopCollab', getTopN('Nom', 5), 'bar', 'Collaborateur', 'Heures');
+                } catch (error) {
+                    
+                }
+            }, 200);
+            } catch (error) {
+                
+            } finally {
+                window.isRenderingDashboard = false;
+            }
+        }
+
+        // Fonctions utilitaires pour les graphiques
+        function getHoursByField(data, field) {
+            let map = {};
+            data.forEach(row => {
+                let value = row[field];
+                if (value) {
+                    map[value] = (map[value] || 0) + (parseFloat(row['Heures']) || 0);
+                }
+            });
+            return map;
+        }
+
+        // Fonction pour obtenir les top N éléments
+        function getTopN(field, n) {
+            let map = {};
+            filteredData.forEach(row => {
+                let value = row[field];
+                if (value) {
+                    map[value] = (map[value] || 0) + (parseFloat(row['Heures']) || 0);
+                }
+            });
+            
+            return Object.entries(map)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, n)
+                .reduce((obj, [key, value]) => {
+                    obj[key] = value;
+                    return obj;
+                }, {});
+        }
+
+        // Fonction pour rendre un graphique
+        function renderChart(canvasId, data, type, xLabel, yLabel) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) {
+                
+                return;
+            }
+
+            // Vérifier si les données sont valides
+            if (!data || Object.keys(data).length === 0) {
+                console.warn('Aucune donnée pour le graphique:', canvasId);
+                return;
+            }
+
+            // Protection contre les rendus multiples
+            if (window.isRenderingChart && window.isRenderingChart === canvasId) {
+                console.warn('Graphique déjà en cours de rendu:', canvasId);
+                return;
+            }
+            window.isRenderingChart = canvasId;
+
+            try {
+                // Détruire le graphique existant s'il y en a un
+                if (charts[canvasId]) {
+                    charts[canvasId].destroy();
+                    delete charts[canvasId];
+                }
+
+                const ctx = canvas.getContext('2d');
+                
+                let chartData = {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: yLabel,
+                        data: Object.values(data),
+                        backgroundColor: type === 'doughnut' ? [
+                            '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe',
+                            '#00f2fe', '#43e97b', '#38f9d7', '#fa7093', '#fee140'
+                        ] : '#667eea',
+                        borderColor: type === 'doughnut' ? '#fff' : '#764ba2',
+                        borderWidth: 2
+                    }]
+                };
+
+                charts[canvasId] = new Chart(ctx, {
+                    type: type,
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 10
+                                }
+                            }
+                        },
+                        scales: type !== 'doughnut' ? {
+                            x: {
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 0
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString();
+                                    }
+                                }
+                            }
+                        } : {}
+                    }
+                });
+            } catch (error) {
+                
+            } finally {
+                window.isRenderingChart = null;
+            }
+        }
+
+        // ===== ONGLET MISSIONS =====
+        function renderMissionsTab() {
+            if (!filteredData.length) {
+                document.getElementById('tab-missions').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
+                return;
+            }
+            // Protection contre les appels multiples
+            if (window.isRenderingMissions) {
+                
+                return;
+            }
+            window.isRenderingMissions = true;
+            
+            try {
+                if (!filteredData.length) {
+                    document.getElementById('tab-missions').innerHTML = '<div class="no-data">Aucune donnée de missions disponible</div>';
+                    return;
+                }
+
+            let missionStats = calculateMissionStats();
+            let totalHeures = filteredData.reduce((sum, row) => sum + (parseFloat(row['Heures']) || 0), 0);
+            let totalCout = calculateTotalCost();
+
+            let missionsHTML = `
+                <div class="kpi-cards">
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📋</span>
+                        <div class="kpi-label">Missions Actives</div>
+                        <div class="kpi-value">${Object.keys(missionStats).length}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">⏰</span>
+                        <div class="kpi-label">Total Heures</div>
+                        <div class="kpi-value">${totalHeures.toFixed(1)}h</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">💰</span>
+                        <div class="kpi-label">Coût Total</div>
+                        <div class="kpi-value">${totalCout.toLocaleString()} XAF</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">👥</span>
+                        <div class="kpi-label">Collaborateurs</div>
+                        <div class="kpi-value">${new Set(filteredData.map(row => row['Nom'])).size}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📊</span>
+                        <div class="kpi-label">Heures Moyennes/Mission</div>
+                        <div class="kpi-value">${Object.keys(missionStats).length > 0 ? (totalHeures / Object.keys(missionStats).length).toFixed(1) : 0}h</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">🏆</span>
+                        <div class="kpi-label">Top Mission Coûteuse</div>
+                        <div class="kpi-value">${getTopCostlyMission(missionStats)}</div>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Heures par Mission (Top 10)</div>
+                        <canvas id="missionsChartHours"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Répartition par Type d'Heure</div>
+                        <canvas id="missionsChartType"></canvas>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Évolution des Heures par Mois</div>
+                        <canvas id="missionsChartEvolution"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Répartition par Grade</div>
+                        <canvas id="missionsChartGrade"></canvas>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Top Collaborateurs par Heures</div>
+                        <canvas id="missionsChartCollaborateurs"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Coût par Division</div>
+                        <canvas id="missionsChartDivision"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container" style="margin-top: 20px;">
+                    <div class="section-title">Détail des Heures par Mission</div>
+                    <div class="table-container">
+                        <table id="missionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Mission</th>
+                                    <th>Division</th>
+                                    <th>Collaborateurs</th>
+                                    <th>Heures HC</th>
+                                    <th>Heures HNC</th>
+                                    <th>Total Heures</th>
+                                    <th>Coût Total</th>
+                                    <th>Coût Moyen/H</th>
+                                    <th>Taux Chargeabilité</th>
+                                    <th>Coût/Collaborateur</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${generateMissionsTable()}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('tab-missions').innerHTML = missionsHTML;
+
+            // Rendu des graphiques
+            renderChart('missionsChartHours', getHoursByMission(), 'bar', 'Mission', 'Heures');
+            renderChart('missionsChartType', getHoursByType(), 'doughnut', 'Type d\'heure', 'Heures');
+            renderChart('missionsChartEvolution', getHoursByMonth(), 'line', 'Mois', 'Heures');
+            renderChart('missionsChartGrade', getHoursByGrade(), 'bar', 'Grade', 'Heures');
+            renderChart('missionsChartCollaborateurs', getTopCollaborateurs(), 'bar', 'Collaborateur', 'Heures');
+            renderChart('missionsChartDivision', getCostByDivision(), 'bar', 'Division', 'Coût (XAF)');
+            } catch (error) {
+                
+            } finally {
+                window.isRenderingMissions = false;
+            }
+        }
+
+        function calculateMissionStats() {
+            let stats = {};
+            filteredData.forEach(row => {
+                let mission = row['Missions'];
+                if (!mission) return;
+                
+                if (!stats[mission]) {
+                    stats[mission] = {
+                        division: row['Division'],
+                        collaborateurs: new Set(),
+                        heures: 0,
+                        heuresHC: 0,
+                        heuresHNC: 0,
+                        cout: 0
+                    };
+                }
+                
+                stats[mission].collaborateurs.add(row['Nom']);
+                let heures = parseFloat(row['Heures']) || 0;
+                stats[mission].heures += heures;
+                
+                // Calculer le coût basé sur le grade (uniquement pour les heures HC)
+                if (row['Type Heure'] === 'HC') {
+                    let grade = row['Grade'];
+                    let tauxHoraire = gradeToTaux[grade] || 0;
+                    stats[mission].cout += tauxHoraire * heures;
+                    stats[mission].heuresHC += heures;
+                } else {
+                    stats[mission].heuresHNC += heures;
+                }
+            });
+            
+            return stats;
+        }
+
+        function calculateTotalCost() {
+            return filteredData.reduce((sum, row) => {
+                // Ne calculer le coût que pour les heures HC (chargeables)
+                if (row['Type Heure'] === 'HC') {
+                    let grade = row['Grade'];
+                    let tauxHoraire = gradeToTaux[grade] || 0;
+                    let heures = parseFloat(row['Heures']) || 0;
+                    return sum + (tauxHoraire * heures);
+                }
+                return sum;
+            }, 0);
+        }
+
+        function getTopCostlyMission(missionStats) {
+            let topMission = Object.entries(missionStats)
+                .sort((a, b) => b[1].cout - a[1].cout)[0];
+            return topMission ? topMission[0].substring(0, 20) + '...' : 'N/A';
+        }
+
+        function getHoursByMission() {
+            let missionStats = calculateMissionStats();
+            return Object.entries(missionStats)
+                .sort((a, b) => b[1].heures - a[1].heures)
+                .slice(0, 10)
+                .reduce((obj, [mission, stats]) => {
+                    obj[mission.substring(0, 20) + '...'] = stats.heures;
+                    return obj;
+                }, {});
+        }
+
+        function getHoursByType() {
+            let hcTotal = 0;
+            let hncTotal = 0;
+            
+            filteredData.forEach(row => {
+                let heures = parseFloat(row['Heures']) || 0;
+                if (row['Type Heure'] === 'HC') {
+                    hcTotal += heures;
+                } else {
+                    hncTotal += heures;
+                }
+            });
+            
+            return {
+                'Heures Chargeables': hcTotal,
+                'Heures Non-Chargeables': hncTotal
+            };
+        }
+
+        function getHoursByMonth() {
+            let monthStats = {};
+            filteredData.forEach(row => {
+                let mois = row['Mois'] || 'Non défini';
+                let heures = parseFloat(row['Heures']) || 0;
+                monthStats[mois] = (monthStats[mois] || 0) + heures;
+            });
+            return monthStats;
+        }
+
+        function getHoursByGrade() {
+            let gradeStats = {};
+            filteredData.forEach(row => {
+                let grade = row['Grade'] || 'Non défini';
+                let heures = parseFloat(row['Heures']) || 0;
+                gradeStats[grade] = (gradeStats[grade] || 0) + heures;
+            });
+            return gradeStats;
+        }
+
+        function getTopCollaborateurs() {
+            let collabStats = {};
+            filteredData.forEach(row => {
+                let nom = row['Nom'];
+                let heures = parseFloat(row['Heures']) || 0;
+                collabStats[nom] = (collabStats[nom] || 0) + heures;
+            });
+            
+            return Object.entries(collabStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .reduce((obj, [nom, heures]) => {
+                    obj[nom.length > 15 ? nom.substring(0, 15) + '...' : nom] = heures;
+                    return obj;
+                }, {});
+        }
+
+        function getCostByDivision() {
+            let divisionStats = {};
+            filteredData.forEach(row => {
+                if (row['Type Heure'] === 'HC') {
+                    let division = row['Division'] || 'Non défini';
+                    let grade = row['Grade'];
+                    let tauxHoraire = gradeToTaux[grade] || 0;
+                    let heures = parseFloat(row['Heures']) || 0;
+                    let cout = tauxHoraire * heures;
+                    
+                    divisionStats[division] = (divisionStats[division] || 0) + cout;
+                }
+            });
+            return divisionStats;
+        }
+
+        function generateMissionsTable() {
+            let missionStats = calculateMissionStats();
+            return Object.entries(missionStats).map(([mission, stats]) => {
+                let coutMoyenH = stats.heures > 0 ? stats.cout / stats.heures : 0;
+                let tauxChargeabilite = stats.heures > 0 ? (stats.heuresHC / stats.heures) * 100 : 0;
+                let coutParCollab = stats.collaborateurs.size > 0 ? stats.cout / stats.collaborateurs.size : 0;
+                
+                let rowClass = tauxChargeabilite < 50 ? 'alert-low-chargeability' : '';
+                
+                return `
+                    <tr class="${rowClass}">
+                        <td>${mission}</td>
+                        <td>${stats.division}</td>
+                        <td>${stats.collaborateurs.size}</td>
+                        <td>${stats.heuresHC.toFixed(1)}h</td>
+                        <td>${stats.heuresHNC.toFixed(1)}h</td>
+                        <td>${stats.heures.toFixed(1)}h</td>
+                        <td>${stats.cout.toLocaleString()} XAF</td>
+                        <td>${coutMoyenH.toLocaleString()} XAF/h</td>
+                        <td>${tauxChargeabilite.toFixed(1)}%</td>
+                        <td>${coutParCollab.toLocaleString()} XAF</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ===== ONGLET FACTURATION =====
+        function renderFacturationTab() {
+            console.debug('renderFacturationTab called');
+            console.log('renderFacturationTab - facturesData.length:', facturesData.length);
+            
+            // Nettoyer les filtres invalides
+            cleanInvalidFacturationFilters();
+            
+            try {
+            if (!facturesData.length) {
+                document.getElementById('tab-facturation').innerHTML = '<div class="no-data">Aucune donnée de facturation disponible</div>';
+                return;
+            }
+            let filteredFactures = applyFacturationFilters();
+                console.log('renderFacturationTab - filteredFactures.length:', filteredFactures.length);
+                if (!filteredFactures.length) {
+                    document.getElementById('tab-facturation').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
+                    return;
+                }
+            let facturationStats = calculateFacturationStats(filteredFactures);
+                let alertHTML = '';
+                if (facturationStats.invalids > 0) {
+                    alertHTML = `<div style='color:#b00;background:#ffe5e5;padding:8px 12px;margin-bottom:10px;border-radius:5px;'>Attention : ${facturationStats.invalids} valeur(s) non numérique(s) détectée(s) dans les montants. Vérifiez votre CSV.</div>`;
+                }
+
+            let facturationHTML = `
+                <div class="filters-section">
+                        <div class="filters-row">
+                    <div class="filter-group">
+                        <label>Client:</label>
+                        <select id="facturation-client-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['Client']).filter(Boolean))].sort().map(client => 
+                                `<option value="${client}">${client}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Division:</label>
+                        <select id="facturation-division-filter">
+                            <option value="">Toutes</option>
+                            ${[...new Set(facturesData.map(f => f['Division']).filter(Boolean))].sort().map(div => 
+                                `<option value="${div}">${div}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Manager:</label>
+                        <select id="facturation-manager-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['Manager']).filter(Boolean))].sort().map(manager => 
+                                `<option value="${manager}">${manager}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Partner:</label>
+                        <select id="facturation-partner-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['Partner']).filter(Boolean))].sort().map(partner => 
+                                `<option value="${partner}">${partner}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>État:</label>
+                        <select id="facturation-etat-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => f['État']).filter(Boolean))].sort().map(etat => 
+                                `<option value="${etat}">${etat}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Année:</label>
+                        <select id="facturation-annee-filter">
+                            <option value="">Toutes</option>
+                            ${[...new Set(facturesData.map(f => {
+                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[3] : '';
+                            }).filter(annee => annee))].sort().map(annee => 
+                                `<option value="${annee}">${annee}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Mois:</label>
+                        <select id="facturation-mois-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(facturesData.map(f => {
+                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[2] : '';
+                            }).filter(mois => mois))].sort().map(mois => {
+                                const moisNoms = {
+                                    '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                                    '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                                    '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                                };
+                                return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group" style="flex: 2;">
+                        <label>Période personnalisée:</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="date" id="facturation-date-debut" placeholder="Date début" style="flex: 1;">
+                            <input type="date" id="facturation-date-fin" placeholder="Date fin" style="flex: 1;">
+                        </div>
+                    </div>
+                </div>
+                    </div>
+                    ${alertHTML}
+                <div class="kpi-cards">
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📄</span>
+                        <div class="kpi-label">Total Factures</div>
+                        <div class="kpi-value">${facturationStats.totalFactures}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">💰</span>
+                        <div class="kpi-label">Montant Facturé</div>
+                        <div class="kpi-value">${facturationStats.montantFacture.toLocaleString()} XAF</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">💳</span>
+                        <div class="kpi-label">Montant Encaissé</div>
+                        <div class="kpi-value">${facturationStats.montantEncaisse.toLocaleString()} XAF</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📊</span>
+                        <div class="kpi-label">Taux d'Encaissement</div>
+                        <div class="kpi-value">${facturationStats.tauxEncaissement.toFixed(1)}%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📈</span>
+                        <div class="kpi-label">Montant Moyen</div>
+                        <div class="kpi-value">${facturationStats.montantMoyen.toLocaleString()} XAF</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">⏰</span>
+                        <div class="kpi-label">Délai Moyen</div>
+                        <div class="kpi-value">${facturationStats.delaiMoyen.toFixed(0)} jours</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">⚠️</span>
+                        <div class="kpi-label">En Retard</div>
+                        <div class="kpi-value">${facturationStats.facturesEnRetard}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">🎯</span>
+                        <div class="kpi-label">Top Client</div>
+                        <div class="kpi-value">${facturationStats.topClient}</div>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Facturation par Division</div>
+                        <canvas id="facturationChartDivision"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">État des Factures</div>
+                        <canvas id="facturationChartEtat"></canvas>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Top Clients</div>
+                        <canvas id="facturationChartTopClients"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Facturation par Manager</div>
+                        <canvas id="facturationChartManager"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container" style="margin-top: 20px;">
+                    <div class="section-title">Détail des Factures</div>
+                    <div class="table-container">
+                        <table id="facturationTable">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Mission</th>
+                                    <th>Division</th>
+                                    <th>Manager</th>
+                                    <th>Montant Facturé</th>
+                                    <th>Montant Encaissé</th>
+                                    <th>Solde</th>
+                                    <th>État</th>
+                                    <th>Délai</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${generateFacturationTable(filteredFactures)}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('tab-facturation').innerHTML = facturationHTML;
+
+            // Rendu des graphiques
+                console.log('Rendu des graphiques de facturation avec', filteredFactures.length, 'factures filtrées');
+                
+                let divisionData = getFacturationByDivision(filteredFactures);
+                let etatData = getFacturationByEtat(filteredFactures);
+                let clientData = getFacturationByClient(filteredFactures);
+                let managerData = getFacturationByManager(filteredFactures);
+                
+                console.log('Données pour graphiques:', {
+                    division: Object.keys(divisionData).length,
+                    etat: Object.keys(etatData).length,
+                    client: Object.keys(clientData).length,
+                    manager: Object.keys(managerData).length
+                });
+                
+                renderChart('facturationChartDivision', divisionData, 'bar', 'Division', 'Montant (XAF)');
+                renderChart('facturationChartEtat', etatData, 'doughnut', 'État', 'Nombre');
+                renderChart('facturationChartTopClients', clientData, 'bar', 'Client', 'Montant (XAF)');
+                renderChart('facturationChartManager', managerData, 'bar', 'Manager', 'Montant (XAF)');
+
+            // Ajouter les event listeners pour les filtres
+            addFacturationFilterListeners();
+            } catch (error) {
+                document.getElementById('tab-facturation').innerHTML = `<div class='error-message'>Erreur lors de l'affichage de la facturation : ${error}</div>`;
+                console.error('Erreur renderFacturationTab:', error);
+            }
+        }
+
+        function applyFacturationFilters() {
+            let filtered = facturesData;
+            console.log('applyFacturationFilters - Données initiales:', filtered.length);
+            
+            let clientFilter = document.getElementById('facturation-client-filter')?.value;
+            let divisionFilter = document.getElementById('facturation-division-filter')?.value;
+            let managerFilter = document.getElementById('facturation-manager-filter')?.value;
+            let partnerFilter = document.getElementById('facturation-partner-filter')?.value;
+            let etatFilter = document.getElementById('facturation-etat-filter')?.value;
+            let anneeFilter = document.getElementById('facturation-annee-filter')?.value;
+            let moisFilter = document.getElementById('facturation-mois-filter')?.value;
+            let dateDebut = document.getElementById('facturation-date-debut')?.value;
+            let dateFin = document.getElementById('facturation-date-fin')?.value;
+            
+            console.log('Filtres actifs:', {
+                clientFilter,
+                divisionFilter,
+                managerFilter,
+                partnerFilter,
+                etatFilter,
+                anneeFilter,
+                moisFilter,
+                dateDebut,
+                dateFin
+            });
+
+            if (clientFilter) {
+                filtered = filtered.filter(f => f['Client'] === clientFilter);
+                console.log('Après filtre client:', filtered.length);
+            }
+            if (divisionFilter) {
+                filtered = filtered.filter(f => f['Division'] === divisionFilter);
+                console.log('Après filtre division:', filtered.length);
+            }
+            if (managerFilter) {
+                filtered = filtered.filter(f => f['Manager'] === managerFilter);
+                console.log('Après filtre manager:', filtered.length);
+            }
+            if (partnerFilter) {
+                filtered = filtered.filter(f => f['Partner'] === partnerFilter);
+                console.log('Après filtre partner:', filtered.length);
+            }
+            if (etatFilter) {
+                filtered = filtered.filter(f => f['État'] === etatFilter);
+                console.log('Après filtre état:', filtered.length);
+            }
+            if (anneeFilter) {
+                filtered = filtered.filter(f => {
+                    let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    return match && match[3] === anneeFilter;
+                });
+                console.log('Après filtre année:', filtered.length);
+            }
+            if (moisFilter) {
+                filtered = filtered.filter(f => {
+                    let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    return match && match[2] === moisFilter;
+                });
+                console.log('Après filtre mois:', filtered.length);
+            }
+            if (dateDebut) {
+                filtered = filtered.filter(f => {
+                    let factureDate = f['Date'];
+                    if (!factureDate) return false;
+                    let match = factureDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (!match) return false;
+                    let factureDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
+                    return factureDateFormatted >= dateDebut;
+                });
+                console.log('Après filtre date début:', filtered.length);
+            }
+            if (dateFin) {
+                filtered = filtered.filter(f => {
+                    let factureDate = f['Date'];
+                    if (!factureDate) return false;
+                    let match = factureDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (!match) return false;
+                    let factureDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
+                    return factureDateFormatted <= dateFin;
+                });
+                console.log('Après filtre date fin:', filtered.length);
+            }
+
+            console.log('applyFacturationFilters - Données finales:', filtered.length);
+            return filtered;
+        }
+
+        function cleanInvalidFacturationFilters() {
+            // Nettoyer les filtres invalides du sessionStorage
+            const filterKeys = [
+                'facturation-client-filter',
+                'facturation-division-filter',
+                'facturation-manager-filter',
+                'facturation-partner-filter',
+                'facturation-etat-filter',
+                'facturation-annee-filter',
+                'facturation-mois-filter',
+                'facturation-date-debut',
+                'facturation-date-fin'
+            ];
+            
+            filterKeys.forEach(key => {
+                const savedValue = sessionStorage.getItem(key);
+                if (savedValue) {
+                    let isValidValue = false;
+                    if (key === 'facturation-division-filter') {
+                        isValidValue = facturesData.some(f => f['Division'] === savedValue);
+                    } else if (key === 'facturation-annee-filter') {
+                        isValidValue = facturesData.some(f => {
+                            let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                            return match && match[3] === savedValue;
+                        });
+                    } else {
+                        isValidValue = true;
+                    }
+                    
+                    if (!isValidValue) {
+                        sessionStorage.removeItem(key);
+                        console.log('Filtre invalide supprimé:', key, savedValue);
+                    }
+                }
+            });
+        }
+
+        function addFacturationFilterListeners() {
+            const filterIds = [
+                'facturation-client-filter',
+                'facturation-division-filter',
+                'facturation-manager-filter',
+                'facturation-partner-filter',
+                'facturation-etat-filter',
+                'facturation-annee-filter',
+                'facturation-mois-filter'
+            ];
+
+            filterIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    // Restaurer la valeur précédente si elle existe
+                    const savedValue = sessionStorage.getItem(id);
+                    if (savedValue) {
+                        // Vérifier que la valeur sauvegardée correspond aux données disponibles
+                        let isValidValue = false;
+                        if (id === 'facturation-division-filter') {
+                            isValidValue = facturesData.some(f => f['Division'] === savedValue);
+                        } else if (id === 'facturation-annee-filter') {
+                            isValidValue = facturesData.some(f => {
+                                let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match && match[3] === savedValue;
+                            });
+                        } else {
+                            isValidValue = true; // Pour les autres filtres, on accepte la valeur
+                        }
+                        
+                        if (isValidValue) {
+                            element.value = savedValue;
+                        } else {
+                            // Si la valeur n'est pas valide, on la supprime du sessionStorage
+                            sessionStorage.removeItem(id);
+                            element.value = '';
+                        }
+                    }
+                    
+                    element.addEventListener('change', () => {
+                        // Sauvegarder la valeur sélectionnée
+                        sessionStorage.setItem(id, element.value);
+                        renderFacturationTab();
+                    });
+                }
+            });
+
+            // Gestion des filtres de dates
+            const dateDebut = document.getElementById('facturation-date-debut');
+            const dateFin = document.getElementById('facturation-date-fin');
+            
+            if (dateDebut) {
+                const savedDateDebut = sessionStorage.getItem('facturation-date-debut');
+                if (savedDateDebut) {
+                    dateDebut.value = savedDateDebut;
+                }
+                dateDebut.addEventListener('change', () => {
+                    sessionStorage.setItem('facturation-date-debut', dateDebut.value);
+                    renderFacturationTab();
+                });
+            }
+            
+            if (dateFin) {
+                const savedDateFin = sessionStorage.getItem('facturation-date-fin');
+                if (savedDateFin) {
+                    dateFin.value = savedDateFin;
+                }
+                dateFin.addEventListener('change', () => {
+                    sessionStorage.setItem('facturation-date-fin', dateFin.value);
+                    renderFacturationTab();
+                });
+            }
+        }
+
+        function calculateFacturationStats(data = facturesData) {
+            console.log('=== DEBUG FACTURATION ===');
+            console.log('Données reçues:', data.length, 'factures');
+            if (data.length > 0) {
+                console.log('Première facture:', data[0]);
+            }
+            
+            let totalFactures = data.length;
+            let montantFacture = 0, montantEncaisse = 0, invalids = 0;
+            let totalDelai = 0, facturesEnRetard = 0;
+            let clientStats = {};
+            
+            data.forEach((facture, index) => {
+                let mf = safeParseMontant(facture['Montant facturé']);
+                let me = safeParseMontant(facture['Montant payé']);
+                
+                // Debug pour les premières factures
+                if (index < 5) {
+                    console.log(`Facture ${index + 1}:`, {
+                        original: facture['Montant facturé'],
+                        parsed: mf,
+                        originalEncaisse: facture['Montant payé'],
+                        parsedEncaisse: me
+                    });
+                }
+                
+                if (isNaN(mf) || isNaN(me)) invalids++;
+                montantFacture += mf;
+                montantEncaisse += me;
+                
+                // Calcul du délai (si disponible)
+                if (facture['Délai']) {
+                    let delai = parseInt(facture['Délai']) || 0;
+                    totalDelai += delai;
+                    if (delai > 30) facturesEnRetard++; // Considérer en retard si > 30 jours
+                }
+                
+                // Stats par client
+                let client = facture['Client'] || 'Non défini';
+                clientStats[client] = (clientStats[client] || 0) + mf;
+            });
+            
+            let tauxEncaissement = montantFacture > 0 ? (montantEncaisse / montantFacture) * 100 : 0;
+            let montantMoyen = totalFactures > 0 ? montantFacture / totalFactures : 0;
+            let delaiMoyen = totalFactures > 0 ? totalDelai / totalFactures : 0;
+            
+            // Top client
+            let topClient = 'N/A';
+            if (Object.keys(clientStats).length > 0) {
+                let sortedClients = Object.entries(clientStats).sort((a, b) => b[1] - a[1]);
+                topClient = sortedClients[0][0];
+            }
+
+            return {
+                totalFactures,
+                montantFacture,
+                montantEncaisse,
+                tauxEncaissement,
+                montantMoyen,
+                delaiMoyen,
+                facturesEnRetard,
+                topClient,
+                invalids
+            };
+        }
+
+        function getFacturationByDivision(data = facturesData) {
+            console.log('getFacturationByDivision appelée avec', data.length, 'factures');
+            let divisionStats = {};
+            data.forEach(facture => {
+                let division = facture['Division'] || 'Non défini';
+                let montant = safeParseMontant(facture['Montant facturé']);
+                divisionStats[division] = (divisionStats[division] || 0) + montant;
+            });
+            console.log('getFacturationByDivision retourne', Object.keys(divisionStats).length, 'divisions');
+            return divisionStats;
+        }
+
+        function getFacturationByEtat(data = facturesData) {
+            console.log('getFacturationByEtat appelée avec', data.length, 'factures');
+            let etatStats = {};
+            data.forEach(facture => {
+                let montantFacture = safeParseMontant(facture['Montant facturé']);
+                let montantEncaisse = safeParseMontant(facture['Montant payé']);
+                let solde = montantFacture - montantEncaisse;
+                let etat = solde === 0 ? 'Payé' : solde > 0 ? 'En attente' : 'Surpayé';
+                
+                if (!etatStats[etat]) {
+                    etatStats[etat] = 0;
+                }
+                etatStats[etat]++;
+            });
+
+            console.log('getFacturationByEtat retourne', Object.keys(etatStats).length, 'états');
+            return etatStats;
+        }
+
+        function getFacturationByClient(data = facturesData) {
+            console.log('getFacturationByClient appelée avec', data.length, 'factures');
+            let clientStats = {};
+            data.forEach(facture => {
+                let client = facture['Client'] || 'Non défini';
+                let montant = safeParseMontant(facture['Montant facturé']);
+                clientStats[client] = (clientStats[client] || 0) + montant;
+            });
+            // Trier et prendre les top 10
+            let topClients = Object.entries(clientStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .reduce((obj, [client, montant]) => {
+                    obj[client.length > 20 ? client.substring(0, 20) + '...' : client] = montant;
+                    return obj;
+                }, {});
+            console.log('getFacturationByClient retourne', Object.keys(topClients).length, 'clients');
+            return topClients;
+        }
+
+        function getFacturationByManager(data = facturesData) {
+            console.log('getFacturationByManager appelée avec', data.length, 'factures');
+            let managerStats = {};
+            data.forEach(facture => {
+                let manager = facture['Manager'] || 'Non défini';
+                let montant = safeParseMontant(facture['Montant facturé']);
+                managerStats[manager] = (managerStats[manager] || 0) + montant;
+            });
+            // Trier et prendre les top 10
+            let topManagers = Object.entries(managerStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .reduce((obj, [manager, montant]) => {
+                    obj[manager.length > 15 ? manager.substring(0, 15) + '...' : manager] = montant;
+                    return obj;
+                }, {});
+            console.log('getFacturationByManager retourne', Object.keys(topManagers).length, 'managers');
+            return topManagers;
+        }
+
+        function generateFacturationTable(data = facturesData) {
+            return data.map(facture => {
+                let montantFacture = safeParseMontant(facture['Montant facturé']);
+                let montantEncaisse = safeParseMontant(facture['Montant payé']);
+                let solde = montantFacture - montantEncaisse;
+                let etat = solde === 0 ? 'Payé' : solde > 0 ? 'En attente' : 'Surpayé';
+                
+                let rowClass = etat === 'En attente' ? 'alert-low-rentability' : '';
+                
+                // Calcul du délai
+                let delai = 'N/A';
+                if (solde > 0 && facture['Date']) {
+                    let match = facture['Date'].match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (match) {
+                        let dateFacture = new Date(match[3], match[2] - 1, match[1]);
+                        let aujourdhui = new Date();
+                        let delaiJours = Math.floor((aujourdhui - dateFacture) / (1000 * 60 * 60 * 24));
+                        delai = delaiJours > 0 ? `${delaiJours} jours` : 'À jour';
+                    }
+                }
+                
+                return `
+                    <tr class="${rowClass}">
+                        <td>${facture['Client'] || ''}</td>
+                        <td>${facture['Mission'] || ''}</td>
+                        <td>${facture['Division'] || ''}</td>
+                        <td>${facture['Manager'] || ''}</td>
+                        <td>${montantFacture.toLocaleString()} XAF</td>
+                        <td>${montantEncaisse.toLocaleString()} XAF</td>
+                        <td>${solde.toLocaleString()} XAF</td>
+                        <td>${etat}</td>
+                        <td>${delai}</td>
+                        <td>${facture['Date'] || ''}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ===== ONGLET RENTABILITÉ =====
+        function renderRentabiliteTab() {
+            if (!filteredData.length) {
+                document.getElementById('tab-rentabilite').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
+                return;
+            }
+
+            let rentabiliteStats = calculateRentabiliteStats();
+
+            let rentabiliteHTML = `
+                <div class="kpi-cards">
+                    <div class="kpi-card">
+                        <span class="kpi-icon">💰</span>
+                        <div class="kpi-label">Chiffre d'Affaires</div>
+                        <div class="kpi-value">${rentabiliteStats.ca.toLocaleString()} XAF</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">💸</span>
+                        <div class="kpi-label">Coûts Totaux</div>
+                        <div class="kpi-value">${rentabiliteStats.couts.toLocaleString()} XAF</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📈</span>
+                        <div class="kpi-label">Marge Brute</div>
+                        <div class="kpi-value">${rentabiliteStats.marge.toLocaleString()} XAF</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📊</span>
+                        <div class="kpi-label">Taux de Marge</div>
+                        <div class="kpi-value">${rentabiliteStats.tauxMarge.toFixed(1)}%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">🎯</span>
+                        <div class="kpi-label">ROI</div>
+                        <div class="kpi-value">${rentabiliteStats.roi.toFixed(1)}%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📋</span>
+                        <div class="kpi-label">Missions Rentables</div>
+                        <div class="kpi-value">${rentabiliteStats.missionsRentables}</div>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Rentabilité par Mission</div>
+                        <canvas id="rentabiliteChartMissions"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Rentabilité par Division</div>
+                        <canvas id="rentabiliteChartDivision"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container" style="margin-top: 20px;">
+                    <div class="section-title">Détail de la Rentabilité</div>
+                    <div class="table-container">
+                        <table id="rentabiliteTable">
+                            <thead>
+                                <tr>
+                                    <th>Mission</th>
+                                    <th>Division</th>
+                                    <th>Heures HC</th>
+                                    <th>Coûts</th>
+                                    <th>CA</th>
+                                    <th>Marge</th>
+                                    <th>Taux Marge</th>
+                                    <th>ROI</th>
+                                    <th>Coût/H HC</th>
+                                    <th>CA/H HC</th>
+                                    <th>Rentabilité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${generateRentabiliteTable()}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('tab-rentabilite').innerHTML = rentabiliteHTML;
+
+            // Rendu des graphiques
+            renderChart('rentabiliteChartMissions', getRentabiliteByMission(), 'bar', 'Mission', 'Marge (XAF)');
+            renderChart('rentabiliteChartDivision', getRentabiliteByDivision(), 'bar', 'Division', 'Marge (XAF)');
+        }
+
+        function calculateRentabiliteStats() {
+            let missionStats = calculateMissionStats();
+            let totalCA = 0;
+            let totalCouts = 0;
+            let missionsRentables = 0;
+
+            Object.entries(missionStats).forEach(([mission, stats]) => {
+                // Simuler le CA basé sur les heures HC (pour l'exemple)
+                let ca = stats.heuresHC * 5000; // Taux moyen de 5000 XAF/h
+                let couts = stats.cout;
+                let marge = ca - couts;
+                
+                totalCA += ca;
+                totalCouts += couts;
+                if (marge > 0) missionsRentables++;
+            });
+
+            let marge = totalCA - totalCouts;
+            let tauxMarge = totalCA > 0 ? (marge / totalCA) * 100 : 0;
+            let roi = totalCouts > 0 ? (marge / totalCouts) * 100 : 0;
+
+            return {
+                ca: totalCA,
+                couts: totalCouts,
+                marge: marge,
+                tauxMarge: tauxMarge,
+                roi: roi,
+                missionsRentables: missionsRentables
+            };
+        }
+
+        function getRentabiliteByMission() {
+            let missionStats = calculateMissionStats();
+            return Object.entries(missionStats)
+                .map(([mission, stats]) => {
+                    let ca = stats.heuresHC * 5000; // Taux moyen
+                    let marge = ca - stats.cout;
+                    return {
+                        mission: mission.substring(0, 20) + '...',
+                        marge: marge
+                    };
+                })
+                .sort((a, b) => b.marge - a.marge)
+                .slice(0, 10)
+                .reduce((obj, item) => {
+                    obj[item.mission] = item.marge;
+                    return obj;
+                }, {});
+        }
+
+        function getRentabiliteByDivision() {
+            let divisionStats = {};
+            let missionStats = calculateMissionStats();
+            
+            Object.entries(missionStats).forEach(([mission, stats]) => {
+                let division = stats.division || 'Non défini';
+                let ca = stats.heuresHC * 5000;
+                let marge = ca - stats.cout;
+                
+                if (!divisionStats[division]) {
+                    divisionStats[division] = 0;
+                }
+                divisionStats[division] += marge;
+            });
+
+            return divisionStats;
+        }
+
+        function generateRentabiliteTable() {
+            let missionStats = {};
+            
+            // Calculer les coûts par mission (uniquement heures HC)
+            filteredData.forEach(row => {
+                let mission = row['Missions'] || 'Non défini';
+                let division = row['Division'] || 'Non défini';
+                let heures = parseFloat(row['Heures']) || 0;
+                let taux = gradeToTaux[row['Grade']] || 0;
+                
+                if (!missionStats[mission]) {
+                    missionStats[mission] = { 
+                        division: division,
+                        cout: 0, 
+                        ca: 0,
+                        heuresHC: 0
+                    };
+                }
+                
+                // Ne calculer le coût que pour les heures HC
+                if (row['Type Heure'] === 'HC') {
+                    let cout = heures * taux;
+                    missionStats[mission].cout += cout;
+                    missionStats[mission].heuresHC += heures;
+                }
+            });
+            
+            // Ajouter les CA par mission depuis les factures
+            facturesData.forEach(facture => {
+                let mission = facture['Mission'] || 'Non défini';
+                let montant = safeParseMontant(facture['Montant Facturé']);
+                
+                if (!missionStats[mission]) {
+                    missionStats[mission] = { 
+                        division: facture['Division'] || 'Non défini',
+                        cout: 0, 
+                        ca: 0,
+                        heuresHC: 0
+                    };
+                }
+                missionStats[mission].ca += montant;
+            });
+
+            return Object.entries(missionStats)
+                .map(([mission, stats]) => {
+                    let marge = stats.ca - stats.cout;
+                    let tauxMarge = stats.ca > 0 ? (marge / stats.ca) * 100 : 0;
+                    let roi = stats.cout > 0 ? (marge / stats.cout) * 100 : 0;
+                    let coutParHeure = stats.heuresHC > 0 ? stats.cout / stats.heuresHC : 0;
+                    let caParHeure = stats.heuresHC > 0 ? stats.ca / stats.heuresHC : 0;
+                    let rentabilite = marge > 0 ? 'Rentable' : marge < 0 ? 'Déficitaire' : 'Équilibré';
+                    
+                    // Classes CSS pour les alertes
+                    let alertClass = '';
+                    if (marge < 0 || roi < 20) {
+                        alertClass = 'alert-low-rentability';
+                    }
+                    
+                    return `
+                        <tr class="${alertClass}">
+                            <td>${mission}</td>
+                            <td>${stats.division}</td>
+                            <td>${stats.heuresHC.toFixed(1)}h</td>
+                            <td>${stats.cout.toLocaleString()} XAF</td>
+                            <td>${stats.ca.toLocaleString()} XAF</td>
+                            <td>${marge.toLocaleString()} XAF</td>
+                            <td>${tauxMarge.toFixed(1)}%</td>
+                            <td>${roi.toFixed(1)}%</td>
+                            <td>${coutParHeure.toFixed(0)} XAF/h</td>
+                            <td>${caParHeure.toFixed(0)} XAF/h</td>
+                            <td>${rentabilite}</td>
+                        </tr>
+                    `;
+                })
+                .sort((a, b) => {
+                    // Trier par rentabilité décroissante
+                    let margeA = parseFloat(a.match(/td>([^<]+) XAF<\/td>/)[1].replace(/\s/g, ''));
+                    let margeB = parseFloat(b.match(/td>([^<]+) XAF<\/td>/)[1].replace(/\s/g, ''));
+                    return margeB - margeA;
+                })
+                .join('');
+        }
+
+        // ===== ONGLET PERFORMANCE =====
+        function renderPerformanceTab() {
+            if (!filteredData.length) {
+                document.getElementById('tab-performance').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
+                return;
+            }
+
+            let performanceStats = calculatePerformanceStats();
+
+            let performanceHTML = `
+                <div class="kpi-cards">
+                    <div class="kpi-card">
+                        <span class="kpi-icon">⏰</span>
+                        <div class="kpi-label">Total Heures</div>
+                        <div class="kpi-value">${performanceStats.totalHeures.toFixed(1)}h</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📊</span>
+                        <div class="kpi-label">Taux de Chargeabilité</div>
+                        <div class="kpi-value">${performanceStats.tauxChargeabilite.toFixed(1)}%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">👥</span>
+                        <div class="kpi-label">Collaborateurs Actifs</div>
+                        <div class="kpi-value">${performanceStats.collaborateursActifs}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">🏆</span>
+                        <div class="kpi-label">Plus Efficace</div>
+                        <div class="kpi-value">${performanceStats.plusEfficace}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📈</span>
+                        <div class="kpi-label">Productivité Moyenne</div>
+                        <div class="kpi-value">${performanceStats.productiviteMoyenne.toFixed(1)}h/j</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">🎯</span>
+                        <div class="kpi-label">Meilleure Division</div>
+                        <div class="kpi-value">${performanceStats.meilleureDivision}</div>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Performance par Collaborateur</div>
+                        <canvas id="performanceChartCollaborateurs"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Répartition HC/HNC</div>
+                        <canvas id="performanceChartHCHNC"></canvas>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Performance par Division</div>
+                        <canvas id="performanceChartDivision"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Évolution par Mois</div>
+                        <canvas id="performanceChartEvolution"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container" style="margin-top: 20px;">
+                    <div class="section-title">Détail de la Performance</div>
+                    <div class="table-container">
+                        <table id="performanceTable">
+                            <thead>
+                                <tr>
+                                    <th>Collaborateur</th>
+                                    <th>Grade</th>
+                                    <th>Division</th>
+                                    <th>Total Heures</th>
+                                    <th>Heures HC</th>
+                                    <th>Heures HNC</th>
+                                    <th>Taux Chargeabilité</th>
+                                    <th>Ratio HNC/HC</th>
+                                    <th>Productivité Relative</th>
+                                    <th>Niveau de Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${generatePerformanceTable()}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('tab-performance').innerHTML = performanceHTML;
+
+            // Rendu des graphiques
+            renderChart('performanceChartCollaborateurs', getPerformanceByCollaborateur(), 'bar', 'Collaborateur', 'Heures');
+            renderChart('performanceChartHCHNC', getRepartitionHCHNC(), 'doughnut', 'Type', 'Heures');
+            renderChart('performanceChartDivision', getPerformanceByDivision(), 'bar', 'Division', 'Taux (%)');
+            renderChart('performanceChartEvolution', getPerformanceByMonth(), 'line', 'Mois', 'Taux (%)');
+        }
+
+        function calculatePerformanceStats() {
+            let totalHeures = filteredData.reduce((sum, row) => sum + (parseFloat(row['Heures']) || 0), 0);
+            let totalHeuresHC = filteredData.filter(row => row['Type Heure'] === 'HC')
+                .reduce((sum, row) => sum + (parseFloat(row['Heures']) || 0), 0);
+            let tauxChargeabilite = totalHeures > 0 ? (totalHeuresHC / totalHeures) * 100 : 0;
+            
+            let collaborateursActifs = new Set(filteredData.map(row => row['Nom'])).size;
+            
+            // Trouver le collaborateur le plus efficace (plus d'heures HC)
+            let collabStats = {};
+            filteredData.forEach(row => {
+                let nom = row['Nom'];
+                let heures = parseFloat(row['Heures']) || 0;
+                if (row['Type Heure'] === 'HC') {
+                    collabStats[nom] = (collabStats[nom] || 0) + heures;
+                }
+            });
+            
+            let plusEfficace = Object.entries(collabStats)
+                .sort((a, b) => b[1] - a[1])[0];
+            plusEfficace = plusEfficace ? plusEfficace[0].substring(0, 15) + '...' : 'N/A';
+            
+            // Calculer la productivité moyenne (heures par jour travaillé)
+            let productiviteMoyenne = collaborateursActifs > 0 ? totalHeures / (collaborateursActifs * 20) : 0; // 20 jours/mois
+            
+            // Trouver la meilleure division (taux de chargeabilité le plus élevé)
+            let divisionStats = {};
+            filteredData.forEach(row => {
+                let division = row['Division'] || 'Non défini';
+                let heures = parseFloat(row['Heures']) || 0;
+                let isHC = row['Type Heure'] === 'HC';
+                
+                if (!divisionStats[division]) {
+                    divisionStats[division] = { total: 0, hc: 0 };
+                }
+                divisionStats[division].total += heures;
+                if (isHC) divisionStats[division].hc += heures;
+            });
+            
+            let meilleureDivision = Object.entries(divisionStats)
+                .map(([division, stats]) => ({
+                    division,
+                    taux: stats.total > 0 ? (stats.hc / stats.total) * 100 : 0
+                }))
+                .sort((a, b) => b.taux - a.taux)[0];
+            meilleureDivision = meilleureDivision ? meilleureDivision.division : 'N/A';
+
+            return {
+                totalHeures,
+                tauxChargeabilite,
+                collaborateursActifs,
+                plusEfficace,
+                productiviteMoyenne,
+                meilleureDivision
+            };
+        }
+
+        function getPerformanceByCollaborateur() {
+            let collabStats = {};
+            filteredData.forEach(row => {
+                let nom = row['Nom'];
+                let heures = parseFloat(row['Heures']) || 0;
+                collabStats[nom] = (collabStats[nom] || 0) + heures;
+            });
+            
+            return Object.entries(collabStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .reduce((obj, [nom, heures]) => {
+                    obj[nom.length > 15 ? nom.substring(0, 15) + '...' : nom] = heures;
+                    return obj;
+                }, {});
+        }
+
+        function getRepartitionHCHNC() {
+            let hcTotal = 0;
+            let hncTotal = 0;
+            
+            filteredData.forEach(row => {
+                let heures = parseFloat(row['Heures']) || 0;
+                if (row['Type Heure'] === 'HC') {
+                    hcTotal += heures;
+                } else {
+                    hncTotal += heures;
+                }
+            });
+            
+            return {
+                'Heures Chargeables': hcTotal,
+                'Heures Non-Chargeables': hncTotal
+            };
+        }
+
+        function getPerformanceByDivision() {
+            let divisionStats = {};
+            filteredData.forEach(row => {
+                let division = row['Division'] || 'Non défini';
+                let heures = parseFloat(row['Heures']) || 0;
+                let isHC = row['Type Heure'] === 'HC';
+                
+                if (!divisionStats[division]) {
+                    divisionStats[division] = { total: 0, hc: 0 };
+                }
+                divisionStats[division].total += heures;
+                if (isHC) divisionStats[division].hc += heures;
+            });
+            
+            return Object.entries(divisionStats)
+                .reduce((obj, [division, stats]) => {
+                    obj[division] = stats.total > 0 ? (stats.hc / stats.total) * 100 : 0;
+                    return obj;
+                }, {});
+        }
+
+        function getPerformanceByMonth() {
+            let monthStats = {};
+            filteredData.forEach(row => {
+                let mois = row['Mois'] || 'Non défini';
+                let heures = parseFloat(row['Heures']) || 0;
+                let isHC = row['Type Heure'] === 'HC';
+                
+                if (!monthStats[mois]) {
+                    monthStats[mois] = { total: 0, hc: 0 };
+                }
+                monthStats[mois].total += heures;
+                if (isHC) monthStats[mois].hc += heures;
+            });
+            
+            return Object.entries(monthStats)
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .reduce((obj, [mois, stats]) => {
+                    obj[mois] = stats.total > 0 ? (stats.hc / stats.total) * 100 : 0;
+                    return obj;
+                }, {});
+        }
+
+        function generatePerformanceTable() {
+            let collaborateurStats = {};
+            
+            filteredData.forEach(row => {
+                let nom = row['Nom'] || 'Non défini';
+                let heures = parseFloat(row['Heures']) || 0;
+                let grade = row['Grade'] || 'Non défini';
+                let division = row['Division'] || 'Non défini';
+                
+                if (!collaborateurStats[nom]) {
+                    collaborateurStats[nom] = {
+                        heures: 0,
+                        heuresHC: 0,
+                        heuresHNC: 0,
+                        grade: grade,
+                        division: division
+                    };
+                }
+                
+                collaborateurStats[nom].heures += heures;
+                
+                if (row['Type Heure'] === 'HC') {
+                    collaborateurStats[nom].heuresHC += heures;
+                } else {
+                    collaborateurStats[nom].heuresHNC += heures;
+                }
+            });
+
+            // Calculer la productivité moyenne pour la comparaison
+            let productivites = Object.values(collaborateurStats)
+                .filter(stats => stats.heuresHC > 0)
+                .map(stats => stats.heuresHNC / stats.heuresHC);
+            let productiviteMoyenne = productivites.length > 0 ? 
+                productivites.reduce((sum, val) => sum + val, 0) / productivites.length : 0;
+
+            return Object.entries(collaborateurStats)
+                .map(([nom, stats]) => {
+                    let tauxChargeabilite = (stats.heuresHC + stats.heuresHNC) > 0 ? 
+                        (stats.heuresHC / (stats.heuresHC + stats.heuresHNC)) * 100 : 0;
+                    let ratioHCHNC = stats.heuresHC > 0 ? stats.heuresHNC / stats.heuresHC : 0;
+                    let productiviteRelative = productiviteMoyenne > 0 ? 
+                        ((productiviteMoyenne - ratioHCHNC) / productiviteMoyenne) * 100 : 0;
+                    
+                    // Déterminer le statut
+                    let statut = '';
+                    let alertClass = '';
+                    if (ratioHCHNC > 1.5) {
+                        statut = '⚠️ Sous-performant';
+                        alertClass = 'alert-low-performance';
+                    } else if (ratioHCHNC < 0.5) {
+                        statut = '✅ Excellent';
+                        alertClass = 'alert-excellent-performance';
+                    } else if (ratioHCHNC < 1) {
+                        statut = '👍 Bon';
+                        alertClass = 'alert-good-performance';
+                    } else {
+                        statut = '⚠️ À améliorer';
+                        alertClass = 'alert-medium-performance';
+                    }
+                    
+                    return `
+                        <tr class="${alertClass}">
+                            <td>${nom}</td>
+                            <td>${stats.grade}</td>
+                            <td>${stats.division}</td>
+                            <td>${stats.heures.toFixed(1)}h</td>
+                            <td>${stats.heuresHC.toFixed(1)}h</td>
+                            <td>${stats.heuresHNC.toFixed(1)}h</td>
+                            <td>${tauxChargeabilite.toFixed(1)}%</td>
+                            <td>${ratioHCHNC.toFixed(2)}</td>
+                            <td>${productiviteRelative.toFixed(1)}%</td>
+                            <td>${statut}</td>
+                        </tr>
+                    `;
+                })
+                .sort((a, b) => {
+                    // Trier par ratio HNC/HC croissant (meilleur en premier)
+                    let ratioA = parseFloat(a.match(/td>([^<]+)<\/td>/g)[7].replace(/<\/?td>/g, ''));
+                    let ratioB = parseFloat(b.match(/td>([^<]+)<\/td>/g)[7].replace(/<\/?td>/g, ''));
+                    return ratioA - ratioB;
+                })
+                .join('');
+        }
+
+        // ===== ONGLET OPPORTUNITÉS =====
+        function renderOpportunitesTab() {
+            if (!opportunitesData || !opportunitesData.length) {
+                document.getElementById('tab-opportunites').innerHTML = '<div class="no-data">Aucune donnée d\'opportunités disponible</div>';
+                return;
+            }
+            let filteredOpportunites = applyOpportunitesFilters();
+            let opportunitesStats = calculateOpportunitesStats(filteredOpportunites);
+            let infoHTML = `<div style='margin-bottom:10px;font-size:14px;color:#555;'>Opportunités chargées : <b>${opportunitesData.length}</b> &nbsp;|&nbsp; Opportunités après filtre : <b>${filteredOpportunites.length}</b></div>`;
+            if (filteredOpportunites.length === 0) {
+                document.getElementById('tab-opportunites').innerHTML = infoHTML + '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
+                return;
+            }
+            let opportunitesHTML = infoHTML + `
+                <div class="filters-section">
+                    <div class="filters-row">
+                    <div class="filter-group">
+                        <label>Division:</label>
+                        <select id="opportunites-division-filter">
+                            <option value="">Toutes</option>
+                            ${getUniqueValues(opportunitesData, 'Division').map(div => 
+                                `<option value="${div}">${div}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Statut:</label>
+                        <select id="opportunites-statut-filter">
+                            <option value="">Tous</option>
+                            ${getUniqueValues(opportunitesData, 'Statut').map(statut => 
+                                `<option value="${statut}">${statut}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Responsable:</label>
+                        <select id="opportunites-responsable-filter">
+                            <option value="">Tous</option>
+                            ${getUniqueValues(opportunitesData, 'Responsable').map(resp => 
+                                `<option value="${resp}">${resp}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Secteur:</label>
+                        <select id="opportunites-secteur-filter">
+                            <option value="">Tous</option>
+                            ${getUniqueValues(opportunitesData, 'Secteur').map(secteur => 
+                                `<option value="${secteur}">${secteur}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Type:</label>
+                        <select id="opportunites-type-filter">
+                            <option value="">Tous</option>
+                            ${getUniqueValues(opportunitesData, 'Type').map(type => 
+                                `<option value="${type}">${type}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Initiative:</label>
+                        <select id="opportunites-initiative-filter">
+                            <option value="">Toutes</option>
+                            ${getUniqueValues(opportunitesData, 'Initiative').map(init => 
+                                `<option value="${init}">${init}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Année:</label>
+                        <select id="opportunites-annee-filter">
+                            <option value="">Toutes</option>
+                            ${[...new Set(getUniqueValues(opportunitesData, 'Date Insertion').map(date => {
+                                let match = date.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[3] : '';
+                            }).filter(annee => annee))].sort().map(annee => 
+                                `<option value="${annee}">${annee}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Mois:</label>
+                        <select id="opportunites-mois-filter">
+                            <option value="">Tous</option>
+                            ${[...new Set(getUniqueValues(opportunitesData, 'Date Insertion').map(date => {
+                                let match = date.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                return match ? match[2] : '';
+                            }).filter(mois => mois))].sort().map(mois => {
+                                const moisNoms = {
+                                    '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
+                                    '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
+                                    '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+                                };
+                                return `<option value="${mois}">${moisNoms[mois] || mois}</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Période:</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="date" id="opportunites-date-debut" placeholder="Date début" style="flex: 1;">
+                                <input type="date" id="opportunites-date-fin" placeholder="Date fin" style="flex: 1;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="kpi-cards">
+                    <div class="kpi-card">
+                        <span class="kpi-icon">🎯</span>
+                        <div class="kpi-label">Total Opportunités</div>
+                        <div class="kpi-value">${opportunitesStats.totalOpportunites}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">💰</span>
+                        <div class="kpi-label">Valeur Totale</div>
+                        <div class="kpi-value">${opportunitesStats.valeurTotale.toLocaleString()} XAF</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📊</span>
+                        <div class="kpi-label">Taux de Conversion</div>
+                        <div class="kpi-value">${opportunitesStats.tauxConversion.toFixed(1)}%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">📈</span>
+                        <div class="kpi-label">Valeur Moyenne</div>
+                        <div class="kpi-value">${opportunitesStats.valeurMoyenne.toLocaleString()} XAF</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">🏆</span>
+                        <div class="kpi-label">Opportunités Gagnées</div>
+                        <div class="kpi-value">${opportunitesStats.opportunitesGagnees}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-icon">⏳</span>
+                        <div class="kpi-label">En Cours</div>
+                        <div class="kpi-value">${opportunitesStats.enCours}</div>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Opportunités par Division</div>
+                        <canvas id="opportunitesChartDivision"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Opportunités par Statut</div>
+                        <canvas id="opportunitesChartStatut"></canvas>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="section-title">Opportunités par Secteur</div>
+                        <canvas id="opportunitesChartSecteur"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="section-title">Top Responsables</div>
+                        <canvas id="opportunitesChartResponsable"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container" style="margin-top: 20px;">
+                    <div class="section-title">Pipeline Commercial</div>
+                    <div class="table-container">
+                        <table id="opportunitesTable">
+                            <thead>
+                                <tr>
+                                    <th>Opportunité</th>
+                                    <th>Client</th>
+                                    <th>Division</th>
+                                    <th>Statut</th>
+                                    <th>Responsable</th>
+                                    <th>Secteur</th>
+                                    <th>Type</th>
+                                    <th>Valeur</th>
+                                    <th>Probabilité</th>
+                                    <th>Date Insertion</th>
+                                    <th>Dernière Action</th>
+                                    <th>Prochaine Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${generateOpportunitesTable(filteredOpportunites)}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('tab-opportunites').innerHTML = opportunitesHTML;
+
+            // Rendu des graphiques
+            renderChart('opportunitesChartDivision', getOpportunitesByDivision(filteredOpportunites), 'bar', 'Division', 'Nombre');
+            renderChart('opportunitesChartStatut', getOpportunitesByStatut(filteredOpportunites), 'doughnut', 'Statut', 'Nombre');
+            renderChart('opportunitesChartSecteur', getOpportunitesBySecteur(filteredOpportunites), 'bar', 'Secteur', 'Nombre');
+            renderChart('opportunitesChartResponsable', getOpportunitesByResponsable(filteredOpportunites), 'bar', 'Responsable', 'Nombre');
+
+            // Ajouter les event listeners pour les filtres
+            addOpportunitesFilterListeners();
+            
+            // Restaurer les valeurs des filtres après le rendu
+            setTimeout(() => {
+                const filterIds = [
+                    'opportunites-division-filter',
+                    'opportunites-statut-filter', 
+                    'opportunites-responsable-filter',
+                    'opportunites-secteur-filter',
+                    'opportunites-type-filter',
+                    'opportunites-initiative-filter'
+                ];
+
+                filterIds.forEach(id => {
+                    const element = document.getElementById(id);
+                    const savedValue = sessionStorage.getItem(id);
+                    if (element && savedValue) {
+                        element.value = savedValue;
+                    }
+                });
+            }, 100);
+        }
+
+        function applyOpportunitesFilters() {
+            let filtered = opportunitesData;
+            
+            let divisionFilter = document.getElementById('opportunites-division-filter')?.value;
+            let statutFilter = document.getElementById('opportunites-statut-filter')?.value;
+            let responsableFilter = document.getElementById('opportunites-responsable-filter')?.value;
+            let secteurFilter = document.getElementById('opportunites-secteur-filter')?.value;
+            let typeFilter = document.getElementById('opportunites-type-filter')?.value;
+            let initiativeFilter = document.getElementById('opportunites-initiative-filter')?.value;
+            let anneeFilter = document.getElementById('opportunites-annee-filter')?.value;
+            let moisFilter = document.getElementById('opportunites-mois-filter')?.value;
+            let dateDebut = document.getElementById('opportunites-date-debut')?.value;
+            let dateFin = document.getElementById('opportunites-date-fin')?.value;
+
+            if (divisionFilter) {
+                filtered = filtered.filter(opp => opp['Division'] === divisionFilter);
+            }
+            if (statutFilter) {
+                filtered = filtered.filter(opp => opp['Statut'] === statutFilter);
+            }
+            if (responsableFilter) {
+                filtered = filtered.filter(opp => opp['Responsable'] === responsableFilter);
+            }
+            if (secteurFilter) {
+                filtered = filtered.filter(opp => opp['Secteur'] === secteurFilter);
+            }
+            if (typeFilter) {
+                filtered = filtered.filter(opp => opp['Type'] === typeFilter);
+            }
+            if (initiativeFilter) {
+                filtered = filtered.filter(opp => opp['Initiative'] === initiativeFilter);
+            }
+            if (anneeFilter) {
+                filtered = filtered.filter(opp => {
+                    let match = opp['Date Insertion']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    return match && match[3] === anneeFilter;
+                });
+            }
+            if (moisFilter) {
+                filtered = filtered.filter(opp => {
+                    let match = opp['Date Insertion']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    return match && match[2] === moisFilter;
+                });
+            }
+            if (dateDebut) {
+                filtered = filtered.filter(opp => {
+                    let oppDate = opp['Date Insertion'];
+                    if (!oppDate) return false;
+                    let match = oppDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (!match) return false;
+                    let oppDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
+                    return oppDateFormatted >= dateDebut;
+                });
+            }
+            if (dateFin) {
+                filtered = filtered.filter(opp => {
+                    let oppDate = opp['Date Insertion'];
+                    if (!oppDate) return false;
+                    let match = oppDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                    if (!match) return false;
+                    let oppDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
+                    return oppDateFormatted <= dateFin;
+                });
+            }
+
+            return filtered;
+        }
+
+        function addOpportunitesFilterListeners() {
+            const filterIds = [
+                'opportunites-division-filter',
+                'opportunites-statut-filter', 
+                'opportunites-responsable-filter',
+                'opportunites-secteur-filter',
+                'opportunites-type-filter',
+                'opportunites-initiative-filter',
+                'opportunites-annee-filter',
+                'opportunites-mois-filter'
+            ];
+
+            filterIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    // Restaurer la valeur précédente si elle existe
+                    const savedValue = sessionStorage.getItem(id);
+                    if (savedValue) {
+                        element.value = savedValue;
+                    }
+                    
+                    element.addEventListener('change', () => {
+                        // Sauvegarder la valeur sélectionnée
+                        sessionStorage.setItem(id, element.value);
+                        renderOpportunitesTab();
+                    });
+                }
+            });
+
+            // Gestion des filtres de dates
+            const dateDebut = document.getElementById('opportunites-date-debut');
+            const dateFin = document.getElementById('opportunites-date-fin');
+            
+            if (dateDebut) {
+                const savedDateDebut = sessionStorage.getItem('opportunites-date-debut');
+                if (savedDateDebut) {
+                    dateDebut.value = savedDateDebut;
+                }
+                dateDebut.addEventListener('change', () => {
+                    sessionStorage.setItem('opportunites-date-debut', dateDebut.value);
+                    renderOpportunitesTab();
+                });
+            }
+            
+            if (dateFin) {
+                const savedDateFin = sessionStorage.getItem('opportunites-date-fin');
+                if (savedDateFin) {
+                    dateFin.value = savedDateFin;
+                }
+                dateFin.addEventListener('change', () => {
+                    sessionStorage.setItem('opportunites-date-fin', dateFin.value);
+                    renderOpportunitesTab();
+                });
+            }
+        }
+
+        function calculateOpportunitesStats(data = opportunitesData) {
+            let totalOpportunites = data.length;
+            let valeurTotale = data.reduce((sum, opp) => {
+                let valeur = parseFloat(opp['cout']?.replace(/\s/g, '') || '0');
+                return sum + valeur;
+            }, 0);
+            let valeurMoyenne = totalOpportunites > 0 ? valeurTotale / totalOpportunites : 0;
+            
+            let oppGagnees = data.filter(opp => 
+                opp['Statut']?.toLowerCase().includes('win') || 
+                opp['Statut']?.toLowerCase().includes('gagné') ||
+                opp['Statut']?.toLowerCase().includes('4-win')
+            ).length;
+            let tauxConversion = totalOpportunites > 0 ? (oppGagnees / totalOpportunites) * 100 : 0;
+
+            return {
+                totalOpportunites,
+                valeurTotale,
+                valeurMoyenne,
+                tauxConversion,
+                opportunitesGagnees: oppGagnees,
+                enCours: totalOpportunites - oppGagnees
+            };
+        }
+
+        function getOpportunitesByDivision(data = opportunitesData) {
+            let divisionStats = {};
+            data.forEach(opp => {
+                let division = opp['Division'] || 'Non défini';
+                divisionStats[division] = (divisionStats[division] || 0) + 1;
+            });
+            return divisionStats;
+        }
+
+        function getOpportunitesByStatut(data = opportunitesData) {
+            let statutStats = {};
+            data.forEach(opp => {
+                let statut = opp['Statut'] || 'Non défini';
+                statutStats[statut] = (statutStats[statut] || 0) + 1;
+            });
+            return statutStats;
+        }
+
+        function getOpportunitesBySecteur(data = opportunitesData) {
+            let secteurStats = {};
+            data.forEach(opp => {
+                let secteur = opp['Secteur'] || 'Non défini';
+                secteurStats[secteur] = (secteurStats[secteur] || 0) + 1;
+            });
+            return secteurStats;
+        }
+
+        function getOpportunitesByResponsable(data = opportunitesData) {
+            let responsableStats = {};
+            data.forEach(opp => {
+                let responsable = opp['Responsable'] || 'Non défini';
+                responsableStats[responsable] = (responsableStats[responsable] || 0) + 1;
+            });
+            
+            // Trier par nombre d'opportunités et prendre le top 10
+            return Object.entries(responsableStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .reduce((obj, [responsable, count]) => {
+                    obj[responsable] = count;
+                    return obj;
+                }, {});
+        }
+
+        // Fonction utilitaire pour obtenir les valeurs uniques d'une colonne
+        function getUniqueValues(data, columnName) {
+            if (!data || !data.length) return [];
+            return [...new Set(data.map(row => row[columnName]).filter(Boolean))];
+        }
+
+        function generateOpportunitesTable(data = opportunitesData) {
+            return data.map(opp => {
+                let valeur = opp['cout'] ? parseFloat(opp['cout'].replace(/\s/g, '')).toLocaleString() + ' XAF' : '0 XAF';
+                let probabilite = opp['% probabilité Succès'] || '0%';
+                
+                // Déterminer la classe d'alerte selon le statut
+                let alertClass = '';
+                if (opp['Statut']?.toLowerCase().includes('win') || opp['Statut']?.toLowerCase().includes('gagné')) {
+                    alertClass = 'alert-success';
+                } else if (opp['Statut']?.toLowerCase().includes('loss')) {
+                    alertClass = 'alert-danger';
+                } else if (opp['Statut']?.toLowerCase().includes('proposed')) {
+                    alertClass = 'alert-warning';
+                }
+                
+                return `
+                    <tr class="${alertClass}">
+                        <td>${opp['Opportunite'] || ''}</td>
+                        <td>${opp['Client'] || ''}</td>
+                        <td>${opp['Division'] || ''}</td>
+                        <td>${opp['Statut'] || ''}</td>
+                        <td>${opp['Responsable'] || ''}</td>
+                        <td>${opp['Secteur'] || ''}</td>
+                        <td>${opp['Type'] || ''}</td>
+                        <td>${valeur}</td>
+                        <td>${probabilite}</td>
+                        <td>${opp['Date Insertion'] || ''}</td>
+                        <td>${opp['Date Dernière action'] || ''}</td>
+                        <td>${opp['Date prochaine action'] || ''}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ===== ONGLET FEUILLES DE TEMPS =====
+        function renderFeuillesTab() {
+            console.log('renderFeuillesTab appelée');
+            if (!trsData.length) {
+                document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
+                return;
+            }
+            if (window.isRenderingFeuilles) {
+                return;
+            }
+            window.isRenderingFeuilles = true;
+            try {
+                if (!trsData.length) {
+                    document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Chargement des données en cours... Veuillez patienter."</div>';
+                    return;
+                }
+                const feuillesFilters = document.getElementById('feuilles-filters');
+                // 1. Récupérer les selects
+                const divisionSelect = document.getElementById('feuilles-division-filter');
+                const collabSelect = document.getElementById('feuilles-collab-filter');
+                
+                // Restaurer les valeurs sauvegardées
+                const savedDivision = sessionStorage.getItem('feuilles-division-filter');
+                const savedCollab = sessionStorage.getItem('feuilles-collab-filter');
+                
+                console.log('Valeurs sauvegardées:', { savedDivision, savedCollab });
+                
+                // Sauvegarder la sélection AVANT de remplir les selects
+                const previousDivision = savedDivision !== null ? savedDivision : '';
+                const previousCollab = savedCollab !== null ? savedCollab : '';
+                // 2. Remplir la liste des pôles
+                const divisions = [...new Set(trsData.map(row => row['Division']).filter(Boolean))].sort();
+                divisionSelect.innerHTML = '<option value="">Tous les pôles</option>' + divisions.map(d => `<option value="${d}">${d}</option>`).join('');
+                
+                // Valider et restaurer la valeur de division
+                if (previousDivision && previousDivision !== '' && divisions.includes(previousDivision)) {
+                    divisionSelect.value = previousDivision;
+                    console.log('Valeur division restaurée:', previousDivision);
+                } else if (previousDivision && previousDivision !== '') {
+                    // Si la valeur sauvegardée n'est plus valide, la supprimer
+                    sessionStorage.removeItem('feuilles-division-filter');
+                    console.log('Valeur division invalide supprimée:', previousDivision);
+                    divisionSelect.value = '';
+                } else {
+                    // S'assurer que la valeur est vide si aucune valeur sauvegardée
+                    divisionSelect.value = '';
+                }
+                
+                // S'assurer que la valeur est bien affichée
+                console.log('Valeur division finale:', divisionSelect.value);
+                console.log('Options division disponibles:', Array.from(divisionSelect.options).map(opt => opt.value));
+                
+                // Forcer la mise à jour visuelle de l'interface
+                if (divisionSelect.value) {
+                    const savedValue = divisionSelect.value; // Sauvegarder la valeur
+                    requestAnimationFrame(() => {
+                        // Réinitialiser toutes les options
+                        Array.from(divisionSelect.options).forEach(option => {
+                            option.selected = false;
+                        });
+                        // Sélectionner la bonne option
+                        const targetOption = Array.from(divisionSelect.options).find(opt => opt.value === savedValue);
+                        if (targetOption) {
+                            targetOption.selected = true;
+                        }
+                        console.log('Valeur division forcée après animation frame:', savedValue);
+                    });
+                }
+                // 3. Remplir la liste des collaborateurs selon le pôle sélectionné
+                let selectedDivision = divisionSelect.value;
+                let collaborateurs = trsData
+                    .filter(row => !selectedDivision || row['Division'] === selectedDivision)
+                    .map(row => row['Nom'])
+                    .filter(Boolean);
+                collaborateurs = [...new Set(collaborateurs)].sort();
+                collabSelect.innerHTML = '<option value="">Tous les collaborateurs</option>' + collaborateurs.map(c => `<option value="${c}">${c}</option>`).join('');
+                
+                // Valider et restaurer la valeur de collaborateur
+                if (previousCollab && previousCollab !== '' && collaborateurs.includes(previousCollab)) {
+                    collabSelect.value = previousCollab;
+                    console.log('Valeur collaborateur restaurée:', previousCollab);
+                } else if (previousCollab && previousCollab !== '') {
+                    // Si la valeur sauvegardée n'est plus valide, la supprimer
+                    sessionStorage.removeItem('feuilles-collab-filter');
+                    console.log('Valeur collaborateur invalide supprimée:', previousCollab);
+                    collabSelect.value = '';
+                } else {
+                    // S'assurer que la valeur est vide si aucune valeur sauvegardée
+                    collabSelect.value = '';
+                }
+                
+                // S'assurer que la valeur est bien affichée
+                console.log('Valeur collaborateur finale:', collabSelect.value);
+                console.log('Options collaborateur disponibles:', Array.from(collabSelect.options).map(opt => opt.value));
+                
+                // Forcer la mise à jour visuelle de l'interface
+                if (collabSelect.value) {
+                    const savedValue = collabSelect.value; // Sauvegarder la valeur
+                    requestAnimationFrame(() => {
+                        // Réinitialiser toutes les options
+                        Array.from(collabSelect.options).forEach(option => {
+                            option.selected = false;
+                        });
+                        // Sélectionner la bonne option
+                        const targetOption = Array.from(collabSelect.options).find(opt => opt.value === savedValue);
+                        if (targetOption) {
+                            targetOption.selected = true;
+                        }
+                        console.log('Valeur collaborateur forcée après animation frame:', savedValue);
+                    });
+                }
+                // 4. Listeners - utiliser la délégation d'événements au niveau du document
+                // Supprimer les anciens listeners s'ils existent
+                if (window.feuiillesDivisionHandler) {
+                    document.removeEventListener('change', window.feuiillesDivisionHandler);
+                }
+                if (window.feuiillesCollabHandler) {
+                    document.removeEventListener('change', window.feuiillesCollabHandler);
+                }
+                
+                // Créer de nouveaux handlers avec délégation d'événements
+                window.feuiillesDivisionHandler = (event) => {
+                    if (event.target.id === 'feuilles-division-filter') {
+                        console.log('Filtre division changé:', event.target.value);
+                        // Sauvegarder la valeur (même si c'est vide pour "Tous")
+                        if (event.target.value === '') {
+                            sessionStorage.removeItem('feuilles-division-filter');
+                        } else {
+                            sessionStorage.setItem('feuilles-division-filter', event.target.value);
+                        }
+                        renderFeuillesTab();
+                    }
+                };
+                window.feuiillesCollabHandler = (event) => {
+                    if (event.target.id === 'feuilles-collab-filter') {
+                        console.log('Filtre collaborateur changé:', event.target.value);
+                        // Sauvegarder la valeur (même si c'est vide pour "Tous")
+                        if (event.target.value === '') {
+                            sessionStorage.removeItem('feuilles-collab-filter');
+                        } else {
+                            sessionStorage.setItem('feuilles-collab-filter', event.target.value);
+                        }
+                        renderFeuillesTab();
+                    }
+                };
+                
+                // Attacher les listeners au document
+                document.addEventListener('change', window.feuiillesDivisionHandler);
+                document.addEventListener('change', window.feuiillesCollabHandler);
+                
+                // Debug - vérifier que les éléments existent
+                console.log('Éléments des filtres trouvés:', {
+                    divisionSelect: !!divisionSelect,
+                    collabSelect: !!collabSelect,
+                    divisionValue: divisionSelect.value,
+                    collabValue: collabSelect.value
+                });
+                
+                // Debug - vérifier les valeurs après restauration
+                console.log('Valeurs finales des filtres:', {
+                    divisionValue: divisionSelect.value,
+                    collabValue: collabSelect.value,
+                    previousDivision,
+                    previousCollab
+                });
+                // 5. Lire les valeurs sélectionnées APRÈS avoir rempli les selects
+                selectedDivision = divisionSelect.value;
+                const selectedCollab = collabSelect.value;
+                
+                console.log('Valeurs sélectionnées après remplissage:', { selectedDivision, selectedCollab });
+                
+                let collaborateursAffiches = collaborateurs;
+                if (selectedCollab && selectedCollab !== '') {
+                    collaborateursAffiches = [selectedCollab];
+                }
+                
+                // Filtrer les données selon les filtres personnalisés
+                console.log('Filtres appliqués - Division:', selectedDivision, 'Collaborateur:', selectedCollab);
+                let donneesFiltrees = trsData.filter(row => {
+                    // Filtre par division (seulement si une valeur est sélectionnée)
+                    if (selectedDivision && selectedDivision !== '' && row['Division'] !== selectedDivision) {
+                        return false;
+                    }
+                    // Filtre par collaborateur (seulement si une valeur est sélectionnée)
+                    if (selectedCollab && selectedCollab !== '' && row['Nom'] !== selectedCollab) {
+                        return false;
+                    }
+                    return true;
+                });
+                console.log('Données filtrées:', donneesFiltrees.length, 'sur', trsData.length, 'total');
+                // Extraire la liste unique des mois (inchangée)
+                const mois = [...new Set(trsData.map(row => row['Mois']).filter(Boolean))].sort((a, b) => {
+                    const [ma, ya] = a.split('/').map(Number);
+                    const [mb, yb] = b.split('/').map(Number);
+                    return yb !== ya ? ya - yb : ma - mb;
+                });
+                // Construire un mapping (collaborateur, mois) => statut (prendre le premier trouvé)
+                const statutMap = {};
+                donneesFiltrees.forEach(row => {
+                    const nom = row['Nom'];
+                    const moisVal = row['Mois'];
+                    const statut = row['Statut'] || '';
+                    if (nom && moisVal) {
+                        const key = `${nom}__${moisVal}`;
+                        // Debug spécifique pour Raphaël Ngos
+                        if (nom === 'Raphaël Ngos' && (moisVal.includes('06/2025') || moisVal.includes('06/2025'))) {
+                            console.log('🔍 DEBUG Raphaël Ngos - Ligne trouvée:', {
+                                nom: nom,
+                                mois: moisVal,
+                                statut: statut,
+                                key: key,
+                                statutExistant: statutMap[key] || 'AUCUN',
+                                heures: row['Heures'],
+                                division: row['Division']
+                            });
+                        }
+                        if (!(key in statutMap)) {
+                            statutMap[key] = statut;
+                        }
+                    }
+                });
+                // Générer le tableau HTML
+                let tableHTML = '<div class="table-container"><table><thead><tr><th>Collaborateur</th>';
+                mois.forEach(moisVal => {
+                    tableHTML += `<th>${moisVal}</th>`;
+                });
+                tableHTML += '</tr></thead><tbody>';
+                collaborateursAffiches.forEach(nom => {
+                    tableHTML += `<tr><td>${nom}</td>`;
+                    mois.forEach(moisVal => {
+                        let statut = statutMap[`${nom}__${moisVal}`] || '';
+                        let color = '';
+                        let displayText = statut;
+                        
+                        // Debug spécifique pour Raphaël Ngos
+                        if (nom === 'Raphaël Ngos' && (moisVal.includes('06/2025') || moisVal.includes('06/2025'))) {
+                            console.log('🔍 DEBUG Raphaël Ngos - Traitement statut:', {
+                                nom: nom,
+                                mois: moisVal,
+                                statutOriginal: statut,
+                                statutMapKey: `${nom}__${moisVal}`,
+                                statutMapValue: statutMap[`${nom}__${moisVal}`]
+                            });
+                        }
+                        
+                        // Gestion des couleurs et textes (inchangée)
+                        if (!statut) {
+                            displayText = 'Non transmis';
+                            color = 'background:#f8d7da;color:#721c24;font-weight:bold;';
+                        } else if (/attente.*validation/i.test(statut)) {
+                            color = 'background:#e5e7e9;color:#555;font-weight:bold;'; // argenté
+                        } else if (/^(validé|approuvé)/i.test(statut) || /approuv/i.test(statut) || /valid/i.test(statut)) {
+                            color = 'background:#28a745;color:#fff;font-weight:bold;'; // vert bien visible
+                        } else if (/en cours d'édition/i.test(statut)) {
+                            const [cellMonth, cellYear] = moisVal.split('/').map(Number);
+                            const now = new Date();
+                            const currentMonth = now.getMonth() + 1;
+                            const currentYear = now.getFullYear();
+                            
+                            // Debug spécifique pour Raphaël Ngos
+                            if (nom === 'Raphaël Ngos' && (moisVal.includes('06/2025') || moisVal.includes('06/2025'))) {
+                                console.log('🔍 DEBUG Raphaël Ngos - Logique "En cours d\'édition":', {
+                                    nom: nom,
+                                    mois: moisVal,
+                                    cellMonth: cellMonth,
+                                    cellYear: cellYear,
+                                    currentMonth: currentMonth,
+                                    currentYear: currentYear,
+                                    isFuture: cellYear > currentYear || (cellYear === currentYear && cellMonth >= currentMonth),
+                                    statut: statut
+                                });
+                            }
+                            
+                            if (cellYear > currentYear || (cellYear === currentYear && cellMonth >= currentMonth)) {
+                                displayText = "En cours d'édition";
+                                color = 'background:#d4edda;color:#155724;font-weight:bold;'; // vert clair
+                            } else {
+                                const totalHeures = donneesFiltrees.filter(row => row['Nom'] === nom && row['Mois'] === moisVal)
+                                    .reduce((sum, row) => sum + (parseFloat(row['Heures'].replace(',', '.')) || 0), 0);
+                                
+                                // Debug spécifique pour Raphaël Ngos
+                                if (nom === 'Raphaël Ngos' && (moisVal.includes('06/2025') || moisVal.includes('06/2025'))) {
+                                    console.log('🔍 DEBUG Raphaël Ngos - Calcul heures:', {
+                                        nom: nom,
+                                        mois: moisVal,
+                                        totalHeures: totalHeures,
+                                        lignesTrouvees: donneesFiltrees.filter(row => row['Nom'] === nom && row['Mois'] === moisVal).length,
+                                        detailsLignes: donneesFiltrees.filter(row => row['Nom'] === nom && row['Mois'] === moisVal).map(row => ({
+                                            heures: row['Heures'],
+                                            statut: row['Statut'],
+                                            mission: row['Missions']
+                                        }))
+                                    });
+                                }
+                                
+                                if (totalHeures === 0) {
+                                    displayText = 'Non Rempli';
+                                    color = 'background:#c82333;color:#fff;font-weight:bold;'; // rouge foncé, texte blanc
+                                } else {
+                                    displayText = 'Non Soumis';
+                                    color = 'background:#ffe5b4;color:#b36b00;font-weight:bold;'; // orange clair
+                                }
+                            }
+                        } else {
+                            color = 'background:#f8d7da;color:#721c24;font-weight:bold;';
+                        }
+                        tableHTML += `<td style="${color}">${displayText}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+                tableHTML += '</tbody></table></div>';
+                document.getElementById('tab-feuilles').innerHTML = '';
+                feuillesFilters.style.display = 'block';
+                document.getElementById('tab-feuilles').appendChild(feuillesFilters);
+                document.getElementById('tab-feuilles').innerHTML += tableHTML;
+            } catch (error) {
+                
+                document.getElementById('tab-feuilles').innerHTML = '<div class="no-data">Erreur lors du rendu des feuilles de temps : ' + error + '</div>';
+            } finally {
+                window.isRenderingFeuilles = false;
+            }
+        }
+
+
+
+        // Ajout d'un observer pour détecter toute modification du style du filtre général
+        function observeGeneralFilters() {
+            const generalFilters = document.getElementById('general-filters');
+            if (!generalFilters) return;
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach(mutation => {
+                    if (mutation.attributeName === 'style') {
+                        // Observer silencieux pour maintenir la fonctionnalité
+                    }
+                });
+            });
+            observer.observe(generalFilters, { attributes: true, attributeFilter: ['style'] });
+        }
+
+
+
+        // Forçage du masquage après chaque rendu d'onglet personnalisé
+        function forceHideGeneralFiltersIfNeeded() {
+            const generalFilters = document.getElementById('general-filters');
+            if (generalFilters && (currentTab === 'facturation' || currentTab === 'opportunites')) {
+                generalFilters.style.display = 'none';
+            }
+        }
+
+        // 1. Définir le template en dur en JS (au tout début du script)
+        const generalFiltersHTML = `
+        <div class="filters-section" id="general-filters">
+          <div class="filters-row">
+            <div class="filter-group">
+                <label for="yearFilter">Année</label>
+                <select id="yearFilter"><option value="">Toutes les années</option></select>
+            </div>
+            <div class="filter-group">
+                <label for="monthFilter">Mois</label>
+                <select id="monthFilter"><option value="">Tous les mois</option></select>
+            </div>
+            <div class="filter-group" style="flex:2;min-width:220px;max-width:320px;">
+                <label for="startDate">Période personnalisée</label>
+                <div style="display:flex;gap:10px;">
+                    <input type="date" id="startDate" placeholder="Date début" style="flex:1;">
+                    <input type="date" id="endDate" placeholder="Date fin" style="flex:1;">
+                </div>
+            </div>
+          </div>
+          <div class="filters-row" style="margin-top: 15px;">
+            <div class="filter-group">
+                <label for="buFilter">Pôle</label>
+                <select id="buFilter"><option value="">Tous les pôles</option></select>
+            </div>
+            <div class="filter-group">
+                <label for="collabFilter">Collaborateur</label>
+                <select id="collabFilter"><option value="">Tous les collaborateurs</option></select>
+            </div>
+            <div class="filter-group">
+                <label for="missionFilter">Mission</label>
+                <select id="missionFilter"><option value="">Toutes les missions</option></select>
+            </div>
+            <div class="filter-group">
+                <label for="typeHeureFilter">Type d'heure</label>
+                <select id="typeHeureFilter"><option value="">Tous les types</option></select>
+            </div>
+          </div>
+        </div>
+        `;
+
+        // Nouvelle version centralisée de updateFiltersVisibility
+        function updateFiltersVisibility() {
+            console.log('updateFiltersVisibility appelée pour onglet:', currentTab);
+            
+            // Onglets où le bloc général-filters doit être présent UNIQUEMENT
+            const tabsWithGeneralFilters = ['dashboard', 'missions', 'rentabilite', 'performance'];
+            // Onglets avec filtres personnalisés (pas de filtres généraux)
+            const tabsWithCustomFilters = ['facturation', 'opportunites', 'feuilles'];
+            const generalFilters = document.getElementById('general-filters');
+            
+            if (tabsWithCustomFilters.includes(currentTab)) {
+                // Onglet avec filtres personnalisés - supprimer le bloc général
+                if (generalFilters) {
+                    console.log('Suppression du bloc general-filters pour onglet:', currentTab);
+                    generalFilters.remove();
+                }
+            } else {
+                // Onglet avec filtres généraux - s'assurer que le bloc existe
+                if (!generalFilters) {
+                    console.log('Ajout du bloc general-filters pour onglet:', currentTab);
+                    const tabs = document.querySelector('.tabs');
+                    if (tabs) {
+                        tabs.insertAdjacentHTML('afterend', generalFiltersHTML);
+                        // Réattacher les listeners sur les nouveaux éléments
+                        const filterElements = [
+                            'yearFilter',
+                            'monthFilter',
+                            'startDate',
+                            'endDate',
+                            'buFilter',
+                            'collabFilter',
+                            'missionFilter',
+                            'typeHeureFilter'
+                        ];
+                        filterElements.forEach(id => {
+                            const element = document.getElementById(id);
+                            if (element) {
+                                element.addEventListener('change', handleFilterChange);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        // Nettoyer renderCurrentTab : ne plus toucher au bloc general-filters ici
+        function renderCurrentTab() {
+            if (window.isRenderingTab) {
+                return;
+            }
+            window.isRenderingTab = true;
+            try {
+                switch (currentTab) {
+                    case 'dashboard':
+                        renderDashboard();
+                        break;
+                    case 'missions':
+                        renderMissionsTab();
+                        break;
+                    case 'facturation':
+                        renderFacturationTab();
+                        break;
+                    case 'rentabilite':
+                        renderRentabiliteTab();
+                        break;
+                    case 'performance':
+                        renderPerformanceTab();
+                        break;
+                    case 'opportunites':
+                        renderOpportunitesTab();
+                        break;
+                    case 'feuilles':
+                        renderFeuillesTab();
+                        break;
+                    default:
+                        renderDashboard();
+                }
+            } finally {
+                window.isRenderingTab = false;
+            }
+        }
+
+        // Nettoyer refreshData : ne plus toucher au bloc general-filters ici
+        async function refreshData() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn.classList.contains('loading')) {
+                return;
+            }
+            refreshBtn.classList.add('loading');
+            refreshBtn.textContent = '🔄 Chargement...';
+            refreshBtn.disabled = true;
+            try {
+                // Sauvegarder l'onglet actuel
+                const currentTabBeforeRefresh = currentTab;
+                console.log('Rafraîchissement - onglet avant:', currentTabBeforeRefresh);
+                
+                trsData = [];
+                missionsData = [];
+                facturesData = [];
+                tauxHorairesData = [];
+                initialesData = [];
+                opportunitesData = [];
+                filteredData = [];
+                await loadAllCSVs();
+                setupFilters();
+                
+                // Restaurer l'onglet actuel avant de mettre à jour les filtres
+                currentTab = currentTabBeforeRefresh;
+                console.log('Rafraîchissement - onglet restauré:', currentTab);
+                updateFiltersVisibility(); // Maintenant avec le bon onglet
+                renderCurrentTab();
+            } catch (error) {
+                console.error('Erreur lors du rafraîchissement:', error);
+                refreshBtn.textContent = '❌ Erreur';
+                setTimeout(() => {
+                    refreshBtn.textContent = '🔄 Mise à jour';
+                }, 3000);
+            } finally {
+                refreshBtn.classList.remove('loading');
+                refreshBtn.disabled = false;
+            }
+        }
+
+        function resetOpportunitesFilters() {
+            const filterIds = [
+                'opportunites-division-filter',
+                'opportunites-statut-filter',
+                'opportunites-responsable-filter',
+                'opportunites-secteur-filter',
+                'opportunites-type-filter',
+                'opportunites-initiative-filter',
+                'opportunites-annee-filter',
+                'opportunites-mois-filter',
+                'opportunites-date-debut',
+                'opportunites-date-fin'
+            ];
+            filterIds.forEach(id => {
+                sessionStorage.removeItem(id);
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        }
+
+
+        // ... existing code ...
+        function safeParseMontant(val) {
+            if (typeof val !== 'string') return 0;
+            // Nettoyer les espaces et remplacer les caractères invalides
+            let cleaned = val.replace(/\s/g, '').replace(/[-–—N\/Ana]/gi, '0');
+            // Gérer les formats avec virgules comme séparateurs décimaux
+            cleaned = cleaned.replace(/,/g, '.');
+            let num = parseFloat(cleaned);
+            return isNaN(num) ? 0 : num;
+        }
+
+
+        // ... même correction pour getFacturationByEtat, getFacturationByClient, getFacturationByManager ...
+        // ... dans renderChart, si data.length === 0 ou tout à 0, afficher un message "Aucune donnée exploitable pour ce graphique" à la place du canvas ...
+        // ... existing code ...
+
+        // Initialisation centralisée
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Initialisation du dashboard...');
+            
+            try {
+                // Charger les données
+                await loadAllCSVs();
+                console.log('Données chargées:', {
+                    trs: trsData.length,
+                    missions: missionsData.length,
+                    factures: facturesData.length,
+                    opportunites: opportunitesData.length
+                });
+                
+                // Configurer les filtres
+                setupFilters();
+                
+                // Configurer la visibilité des filtres
+                updateFiltersVisibility();
+                
+                // Configurer les événements des onglets
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        console.log('Clic sur onglet:', tab.dataset.tab);
+                        if (window.isChangingTab) {
+                            return;
+                        }
+                        window.isChangingTab = true;
+                        try {
+                            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                            tab.classList.add('active');
+                            const tabId = 'tab-' + tab.dataset.tab;
+                            document.getElementById(tabId).classList.add('active');
+                            currentTab = tab.dataset.tab;
+                            
+                            // Reset des filtres pour opportunités
+                            if (tab.dataset.tab === 'opportunites') {
+                                resetOpportunitesFilters();
+                            }
+                            
+                            updateFiltersVisibility();
+                            updateFiltersForCurrentTab();
+                            applyFilters();
+                            renderCurrentTab();
+                        } finally {
+                            window.isChangingTab = false;
+                        }
+                    });
+                });
+                
+                // Configurer les événements des filtres généraux
+                const filterElements = [
+                    'yearFilter',
+                    'monthFilter', 
+                    'startDate',
+                    'endDate',
+                    'buFilter',
+                    'collabFilter',
+                    'missionFilter',
+                    'typeHeureFilter'
+                ];
+                
+                filterElements.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('change', handleFilterChange);
+                    }
+                });
+                
+                // Configurer le bouton de rafraîchissement
+                const refreshBtn = document.getElementById('refreshBtn');
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', refreshData);
+                }
+                
+                // Observer les filtres généraux
+                observeGeneralFilters();
+                
+                // Rendu initial
+                renderCurrentTab();
+                
+                console.log('Dashboard initialisé avec succès');
+            } catch (error) {
+                console.error('Erreur lors de l\'initialisation:', error);
+            }
+        });
+
+        // Après la création du bouton refreshBtn, le désactiver :
+        document.addEventListener('DOMContentLoaded', () => {
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.disabled = true;
+                refreshBtn.title = "Le rafraîchissement manuel est désactivé (tout se charge automatiquement)";
+            }
+        });
+    </script>
+</body>
+</html> 

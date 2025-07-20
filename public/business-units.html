@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Divisions - TRS Dashboard</title>
+    <title>Gestion des Business Units - TRS Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="css/sidebar.css" rel="stylesheet">
@@ -15,12 +15,12 @@
             padding: 20px;
             margin-bottom: 20px;
         }
-        .division-card {
+        .business-unit-card {
             border: 1px solid #e0e0e0;
             border-radius: 10px;
             transition: all 0.3s ease;
         }
-        .division-card:hover {
+        .business-unit-card:hover {
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transform: translateY(-2px);
         }
@@ -32,13 +32,6 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        .business-unit-badge {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8em;
-        }
     </style>
 </head>
 <body>
@@ -46,7 +39,7 @@
         <!-- Sidebar -->
         <div class="border-end bg-white" id="sidebar-wrapper">
             <div class="sidebar-heading border-bottom bg-primary text-white">
-                <i class="fas fa-sitemap me-2"></i>TRS Dashboard
+                <i class="fas fa-building me-2"></i>TRS Dashboard
             </div>
             <div class="list-group list-group-flush" id="sidebar-menu">
                 <!-- Le menu sera chargé par sidebar.js -->
@@ -60,10 +53,10 @@
                     <button class="btn btn-primary" id="sidebarToggle">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <span class="navbar-brand ms-3">Gestion des Divisions</span>
+                    <span class="navbar-brand ms-3">Gestion des Business Units</span>
                     <div class="ms-auto">
                         <button class="btn btn-success" onclick="openCreateModal()">
-                            <i class="fas fa-plus"></i> Nouvelle Division
+                            <i class="fas fa-plus"></i> Nouvelle Business Unit
                         </button>
                     </div>
                 </div>
@@ -74,25 +67,25 @@
                 <div class="row mb-4" id="stats-container">
                     <div class="col-md-3">
                         <div class="stats-card">
+                            <h4 id="total-business-units">-</h4>
+                            <p class="mb-0">Total Business Units</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <h4 id="active-business-units">-</h4>
+                            <p class="mb-0">Business Units Actives</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
                             <h4 id="total-divisions">-</h4>
                             <p class="mb-0">Total Divisions</p>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="stats-card">
-                            <h4 id="active-divisions">-</h4>
-                            <p class="mb-0">Divisions Actives</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stats-card">
-                            <h4 id="total-business-units">-</h4>
-                            <p class="mb-0">Business Units</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stats-card">
-                            <h4 id="avg-divisions-per-bu">-</h4>
+                            <h4 id="avg-divisions">-</h4>
                             <p class="mb-0">Moy. Divisions/BU</p>
                         </div>
                     </div>
@@ -100,17 +93,11 @@
 
                 <!-- Filtres -->
                 <div class="row mb-4">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            <input type="text" class="form-control" id="search-input" placeholder="Rechercher une division...">
+                            <input type="text" class="form-control" id="search-input" placeholder="Rechercher une business unit...">
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" id="business-unit-filter">
-                            <option value="">Toutes les Business Units</option>
-                            <!-- Les business units seront chargées ici -->
-                        </select>
                     </div>
                     <div class="col-md-3">
                         <select class="form-select" id="status-filter">
@@ -119,22 +106,22 @@
                             <option value="INACTIF">Inactif</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-outline-secondary w-100" onclick="loadDivisions()">
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-secondary w-100" onclick="loadBusinessUnits()">
                             <i class="fas fa-refresh"></i> Actualiser
                         </button>
                     </div>
                 </div>
 
-                <!-- Liste des Divisions -->
-                <div class="row" id="divisions-container">
-                    <!-- Les divisions seront chargées ici -->
+                <!-- Liste des Business Units -->
+                <div class="row" id="business-units-container">
+                    <!-- Les business units seront chargées ici -->
                 </div>
 
                 <!-- Pagination -->
                 <div class="row mt-4">
                     <div class="col-12">
-                        <nav aria-label="Pagination des divisions">
+                        <nav aria-label="Pagination des business units">
                             <ul class="pagination justify-content-center" id="pagination">
                                 <!-- Pagination sera générée ici -->
                             </ul>
@@ -145,16 +132,16 @@
         </div>
     </div>
 
-    <!-- Modal Création/Édition Division -->
-    <div class="modal fade" id="divisionModal" tabindex="-1">
+    <!-- Modal Création/Édition Business Unit -->
+    <div class="modal fade" id="businessUnitModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalTitle">Nouvelle Division</h5>
+                    <h5 class="modal-title" id="modalTitle">Nouvelle Business Unit</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="divisionForm">
+                    <form id="businessUnitForm">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="nom" class="form-label">Nom *</label>
@@ -164,13 +151,6 @@
                                 <label for="code" class="form-label">Code *</label>
                                 <input type="text" class="form-control" id="code" name="code" maxlength="10" required>
                             </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="business_unit_id" class="form-label">Business Unit *</label>
-                            <select class="form-select" id="business_unit_id" name="business_unit_id" required>
-                                <option value="">Sélectionner une Business Unit</option>
-                                <!-- Les business units seront chargées ici -->
-                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
@@ -187,7 +167,44 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" onclick="saveDivision()">Enregistrer</button>
+                    <button type="button" class="btn btn-primary" onclick="saveBusinessUnit()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Divisions d'une Business Unit -->
+    <div class="modal fade" id="divisionsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Divisions de <span id="businessUnitName"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <button class="btn btn-success" onclick="openCreateDivisionModal()">
+                                <i class="fas fa-plus"></i> Nouvelle Division
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Code</th>
+                                    <th>Description</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="divisionsTableBody">
+                                <!-- Les divisions seront chargées ici -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -199,96 +216,66 @@
     <script>
         let currentPage = 1;
         let totalPages = 1;
-        let businessUnits = [];
+        let currentBusinessUnitId = null;
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
             loadBusinessUnits();
-            loadDivisions();
             loadStatistics();
         });
 
-        // Charger les business units pour les filtres et formulaires
-        async function loadBusinessUnits() {
-            try {
-                const response = await fetch('/api/business-units/active');
-                const data = await response.json();
-
-                if (data.success) {
-                    businessUnits = data.data;
-                    
-                    // Remplir le filtre business unit
-                    const filterSelect = document.getElementById('business-unit-filter');
-                    filterSelect.innerHTML = '<option value="">Toutes les Business Units</option>';
-                    businessUnits.forEach(bu => {
-                        filterSelect.innerHTML += `<option value="${bu.id}">${bu.nom}</option>`;
-                    });
-
-                    // Remplir le select du formulaire
-                    const formSelect = document.getElementById('business_unit_id');
-                    formSelect.innerHTML = '<option value="">Sélectionner une Business Unit</option>';
-                    businessUnits.forEach(bu => {
-                        formSelect.innerHTML += `<option value="${bu.id}">${bu.nom}</option>`;
-                    });
-                }
-            } catch (error) {
-                console.error('Erreur lors du chargement des business units:', error);
-            }
-        }
-
-        // Charger les divisions
-        async function loadDivisions(page = 1) {
+        // Charger les business units
+        async function loadBusinessUnits(page = 1) {
             try {
                 const searchTerm = document.getElementById('search-input').value;
-                const businessUnitFilter = document.getElementById('business-unit-filter').value;
                 const statusFilter = document.getElementById('status-filter').value;
                 
-                let url = `/api/divisions?page=${page}&limit=12`;
+                let url = `/api/business-units?page=${page}&limit=12`;
                 if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
-                if (businessUnitFilter) url += `&business_unit_id=${businessUnitFilter}`;
                 if (statusFilter) url += `&statut=${statusFilter}`;
 
                 const response = await fetch(url);
                 const data = await response.json();
 
                 if (data.success) {
-                    displayDivisions(data.data.divisions);
+                    displayBusinessUnits(data.data.businessUnits);
                     currentPage = page;
                     totalPages = Math.ceil(data.data.total / 12);
                     updatePagination();
                 }
             } catch (error) {
-                console.error('Erreur lors du chargement des divisions:', error);
-                showAlert('Erreur lors du chargement des divisions', 'danger');
+                console.error('Erreur lors du chargement des business units:', error);
+                showAlert('Erreur lors du chargement des business units', 'danger');
             }
         }
 
-        // Afficher les divisions
-        function displayDivisions(divisions) {
-            const container = document.getElementById('divisions-container');
+        // Afficher les business units
+        function displayBusinessUnits(businessUnits) {
+            const container = document.getElementById('business-units-container');
             container.innerHTML = '';
 
-            divisions.forEach(division => {
-                const businessUnit = businessUnits.find(bu => bu.id === division.business_unit_id);
+            businessUnits.forEach(bu => {
                 const card = document.createElement('div');
                 card.className = 'col-md-6 col-lg-4 mb-4';
                 card.innerHTML = `
-                    <div class="card division-card h-100">
+                    <div class="card business-unit-card h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-3">
-                                <h5 class="card-title mb-0">${division.nom}</h5>
-                                <span class="badge ${division.statut === 'ACTIF' ? 'bg-success' : 'bg-secondary'} status-badge">
-                                    ${division.statut}
+                                <h5 class="card-title mb-0">${bu.nom}</h5>
+                                <span class="badge ${bu.statut === 'ACTIF' ? 'bg-success' : 'bg-secondary'} status-badge">
+                                    ${bu.statut}
                                 </span>
                             </div>
-                            <p class="card-text text-muted mb-2">Code: ${division.code}</p>
-                            ${businessUnit ? `<p class="mb-2"><span class="business-unit-badge">${businessUnit.nom}</span></p>` : ''}
-                            ${division.description ? `<p class="card-text">${division.description}</p>` : ''}
+                            <p class="card-text text-muted mb-2">Code: ${bu.code}</p>
+                            ${bu.description ? `<p class="card-text">${bu.description}</p>` : ''}
                             <div class="mt-auto">
-                                <button class="btn btn-outline-warning btn-sm" onclick="editDivision('${division.id}')">
+                                <button class="btn btn-outline-primary btn-sm" onclick="viewDivisions('${bu.id}', '${bu.nom}')">
+                                    <i class="fas fa-sitemap"></i> Voir Divisions
+                                </button>
+                                <button class="btn btn-outline-warning btn-sm" onclick="editBusinessUnit('${bu.id}')">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="deleteDivision('${division.id}')">
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteBusinessUnit('${bu.id}')">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -302,14 +289,14 @@
         // Charger les statistiques
         async function loadStatistics() {
             try {
-                const response = await fetch('/api/divisions/statistics');
+                const response = await fetch('/api/business-units/statistics/global');
                 const data = await response.json();
 
                 if (data.success) {
-                    document.getElementById('total-divisions').textContent = data.data.total_divisions;
-                    document.getElementById('active-divisions').textContent = data.data.active_divisions;
-                    document.getElementById('total-business-units').textContent = data.data.total_business_units || '0';
-                    document.getElementById('avg-divisions-per-bu').textContent = data.data.avg_divisions_per_bu || '0';
+                    document.getElementById('total-business-units').textContent = data.data.total_business_units;
+                    document.getElementById('active-business-units').textContent = data.data.active_business_units;
+                    document.getElementById('total-divisions').textContent = data.data.total_divisions || '0';
+                    document.getElementById('avg-divisions').textContent = data.data.avg_divisions || '0';
                 }
             } catch (error) {
                 console.error('Erreur lors du chargement des statistiques:', error);
@@ -318,45 +305,44 @@
 
         // Ouvrir le modal de création
         function openCreateModal() {
-            document.getElementById('modalTitle').textContent = 'Nouvelle Division';
-            document.getElementById('divisionForm').reset();
-            document.getElementById('divisionForm').dataset.mode = 'create';
-            new bootstrap.Modal(document.getElementById('divisionModal')).show();
+            document.getElementById('modalTitle').textContent = 'Nouvelle Business Unit';
+            document.getElementById('businessUnitForm').reset();
+            document.getElementById('businessUnitForm').dataset.mode = 'create';
+            new bootstrap.Modal(document.getElementById('businessUnitModal')).show();
         }
 
-        // Éditer une division
-        async function editDivision(id) {
+        // Éditer une business unit
+        async function editBusinessUnit(id) {
             try {
-                const response = await fetch(`/api/divisions/${id}`);
+                const response = await fetch(`/api/business-units/${id}`);
                 const data = await response.json();
 
                 if (data.success) {
-                    const division = data.data;
-                    document.getElementById('modalTitle').textContent = 'Modifier Division';
-                    document.getElementById('nom').value = division.nom;
-                    document.getElementById('code').value = division.code;
-                    document.getElementById('business_unit_id').value = division.business_unit_id;
-                    document.getElementById('description').value = division.description || '';
-                    document.getElementById('statut').value = division.statut;
-                    document.getElementById('divisionForm').dataset.mode = 'edit';
-                    document.getElementById('divisionForm').dataset.id = id;
-                    new bootstrap.Modal(document.getElementById('divisionModal')).show();
+                    const bu = data.data;
+                    document.getElementById('modalTitle').textContent = 'Modifier Business Unit';
+                    document.getElementById('nom').value = bu.nom;
+                    document.getElementById('code').value = bu.code;
+                    document.getElementById('description').value = bu.description || '';
+                    document.getElementById('statut').value = bu.statut;
+                    document.getElementById('businessUnitForm').dataset.mode = 'edit';
+                    document.getElementById('businessUnitForm').dataset.id = id;
+                    new bootstrap.Modal(document.getElementById('businessUnitModal')).show();
                 }
             } catch (error) {
-                console.error('Erreur lors du chargement de la division:', error);
-                showAlert('Erreur lors du chargement de la division', 'danger');
+                console.error('Erreur lors du chargement de la business unit:', error);
+                showAlert('Erreur lors du chargement de la business unit', 'danger');
             }
         }
 
-        // Sauvegarder une division
-        async function saveDivision() {
+        // Sauvegarder une business unit
+        async function saveBusinessUnit() {
             try {
-                const form = document.getElementById('divisionForm');
+                const form = document.getElementById('businessUnitForm');
                 const formData = new FormData(form);
                 const data = Object.fromEntries(formData.entries());
 
                 const mode = form.dataset.mode;
-                const url = mode === 'edit' ? `/api/divisions/${form.dataset.id}` : '/api/divisions';
+                const url = mode === 'edit' ? `/api/business-units/${form.dataset.id}` : '/api/business-units';
                 const method = mode === 'edit' ? 'PUT' : 'POST';
 
                 const response = await fetch(url, {
@@ -370,9 +356,9 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('divisionModal')).hide();
-                    showAlert(`Division ${mode === 'edit' ? 'modifiée' : 'créée'} avec succès`, 'success');
-                    loadDivisions();
+                    bootstrap.Modal.getInstance(document.getElementById('businessUnitModal')).hide();
+                    showAlert(`Business unit ${mode === 'edit' ? 'modifiée' : 'créée'} avec succès`, 'success');
+                    loadBusinessUnits();
                     loadStatistics();
                 } else {
                     showAlert(result.message, 'danger');
@@ -383,19 +369,19 @@
             }
         }
 
-        // Supprimer une division
-        async function deleteDivision(id) {
-            if (confirm('Êtes-vous sûr de vouloir supprimer cette division ?')) {
+        // Supprimer une business unit
+        async function deleteBusinessUnit(id) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette business unit ?')) {
                 try {
-                    const response = await fetch(`/api/divisions/${id}`, {
+                    const response = await fetch(`/api/business-units/${id}`, {
                         method: 'DELETE'
                     });
 
                     const result = await response.json();
 
                     if (result.success) {
-                        showAlert('Division supprimée avec succès', 'success');
-                        loadDivisions();
+                        showAlert('Business unit supprimée avec succès', 'success');
+                        loadBusinessUnits();
                         loadStatistics();
                     } else {
                         showAlert(result.message, 'danger');
@@ -407,6 +393,50 @@
             }
         }
 
+        // Voir les divisions d'une business unit
+        async function viewDivisions(businessUnitId, businessUnitName) {
+            currentBusinessUnitId = businessUnitId;
+            document.getElementById('businessUnitName').textContent = businessUnitName;
+            
+            try {
+                const response = await fetch(`/api/business-units/${businessUnitId}/divisions`);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayDivisions(data.data.divisions);
+                    new bootstrap.Modal(document.getElementById('divisionsModal')).show();
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des divisions:', error);
+                showAlert('Erreur lors du chargement des divisions', 'danger');
+            }
+        }
+
+        // Afficher les divisions
+        function displayDivisions(divisions) {
+            const tbody = document.getElementById('divisionsTableBody');
+            tbody.innerHTML = '';
+
+            divisions.forEach(division => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${division.nom}</td>
+                    <td>${division.code}</td>
+                    <td>${division.description || '-'}</td>
+                    <td><span class="badge ${division.statut === 'ACTIF' ? 'bg-success' : 'bg-secondary'}">${division.statut}</span></td>
+                    <td>
+                        <button class="btn btn-outline-warning btn-sm" onclick="editDivision('${division.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteDivision('${division.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
         // Mise à jour de la pagination
         function updatePagination() {
             const pagination = document.getElementById('pagination');
@@ -415,21 +445,21 @@
             // Bouton précédent
             const prevLi = document.createElement('li');
             prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-            prevLi.innerHTML = `<a class="page-link" href="#" onclick="loadDivisions(${currentPage - 1})">Précédent</a>`;
+            prevLi.innerHTML = `<a class="page-link" href="#" onclick="loadBusinessUnits(${currentPage - 1})">Précédent</a>`;
             pagination.appendChild(prevLi);
 
             // Pages
             for (let i = 1; i <= totalPages; i++) {
                 const li = document.createElement('li');
                 li.className = `page-item ${i === currentPage ? 'active' : ''}`;
-                li.innerHTML = `<a class="page-link" href="#" onclick="loadDivisions(${i})">${i}</a>`;
+                li.innerHTML = `<a class="page-link" href="#" onclick="loadBusinessUnits(${i})">${i}</a>`;
                 pagination.appendChild(li);
             }
 
             // Bouton suivant
             const nextLi = document.createElement('li');
             nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
-            nextLi.innerHTML = `<a class="page-link" href="#" onclick="loadDivisions(${currentPage + 1})">Suivant</a>`;
+            nextLi.innerHTML = `<a class="page-link" href="#" onclick="loadBusinessUnits(${currentPage + 1})">Suivant</a>`;
             pagination.appendChild(nextLi);
         }
 
@@ -454,9 +484,8 @@
         }
 
         // Événements de recherche et filtrage
-        document.getElementById('search-input').addEventListener('input', debounce(() => loadDivisions(1), 500));
-        document.getElementById('business-unit-filter').addEventListener('change', () => loadDivisions(1));
-        document.getElementById('status-filter').addEventListener('change', () => loadDivisions(1));
+        document.getElementById('search-input').addEventListener('input', debounce(() => loadBusinessUnits(1), 500));
+        document.getElementById('status-filter').addEventListener('change', () => loadBusinessUnits(1));
 
         // Fonction debounce
         function debounce(func, wait) {

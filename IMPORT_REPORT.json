@@ -1,0 +1,55 @@
+{
+  "timestamp": "2025-07-18T21:33:09.015Z",
+  "summary": {
+    "totalUsers": 0,
+    "totalDivisions": 0,
+    "totalClients": 0,
+    "totalMissions": 0,
+    "totalTimeEntries": 0,
+    "totalInvoices": 0,
+    "totalOpportunities": 0
+  },
+  "tables": {
+    "users": 0,
+    "divisions": 0,
+    "clients": 0,
+    "contacts": 0,
+    "fiscal_years": 0,
+    "missions": 0,
+    "time_entries": 0,
+    "invoices": 0,
+    "opportunities": 0,
+    "hourly_rates": 0
+  },
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "category": "USERS",
+      "message": "Aucun utilisateur importé. Créez des comptes utilisateurs.",
+      "action": "Utiliser l'API /api/users pour créer des utilisateurs"
+    },
+    {
+      "priority": "HIGH",
+      "category": "CLIENTS",
+      "message": "Aucun client importé. Importez les données clients.",
+      "action": "Vérifier les fichiers CSV clients et relancer l'importation"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "MISSIONS",
+      "message": "Aucune mission importée. Importez les données missions.",
+      "action": "Vérifier le fichier liste des missions.csv"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "TIME_ENTRIES",
+      "message": "Aucune saisie de temps importée. Importez les données TRS.",
+      "action": "Vérifier le fichier données_TRS.csv"
+    }
+  ],
+  "usersByDivision": [],
+  "missionsByStatus": [],
+  "clientsByStatus": [],
+  "timeEntriesByMonth": [],
+  "invoicesByStatus": []
+}

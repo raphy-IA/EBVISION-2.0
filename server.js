@@ -10,6 +10,7 @@ const path = require('path');
 // Import des routes
 const authRoutes = require('./src/routes/auth');
 const userRoutes = require('./src/routes/users');
+const businessUnitsRoutes = require('./src/routes/business-units');
 const divisionRoutes = require('./src/routes/divisions');
 const clientRoutes = require('./src/routes/clients');
 const contactRoutes = require('./src/routes/contacts');
@@ -21,6 +22,9 @@ const healthRoutes = require('./src/routes/health');
 const feuillesTempsRoutes = require('./src/routes/feuilles-temps');
 const timeEntriesRoutes = require('./src/routes/time-entries');
 const reportsRoutes = require('./src/routes/reports');
+const typesCollaborateursRoutes = require('./src/routes/types-collaborateurs');
+const postesRoutes = require('./src/routes/postes');
+const tauxHorairesRoutes = require('./src/routes/taux-horaires');
 
 // Import des middlewares
 const errorHandler = require('./src/middleware/errorHandler');
@@ -34,10 +38,11 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            scriptSrcAttr: ["'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "https:"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
         },
     },
 }));
@@ -73,6 +78,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/business-units', businessUnitsRoutes);
 app.use('/api/divisions', divisionRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/contacts', contactRoutes);
@@ -83,6 +89,9 @@ app.use('/api/missions', missionRoutes);
 app.use('/api/feuilles-temps', feuillesTempsRoutes);
 app.use('/api/time-entries', timeEntriesRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/types-collaborateurs', typesCollaborateursRoutes);
+app.use('/api/postes', postesRoutes);
+app.use('/api/taux-horaires', tauxHorairesRoutes);
 
 // Route racine
 app.get('/', (req, res) => {

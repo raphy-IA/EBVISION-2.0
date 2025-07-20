@@ -97,6 +97,14 @@ class SidebarManager {
                             <i class="fas fa-star"></i>
                             Grades
                         </a>
+                        <a class="nav-link" href="/taux-horaires.html" data-page="taux-horaires">
+                            <i class="fas fa-euro-sign"></i>
+                            Taux Horaires
+                        </a>
+                        <a class="nav-link" href="/business-units.html" data-page="business-units">
+                            <i class="fas fa-building"></i>
+                            Business Units
+                        </a>
                         <a class="nav-link" href="/divisions.html" data-page="divisions">
                             <i class="fas fa-sitemap"></i>
                             Divisions

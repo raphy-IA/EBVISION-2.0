@@ -1,6 +1,7 @@
 const express = require('express');
 const Division = require('../models/Division');
-const { validateDivision } = require('../utils/validators');
+const BusinessUnit = require('../models/BusinessUnit');
+const { divisionValidation } = require('../utils/validators');
 
 const router = express.Router();
 
@@ -27,12 +28,12 @@ router.get('/', async (req, res) => {
 // Statistiques des divisions (DOIT ÊTRE AVANT /:id)
 router.get('/statistics', async (req, res) => {
     try {
-        const result = await Division.findAll();
+        const globalStats = await Division.getGlobalStats();
+        const divisions = await Division.findAll();
         
         const statistics = {
-            total_divisions: result.pagination ? result.pagination.total : result.divisions.length,
-            active_divisions: result.divisions.filter(d => d.statut === 'ACTIF').length,
-            divisions_list: result.divisions.map(d => ({
+            ...globalStats,
+            divisions_list: divisions.divisions.map(d => ({
                 id: d.id,
                 nom: d.nom,
                 code: d.code,
@@ -85,12 +86,30 @@ router.get('/:id', async (req, res) => {
 // Créer une nouvelle division
 router.post('/', async (req, res) => {
     try {
-        const { error, value } = validateDivision.create.validate(req.body);
+        const { error, value } = divisionValidation.create.validate(req.body);
         if (error) {
             return res.status(400).json({
                 success: false,
                 message: 'Données invalides',
                 errors: error.details.map(detail => detail.message)
+            });
+        }
+
+        // Vérifier si la business unit existe
+        const businessUnit = await BusinessUnit.findById(value.business_unit_id);
+        if (!businessUnit) {
+            return res.status(400).json({
+                success: false,
+                message: 'Business unit non trouvée'
+            });
+        }
+
+        // Vérifier si le code existe déjà
+        const existingDivision = await Division.findByCode(value.code);
+        if (existingDivision) {
+            return res.status(400).json({
+                success: false,
+                message: 'Une division avec ce code existe déjà'
             });
         }
 
@@ -115,7 +134,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { error, value } = validateDivision.update.validate(req.body);
+        const { error, value } = divisionValidation.update.validate(req.body);
         
         if (error) {
             return res.status(400).json({
@@ -133,7 +152,7 @@ router.put('/:id', async (req, res) => {
             });
         }
 
-        const updatedDivision = await division.update(value);
+        const updatedDivision = await Division.update(id, value);
 
         res.json({
             success: true,
@@ -163,7 +182,7 @@ router.delete('/:id', async (req, res) => {
             });
         }
 
-        await division.delete();
+        await Division.delete(id);
 
         res.json({
             success: true,

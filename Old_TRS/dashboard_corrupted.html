@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+��<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -147,7 +147,7 @@
         }
         .kpi-card:hover {
             box-shadow: 0 8px 32px rgba(102,126,234,0.13);
-            transform: translateY(-2px) scale(1.03);
+            transform: translateY(-2pxscale(1.03);
         }
         .kpi-icon {
             font-size: 2.1em;
@@ -223,7 +223,7 @@
         }
         
         .table-container th {
-            background: linear-gradient(90deg, #e9eafc 60%, #f8f9fa 100%) !important;
+            background: linear-gradient(90deg, #e9eafc 60%, #f8f9fa 100%!important;
             color: #667eea;
             font-weight: 600;
             font-size: 1.05em;
@@ -308,7 +308,7 @@
             padding: 40px;
             font-size: 1.1em;
         }
-        /* Styles généraux pour les tableaux (hors conteneurs) */
+        /* Styles généraux pour les tableaux (hors conteneurs*/
         table:not(.table-container table) {
             border-collapse: collapse;
             width: 100%;
@@ -319,7 +319,7 @@
             margin-top: 10px;
         }
         table:not(.table-container table) th, 
-        table:not(.table-container table) td {
+        table:not(.table-container tabletd {
             padding: 12px 14px;
             border-bottom: 1px solid #f0f0f0;
             text-align: left;
@@ -330,10 +330,10 @@
             font-weight: 600;
             font-size: 1.05em;
         }
-        table:not(.table-container table) tr:hover {
+        table:not(.table-container tabletr:hover {
             background: #f4f6fa;
         }
-        table:not(.table-container table) tr:nth-child(even) {
+        table:not(.table-container tabletr:nth-child(even) {
             background: #fafaff;
         }
         .tab-content {
@@ -622,7 +622,7 @@
             flex: 1;
         }
 
-        @media (max-width: 700px) {
+        @media (max-width: 700px{
             .filters-bar {
                 flex-direction: column;
                 gap: 12px;
@@ -650,9 +650,6 @@
                     <p>Visualisez et analysez la répartition du temps de vos équipes par Pôle, Collaborateur et Mission.</p>
                 </div>
                 <div class="header-actions">
-                    <button id="refreshBtn" class="refresh-btn">
-                        🔄 Mise à jour
-                    </button>
                 </div>
             </div>
         </div>
@@ -736,14 +733,14 @@
         let gradeToTaux = {};
 
         // Parsing CSV robuste avec gestion des séparateurs et encodage
-        function parseCSV(csvText) {
+        function parseCSV(csvText{
             let data = [];
             let lines = csvText.split('\n');
-            if (lines.length < 2) return data;
+            if (lines.length < 2return data;
             
             // Détecter le séparateur (; ou ,)
             let separator = ';';
-            if (lines[0].includes(',')) separator = ',';
+            if (lines[0].includes(',')separator = ',';
             
             let headers = lines[0].split(separator).map(h => h.replace(/"/g, '').trim());
     
@@ -752,10 +749,10 @@
                 if (lines[i].trim() === '') continue;
                 
                 let row = lines[i].split(separator);
-                if (row.length === headers.length) {
+                if (row.length === headers.length{
                     let dataRow = {};
                     for (let j = 0; j < headers.length; j++) {
-                        dataRow[headers[j]] = row[j] ? row[j].replace(/"/g, '').trim() : '';
+                        dataRow[headers[j]] = row[j] ? row[j].replace(/"/g, '').trim(: '';
                     }
                     data.push(dataRow);
                 }
@@ -792,7 +789,7 @@
                         'Expires': '0'
                     }
                 });
-                if (!missionsResponse.ok) throw new Error('Fichier missions non trouvé');
+                if (!missionsResponse.okthrow new Error('Fichier missions non trouvé');
                 const missionsText = await missionsResponse.text();
                 missionsData = parseCSV(missionsText);
 
@@ -805,7 +802,7 @@
                         'Expires': '0'
                     }
                 });
-                if (!facturesResponse.ok) throw new Error('Fichier factures non trouvé');
+                if (!facturesResponse.okthrow new Error('Fichier factures non trouvé');
                 const facturesText = await facturesResponse.text();
                 facturesData = parseCSV(facturesText);
 
@@ -845,7 +842,7 @@
                         'Expires': '0'
                     }
                 });
-                if (!opportunitesResponse.ok) {
+                if (!opportunitesResponse.ok{
                     throw new Error('Fichier opportunités non trouvé');
                 }
                 const opportunitesText = await opportunitesResponse.text();
@@ -862,8 +859,8 @@
                 
                 // S'assurer que les filtres généraux sont correctement masqués/affichés au démarrage
                 const generalFilters = document.getElementById('general-filters');
-                if (generalFilters) {
-                    if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles') {
+                if (generalFilters{
+                    if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles'{
                         generalFilters.style.display = 'none';
                     } else {
                         generalFilters.style.display = 'block';
@@ -887,7 +884,7 @@
         function buildMappings() {
             // Mapping initiales ↔ noms
             initialesData.forEach(row => {
-                if (row['Nom'] && row['Initiales 1']) {
+                if (row['Nom'] && row['Initiales 1']{
                     initialesToNom[row['Initiales 1']] = row['Nom'];
                     nomToInitiales[row['Nom']] = row['Initiales 1'];
                 }
@@ -895,7 +892,7 @@
 
             // Mapping grade ↔ taux horaire
             tauxHorairesData.forEach(row => {
-                if (row['Grade'] && row['Taux horaire']) {
+                if (row['Grade'] && row['Taux horaire']{
                     let taux = parseFloat(row['Taux horaire'].replace(/\s/g, ''));
                     if (!isNaN(taux)) {
                         gradeToTaux[row['Grade']] = taux;
@@ -905,8 +902,8 @@
         }
 
         // Fonction pour normaliser les dates (gère les formats DD/MM/YYYY et anciens formats français)
-        function normalizeDate(dateStr) {
-            if (!dateStr) return '';
+        function normalizeDate(dateStr{
+            if (!dateStrreturn '';
             
             // Si c'est déjà au format DD/MM/YYYY, le convertir en YYYY-MM-DD
             let match = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
@@ -930,8 +927,8 @@
             
             try {
                 // Vérifier que le DOM est prêt
-                if (!document.getElementById('buFilter')) {
-                    setTimeout(() => {
+                if (!document.getElementById('buFilter'){
+                    setTimeout((=> {
                         window.isSettingUpFilters = false;
                         setupFilters();
                     }, 100);
@@ -953,14 +950,14 @@
                     let trsDates = [];
                     trsData.forEach(row => {
                         if (row['Mois']) trsDates.push(row['Mois']);
-                        if (row['Date']) trsDates.push(row['Date']);
+                        if (row['Date']trsDates.push(row['Date']);
                         if (row['Date Insertion']) trsDates.push(row['Date Insertion']);
                     });
                     allDates = allDates.concat(trsDates.filter(d => d));
                 }
                 
                 // Dates Factures
-                if (facturesData && facturesData.length > 0) {
+                if (facturesData && facturesData.length > 0{
                     let facturesDates = facturesData.map(row => row['Date']).filter(d => d);
                     allDates = allDates.concat(facturesDates);
                 }
@@ -998,7 +995,7 @@
                 
                 // Remplir les filtres généraux
                 fillSelect(document.getElementById('yearFilter'), years, 'Toutes les années');
-                fillSelect(document.getElementById('monthFilter'), months, 'Tous les mois', (month) => {
+                fillSelect(document.getElementById('monthFilter'), months, 'Tous les mois', (month=> {
                     const moisNoms = {
                         '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
                         '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
@@ -1015,7 +1012,7 @@
         }
 
         // Fonction pour mettre à jour les filtres selon l'onglet actif
-        function updateFiltersForCurrentTab() {
+        function updateFiltersForCurrentTab({
             // Protection contre les appels récursifs
             if (window.isUpdatingFilters) {
                 return;
@@ -1036,23 +1033,23 @@
                 }
                 
                 // Si ce n'est pas l'onglet facturation ou opportunités, mettre à jour les filtres TRS
-                if (currentTab !== 'facturation' && currentTab !== 'opportunites') {
+                if (currentTab !== 'facturation' && currentTab !== 'opportunites'{
                     // Recharger les années et mois
                     let allDates = [];
                     
                     // Dates TRS - vérifier plusieurs champs possibles
-                    if (trsData && trsData.length > 0) {
+                    if (trsData && trsData.length > 0{
                         let trsDates = [];
                         trsData.forEach(row => {
                             if (row['Mois']) trsDates.push(row['Mois']);
-                            if (row['Date']) trsDates.push(row['Date']);
+                            if (row['Date']trsDates.push(row['Date']);
                             if (row['Date Insertion']) trsDates.push(row['Date Insertion']);
                         });
                         allDates = allDates.concat(trsDates.filter(d => d));
                     }
                     
                     // Dates Factures
-                    if (facturesData && facturesData.length > 0) {
+                    if (facturesData && facturesData.length > 0{
                         let facturesDates = facturesData.map(row => row['Date']).filter(d => d);
                         allDates = allDates.concat(facturesDates);
                     }
@@ -1087,7 +1084,7 @@
                     
                     // Remplir les filtres année et mois
                     fillSelect(document.getElementById('yearFilter'), years, 'Toutes les années');
-                    fillSelect(document.getElementById('monthFilter'), months, 'Tous les mois', (month) => {
+                    fillSelect(document.getElementById('monthFilter'), months, 'Tous les mois', (month=> {
                         const moisNoms = {
                             '01': 'Janvier', '02': 'Février', '03': 'Mars', '04': 'Avril',
                             '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Août',
@@ -1117,7 +1114,7 @@
             }
         }
 
-        function fillSelect(select, values, allLabel, formatter = null) {
+        function fillSelect(select, values, allLabel, formatter = null{
             if (!select) return; // Sécurité anti-erreur
             
             
@@ -1141,7 +1138,7 @@
         }
 
         // Application des filtres
-        function applyFilters() {
+        function applyFilters({
             
             
             // Protection contre les appels récursifs
@@ -1158,7 +1155,7 @@
                 let sourceData = trsData;
                 let dateField = 'Mois';
                 
-                if (!sourceData || sourceData.length === 0) {
+                if (!sourceData || sourceData.length === 0{
                     
                     filteredData = [];
                     renderCurrentTab();
@@ -1181,11 +1178,11 @@
                         let typeHeureFilter = document.getElementById('typeHeureFilter')?.value || '';
 
                         // Filtre par année
-                        if (yearFilter && dateField && dateField !== '') {
+                        if (yearFilter && dateField && dateField !== ''{
                             let rowDate = row[dateField];
                             let rowYear = '';
                             
-                            if (rowDate) {
+                            if (rowDate{
                                 let match = rowDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                                 if (match) {
                                     rowYear = match[3];
@@ -1203,13 +1200,13 @@
                         }
                         
                         // Filtre par mois
-                        if (monthFilter && dateField && dateField !== '') {
+                        if (monthFilter && dateField && dateField !== ''{
                             let rowDate = row[dateField];
                             let rowMonth = '';
                             
                             if (rowDate) {
                                 let match = rowDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                                if (match) {
+                                if (match{
                                     rowMonth = match[2];
                                 } else {
                                     let normalizedRowDate = normalizeDate(rowDate);
@@ -1228,13 +1225,13 @@
                         if (buFilter && row['Division'] !== buFilter) {
                             return false;
                         }
-                        if (collabFilter && row['Nom'] !== collabFilter) {
+                        if (collabFilter && row['Nom'] !== collabFilter{
                             return false;
                         }
-                        if (missionFilter && row['Missions'] !== missionFilter) {
+                        if (missionFilter && row['Missions'] !== missionFilter{
                             return false;
                         }
-                        if (typeHeureFilter && row['Type Heure'] !== typeHeureFilter) {
+                        if (typeHeureFilter && row['Type Heure'] !== typeHeureFilter{
                             return false;
                         }
 
@@ -1262,14 +1259,14 @@
                         
                         if (rowDate) {
                             let match = rowDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                            if (match) {
+                            if (match{
                                 rowYear = match[3];
                             } else {
                                 let normalizedRowDate = normalizeDate(rowDate);
                                 rowYear = extractYearFromDate(normalizedRowDate);
                             }
                             
-                            if (rowYear !== yearFilter) {
+                            if (rowYear !== yearFilter{
                                 return false;
                             }
                         } else {
@@ -1282,7 +1279,7 @@
                         let rowDate = row[dateField];
                         let rowMonth = '';
                         
-                        if (rowDate) {
+                        if (rowDate{
                             let match = rowDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                             if (match) {
                                 rowMonth = match[2];
@@ -1291,7 +1288,7 @@
                                 rowMonth = extractMonthFromDate(normalizedRowDate);
                             }
                             
-                            if (rowMonth !== monthFilter) {
+                            if (rowMonth !== monthFilter{
                                 return false;
                             }
                         } else {
@@ -1300,7 +1297,7 @@
                     }
                     
                     // Filtres spécifiques
-                    if (buFilter && row['Division'] !== buFilter) {
+                    if (buFilter && row['Division'] !== buFilter{
                         return false;
                     }
                     if (collabFilter && row['Nom'] !== collabFilter) {
@@ -1339,17 +1336,17 @@
             try {
                 // Masquer le filtre général uniquement pour l'onglet Feuilles de temps
                 // Gestion des filtres généraux selon l'onglet
-                if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles') {
+                if (currentTab === 'facturation' || currentTab === 'opportunites' || currentTab === 'feuilles'{
                     // Pour ces onglets, les filtres généraux ne doivent pas être présents dans le DOM
                     const generalFilters = document.getElementById('general-filters');
-                    if (generalFilters) {
+                    if (generalFilters{
                         generalFilters.style.display = 'none';
                         
                     }
                 } else {
                     // Pour les autres onglets, les filtres généraux doivent être visibles
                     const generalFilters = document.getElementById('general-filters');
-                    if (generalFilters) {
+                    if (generalFilters{
                         generalFilters.style.display = 'block';
                         
                     }
@@ -1391,7 +1388,7 @@
 
         // Gestion des filtres avec protection
         function handleFilterChange() {
-            if (!window.isApplyingFilters) {
+            if (!window.isApplyingFilters{
                 applyFilters();
             }
         }
@@ -1403,8 +1400,8 @@
             return match ? match[1] : '';
         }
 
-        function extractMonthFromDate(dateStr) {
-            if (!dateStr) return '';
+        function extractMonthFromDate(dateStr{
+            if (!dateStrreturn '';
             let match = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
             return match ? match[2] : '';
         }
@@ -1430,11 +1427,11 @@
                 setupFilters();
                 updateFiltersVisibility();
                 renderCurrentTab();
-            } catch (error) {
+            } catch (error{
                 console.error('Erreur lors du rafraîchissement:', error);
                 refreshBtn.textContent = '❌ Erreur';
-            setTimeout(() => {
-                refreshBtn.textContent = '🔄 Mise à jour';
+                setTimeout((=> {
+                    refreshBtn.textContent = '🔄 Mise à jour';
                 }, 3000);
             } finally {
                 refreshBtn.classList.remove('loading');
@@ -1443,13 +1440,13 @@
         }
 
         // Rendu du dashboard principal
-        function renderDashboard() {
-            if (!filteredData.length) {
+        function renderDashboard({
+            if (!filteredData.length{
                 document.getElementById('tab-dashboard').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
                 return;
             }
             // Protection contre les appels multiples
-            if (window.isRenderingDashboard) {
+            if (window.isRenderingDashboard{
                 return;
             }
             window.isRenderingDashboard = true;
@@ -1461,7 +1458,7 @@
                 }
 
             // Calcul des KPIs
-            let totalHeures = filteredData.reduce((sum, row) => sum + (parseFloat(row['Heures']) || 0), 0);
+            let totalHeures = filteredData.reduce((sum, row=> sum + (parseFloat(row['Heures']|| 0), 0);
             let totalCollaborateurs = new Set(filteredData.map(row => row['Nom'])).size;
             let totalMissions = new Set(filteredData.map(row => row['Missions'])).size;
             let totalPoles = new Set(filteredData.map(row => row['Division'])).size;
@@ -1509,14 +1506,14 @@
             document.getElementById('tab-dashboard').innerHTML = kpisHTML + chartsHTML;
 
             // Rendu des graphiques
-            setTimeout(() => {
+            setTimeout((=> {
                 try {
                     renderChart('chartByBU', getHoursByField(filteredData, 'Division'), 'bar', 'Pôle', 'Heures');
-                } catch (error) {
+                } catch (error{
                     
                 }
             }, 100);
-            setTimeout(() => {
+            setTimeout((=> {
                 try {
                     renderChart('chartTopCollab', getTopN('Nom', 5), 'bar', 'Collaborateur', 'Heures');
                 } catch (error) {
@@ -1535,8 +1532,8 @@
             let map = {};
             data.forEach(row => {
                 let value = row[field];
-                if (value) {
-                    map[value] = (map[value] || 0) + (parseFloat(row['Heures']) || 0);
+                if (value{
+                    map[value] = (map[value] || 0) + (parseFloat(row['Heures']|| 0);
                 }
             });
             return map;
@@ -1547,13 +1544,13 @@
             let map = {};
             filteredData.forEach(row => {
                 let value = row[field];
-                if (value) {
-                    map[value] = (map[value] || 0) + (parseFloat(row['Heures']) || 0);
+                if (value{
+                    map[value] = (map[value] || 0) + (parseFloat(row['Heures']|| 0);
                 }
             });
             
             return Object.entries(map)
-                .sort((a, b) => b[1] - a[1])
+                .sort((a, b=> b[1] - a[1])
                 .slice(0, n)
                 .reduce((obj, [key, value]) => {
                     obj[key] = value;
@@ -1564,7 +1561,7 @@
         // Fonction pour rendre un graphique
         function renderChart(canvasId, data, type, xLabel, yLabel) {
             const canvas = document.getElementById(canvasId);
-            if (!canvas) {
+            if (!canvas{
                 
                 return;
             }
@@ -1576,7 +1573,7 @@
             }
 
             // Protection contre les rendus multiples
-            if (window.isRenderingChart && window.isRenderingChart === canvasId) {
+            if (window.isRenderingChart && window.isRenderingChart === canvasId{
                 console.warn('Graphique déjà en cours de rendu:', canvasId);
                 return;
             }
@@ -1584,7 +1581,7 @@
 
             try {
                 // Détruire le graphique existant s'il y en a un
-                if (charts[canvasId]) {
+                if (charts[canvasId]{
                     charts[canvasId].destroy();
                     delete charts[canvasId];
                 }
@@ -1659,13 +1656,13 @@
             window.isRenderingMissions = true;
             
             try {
-                if (!filteredData.length) {
+                if (!filteredData.length{
                     document.getElementById('tab-missions').innerHTML = '<div class="no-data">Aucune donnée de missions disponible</div>';
                     return;
                 }
 
             let missionStats = calculateMissionStats();
-            let totalHeures = filteredData.reduce((sum, row) => sum + (parseFloat(row['Heures']) || 0), 0);
+            let totalHeures = filteredData.reduce((sum, row=> sum + (parseFloat(row['Heures']|| 0), 0);
             let totalCout = calculateTotalCost();
 
             let missionsHTML = `
@@ -1693,7 +1690,7 @@
                     <div class="kpi-card">
                         <span class="kpi-icon">📊</span>
                         <div class="kpi-label">Heures Moyennes/Mission</div>
-                        <div class="kpi-value">${Object.keys(missionStats).length > 0 ? (totalHeures / Object.keys(missionStats).length).toFixed(1) : 0}h</div>
+                        <div class="kpi-value">${Object.keys(missionStats).length > 0 ? (totalHeures / Object.keys(missionStats).length).toFixed(1: 0}h</div>
                     </div>
                     <div class="kpi-card">
                         <span class="kpi-icon">🏆</span>
@@ -1773,7 +1770,7 @@
             }
         }
 
-        function calculateMissionStats() {
+        function calculateMissionStats({
             let stats = {};
             filteredData.forEach(row => {
                 let mission = row['Missions'];
@@ -1791,11 +1788,11 @@
                 }
                 
                 stats[mission].collaborateurs.add(row['Nom']);
-                let heures = parseFloat(row['Heures']) || 0;
+                let heures = parseFloat(row['Heures']|| 0;
                 stats[mission].heures += heures;
                 
                 // Calculer le coût basé sur le grade (uniquement pour les heures HC)
-                if (row['Type Heure'] === 'HC') {
+                if (row['Type Heure'] === 'HC'{
                     let grade = row['Grade'];
                     let tauxHoraire = gradeToTaux[grade] || 0;
                     stats[mission].cout += tauxHoraire * heures;
@@ -1808,37 +1805,37 @@
             return stats;
         }
 
-        function calculateTotalCost() {
-            return filteredData.reduce((sum, row) => {
+        function calculateTotalCost({
+            return filteredData.reduce((sum, row=> {
                 // Ne calculer le coût que pour les heures HC (chargeables)
-                if (row['Type Heure'] === 'HC') {
+                if (row['Type Heure'] === 'HC'{
                     let grade = row['Grade'];
                     let tauxHoraire = gradeToTaux[grade] || 0;
-                    let heures = parseFloat(row['Heures']) || 0;
+                    let heures = parseFloat(row['Heures']|| 0;
                     return sum + (tauxHoraire * heures);
                 }
                 return sum;
             }, 0);
         }
 
-        function getTopCostlyMission(missionStats) {
+        function getTopCostlyMission(missionStats{
             let topMission = Object.entries(missionStats)
                 .sort((a, b) => b[1].cout - a[1].cout)[0];
-            return topMission ? topMission[0].substring(0, 20) + '...' : 'N/A';
+            return topMission ? topMission[0].substring(0, 20+ '...' : 'N/A';
         }
 
         function getHoursByMission() {
             let missionStats = calculateMissionStats();
             return Object.entries(missionStats)
-                .sort((a, b) => b[1].heures - a[1].heures)
+                .sort((a, b=> b[1].heures - a[1].heures)
                 .slice(0, 10)
-                .reduce((obj, [mission, stats]) => {
-                    obj[mission.substring(0, 20) + '...'] = stats.heures;
+                .reduce((obj, [mission, stats]=> {
+                    obj[mission.substring(0, 20+ '...'] = stats.heures;
                     return obj;
                 }, {});
         }
 
-        function getHoursByType() {
+        function getHoursByType({
             let hcTotal = 0;
             let hncTotal = 0;
             
@@ -1857,12 +1854,12 @@
             };
         }
 
-        function getHoursByMonth() {
+        function getHoursByMonth({
             let monthStats = {};
             filteredData.forEach(row => {
                 let mois = row['Mois'] || 'Non défini';
                 let heures = parseFloat(row['Heures']) || 0;
-                monthStats[mois] = (monthStats[mois] || 0) + heures;
+                monthStats[mois] = (monthStats[mois] || 0+ heures;
             });
             return monthStats;
         }
@@ -1871,7 +1868,7 @@
             let gradeStats = {};
             filteredData.forEach(row => {
                 let grade = row['Grade'] || 'Non défini';
-                let heures = parseFloat(row['Heures']) || 0;
+                let heures = parseFloat(row['Heures']|| 0;
                 gradeStats[grade] = (gradeStats[grade] || 0) + heures;
             });
             return gradeStats;
@@ -1881,15 +1878,15 @@
             let collabStats = {};
             filteredData.forEach(row => {
                 let nom = row['Nom'];
-                let heures = parseFloat(row['Heures']) || 0;
+                let heures = parseFloat(row['Heures']|| 0;
                 collabStats[nom] = (collabStats[nom] || 0) + heures;
             });
             
             return Object.entries(collabStats)
-                .sort((a, b) => b[1] - a[1])
+                .sort((a, b=> b[1] - a[1])
                 .slice(0, 5)
-                .reduce((obj, [nom, heures]) => {
-                    obj[nom.length > 15 ? nom.substring(0, 15) + '...' : nom] = heures;
+                .reduce((obj, [nom, heures]=> {
+                    obj[nom.length > 15 ? nom.substring(0, 15+ '...' : nom] = heures;
                     return obj;
                 }, {});
         }
@@ -1901,7 +1898,7 @@
                     let division = row['Division'] || 'Non défini';
                     let grade = row['Grade'];
                     let tauxHoraire = gradeToTaux[grade] || 0;
-                    let heures = parseFloat(row['Heures']) || 0;
+                    let heures = parseFloat(row['Heures']|| 0;
                     let cout = tauxHoraire * heures;
                     
                     divisionStats[division] = (divisionStats[division] || 0) + cout;
@@ -1912,7 +1909,7 @@
 
         function generateMissionsTable() {
             let missionStats = calculateMissionStats();
-            return Object.entries(missionStats).map(([mission, stats]) => {
+            return Object.entries(missionStats).map(([mission, stats]=> {
                 let coutMoyenH = stats.heures > 0 ? stats.cout / stats.heures : 0;
                 let tauxChargeabilite = stats.heures > 0 ? (stats.heuresHC / stats.heures) * 100 : 0;
                 let coutParCollab = stats.collaborateurs.size > 0 ? stats.cout / stats.collaborateurs.size : 0;
@@ -1945,7 +1942,7 @@
             cleanInvalidFacturationFilters();
             
             try {
-            if (!facturesData.length) {
+            if (!facturesData.length{
                 document.getElementById('tab-facturation').innerHTML = '<div class="no-data">Aucune donnée de facturation disponible</div>';
                 return;
             }
@@ -2166,7 +2163,7 @@
             }
         }
 
-        function applyFacturationFilters() {
+        function applyFacturationFilters({
             let filtered = facturesData;
             console.log('applyFacturationFilters - Données initiales:', filtered.length);
             
@@ -2192,11 +2189,11 @@
                 dateFin
             });
 
-            if (clientFilter) {
+            if (clientFilter{
                 filtered = filtered.filter(f => f['Client'] === clientFilter);
                 console.log('Après filtre client:', filtered.length);
             }
-            if (divisionFilter) {
+            if (divisionFilter{
                 filtered = filtered.filter(f => f['Division'] === divisionFilter);
                 console.log('Après filtre division:', filtered.length);
             }
@@ -2208,7 +2205,7 @@
                 filtered = filtered.filter(f => f['Partner'] === partnerFilter);
                 console.log('Après filtre partner:', filtered.length);
             }
-            if (etatFilter) {
+            if (etatFilter{
                 filtered = filtered.filter(f => f['État'] === etatFilter);
                 console.log('Après filtre état:', filtered.length);
             }
@@ -2229,9 +2226,9 @@
             if (dateDebut) {
                 filtered = filtered.filter(f => {
                     let factureDate = f['Date'];
-                    if (!factureDate) return false;
+                    if (!factureDatereturn false;
                     let match = factureDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                    if (!match) return false;
+                    if (!matchreturn false;
                     let factureDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
                     return factureDateFormatted >= dateDebut;
                 });
@@ -2240,9 +2237,9 @@
             if (dateFin) {
                 filtered = filtered.filter(f => {
                     let factureDate = f['Date'];
-                    if (!factureDate) return false;
+                    if (!factureDatereturn false;
                     let match = factureDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                    if (!match) return false;
+                    if (!matchreturn false;
                     let factureDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
                     return factureDateFormatted <= dateFin;
                 });
@@ -2271,9 +2268,9 @@
                 const savedValue = sessionStorage.getItem(key);
                 if (savedValue) {
                     let isValidValue = false;
-                    if (key === 'facturation-division-filter') {
+                    if (key === 'facturation-division-filter'{
                         isValidValue = facturesData.some(f => f['Division'] === savedValue);
-                    } else if (key === 'facturation-annee-filter') {
+                    } else if (key === 'facturation-annee-filter'{
                         isValidValue = facturesData.some(f => {
                             let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                             return match && match[3] === savedValue;
@@ -2282,7 +2279,7 @@
                         isValidValue = true;
                     }
                     
-                    if (!isValidValue) {
+                    if (!isValidValue{
                         sessionStorage.removeItem(key);
                         console.log('Filtre invalide supprimé:', key, savedValue);
                     }
@@ -2290,7 +2287,7 @@
             });
         }
 
-        function addFacturationFilterListeners() {
+        function addFacturationFilterListeners({
             const filterIds = [
                 'facturation-client-filter',
                 'facturation-division-filter',
@@ -2311,7 +2308,7 @@
                         let isValidValue = false;
                         if (id === 'facturation-division-filter') {
                             isValidValue = facturesData.some(f => f['Division'] === savedValue);
-                        } else if (id === 'facturation-annee-filter') {
+                        } else if (id === 'facturation-annee-filter'{
                             isValidValue = facturesData.some(f => {
                                 let match = f['Date']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                                 return match && match[3] === savedValue;
@@ -2320,7 +2317,7 @@
                             isValidValue = true; // Pour les autres filtres, on accepte la valeur
                         }
                         
-                        if (isValidValue) {
+                        if (isValidValue{
                             element.value = savedValue;
                         } else {
                             // Si la valeur n'est pas valide, on la supprime du sessionStorage
@@ -2329,7 +2326,7 @@
                         }
                     }
                     
-                    element.addEventListener('change', () => {
+                    element.addEventListener('change', (=> {
                         // Sauvegarder la valeur sélectionnée
                         sessionStorage.setItem(id, element.value);
                         renderFacturationTab();
@@ -2343,16 +2340,16 @@
             
             if (dateDebut) {
                 const savedDateDebut = sessionStorage.getItem('facturation-date-debut');
-                if (savedDateDebut) {
+                if (savedDateDebut{
                     dateDebut.value = savedDateDebut;
                 }
-                dateDebut.addEventListener('change', () => {
+                dateDebut.addEventListener('change', (=> {
                     sessionStorage.setItem('facturation-date-debut', dateDebut.value);
                     renderFacturationTab();
                 });
             }
             
-            if (dateFin) {
+            if (dateFin{
                 const savedDateFin = sessionStorage.getItem('facturation-date-fin');
                 if (savedDateFin) {
                     dateFin.value = savedDateFin;
@@ -2364,10 +2361,10 @@
             }
         }
 
-        function calculateFacturationStats(data = facturesData) {
+        function calculateFacturationStats(data = facturesData{
             console.log('=== DEBUG FACTURATION ===');
             console.log('Données reçues:', data.length, 'factures');
-            if (data.length > 0) {
+            if (data.length > 0{
                 console.log('Première facture:', data[0]);
             }
             
@@ -2376,12 +2373,12 @@
             let totalDelai = 0, facturesEnRetard = 0;
             let clientStats = {};
             
-            data.forEach((facture, index) => {
+            data.forEach((facture, index=> {
                 let mf = safeParseMontant(facture['Montant facturé']);
                 let me = safeParseMontant(facture['Montant payé']);
                 
                 // Debug pour les premières factures
-                if (index < 5) {
+                if (index < 5{
                     console.log(`Facture ${index + 1}:`, {
                         original: facture['Montant facturé'],
                         parsed: mf,
@@ -2390,7 +2387,7 @@
                     });
                 }
                 
-                if (isNaN(mf) || isNaN(me)) invalids++;
+                if (isNaN(mf|| isNaN(me)invalids++;
                 montantFacture += mf;
                 montantEncaisse += me;
                 
@@ -2398,22 +2395,22 @@
                 if (facture['Délai']) {
                     let delai = parseInt(facture['Délai']) || 0;
                     totalDelai += delai;
-                    if (delai > 30) facturesEnRetard++; // Considérer en retard si > 30 jours
+                    if (delai > 30facturesEnRetard++; // Considérer en retard si > 30 jours
                 }
                 
                 // Stats par client
                 let client = facture['Client'] || 'Non défini';
-                clientStats[client] = (clientStats[client] || 0) + mf;
+                clientStats[client] = (clientStats[client] || 0+ mf;
             });
             
-            let tauxEncaissement = montantFacture > 0 ? (montantEncaisse / montantFacture) * 100 : 0;
+            let tauxEncaissement = montantFacture > 0 ? (montantEncaisse / montantFacture* 100 : 0;
             let montantMoyen = totalFactures > 0 ? montantFacture / totalFactures : 0;
             let delaiMoyen = totalFactures > 0 ? totalDelai / totalFactures : 0;
             
             // Top client
             let topClient = 'N/A';
-            if (Object.keys(clientStats).length > 0) {
-                let sortedClients = Object.entries(clientStats).sort((a, b) => b[1] - a[1]);
+            if (Object.keys(clientStats).length > 0{
+                let sortedClients = Object.entries(clientStats).sort((a, b=> b[1] - a[1]);
                 topClient = sortedClients[0][0];
             }
 
@@ -2436,7 +2433,7 @@
             data.forEach(facture => {
                 let division = facture['Division'] || 'Non défini';
                 let montant = safeParseMontant(facture['Montant facturé']);
-                divisionStats[division] = (divisionStats[division] || 0) + montant;
+                divisionStats[division] = (divisionStats[division] || 0+ montant;
             });
             console.log('getFacturationByDivision retourne', Object.keys(divisionStats).length, 'divisions');
             return divisionStats;
@@ -2451,7 +2448,7 @@
                 let solde = montantFacture - montantEncaisse;
                 let etat = solde === 0 ? 'Payé' : solde > 0 ? 'En attente' : 'Surpayé';
                 
-                if (!etatStats[etat]) {
+                if (!etatStats[etat]{
                     etatStats[etat] = 0;
                 }
                 etatStats[etat]++;
@@ -2461,7 +2458,7 @@
             return etatStats;
         }
 
-        function getFacturationByClient(data = facturesData) {
+        function getFacturationByClient(data = facturesData{
             console.log('getFacturationByClient appelée avec', data.length, 'factures');
             let clientStats = {};
             data.forEach(facture => {
@@ -2473,15 +2470,15 @@
             let topClients = Object.entries(clientStats)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10)
-                .reduce((obj, [client, montant]) => {
-                    obj[client.length > 20 ? client.substring(0, 20) + '...' : client] = montant;
+                .reduce((obj, [client, montant]=> {
+                    obj[client.length > 20 ? client.substring(0, 20+ '...' : client] = montant;
                     return obj;
                 }, {});
             console.log('getFacturationByClient retourne', Object.keys(topClients).length, 'clients');
             return topClients;
         }
 
-        function getFacturationByManager(data = facturesData) {
+        function getFacturationByManager(data = facturesData{
             console.log('getFacturationByManager appelée avec', data.length, 'factures');
             let managerStats = {};
             data.forEach(facture => {
@@ -2512,7 +2509,7 @@
                 
                 // Calcul du délai
                 let delai = 'N/A';
-                if (solde > 0 && facture['Date']) {
+                if (solde > 0 && facture['Date']{
                     let match = facture['Date'].match(/(\d{2})\/(\d{2})\/(\d{4})/);
                     if (match) {
                         let dateFacture = new Date(match[3], match[2] - 1, match[1]);
@@ -2625,7 +2622,7 @@
             renderChart('rentabiliteChartDivision', getRentabiliteByDivision(), 'bar', 'Division', 'Marge (XAF)');
         }
 
-        function calculateRentabiliteStats() {
+        function calculateRentabiliteStats({
             let missionStats = calculateMissionStats();
             let totalCA = 0;
             let totalCouts = 0;
@@ -2639,11 +2636,11 @@
                 
                 totalCA += ca;
                 totalCouts += couts;
-                if (marge > 0) missionsRentables++;
+                if (marge > 0missionsRentables++;
             });
 
             let marge = totalCA - totalCouts;
-            let tauxMarge = totalCA > 0 ? (marge / totalCA) * 100 : 0;
+            let tauxMarge = totalCA > 0 ? (marge / totalCA* 100 : 0;
             let roi = totalCouts > 0 ? (marge / totalCouts) * 100 : 0;
 
             return {
@@ -2656,10 +2653,10 @@
             };
         }
 
-        function getRentabiliteByMission() {
+        function getRentabiliteByMission({
             let missionStats = calculateMissionStats();
             return Object.entries(missionStats)
-                .map(([mission, stats]) => {
+                .map(([mission, stats]=> {
                     let ca = stats.heuresHC * 5000; // Taux moyen
                     let marge = ca - stats.cout;
                     return {
@@ -2667,15 +2664,15 @@
                         marge: marge
                     };
                 })
-                .sort((a, b) => b.marge - a.marge)
+                .sort((a, b=> b.marge - a.marge)
                 .slice(0, 10)
-                .reduce((obj, item) => {
+                .reduce((obj, item=> {
                     obj[item.mission] = item.marge;
                     return obj;
                 }, {});
         }
 
-        function getRentabiliteByDivision() {
+        function getRentabiliteByDivision({
             let divisionStats = {};
             let missionStats = calculateMissionStats();
             
@@ -2684,7 +2681,7 @@
                 let ca = stats.heuresHC * 5000;
                 let marge = ca - stats.cout;
                 
-                if (!divisionStats[division]) {
+                if (!divisionStats[division]{
                     divisionStats[division] = 0;
                 }
                 divisionStats[division] += marge;
@@ -2713,7 +2710,7 @@
                 }
                 
                 // Ne calculer le coût que pour les heures HC
-                if (row['Type Heure'] === 'HC') {
+                if (row['Type Heure'] === 'HC'{
                     let cout = heures * taux;
                     missionStats[mission].cout += cout;
                     missionStats[mission].heuresHC += heures;
@@ -2725,7 +2722,7 @@
                 let mission = facture['Mission'] || 'Non défini';
                 let montant = safeParseMontant(facture['Montant Facturé']);
                 
-                if (!missionStats[mission]) {
+                if (!missionStats[mission]{
                     missionStats[mission] = { 
                         division: facture['Division'] || 'Non défini',
                         cout: 0, 
@@ -2740,7 +2737,7 @@
                 .map(([mission, stats]) => {
                     let marge = stats.ca - stats.cout;
                     let tauxMarge = stats.ca > 0 ? (marge / stats.ca) * 100 : 0;
-                    let roi = stats.cout > 0 ? (marge / stats.cout) * 100 : 0;
+                    let roi = stats.cout > 0 ? (marge / stats.cout* 100 : 0;
                     let coutParHeure = stats.heuresHC > 0 ? stats.cout / stats.heuresHC : 0;
                     let caParHeure = stats.heuresHC > 0 ? stats.ca / stats.heuresHC : 0;
                     let rentabilite = marge > 0 ? 'Rentable' : marge < 0 ? 'Déficitaire' : 'Équilibré';
@@ -2767,7 +2764,7 @@
                         </tr>
                     `;
                 })
-                .sort((a, b) => {
+                .sort((a, b=> {
                     // Trier par rentabilité décroissante
                     let margeA = parseFloat(a.match(/td>([^<]+) XAF<\/td>/)[1].replace(/\s/g, ''));
                     let margeB = parseFloat(b.match(/td>([^<]+) XAF<\/td>/)[1].replace(/\s/g, ''));
@@ -2777,8 +2774,8 @@
         }
 
         // ===== ONGLET PERFORMANCE =====
-        function renderPerformanceTab() {
-            if (!filteredData.length) {
+        function renderPerformanceTab({
+            if (!filteredData.length{
                 document.getElementById('tab-performance').innerHTML = '<div class="no-data">Aucun résultat ne correspond à vos filtres.</div>';
                 return;
             }
@@ -2873,10 +2870,10 @@
             renderChart('performanceChartEvolution', getPerformanceByMonth(), 'line', 'Mois', 'Taux (%)');
         }
 
-        function calculatePerformanceStats() {
+        function calculatePerformanceStats({
             let totalHeures = filteredData.reduce((sum, row) => sum + (parseFloat(row['Heures']) || 0), 0);
             let totalHeuresHC = filteredData.filter(row => row['Type Heure'] === 'HC')
-                .reduce((sum, row) => sum + (parseFloat(row['Heures']) || 0), 0);
+                .reduce((sum, row=> sum + (parseFloat(row['Heures']|| 0), 0);
             let tauxChargeabilite = totalHeures > 0 ? (totalHeuresHC / totalHeures) * 100 : 0;
             
             let collaborateursActifs = new Set(filteredData.map(row => row['Nom'])).size;
@@ -2887,13 +2884,13 @@
                 let nom = row['Nom'];
                 let heures = parseFloat(row['Heures']) || 0;
                 if (row['Type Heure'] === 'HC') {
-                    collabStats[nom] = (collabStats[nom] || 0) + heures;
+                    collabStats[nom] = (collabStats[nom] || 0+ heures;
                 }
             });
             
             let plusEfficace = Object.entries(collabStats)
                 .sort((a, b) => b[1] - a[1])[0];
-            plusEfficace = plusEfficace ? plusEfficace[0].substring(0, 15) + '...' : 'N/A';
+            plusEfficace = plusEfficace ? plusEfficace[0].substring(0, 15+ '...' : 'N/A';
             
             // Calculer la productivité moyenne (heures par jour travaillé)
             let productiviteMoyenne = collaborateursActifs > 0 ? totalHeures / (collaborateursActifs * 20) : 0; // 20 jours/mois
@@ -2902,22 +2899,22 @@
             let divisionStats = {};
             filteredData.forEach(row => {
                 let division = row['Division'] || 'Non défini';
-                let heures = parseFloat(row['Heures']) || 0;
+                let heures = parseFloat(row['Heures']|| 0;
                 let isHC = row['Type Heure'] === 'HC';
                 
-                if (!divisionStats[division]) {
+                if (!divisionStats[division]{
                     divisionStats[division] = { total: 0, hc: 0 };
                 }
                 divisionStats[division].total += heures;
-                if (isHC) divisionStats[division].hc += heures;
+                if (isHCdivisionStats[division].hc += heures;
             });
             
             let meilleureDivision = Object.entries(divisionStats)
-                .map(([division, stats]) => ({
+                .map(([division, stats]=> ({
                     division,
                     taux: stats.total > 0 ? (stats.hc / stats.total) * 100 : 0
                 }))
-                .sort((a, b) => b.taux - a.taux)[0];
+                .sort((a, b=> b.taux - a.taux)[0];
             meilleureDivision = meilleureDivision ? meilleureDivision.division : 'N/A';
 
             return {
@@ -2930,19 +2927,19 @@
             };
         }
 
-        function getPerformanceByCollaborateur() {
+        function getPerformanceByCollaborateur({
             let collabStats = {};
             filteredData.forEach(row => {
                 let nom = row['Nom'];
                 let heures = parseFloat(row['Heures']) || 0;
-                collabStats[nom] = (collabStats[nom] || 0) + heures;
+                collabStats[nom] = (collabStats[nom] || 0+ heures;
             });
             
             return Object.entries(collabStats)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10)
-                .reduce((obj, [nom, heures]) => {
-                    obj[nom.length > 15 ? nom.substring(0, 15) + '...' : nom] = heures;
+                .reduce((obj, [nom, heures]=> {
+                    obj[nom.length > 15 ? nom.substring(0, 15+ '...' : nom] = heures;
                     return obj;
                 }, {});
         }
@@ -2952,8 +2949,8 @@
             let hncTotal = 0;
             
             filteredData.forEach(row => {
-                let heures = parseFloat(row['Heures']) || 0;
-                if (row['Type Heure'] === 'HC') {
+                let heures = parseFloat(row['Heures']|| 0;
+                if (row['Type Heure'] === 'HC'{
                     hcTotal += heures;
                 } else {
                     hncTotal += heures;
@@ -2966,18 +2963,18 @@
             };
         }
 
-        function getPerformanceByDivision() {
+        function getPerformanceByDivision({
             let divisionStats = {};
             filteredData.forEach(row => {
                 let division = row['Division'] || 'Non défini';
-                let heures = parseFloat(row['Heures']) || 0;
+                let heures = parseFloat(row['Heures']|| 0;
                 let isHC = row['Type Heure'] === 'HC';
                 
-                if (!divisionStats[division]) {
+                if (!divisionStats[division]{
                     divisionStats[division] = { total: 0, hc: 0 };
                 }
                 divisionStats[division].total += heures;
-                if (isHC) divisionStats[division].hc += heures;
+                if (isHCdivisionStats[division].hc += heures;
             });
             
             return Object.entries(divisionStats)
@@ -2987,18 +2984,18 @@
                 }, {});
         }
 
-        function getPerformanceByMonth() {
+        function getPerformanceByMonth({
             let monthStats = {};
             filteredData.forEach(row => {
                 let mois = row['Mois'] || 'Non défini';
                 let heures = parseFloat(row['Heures']) || 0;
                 let isHC = row['Type Heure'] === 'HC';
                 
-                if (!monthStats[mois]) {
+                if (!monthStats[mois]{
                     monthStats[mois] = { total: 0, hc: 0 };
                 }
                 monthStats[mois].total += heures;
-                if (isHC) monthStats[mois].hc += heures;
+                if (isHCmonthStats[mois].hc += heures;
             });
             
             return Object.entries(monthStats)
@@ -3018,7 +3015,7 @@
                 let grade = row['Grade'] || 'Non défini';
                 let division = row['Division'] || 'Non défini';
                 
-                if (!collaborateurStats[nom]) {
+                if (!collaborateurStats[nom]{
                     collaborateurStats[nom] = {
                         heures: 0,
                         heuresHC: 0,
@@ -3030,7 +3027,7 @@
                 
                 collaborateurStats[nom].heures += heures;
                 
-                if (row['Type Heure'] === 'HC') {
+                if (row['Type Heure'] === 'HC'{
                     collaborateurStats[nom].heuresHC += heures;
                 } else {
                     collaborateurStats[nom].heuresHNC += heures;
@@ -3042,23 +3039,23 @@
                 .filter(stats => stats.heuresHC > 0)
                 .map(stats => stats.heuresHNC / stats.heuresHC);
             let productiviteMoyenne = productivites.length > 0 ? 
-                productivites.reduce((sum, val) => sum + val, 0) / productivites.length : 0;
+                productivites.reduce((sum, val=> sum + val, 0) / productivites.length : 0;
 
             return Object.entries(collaborateurStats)
-                .map(([nom, stats]) => {
-                    let tauxChargeabilite = (stats.heuresHC + stats.heuresHNC) > 0 ? 
+                .map(([nom, stats]=> {
+                    let tauxChargeabilite = (stats.heuresHC + stats.heuresHNC> 0 ? 
                         (stats.heuresHC / (stats.heuresHC + stats.heuresHNC)) * 100 : 0;
                     let ratioHCHNC = stats.heuresHC > 0 ? stats.heuresHNC / stats.heuresHC : 0;
                     let productiviteRelative = productiviteMoyenne > 0 ? 
-                        ((productiviteMoyenne - ratioHCHNC) / productiviteMoyenne) * 100 : 0;
+                        ((productiviteMoyenne - ratioHCHNC/ productiviteMoyenne) * 100 : 0;
                     
                     // Déterminer le statut
                     let statut = '';
                     let alertClass = '';
-                    if (ratioHCHNC > 1.5) {
+                    if (ratioHCHNC > 1.5{
                         statut = '⚠️ Sous-performant';
                         alertClass = 'alert-low-performance';
-                    } else if (ratioHCHNC < 0.5) {
+                    } else if (ratioHCHNC < 0.5{
                         statut = '✅ Excellent';
                         alertClass = 'alert-excellent-performance';
                     } else if (ratioHCHNC < 1) {
@@ -3094,7 +3091,7 @@
         }
 
         // ===== ONGLET OPPORTUNITÉS =====
-        function renderOpportunitesTab() {
+        function renderOpportunitesTab({
             if (!opportunitesData || !opportunitesData.length) {
                 document.getElementById('tab-opportunites').innerHTML = '<div class="no-data">Aucune donnée d\'opportunités disponible</div>';
                 return;
@@ -3327,7 +3324,7 @@
             let dateDebut = document.getElementById('opportunites-date-debut')?.value;
             let dateFin = document.getElementById('opportunites-date-fin')?.value;
 
-            if (divisionFilter) {
+            if (divisionFilter{
                 filtered = filtered.filter(opp => opp['Division'] === divisionFilter);
             }
             if (statutFilter) {
@@ -3339,7 +3336,7 @@
             if (secteurFilter) {
                 filtered = filtered.filter(opp => opp['Secteur'] === secteurFilter);
             }
-            if (typeFilter) {
+            if (typeFilter{
                 filtered = filtered.filter(opp => opp['Type'] === typeFilter);
             }
             if (initiativeFilter) {
@@ -3351,7 +3348,7 @@
                     return match && match[3] === anneeFilter;
                 });
             }
-            if (moisFilter) {
+            if (moisFilter{
                 filtered = filtered.filter(opp => {
                     let match = opp['Date Insertion']?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                     return match && match[2] === moisFilter;
@@ -3360,9 +3357,9 @@
             if (dateDebut) {
                 filtered = filtered.filter(opp => {
                     let oppDate = opp['Date Insertion'];
-                    if (!oppDate) return false;
+                    if (!oppDatereturn false;
                     let match = oppDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                    if (!match) return false;
+                    if (!matchreturn false;
                     let oppDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
                     return oppDateFormatted >= dateDebut;
                 });
@@ -3370,9 +3367,9 @@
             if (dateFin) {
                 filtered = filtered.filter(opp => {
                     let oppDate = opp['Date Insertion'];
-                    if (!oppDate) return false;
+                    if (!oppDatereturn false;
                     let match = oppDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                    if (!match) return false;
+                    if (!matchreturn false;
                     let oppDateFormatted = `${match[3]}-${match[2]}-${match[1]}`;
                     return oppDateFormatted <= dateFin;
                 });
@@ -3395,10 +3392,10 @@
 
             filterIds.forEach(id => {
                 const element = document.getElementById(id);
-                if (element) {
+                if (element{
                     // Restaurer la valeur précédente si elle existe
                     const savedValue = sessionStorage.getItem(id);
-                    if (savedValue) {
+                    if (savedValue{
                         element.value = savedValue;
                     }
                     
@@ -3439,7 +3436,7 @@
 
         function calculateOpportunitesStats(data = opportunitesData) {
             let totalOpportunites = data.length;
-            let valeurTotale = data.reduce((sum, opp) => {
+            let valeurTotale = data.reduce((sum, opp=> {
                 let valeur = parseFloat(opp['cout']?.replace(/\s/g, '') || '0');
                 return sum + valeur;
             }, 0);
@@ -3480,7 +3477,7 @@
             return statutStats;
         }
 
-        function getOpportunitesBySecteur(data = opportunitesData) {
+        function getOpportunitesBySecteur(data = opportunitesData{
             let secteurStats = {};
             data.forEach(opp => {
                 let secteur = opp['Secteur'] || 'Non défini';
@@ -3493,14 +3490,14 @@
             let responsableStats = {};
             data.forEach(opp => {
                 let responsable = opp['Responsable'] || 'Non défini';
-                responsableStats[responsable] = (responsableStats[responsable] || 0) + 1;
+                responsableStats[responsable] = (responsableStats[responsable] || 0+ 1;
             });
             
             // Trier par nombre d'opportunités et prendre le top 10
             return Object.entries(responsableStats)
-                .sort((a, b) => b[1] - a[1])
+                .sort((a, b=> b[1] - a[1])
                 .slice(0, 10)
-                .reduce((obj, [responsable, count]) => {
+                .reduce((obj, [responsable, count]=> {
                     obj[responsable] = count;
                     return obj;
                 }, {});
@@ -3508,7 +3505,7 @@
 
         // Fonction utilitaire pour obtenir les valeurs uniques d'une colonne
         function getUniqueValues(data, columnName) {
-            if (!data || !data.length) return [];
+            if (!data || !data.lengthreturn [];
             return [...new Set(data.map(row => row[columnName]).filter(Boolean))];
         }
 
@@ -3523,7 +3520,7 @@
                     alertClass = 'alert-success';
                 } else if (opp['Statut']?.toLowerCase().includes('loss')) {
                     alertClass = 'alert-danger';
-                } else if (opp['Statut']?.toLowerCase().includes('proposed')) {
+                } else if (opp['Statut']?.toLowerCase().includes('proposed'){
                     alertClass = 'alert-warning';
                 }
                 
@@ -3581,7 +3578,7 @@
                 divisionSelect.innerHTML = '<option value="">Tous les pôles</option>' + divisions.map(d => `<option value="${d}">${d}</option>`).join('');
                 
                 // Valider et restaurer la valeur de division
-                if (previousDivision && previousDivision !== '' && divisions.includes(previousDivision)) {
+                if (previousDivision && previousDivision !== '' && divisions.includes(previousDivision){
                     divisionSelect.value = previousDivision;
                     console.log('Valeur division restaurée:', previousDivision);
                 } else if (previousDivision && previousDivision !== '') {
@@ -3601,14 +3598,14 @@
                 // Forcer la mise à jour visuelle de l'interface
                 if (divisionSelect.value) {
                     const savedValue = divisionSelect.value; // Sauvegarder la valeur
-                    requestAnimationFrame(() => {
+                    requestAnimationFrame((=> {
                         // Réinitialiser toutes les options
                         Array.from(divisionSelect.options).forEach(option => {
                             option.selected = false;
                         });
                         // Sélectionner la bonne option
                         const targetOption = Array.from(divisionSelect.options).find(opt => opt.value === savedValue);
-                        if (targetOption) {
+                        if (targetOption{
                             targetOption.selected = true;
                         }
                         console.log('Valeur division forcée après animation frame:', savedValue);
@@ -3624,10 +3621,10 @@
                 collabSelect.innerHTML = '<option value="">Tous les collaborateurs</option>' + collaborateurs.map(c => `<option value="${c}">${c}</option>`).join('');
                 
                 // Valider et restaurer la valeur de collaborateur
-                if (previousCollab && previousCollab !== '' && collaborateurs.includes(previousCollab)) {
+                if (previousCollab && previousCollab !== '' && collaborateurs.includes(previousCollab){
                     collabSelect.value = previousCollab;
                     console.log('Valeur collaborateur restaurée:', previousCollab);
-                } else if (previousCollab && previousCollab !== '') {
+                } else if (previousCollab && previousCollab !== ''{
                     // Si la valeur sauvegardée n'est plus valide, la supprimer
                     sessionStorage.removeItem('feuilles-collab-filter');
                     console.log('Valeur collaborateur invalide supprimée:', previousCollab);
@@ -3644,14 +3641,14 @@
                 // Forcer la mise à jour visuelle de l'interface
                 if (collabSelect.value) {
                     const savedValue = collabSelect.value; // Sauvegarder la valeur
-                    requestAnimationFrame(() => {
+                    requestAnimationFrame((=> {
                         // Réinitialiser toutes les options
                         Array.from(collabSelect.options).forEach(option => {
                             option.selected = false;
                         });
                         // Sélectionner la bonne option
                         const targetOption = Array.from(collabSelect.options).find(opt => opt.value === savedValue);
-                        if (targetOption) {
+                        if (targetOption{
                             targetOption.selected = true;
                         }
                         console.log('Valeur collaborateur forcée après animation frame:', savedValue);
@@ -3659,19 +3656,19 @@
                 }
                 // 4. Listeners - utiliser la délégation d'événements au niveau du document
                 // Supprimer les anciens listeners s'ils existent
-                if (window.feuiillesDivisionHandler) {
+                if (window.feuiillesDivisionHandler{
                     document.removeEventListener('change', window.feuiillesDivisionHandler);
                 }
-                if (window.feuiillesCollabHandler) {
+                if (window.feuiillesCollabHandler{
                     document.removeEventListener('change', window.feuiillesCollabHandler);
                 }
                 
                 // Créer de nouveaux handlers avec délégation d'événements
-                window.feuiillesDivisionHandler = (event) => {
+                window.feuiillesDivisionHandler = (event=> {
                     if (event.target.id === 'feuilles-division-filter') {
                         console.log('Filtre division changé:', event.target.value);
                         // Sauvegarder la valeur (même si c'est vide pour "Tous")
-                        if (event.target.value === '') {
+                        if (event.target.value === ''{
                             sessionStorage.removeItem('feuilles-division-filter');
                         } else {
                             sessionStorage.setItem('feuilles-division-filter', event.target.value);
@@ -3679,7 +3676,7 @@
                         renderFeuillesTab();
                     }
                 };
-                window.feuiillesCollabHandler = (event) => {
+                window.feuiillesCollabHandler = (event=> {
                     if (event.target.id === 'feuilles-collab-filter') {
                         console.log('Filtre collaborateur changé:', event.target.value);
                         // Sauvegarder la valeur (même si c'est vide pour "Tous")
@@ -3726,7 +3723,7 @@
                 console.log('Filtres appliqués - Division:', selectedDivision, 'Collaborateur:', selectedCollab);
                 let donneesFiltrees = trsData.filter(row => {
                     // Filtre par division (seulement si une valeur est sélectionnée)
-                    if (selectedDivision && selectedDivision !== '' && row['Division'] !== selectedDivision) {
+                    if (selectedDivision && selectedDivision !== '' && row['Division'] !== selectedDivision{
                         return false;
                     }
                     // Filtre par collaborateur (seulement si une valeur est sélectionnée)
@@ -3748,8 +3745,20 @@
                     const nom = row['Nom'];
                     const moisVal = row['Mois'];
                     const statut = row['Statut'] || '';
-                    if (nom && moisVal) {
+                    if (nom && moisVal{
                         const key = `${nom}__${moisVal}`;
+                        // Debug spécifique pour Raphaël Ngos
+                        if (nom === 'Raphaël Ngos' && (moisVal.includes('06/2025'|| moisVal.includes('06/2025'))) {
+                            console.log('🔍 DEBUG Raphaël Ngos - Ligne trouvée:', {
+                                nom: nom,
+                                mois: moisVal,
+                                statut: statut,
+                                key: key,
+                                statutExistant: statutMap[key] || 'AUCUN',
+                                heures: row['Heures'],
+                                division: row['Division']
+                            });
+                        }
                         if (!(key in statutMap)) {
                             statutMap[key] = statut;
                         }
@@ -3767,26 +3776,69 @@
                         let statut = statutMap[`${nom}__${moisVal}`] || '';
                         let color = '';
                         let displayText = statut;
+                        
+                        // Debug spécifique pour Raphaël Ngos
+                        if (nom === 'Raphaël Ngos' && (moisVal.includes('06/2025'|| moisVal.includes('06/2025'))) {
+                            console.log('🔍 DEBUG Raphaël Ngos - Traitement statut:', {
+                                nom: nom,
+                                mois: moisVal,
+                                statutOriginal: statut,
+                                statutMapKey: `${nom}__${moisVal}`,
+                                statutMapValue: statutMap[`${nom}__${moisVal}`]
+                            });
+                        }
+                        
                         // Gestion des couleurs et textes (inchangée)
-                        if (!statut) {
+                        if (!statut{
                             displayText = 'Non transmis';
                             color = 'background:#f8d7da;color:#721c24;font-weight:bold;';
-                        } else if (/attente.*validation/i.test(statut)) {
+                        } else if (/attente.*validation/i.test(statut){
                             color = 'background:#e5e7e9;color:#555;font-weight:bold;'; // argenté
-                        } else if (/^(validé|approuvé)/i.test(statut) || /approuv/i.test(statut) || /valid/i.test(statut)) {
+                        } else if (/^(validé|approuvé)/i.test(statut) || /approuv/i.test(statut|| /valid/i.test(statut){
                             color = 'background:#28a745;color:#fff;font-weight:bold;'; // vert bien visible
-                        } else if (/en cours d'édition/i.test(statut)) {
+                        } else if (/en cours d'édition/i.test(statut){
                             const [cellMonth, cellYear] = moisVal.split('/').map(Number);
                             const now = new Date();
-                            const currentMonth = now.getMonth() + 1;
+                            const currentMonth = now.getMonth(+ 1;
                             const currentYear = now.getFullYear();
+                            
+                            // Debug spécifique pour Raphaël Ngos
+                            if (nom === 'Raphaël Ngos' && (moisVal.includes('06/2025') || moisVal.includes('06/2025')){
+                                console.log('🔍 DEBUG Raphaël Ngos - Logique "En cours d\'édition":', {
+                                    nom: nom,
+                                    mois: moisVal,
+                                    cellMonth: cellMonth,
+                                    cellYear: cellYear,
+                                    currentMonth: currentMonth,
+                                    currentYear: currentYear,
+                                    isFuture: cellYear > currentYear || (cellYear === currentYear && cellMonth >= currentMonth),
+                                    statut: statut
+                                });
+                            }
+                            
                             if (cellYear > currentYear || (cellYear === currentYear && cellMonth >= currentMonth)) {
                                 displayText = "En cours d'édition";
                                 color = 'background:#d4edda;color:#155724;font-weight:bold;'; // vert clair
                             } else {
                                 const totalHeures = donneesFiltrees.filter(row => row['Nom'] === nom && row['Mois'] === moisVal)
                                     .reduce((sum, row) => sum + (parseFloat(row['Heures'].replace(',', '.')) || 0), 0);
-                                if (totalHeures === 0) {
+                                
+                                // Debug spécifique pour Raphaël Ngos
+                                if (nom === 'Raphaël Ngos' && (moisVal.includes('06/2025') || moisVal.includes('06/2025')){
+                                    console.log('🔍 DEBUG Raphaël Ngos - Calcul heures:', {
+                                        nom: nom,
+                                        mois: moisVal,
+                                        totalHeures: totalHeures,
+                                        lignesTrouvees: donneesFiltrees.filter(row => row['Nom'] === nom && row['Mois'] === moisVal).length,
+                                        detailsLignes: donneesFiltrees.filter(row => row['Nom'] === nom && row['Mois'] === moisVal).map(row => ({
+                                            heures: row['Heures'],
+                                            statut: row['Statut'],
+                                            mission: row['Missions']
+                                        }))
+                                    });
+                                }
+                                
+                                if (totalHeures === 0{
                                     displayText = 'Non Rempli';
                                     color = 'background:#c82333;color:#fff;font-weight:bold;'; // rouge foncé, texte blanc
                                 } else {
@@ -3822,7 +3874,7 @@
             if (!generalFilters) return;
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach(mutation => {
-                    if (mutation.attributeName === 'style') {
+                    if (mutation.attributeName === 'style'{
                         // Observer silencieux pour maintenir la fonctionnalité
                     }
                 });
@@ -3833,9 +3885,9 @@
 
 
         // Forçage du masquage après chaque rendu d'onglet personnalisé
-        function forceHideGeneralFiltersIfNeeded() {
+        function forceHideGeneralFiltersIfNeeded({
             const generalFilters = document.getElementById('general-filters');
-            if (generalFilters && (currentTab === 'facturation' || currentTab === 'opportunites')) {
+            if (generalFilters && (currentTab === 'facturation' || currentTab === 'opportunites'){
                 generalFilters.style.display = 'none';
             }
         }
@@ -3882,7 +3934,7 @@
         `;
 
         // Nouvelle version centralisée de updateFiltersVisibility
-        function updateFiltersVisibility() {
+        function updateFiltersVisibility({
             console.log('updateFiltersVisibility appelée pour onglet:', currentTab);
             
             // Onglets où le bloc général-filters doit être présent UNIQUEMENT
@@ -3899,7 +3951,7 @@
                 }
             } else {
                 // Onglet avec filtres généraux - s'assurer que le bloc existe
-                if (!generalFilters) {
+                if (!generalFilters{
                     console.log('Ajout du bloc general-filters pour onglet:', currentTab);
                     const tabs = document.querySelector('.tabs');
                     if (tabs) {
@@ -3917,7 +3969,7 @@
                         ];
                         filterElements.forEach(id => {
                             const element = document.getElementById(id);
-                            if (element) {
+                            if (element{
                                 element.addEventListener('change', handleFilterChange);
                             }
                         });
@@ -3927,7 +3979,7 @@
         }
 
         // Nettoyer renderCurrentTab : ne plus toucher au bloc general-filters ici
-        function renderCurrentTab() {
+        function renderCurrentTab({
             if (window.isRenderingTab) {
                 return;
             }
@@ -3964,9 +4016,9 @@
         }
 
         // Nettoyer refreshData : ne plus toucher au bloc general-filters ici
-        async function refreshData() {
+        async function refreshData({
             const refreshBtn = document.getElementById('refreshBtn');
-            if (refreshBtn.classList.contains('loading')) {
+            if (refreshBtn.classList.contains('loading'){
                 return;
             }
             refreshBtn.classList.add('loading');
@@ -4004,7 +4056,7 @@
             }
         }
 
-        function resetOpportunitesFilters() {
+        function resetOpportunitesFilters({
             const filterIds = [
                 'opportunites-division-filter',
                 'opportunites-statut-filter',
@@ -4020,14 +4072,14 @@
             filterIds.forEach(id => {
                 sessionStorage.removeItem(id);
                 const el = document.getElementById(id);
-                if (el) el.value = '';
+                if (elel.value = '';
             });
         }
 
 
         // ... existing code ...
         function safeParseMontant(val) {
-            if (typeof val !== 'string') return 0;
+            if (typeof val !== 'string'return 0;
             // Nettoyer les espaces et remplacer les caractères invalides
             let cleaned = val.replace(/\s/g, '').replace(/[-–—N\/Ana]/gi, '0');
             // Gérer les formats avec virgules comme séparateurs décimaux
@@ -4042,7 +4094,7 @@
         // ... existing code ...
 
         // Initialisation centralisée
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', async (=> {
             console.log('Initialisation du dashboard...');
             
             try {
@@ -4063,7 +4115,7 @@
                 
                 // Configurer les événements des onglets
                 document.querySelectorAll('.tab').forEach(tab => {
-                    tab.addEventListener('click', () => {
+                    tab.addEventListener('click', (=> {
                         console.log('Clic sur onglet:', tab.dataset.tab);
                         if (window.isChangingTab) {
                             return;
@@ -4078,7 +4130,7 @@
                             currentTab = tab.dataset.tab;
                             
                             // Reset des filtres pour opportunités
-                            if (tab.dataset.tab === 'opportunites') {
+                            if (tab.dataset.tab === 'opportunites'{
                                 resetOpportunitesFilters();
                             }
                             
@@ -4106,14 +4158,14 @@
                 
                 filterElements.forEach(id => {
                     const element = document.getElementById(id);
-                    if (element) {
+                    if (element{
                         element.addEventListener('change', handleFilterChange);
                     }
                 });
                 
                 // Configurer le bouton de rafraîchissement
                 const refreshBtn = document.getElementById('refreshBtn');
-                if (refreshBtn) {
+                if (refreshBtn{
                     refreshBtn.addEventListener('click', refreshData);
                 }
                 
@@ -4124,8 +4176,17 @@
                 renderCurrentTab();
                 
                 console.log('Dashboard initialisé avec succès');
-            } catch (error) {
+            } catch (error{
                 console.error('Erreur lors de l\'initialisation:', error);
+            }
+        });
+
+        // Après la création du bouton refreshBtn, le désactiver :
+        document.addEventListener('DOMContentLoaded', () => {
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn{
+                refreshBtn.disabled = true;
+                refreshBtn.title = "Le rafraîchissement manuel est désactivé (tout se charge automatiquement)";
             }
         });
     </script>

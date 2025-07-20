@@ -320,8 +320,18 @@
                                 <input type="email" class="form-control" id="email-input" required>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label for="initiales-input" class="form-label">Initiales *</label>
+                                <input type="text" class="form-control" id="initiales-input" required maxlength="3" placeholder="ex: JD">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label for="telephone-input" class="form-label">Téléphone</label>
                                 <input type="tel" class="form-control" id="telephone-input">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="date-embauche-input" class="form-label">Date d'embauche *</label>
+                                <input type="date" class="form-control" id="date-embauche-input" required>
                             </div>
                         </div>
                         <div class="row">
@@ -332,8 +342,22 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="grade-select" class="form-label">Grade</label>
-                                <select class="form-select" id="grade-select">
+                                <label for="typeCollaborateur-select" class="form-label">Type de collaborateur *</label>
+                                <select class="form-select" id="typeCollaborateur-select" required>
+                                    <option value="">Sélectionner un type</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="poste-select" class="form-label">Poste *</label>
+                                <select class="form-select" id="poste-select" required>
+                                    <option value="">Sélectionner un poste</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="grade-select" class="form-label">Grade *</label>
+                                <select class="form-select" id="grade-select" required>
                                     <option value="">Sélectionner un grade</option>
                                 </select>
                             </div>
@@ -393,8 +417,28 @@
                                 <input type="email" class="form-control" id="edit-email-input" required>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label for="edit-initiales-input" class="form-label">Initiales *</label>
+                                <input type="text" class="form-control" id="edit-initiales-input" required maxlength="3" placeholder="ex: JD">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label for="edit-telephone-input" class="form-label">Téléphone</label>
                                 <input type="tel" class="form-control" id="edit-telephone-input">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-date-embauche-input" class="form-label">Date d'embauche *</label>
+                                <input type="date" class="form-control" id="edit-date-embauche-input" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-date-depart-input" class="form-label">Date de départ</label>
+                                <input type="date" class="form-control" id="edit-date-depart-input">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-taux-horaire-input" class="form-label">Taux horaire</label>
+                                <input type="number" class="form-control" id="edit-taux-horaire-input" step="0.01" min="0" placeholder="0.00">
                             </div>
                         </div>
                         <div class="row">
@@ -478,6 +522,19 @@
             loadCollaborateurs();
             loadDivisions();
             loadGrades();
+            loadTypesCollaborateurs();
+            
+            // Événement pour charger les postes quand le type de collaborateur change
+            document.addEventListener('change', function(e) {
+                if (e.target.id === 'typeCollaborateur-select' || e.target.id === 'edit-typeCollaborateur-select') {
+                    const typeId = e.target.value;
+                    if (typeId) {
+                        loadPostes(typeId);
+                    } else {
+                        loadPostes();
+                    }
+                }
+            });
         });
 
         async function loadCollaborateurs() {
@@ -587,32 +644,11 @@
         function showNewCollaborateurModal() {
             loadDivisions();
             loadGrades();
+            loadTypesCollaborateurs();
+            loadPostes();
             document.getElementById('newCollaborateurForm').reset();
-            new bootstrap.Modal(document.getElementById('newCollaborateurModal')).show();
-        }
-
-        async function loadDivisions() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/divisions`);
-                const data = await response.json();
-                
-                const selects = ['division-select', 'edit-division-select'];
-                selects.forEach(selectId => {
-                    const select = document.getElementById(selectId);
-                    select.innerHTML = '<option value="">Sélectionner une division</option>';
-                    
-                    if (data.success) {
-                        data.data.forEach(division => {
-                            const option = document.createElement('option');
-                            option.value = division.id;
-                            option.textContent = division.nom;
-                            select.appendChild(option);
-                        });
-                    }
-                });
-            } catch (error) {
-                console.error('Erreur lors du chargement des divisions:', error);
-            }
+            const modal = new bootstrap.Modal(document.getElementById('newCollaborateurModal'));
+            modal.show();
         }
 
         async function loadGrades() {
@@ -625,8 +661,8 @@
                     const select = document.getElementById(selectId);
                     select.innerHTML = '<option value="">Sélectionner un grade</option>';
                     
-                    if (data.success) {
-                        data.data.forEach(grade => {
+                    if (data.success && data.data && data.data.grades) {
+                        data.data.grades.forEach(grade => {
                             const option = document.createElement('option');
                             option.value = grade.id;
                             option.textContent = grade.nom;
@@ -639,6 +675,90 @@
             }
         }
 
+        async function loadDivisions() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/divisions`);
+                const data = await response.json();
+                
+                const selects = ['division-select', 'edit-division-select'];
+                selects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    select.innerHTML = '<option value="">Sélectionner une division</option>';
+                    
+                    if (data.success && data.data && data.data.divisions) {
+                        data.data.divisions.forEach(division => {
+                            const option = document.createElement('option');
+                            option.value = division.id;
+                            option.textContent = division.nom;
+                            select.appendChild(option);
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des divisions:', error);
+            }
+        }
+
+        async function loadTypesCollaborateurs() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/types-collaborateurs`);
+                const data = await response.json();
+                
+                const selects = ['typeCollaborateur-select', 'edit-typeCollaborateur-select'];
+                selects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    if (select) {
+                        select.innerHTML = '<option value="">Sélectionner un type</option>';
+                        
+                        if (data.types) {
+                            data.types.forEach(type => {
+                                const option = document.createElement('option');
+                                option.value = type.id;
+                                option.textContent = type.nom;
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des types de collaborateurs:', error);
+            }
+        }
+
+        async function loadPostes(typeCollaborateurId = null) {
+            try {
+                let url = `${API_BASE_URL}/postes`;
+                if (typeCollaborateurId) {
+                    url = `${API_BASE_URL}/postes/type/${typeCollaborateurId}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                const selects = ['poste-select', 'edit-poste-select'];
+                selects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    if (select) {
+                        select.innerHTML = '<option value="">Sélectionner un poste</option>';
+                        
+                        if (data.postes || data) {
+                            const postes = data.postes || data;
+                            postes.forEach(poste => {
+                                const option = document.createElement('option');
+                                option.value = poste.id;
+                                option.textContent = poste.nom;
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des postes:', error);
+            }
+        }
+
+
+
         async function submitCollaborateur() {
             const form = document.getElementById('newCollaborateurForm');
             if (!form.checkValidity()) {
@@ -650,9 +770,13 @@
                 nom: document.getElementById('nom-input').value,
                 prenom: document.getElementById('prenom-input').value,
                 email: document.getElementById('email-input').value,
+                initiales: document.getElementById('initiales-input').value,
                 telephone: document.getElementById('telephone-input').value,
+                date_embauche: document.getElementById('date-embauche-input').value,
+                type_collaborateur_id: document.getElementById('typeCollaborateur-select').value || null,
+                poste_actuel_id: document.getElementById('poste-select').value || null,
                 division_id: document.getElementById('division-select').value || null,
-                grade_id: document.getElementById('grade-select').value || null,
+                grade_actuel_id: document.getElementById('grade-select').value || null,
                 statut: document.getElementById('statut-select').value,
                 notes: document.getElementById('notes-input').value
             };
@@ -692,9 +816,12 @@
                     document.getElementById('edit-nom-input').value = collaborateur.nom;
                     document.getElementById('edit-prenom-input').value = collaborateur.prenom;
                     document.getElementById('edit-email-input').value = collaborateur.email || '';
+                    document.getElementById('edit-initiales-input').value = collaborateur.initiales || '';
                     document.getElementById('edit-telephone-input').value = collaborateur.telephone || '';
+                    document.getElementById('edit-date-embauche-input').value = collaborateur.date_embauche || '';
+                    document.getElementById('edit-date-depart-input').value = collaborateur.date_depart || '';
                     document.getElementById('edit-division-select').value = collaborateur.division_id || '';
-                    document.getElementById('edit-grade-select').value = collaborateur.grade_id || '';
+                    document.getElementById('edit-grade-select').value = collaborateur.grade_actuel_id || '';
                     document.getElementById('edit-statut-select').value = collaborateur.statut;
                     document.getElementById('edit-notes-input').value = collaborateur.notes || '';
                     
@@ -720,9 +847,12 @@
                 nom: document.getElementById('edit-nom-input').value,
                 prenom: document.getElementById('edit-prenom-input').value,
                 email: document.getElementById('edit-email-input').value,
+                initiales: document.getElementById('edit-initiales-input').value,
                 telephone: document.getElementById('edit-telephone-input').value,
+                date_embauche: document.getElementById('edit-date-embauche-input').value,
+                date_depart: document.getElementById('edit-date-depart-input').value || null,
                 division_id: document.getElementById('edit-division-select').value || null,
-                grade_id: document.getElementById('edit-grade-select').value || null,
+                grade_actuel_id: document.getElementById('edit-grade-select').value || null,
                 statut: document.getElementById('edit-statut-select').value,
                 notes: document.getElementById('edit-notes-input').value
             };

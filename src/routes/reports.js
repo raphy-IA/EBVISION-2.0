@@ -175,7 +175,6 @@ router.get('/statistics', async (req, res) => {
             SELECT 
                 m.id,
                 m.titre as mission_name,
-                m.code as mission_code,
                 COUNT(te.id) as entries_count,
                 COALESCE(SUM(te.heures), 0) as total_hours,
                 COALESCE(AVG(te.heures), 0) as avg_hours_per_entry,
@@ -184,7 +183,7 @@ router.get('/statistics', async (req, res) => {
             FROM missions m
             LEFT JOIN time_entries te ON m.id = te.mission_id
             ${whereClause}
-            GROUP BY m.id, m.titre, m.code
+            GROUP BY m.id, m.titre
             ORDER BY total_hours DESC
         `;
 
@@ -243,11 +242,10 @@ router.get('/export', async (req, res) => {
                 te.date_saisie,
                 te.heures,
                 te.statut,
-                te.commentaire,
+                te.description,
                 c.nom as collaborateur_nom,
                 c.prenom as collaborateur_prenom,
                 m.titre as mission_nom,
-                m.code as mission_code,
                 cl.nom as client_nom
             FROM time_entries te
             JOIN collaborateurs c ON te.user_id = c.id
@@ -264,7 +262,7 @@ router.get('/export', async (req, res) => {
             res.setHeader('Content-Disposition', 'attachment; filename="time_entries_export.csv"');
             
             // En-têtes CSV
-            const headers = ['ID', 'Date', 'Heures', 'Statut', 'Commentaire', 'Collaborateur', 'Mission', 'Code Mission', 'Client'];
+            const headers = ['ID', 'Date', 'Heures', 'Statut', 'Commentaire', 'Collaborateur', 'Mission', 'Client'];
             res.write(headers.join(',') + '\n');
             
             // Données CSV
@@ -274,10 +272,9 @@ router.get('/export', async (req, res) => {
                     row.date_saisie,
                     row.heures,
                     row.statut,
-                    `"${row.commentaire || ''}"`,
+                    `"${row.description || ''}"`,
                     `${row.collaborateur_prenom} ${row.collaborateur_nom}`,
                     row.mission_nom,
-                    row.mission_code,
                     row.client_nom
                 ].join(',');
                 res.write(line + '\n');
