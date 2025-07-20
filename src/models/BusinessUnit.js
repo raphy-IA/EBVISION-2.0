@@ -10,14 +10,46 @@ class BusinessUnit {
             statut = 'ACTIF'
         } = businessUnitData;
 
-        const sql = `
-            INSERT INTO business_units (nom, code, description, statut)
-            VALUES ($1, $2, $3, $4)
-            RETURNING id, nom, code, description, statut, created_at
-        `;
+        // Commencer une transaction
+        const client = await pool.connect();
+        
+        try {
+            await client.query('BEGIN');
 
-        const result = await pool.query(sql, [nom, code, description, statut]);
-        return result.rows[0];
+            // 1. Créer la business unit
+            const businessUnitSql = `
+                INSERT INTO business_units (nom, code, description, statut)
+                VALUES ($1, $2, $3, $4)
+                RETURNING id, nom, code, description, statut
+            `;
+
+            const businessUnitResult = await client.query(businessUnitSql, [nom, code, description, statut]);
+            const businessUnit = businessUnitResult.rows[0];
+
+            // 2. Créer automatiquement une division par défaut
+            const divisionId = require('crypto').randomUUID();
+            const divisionCode = `DIV${divisionId.substring(0, 6)}`; // Code plus court pour respecter la limite
+            const divisionSql = `
+                INSERT INTO divisions (id, nom, code, business_unit_id, description, statut, updated_at)
+                VALUES ($1, $2, $3, $4, $5, 'ACTIF', CURRENT_TIMESTAMP)
+                RETURNING id, nom, code
+            `;
+
+            const divisionDescription = `Division par défaut de la business unit ${nom}`;
+            await client.query(divisionSql, [divisionId, nom, divisionCode, businessUnit.id, divisionDescription]);
+
+            await client.query('COMMIT');
+            
+            console.log(`✅ Business unit "${nom}" créée avec division par défaut`);
+            return businessUnit;
+
+        } catch (error) {
+            await client.query('ROLLBACK');
+            console.error('❌ Erreur lors de la création de la business unit:', error.message);
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 
     // Récupérer une business unit par ID

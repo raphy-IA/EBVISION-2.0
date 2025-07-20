@@ -12,7 +12,15 @@ class TauxHoraire {
         this.statut = data.statut || 'ACTIF';
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
-        // Relations
+        // Relations avec noms
+        this.grade_nom = data.grade_nom;
+        this.grade_code = data.grade_code;
+        this.division_nom = data.division_nom;
+        this.division_code = data.division_code;
+        this.business_unit_id = data.business_unit_id;
+        this.business_unit_nom = data.business_unit_nom;
+        this.business_unit_code = data.business_unit_code;
+        // Relations objets (pour compatibilité)
         this.grade = data.grade;
         this.division = data.division;
     }
@@ -104,12 +112,14 @@ class TauxHoraire {
         const dataQuery = `
             SELECT th.*, 
                    g.nom as grade_nom, g.code as grade_code,
-                   d.nom as division_nom, d.code as division_code
+                   d.nom as division_nom, d.code as division_code,
+                   bu.id as business_unit_id, bu.nom as business_unit_nom, bu.code as business_unit_code
             FROM taux_horaires th
             LEFT JOIN grades g ON th.grade_id = g.id
             LEFT JOIN divisions d ON th.division_id = d.id
+            LEFT JOIN business_units bu ON d.business_unit_id = bu.id
             ${whereClause}
-            ORDER BY d.nom, g.niveau, th.date_effet DESC
+            ORDER BY bu.nom, d.nom, g.niveau, th.date_effet DESC
             LIMIT $${paramIndex++} OFFSET $${paramIndex++}
         `;
         queryParams.push(limit, offset);
@@ -132,10 +142,12 @@ class TauxHoraire {
         const query = `
             SELECT th.*, 
                    g.nom as grade_nom, g.code as grade_code,
-                   d.nom as division_nom, d.code as division_code
+                   d.nom as division_nom, d.code as division_code,
+                   bu.id as business_unit_id, bu.nom as business_unit_nom, bu.code as business_unit_code
             FROM taux_horaires th
             LEFT JOIN grades g ON th.grade_id = g.id
             LEFT JOIN divisions d ON th.division_id = d.id
+            LEFT JOIN business_units bu ON d.business_unit_id = bu.id
             WHERE th.id = $1
         `;
         
@@ -147,10 +159,12 @@ class TauxHoraire {
         const query = `
             SELECT th.*, 
                    g.nom as grade_nom, g.code as grade_code,
-                   d.nom as division_nom, d.code as division_code
+                   d.nom as division_nom, d.code as division_code,
+                   bu.id as business_unit_id, bu.nom as business_unit_nom, bu.code as business_unit_code
             FROM taux_horaires th
             LEFT JOIN grades g ON th.grade_id = g.id
             LEFT JOIN divisions d ON th.division_id = d.id
+            LEFT JOIN business_units bu ON d.business_unit_id = bu.id
             WHERE th.grade_id = $1 
               AND th.division_id = $2 
               AND th.statut = 'ACTIF'
@@ -168,10 +182,12 @@ class TauxHoraire {
         const query = `
             SELECT th.*, 
                    g.nom as grade_nom, g.code as grade_code,
-                   d.nom as division_nom, d.code as division_code
+                   d.nom as division_nom, d.code as division_code,
+                   bu.id as business_unit_id, bu.nom as business_unit_nom, bu.code as business_unit_code
             FROM taux_horaires th
             LEFT JOIN grades g ON th.grade_id = g.id
             LEFT JOIN divisions d ON th.division_id = d.id
+            LEFT JOIN business_units bu ON d.business_unit_id = bu.id
             WHERE th.grade_id = $1 AND th.division_id = $2
             ORDER BY th.date_effet DESC
         `;
@@ -243,14 +259,16 @@ class TauxHoraire {
         const query = `
             SELECT th.*, 
                    g.nom as grade_nom, g.code as grade_code,
-                   d.nom as division_nom, d.code as division_code
+                   d.nom as division_nom, d.code as division_code,
+                   bu.id as business_unit_id, bu.nom as business_unit_nom, bu.code as business_unit_code
             FROM taux_horaires th
             LEFT JOIN grades g ON th.grade_id = g.id
             LEFT JOIN divisions d ON th.division_id = d.id
+            LEFT JOIN business_units bu ON d.business_unit_id = bu.id
             WHERE th.statut = 'ACTIF'
               AND th.date_effet <= $1
               AND (th.date_fin_effet IS NULL OR th.date_fin_effet >= $1)
-            ORDER BY d.nom, g.niveau
+            ORDER BY bu.nom, d.nom, g.niveau
         `;
         
         const result = await pool.query(query, [dateReference]);

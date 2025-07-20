@@ -280,7 +280,6 @@
                                             <th>Prénom</th>
                                             <th>Email</th>
                                             <th>Téléphone</th>
-                                            <th>Business Unit</th>
                                             <th>Division</th>
                                             <th>Grade</th>
                                             <th>Statut</th>
@@ -459,29 +458,15 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="edit-business-unit-select" class="form-label">Business Unit *</label>
-                                <select class="form-select" id="edit-business-unit-select" required onchange="loadDivisionsForBusinessUnitEdit()">
-                                    <option value="">Sélectionner une business unit</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
                                 <label for="edit-division-select" class="form-label">Division</label>
                                 <select class="form-select" id="edit-division-select">
                                     <option value="">Sélectionner une division</option>
                                 </select>
                             </div>
-                        </div>
-                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="edit-grade-select" class="form-label">Grade</label>
                                 <select class="form-select" id="edit-grade-select">
                                     <option value="">Sélectionner un grade</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="edit-typeCollaborateur-select" class="form-label">Type de collaborateur *</label>
-                                <select class="form-select" id="edit-typeCollaborateur-select" required>
-                                    <option value="">Sélectionner un type</option>
                                 </select>
                             </div>
                         </div>
@@ -535,98 +520,6 @@
         </div>
     </div>
 
-    <!-- View Collaborateur Modal -->
-    <div class="modal fade" id="viewCollaborateurModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-eye me-2 text-info"></i>
-                        Détails du Collaborateur
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="text-primary mb-3">Informations Personnelles</h6>
-                            <div class="mb-3">
-                                <label class="fw-bold">Nom :</label>
-                                <span id="view-nom" class="ms-2"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="fw-bold">Prénom :</label>
-                                <span id="view-prenom" class="ms-2"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="fw-bold">Initiales :</label>
-                                <span id="view-initiales" class="ms-2"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="fw-bold">Email :</label>
-                                <span id="view-email" class="ms-2"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="fw-bold">Téléphone :</label>
-                                <span id="view-telephone" class="ms-2"></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="text-primary mb-3">Informations Professionnelles</h6>
-                            <div class="mb-3">
-                                <label class="fw-bold">Business Unit :</label>
-                                <span id="view-business-unit" class="ms-2"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="fw-bold">Division :</label>
-                                <span id="view-division" class="ms-2"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="fw-bold">Grade :</label>
-                                <span id="view-grade" class="ms-2"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="fw-bold">Type de Collaborateur :</label>
-                                <span id="view-type-collaborateur" class="ms-2"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="fw-bold">Poste :</label>
-                                <span id="view-poste" class="ms-2"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <h6 class="text-primary mb-3">Dates et Statut</h6>
-                            <div class="mb-3">
-                                <label class="fw-bold">Date d'embauche :</label>
-                                <span id="view-date-embauche" class="ms-2"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="fw-bold">Date de départ :</label>
-                                <span id="view-date-depart" class="ms-2"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="fw-bold">Statut :</label>
-                                <span id="view-statut" class="ms-2"></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="text-primary mb-3">Notes</h6>
-                            <div class="mb-3">
-                                <label class="fw-bold">Notes :</label>
-                                <span id="view-notes" class="ms-2"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Sidebar Manager -->
@@ -641,24 +534,12 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 [DEBUG] DOMContentLoaded - Début de l\'initialisation');
-            try {
-                console.log('🔍 [DEBUG] Appel de loadCollaborateurs()');
-                loadCollaborateurs();
-                console.log('🔍 [DEBUG] Appel de loadBusinessUnits()');
-                loadBusinessUnits();
-                console.log('🔍 [DEBUG] Appel de loadDivisions()');
-                loadDivisions();
-                console.log('🔍 [DEBUG] Appel de loadTypesCollaborateurs()');
-                loadTypesCollaborateurs();
-                console.log('🔍 [DEBUG] Appel de loadGrades()');
-                loadGrades();
-                console.log('🔍 [DEBUG] Appel de loadPostes()');
-                loadPostes();
-                console.log('✅ [DEBUG] Toutes les fonctions de chargement appelées');
-            } catch (error) {
-                console.error('❌ [DEBUG] Erreur lors de l\'initialisation:', error);
-            }
+            loadCollaborateurs();
+            loadBusinessUnits();
+            loadDivisions();
+            loadTypesCollaborateurs();
+            loadGrades();
+            loadPostes();
             
             // Événement pour charger les postes quand le type de collaborateur change
             document.addEventListener('change', function(e) {
@@ -682,63 +563,45 @@
         });
 
         async function loadCollaborateurs() {
-            console.log('🔍 [DEBUG] === DÉBUT loadCollaborateurs() ===');
             showLoading(true);
-            console.log('🔍 [DEBUG] Loading affiché');
             
             try {
-                console.log('🔍 [DEBUG] Appel API /collaborateurs');
                 const response = await fetch(`${API_BASE_URL}/collaborateurs`);
-                console.log('🔍 [DEBUG] Réponse reçue:', response.status, response.statusText);
                 const data = await response.json();
-                console.log('🔍 [DEBUG] Données reçues:', data);
                 
                 if (data.success) {
-                    console.log('🔍 [DEBUG] Succès - Nombre de collaborateurs:', data.data.length);
                     collaborateurs = data.data;
                     filteredCollaborateurs = [...collaborateurs];
-                    console.log('🔍 [DEBUG] Appel displayCollaborateurs()');
                     displayCollaborateurs();
-                    console.log('🔍 [DEBUG] Appel updateStatistics()');
                     updateStatistics();
                 } else {
-                    console.error('❌ [DEBUG] Erreur API:', data);
                     showAlert('Erreur lors du chargement des collaborateurs', 'danger');
                 }
             } catch (error) {
-                console.error('❌ [DEBUG] Erreur fetch:', error);
+                console.error('Erreur:', error);
                 showAlert('Erreur de connexion', 'danger');
             } finally {
-                console.log('🔍 [DEBUG] Masquage du loading');
                 showLoading(false);
-                console.log('🔍 [DEBUG] === FIN loadCollaborateurs() ===');
             }
         }
 
         function displayCollaborateurs() {
-            console.log('🔍 [DEBUG] === DÉBUT displayCollaborateurs() ===');
             const tbody = document.getElementById('collaborateurs-table');
-            console.log('🔍 [DEBUG] Tbody trouvé:', tbody);
             tbody.innerHTML = '';
-            console.log('🔍 [DEBUG] Tbody vidé');
             
             if (filteredCollaborateurs.length === 0) {
-                console.log('🔍 [DEBUG] Aucun collaborateur à afficher');
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="10" class="text-center text-muted py-4">
+                        <td colspan="9" class="text-center text-muted py-4">
                             <i class="fas fa-users fa-2x mb-3"></i>
                             <p>Aucun collaborateur trouvé</p>
                         </td>
                     </tr>
                 `;
-                console.log('🔍 [DEBUG] Message "aucun collaborateur" affiché');
                 return;
             }
             
-            console.log('🔍 [DEBUG] Affichage de', filteredCollaborateurs.length, 'collaborateurs');
-            filteredCollaborateurs.forEach((collaborateur, index) => {
-                console.log('🔍 [DEBUG] Traitement collaborateur', index + 1, ':', collaborateur.nom, collaborateur.prenom);
+            filteredCollaborateurs.forEach(collaborateur => {
                 const row = document.createElement('tr');
                 const initials = getInitials(collaborateur.nom, collaborateur.prenom);
                 
@@ -752,28 +615,25 @@
                     <td>${collaborateur.prenom}</td>
                     <td>${collaborateur.email || '-'}</td>
                     <td>${collaborateur.telephone || '-'}</td>
-                    <td>${collaborateur.business_unit_nom || '-'}</td>
                     <td>${collaborateur.division_nom || '-'}</td>
                     <td>${collaborateur.grade_nom || '-'}</td>
                     <td><span class="status-badge status-${collaborateur.statut.toLowerCase()}">${getStatusLabel(collaborateur.statut)}</span></td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-info" onclick="viewCollaborateur('${collaborateur.id}')" title="Voir">
+                            <button class="btn btn-outline-info" onclick="viewCollaborateur(${collaborateur.id})" title="Voir">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-outline-warning" onclick="editCollaborateur('${collaborateur.id}')" title="Modifier">
+                            <button class="btn btn-outline-warning" onclick="editCollaborateur(${collaborateur.id})" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-outline-danger" onclick="deleteCollaborateur('${collaborateur.id}')" title="Supprimer">
+                            <button class="btn btn-outline-danger" onclick="deleteCollaborateur(${collaborateur.id})" title="Supprimer">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </td>
                 `;
                 tbody.appendChild(row);
-                console.log('🔍 [DEBUG] Ligne ajoutée pour:', collaborateur.nom);
             });
-            console.log('🔍 [DEBUG] === FIN displayCollaborateurs() ===');
         }
 
         function updateStatistics() {
@@ -819,11 +679,11 @@
 
         async function loadBusinessUnits() {
             try {
-                console.log('🔄 Chargement des business units...');
+                console.log('[LOAD] Chargement des business units...');
                 const response = await fetch(`${API_BASE_URL}/business-units`);
                 const data = await response.json();
                 
-                console.log('📄 Réponse business units:', data);
+                console.log('[DATA] Réponse business units:', data);
                 
                 const selects = ['business-unit-select', 'edit-business-unit-select'];
                 selects.forEach(selectId => {
@@ -832,7 +692,7 @@
                         select.innerHTML = '<option value="">Sélectionner une business unit</option>';
                         
                         if (data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {
-                            console.log('📋 Business units trouvées:', data.data.length);
+                            console.log('[INFO] Business units trouvées:', data.data.length);
                             data.data.forEach(bu => {
                                 const option = document.createElement('option');
                                 option.value = bu.id;
@@ -841,7 +701,7 @@
                             });
                         } else if (data.success && data.data && data.data.businessUnits && data.data.businessUnits.length > 0) {
                             // Gérer le format alternatif
-                            console.log('📋 Business units trouvées (format alternatif):', data.data.businessUnits.length);
+                            console.log('[INFO] Business units trouvées (format alternatif):', data.data.businessUnits.length);
                             data.data.businessUnits.forEach(bu => {
                                 const option = document.createElement('option');
                                 option.value = bu.id;
@@ -849,7 +709,7 @@
                                 select.appendChild(option);
                             });
                         } else {
-                            console.warn('⚠️ Pas de business units dans la réponse:', data);
+                            console.warn('[WARN] Pas de business units dans la réponse:', data);
                             // Ajouter une option par défaut
                             const option = document.createElement('option');
                             option.value = "";
@@ -860,7 +720,7 @@
                     }
                 });
             } catch (error) {
-                console.error('❌ Erreur lors du chargement des business units:', error);
+                console.error('[ERROR] Erreur lors du chargement des business units:', error);
             }
         }
 
@@ -892,11 +752,11 @@
 
         async function loadDivisions() {
             try {
-                console.log('🔄 Chargement des divisions...');
+                console.log('[LOAD] Chargement des divisions...');
                 const response = await fetch(`${API_BASE_URL}/divisions`);
                 const data = await response.json();
                 
-                console.log('📄 Réponse divisions:', data);
+                console.log('[DATA] Réponse divisions:', data);
                 
                 const selects = ['division-select', 'edit-division-select'];
                 selects.forEach(selectId => {
@@ -905,7 +765,7 @@
                         select.innerHTML = '<option value="">Sélectionner une division</option>';
                         
                         if (data.success && data.data && data.data.divisions) {
-                            console.log('📋 Divisions trouvées:', data.data.divisions.length);
+                            console.log('[INFO] Divisions trouvées:', data.data.divisions.length);
                             data.data.divisions.forEach(division => {
                                 const option = document.createElement('option');
                                 option.value = division.id;
@@ -914,7 +774,7 @@
                             });
                         } else if (data.success && data.data && Array.isArray(data.data)) {
                             // Gérer le cas où data.data est directement un array
-                            console.log('📋 Divisions trouvées (format array):', data.data.length);
+                            console.log('[INFO] Divisions trouvées (format array):', data.data.length);
                             data.data.forEach(division => {
                                 const option = document.createElement('option');
                                 option.value = division.id;
@@ -922,22 +782,22 @@
                                 select.appendChild(option);
                             });
                         } else {
-                            console.warn('⚠️ Pas de divisions dans la réponse:', data);
+                            console.warn('[WARN] Pas de divisions dans la réponse:', data);
                         }
                     }
                 });
             } catch (error) {
-                console.error('❌ Erreur lors du chargement des divisions:', error);
+                console.error('[ERROR] Erreur lors du chargement des divisions:', error);
             }
         }
 
         async function loadTypesCollaborateurs() {
             try {
-                console.log('🔄 Chargement des types de collaborateurs...');
+                console.log('[LOAD] Chargement des types de collaborateurs...');
                 const response = await fetch(`${API_BASE_URL}/types-collaborateurs`);
                 const data = await response.json();
                 
-                console.log('📄 Réponse types collaborateurs:', data);
+                console.log('[DATA] Réponse types collaborateurs:', data);
                 
                 const selects = ['typeCollaborateur-select', 'edit-typeCollaborateur-select'];
                 selects.forEach(selectId => {
@@ -946,16 +806,16 @@
                         select.innerHTML = '<option value="">Sélectionner un type</option>';
                         
                         if (data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {
-                            console.log('📋 Types collaborateurs trouvés:', data.data.length);
+                            console.log('[INFO] Types collaborateurs trouvés:', data.data.length);
                             data.data.forEach(type => {
                                 const option = document.createElement('option');
                                 option.value = type.id;
                                 option.textContent = type.nom;
                                 select.appendChild(option);
-                                console.log('✅ Ajouté:', type.nom, '(', type.id, ')');
+                                console.log('[OK] Ajouté:', type.nom, '(', type.id, ')');
                             });
                         } else {
-                            console.warn('⚠️ Pas de types collaborateurs dans la réponse:', data);
+                            console.warn('[WARN] Pas de types collaborateurs dans la réponse:', data);
                             // Fallback avec des valeurs par défaut
                             const defaultTypes = [
                                 { id: 'CONSULTANT', nom: 'Consultant' },
@@ -973,7 +833,7 @@
                     }
                 });
             } catch (error) {
-                console.error('❌ Erreur lors du chargement des types collaborateurs:', error);
+                console.error('[ERROR] Erreur lors du chargement des types collaborateurs:', error);
                 // Fallback avec des valeurs par défaut en cas d'erreur
                 const selects = ['typeCollaborateur-select', 'edit-typeCollaborateur-select'];
                 selects.forEach(selectId => {
@@ -1030,7 +890,7 @@
             const businessUnitId = document.getElementById('business-unit-select').value;
             const divisionSelect = document.getElementById('division-select');
             
-            console.log('🔄 Chargement des divisions pour business unit:', businessUnitId);
+            console.log('[LOAD] Chargement des divisions pour business unit:', businessUnitId);
             
             // Vider les divisions
             divisionSelect.innerHTML = '<option value="">Sélectionner une division</option>';
@@ -1041,88 +901,32 @@
                 const response = await fetch(`${API_BASE_URL}/divisions?business_unit_id=${businessUnitId}`);
                 const data = await response.json();
                 
-                console.log('📄 Réponse divisions pour BU:', data);
+                console.log('[DATA] Réponse divisions pour BU:', data);
                 
                 if (data.success && data.data && data.data.divisions) {
-                    console.log('📋 Divisions trouvées pour cette BU:', data.data.divisions.length);
+                    console.log('[INFO] Divisions trouvées pour cette BU:', data.data.divisions.length);
                     data.data.divisions.forEach(division => {
                         const option = document.createElement('option');
                         option.value = division.id;
                         option.textContent = division.nom;
                         divisionSelect.appendChild(option);
-                        console.log('✅ Division ajoutée:', division.nom, '(', division.id, ')');
+                        console.log('[OK] Division ajoutée:', division.nom, '(', division.id, ')');
                     });
                 } else if (data.success && data.data && Array.isArray(data.data)) {
                     // Gérer le cas où data.data est directement un array
-                    console.log('📋 Divisions trouvées (format array):', data.data.length);
+                    console.log('[INFO] Divisions trouvées (format array):', data.data.length);
                     data.data.forEach(division => {
                         const option = document.createElement('option');
                         option.value = division.id;
                         option.textContent = division.nom;
                         divisionSelect.appendChild(option);
-                        console.log('✅ Division ajoutée:', division.nom, '(', division.id, ')');
+                        console.log('[OK] Division ajoutée:', division.nom, '(', division.id, ')');
                     });
                 } else {
-                    console.warn('⚠️ Pas de divisions trouvées pour cette business unit');
+                    console.warn('[WARN] Pas de divisions trouvées pour cette business unit');
                 }
             } catch (error) {
-                console.error('❌ Erreur lors du chargement des divisions:', error);
-            }
-        }
-
-        // Fonction pour charger les divisions lors de l'édition
-        async function loadDivisionsForBusinessUnitEdit(businessUnitId = null) {
-            const buId = businessUnitId || document.getElementById('edit-business-unit-select').value;
-            const divisionSelect = document.getElementById('edit-division-select');
-            
-            console.log('🔄 [DEBUG] Chargement des divisions pour BU (édition):', buId);
-            
-            // Vider le select
-            divisionSelect.innerHTML = '<option value="">Sélectionner une division</option>';
-            
-            if (!buId) {
-                console.log('⚠️ [DEBUG] Pas de Business Unit ID fourni');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/divisions?business_unit_id=${buId}`);
-                const data = await response.json();
-                
-                console.log('📄 [DEBUG] Réponse divisions pour BU (édition):', data);
-                
-                let divisionsLoaded = 0;
-                
-                if (data.success && data.data && data.data.divisions) {
-                    console.log('📋 [DEBUG] Divisions trouvées (édition, format divisions):', data.data.divisions.length);
-                    data.data.divisions.forEach(division => {
-                        const option = document.createElement('option');
-                        option.value = division.id;
-                        option.textContent = division.nom;
-                        divisionSelect.appendChild(option);
-                        divisionsLoaded++;
-                        console.log('✅ [DEBUG] Division ajoutée (édition):', division.nom, '(', division.id, ')');
-                    });
-                } else if (data.success && data.data && Array.isArray(data.data)) {
-                    console.log('📋 [DEBUG] Divisions trouvées (édition, format array):', data.data.length);
-                    data.data.forEach(division => {
-                        const option = document.createElement('option');
-                        option.value = division.id;
-                        option.textContent = division.nom;
-                        divisionSelect.appendChild(option);
-                        divisionsLoaded++;
-                        console.log('✅ [DEBUG] Division ajoutée (édition):', division.nom, '(', division.id, ')');
-                    });
-                } else {
-                    console.warn('⚠️ [DEBUG] Pas de divisions trouvées pour cette business unit (édition)');
-                    console.log('📄 [DEBUG] Structure de data:', data);
-                }
-                
-                console.log('🎯 [DEBUG] Total divisions chargées:', divisionsLoaded);
-                console.log('📋 [DEBUG] Options disponibles dans le select:', divisionSelect.options.length);
-                
-            } catch (error) {
-                console.error('❌ [DEBUG] Erreur lors du chargement des divisions (édition):', error);
+                console.error('[ERROR] Erreur lors du chargement des divisions:', error);
             }
         }
 
@@ -1134,7 +938,7 @@
             
             if (selectedType) {
                 try {
-                    console.log('🔄 Mise à jour des postes pour le type:', selectedType);
+                    console.log('[LOAD] Mise à jour des postes pour le type:', selectedType);
                     
                     // Charger tous les postes (sans filtre pour éviter l'erreur 500)
                     const response = await fetch(`${API_BASE_URL}/postes`);
@@ -1155,12 +959,12 @@
                             const consultantPoste = data.data.find(p => p.code === 'CONSULTANT');
                             if (consultantPoste) {
                                 posteSelect.value = consultantPoste.id;
-                                console.log('✅ Poste consultant sélectionné automatiquement');
+                                console.log('[OK] Poste consultant sélectionné automatiquement');
                             }
                         }
                     }
                 } catch (error) {
-                    console.error('❌ Erreur lors du chargement des postes:', error);
+                    console.error('[ERROR] Erreur lors du chargement des postes:', error);
                 }
             }
         }
@@ -1168,11 +972,11 @@
         // Fonction pour charger les business units
         async function loadBusinessUnits() {
             try {
-                console.log('🔄 Chargement des business units...');
+                console.log('[LOAD] Chargement des business units...');
                 const response = await fetch(`${API_BASE_URL}/business-units`);
                 const data = await response.json();
                 
-                console.log('📄 Réponse business units:', data);
+                console.log('[DATA] Réponse business units:', data);
                 
                 const selects = ['business-unit-select', 'edit-business-unit-select'];
                 selects.forEach(selectId => {
@@ -1181,26 +985,26 @@
                         select.innerHTML = '<option value="">Sélectionner une business unit</option>';
                         
                         if (data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {
-                            console.log('📋 Business units trouvées:', data.data.length);
+                            console.log('[INFO] Business units trouvées:', data.data.length);
                             data.data.forEach(bu => {
                                 const option = document.createElement('option');
                                 option.value = bu.id;
                                 option.textContent = bu.nom;
                                 select.appendChild(option);
-                                console.log('✅ Ajoutée:', bu.nom, '(', bu.id, ')');
+                                console.log('[OK] Ajoutée:', bu.nom, '(', bu.id, ')');
                             });
                         } else if (data.success && data.data && data.data.businessUnits && data.data.businessUnits.length > 0) {
                             // Gérer le format alternatif
-                            console.log('📋 Business units trouvées (format alternatif):', data.data.businessUnits.length);
+                            console.log('[INFO] Business units trouvées (format alternatif):', data.data.businessUnits.length);
                             data.data.businessUnits.forEach(bu => {
                                 const option = document.createElement('option');
                                 option.value = bu.id;
                                 option.textContent = bu.nom;
                                 select.appendChild(option);
-                                console.log('✅ Ajoutée:', bu.nom, '(', bu.id, ')');
+                                console.log('[OK] Ajoutée:', bu.nom, '(', bu.id, ')');
                             });
                         } else {
-                            console.warn('⚠️ Pas de business units dans la réponse:', data);
+                            console.warn('[WARN] Pas de business units dans la réponse:', data);
                             // Ajouter une option par défaut
                             const option = document.createElement('option');
                             option.value = "";
@@ -1211,7 +1015,7 @@
                     }
                 });
             } catch (error) {
-                console.error('❌ Erreur lors du chargement des business units:', error);
+                console.error('[ERROR] Erreur lors du chargement des business units:', error);
             }
         }
 
@@ -1265,84 +1069,53 @@
                 console.log('📡 Status de la réponse:', response.status);
                 
                 const data = await response.json();
-                console.log('📄 Réponse complète:', JSON.stringify(data, null, 2));
+                console.log('[DATA] Réponse complète:', JSON.stringify(data, null, 2));
                 
                 if (data.success) {
                     showAlert('Collaborateur créé avec succès', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('newCollaborateurModal')).hide();
                     loadCollaborateurs();
                 } else {
-                    console.error('❌ Erreur de création:', JSON.stringify(data, null, 2));
+                    console.error('[ERROR] Erreur de création:', JSON.stringify(data, null, 2));
                     showAlert(`Erreur lors de la création: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
                 }
             } catch (error) {
-                console.error('❌ Erreur lors de la soumission:', error);
+                console.error('[ERROR] Erreur lors de la soumission:', error);
                 showAlert('Erreur lors de la soumission', 'danger');
             }
         }
 
         async function editCollaborateur(id) {
-            console.log('🔍 [DEBUG] === DÉBUT editCollaborateur() ===');
-            console.log('🔍 [DEBUG] ID reçu:', id);
-            
             try {
                 const response = await fetch(`${API_BASE_URL}/collaborateurs/${id}`);
                 const data = await response.json();
                 
-                console.log('🔍 [DEBUG] Réponse API:', data);
-                
                 if (data.success) {
                     const collaborateur = data.data;
-                    console.log('🔍 [DEBUG] Collaborateur reçu:', collaborateur);
-                    
-                    // Remplir les champs de base
                     document.getElementById('edit-id-input').value = collaborateur.id;
                     document.getElementById('edit-nom-input').value = collaborateur.nom;
                     document.getElementById('edit-prenom-input').value = collaborateur.prenom;
                     document.getElementById('edit-email-input').value = collaborateur.email || '';
                     document.getElementById('edit-initiales-input').value = collaborateur.initiales || '';
                     document.getElementById('edit-telephone-input').value = collaborateur.telephone || '';
-                    document.getElementById('edit-date-embauche-input').value = collaborateur.date_embauche ? collaborateur.date_embauche.split('T')[0] : '';
-                    document.getElementById('edit-date-depart-input').value = collaborateur.date_depart ? collaborateur.date_depart.split('T')[0] : '';
+                    document.getElementById('edit-date-embauche-input').value = collaborateur.date_embauche || '';
+                    document.getElementById('edit-date-depart-input').value = collaborateur.date_depart || '';
+                    document.getElementById('edit-division-select').value = collaborateur.division_id || '';
+                    document.getElementById('edit-grade-select').value = collaborateur.grade_actuel_id || '';
                     document.getElementById('edit-statut-select').value = collaborateur.statut;
                     document.getElementById('edit-notes-input').value = collaborateur.notes || '';
                     
-                    // Remplir les champs de relations avec les nouvelles propriétés
-                    document.getElementById('edit-business-unit-select').value = collaborateur.business_unit_id || '';
-                    document.getElementById('edit-grade-select').value = collaborateur.grade_actuel_id || '';
-                    document.getElementById('edit-typeCollaborateur-select').value = collaborateur.type_collaborateur_id || '';
-                    
-                    console.log('🔍 [DEBUG] Champs remplis avec succès');
-                    console.log('🔍 [DEBUG] Business Unit ID:', collaborateur.business_unit_id);
-                    console.log('🔍 [DEBUG] Division ID:', collaborateur.division_id);
-                    console.log('🔍 [DEBUG] Grade ID:', collaborateur.grade_actuel_id);
-                    console.log('🔍 [DEBUG] Type ID:', collaborateur.type_collaborateur_id);
-                    
-                    // Charger les divisions pour la business unit sélectionnée AVANT de définir la valeur
-                    if (collaborateur.business_unit_id) {
-                        await loadDivisionsForBusinessUnitEdit(collaborateur.business_unit_id);
-                        // Maintenant définir la valeur de la division APRÈS avoir chargé les options
-                        document.getElementById('edit-division-select').value = collaborateur.division_id || '';
-                        console.log('🔍 [DEBUG] Division sélectionnée après chargement:', collaborateur.division_id);
-                    }
-                    
                     new bootstrap.Modal(document.getElementById('editCollaborateurModal')).show();
-                    console.log('🔍 [DEBUG] Modal affiché');
                 } else {
-                    console.error('❌ [DEBUG] Erreur API:', data);
                     showAlert('Erreur lors du chargement du collaborateur', 'danger');
                 }
             } catch (error) {
-                console.error('❌ [DEBUG] Erreur:', error);
+                console.error('Erreur:', error);
                 showAlert('Erreur de connexion', 'danger');
             }
-            
-            console.log('🔍 [DEBUG] === FIN editCollaborateur() ===');
         }
 
         async function updateCollaborateur() {
-            console.log('🔍 [DEBUG] === DÉBUT updateCollaborateur() ===');
-            
             const form = document.getElementById('editCollaborateurForm');
             if (!form.checkValidity()) {
                 form.reportValidity();
@@ -1358,15 +1131,11 @@
                 telephone: document.getElementById('edit-telephone-input').value,
                 date_embauche: document.getElementById('edit-date-embauche-input').value,
                 date_depart: document.getElementById('edit-date-depart-input').value || null,
-                business_unit_id: document.getElementById('edit-business-unit-select').value || null,
                 division_id: document.getElementById('edit-division-select').value || null,
                 grade_actuel_id: document.getElementById('edit-grade-select').value || null,
-                type_collaborateur_id: document.getElementById('edit-typeCollaborateur-select').value || null,
                 statut: document.getElementById('edit-statut-select').value,
                 notes: document.getElementById('edit-notes-input').value
             };
-            
-            console.log('🔍 [DEBUG] Données à envoyer:', formData);
             
             try {
                 const response = await fetch(`${API_BASE_URL}/collaborateurs/${id}`, {
@@ -1423,45 +1192,7 @@
         }
 
         function viewCollaborateur(id) {
-            console.log('🔍 [DEBUG] === DÉBUT viewCollaborateur() ===');
-            console.log('🔍 [DEBUG] ID reçu:', id);
-            
-            const collaborateur = collaborateurs.find(c => c.id === id);
-            console.log('🔍 [DEBUG] Collaborateur trouvé:', collaborateur);
-            
-            if (!collaborateur) {
-                console.error('❌ [DEBUG] Collaborateur non trouvé');
-                showAlert('Collaborateur non trouvé', 'danger');
-                return;
-            }
-            
-            // Remplir le modal avec les données
-            document.getElementById('view-nom').textContent = collaborateur.nom;
-            document.getElementById('view-prenom').textContent = collaborateur.prenom;
-            document.getElementById('view-email').textContent = collaborateur.email || '-';
-            document.getElementById('view-telephone').textContent = collaborateur.telephone || '-';
-            document.getElementById('view-initiales').textContent = collaborateur.initiales;
-            document.getElementById('view-date-embauche').textContent = collaborateur.date_embauche ? new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : '-';
-            document.getElementById('view-date-depart').textContent = collaborateur.date_depart ? new Date(collaborateur.date_depart).toLocaleDateString('fr-FR') : '-';
-            document.getElementById('view-statut').textContent = getStatusLabel(collaborateur.statut);
-            document.getElementById('view-notes').textContent = collaborateur.notes || '-';
-            
-            // Relations avec les nouvelles propriétés mappées
-            document.getElementById('view-business-unit').textContent = collaborateur.business_unit_nom || '-';
-            document.getElementById('view-division').textContent = collaborateur.division_nom || '-';
-            document.getElementById('view-grade').textContent = collaborateur.grade_nom || '-';
-            document.getElementById('view-type-collaborateur').textContent = collaborateur.type_collaborateur_nom || '-';
-            document.getElementById('view-poste').textContent = collaborateur.poste_nom || '-';
-            
-            console.log('🔍 [DEBUG] Modal rempli avec succès');
-            console.log('🔍 [DEBUG] Business Unit:', collaborateur.business_unit_nom);
-            console.log('🔍 [DEBUG] Division:', collaborateur.division_nom);
-            console.log('🔍 [DEBUG] Grade:', collaborateur.grade_nom);
-            console.log('🔍 [DEBUG] === FIN viewCollaborateur() ===');
-            
-            // Afficher le modal
-            const modal = new bootstrap.Modal(document.getElementById('viewCollaborateurModal'));
-            modal.show();
+            showAlert(`Affichage détaillé du collaborateur ${id} - Fonctionnalité en cours de développement`, 'info');
         }
 
         function exportCollaborateurs() {

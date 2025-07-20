@@ -20,11 +20,16 @@ class Collaborateur {
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
         // Relations
-        this.business_unit = data.business_unit;
-        this.division = data.division;
-        this.grade = data.grade;
-        this.type_collaborateur = data.type_collaborateur;
-        this.poste = data.poste;
+        this.business_unit_nom = data.business_unit_nom;
+        this.business_unit_code = data.business_unit_code;
+        this.division_nom = data.division_nom;
+        this.division_code = data.division_code;
+        this.grade_nom = data.grade_nom;
+        this.grade_code = data.grade_code;
+        this.type_collaborateur_nom = data.type_collaborateur_nom;
+        this.type_collaborateur_code = data.type_collaborateur_code;
+        this.poste_nom = data.poste_nom;
+        this.poste_code = data.poste_code;
     }
 
     validate() {
