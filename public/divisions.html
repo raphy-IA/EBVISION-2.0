@@ -293,7 +293,7 @@
                 const response = await fetch(`${API_BASE_URL}/divisions`, { cache: 'no-cache' });
                 const data = await response.json();
                 if (data.success) {
-                    displayDivisions(data.data.divisions);
+                    displayDivisions(data.data);
                 } else {
                     showAlert('Erreur lors du chargement des divisions', 'danger');
                 }

@@ -5,22 +5,27 @@ class Poste {
         this.id = data.id;
         this.nom = data.nom;
         this.code = data.code;
-        this.type_collaborateur_id = data.type_collaborateur_id;
         this.description = data.description;
         this.statut = data.statut || 'ACTIF';
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
-        // Relations
-        this.type_collaborateur = data.type_collaborateur;
     }
 
     validate() {
         const errors = [];
-        if (!this.nom) { errors.push('Nom requis'); }
-        if (!this.code) { errors.push('Code requis'); }
-        if (!['ACTIF', 'INACTIF'].includes(this.statut)) {
-            errors.push('Statut invalide');
+        
+        if (!this.nom || this.nom.trim().length === 0) {
+            errors.push('Le nom du poste est requis');
         }
+        
+        if (!this.code || this.code.trim().length === 0) {
+            errors.push('Le code du poste est requis');
+        }
+        
+        if (this.statut && !['ACTIF', 'INACTIF'].includes(this.statut)) {
+            errors.push('Le statut doit être ACTIF ou INACTIF');
+        }
+        
         return errors;
     }
 
@@ -48,7 +53,7 @@ class Poste {
     }
 
     static async findAll(options = {}) {
-        const { page, limit, statut, type_collaborateur_id } = options;
+        const { page, limit, statut } = options;
         const queryParams = [];
         let paramIndex = 1;
 
@@ -57,10 +62,6 @@ class Poste {
         if (statut) {
             whereConditions.push(`p.statut = $${paramIndex++}`);
             queryParams.push(statut);
-        }
-        if (type_collaborateur_id) {
-            whereConditions.push(`p.type_collaborateur_id = $${paramIndex++}`);
-            queryParams.push(type_collaborateur_id);
         }
 
         const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
@@ -76,11 +77,10 @@ class Poste {
 
         // Construire la requête pour les données
         let dataQuery = `
-            SELECT p.*, tc.nom as type_collaborateur_nom, tc.code as type_collaborateur_code
+            SELECT p.*
             FROM postes p
-            LEFT JOIN types_collaborateurs tc ON p.type_collaborateur_id = tc.id
             ${whereClause}
-            ORDER BY tc.nom, p.nom
+            ORDER BY p.nom
         `;
 
         // Ajouter la pagination seulement si spécifiée
@@ -95,103 +95,97 @@ class Poste {
 
         return {
             data: postes,
-            pagination: page && limit ? {
-                page,
-                limit,
+            pagination: {
                 total,
-                pages: Math.ceil(total / limit)
-            } : {
-                page: 1,
-                limit: total,
-                total,
-                pages: 1
+                page: page || 1,
+                limit: limit || total,
+                pages: page && limit ? Math.ceil(total / limit) : 1
             }
         };
     }
 
     static async findById(id) {
         const query = `
-            SELECT p.*, tc.nom as type_collaborateur_nom, tc.code as type_collaborateur_code
+            SELECT p.*
             FROM postes p
-            LEFT JOIN types_collaborateurs tc ON p.type_collaborateur_id = tc.id
             WHERE p.id = $1
         `;
         
         const result = await pool.query(query, [id]);
-        return result.rows.length > 0 ? new Poste(result.rows[0]) : null;
+        
+        if (result.rows.length === 0) {
+            return null;
+        }
+        
+        return new Poste(result.rows[0]);
     }
 
     static async findByCode(code) {
         const query = `
-            SELECT p.*, tc.nom as type_collaborateur_nom, tc.code as type_collaborateur_code
+            SELECT p.*
             FROM postes p
-            LEFT JOIN types_collaborateurs tc ON p.type_collaborateur_id = tc.id
             WHERE p.code = $1
         `;
         
         const result = await pool.query(query, [code]);
-        return result.rows.length > 0 ? new Poste(result.rows[0]) : null;
-    }
-
-    static async findByTypeCollaborateur(typeCollaborateurId) {
-        const query = `
-            SELECT p.*, tc.nom as type_collaborateur_nom, tc.code as type_collaborateur_code
-            FROM postes p
-            LEFT JOIN types_collaborateurs tc ON p.type_collaborateur_id = tc.id
-            WHERE p.type_collaborateur_id = $1 AND p.statut = 'ACTIF'
-            ORDER BY p.nom
-        `;
         
-        const result = await pool.query(query, [typeCollaborateurId]);
-        return result.rows.map(row => new Poste(row));
+        if (result.rows.length === 0) {
+            return null;
+        }
+        
+        return new Poste(result.rows[0]);
     }
 
-    async update() {
-        const errors = this.validate();
-        if (errors.length > 0) {
-            throw new Error(`Validation échouée: ${errors.join(', ')}`);
+    async update(updateData) {
+        const allowedFields = ['nom', 'code', 'description', 'statut'];
+        const updates = [];
+        const values = [];
+        let paramIndex = 1;
+
+        for (const [key, value] of Object.entries(updateData)) {
+            if (allowedFields.includes(key) && value !== undefined) {
+                updates.push(`${key} = $${paramIndex++}`);
+                values.push(value);
+            }
         }
 
+        if (updates.length === 0) {
+            throw new Error('Aucun champ valide à mettre à jour');
+        }
+
+        updates.push(`updated_at = CURRENT_TIMESTAMP`);
+        values.push(this.id);
+
         const query = `
-            UPDATE postes SET
-                nom = $1,
-                code = $2,
-                description = $3,
-                statut = $4,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = $5
+            UPDATE postes 
+            SET ${updates.join(', ')}
+            WHERE id = $${paramIndex}
             RETURNING *
         `;
 
-        const result = await pool.query(query, [
-            this.nom,
-            this.code,
-            this.description,
-            this.statut,
-            this.id
-        ]);
+        const result = await pool.query(query, values);
+        
+        if (result.rows.length === 0) {
+            throw new Error('Poste non trouvé');
+        }
 
         return new Poste(result.rows[0]);
     }
 
-    static async delete(id) {
-        // Vérifier s'il y a des collaborateurs avec ce poste
-        const checkQuery = `
-            SELECT COUNT(*) as count FROM collaborateurs 
-            WHERE poste_actuel_id = $1
-        `;
-        const checkResult = await pool.query(checkQuery, [id]);
-        
-        if (parseInt(checkResult.rows[0].count) > 0) {
-            throw new Error('Impossible de supprimer ce poste car il est utilisé par des collaborateurs');
-        }
-
+    async delete() {
         const query = `
-            DELETE FROM postes WHERE id = $1
+            DELETE FROM postes 
+            WHERE id = $1
+            RETURNING *
         `;
         
-        await pool.query(query, [id]);
-        return true;
+        const result = await pool.query(query, [this.id]);
+        
+        if (result.rows.length === 0) {
+            throw new Error('Poste non trouvé');
+        }
+        
+        return new Poste(result.rows[0]);
     }
 
     static async getStatistics() {
@@ -199,11 +193,8 @@ class Poste {
             SELECT 
                 COUNT(*) as total_postes,
                 COUNT(CASE WHEN p.statut = 'ACTIF' THEN 1 END) as actifs,
-                COUNT(CASE WHEN p.statut = 'INACTIF' THEN 1 END) as inactifs,
-                COUNT(CASE WHEN tc.code = 'ADMIN' THEN 1 END) as postes_admin,
-                COUNT(CASE WHEN tc.code = 'CONSULTANT' THEN 1 END) as postes_consultant
+                COUNT(CASE WHEN p.statut = 'INACTIF' THEN 1 END) as inactifs
             FROM postes p
-            LEFT JOIN types_collaborateurs tc ON p.type_collaborateur_id = tc.id
         `;
         
         const result = await pool.query(query);

@@ -91,12 +91,12 @@ class BusinessUnit {
 
         // Construire les conditions de recherche
         if (search) {
-            conditions.push(`(nom ILIKE $${params.length + 1} OR code ILIKE $${params.length + 1} OR description ILIKE $${params.length + 1})`);
+            conditions.push(`(bu.nom ILIKE $${params.length + 1} OR bu.code ILIKE $${params.length + 1} OR bu.description ILIKE $${params.length + 1})`);
             params.push(`%${search}%`);
         }
 
         if (statut) {
-            conditions.push(`statut = $${params.length + 1}`);
+            conditions.push(`bu.statut = $${params.length + 1}`);
             params.push(statut);
         }
 
@@ -105,19 +105,29 @@ class BusinessUnit {
         // Requête pour le total
         const countSql = `
             SELECT COUNT(*) as total
-            FROM business_units
+            FROM business_units bu
             ${whereClause}
         `;
 
         const countResult = await pool.query(countSql, params);
         const total = parseInt(countResult.rows[0].total);
 
-        // Requête pour les données
+        // Requête pour les données avec comptage des divisions
         const sql = `
-            SELECT id, nom, code, description, statut, created_at, updated_at
-            FROM business_units
+            SELECT 
+                bu.id, 
+                bu.nom, 
+                bu.code, 
+                bu.description, 
+                bu.statut, 
+                bu.created_at, 
+                bu.updated_at,
+                COUNT(d.id) as divisions_count
+            FROM business_units bu
+            LEFT JOIN divisions d ON bu.id = d.business_unit_id
             ${whereClause}
-            ORDER BY nom
+            GROUP BY bu.id, bu.nom, bu.code, bu.description, bu.statut, bu.created_at, bu.updated_at
+            ORDER BY bu.nom
             LIMIT $${params.length + 1} OFFSET $${params.length + 2}
         `;
 
@@ -137,10 +147,17 @@ class BusinessUnit {
     // Récupérer toutes les business units actives (pour les listes déroulantes)
     static async findActive() {
         const sql = `
-            SELECT id, nom, code, description
-            FROM business_units
-            WHERE statut = 'ACTIF'
-            ORDER BY nom
+            SELECT 
+                bu.id, 
+                bu.nom, 
+                bu.code, 
+                bu.description,
+                COUNT(d.id) as divisions_count
+            FROM business_units bu
+            LEFT JOIN divisions d ON bu.id = d.business_unit_id
+            WHERE bu.statut = 'ACTIF'
+            GROUP BY bu.id, bu.nom, bu.code, bu.description
+            ORDER BY bu.nom
         `;
 
         const result = await pool.query(sql);

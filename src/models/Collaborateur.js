@@ -50,7 +50,17 @@ class Collaborateur {
     }
 
     static async create(data) {
-        const collaborateur = new Collaborateur(data);
+        // Ne permettre que les champs de base lors de la création
+        const allowedFields = ['nom', 'prenom', 'initiales', 'email', 'telephone', 'business_unit_id', 'division_id', 'type_collaborateur_id', 'poste_actuel_id', 'grade_actuel_id', 'date_embauche', 'notes'];
+        const filteredData = {};
+        
+        for (const field of allowedFields) {
+            if (data.hasOwnProperty(field)) {
+                filteredData[field] = data[field];
+            }
+        }
+        
+        const collaborateur = new Collaborateur(filteredData);
         const errors = collaborateur.validate();
         if (errors.length > 0) {
             throw new Error(`Validation échouée: ${errors.join(', ')}`);
@@ -59,9 +69,8 @@ class Collaborateur {
         const query = `
             INSERT INTO collaborateurs (
                 nom, prenom, initiales, email, telephone, business_unit_id, division_id,
-                grade_actuel_id, type_collaborateur_id, poste_actuel_id, statut, 
-                date_embauche, date_depart, notes
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                type_collaborateur_id, poste_actuel_id, grade_actuel_id, date_embauche, notes
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             RETURNING *
         `;
 
@@ -73,12 +82,10 @@ class Collaborateur {
             collaborateur.telephone,
             collaborateur.business_unit_id,
             collaborateur.division_id,
-            collaborateur.grade_actuel_id,
             collaborateur.type_collaborateur_id,
             collaborateur.poste_actuel_id,
-            collaborateur.statut,
+            collaborateur.grade_actuel_id,
             collaborateur.date_embauche,
-            collaborateur.date_depart,
             collaborateur.notes
         ]);
 
@@ -193,7 +200,17 @@ class Collaborateur {
     }
 
     async update(updateData) {
-        Object.assign(this, updateData);
+        // Ne mettre à jour que les champs de base (pas les champs RH ni les champs gérés par d'autres modules)
+        const allowedFields = ['nom', 'prenom', 'initiales', 'email', 'telephone', 'date_embauche', 'notes'];
+        const filteredData = {};
+        
+        for (const field of allowedFields) {
+            if (updateData.hasOwnProperty(field)) {
+                filteredData[field] = updateData[field];
+            }
+        }
+        
+        Object.assign(this, filteredData);
         
         const errors = this.validate();
         if (errors.length > 0) {
@@ -207,17 +224,10 @@ class Collaborateur {
                 initiales = $3,
                 email = $4,
                 telephone = $5,
-                business_unit_id = $6,
-                division_id = $7,
-                grade_actuel_id = $8,
-                type_collaborateur_id = $9,
-                poste_actuel_id = $10,
-                statut = $11,
-                date_embauche = $12,
-                date_depart = $13,
-                notes = $14,
+                date_embauche = $6,
+                notes = $7,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id = $15
+            WHERE id = $8
             RETURNING *
         `;
 
@@ -227,15 +237,58 @@ class Collaborateur {
             this.initiales,
             this.email,
             this.telephone,
-            this.business_unit_id,
-            this.division_id,
-            this.grade_actuel_id,
-            this.type_collaborateur_id,
-            this.poste_actuel_id,
-            this.statut,
             this.date_embauche,
-            this.date_depart,
             this.notes,
+            this.id
+        ]);
+
+        if (result.rows.length === 0) {
+            throw new Error('Collaborateur non trouvé');
+        }
+
+        Object.assign(this, result.rows[0]);
+        return this;
+    }
+
+    async updateDepart(departData) {
+        // Méthode spéciale pour la gestion des départs
+        const query = `
+            UPDATE collaborateurs SET
+                statut = $1,
+                date_depart = $2,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $3
+            RETURNING *
+        `;
+
+        const result = await pool.query(query, [
+            departData.statut,
+            departData.date_depart,
+            this.id
+        ]);
+
+        if (result.rows.length === 0) {
+            throw new Error('Collaborateur non trouvé');
+        }
+
+        Object.assign(this, result.rows[0]);
+        return this;
+    }
+
+    async updateReembauche(reembaucheData) {
+        // Méthode spéciale pour la réembauche
+        const query = `
+            UPDATE collaborateurs SET
+                statut = $1,
+                date_depart = $2,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $3
+            RETURNING *
+        `;
+
+        const result = await pool.query(query, [
+            reembaucheData.statut,
+            reembaucheData.date_depart,
             this.id
         ]);
 

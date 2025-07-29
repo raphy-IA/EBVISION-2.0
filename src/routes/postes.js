@@ -5,10 +5,10 @@ const Poste = require('../models/Poste');
 // GET /api/postes - Liste des postes
 router.get('/', async (req, res) => {
     try {
-        const { page, limit, statut, type_collaborateur_id } = req.query;
+        const { page, limit, statut } = req.query;
         
         // Si pas de pagination spécifiée, retourner tous les postes
-        const options = { statut, type_collaborateur_id };
+        const options = { statut };
         if (page && limit) {
             options.page = parseInt(page);
             options.limit = parseInt(limit);
@@ -30,44 +30,19 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET /api/postes/statistics - Statistiques des postes
-router.get('/statistics', async (req, res) => {
-    try {
-        const statistics = await Poste.getStatistics();
-        res.json(statistics);
-    } catch (error) {
-        console.error('Erreur lors de la récupération des statistiques:', error);
-        res.status(500).json({ 
-            error: 'Erreur lors de la récupération des statistiques',
-            details: error.message 
-        });
-    }
-});
-
-// GET /api/postes/type/:typeCollaborateurId - Postes par type de collaborateur
-router.get('/type/:typeCollaborateurId', async (req, res) => {
-    try {
-        const postes = await Poste.findByTypeCollaborateur(req.params.typeCollaborateurId);
-        res.json({
-            success: true,
-            data: postes
-        });
-    } catch (error) {
-        console.error('Erreur lors de la récupération des postes par type:', error);
-        res.status(500).json({ 
-            error: 'Erreur lors de la récupération des postes par type',
-            details: error.message 
-        });
-    }
-});
-
-// GET /api/postes/:id - Détails d'un poste
+// GET /api/postes/:id - Récupérer un poste par ID
 router.get('/:id', async (req, res) => {
     try {
         const poste = await Poste.findById(req.params.id);
+        
         if (!poste) {
-            return res.status(404).json({ error: 'Poste non trouvé' });
+            return res.status(404).json({
+                success: false,
+                error: 'Poste non trouvé',
+                message: 'Le poste demandé n\'existe pas'
+            });
         }
+        
         res.json({
             success: true,
             data: poste
@@ -124,24 +99,28 @@ router.post('/', async (req, res) => {
     }
 });
 
-// PUT /api/postes/:id - Modifier un poste
+// PUT /api/postes/:id - Mettre à jour un poste
 router.put('/:id', async (req, res) => {
     try {
         const poste = await Poste.findById(req.params.id);
+        
         if (!poste) {
-            return res.status(404).json({ error: 'Poste non trouvé' });
+            return res.status(404).json({
+                success: false,
+                error: 'Poste non trouvé',
+                message: 'Le poste à modifier n\'existe pas'
+            });
         }
-
-        // Mettre à jour les propriétés
-        Object.assign(poste, req.body);
-        const updated = await poste.update();
+        
+        const updated = await poste.update(req.body);
+        
         res.json({
             success: true,
             data: updated,
             message: 'Poste mis à jour avec succès'
         });
     } catch (error) {
-        console.error('Erreur lors de la modification du poste:', error);
+        console.error('Erreur lors de la mise à jour du poste:', error);
         
         // Gérer spécifiquement l'erreur de contrainte unique
         if (error.message.includes('postes_code_key')) {
@@ -163,11 +142,10 @@ router.put('/:id', async (req, res) => {
             });
         }
         
-        // Erreur générique
         res.status(400).json({ 
             success: false,
-            error: 'Erreur lors de la modification du poste',
-            message: 'Une erreur est survenue lors de la modification du poste',
+            error: 'Erreur lors de la mise à jour du poste',
+            message: 'Une erreur est survenue lors de la mise à jour du poste',
             details: error.message 
         });
     }
@@ -176,15 +154,59 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/postes/:id - Supprimer un poste
 router.delete('/:id', async (req, res) => {
     try {
-        await Poste.delete(req.params.id);
+        const poste = await Poste.findById(req.params.id);
+        
+        if (!poste) {
+            return res.status(404).json({
+                success: false,
+                error: 'Poste non trouvé',
+                message: 'Le poste à supprimer n\'existe pas'
+            });
+        }
+        
+        // Vérifier s'il y a des collaborateurs avec ce poste
+        const checkQuery = `
+            SELECT COUNT(*) as count FROM collaborateurs 
+            WHERE poste_actuel_id = $1
+        `;
+        const checkResult = await pool.query(checkQuery, [req.params.id]);
+        
+        if (parseInt(checkResult.rows[0].count) > 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Poste utilisé',
+                message: 'Impossible de supprimer ce poste car il est utilisé par des collaborateurs',
+                details: 'Vous devez d\'abord réassigner les collaborateurs à un autre poste'
+            });
+        }
+        
+        await poste.delete();
+        
         res.json({
             success: true,
             message: 'Poste supprimé avec succès'
         });
     } catch (error) {
         console.error('Erreur lors de la suppression du poste:', error);
-        res.status(400).json({ 
+        res.status(500).json({ 
             error: 'Erreur lors de la suppression du poste',
+            details: error.message 
+        });
+    }
+});
+
+// GET /api/postes/statistics - Statistiques des postes
+router.get('/statistics', async (req, res) => {
+    try {
+        const statistics = await Poste.getStatistics();
+        res.json({
+            success: true,
+            data: statistics
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des statistiques:', error);
+        res.status(500).json({ 
+            error: 'Erreur lors de la récupération des statistiques',
             details: error.message 
         });
     }

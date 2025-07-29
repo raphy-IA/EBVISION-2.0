@@ -191,6 +191,7 @@
                                             <th>Code</th>
                                             <th>Nom</th>
                                             <th>Description</th>
+                                            <th>Divisions</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -268,6 +269,116 @@
         </div>
     </div>
 
+    <!-- Divisions Modal -->
+    <div class="modal fade" id="divisionsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-sitemap me-2"></i>
+                        Divisions de la Business Unit: <span id="bu-name-display"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Liste des divisions</h6>
+                        <button class="btn btn-primary btn-sm" onclick="openCreateDivisionModal()">
+                            <i class="fas fa-plus me-1"></i> Nouvelle Division
+                        </button>
+                    </div>
+                    <div id="divisions-loading" class="loading">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                    <div id="divisions-content">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Nom</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="divisions-table">
+                                    <!-- Divisions will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Division Modal -->
+    <div class="modal fade" id="divisionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="divisionModalLabel">Nouvelle Division</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="divisionForm">
+                        <input type="hidden" id="divisionId">
+                        <input type="hidden" id="currentBuId">
+                        <div class="mb-3">
+                            <label for="divisionName" class="form-label">Nom *</label>
+                            <input type="text" class="form-control" id="divisionName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="divisionCode" class="form-label">Code *</label>
+                            <input type="text" class="form-control" id="divisionCode" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="divisionDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="divisionDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveDivision()">
+                        <i class="fas fa-save me-1"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Division Confirmation Modal -->
+    <div class="modal fade" id="deleteDivisionConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                        Confirmer la suppression
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer cette Division ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteDivision()">
+                        <i class="fas fa-trash me-1"></i>
+                        Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js" defer></script>
@@ -275,6 +386,8 @@
     <script>
         const API_BASE_URL = '/api';
         let buToDelete = null;
+        let divisionToDelete = null;
+        let currentBuId = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             loadBusinessUnits();
@@ -304,7 +417,7 @@
             if (bus.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-4">
+                        <td colspan="5" class="text-center text-muted py-4">
                             <i class="fas fa-building fa-2x mb-3"></i>
                             <p>Aucune Business Unit trouvée</p>
                         </td>
@@ -320,7 +433,13 @@
                     <td>${bu.nom}</td>
                     <td>${bu.description || '-'}</td>
                     <td>
+                        <span class="badge bg-info">${bu.divisions_count || 0}</span>
+                    </td>
+                    <td>
                         <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-info" onclick="viewDivisions('${bu.id}', '${bu.nom}')" title="Voir les divisions">
+                                <i class="fas fa-sitemap"></i>
+                            </button>
                             <button class="btn btn-outline-warning" onclick="editBusinessUnit('${bu.id}')" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </button>
@@ -434,6 +553,80 @@
             }
         }
 
+        async function viewDivisions(buId, buName) {
+            try {
+                // Stocker l'ID de la BU courante
+                currentBuId = buId;
+                
+                // Afficher le nom de la BU dans le modal
+                document.getElementById('bu-name-display').textContent = buName;
+                
+                // Afficher le loading
+                showDivisionsLoading(true);
+                
+                // Charger les divisions de cette BU
+                const response = await fetch(`${API_BASE_URL}/divisions?business_unit_id=${buId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayDivisions(data.data);
+                } else {
+                    showAlert('Erreur lors du chargement des divisions', 'danger');
+                }
+                
+                // Afficher le modal
+                new bootstrap.Modal(document.getElementById('divisionsModal')).show();
+                
+            } catch (error) {
+                console.error('Erreur lors du chargement des divisions:', error);
+                showAlert('Erreur de connexion', 'danger');
+            } finally {
+                showDivisionsLoading(false);
+            }
+        }
+
+        function displayDivisions(divisions) {
+            const tbody = document.getElementById('divisions-table');
+            tbody.innerHTML = '';
+            
+            if (divisions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="fas fa-sitemap fa-2x mb-3"></i>
+                            <p>Aucune division trouvée pour cette Business Unit</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            divisions.forEach(division => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${division.code}</td>
+                    <td>${division.nom}</td>
+                    <td>${division.description || '-'}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-warning" onclick="editDivision('${division.id}')" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteDivision('${division.id}')" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function showDivisionsLoading(show) {
+            document.getElementById('divisions-loading').style.display = show ? 'flex' : 'none';
+            document.getElementById('divisions-content').style.display = show ? 'none' : 'block';
+        }
+
         function showLoading(show) {
             document.getElementById('bu-loading').style.display = show ? 'flex' : 'none';
             document.getElementById('bu-content').style.display = show ? 'none' : 'block';
@@ -459,6 +652,110 @@
                     alertDiv.remove();
                 }
             }, 5000);
+        }
+
+        function openCreateDivisionModal() {
+            document.getElementById('divisionForm').reset();
+            document.getElementById('divisionId').value = '';
+            document.getElementById('currentBuId').value = currentBuId;
+            document.getElementById('divisionModalLabel').textContent = 'Nouvelle Division';
+            new bootstrap.Modal(document.getElementById('divisionModal')).show();
+        }
+
+        async function saveDivision() {
+            const form = document.getElementById('divisionForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const id = document.getElementById('divisionId').value;
+            const formData = {
+                nom: document.getElementById('divisionName').value.trim(),
+                code: document.getElementById('divisionCode').value.trim(),
+                description: document.getElementById('divisionDescription').value.trim(),
+                business_unit_id: currentBuId
+            };
+
+            if (!formData.nom) {
+                showAlert('Le nom de la Division ne peut pas être vide.', 'danger');
+                return;
+            }
+
+            try {
+                const url = id ? `${API_BASE_URL}/divisions/${id}` : `${API_BASE_URL}/divisions`;
+                const method = id ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert(`Division ${id ? 'mise à jour' : 'créée'} avec succès`, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('divisionModal')).hide();
+                    // Recharger les divisions de la BU courante
+                    await viewDivisions(currentBuId, document.getElementById('bu-name-display').textContent);
+                } else {
+                    showAlert(`Erreur lors de la sauvegarde: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde:', error);
+                showAlert('Erreur lors de la sauvegarde', 'danger');
+            }
+        }
+
+        async function editDivision(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/divisions/${id}`);
+                const data = await response.json();
+                if (data.success) {
+                    const division = data.data;
+                    document.getElementById('divisionId').value = division.id;
+                    document.getElementById('divisionName').value = division.nom;
+                    document.getElementById('divisionCode').value = division.code;
+                    document.getElementById('divisionDescription').value = division.description || '';
+                    document.getElementById('divisionModalLabel').textContent = 'Modifier Division';
+                    new bootstrap.Modal(document.getElementById('divisionModal')).show();
+                } else {
+                    showAlert('Division non trouvée', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur de connexion', 'danger');
+            }
+        }
+
+        function deleteDivision(id) {
+            divisionToDelete = id;
+            new bootstrap.Modal(document.getElementById('deleteDivisionConfirmModal')).show();
+        }
+
+        async function confirmDeleteDivision() {
+            if (!divisionToDelete) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/divisions/${divisionToDelete}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Division supprimée avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('deleteDivisionConfirmModal')).hide();
+                    // Recharger les divisions de la BU courante
+                    await viewDivisions(currentBuId, document.getElementById('bu-name-display').textContent);
+                } else {
+                    showAlert('Erreur lors de la suppression', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression:', error);
+                showAlert('Erreur lors de la suppression', 'danger');
+            } finally {
+                divisionToDelete = null;
+            }
         }
     </script>
 </body>
