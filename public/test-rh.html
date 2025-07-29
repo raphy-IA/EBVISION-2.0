@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Gestion RH</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .loading { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de la Gestion RH</h1>
+    
+    <div>
+        <button onclick="testAllAPIs()">Tester toutes les APIs</button>
+        <button onclick="testRHModal()">Tester le Modal RH</button>
+        <button onclick="clearResults()">Effacer les résultats</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        const API_BASE_URL = '/api';
+        const results = document.getElementById('results');
+        
+        function addResult(message, type = 'loading') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+        
+        function clearResults() {
+            results.innerHTML = '';
+        }
+        
+        async function testAPI(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`);
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    addResult(`✅ ${endpoint} - OK (${data.data ? data.data.length : 'N/A'} éléments)`, 'success');
+                    return true;
+                } else {
+                    addResult(`❌ ${endpoint} - Erreur: ${data.error || response.statusText}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addResult(`❌ ${endpoint} - Erreur réseau: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testAllAPIs() {
+            clearResults();
+            addResult('🔄 Test de toutes les APIs...', 'loading');
+            
+            const endpoints = [
+                '/grades',
+                '/types-collaborateurs',
+                '/postes', 
+                '/business-units',
+                '/collaborateurs'
+            ];
+            
+            let successCount = 0;
+            for (const endpoint of endpoints) {
+                const success = await testAPI(endpoint);
+                if (success) successCount++;
+            }
+            
+            addResult(`📊 Résultats: ${successCount}/${endpoints.length} APIs fonctionnelles`, 
+                     successCount === endpoints.length ? 'success' : 'error');
+        }
+        
+        function testRHModal() {
+            clearResults();
+            addResult('🔄 Test du Modal RH...', 'loading');
+            
+            // Simuler l'ouverture du modal
+            const modal = document.createElement('div');
+            modal.id = 'gestionRHModal';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5>Test Modal RH</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div id="rh-collaborateur-nom">Test Collaborateur</div>
+                            <select id="rh-grade-select"></select>
+                            <select id="rh-type-collaborateur-select"></select>
+                            <select id="rh-poste-select"></select>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Tester les fonctions de chargement
+            setTimeout(() => {
+                const elements = [
+                    'gestionRHModal',
+                    'rh-collaborateur-nom',
+                    'rh-grade-select',
+                    'rh-type-collaborateur-select',
+                    'rh-poste-select'
+                ];
+                
+                let foundElements = 0;
+                elements.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        foundElements++;
+                        addResult(`✅ Élément ${id} trouvé`, 'success');
+                    } else {
+                        addResult(`❌ Élément ${id} manquant`, 'error');
+                    }
+                });
+                
+                addResult(`📊 Éléments DOM: ${foundElements}/${elements.length} trouvés`, 
+                         foundElements === elements.length ? 'success' : 'error');
+                
+                // Nettoyer
+                document.body.removeChild(modal);
+            }, 100);
+        }
+    </script>
+</body>
+</html>

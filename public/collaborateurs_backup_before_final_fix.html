@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRS Dashboard - Gestion des Collaborateurs</title>
+    <title>Gestion des Collaborateurs - TRS</title>
     
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -81,23 +81,10 @@
             font-weight: 600;
         }
         
-        .status-actif { background-color: #e8f5e8; color: #388e3c; }
-        .status-inactif { background-color: #ffebee; color: #d32f2f; }
-        .status-conge { background-color: #fff3e0; color: #f57c00; }
-        .status-depart { background-color: #f3e5f5; color: #7b1fa2; }
-        
-        .collaborateur-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
+        .status-saisie { background-color: #e3f2fd; color: #1976d2; }
+        .status-soumise { background-color: #fff3e0; color: #f57c00; }
+        .status-validee { background-color: #e8f5e8; color: #388e3c; }
+        .status-rejetee { background-color: #ffebee; color: #d32f2f; }
         
         .loading {
             display: flex;
@@ -172,11 +159,12 @@
 
         <!-- Main Content Area -->
         <div class="main-content-area">
+            <!-- Collaborateurs Section (actual content of the page) -->
             <div id="collaborateurs-section">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="fas fa-users me-2"></i>Gestion des Collaborateurs</h2>
                     <button class="btn btn-primary" onclick="showNewCollaborateurModal()">
-                        <i class="fas fa-plus me-2"></i>Nouveau Collaborateur
+                        <i class="fas fa-plus me-2"></i>Ajouter un collaborateur
                     </button>
                 </div>
 
@@ -185,36 +173,32 @@
                     <div class="col-md-3 mb-3">
                         <div class="card stat-card">
                             <div class="card-body text-center">
-                                <i class="fas fa-users fa-2x mb-2"></i>
-                                <div class="stat-number" id="total-collaborateurs">0</div>
-                                <div>Total Collaborateurs</div>
+                                <div class="stat-number" id="total-collaborateurs">-</div>
+                                <div class="stat-label">Total Collaborateurs</div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="card stat-card success">
                             <div class="card-body text-center">
-                                <i class="fas fa-user-check fa-2x mb-2"></i>
-                                <div class="stat-number" id="actifs-collaborateurs">0</div>
-                                <div>Actifs</div>
+                                <div class="stat-number" id="actifs-collaborateurs">-</div>
+                                <div class="stat-label">Actifs</div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="card stat-card warning">
                             <div class="card-body text-center">
-                                <i class="fas fa-clock fa-2x mb-2"></i>
-                                <div class="stat-number" id="total-heures">0</div>
-                                <div>Heures Total</div>
+                                <div class="stat-number" id="total-heures">-</div>
+                                <div class="stat-label">Heures Totales (à impl.)</div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="card stat-card info">
                             <div class="card-body text-center">
-                                <i class="fas fa-chart-line fa-2x mb-2"></i>
-                                <div class="stat-number" id="moyenne-heures">0</div>
-                                <div>Moyenne/H</div>
+                                <div class="stat-number" id="moyenne-heures">-</div>
+                                <div class="stat-label">Moyenne Heures (à impl.)</div>
                             </div>
                         </div>
                     </div>
@@ -223,19 +207,11 @@
                 <!-- Filters and Search -->
                 <div class="card mb-4">
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="search-input" class="form-label">Rechercher</label>
-                                <input type="text" class="form-control" id="search-input" placeholder="Nom, prénom, email..." onkeyup="filterCollaborateurs()">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-6">
+                                <input type="text" id="search-input" class="form-control" placeholder="Rechercher par nom, prénom, email..." onkeyup="filterCollaborateurs()">
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="business-unit-filter" class="form-label">Business Unit</label>
-                                <select id="business-unit-filter" class="form-select" onchange="filterCollaborateurs()">
-                                    <option value="">Toutes les business units</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="status-filter" class="form-label">Statut</label>
+                            <div class="col-md-4">
                                 <select id="status-filter" class="form-select" onchange="filterCollaborateurs()">
                                     <option value="">Tous les statuts</option>
                                     <option value="ACTIF">Actif</option>
@@ -275,6 +251,7 @@
                                             <th>Business Unit</th>
                                             <th>Division</th>
                                             <th>Grade</th>
+                                            <th>Poste</th>
                                             <th>Statut</th>
                                             <th>Actions</th>
                                         </tr>
@@ -349,25 +326,81 @@
                                 </select>
                             </div>
                         </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="typeCollaborateur-select" class="form-label">Type de collaborateur *</label>
+                                <select class="form-select" id="typeCollaborateur-select" required onchange="loadPostesForType()">
+                                    <option value="">Sélectionner un type</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="poste-select" class="form-label">Poste *</label>
+                                <select class="form-select" id="poste-select" required>
+                                    <option value="">Sélectionner un poste</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="grade-select" class="form-label">Grade *</label>
+                                <select class="form-select" id="grade-select" required>
+                                    <option value="">Sélectionner un grade</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <!-- Espace réservé pour équilibrage -->
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="date-depart-input" class="form-label">Date de départ</label>
+                                <input type="date" class="form-control" id="date-depart-input" disabled>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Géré via la page de départ collaborateur
+                                </small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="taux-horaire-input" class="form-label">Taux horaire</label>
+                                <input type="number" class="form-control" id="taux-horaire-input" step="0.01" min="0" placeholder="0.00" disabled>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Géré via la gestion des grades
+                                </small>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="statut-select" class="form-label">Statut</label>
-                                <select class="form-select" id="statut-select">
+                                <select class="form-select" id="statut-select" disabled>
                                     <option value="ACTIF">Actif</option>
                                     <option value="INACTIF">Inactif</option>
                                     <option value="CONGE">En congé</option>
                                     <option value="DEPART">Départ</option>
                                 </select>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Géré via la page de départ collaborateur
+                                </small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <!-- Espace réservé pour équilibrage -->
                             </div>
                         </div>
+
                         <div class="mb-3">
                             <label for="notes-input" class="form-label">Notes</label>
                             <textarea class="form-control" id="notes-input" rows="3" 
                                       placeholder="Notes additionnelles..."></textarea>
                         </div>
+
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
-                            <strong>Note :</strong> Les informations RH (Grade, Poste, Type de collaborateur) seront configurées après la création du collaborateur via le module de gestion RH.
+                            <strong>Note :</strong> Le grade sera configuré après la création du collaborateur via le module de gestion RH. Le statut, la date de départ et le taux horaire sont gérés via des modules dédiés.
                         </div>
                     </form>
                 </div>
@@ -429,47 +462,79 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="edit-date-depart-input" class="form-label">Date de départ</label>
-                                <input type="date" class="form-control" id="edit-date-depart-input">
+                                <input type="date" class="form-control" id="edit-date-depart-input" disabled>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Géré via la page de départ collaborateur
+                                </small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="edit-taux-horaire-input" class="form-label">Taux horaire</label>
-                                <input type="number" class="form-control" id="edit-taux-horaire-input" step="0.01" min="0" placeholder="0.00">
+                                <input type="number" class="form-control" id="edit-taux-horaire-input" step="0.01" min="0" placeholder="0.00" disabled>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Géré via la gestion des grades
+                                </small>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="edit-business-unit-select" class="form-label">Business Unit *</label>
-                                <select class="form-select" id="edit-business-unit-select" required onchange="loadDivisionsForBusinessUnitEdit()">
+                                <label for="edit-business-unit-select" class="form-label">Business Unit</label>
+                                <select class="form-select" id="edit-business-unit-select" disabled>
                                     <option value="">Sélectionner une business unit</option>
                                 </select>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Modifié via la gestion RH
+                                </small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="edit-division-select" class="form-label">Division</label>
-                                <select class="form-select" id="edit-division-select">
+                                <select class="form-select" id="edit-division-select" disabled>
                                     <option value="">Sélectionner une division</option>
                                 </select>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Modifié via la gestion RH
+                                </small>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="edit-grade-select" class="form-label">Grade</label>
-                                <select class="form-select" id="edit-grade-select">
+                                <select class="form-select" id="edit-grade-select" disabled>
                                     <option value="">Sélectionner un grade</option>
                                 </select>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Modifié via la gestion RH
+                                </small>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="edit-typeCollaborateur-select" class="form-label">Type de collaborateur *</label>
-                                <select class="form-select" id="edit-typeCollaborateur-select" required>
+                                <label for="edit-typeCollaborateur-select" class="form-label">Type de collaborateur</label>
+                                <select class="form-select" id="edit-typeCollaborateur-select" disabled>
                                     <option value="">Sélectionner un type</option>
                                 </select>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Modifié via la gestion RH
+                                </small>
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="edit-statut-select" class="form-label">Statut</label>
-                            <select class="form-select" id="edit-statut-select">
+                            <select class="form-select" id="edit-statut-select" disabled>
                                 <option value="ACTIF">Actif</option>
                                 <option value="INACTIF">Inactif</option>
                             </select>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Géré via la page de départ collaborateur
+                            </small>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note :</strong> Les informations RH (Grade, Poste, Business Unit, Division), le statut, la date de départ et le taux horaire sont gérés via des modules dédiés pour conserver l'historique des évolutions.
                         </div>
                         <div class="mb-3">
                             <label for="edit-notes-input" class="form-label">Notes</label>
@@ -508,6 +573,113 @@
                     <button type="button" class="btn btn-danger" onclick="confirmDelete()">
                         <i class="fas fa-trash me-1"></i>
                         Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gestion Départ Collaborateur Modal -->
+    <div class="modal fade" id="gestionDepartModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-times me-2 text-danger"></i>
+                        Gestion du départ - <span id="depart-collaborateur-nom"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Informations du collaborateur -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary mb-3">
+                                        <i class="fas fa-user me-2"></i>Informations du Collaborateur
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <strong>Nom :</strong><br>
+                                            <span id="depart-collaborateur-nom-complet"></span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Email :</strong><br>
+                                            <span id="depart-collaborateur-email"></span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Date d'embauche :</strong><br>
+                                            <span id="depart-collaborateur-date-embauche"></span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Statut actuel :</strong><br>
+                                            <span id="depart-collaborateur-statut"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulaire de départ -->
+                    <form id="departCollaborateurForm">
+                        <input type="hidden" id="depart-collaborateur-id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="depart-type-select" class="form-label">Type de départ *</label>
+                                <select class="form-select" id="depart-type-select" required>
+                                    <option value="">Sélectionner un type de départ</option>
+                                    <option value="DEMISSION">Démission</option>
+                                    <option value="LICENCIEMENT">Licenciement</option>
+                                    <option value="ABANDON">Abandon de poste</option>
+                                    <option value="RETRAITE">Retraite</option>
+                                    <option value="FIN_CONTRAT">Fin de contrat</option>
+                                    <option value="MUTATION">Mutation</option>
+                                    <option value="AUTRE">Autre</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="depart-date-effet" class="form-label">Date de prise d'effet *</label>
+                                <input type="date" class="form-control" id="depart-date-effet" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="depart-motif" class="form-label">Motif du départ *</label>
+                                <textarea class="form-control" id="depart-motif" rows="3" required 
+                                          placeholder="Décrivez les raisons du départ..."></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="depart-preavis" class="form-label">Préavis (en jours)</label>
+                                <input type="number" class="form-control" id="depart-preavis" min="0" placeholder="0">
+                                <small class="text-muted">Nombre de jours de préavis respecté</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="depart-documentation" class="form-label">Documentation fournie</label>
+                                <textarea class="form-control" id="depart-documentation" rows="2" 
+                                          placeholder="Documents remis (badge, matériel, etc.)"></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="depart-remarques" class="form-label">Remarques additionnelles</label>
+                                <textarea class="form-control" id="depart-remarques" rows="2" 
+                                          placeholder="Informations complémentaires..."></textarea>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Attention :</strong> Cette action va désactiver le collaborateur et son compte utilisateur. 
+                            Le collaborateur ne pourra plus se connecter à l'application.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmerDepart()">
+                        <i class="fas fa-user-times me-1"></i>
+                        Confirmer le départ
                     </button>
                 </div>
             </div>
@@ -736,6 +908,10 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary" onclick="reloadCollaborateursData()" title="Recharger les données">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Recharger les données
+                    </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                 </div>
             </div>
@@ -844,6 +1020,7 @@
         let filteredCollaborateurs = [];
         let collaborateurToDelete = null;
         let collaborateurRHId = null;
+        let isReloading = false; // Variable pour éviter les rechargements multiples
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
@@ -915,7 +1092,7 @@
                 console.log('📭 Aucun collaborateur à afficher');
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="10" class="text-center text-muted py-4">
+                        <td colspan="11" class="text-center text-muted py-4">
                             <i class="fas fa-users fa-2x mb-3"></i>
                             <p>Aucun collaborateur trouvé</p>
                         </td>
@@ -943,6 +1120,7 @@
                     <td>${collaborateur.business_unit_nom || '-'}</td>
                     <td>${collaborateur.division_nom || '-'}</td>
                     <td>${collaborateur.grade_nom || '-'}</td>
+                    <td>${collaborateur.poste_nom || '-'}</td>
                     <td><span class="status-badge status-${collaborateur.statut.toLowerCase()}">${getStatusLabel(collaborateur.statut)}</span></td>
                     <td>
                         <div class="btn-group btn-group-sm">
@@ -955,9 +1133,14 @@
                             <button class="btn btn-outline-primary" onclick="gestionRH('${collaborateur.id}')" title="Gestion RH">
                                 <i class="fas fa-user-tie"></i>
                             </button>
-                            <button class="btn btn-outline-danger" onclick="deleteCollaborateur('${collaborateur.id}')" title="Supprimer">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            ${collaborateur.statut === 'DEPART' ? 
+                                `<button class="btn btn-outline-success" onclick="reembaucherCollaborateur('${collaborateur.id}')" title="Réembaucher">
+                                    <i class="fas fa-user-plus"></i>
+                                </button>` : 
+                                `<button class="btn btn-outline-danger" onclick="gestionDepart('${collaborateur.id}')" title="Gérer le départ">
+                                    <i class="fas fa-user-times"></i>
+                                </button>`
+                            }
                         </div>
                     </td>
                 `;
@@ -981,7 +1164,6 @@
         function filterCollaborateurs() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const statusFilter = document.getElementById('status-filter').value;
-            const businessUnitFilter = document.getElementById('business-unit-filter').value;
             
             filteredCollaborateurs = collaborateurs.filter(collaborateur => {
                 const matchesSearch = !searchTerm || 
@@ -990,9 +1172,8 @@
                     (collaborateur.email && collaborateur.email.toLowerCase().includes(searchTerm));
                 
                 const matchesStatus = !statusFilter || collaborateur.statut === statusFilter;
-                const matchesBusinessUnit = !businessUnitFilter || collaborateur.business_unit_id === businessUnitFilter;
                 
-                return matchesSearch && matchesStatus && matchesBusinessUnit;
+                return matchesSearch && matchesStatus;
             });
             
             displayCollaborateurs();
@@ -1009,132 +1190,195 @@
             modal.show();
         }
 
-        async function loadBusinessUnits() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/business-units`);
-                const data = await response.json();
-                
-                const selects = ['business-unit-select', 'edit-business-unit-select', 'business-unit-filter'];
-                selects.forEach(selectId => {
-                    const select = document.getElementById(selectId);
-                    if (select) {
-                        select.innerHTML = '<option value="">Sélectionner une business unit</option>';
-                        
-                        if (data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {
-                            data.data.forEach(bu => {
+        function loadBusinessUnits() {
+            fetch(`${API_BASE_URL}/business-units`)
+                .then(response => response.json())
+                .then(data => {
+                    const selects = ['business-unit-select', 'edit-business-unit-select'];
+                    selects.forEach(selectId => {
+                        const select = document.getElementById(selectId);
+                        if (select) {
+                            select.innerHTML = '<option value="">Sélectionner une business unit</option>';
+                            
+                            // Gérer la structure de réponse de l'API
+                            let businessUnits = [];
+                            if (data.success && data.data && Array.isArray(data.data)) {
+                                businessUnits = data.data;
+                            } else if (Array.isArray(data)) {
+                                businessUnits = data;
+                            }
+                            
+                            businessUnits.forEach(bu => {
                                 const option = document.createElement('option');
                                 option.value = bu.id;
                                 option.textContent = bu.nom;
                                 select.appendChild(option);
                             });
-                        } else if (data.success && data.data && data.data.businessUnits && data.data.businessUnits.length > 0) {
-                            // Gérer le format alternatif
-                            data.data.businessUnits.forEach(bu => {
-                                const option = document.createElement('option');
-                                option.value = bu.id;
-                                option.textContent = bu.nom;
-                                select.appendChild(option);
-                            });
-                        } else {
-                            // Ajouter une option par défaut
-                            const option = document.createElement('option');
-                            option.value = "";
-                            option.textContent = "Aucune business unit disponible";
-                            option.disabled = true;
-                            select.appendChild(option);
                         }
-                    }
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des business units:', error);
                 });
-            } catch (error) {
-                console.error('Erreur lors du chargement des business units:', error);
-            }
         }
 
-        async function loadGrades() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/grades`);
-                const data = await response.json();
-                
-                const selects = ['grade-select', 'edit-grade-select'];
-                selects.forEach(selectId => {
-                    const select = document.getElementById(selectId);
-                    if (select) {
-                        select.innerHTML = '<option value="">Sélectionner un grade</option>';
-                        
-                        if (data.success && data.data) {
-                            data.data.forEach(grade => {
+        
+        
+        function loadGrades() {
+            fetch(`${API_BASE_URL}/grades`)
+                .then(response => response.json())
+                .then(data => {
+                    const selects = ['grade-select', 'edit-grade-select'];
+                    selects.forEach(selectId => {
+                        const select = document.getElementById(selectId);
+                        if (select) {
+                            select.innerHTML = '<option value="">Sélectionner un grade</option>';
+                            
+                            // Gérer la structure de réponse de l'API
+                            let grades = [];
+                            if (data.success && data.data && Array.isArray(data.data)) {
+                                grades = data.data;
+                            } else if (Array.isArray(data)) {
+                                grades = data;
+                            }
+                            
+                            grades.forEach(grade => {
                                 const option = document.createElement('option');
                                 option.value = grade.id;
-                                option.textContent = `${grade.nom} (${grade.code})`;
+                                option.textContent = grade.nom;
                                 select.appendChild(option);
                             });
                         }
-                    }
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des grades:', error);
                 });
-            } catch (error) {
-                console.error('Erreur lors du chargement des grades:', error);
-            }
         }
 
-        async function loadDivisions() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/divisions`);
-                const data = await response.json();
-                
-                const selects = ['division-select', 'edit-division-select'];
-                selects.forEach(selectId => {
-                    const select = document.getElementById(selectId);
-                    if (select) {
-                        select.innerHTML = '<option value="">Sélectionner une division</option>';
-                        
-                        if (data.success && data.data && data.data.divisions) {
-                            data.data.divisions.forEach(division => {
+        function loadPostes() {
+            fetch(`${API_BASE_URL}/postes`)
+                .then(response => response.json())
+                .then(data => {
+                    const selects = ['poste-select', 'edit-poste-select'];
+                    selects.forEach(selectId => {
+                        const select = document.getElementById(selectId);
+                        if (select) {
+                            select.innerHTML = '<option value="">Sélectionner un poste</option>';
+                            
+                            // Gérer la structure de réponse de l'API
+                            let postes = [];
+                            if (data.success && data.data && Array.isArray(data.data)) {
+                                postes = data.data;
+                            } else if (Array.isArray(data)) {
+                                postes = data;
+                            }
+                            
+                            postes.forEach(poste => {
+                                const option = document.createElement('option');
+                                option.value = poste.id;
+                                option.textContent = poste.nom;
+                                select.appendChild(option);
+                            });
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des postes:', error);
+                });
+        }
+
+function loadDivisions() {
+            fetch(`${API_BASE_URL}/divisions`)
+                .then(response => response.json())
+                .then(data => {
+                    const selects = ['division-select', 'edit-division-select'];
+                    selects.forEach(selectId => {
+                        const select = document.getElementById(selectId);
+                        if (select) {
+                            select.innerHTML = '<option value="">Sélectionner une division</option>';
+                            
+                            // Gérer la structure de réponse de l'API
+                            let divisions = [];
+                            if (data.success && data.data && Array.isArray(data.data)) {
+                                divisions = data.data;
+                            } else if (Array.isArray(data)) {
+                                divisions = data;
+                            }
+                            
+                            divisions.forEach(division => {
                                 const option = document.createElement('option');
                                 option.value = division.id;
                                 option.textContent = division.nom;
                                 select.appendChild(option);
                             });
-                        } else if (data.success && data.data && Array.isArray(data.data)) {
-                            // Gérer le cas où data.data est directement un array
-                            data.data.forEach(division => {
-                                const option = document.createElement('option');
-                                option.value = division.id;
-                                option.textContent = division.nom;
-                                select.appendChild(option);
-                            });
                         }
-                    }
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des divisions:', error);
                 });
-            } catch (error) {
-                console.error('Erreur lors du chargement des divisions:', error);
-            }
         }
 
-        async function loadTypesCollaborateurs() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/types-collaborateurs`);
-                const data = await response.json();
-                
-                const selects = ['typeCollaborateur-select', 'edit-typeCollaborateur-select'];
-                selects.forEach(selectId => {
-                    const select = document.getElementById(selectId);
-                    if (select) {
-                        select.innerHTML = '<option value="">Sélectionner un type</option>';
-                        
-                        if (data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {
-                            data.data.forEach(type => {
+        function loadTypesCollaborateurs() {
+            console.log('🔄 Chargement des types de collaborateurs...');
+            fetch(`${API_BASE_URL}/types-collaborateurs`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('📥 Réponse API types collaborateurs:', data);
+                    const selects = ['typeCollaborateur-select', 'edit-typeCollaborateur-select'];
+                    selects.forEach(selectId => {
+                        const select = document.getElementById(selectId);
+                        if (select) {
+                            console.log(`✅ Select ${selectId} trouvé`);
+                            select.innerHTML = '<option value="">Sélectionner un type</option>';
+                            
+                            // Gérer la structure de réponse de l'API
+                            let types = [];
+                            if (data.success && data.data && Array.isArray(data.data)) {
+                                types = data.data;
+                                console.log('📋 Types depuis data.data:', types);
+                            } else if (Array.isArray(data)) {
+                                types = data;
+                                console.log('📋 Types depuis data direct:', types);
+                            } else {
+                                // Fallback avec les types par défaut
+                                types = [
+                                    { id: 'CONSULTANT', nom: 'Consultant' },
+                                    { id: 'ADMINISTRATIF', nom: 'Administratif' },
+                                    { id: 'SUPPORT', nom: 'Support' },
+                                    { id: 'EXTERNE', nom: 'Externe' },
+                                    { id: 'TEMPORAIRE', nom: 'Temporaire' }
+                                ];
+                                console.log('📋 Types par défaut utilisés:', types);
+                            }
+                            
+                            types.forEach(type => {
                                 const option = document.createElement('option');
                                 option.value = type.id;
                                 option.textContent = type.nom;
                                 select.appendChild(option);
+                                console.log(`➕ Option ajoutée: ${type.nom} (${type.id})`);
                             });
                         } else {
-                            // Fallback avec des valeurs par défaut
+                            console.log(`❌ Select ${selectId} non trouvé`);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('❌ Erreur lors du chargement des types de collaborateurs:', error);
+                    // Fallback en cas d'erreur
+                    const selects = ['typeCollaborateur-select', 'edit-typeCollaborateur-select'];
+                    selects.forEach(selectId => {
+                        const select = document.getElementById(selectId);
+                        if (select) {
+                            select.innerHTML = '<option value="">Sélectionner un type</option>';
                             const defaultTypes = [
                                 { id: 'CONSULTANT', nom: 'Consultant' },
                                 { id: 'ADMINISTRATIF', nom: 'Administratif' },
                                 { id: 'SUPPORT', nom: 'Support' },
-                                { id: 'AUTRE', nom: 'Autre' }
+                                { id: 'EXTERNE', nom: 'Externe' },
+                                { id: 'TEMPORAIRE', nom: 'Temporaire' }
                             ];
                             defaultTypes.forEach(type => {
                                 const option = document.createElement('option');
@@ -1143,56 +1387,54 @@
                                 select.appendChild(option);
                             });
                         }
-                    }
+                    });
                 });
-            } catch (error) {
-                console.error('Erreur lors du chargement des types collaborateurs:', error);
-                // Fallback avec des valeurs par défaut en cas d'erreur
-                const selects = ['typeCollaborateur-select', 'edit-typeCollaborateur-select'];
-                selects.forEach(selectId => {
-                    const select = document.getElementById(selectId);
-                    if (select) {
-                        select.innerHTML = '<option value="">Sélectionner un type</option>';
-                        const defaultTypes = [
-                            { id: 'CONSULTANT', nom: 'Consultant' },
-                            { id: 'ADMINISTRATIF', nom: 'Administratif' },
-                            { id: 'SUPPORT', nom: 'Support' },
-                            { id: 'AUTRE', nom: 'Autre' }
-                        ];
-                        defaultTypes.forEach(type => {
-                            const option = document.createElement('option');
-                            option.value = type.id;
-                            option.textContent = type.nom;
-                            select.appendChild(option);
-                        });
-                    }
-                });
-            }
         }
 
         async function loadPostes(typeCollaborateurId = null) {
             try {
+                console.log('🔄 Chargement des postes...');
                 const response = await fetch(`${API_BASE_URL}/postes`);
                 const data = await response.json();
+                console.log('📥 Réponse API postes:', data);
                 
                 const selects = ['poste-select', 'edit-poste-select'];
                 selects.forEach(selectId => {
                     const select = document.getElementById(selectId);
                     if (select) {
+                        console.log(`✅ Select ${selectId} trouvé`);
                         select.innerHTML = '<option value="">Sélectionner un poste</option>';
                         
-                        if (data.success && data.data) {
-                            data.data.forEach(poste => {
-                                const option = document.createElement('option');
-                                option.value = poste.id;
-                                option.textContent = poste.nom;
-                                select.appendChild(option);
-                            });
+                        // Gérer la structure de réponse de l'API
+                        let postes = [];
+                        if (data.success && data.data && Array.isArray(data.data)) {
+                            postes = data.data;
+                            console.log('📋 Postes depuis data.data:', postes);
+                        } else if (Array.isArray(data)) {
+                            postes = data;
+                            console.log('📋 Postes depuis data direct:', postes);
+                        } else {
+                            console.log('⚠️ Aucun poste trouvé ou format invalide');
+                            const option = document.createElement('option');
+                            option.value = "";
+                            option.textContent = "Aucun poste disponible";
+                            option.disabled = true;
+                            select.appendChild(option);
                         }
+                        
+                        postes.forEach(poste => {
+                            const option = document.createElement('option');
+                            option.value = poste.id;
+                            option.textContent = poste.nom;
+                            select.appendChild(option);
+                            console.log(`➕ Option ajoutée: ${poste.nom} (${poste.id})`);
+                        });
+                    } else {
+                        console.log(`❌ Select ${selectId} non trouvé`);
                     }
                 });
             } catch (error) {
-                console.error('Erreur lors du chargement des postes:', error);
+                console.error('❌ Erreur lors du chargement des postes:', error);
             }
         }
 
@@ -1268,6 +1510,42 @@
             }
         }
 
+        // Fonction pour mettre à jour automatiquement le poste si type = CONSULTANT
+        async function updatePosteForConsultant() {
+            const typeSelect = document.getElementById('typeCollaborateur-select');
+            const posteSelect = document.getElementById('poste-select');
+            const selectedType = typeSelect.value;
+            
+            if (selectedType) {
+                try {
+                    // Charger tous les postes (sans filtre pour éviter l'erreur 500)
+                    const response = await fetch(`${API_BASE_URL}/postes`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.data) {
+                        posteSelect.innerHTML = '<option value="">Sélectionner un poste</option>';
+                        
+                        data.data.forEach(poste => {
+                            const option = document.createElement('option');
+                            option.value = poste.id;
+                            option.textContent = poste.nom;
+                            posteSelect.appendChild(option);
+                        });
+                        
+                        // Si c'est un consultant, essayer de sélectionner automatiquement le poste CONSULTANT
+                        if (selectedType === 'CONSULTANT') {
+                            const consultantPoste = data.data.find(p => p.code === 'CONSULTANT');
+                            if (consultantPoste) {
+                                posteSelect.value = consultantPoste.id;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erreur lors du chargement des postes:', error);
+                }
+            }
+        }
+
         async function submitCollaborateur() {
             const form = document.getElementById('newCollaborateurForm');
             if (!form.checkValidity()) {
@@ -1296,10 +1574,18 @@
                 telephone: document.getElementById('telephone-input').value,
                 business_unit_id: document.getElementById('business-unit-select').value,
                 division_id: selectedDivisionId || null,
+                type_collaborateur_id: document.getElementById('typeCollaborateur-select').value,
+                poste_actuel_id: document.getElementById('poste-select').value,
+                grade_actuel_id: document.getElementById('grade-select').value,
                 date_embauche: document.getElementById('date-embauche-input').value,
-                statut: document.getElementById('statut-select').value,
                 notes: document.getElementById('notes-input').value
+                // Les champs suivants ne sont plus collectés car gérés via des modules dédiés :
+                // - date_depart (géré via page de départ collaborateur)
+                // - statut (géré via page de départ collaborateur)
+                // - taux_horaire (géré via gestion des grades)
             };
+            
+            console.log('📤 Données envoyées:', JSON.stringify(formData, null, 2));
             
             try {
                 const response = await fetch(`${API_BASE_URL}/collaborateurs`, {
@@ -1310,19 +1596,235 @@
                     body: JSON.stringify(formData)
                 });
                 
+                console.log('📡 Status de la réponse:', response.status);
+                
                 const data = await response.json();
+                console.log('[DATA] Réponse complète:', JSON.stringify(data, null, 2));
                 
                 if (data.success) {
                     showAlert('Collaborateur créé avec succès', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('newCollaborateurModal')).hide();
                     loadCollaborateurs();
                 } else {
+                    console.error('[ERROR] Erreur de création:', JSON.stringify(data, null, 2));
                     showAlert(`Erreur lors de la création: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
                 }
             } catch (error) {
-                console.error('Erreur lors de la soumission:', error);
+                console.error('[ERROR] Erreur lors de la soumission:', error);
                 showAlert('Erreur lors de la soumission', 'danger');
             }
+        }
+
+        async function editCollaborateur(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/collaborateurs/${id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const collaborateur = data.data;
+                    
+                    // Remplir les champs de base (modifiables)
+                    document.getElementById('edit-id-input').value = collaborateur.id;
+                    document.getElementById('edit-nom-input').value = collaborateur.nom;
+                    document.getElementById('edit-prenom-input').value = collaborateur.prenom;
+                    document.getElementById('edit-email-input').value = collaborateur.email || '';
+                    document.getElementById('edit-initiales-input').value = collaborateur.initiales || '';
+                    document.getElementById('edit-telephone-input').value = collaborateur.telephone || '';
+                    document.getElementById('edit-date-embauche-input').value = collaborateur.date_embauche ? collaborateur.date_embauche.split('T')[0] : '';
+                    document.getElementById('edit-date-depart-input').value = collaborateur.date_depart ? collaborateur.date_depart.split('T')[0] : '';
+                    document.getElementById('edit-statut-select').value = collaborateur.statut;
+                    document.getElementById('edit-notes-input').value = collaborateur.notes || '';
+                    
+                    // Afficher les informations RH en lecture seule (non modifiables)
+                    document.getElementById('edit-business-unit-select').innerHTML = `<option value="">${collaborateur.business_unit_nom || 'Non assigné'}</option>`;
+                    document.getElementById('edit-division-select').innerHTML = `<option value="">${collaborateur.division_nom || 'Non assigné'}</option>`;
+                    document.getElementById('edit-grade-select').innerHTML = `<option value="">${collaborateur.grade_nom || 'Non assigné'}</option>`;
+                    document.getElementById('edit-typeCollaborateur-select').innerHTML = `<option value="">${collaborateur.type_collaborateur_nom || 'Non assigné'}</option>`;
+                    
+                    new bootstrap.Modal(document.getElementById('editCollaborateurModal')).show();
+                } else {
+                    showAlert('Erreur lors du chargement du collaborateur', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur de connexion', 'danger');
+            }
+        }
+
+        async function updateCollaborateur() {
+            const form = document.getElementById('editCollaborateurForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const id = document.getElementById('edit-id-input').value;
+            const formData = {
+                nom: document.getElementById('edit-nom-input').value,
+                prenom: document.getElementById('edit-prenom-input').value,
+                email: document.getElementById('edit-email-input').value,
+                initiales: document.getElementById('edit-initiales-input').value,
+                telephone: document.getElementById('edit-telephone-input').value,
+                date_embauche: document.getElementById('edit-date-embauche-input').value,
+                notes: document.getElementById('edit-notes-input').value
+                // Les champs suivants ne sont plus collectés car gérés via des modules dédiés :
+                // - date_depart (géré via page de départ collaborateur)
+                // - statut (géré via page de départ collaborateur)
+                // - taux_horaire (géré via gestion des grades)
+                // - business_unit_id, division_id, grade_actuel_id, type_collaborateur_id (gérés via gestion RH)
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/collaborateurs/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Collaborateur mis à jour avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editCollaborateurModal')).hide();
+                    loadCollaborateurs();
+                } else {
+                    showAlert('Erreur lors de la mise à jour', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour:', error);
+                showAlert('Erreur lors de la mise à jour', 'danger');
+            }
+        }
+
+        function deleteCollaborateur(id) {
+            collaborateurToDelete = id;
+            new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+        }
+
+        function gestionDepart(id) {
+            const collaborateur = collaborateurs.find(c => c.id === id);
+            if (!collaborateur) {
+                showAlert('Collaborateur non trouvé', 'danger');
+                return;
+            }
+            
+            // Remplir les informations du collaborateur
+            document.getElementById('depart-collaborateur-id').value = collaborateur.id;
+            document.getElementById('depart-collaborateur-nom').textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
+            document.getElementById('depart-collaborateur-nom-complet').textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
+            document.getElementById('depart-collaborateur-email').textContent = collaborateur.email || '-';
+            document.getElementById('depart-collaborateur-date-embauche').textContent = collaborateur.date_embauche ? new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : '-';
+            document.getElementById('depart-collaborateur-statut').textContent = getStatusLabel(collaborateur.statut);
+            
+            // Définir la date d'aujourd'hui par défaut
+            document.getElementById('depart-date-effet').value = new Date().toISOString().split('T')[0];
+            
+            // Réinitialiser le formulaire
+            document.getElementById('departCollaborateurForm').reset();
+            document.getElementById('depart-date-effet').value = new Date().toISOString().split('T')[0];
+            
+            new bootstrap.Modal(document.getElementById('gestionDepartModal')).show();
+        }
+
+        async function reembaucherCollaborateur(id) {
+            const collaborateur = collaborateurs.find(c => c.id === id);
+            if (!collaborateur) {
+                showAlert('Collaborateur non trouvé', 'danger');
+                return;
+            }
+
+            // Confirmation de réembauche
+            if (!confirm(`Êtes-vous sûr de vouloir réembaucher ${collaborateur.nom} ${collaborateur.prenom} ?\n\nCette action va :\n- Réactiver le collaborateur\n- Réactiver son compte utilisateur\n- Ouvrir la gestion RH pour configurer ses nouvelles attributions`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/collaborateurs/${collaborateur.id}/reembaucher`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Collaborateur réembauché avec succès', 'success');
+                    await loadCollaborateurs();
+                    
+                    // Attendre un peu plus longtemps pour s'assurer que la DB est mise à jour
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    
+                    setTimeout(() => { gestionRH(collaborateur.id); }, 1000);
+                } else {
+                    showAlert(`Erreur lors de la réembauche: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la réembauche:', error);
+                showAlert('Erreur lors de la réembauche', 'danger');
+            }
+        }
+
+        async function confirmDelete() {
+            if (!collaborateurToDelete) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/collaborateurs/${collaborateurToDelete}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Collaborateur supprimé avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+                    loadCollaborateurs();
+                } else {
+                    showAlert('Erreur lors de la suppression', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression:', error);
+                showAlert('Erreur lors de la suppression', 'danger');
+            } finally {
+                collaborateurToDelete = null;
+            }
+        }
+
+        function viewCollaborateur(id) {
+            const collaborateur = collaborateurs.find(c => c.id === id);
+            
+            if (!collaborateur) {
+                showAlert('Collaborateur non trouvé', 'danger');
+                return;
+            }
+            
+            // Remplir le modal avec les données
+            document.getElementById('view-nom').textContent = collaborateur.nom;
+            document.getElementById('view-prenom').textContent = collaborateur.prenom;
+            document.getElementById('view-email').textContent = collaborateur.email || '-';
+            document.getElementById('view-telephone').textContent = collaborateur.telephone || '-';
+            document.getElementById('view-initiales').textContent = collaborateur.initiales;
+            document.getElementById('view-date-embauche').textContent = collaborateur.date_embauche ? new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : '-';
+            document.getElementById('view-date-depart').textContent = collaborateur.date_depart ? new Date(collaborateur.date_depart).toLocaleDateString('fr-FR') : '-';
+            document.getElementById('view-statut').textContent = getStatusLabel(collaborateur.statut);
+            document.getElementById('view-notes').textContent = collaborateur.notes || '-';
+            
+            // Relations avec les nouvelles propriétés mappées
+            document.getElementById('view-business-unit').textContent = collaborateur.business_unit_nom || '-';
+            document.getElementById('view-division').textContent = collaborateur.division_nom || '-';
+            document.getElementById('view-grade').textContent = collaborateur.grade_nom || '-';
+            document.getElementById('view-type-collaborateur').textContent = collaborateur.type_collaborateur_nom || '-';
+            document.getElementById('view-poste').textContent = collaborateur.poste_nom || '-';
+            
+            // Afficher le modal
+            const modal = new bootstrap.Modal(document.getElementById('viewCollaborateurModal'));
+            modal.show();
+        }
+
+        function exportCollaborateurs() {
+            showAlert('Export Excel en cours de développement', 'info');
         }
 
         function showLoading(show) {
@@ -1380,14 +1882,54 @@
             }, 5000);
         }
 
-        function exportCollaborateurs() {
-            showAlert('Export Excel en cours de développement', 'info');
+        
+        // Fonction de diagnostic pour la gestion RH
+        function diagnosticRH() {
+            console.log('🔍 Diagnostic de la gestion RH...');
+            
+            // Vérifier les éléments DOM
+            const elements = [
+                'gestionRHModal',
+                'rh-collaborateur-nom',
+                'rh-grade-select',
+                'rh-type-collaborateur-select',
+                'rh-poste-select',
+                'rh-business-unit-select'
+            ];
+            
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    console.log(`✅ ${id} - OK`);
+                } else {
+                    console.log(`❌ ${id} - MANQUANT`);
+                }
+            });
+            
+            // Vérifier les variables globales
+            console.log('📊 Variables globales:');
+            console.log('- collaborateurs:', typeof collaborateurs, collaborateurs ? collaborateurs.length : 'undefined');
+            console.log('- collaborateurRHId:', collaborateurRHId);
+            console.log('- API_BASE_URL:', API_BASE_URL);
+            
+            // Tester les endpoints API
+            const endpoints = ['/grades', '/types-collaborateurs', '/postes', '/business-units'];
+            endpoints.forEach(endpoint => {
+                fetch(`${API_BASE_URL}${endpoint}`)
+                    .then(response => {
+                        console.log(`✅ ${endpoint} - ${response.status}`);
+                    })
+                    .catch(error => {
+                        console.log(`❌ ${endpoint} - ${error.message}`);
+                    });
+            });
         }
 
-        // =====================================================
+// =====================================================
         // FONCTIONS DE GESTION RH
         // =====================================================
 
+        
         function gestionRH(collaborateurId) {
             console.log('🔧 Début gestionRH pour collaborateurId:', collaborateurId);
             collaborateurRHId = collaborateurId;
@@ -1401,57 +1943,150 @@
                 return;
             }
 
+            // Afficher le modal d'abord
+            const modal = new bootstrap.Modal(document.getElementById('gestionRHModal'));
+            modal.show();
+
+            // Fonction pour charger les données avec gestion d'erreur
+            async function loadRHData() {
+                try {
+                    console.log('🔄 Chargement des données RH...');
+                    
+                    // Charger les données en parallèle
+                    const promises = [
+                        loadGradesForRH(),
+                        loadTypesCollaborateursForRH(),
+                        loadPostesForRH(),
+                        loadBusinessUnitsForRH(),
+                        loadHistoriqueGrades(collaborateurId),
+                        loadHistoriquePostes(collaborateurId),
+                        loadHistoriqueOrganisations(collaborateurId)
+                    ];
+                    
+                    await Promise.allSettled(promises);
+                    console.log('✅ Toutes les données RH chargées');
+                    
+                    // Pré-remplir les formulaires
+                    setTimeout(() => {
+                        preRemplirFormulaires();
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('❌ Erreur lors du chargement des données RH:', error);
+                    showAlert('Erreur lors du chargement des données RH', 'danger');
+                }
+            }
+
+            // Mettre à jour les informations du collaborateur
+            setTimeout(() => {
+                console.log('🔄 Mise à jour des informations du collaborateur...');
+                
+                const elements = {
+                    nom: document.getElementById('rh-collaborateur-nom'),
+                    nomComplet: document.getElementById('rh-collaborateur-nom-complet'),
+                    email: document.getElementById('rh-collaborateur-email'),
+                    bu: document.getElementById('rh-collaborateur-business-unit'),
+                    division: document.getElementById('rh-collaborateur-division'),
+                    dateEmb: document.getElementById('rh-collaborateur-date-embauche'),
+                    statut: document.getElementById('rh-collaborateur-statut'),
+                    grade: document.getElementById('rh-collaborateur-grade-actuel'),
+                    poste: document.getElementById('rh-collaborateur-poste-actuel')
+                };
+
+                // Vérifier que tous les éléments existent
+                const missingElements = Object.entries(elements)
+                    .filter(([key, element]) => !element)
+                    .map(([key]) => key);
+
+                if (missingElements.length > 0) {
+                    console.error('❌ Éléments DOM manquants:', missingElements);
+                    showAlert('Erreur: éléments d'interface manquants', 'danger');
+                    return;
+                }
+
+                // Mettre à jour les informations
+                elements.nom.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
+                elements.nomComplet.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
+                elements.email.textContent = collaborateur.email || 'Non renseigné';
+                elements.bu.textContent = collaborateur.business_unit_nom || 'Non assigné';
+                elements.division.textContent = collaborateur.division_nom || 'Non assigné';
+                elements.dateEmb.textContent = collaborateur.date_embauche ? new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : 'Non renseigné';
+                elements.statut.textContent = getStatusLabel(collaborateur.statut);
+                elements.grade.textContent = collaborateur.grade_nom || 'Non assigné';
+                elements.poste.textContent = collaborateur.poste_nom || 'Non assigné';
+
+                console.log('✅ Informations du collaborateur mises à jour');
+                
+                // Charger les données RH
+                loadRHData();
+                
+            }, 100); // Délai réduit
+        }
+
             console.log('✅ Collaborateur trouvé, mise à jour des informations...');
-
-            // Mettre à jour le titre du modal
-            const nomElement = document.getElementById('rh-collaborateur-nom');
-            const nomCompletElement = document.getElementById('rh-collaborateur-nom-complet');
-            const emailElement = document.getElementById('rh-collaborateur-email');
-            const buElement = document.getElementById('rh-collaborateur-business-unit');
-            const divisionElement = document.getElementById('rh-collaborateur-division');
-            const dateEmbElement = document.getElementById('rh-collaborateur-date-embauche');
-            const statutElement = document.getElementById('rh-collaborateur-statut');
-            const gradeElement = document.getElementById('rh-collaborateur-grade-actuel');
-            const posteElement = document.getElementById('rh-collaborateur-poste-actuel');
-
-            console.log('🔍 Éléments DOM trouvés:', {
-                nom: !!nomElement,
-                nomComplet: !!nomCompletElement,
-                email: !!emailElement,
-                bu: !!buElement,
-                division: !!divisionElement,
-                dateEmb: !!dateEmbElement,
-                statut: !!statutElement,
-                grade: !!gradeElement,
-                poste: !!posteElement
-            });
-
-            if (nomElement) nomElement.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
-            if (nomCompletElement) nomCompletElement.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
-            if (emailElement) emailElement.textContent = collaborateur.email || 'Non renseigné';
-            if (buElement) buElement.textContent = collaborateur.business_unit_nom || 'Non assigné';
-            if (divisionElement) divisionElement.textContent = collaborateur.division_nom || 'Non assigné';
-            if (dateEmbElement) dateEmbElement.textContent = collaborateur.date_embauche ? new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : 'Non renseigné';
-            if (statutElement) statutElement.textContent = getStatusLabel(collaborateur.statut);
-            if (gradeElement) gradeElement.textContent = collaborateur.grade_nom || 'Non assigné';
-            if (posteElement) posteElement.textContent = collaborateur.poste_nom || 'Non assigné';
-
-            console.log('📝 Informations mises à jour:', {
-                nom: `${collaborateur.nom} ${collaborateur.prenom}`,
-                email: collaborateur.email || 'Non renseigné',
-                bu: collaborateur.business_unit_nom || 'Non assigné',
-                division: collaborateur.division_nom || 'Non assigné',
-                grade: collaborateur.grade_nom || 'Non assigné',
-                poste: collaborateur.poste_nom || 'Non assigné'
+            console.log('📝 Données du collaborateur:', {
+                id: collaborateur.id,
+                nom: collaborateur.nom,
+                prenom: collaborateur.prenom,
+                email: collaborateur.email,
+                business_unit_nom: collaborateur.business_unit_nom,
+                division_nom: collaborateur.division_nom,
+                grade_nom: collaborateur.grade_nom,
+                poste_nom: collaborateur.poste_nom,
+                date_embauche: collaborateur.date_embauche,
+                statut: collaborateur.statut
             });
 
             // Afficher le modal d'abord
             const modal = new bootstrap.Modal(document.getElementById('gestionRHModal'));
             modal.show();
 
-            // Attendre que le modal soit complètement affiché avant de charger les données
+            // Attendre que le modal soit complètement affiché avant de mettre à jour les informations
             setTimeout(() => {
-                console.log('🔄 Chargement des données après affichage du modal...');
+                console.log('🔄 Modal affiché, mise à jour des informations...');
+                
+                // Mettre à jour le titre du modal
+                const nomElement = document.getElementById('rh-collaborateur-nom');
+                const nomCompletElement = document.getElementById('rh-collaborateur-nom-complet');
+                const emailElement = document.getElementById('rh-collaborateur-email');
+                const buElement = document.getElementById('rh-collaborateur-business-unit');
+                const divisionElement = document.getElementById('rh-collaborateur-division');
+                const dateEmbElement = document.getElementById('rh-collaborateur-date-embauche');
+                const statutElement = document.getElementById('rh-collaborateur-statut');
+                const gradeElement = document.getElementById('rh-collaborateur-grade-actuel');
+                const posteElement = document.getElementById('rh-collaborateur-poste-actuel');
+
+                console.log('🔍 Éléments DOM trouvés:', {
+                    nom: !!nomElement,
+                    nomComplet: !!nomCompletElement,
+                    email: !!emailElement,
+                    bu: !!buElement,
+                    division: !!divisionElement,
+                    dateEmb: !!dateEmbElement,
+                    statut: !!statutElement,
+                    grade: !!gradeElement,
+                    poste: !!posteElement
+                });
+
+                if (nomElement) nomElement.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
+                if (nomCompletElement) nomCompletElement.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
+                if (emailElement) emailElement.textContent = collaborateur.email || 'Non renseigné';
+                if (buElement) buElement.textContent = collaborateur.business_unit_nom || 'Non assigné';
+                if (divisionElement) divisionElement.textContent = collaborateur.division_nom || 'Non assigné';
+                if (dateEmbElement) dateEmbElement.textContent = collaborateur.date_embauche ? new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : 'Non renseigné';
+                if (statutElement) statutElement.textContent = getStatusLabel(collaborateur.statut);
+                if (gradeElement) gradeElement.textContent = collaborateur.grade_nom || 'Non assigné';
+                if (posteElement) posteElement.textContent = collaborateur.poste_nom || 'Non assigné';
+
+                console.log('📝 Informations mises à jour:', {
+                    nom: `${collaborateur.nom} ${collaborateur.prenom}`,
+                    email: collaborateur.email || 'Non renseigné',
+                    bu: collaborateur.business_unit_nom || 'Non assigné',
+                    division: collaborateur.division_nom || 'Non assigné',
+                    grade: collaborateur.grade_nom || 'Non assigné',
+                    poste: collaborateur.poste_nom || 'Non assigné'
+                });
+
                 // Charger les données pour les selects
                 loadGradesForRH();
                 loadTypesCollaborateursForRH();
@@ -1471,72 +2106,136 @@
             }, 500); // Délai pour laisser le modal s'afficher
         }
 
+        
         async function loadGradesForRH() {
             try {
+                console.log('🔄 Chargement des grades pour RH...');
                 const response = await fetch(`${API_BASE_URL}/grades`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log('📥 Réponse API grades:', data);
                 
                 const select = document.getElementById('rh-grade-select');
-                if (select) {
-                    select.innerHTML = '<option value="">Sélectionner un grade</option>';
-                    
-                    if (data.success && data.data) {
-                        data.data.forEach(grade => {
-                            const option = document.createElement('option');
-                            option.value = grade.id;
-                            option.textContent = `${grade.nom} (${grade.code})`;
-                            select.appendChild(option);
-                        });
-                    }
+                if (!select) {
+                    console.error('❌ Select grade non trouvé');
+                    return;
+                }
+                
+                select.innerHTML = '<option value="">Sélectionner un grade</option>';
+                
+                if (data.success && data.data && Array.isArray(data.data)) {
+                    console.log(`📋 ${data.data.length} grades trouvés`);
+                    data.data.forEach(grade => {
+                        const option = document.createElement('option');
+                        option.value = grade.id;
+                        option.textContent = `${grade.nom} (${grade.code})`;
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.log('⚠️ Aucun grade trouvé ou format invalide');
+                    const option = document.createElement('option');
+                    option.value = "";
+                    option.textContent = "Aucun grade disponible";
+                    option.disabled = true;
+                    select.appendChild(option);
                 }
             } catch (error) {
-                console.error('Erreur lors du chargement des grades:', error);
+                console.error('❌ Erreur lors du chargement des grades:', error);
+                showAlert('Erreur lors du chargement des grades', 'danger');
             }
         }
 
         async function loadTypesCollaborateursForRH() {
             try {
+                console.log('🔄 Chargement des types collaborateurs pour RH...');
                 const response = await fetch(`${API_BASE_URL}/types-collaborateurs`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log('📥 Réponse API types collaborateurs:', data);
                 
                 const select = document.getElementById('rh-type-collaborateur-select');
-                if (select) {
-                    select.innerHTML = '<option value="">Sélectionner un type</option>';
-                    
-                    if (data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {
-                        data.data.forEach(type => {
-                            const option = document.createElement('option');
-                            option.value = type.id;
-                            option.textContent = type.nom;
-                            select.appendChild(option);
-                        });
-                    }
+                if (!select) {
+                    console.error('❌ Select type collaborateur non trouvé');
+                    return;
+                }
+                
+                select.innerHTML = '<option value="">Sélectionner un type</option>';
+                
+                if (data.success && data.data && Array.isArray(data.data)) {
+                    console.log(`📋 ${data.data.length} types collaborateurs trouvés`);
+                    data.data.forEach(type => {
+                        const option = document.createElement('option');
+                        option.value = type.id;
+                        option.textContent = type.nom;
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.log('⚠️ Aucun type collaborateur trouvé ou format invalide');
+                    const option = document.createElement('option');
+                    option.value = "";
+                    option.textContent = "Aucun type disponible";
+                    option.disabled = true;
+                    select.appendChild(option);
                 }
             } catch (error) {
-                console.error('Erreur lors du chargement des types collaborateurs:', error);
+                console.error('❌ Erreur lors du chargement des types collaborateurs:', error);
+                showAlert('Erreur lors du chargement des types collaborateurs', 'danger');
             }
         }
 
         async function loadPostesForRH() {
             try {
+                console.log('🔄 Chargement des postes pour RH...');
                 const response = await fetch(`${API_BASE_URL}/postes`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log('📥 Réponse API postes:', data);
                 
                 const select = document.getElementById('rh-poste-select');
-                if (select) {
-                    select.innerHTML = '<option value="">Sélectionner un poste</option>';
-                    
-                    if (data.success && data.data) {
-                        data.data.forEach(poste => {
-                            const option = document.createElement('option');
-                            option.value = poste.id;
-                            option.textContent = poste.nom;
-                            select.appendChild(option);
-                        });
-                    }
+                if (!select) {
+                    console.error('❌ Select poste non trouvé');
+                    return;
+                }
+                
+                select.innerHTML = '<option value="">Sélectionner un poste</option>';
+                
+                if (data.success && data.data && Array.isArray(data.data)) {
+                    console.log(`📋 ${data.data.length} postes trouvés`);
+                    data.data.forEach(poste => {
+                        const option = document.createElement('option');
+                        option.value = poste.id;
+                        option.textContent = poste.nom;
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.log('⚠️ Aucun poste trouvé ou format invalide');
+                    const option = document.createElement('option');
+                    option.value = "";
+                    option.textContent = "Aucun poste disponible";
+                    option.disabled = true;
+                    select.appendChild(option);
                 }
             } catch (error) {
-                console.error('Erreur lors du chargement des postes:', error);
+                console.error('❌ Erreur lors du chargement des postes:', error);
+                showAlert('Erreur lors du chargement des postes', 'danger');
+            }
+        }                } else {
+                    console.log('❌ Select poste non trouvé');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des postes:', error);
             }
         }
 
@@ -1619,28 +2318,44 @@
         }
 
         async function loadPostesForType() {
-            const typeId = document.getElementById('rh-type-collaborateur-select').value;
+            const typeId = document.getElementById('typeCollaborateur-select').value;
             if (!typeId) return;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/postes?type_collaborateur_id=${typeId}`);
+                console.log('🔄 Chargement de tous les postes...');
+                const response = await fetch(`${API_BASE_URL}/postes`);
                 const data = await response.json();
                 
-                const select = document.getElementById('rh-poste-select');
+                console.log('📥 Réponse API postes:', data);
+                
+                const select = document.getElementById('poste-select');
                 if (select) {
+                    console.log('✅ Select poste trouvé');
                     select.innerHTML = '<option value="">Sélectionner un poste</option>';
                     
-                    if (data.success && data.data) {
+                    if (data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {
+                        console.log(`📋 ${data.data.length} postes trouvés`);
                         data.data.forEach(poste => {
                             const option = document.createElement('option');
                             option.value = poste.id;
                             option.textContent = poste.nom;
                             select.appendChild(option);
+                            console.log(`➕ Option ajoutée: ${poste.nom} (${poste.id})`);
                         });
+                    } else {
+                        console.log('⚠️ Aucun poste trouvé ou format invalide');
+                        // Ajouter une option par défaut
+                        const option = document.createElement('option');
+                        option.value = "";
+                        option.textContent = "Aucun poste disponible";
+                        option.disabled = true;
+                        select.appendChild(option);
                     }
+                } else {
+                    console.log('❌ Select poste non trouvé');
                 }
             } catch (error) {
-                console.error('Erreur lors du chargement des postes:', error);
+                console.error('❌ Erreur lors du chargement des postes:', error);
             }
         }
 
@@ -1671,7 +2386,7 @@
                         grade_id: gradeId,
                         date_debut: dateEffet,
                         motif: motif,
-                        taux_horaire_personnalise: salaire || null
+                        taux_horaire_personnalise: salaire ? parseFloat(salaire) : null
                     })
                 });
 
@@ -1682,7 +2397,16 @@
                 if (data.success) {
                     console.log('✅ Succès: évolution de grade ajoutée');
                     showAlert('Évolution de grade ajoutée avec succès', 'success');
-                    loadHistoriqueGrades(collaborateurRHId);
+                    
+                    // Recharger l'historique des grades
+                    await loadHistoriqueGrades(collaborateurRHId);
+                    
+                    // Attendre que la DB soit mise à jour
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Recharger les données de la page principale
+                    await reloadCollaborateursData();
+                    
                     // Réinitialiser le formulaire
                     document.getElementById('rh-grade-select').value = '';
                     document.getElementById('rh-grade-date-effet').value = '';
@@ -1734,7 +2458,16 @@
                 if (data.success) {
                     console.log('✅ Succès: évolution de poste ajoutée');
                     showAlert('Évolution de poste ajoutée avec succès', 'success');
-                    loadHistoriquePostes(collaborateurRHId);
+                    
+                    // Recharger l'historique des postes
+                    await loadHistoriquePostes(collaborateurRHId);
+                    
+                    // Attendre que la DB soit mise à jour
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Recharger les données de la page principale
+                    await reloadCollaborateursData();
+                    
                     // Réinitialiser le formulaire
                     document.getElementById('rh-poste-select').value = '';
                     document.getElementById('rh-poste-date-effet').value = '';
@@ -1779,12 +2512,21 @@
 
                 if (data.success) {
                     showAlert('Évolution organisationnelle ajoutée avec succès', 'success');
+                    
                     // Recharger les données pour les selects de gestion RH
                     loadBusinessUnitsForRH();
                     loadDivisionsForBusinessUnitForRH();
-                    loadPostesForRH(); // Recharger les postes pour le type de collaborateur
-                    loadPostesForType(); // Recharger les postes pour le nouveau type
-                    loadHistoriqueOrganisations(collaborateurRHId);
+                    loadPostesForRH();
+                    loadPostesForType();
+                    
+                    // Recharger l'historique des organisations
+                    await loadHistoriqueOrganisations(collaborateurRHId);
+
+                    // Attendre que la DB soit mise à jour
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    // Recharger les données de la page principale
+                    await reloadCollaborateursData();
 
                     // Réinitialiser le formulaire
                     document.getElementById('rh-business-unit-select').value = '';
@@ -1885,10 +2627,18 @@
             }
 
             console.log('🔧 Début preRemplirFormulaires pour:', collaborateur.nom, collaborateur.prenom);
+            console.log('📊 Données collaborateur:', {
+                grade_actuel_id: collaborateur.grade_actuel_id,
+                poste_actuel_id: collaborateur.poste_actuel_id,
+                business_unit_id: collaborateur.business_unit_id,
+                division_id: collaborateur.division_id,
+                type_collaborateur_id: collaborateur.type_collaborateur_id
+            });
 
             // Vérifier que tous les éléments du DOM existent
             const elements = {
                 'rh-grade-select': document.getElementById('rh-grade-select'),
+                'rh-type-collaborateur-select': document.getElementById('rh-type-collaborateur-select'),
                 'rh-grade-date-effet': document.getElementById('rh-grade-date-effet'),
                 'rh-grade-salaire': document.getElementById('rh-grade-salaire'),
                 'rh-grade-motif': document.getElementById('rh-grade-motif'),
@@ -1917,14 +2667,32 @@
 
             console.log('✅ Tous les éléments trouvés, pré-remplissage en cours...');
 
+            // Pré-remplir le type de collaborateur
+            if (elements['rh-type-collaborateur-select']) {
+                elements['rh-type-collaborateur-select'].value = collaborateur.type_collaborateur_id || '';
+                console.log('✅ Type de collaborateur pré-rempli:', collaborateur.type_collaborateur_id);
+                
+                // Charger tous les postes
+                setTimeout(async () => {
+                    await loadPostesForRH();
+                    
+                    // Pré-remplir le poste après le chargement
+                    setTimeout(() => {
+                        if (elements['rh-poste-select']) {
+                            elements['rh-poste-select'].value = collaborateur.poste_actuel_id || '';
+                            console.log('✅ Poste pré-rempli:', collaborateur.poste_actuel_id);
+                        }
+                    }, 200);
+                }, 100);
+            }
+
             // Pré-remplir les champs de grade
             elements['rh-grade-select'].value = collaborateur.grade_actuel_id || '';
             elements['rh-grade-date-effet'].value = new Date().toISOString().split('T')[0]; // Date d'aujourd'hui
             elements['rh-grade-salaire'].value = ''; // Réinitialiser le salaire personnalisé
             elements['rh-grade-motif'].value = '';
 
-            // Pré-remplir les champs de poste
-            elements['rh-poste-select'].value = collaborateur.poste_actuel_id || '';
+            // Pré-remplir les champs de poste (sera fait après le chargement des postes)
             elements['rh-poste-date-effet'].value = new Date().toISOString().split('T')[0]; // Date d'aujourd'hui
             elements['rh-poste-motif'].value = '';
 
@@ -1945,83 +2713,161 @@
             elements['rh-organisation-date-effet'].value = new Date().toISOString().split('T')[0]; // Date d'aujourd'hui
             elements['rh-organisation-motif'].value = '';
 
-            console.log('✅ Pré-remplissage terminé avec succès');
-            showAlert('Formulaires pré-remplis avec les informations actuelles', 'success');
-        }
+            // Vérifier si le collaborateur a des informations actuelles
+            const hasCurrentInfo = collaborateur.grade_actuel_id || collaborateur.poste_actuel_id || 
+                                  collaborateur.business_unit_id || collaborateur.division_id;
 
-        // =====================================================
-        // FONCTIONS D'ÉDITION ET SUPPRESSION
-        // =====================================================
-
-        async function editCollaborateur(id) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs/${id}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    const collaborateur = data.data;
-                    
-                    // Remplir les champs de base
-                    document.getElementById('edit-id-input').value = collaborateur.id;
-                    document.getElementById('edit-nom-input').value = collaborateur.nom;
-                    document.getElementById('edit-prenom-input').value = collaborateur.prenom;
-                    document.getElementById('edit-email-input').value = collaborateur.email || '';
-                    document.getElementById('edit-initiales-input').value = collaborateur.initiales || '';
-                    document.getElementById('edit-telephone-input').value = collaborateur.telephone || '';
-                    document.getElementById('edit-date-embauche-input').value = collaborateur.date_embauche ? collaborateur.date_embauche.split('T')[0] : '';
-                    document.getElementById('edit-date-depart-input').value = collaborateur.date_depart ? collaborateur.date_depart.split('T')[0] : '';
-                    document.getElementById('edit-statut-select').value = collaborateur.statut;
-                    document.getElementById('edit-notes-input').value = collaborateur.notes || '';
-                    
-                    // Remplir les champs de relations avec les nouvelles propriétés
-                    document.getElementById('edit-business-unit-select').value = collaborateur.business_unit_id || '';
-                    document.getElementById('edit-grade-select').value = collaborateur.grade_actuel_id || '';
-                    document.getElementById('edit-typeCollaborateur-select').value = collaborateur.type_collaborateur_id || '';
-                    
-                    // Charger les divisions pour la business unit sélectionnée AVANT de définir la valeur
-                    if (collaborateur.business_unit_id) {
-                        await loadDivisionsForBusinessUnitEdit(collaborateur.business_unit_id);
-                        // Maintenant définir la valeur de la division APRÈS avoir chargé les options
-                        document.getElementById('edit-division-select').value = collaborateur.division_id || '';
-                    }
-                    
-                    new bootstrap.Modal(document.getElementById('editCollaborateurModal')).show();
-                } else {
-                    showAlert('Erreur lors du chargement du collaborateur', 'danger');
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showAlert('Erreur de connexion', 'danger');
+            if (hasCurrentInfo) {
+                console.log('✅ Pré-remplissage terminé avec succès');
+                showAlert('Formulaires pré-remplis avec les informations actuelles', 'success');
+            } else {
+                console.log('ℹ️ Aucune information actuelle trouvée, formulaires vides');
+                showAlert('Aucune information actuelle trouvée. Vous pouvez ajouter de nouvelles évolutions.', 'info');
             }
         }
 
-        async function updateCollaborateur() {
-            const form = document.getElementById('editCollaborateurForm');
+        function reinitialiserFormulaires() {
+            document.getElementById('rh-grade-select').value = '';
+            document.getElementById('rh-grade-date-effet').value = '';
+            document.getElementById('rh-grade-motif').value = '';
+            document.getElementById('rh-grade-salaire').value = '';
+            document.getElementById('rh-poste-select').value = '';
+            document.getElementById('rh-poste-date-effet').value = '';
+            document.getElementById('rh-poste-motif').value = '';
+            // Recharger les postes pour le type de collaborateur actuel
+            loadPostesForType();
+        }
+
+        // Fonction pour recharger les données de la page principale
+        async function reloadCollaborateursData() {
+            // Éviter les rechargements multiples
+            if (isReloading) {
+                console.log('⚠️ Rechargement déjà en cours, ignoré');
+                return;
+            }
+            
+            isReloading = true;
+            console.log('🔄 Rechargement des données collaborateurs...');
+            
+            try {
+                // Ajouter un délai pour éviter l'erreur 429
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                console.log('🌐 Appel API /collaborateurs...');
+                const timestamp = new Date().getTime();
+                const response = await fetch(`${API_BASE_URL}/collaborateurs?t=${timestamp}`, {
+                    method: 'GET',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+                const data = await response.json();
+                
+                console.log('📊 Données reçues:', data);
+                
+                if (data.success) {
+                    console.log('📋 Nombre de collaborateurs reçus:', data.data.length);
+                    
+                    // Log des données du premier collaborateur pour debug
+                    if (data.data.length > 0) {
+                        const firstCollaborateur = data.data[0];
+                        console.log('🔍 Premier collaborateur:', {
+                            id: firstCollaborateur.id,
+                            nom: firstCollaborateur.nom,
+                            grade_nom: firstCollaborateur.grade_nom,
+                            poste_nom: firstCollaborateur.poste_nom,
+                            business_unit_nom: firstCollaborateur.business_unit_nom,
+                            division_nom: firstCollaborateur.division_nom
+                        });
+                    }
+                    
+                    collaborateurs = data.data;
+                    filteredCollaborateurs = [...collaborateurs];
+                    displayCollaborateurs();
+                    updateStatistics();
+                    console.log('✅ Données collaborateurs rechargées');
+                    
+                    // Si le modal de gestion RH est ouvert, mettre à jour les informations du collaborateur
+                    if (collaborateurRHId) {
+                        const collaborateur = collaborateurs.find(c => c.id === collaborateurRHId);
+                        if (collaborateur) {
+                            console.log('🔄 Mise à jour des informations du collaborateur dans le modal...');
+                            console.log('📊 Données du collaborateur RH:', {
+                                id: collaborateur.id,
+                                nom: collaborateur.nom,
+                                grade_nom: collaborateur.grade_nom,
+                                poste_nom: collaborateur.poste_nom,
+                                business_unit_nom: collaborateur.business_unit_nom,
+                                division_nom: collaborateur.division_nom
+                            });
+                            
+                            // Mettre à jour les informations affichées
+                            const nomElement = document.getElementById('rh-collaborateur-nom');
+                            const nomCompletElement = document.getElementById('rh-collaborateur-nom-complet');
+                            const emailElement = document.getElementById('rh-collaborateur-email');
+                            const buElement = document.getElementById('rh-collaborateur-business-unit');
+                            const divisionElement = document.getElementById('rh-collaborateur-division');
+                            const dateEmbElement = document.getElementById('rh-collaborateur-date-embauche');
+                            const statutElement = document.getElementById('rh-collaborateur-statut');
+                            const gradeElement = document.getElementById('rh-collaborateur-grade-actuel');
+                            const posteElement = document.getElementById('rh-collaborateur-poste-actuel');
+
+                            if (nomElement) nomElement.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
+                            if (nomCompletElement) nomCompletElement.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
+                            if (emailElement) emailElement.textContent = collaborateur.email || 'Non renseigné';
+                            if (buElement) buElement.textContent = collaborateur.business_unit_nom || 'Non assigné';
+                            if (divisionElement) divisionElement.textContent = collaborateur.division_nom || 'Non assigné';
+                            if (dateEmbElement) dateEmbElement.textContent = collaborateur.date_embauche ? new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : 'Non renseigné';
+                            if (statutElement) statutElement.textContent = getStatusLabel(collaborateur.statut);
+                            if (gradeElement) gradeElement.textContent = collaborateur.grade_nom || 'Non assigné';
+                            if (posteElement) posteElement.textContent = collaborateur.poste_nom || 'Non assigné';
+                            
+                            console.log('✅ Informations du collaborateur mises à jour dans le modal');
+                        }
+                    }
+                } else {
+                    console.error('❌ Erreur lors du rechargement:', data);
+                    showAlert('Erreur lors du rechargement des données', 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du rechargement:', error);
+                showAlert('Erreur lors du rechargement des données', 'danger');
+            } finally {
+                // Réinitialiser le flag après un délai
+                setTimeout(() => {
+                    isReloading = false;
+                }, 2000);
+            }
+        }
+
+        async function confirmerDepart() {
+            const form = document.getElementById('departCollaborateurForm');
             if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
             
-            const id = document.getElementById('edit-id-input').value;
+            const collaborateurId = document.getElementById('depart-collaborateur-id').value;
+            const collaborateur = collaborateurs.find(c => c.id === collaborateurId);
+            if (!collaborateur) {
+                showAlert('Collaborateur non trouvé', 'danger');
+                return;
+            }
+            
             const formData = {
-                nom: document.getElementById('edit-nom-input').value,
-                prenom: document.getElementById('edit-prenom-input').value,
-                email: document.getElementById('edit-email-input').value,
-                initiales: document.getElementById('edit-initiales-input').value,
-                telephone: document.getElementById('edit-telephone-input').value,
-                date_embauche: document.getElementById('edit-date-embauche-input').value,
-                date_depart: document.getElementById('edit-date-depart-input').value || null,
-                business_unit_id: document.getElementById('edit-business-unit-select').value || null,
-                division_id: document.getElementById('edit-division-select').value || null,
-                grade_actuel_id: document.getElementById('edit-grade-select').value || null,
-                type_collaborateur_id: document.getElementById('edit-typeCollaborateur-select').value || null,
-                statut: document.getElementById('edit-statut-select').value,
-                notes: document.getElementById('edit-notes-input').value
+                type_depart: document.getElementById('depart-type-select').value,
+                date_effet: document.getElementById('depart-date-effet').value,
+                motif: document.getElementById('depart-motif').value,
+                preavis: document.getElementById('depart-preavis').value,
+                documentation: document.getElementById('depart-documentation').value,
+                remarques: document.getElementById('depart-remarques').value
             };
             
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs/${id}`, {
-                    method: 'PUT',
+                const response = await fetch(`${API_BASE_URL}/collaborateurs/${collaborateur.id}/depart`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -2031,77 +2877,16 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('Collaborateur mis à jour avec succès', 'success');
-                    bootstrap.Modal.getInstance(document.getElementById('editCollaborateurModal')).hide();
+                    showAlert('Départ confirmé avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('gestionDepartModal')).hide();
                     loadCollaborateurs();
                 } else {
-                    showAlert('Erreur lors de la mise à jour', 'danger');
+                    showAlert(`Erreur lors de la confirmation du départ: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
                 }
             } catch (error) {
-                console.error('Erreur lors de la mise à jour:', error);
-                showAlert('Erreur lors de la mise à jour', 'danger');
+                console.error('Erreur lors de la confirmation du départ:', error);
+                showAlert('Erreur lors de la confirmation du départ', 'danger');
             }
-        }
-
-        function deleteCollaborateur(id) {
-            collaborateurToDelete = id;
-            new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
-        }
-
-        async function confirmDelete() {
-            if (!collaborateurToDelete) return;
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs/${collaborateurToDelete}`, {
-                    method: 'DELETE'
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showAlert('Collaborateur supprimé avec succès', 'success');
-                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
-                    loadCollaborateurs();
-                } else {
-                    showAlert('Erreur lors de la suppression', 'danger');
-                }
-            } catch (error) {
-                console.error('Erreur lors de la suppression:', error);
-                showAlert('Erreur lors de la suppression', 'danger');
-            } finally {
-                collaborateurToDelete = null;
-            }
-        }
-
-        function viewCollaborateur(id) {
-            const collaborateur = collaborateurs.find(c => c.id === id);
-            
-            if (!collaborateur) {
-                showAlert('Collaborateur non trouvé', 'danger');
-                return;
-            }
-            
-            // Remplir le modal avec les données
-            document.getElementById('view-nom').textContent = collaborateur.nom;
-            document.getElementById('view-prenom').textContent = collaborateur.prenom;
-            document.getElementById('view-email').textContent = collaborateur.email || '-';
-            document.getElementById('view-telephone').textContent = collaborateur.telephone || '-';
-            document.getElementById('view-initiales').textContent = collaborateur.initiales;
-            document.getElementById('view-date-embauche').textContent = collaborateur.date_embauche ? new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : '-';
-            document.getElementById('view-date-depart').textContent = collaborateur.date_depart ? new Date(collaborateur.date_depart).toLocaleDateString('fr-FR') : '-';
-            document.getElementById('view-statut').textContent = getStatusLabel(collaborateur.statut);
-            document.getElementById('view-notes').textContent = collaborateur.notes || '-';
-            
-            // Relations avec les nouvelles propriétés mappées
-            document.getElementById('view-business-unit').textContent = collaborateur.business_unit_nom || '-';
-            document.getElementById('view-division').textContent = collaborateur.division_nom || '-';
-            document.getElementById('view-grade').textContent = collaborateur.grade_nom || '-';
-            document.getElementById('view-type-collaborateur').textContent = collaborateur.type_collaborateur_nom || '-';
-            document.getElementById('view-poste').textContent = collaborateur.poste_nom || '-';
-            
-            // Afficher le modal
-            const modal = new bootstrap.Modal(document.getElementById('viewCollaborateurModal'));
-            modal.show();
         }
     </script>
 </body>
