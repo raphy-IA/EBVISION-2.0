@@ -351,12 +351,23 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="statut-select" class="form-label">Statut</label>
-                                <select class="form-select" id="statut-select">
-                                    <option value="ACTIF">Actif</option>
-                                    <option value="INACTIF">Inactif</option>
-                                    <option value="CONGE">En congé</option>
-                                    <option value="DEPART">Départ</option>
+                                <label for="type-collaborateur-select" class="form-label">Type de collaborateur *</label>
+                                <select class="form-select" id="type-collaborateur-select" required onchange="loadPostesForType()">
+                                    <option value="">Sélectionner un type</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="poste-select" class="form-label">Poste *</label>
+                                <select class="form-select" id="poste-select" required>
+                                    <option value="">Sélectionner un poste</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="grade-select" class="form-label">Grade *</label>
+                                <select class="form-select" id="grade-select" required>
+                                    <option value="">Sélectionner un grade</option>
                                 </select>
                             </div>
                         </div>
@@ -367,7 +378,7 @@
                         </div>
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
-                            <strong>Note :</strong> Les informations RH (Grade, Poste, Type de collaborateur) seront configurées après la création du collaborateur via le module de gestion RH.
+                            <strong>Note :</strong> Le nouveau collaborateur sera automatiquement créé avec le statut "ACTIF" et les informations RH (Grade, Poste, Type) seront enregistrées dans l'historique.
                         </div>
                     </form>
                 </div>
@@ -1115,28 +1126,14 @@
                 const response = await fetch(`${API_BASE_URL}/types-collaborateurs`);
                 const data = await response.json();
                 
-                const selects = ['typeCollaborateur-select', 'edit-typeCollaborateur-select'];
+                const selects = ['type-collaborateur-select', 'edit-type-collaborateur-select'];
                 selects.forEach(selectId => {
                     const select = document.getElementById(selectId);
                     if (select) {
                         select.innerHTML = '<option value="">Sélectionner un type</option>';
                         
-                        if (data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {
+                        if (data.success && data.data) {
                             data.data.forEach(type => {
-                                const option = document.createElement('option');
-                                option.value = type.id;
-                                option.textContent = type.nom;
-                                select.appendChild(option);
-                            });
-                        } else {
-                            // Fallback avec des valeurs par défaut
-                            const defaultTypes = [
-                                { id: 'CONSULTANT', nom: 'Consultant' },
-                                { id: 'ADMINISTRATIF', nom: 'Administratif' },
-                                { id: 'SUPPORT', nom: 'Support' },
-                                { id: 'AUTRE', nom: 'Autre' }
-                            ];
-                            defaultTypes.forEach(type => {
                                 const option = document.createElement('option');
                                 option.value = type.id;
                                 option.textContent = type.nom;
@@ -1146,31 +1143,11 @@
                     }
                 });
             } catch (error) {
-                console.error('Erreur lors du chargement des types collaborateurs:', error);
-                // Fallback avec des valeurs par défaut en cas d'erreur
-                const selects = ['typeCollaborateur-select', 'edit-typeCollaborateur-select'];
-                selects.forEach(selectId => {
-                    const select = document.getElementById(selectId);
-                    if (select) {
-                        select.innerHTML = '<option value="">Sélectionner un type</option>';
-                        const defaultTypes = [
-                            { id: 'CONSULTANT', nom: 'Consultant' },
-                            { id: 'ADMINISTRATIF', nom: 'Administratif' },
-                            { id: 'SUPPORT', nom: 'Support' },
-                            { id: 'AUTRE', nom: 'Autre' }
-                        ];
-                        defaultTypes.forEach(type => {
-                            const option = document.createElement('option');
-                            option.value = type.id;
-                            option.textContent = type.nom;
-                            select.appendChild(option);
-                        });
-                    }
-                });
+                console.error('Erreur lors du chargement des types de collaborateurs:', error);
             }
         }
 
-        async function loadPostes(typeCollaborateurId = null) {
+        async function loadPostes() {
             try {
                 const response = await fetch(`${API_BASE_URL}/postes`);
                 const data = await response.json();
@@ -1297,7 +1274,7 @@
                 business_unit_id: document.getElementById('business-unit-select').value,
                 division_id: selectedDivisionId || null,
                 date_embauche: document.getElementById('date-embauche-input').value,
-                statut: document.getElementById('statut-select').value,
+                statut: 'ACTIF', // Statut par défaut
                 notes: document.getElementById('notes-input').value
             };
             
@@ -1313,7 +1290,12 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('Collaborateur créé avec succès', 'success');
+                    const newCollaborateurId = data.data.id;
+                    
+                    // Créer automatiquement les historiques RH
+                    await createRHHistory(newCollaborateurId);
+                    
+                    showAlert('Collaborateur créé avec succès et historiques RH initialisés', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('newCollaborateurModal')).hide();
                     loadCollaborateurs();
                 } else {
@@ -1322,6 +1304,80 @@
             } catch (error) {
                 console.error('Erreur lors de la soumission:', error);
                 showAlert('Erreur lors de la soumission', 'danger');
+            }
+        }
+
+        async function createRHHistory(collaborateurId) {
+            try {
+                const typeCollaborateurId = document.getElementById('type-collaborateur-select').value;
+                const posteId = document.getElementById('poste-select').value;
+                const gradeId = document.getElementById('grade-select').value;
+                const dateEffet = document.getElementById('date-embauche-input').value;
+                
+                console.log('🔧 Création des historiques RH pour collaborateur:', collaborateurId);
+                console.log('📊 Données RH:', { typeCollaborateurId, posteId, gradeId, dateEffet });
+                
+                // Créer l'historique des grades
+                if (gradeId) {
+                    const gradeHistory = {
+                        collaborateur_id: collaborateurId,
+                        grade_id: gradeId,
+                        date_effet: dateEffet,
+                        motif: 'Initialisation - Création du collaborateur'
+                    };
+                    
+                    await fetch(`${API_BASE_URL}/evolution-grades`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(gradeHistory)
+                    });
+                    console.log('✅ Historique grade créé');
+                }
+                
+                // Créer l'historique des postes
+                if (posteId) {
+                    const posteHistory = {
+                        collaborateur_id: collaborateurId,
+                        poste_id: posteId,
+                        date_effet: dateEffet,
+                        motif: 'Initialisation - Création du collaborateur'
+                    };
+                    
+                    await fetch(`${API_BASE_URL}/evolution-postes`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(posteHistory)
+                    });
+                    console.log('✅ Historique poste créé');
+                }
+                
+                // Créer l'historique organisationnel
+                const businessUnitId = document.getElementById('business-unit-select').value;
+                const divisionId = document.getElementById('division-select').value;
+                
+                if (businessUnitId) {
+                    const orgHistory = {
+                        collaborateur_id: collaborateurId,
+                        business_unit_id: businessUnitId,
+                        division_id: divisionId || null,
+                        date_effet: dateEffet,
+                        motif: 'Initialisation - Création du collaborateur'
+                    };
+                    
+                    await fetch(`${API_BASE_URL}/evolution-organisations`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(orgHistory)
+                    });
+                    console.log('✅ Historique organisation créé');
+                }
+                
+                console.log('🎉 Tous les historiques RH ont été créés avec succès');
+                
+            } catch (error) {
+                console.error('❌ Erreur lors de la création des historiques RH:', error);
+                // Ne pas bloquer la création du collaborateur si les historiques échouent
+                showAlert('Collaborateur créé mais erreur lors de l\'initialisation des historiques RH', 'warning');
             }
         }
 
@@ -1619,28 +1675,27 @@
         }
 
         async function loadPostesForType() {
-            const typeId = document.getElementById('rh-type-collaborateur-select').value;
+            const typeId = document.getElementById('type-collaborateur-select').value;
+            const posteSelect = document.getElementById('poste-select');
+            
+            posteSelect.innerHTML = '<option value="">Sélectionner un poste</option>';
+            
             if (!typeId) return;
-
+            
             try {
                 const response = await fetch(`${API_BASE_URL}/postes?type_collaborateur_id=${typeId}`);
                 const data = await response.json();
                 
-                const select = document.getElementById('rh-poste-select');
-                if (select) {
-                    select.innerHTML = '<option value="">Sélectionner un poste</option>';
-                    
-                    if (data.success && data.data) {
-                        data.data.forEach(poste => {
-                            const option = document.createElement('option');
-                            option.value = poste.id;
-                            option.textContent = poste.nom;
-                            select.appendChild(option);
-                        });
-                    }
+                if (data.success && data.data) {
+                    data.data.forEach(poste => {
+                        const option = document.createElement('option');
+                        option.value = poste.id;
+                        option.textContent = poste.nom;
+                        posteSelect.appendChild(option);
+                    });
                 }
             } catch (error) {
-                console.error('Erreur lors du chargement des postes:', error);
+                console.error('Erreur lors du chargement des postes pour le type:', error);
             }
         }
 
