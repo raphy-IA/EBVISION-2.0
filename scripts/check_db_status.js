@@ -20,10 +20,14 @@ async function checkDatabaseStatus() {
         // Vérifier si la table divisions existe et sa structure
         const divisionsExists = tables.rows.some(row => row.table_name === 'divisions');
         const businessUnitsExists = tables.rows.some(row => row.table_name === 'business_units');
+        const tauxHorairesExists = tables.rows.some(row => row.table_name === 'taux_horaires');
+        const gradesExists = tables.rows.some(row => row.table_name === 'grades');
 
         console.log('\n📊 État des tables clés:');
         console.log(`  - divisions: ${divisionsExists ? '✅ Existe' : '❌ N\'existe pas'}`);
         console.log(`  - business_units: ${businessUnitsExists ? '✅ Existe' : '❌ N\'existe pas'}`);
+        console.log(`  - taux_horaires: ${tauxHorairesExists ? '✅ Existe' : '❌ N\'existe pas'}`);
+        console.log(`  - grades: ${gradesExists ? '✅ Existe' : '❌ N\'existe pas'}`);
 
         if (divisionsExists) {
             const divisionsStructure = await pool.query(`
@@ -59,6 +63,40 @@ async function checkDatabaseStatus() {
             // Vérifier les données
             const businessUnitsCount = await pool.query('SELECT COUNT(*) as count FROM business_units');
             console.log(`\n📊 Nombre de business units: ${businessUnitsCount.rows[0].count}`);
+        }
+
+        if (tauxHorairesExists) {
+            const tauxHorairesStructure = await pool.query(`
+                SELECT column_name, data_type, is_nullable, column_default
+                FROM information_schema.columns 
+                WHERE table_name = 'taux_horaires' 
+                ORDER BY ordinal_position
+            `);
+
+            console.log('\n📋 Structure de la table taux_horaires:');
+            tauxHorairesStructure.rows.forEach(row => {
+                console.log(`  - ${row.column_name}: ${row.data_type} (nullable: ${row.is_nullable})`);
+            });
+
+            const tauxHorairesCount = await pool.query('SELECT COUNT(*) as count FROM taux_horaires');
+            console.log(`\n📊 Nombre de taux_horaires: ${tauxHorairesCount.rows[0].count}`);
+        }
+
+        if (gradesExists) {
+            const gradesStructure = await pool.query(`
+                SELECT column_name, data_type, is_nullable, column_default
+                FROM information_schema.columns 
+                WHERE table_name = 'grades' 
+                ORDER BY ordinal_position
+            `);
+
+            console.log('\n📋 Structure de la table grades:');
+            gradesStructure.rows.forEach(row => {
+                console.log(`  - ${row.column_name}: ${row.data_type} (nullable: ${row.is_nullable})`);
+            });
+
+            const gradesCount = await pool.query('SELECT COUNT(*) as count FROM grades');
+            console.log(`\n📊 Nombre de grades: ${gradesCount.rows[0].count}`);
         }
 
     } catch (error) {

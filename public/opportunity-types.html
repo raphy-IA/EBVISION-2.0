@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Types d'Opportunités - TRS</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden; /* Empêche le défilement horizontal */
+        }
+        
+        /* Le conteneur principal de la page qui contient la sidebar et le contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Styles pour le contenu principal */
+        .main-content-area {
+            flex-grow: 1; /* Prend l'espace restant */
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .stat-card.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-saisie { background-color: #e3f2fd; color: #1976d2; }
+        .status-soumise { background-color: #fff3e0; color: #f57c00; }
+        .status-validee { background-color: #e8f5e8; color: #388e3c; }
+        .status-rejetee { background-color: #ffebee; color: #d32f2f; }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
+        .sidebar-container {
+            width: 300px; /* Largeur fixe pour la sidebar */
+            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            .sidebar-container {
+                width: 100%; /* La sidebar prend toute la largeur */
+                height: auto; /* Hauteur automatique */
+            }
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div id="types-section">
+                <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2><i class="fas fa-tags me-2"></i>Types d'Opportunités</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTypeModal">
+                            <i class="fas fa-plus-circle me-1"></i>
+                            Nouveau Type
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Types Table -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Liste des Types d'Opportunités</h5>
+                </div>
+                <div class="card-body">
+                    <div id="types-loading" class="loading">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                    <div id="types-content">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nom</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="types-table">
+                                    <!-- Types will be loaded here by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+    <!-- Modals -->
+    <!-- Add Type Modal -->
+    <div class="modal fade" id="addTypeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>
+                        Ajouter un Type d'Opportunité
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTypeForm">
+                        <div class="mb-3">
+                            <label for="typeName" class="form-label">Nom du Type *</label>
+                            <input type="text" class="form-control" id="typeName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="typeDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="typeDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="addType()">
+                        <i class="fas fa-save me-1"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Type Modal -->
+    <div class="modal fade" id="editTypeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>
+                        Modifier le Type d'Opportunité
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTypeForm">
+                        <input type="hidden" id="editTypeId">
+                        <div class="mb-3">
+                            <label for="editTypeName" class="form-label">Nom du Type *</label>
+                            <input type="text" class="form-control" id="editTypeName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTypeDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editTypeDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="updateType()">
+                        <i class="fas fa-save me-1"></i>
+                        Mettre à jour
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                        Confirmer la suppression
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer ce type d'opportunité ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                        <i class="fas fa-trash me-1"></i>
+                        Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <script>
+        const API_BASE_URL = '/api';
+        let typeToDelete = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTypes();
+        });
+
+        async function loadTypes() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/opportunity-types`);
+                const data = await response.json();
+                if (data.success) {
+                    displayTypes(data.data);
+                } else {
+                    showAlert('Erreur lors du chargement des types d\'opportunités', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur fetch:', error);
+                showAlert('Erreur de connexion', 'danger');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayTypes(types) {
+            const tbody = document.getElementById('types-table');
+            tbody.innerHTML = '';
+            if (types.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="fas fa-tags fa-2x mb-3"></i>
+                            <p>Aucun type d'opportunité trouvé</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            types.forEach(type => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${type.id}</td>
+                    <td>${type.nom}</td>
+                    <td>${type.description || '-'}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-warning" onclick="editType('${type.id}')" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteType('${type.id}')" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function addType() {
+            const form = document.getElementById('addTypeForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const formData = {
+                nom: document.getElementById('typeName').value,
+                description: document.getElementById('typeDescription').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/opportunity-types`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Type d\'opportunité ajouté avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('addTypeModal')).hide();
+                    loadTypes();
+                } else {
+                    showAlert(`Erreur lors de l\'ajout: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'ajout:', error);
+                showAlert('Erreur lors de l\'ajout', 'danger');
+            }
+        }
+
+        async function editType(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/opportunity-types/${id}`);
+                const data = await response.json();
+                if (data.success) {
+                    const type = data.data;
+                    document.getElementById('editTypeId').value = type.id;
+                    document.getElementById('editTypeName').value = type.nom;
+                    document.getElementById('editTypeDescription').value = type.description || '';
+                    new bootstrap.Modal(document.getElementById('editTypeModal')).show();
+                } else {
+                    showAlert('Type d\'opportunité non trouvé', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur de connexion', 'danger');
+            }
+        }
+
+        async function updateType() {
+            const form = document.getElementById('editTypeForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const id = document.getElementById('editTypeId').value;
+            const formData = {
+                nom: document.getElementById('editTypeName').value,
+                description: document.getElementById('editTypeDescription').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/opportunity-types/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Type d\'opportunité mis à jour avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editTypeModal')).hide();
+                    loadTypes();
+                } else {
+                    showAlert('Erreur lors de la mise à jour', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour:', error);
+                showAlert('Erreur lors de la mise à jour', 'danger');
+            }
+        }
+
+        function deleteType(id) {
+            typeToDelete = id;
+            new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+        }
+
+        async function confirmDelete() {
+            if (!typeToDelete) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/opportunity-types/${typeToDelete}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Type d\'opportunité supprimé avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+                    loadTypes();
+                } else {
+                    showAlert('Erreur lors de la suppression', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression:', error);
+                showAlert('Erreur lors de la suppression', 'danger');
+            }
+            finally {
+                typeToDelete = null;
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('types-loading').style.display = show ? 'flex' : 'none';
+            document.getElementById('types-content').style.display = show ? 'none' : 'block';
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.main-content-area');
+            if (container) {
+                container.insertBefore(alertDiv, container.firstChild);
+            } else {
+                document.body.appendChild(alertDiv);
+            }
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

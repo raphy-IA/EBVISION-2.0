@@ -15,10 +15,12 @@ router.get('/', async (req, res) => {
             date_reference: date_reference ? new Date(date_reference) : null
         });
         
-        res.json(result);
+        // Réponse formatée pour le frontend
+        res.json({ success: true, data: result.taux_horaires, total: result.pagination.total, page: result.pagination.page, limit: result.pagination.limit });
     } catch (error) {
         console.error('Erreur lors de la récupération des taux horaires:', error);
         res.status(500).json({ 
+            success: false,
             error: 'Erreur lors de la récupération des taux horaires',
             details: error.message 
         });
@@ -29,10 +31,11 @@ router.get('/', async (req, res) => {
 router.get('/statistics', async (req, res) => {
     try {
         const statistics = await TauxHoraire.getStatistics();
-        res.json(statistics);
+        res.json({ success: true, data: statistics });
     } catch (error) {
         console.error('Erreur lors de la récupération des statistiques:', error);
         res.status(500).json({ 
+            success: false,
             error: 'Erreur lors de la récupération des statistiques',
             details: error.message 
         });
@@ -46,10 +49,11 @@ router.get('/current', async (req, res) => {
         const tauxHoraires = await TauxHoraire.getCurrentRates(
             date_reference ? new Date(date_reference) : new Date()
         );
-        res.json(tauxHoraires);
+        res.json({ success: true, data: tauxHoraires });
     } catch (error) {
         console.error('Erreur lors de la récupération des taux horaires actuels:', error);
         res.status(500).json({ 
+            success: false,
             error: 'Erreur lors de la récupération des taux horaires actuels',
             details: error.message 
         });
@@ -67,13 +71,14 @@ router.get('/grade/:gradeId/division/:divisionId', async (req, res) => {
         );
         
         if (!tauxHoraire) {
-            return res.status(404).json({ error: 'Taux horaire non trouvé pour cette combinaison grade/division' });
+            return res.status(404).json({ success: false, error: 'Taux horaire non trouvé pour cette combinaison grade/division' });
         }
         
-        res.json(tauxHoraire);
+        res.json({ success: true, data: tauxHoraire });
     } catch (error) {
         console.error('Erreur lors de la récupération du taux horaire:', error);
         res.status(500).json({ 
+            success: false,
             error: 'Erreur lors de la récupération du taux horaire',
             details: error.message 
         });
@@ -87,10 +92,11 @@ router.get('/grade/:gradeId/division/:divisionId/history', async (req, res) => {
             req.params.gradeId,
             req.params.divisionId
         );
-        res.json(tauxHoraires);
+        res.json({ success: true, data: tauxHoraires });
     } catch (error) {
         console.error('Erreur lors de la récupération de l\'historique:', error);
         res.status(500).json({ 
+            success: false,
             error: 'Erreur lors de la récupération de l\'historique',
             details: error.message 
         });
@@ -102,12 +108,13 @@ router.get('/:id', async (req, res) => {
     try {
         const tauxHoraire = await TauxHoraire.findById(req.params.id);
         if (!tauxHoraire) {
-            return res.status(404).json({ error: 'Taux horaire non trouvé' });
+            return res.status(404).json({ success: false, error: 'Taux horaire non trouvé' });
         }
-        res.json(tauxHoraire);
+        res.json({ success: true, data: tauxHoraire });
     } catch (error) {
         console.error('Erreur lors de la récupération du taux horaire:', error);
         res.status(500).json({ 
+            success: false,
             error: 'Erreur lors de la récupération du taux horaire',
             details: error.message 
         });
@@ -117,12 +124,19 @@ router.get('/:id', async (req, res) => {
 // POST /api/taux-horaires - Créer un nouveau taux horaire
 router.post('/', async (req, res) => {
     try {
-        const tauxHoraire = new TauxHoraire(req.body);
-        const created = await TauxHoraire.create(tauxHoraire);
-        res.status(201).json(created);
+        // Gérer l'incohérence de nommage du champ de date
+        const { date_entree_vigueur, ...otherData } = req.body;
+        const dataToCreate = {
+            ...otherData,
+            date_effet: date_entree_vigueur
+        };
+
+        const created = await TauxHoraire.create(dataToCreate);
+        res.status(201).json({ success: true, data: created });
     } catch (error) {
         console.error('Erreur lors de la création du taux horaire:', error);
         res.status(400).json({ 
+            success: false,
             error: 'Erreur lors de la création du taux horaire',
             details: error.message 
         });
@@ -134,16 +148,22 @@ router.put('/:id', async (req, res) => {
     try {
         const tauxHoraire = await TauxHoraire.findById(req.params.id);
         if (!tauxHoraire) {
-            return res.status(404).json({ error: 'Taux horaire non trouvé' });
+            return res.status(404).json({ success: false, error: 'Taux horaire non trouvé' });
         }
 
-        // Mettre à jour les propriétés
-        Object.assign(tauxHoraire, req.body);
-        const updated = await tauxHoraire.update();
-        res.json(updated);
+        // Gérer l'incohérence de nommage du champ de date
+        const { date_entree_vigueur, ...otherData } = req.body;
+        const dataToUpdate = {
+            ...otherData,
+            date_effet: date_entree_vigueur
+        };
+
+        const updated = await TauxHoraire.update(req.params.id, dataToUpdate);
+        res.json({ success: true, data: updated });
     } catch (error) {
         console.error('Erreur lors de la modification du taux horaire:', error);
         res.status(400).json({ 
+            success: false,
             error: 'Erreur lors de la modification du taux horaire',
             details: error.message 
         });
@@ -154,14 +174,16 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         await TauxHoraire.delete(req.params.id);
-        res.json({ message: 'Taux horaire supprimé avec succès' });
+        res.json({ success: true, message: 'Taux horaire supprimé avec succès' });
     } catch (error) {
         console.error('Erreur lors de la suppression du taux horaire:', error);
         res.status(400).json({ 
+            success: false,
             error: 'Erreur lors de la suppression du taux horaire',
             details: error.message 
         });
     }
 });
 
-module.exports = router; 
+module.exports = router;
+ 

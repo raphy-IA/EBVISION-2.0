@@ -45,7 +45,8 @@ class TauxHoraire {
         return errors;
     }
 
-    static async create(tauxHoraire) {
+    static async create(data) {
+        const tauxHoraire = new TauxHoraire(data);
         const errors = tauxHoraire.validate();
         if (errors.length > 0) {
             throw new Error(`Validation échouée: ${errors.join(', ')}`);

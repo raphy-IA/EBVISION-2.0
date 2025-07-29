@@ -9,6 +9,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
     <!-- Chart.js pour les graphiques -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -25,51 +28,66 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
+            overflow-x: hidden; /* Empêche le défilement horizontal */
         }
         
-        .navbar-brand {
-            font-weight: bold;
-            font-size: 1.5rem;
+        /* Le conteneur principal de la page qui contient la sidebar et le contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Styles pour le contenu principal */
+        .main-content-area {
+            flex-grow: 1; /* Prend l'espace restant */
+            padding: 2rem;
+            background-color: var(--light-bg);
         }
         
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-            border: none;
-            border-radius: 25px;
-            padding: 0.5rem 1.5rem;
-            font-weight: 600;
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, var(--success-color), #2ecc71);
-            border: none;
-            border-radius: 25px;
-            padding: 0.5rem 1.5rem;
-            font-weight: 600;
-        }
-        
-        .filters-card {
+        .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
         
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin: 1rem 0;
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .stat-card.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-saisie { background-color: #e3f2fd; color: #1976d2; }
+        .status-soumise { background-color: #fff3e0; color: #f57c00; }
+        .status-validee { background-color: #e8f5e8; color: #388e3c; }
+        .status-rejetee { background-color: #ffebee; color: #d32f2f; }
         
         .loading {
             display: flex;
@@ -78,364 +96,114 @@
             height: 200px;
         }
         
-        .spinner-border {
-            width: 3rem;
-            height: 3rem;
+        .chart-container {
+            position: relative;
+            height: 300px;
         }
-        
-        .alert {
-            border-radius: 10px;
-            border: none;
+
+        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
+        .sidebar-container {
+            width: 300px; /* Largeur fixe pour la sidebar */
+            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
         }
-        
-        .metric-card {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            color: white;
-        }
-        
-        .metric-card.warning {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        
-        .metric-card.info {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-        
-        .metric-card.danger {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-        }
-        
-        .report-section {
-            margin-bottom: 2rem;
-        }
-        
-        .table {
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        .table thead th {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            font-weight: 600;
-        }
-        
-        .export-buttons {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            .sidebar-container {
+                width: 100%; /* La sidebar prend toute la largeur */
+                height: auto; /* Hauteur automatique */
+            }
+            .main-content-area {
+                padding: 1rem;
+            }
         }
     </style>
-    <link rel="stylesheet" href="/css/sidebar.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/dashboard.html">
-                <i class="fas fa-clock me-2"></i>
-                TRS Dashboard
-            </a>
-            <div class="navbar-nav ms-auto">
-                <span class="navbar-text me-3">
-                    <i class="fas fa-user me-1"></i>
-                    Admin
-                </span>
-                <a href="/dashboard.html" class="btn btn-outline-light btn-sm">
-                    <i class="fas fa-arrow-left me-1"></i>
-                    Retour
-                </a>
-            </div>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
         </div>
-    </nav>
 
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar Container -->
-            <div class="col-md-3 col-lg-2 px-0 sidebar-container">
-                <!-- La sidebar sera générée par JavaScript -->
-            </div>
-
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10">
-                <div class="main-content">
-                    <!-- Header -->
-                    <div class="row mb-4">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h2><i class="fas fa-chart-bar me-2"></i>Rapports et Analyses</h2>
-                    <div>
-                        <button class="btn btn-success me-2" onclick="generateReport()">
-                            <i class="fas fa-file-alt me-1"></i>
-                            Générer Rapport
-                        </button>
-                        <button class="btn btn-primary" onclick="refreshData()">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Actualiser
-                        </button>
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div id="reports-section">
+                <!-- Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2><i class="fas fa-chart-bar me-2"></i>Rapports et Analyses</h2>
+                            <div>
+                                <button class="btn btn-success me-2" onclick="generateReport()">
+                                    <i class="fas fa-file-alt me-1"></i>
+                                    Générer Rapport
+                                </button>
+                                <button class="btn btn-primary" onclick="refreshData()">
+                                    <i class="fas fa-sync-alt me-1"></i>
+                                    Actualiser
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Filters -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card filters-card">
+                <!-- Filters and Options -->
+                <div class="card mb-4">
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-2 mb-3">
-                                <label class="form-label text-white">Période</label>
-                                <select class="form-select" id="period-select" onchange="updateDateInputs()">
-                                    <option value="today">Aujourd'hui</option>
-                                    <option value="week">Cette semaine</option>
-                                    <option value="month" selected>Ce mois</option>
-                                    <option value="quarter">Ce trimestre</option>
-                                    <option value="year">Cette année</option>
-                                    <option value="custom">Personnalisé</option>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="reportType" class="form-label">Type de Rapport</label>
+                                <select class="form-select" id="reportType">
+                                    <option value="timeEntries">Saisies de Temps</option>
+                                    <option value="collaboratorPerformance">Performance Collaborateur</option>
+                                    <option value="clientBilling">Facturation Client</option>
                                 </select>
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <label class="form-label text-white">Date début</label>
-                                <input type="date" class="form-control" id="date-start">
+                            <div class="col-md-4">
+                                <label for="startDate" class="form-label">Date de Début</label>
+                                <input type="date" class="form-control" id="startDate">
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <label class="form-label text-white">Date fin</label>
-                                <input type="date" class="form-control" id="date-end">
+                            <div class="col-md-4">
+                                <label for="endDate" class="form-label">Date de Fin</label>
+                                <input type="date" class="form-control" id="endDate">
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <label class="form-label text-white">Collaborateur</label>
-                                <select class="form-select" id="collaborateur-filter">
-                                    <option value="">Tous</option>
+                        </div>
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-6">
+                                <label for="collaboratorSelect" class="form-label">Collaborateur</label>
+                                <select class="form-select" id="collaboratorSelect">
+                                    <option value="">Tous les collaborateurs</option>
                                 </select>
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <label class="form-label text-white">Mission</label>
-                                <select class="form-select" id="mission-filter">
-                                    <option value="">Toutes</option>
+                            <div class="col-md-6">
+                                <label for="clientSelect" class="form-label">Client</label>
+                                <select class="form-select" id="clientSelect">
+                                    <option value="">Tous les clients</option>
                                 </select>
                             </div>
-                            <div class="col-md-2 mb-3">
-                                <label class="form-label text-white">&nbsp;</label>
-                                <div>
-                                    <button class="btn btn-light btn-sm" onclick="applyFilters()">
-                                        <i class="fas fa-search me-1"></i>
-                                        Appliquer
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Key Metrics -->
-        <div class="row mb-4">
-            <div class="col-md-3 mb-3">
-                <div class="card metric-card">
-                    <div class="card-body text-center">
-                        <h3 id="total-hours-metric">0</h3>
-                        <p class="mb-0">Heures totales</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card metric-card warning">
-                    <div class="card-body text-center">
-                        <h3 id="avg-hours-metric">0</h3>
-                        <p class="mb-0">Moyenne/jour</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card metric-card info">
-                    <div class="card-body text-center">
-                        <h3 id="total-entries-metric">0</h3>
-                        <p class="mb-0">Saisies totales</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card metric-card danger">
-                    <div class="card-body text-center">
-                        <h3 id="validation-rate-metric">0%</h3>
-                        <p class="mb-0">Taux validation</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts Row 1 -->
-        <div class="row mb-4">
-            <div class="col-md-6 mb-3">
+                <!-- Report Display Area -->
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-chart-pie me-2"></i>
-                            Répartition par statut
-                        </h5>
+                        <h5 class="card-title mb-0"><i class="fas fa-chart-line me-2"></i>Visualisation du Rapport</h5>
                     </div>
                     <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="statusChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-chart-line me-2"></i>
-                            Évolution des heures
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="evolutionChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts Row 2 -->
-        <div class="row mb-4">
-            <div class="col-md-6 mb-3">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-users me-2"></i>
-                            Heures par collaborateur
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="collaborateurChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-briefcase me-2"></i>
-                            Heures par mission
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="missionChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Export Section -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card export-buttons">
-                    <div class="card-body">
-                        <h5 class="card-title text-white mb-3">
-                            <i class="fas fa-download me-2"></i>
-                            Exporter les données
-                        </h5>
-                        <div class="row">
-                            <div class="col-md-3 mb-2">
-                                <button class="btn btn-light btn-sm w-100" onclick="exportToExcel()">
-                                    <i class="fas fa-file-excel me-1"></i>
-                                    Excel
-                                </button>
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <button class="btn btn-light btn-sm w-100" onclick="exportToPDF()">
-                                    <i class="fas fa-file-pdf me-1"></i>
-                                    PDF
-                                </button>
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <button class="btn btn-light btn-sm w-100" onclick="exportToCSV()">
-                                    <i class="fas fa-file-csv me-1"></i>
-                                    CSV
-                                </button>
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <button class="btn btn-light btn-sm w-100" onclick="exportCharts()">
-                                    <i class="fas fa-chart-bar me-1"></i>
-                                    Graphiques
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Detailed Reports -->
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-list me-2"></i>
-                            Top Collaborateurs
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="top-collaborateurs-loading" class="loading">
+                        <div id="report-loading" class="loading">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Chargement...</span>
                             </div>
                         </div>
-                        <div id="top-collaborateurs-content" style="display: none;">
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Collaborateur</th>
-                                            <th>Heures</th>
-                                            <th>Saisies</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="top-collaborateurs-table">
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-list me-2"></i>
-                            Top Missions
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="top-missions-loading" class="loading">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Chargement...</span>
-                            </div>
-                        </div>
-                        <div id="top-missions-content" style="display: none;">
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Mission</th>
-                                            <th>Heures</th>
-                                            <th>Saisies</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="top-missions-table">
-                                    </tbody>
-                                </table>
+                        <div id="report-content">
+                            <canvas id="reportChart"></canvas>
+                            <div id="report-table" class="table-responsive mt-4">
+                                <!-- Report data will be displayed here -->
                             </div>
                         </div>
                     </div>
@@ -444,376 +212,225 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Sidebar Manager -->
-    <script src="/js/sidebar.js"></script>
-    <script src="/js/auth.js"></script>
-    
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
     <script>
         const API_BASE_URL = '/api';
-        let statusChart, evolutionChart, collaborateurChart, missionChart;
-        let currentFilters = {};
+        let reportChartInstance;
 
-        // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            updateDateInputs();
-            loadCollaborateurs();
-            loadMissions();
-            loadReportData();
+            loadFiltersData();
+            // Initial load of a default report
+            generateReport();
         });
 
-        function updateDateInputs() {
-            const period = document.getElementById('period-select').value;
-            const today = new Date();
-            let startDate, endDate;
-            
-            switch (period) {
-                case 'today':
-                    startDate = endDate = today;
-                    break;
-                case 'week':
-                    startDate = new Date(today.getTime() - (today.getDay() * 24 * 60 * 60 * 1000));
-                    endDate = today;
-                    break;
-                case 'month':
-                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                    endDate = today;
-                    break;
-                case 'quarter':
-                    const quarter = Math.floor(today.getMonth() / 3);
-                    startDate = new Date(today.getFullYear(), quarter * 3, 1);
-                    endDate = today;
-                    break;
-                case 'year':
-                    startDate = new Date(today.getFullYear(), 0, 1);
-                    endDate = today;
-                    break;
-                case 'custom':
-                    return; // Don't change dates for custom
+        async function loadFiltersData() {
+            try {
+                const [collaboratorsRes, clientsRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/collaborateurs`),
+                    fetch(`${API_BASE_URL}/clients`)
+                ]);
+
+                const collaboratorsData = await collaboratorsRes.json();
+                const clientsData = await clientsRes.json();
+
+                populateSelect('collaboratorSelect', collaboratorsData.data, 'id', 'nom', 'prenom');
+                populateSelect('clientSelect', clientsData.data, 'id', 'raison_sociale');
+
+            } catch (error) {
+                console.error('Erreur lors du chargement des données de filtre:', error);
+                showAlert('Erreur lors du chargement des options de filtre.', 'danger');
             }
-            
-            document.getElementById('date-start').value = startDate.toISOString().split('T')[0];
-            document.getElementById('date-end').value = endDate.toISOString().split('T')[0];
         }
 
-        async function loadReportData() {
+        function populateSelect(selectId, items, valueKey, textKey1, textKey2 = null) {
+            const select = document.getElementById(selectId);
+            select.innerHTML = selectId === 'collaboratorSelect' ? '<option value="">Tous les collaborateurs</option>' : '<option value="">Tous les clients</option>';
+            if (items) {
+                items.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item[valueKey];
+                    option.textContent = textKey2 ? `${item[textKey1]} ${item[textKey2]}` : item[textKey1];
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        async function generateReport() {
             showLoading(true);
-            
+            const reportType = document.getElementById('reportType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const collaboratorId = document.getElementById('collaboratorSelect').value;
+            const clientId = document.getElementById('clientSelect').value;
+
+            let apiUrl = `${API_BASE_URL}/reports/${reportType}?`;
+            if (startDate) apiUrl += `startDate=${startDate}&`;
+            if (endDate) apiUrl += `endDate=${endDate}&`;
+            if (collaboratorId) apiUrl += `collaboratorId=${collaboratorId}&`;
+            if (clientId) apiUrl += `clientId=${clientId}&`;
+
             try {
-                const queryParams = new URLSearchParams(currentFilters);
-                const response = await fetch(`${API_BASE_URL}/reports/summary?${queryParams}`);
+                const response = await fetch(apiUrl);
                 const data = await response.json();
-                
+
                 if (data.success) {
-                    updateMetrics(data.metrics);
-                    loadStatusChart(data.statusData);
-                    loadEvolutionChart(data.evolutionData);
-                    loadCollaborateurChart(data.collaborateurData);
-                    loadMissionChart(data.missionData);
-                    loadTopCollaborateurs(data.topCollaborateurs);
-                    loadTopMissions(data.topMissions);
+                    displayReport(reportType, data.data);
                 } else {
-                    showAlert('Erreur lors du chargement des données', 'danger');
+                    showAlert(`Erreur lors de la génération du rapport: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
                 }
             } catch (error) {
-                console.error('Erreur:', error);
-                showAlert('Erreur de connexion', 'danger');
+                console.error('Erreur lors de la génération du rapport:', error);
+                showAlert('Erreur de connexion lors de la génération du rapport.', 'danger');
             } finally {
                 showLoading(false);
             }
         }
 
-        function updateMetrics(metrics) {
-            document.getElementById('total-hours-metric').textContent = metrics.totalHours || 0;
-            document.getElementById('avg-hours-metric').textContent = (metrics.averageHours || 0).toFixed(1);
-            document.getElementById('total-entries-metric').textContent = metrics.totalEntries || 0;
-            document.getElementById('validation-rate-metric').textContent = `${(metrics.validationRate || 0).toFixed(1)}%`;
-        }
+        function displayReport(reportType, reportData) {
+            const chartCanvas = document.getElementById('reportChart');
+            const reportTableDiv = document.getElementById('report-table');
 
-        function loadStatusChart(data) {
-            const ctx = document.getElementById('statusChart').getContext('2d');
-            
-            if (statusChart) {
-                statusChart.destroy();
+            // Destroy previous chart instance if it exists
+            if (reportChartInstance) {
+                reportChartInstance.destroy();
             }
-            
-            statusChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Validées', 'En attente', 'Rejetées'],
-                    datasets: [{
-                        data: [data.validated || 0, data.pending || 0, data.rejected || 0],
-                        backgroundColor: [
-                            '#27ae60',
-                            '#f39c12',
-                            '#e74c3c'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-        }
 
-        function loadEvolutionChart(data) {
-            const ctx = document.getElementById('evolutionChart').getContext('2d');
-            
-            if (evolutionChart) {
-                evolutionChart.destroy();
-            }
-            
-            statusChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.labels || [],
-                    datasets: [{
-                        label: 'Heures saisies',
-                        data: data.values || [],
-                        borderColor: '#3498db',
-                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
+            reportTableDiv.innerHTML = ''; // Clear previous table content
 
-        function loadCollaborateurChart(data) {
-            const ctx = document.getElementById('collaborateurChart').getContext('2d');
-            
-            if (collaborateurChart) {
-                collaborateurChart.destroy();
-            }
-            
-            collaborateurChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.labels || [],
-                    datasets: [{
-                        label: 'Heures',
-                        data: data.values || [],
-                        backgroundColor: '#3498db'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        function loadMissionChart(data) {
-            const ctx = document.getElementById('missionChart').getContext('2d');
-            
-            if (missionChart) {
-                missionChart.destroy();
-            }
-            
-            missionChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.labels || [],
-                    datasets: [{
-                        label: 'Heures',
-                        data: data.values || [],
-                        backgroundColor: '#e74c3c'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        function loadTopCollaborateurs(collaborateurs) {
-            const tbody = document.getElementById('top-collaborateurs-table');
-            tbody.innerHTML = '';
-            
-            if (collaborateurs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Aucune donnée</td></tr>';
+            if (!reportData || reportData.length === 0) {
+                reportTableDiv.innerHTML = '<p class="text-center text-muted">Aucune donnée disponible pour ce rapport.</p>';
                 return;
             }
-            
-            collaborateurs.forEach(collaborateur => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${collaborateur.nom}</td>
-                    <td>${collaborateur.heures}h</td>
-                    <td>${collaborateur.saisies}</td>
-                `;
-                tbody.appendChild(row);
-            });
-            
-            document.getElementById('top-collaborateurs-loading').style.display = 'none';
-            document.getElementById('top-collaborateurs-content').style.display = 'block';
-        }
 
-        function loadTopMissions(missions) {
-            const tbody = document.getElementById('top-missions-table');
-            tbody.innerHTML = '';
-            
-            if (missions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Aucune donnée</td></tr>';
-                return;
+            // Example: Time Entries Report
+            if (reportType === 'timeEntries') {
+                const labels = reportData.map(item => item.date || item.collaborateur || item.client);
+                const dataValues = reportData.map(item => item.heures || item.total_heures);
+
+                reportChartInstance = new Chart(chartCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Heures Enregistrées',
+                            data: dataValues,
+                            backgroundColor: 'rgba(52, 152, 219, 0.6)',
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Generate table for time entries
+                let tableHtml = '<table class="table table-striped"><thead><tr><th>Date/Collaborateur/Client</th><th>Heures</th><th>Description</th></tr></thead><tbody>';
+                reportData.forEach(item => {
+                    tableHtml += `<tr><td>${item.date || item.collaborateur || item.client}</td><td>${item.heures || item.total_heures}</td><td>${item.description || '-'}</td></tr>`;
+                });
+                tableHtml += '</tbody></table>';
+                reportTableDiv.innerHTML = tableHtml;
+            } 
+            // Add more report types here (e.g., collaboratorPerformance, clientBilling)
+            else if (reportType === 'collaboratorPerformance') {
+                const labels = reportData.map(item => item.collaborateur);
+                const dataValues = reportData.map(item => item.total_heures);
+
+                reportChartInstance = new Chart(chartCanvas, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Heures par Collaborateur',
+                            data: dataValues,
+                            backgroundColor: [
+                                '#3498db', '#2ecc71', '#f1c40f', '#e74c3c', '#9b59b6', '#1abc9c'
+                            ],
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                    }
+                });
+
+                let tableHtml = '<table class="table table-striped"><thead><tr><th>Collaborateur</th><th>Total Heures</th></tr></thead><tbody>';
+                reportData.forEach(item => {
+                    tableHtml += `<tr><td>${item.collaborateur}</td><td>${item.total_heures}</td></tr>`;
+                });
+                tableHtml += '</tbody></table>';
+                reportTableDiv.innerHTML = tableHtml;
             }
-            
-            missions.forEach(mission => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${mission.titre}</td>
-                    <td>${mission.heures}h</td>
-                    <td>${mission.saisies}</td>
-                `;
-                tbody.appendChild(row);
-            });
-            
-            document.getElementById('top-missions-loading').style.display = 'none';
-            document.getElementById('top-missions-content').style.display = 'block';
-        }
+            else if (reportType === 'clientBilling') {
+                const labels = reportData.map(item => item.client);
+                const dataValues = reportData.map(item => item.montant_facture || item.total_heures_facturables);
 
-        function applyFilters() {
-            currentFilters = {
-                date_start: document.getElementById('date-start').value,
-                date_end: document.getElementById('date-end').value,
-                collaborateur_id: document.getElementById('collaborateur-filter').value,
-                mission_id: document.getElementById('mission-filter').value
-            };
-            
-            // Remove empty filters
-            Object.keys(currentFilters).forEach(key => {
-                if (!currentFilters[key]) delete currentFilters[key];
-            });
-            
-            loadReportData();
-        }
+                reportChartInstance = new Chart(chartCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Montant Facturé / Heures Facturables',
+                            data: dataValues,
+                            borderColor: '#27ae60',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
 
-        async function loadCollaborateurs() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs`);
-                const data = await response.json();
-                
-                const select = document.getElementById('collaborateur-filter');
-                select.innerHTML = '<option value="">Tous</option>';
-                
-                if (data.success) {
-                    data.data.forEach(collaborateur => {
-                        const option = document.createElement('option');
-                        option.value = collaborateur.id;
-                        option.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
-                        select.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Erreur lors du chargement des collaborateurs:', error);
+                let tableHtml = '<table class="table table-striped"><thead><tr><th>Client</th><th>Montant Facturé / Heures Facturables</th></tr></thead><tbody>';
+                reportData.forEach(item => {
+                    tableHtml += `<tr><td>${item.client}</td><td>${item.montant_facture || item.total_heures_facturables}</td></tr>`;
+                });
+                tableHtml += '</tbody></table>';
+                reportTableDiv.innerHTML = tableHtml;
             }
-        }
-
-        async function loadMissions() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/missions`);
-                const data = await response.json();
-                
-                const select = document.getElementById('mission-filter');
-                select.innerHTML = '<option value="">Toutes</option>';
-                
-                if (data.success) {
-                    data.data.forEach(mission => {
-                        const option = document.createElement('option');
-                        option.value = mission.id;
-                        option.textContent = mission.titre;
-                        select.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Erreur lors du chargement des missions:', error);
-            }
-        }
-
-        function generateReport() {
-            showAlert('Génération de rapport en cours...', 'info');
-            // TODO: Implement report generation
         }
 
         function refreshData() {
-            loadReportData();
-        }
-
-        function exportToExcel() {
-            showAlert('Export Excel en cours de développement', 'info');
-        }
-
-        function exportToPDF() {
-            showAlert('Export PDF en cours de développement', 'info');
-        }
-
-        function exportToCSV() {
-            showAlert('Export CSV en cours de développement', 'info');
-        }
-
-        function exportCharts() {
-            showAlert('Export des graphiques en cours de développement', 'info');
+            generateReport();
         }
 
         function showLoading(show) {
-            // Show/hide loading indicators for charts
-            const loadingElements = document.querySelectorAll('.loading');
-            loadingElements.forEach(el => {
-                el.style.display = show ? 'flex' : 'none';
-            });
+            document.getElementById('report-loading').style.display = show ? 'flex' : 'none';
+            document.getElementById('report-content').style.display = show ? 'none' : 'block';
         }
 
         function showAlert(message, type) {
             const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
             alertDiv.innerHTML = `
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
             
-            document.body.appendChild(alertDiv);
+            const container = document.querySelector('.main-content-area');
+            if (container) {
+                container.insertBefore(alertDiv, container.firstChild);
+            } else {
+                document.body.appendChild(alertDiv);
+            }
             
             setTimeout(() => {
                 if (alertDiv.parentNode) {
@@ -823,4 +440,4 @@
         }
     </script>
 </body>
-</html> 
+</html>

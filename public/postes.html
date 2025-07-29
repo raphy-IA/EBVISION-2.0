@@ -9,6 +9,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -22,60 +25,66 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
+            overflow-x: hidden; /* Empêche le défilement horizontal */
         }
         
-        .navbar-brand {
-            font-weight: bold;
-            font-size: 1.5rem;
+        /* Le conteneur principal de la page qui contient la sidebar et le contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Styles pour le contenu principal */
+        .main-content-area {
+            flex-grow: 1; /* Prend l'espace restant */
+            padding: 2rem;
+            background-color: var(--light-bg);
         }
         
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
         
-        .btn-primary {
-            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-            border: none;
-            border-radius: 25px;
-            padding: 0.5rem 1.5rem;
-            font-weight: 600;
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
         
-        .btn-success {
-            background: linear-gradient(135deg, var(--success-color), #2ecc71);
-            border: none;
-            border-radius: 25px;
-            padding: 0.5rem 1.5rem;
-            font-weight: 600;
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
         
-        .btn-danger {
-            background: linear-gradient(135deg, var(--danger-color), #c0392b);
-            border: none;
-            border-radius: 25px;
-            padding: 0.5rem 1.5rem;
-            font-weight: 600;
+        .stat-card.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
         
-        .table {
-            border-radius: 10px;
-            overflow: hidden;
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
         }
         
         .table thead th {
             background-color: var(--primary-color);
             color: white;
-            border: none;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: 600;
         }
+        
+        .status-saisie { background-color: #e3f2fd; color: #1976d2; }
+        .status-soumise { background-color: #fff3e0; color: #f57c00; }
+        .status-validee { background-color: #e8f5e8; color: #388e3c; }
+        .status-rejetee { background-color: #ffebee; color: #d32f2f; }
         
         .loading {
             display: flex;
@@ -84,162 +93,81 @@
             height: 200px;
         }
         
-        .spinner-border {
-            width: 3rem;
-            height: 3rem;
+        .chart-container {
+            position: relative;
+            height: 300px;
         }
-        
-        .alert {
-            border-radius: 10px;
-            border: none;
+
+        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
+        .sidebar-container {
+            width: 300px; /* Largeur fixe pour la sidebar */
+            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            .sidebar-container {
+                width: 100%; /* La sidebar prend toute la largeur */
+                height: auto; /* Hauteur automatique */
+            }
+            .main-content-area {
+                padding: 1rem;
+            }
         }
     </style>
-    <link rel="stylesheet" href="/css/sidebar.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/dashboard.html">
-                <i class="fas fa-clock me-2"></i>
-                TRS Dashboard
-            </a>
-            <div class="navbar-nav ms-auto">
-                <span class="navbar-text me-3">
-                    <i class="fas fa-user me-1"></i>
-                    Admin
-                </span>
-                <a href="/collaborateurs.html" class="btn btn-outline-light btn-sm">
-                    <i class="fas fa-arrow-left me-1"></i>
-                    Retour
-                </a>
-            </div>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
         </div>
-    </nav>
 
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar Container -->
-            <div class="col-md-3 col-lg-2 px-0 sidebar-container">
-                <!-- La sidebar sera générée par JavaScript -->
-            </div>
-
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10">
-                <div class="main-content">
-                    <!-- Header -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h2><i class="fas fa-briefcase me-2"></i>Gestion des Postes</h2>
-                                <button class="btn btn-primary" onclick="showNewPosteModal()">
-                                    <i class="fas fa-plus me-1"></i>
-                                    Nouveau Poste
-                                </button>
-                            </div>
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div id="postes-section">
+                <!-- Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2><i class="fas fa-briefcase me-2"></i>Gestion des Postes</h2>
+                            <button class="btn btn-primary" onclick="showNewPosteModal()">
+                                <i class="fas fa-plus me-1"></i>
+                                Nouveau Poste
+                            </button>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Statistics -->
-                    <div class="row mb-4">
-                        <div class="col-md-4 mb-3">
-                            <div class="card text-center">
-                                <div class="card-body">
-                                    <h3 class="text-primary" id="total-postes">0</h3>
-                                    <p class="text-muted mb-0">Total Postes</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="card text-center">
-                                <div class="card-body">
-                                    <h3 class="text-success" id="actifs-postes">0</h3>
-                                    <p class="text-muted mb-0">Actifs</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="card text-center">
-                                <div class="card-body">
-                                    <h3 class="text-warning" id="inactifs-postes">0</h3>
-                                    <p class="text-muted mb-0">Inactifs</p>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Postes Table -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Liste des Postes</h5>
                     </div>
-
-                    <!-- Search and Filters -->
-                    <div class="row mb-4">
-                        <div class="col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="input-group">
-                                        <span class="input-group-text">
-                                            <i class="fas fa-search"></i>
-                                        </span>
-                                        <input type="text" class="form-control" id="search-input" 
-                                               placeholder="Rechercher un poste..." onkeyup="filterPostes()">
-                                    </div>
-                                </div>
+                    <div class="card-body">
+                        <div id="postes-loading" class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <select class="form-select" id="type-filter" onchange="filterPostes()">
-                                        <option value="">Tous les types</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <button class="btn btn-outline-secondary w-100" onclick="loadPostes()">
-                                        <i class="fas fa-sync-alt me-1"></i>
-                                        Actualiser
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Postes Table -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fas fa-list me-2"></i>
-                                        Liste des Postes
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div id="loading" class="loading">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Chargement...</span>
-                                        </div>
-                                    </div>
-                                    <div id="postes-content" style="display: none;">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Code</th>
-                                                        <th>Nom</th>
-                                                        <th>Type</th>
-                                                        <th>Description</th>
-                                                        <th>Statut</th>
-                                                        <th>Actions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="postes-table-body">
-                                                    <!-- Les postes seront chargés ici -->
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div id="postes-content">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Code</th>
+                                            <th>Description</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="postes-table">
+                                        <!-- Postes will be loaded here by JavaScript -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -248,65 +176,104 @@
         </div>
     </div>
 
-    <!-- Modal Nouveau/Éditer Poste -->
-    <div class="modal fade" id="posteModal" tabindex="-1">
+    <!-- Modals -->
+    <!-- New Poste Modal -->
+    <div class="modal fade" id="newPosteModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="posteModalTitle">Nouveau Poste</h5>
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>
+                        Nouveau Poste
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="posteForm">
-                        <input type="hidden" id="poste-id">
+                    <form id="newPosteForm">
                         <div class="mb-3">
-                            <label for="poste-code" class="form-label">Code *</label>
-                            <input type="text" class="form-control" id="poste-code" required 
-                                   placeholder="Ex: CONSULTANT, SECRETAIRE">
+                            <label for="posteName" class="form-label">Nom du Poste *</label>
+                            <input type="text" class="form-control" id="posteName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="poste-nom" class="form-label">Nom *</label>
-                            <input type="text" class="form-control" id="poste-nom" required 
-                                   placeholder="Ex: Consultant, Secrétaire">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="poste-description" class="form-label">Description</label>
-                            <textarea class="form-control" id="poste-description" rows="3" 
-                                      placeholder="Description du poste..."></textarea>
+                            <label for="posteCode" class="form-label">Code du Poste *</label>
+                            <input type="text" class="form-control" id="posteCode" required>
                         </div>
                         <div class="mb-3">
-                            <label for="poste-statut" class="form-label">Statut</label>
-                            <select class="form-select" id="poste-statut">
-                                <option value="ACTIF">Actif</option>
-                                <option value="INACTIF">Inactif</option>
-                            </select>
+                            <label for="posteDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="posteDescription" rows="3"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" onclick="savePoste()">Enregistrer</button>
+                    <button type="button" class="btn btn-primary" onclick="addPoste()">
+                        <i class="fas fa-save me-1"></i>
+                        Enregistrer
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Confirmation Suppression -->
-    <div class="modal fade" id="deleteModal" tabindex="-1">
+    <!-- Edit Poste Modal -->
+    <div class="modal fade" id="editPosteModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Confirmer la suppression</h5>
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>
+                        Modifier le Poste
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editPosteForm">
+                        <input type="hidden" id="editPosteId">
+                        <div class="mb-3">
+                            <label for="editPosteName" class="form-label">Nom du Poste *</label>
+                            <input type="text" class="form-control" id="editPosteName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPosteCode" class="form-label">Code du Poste *</label>
+                            <input type="text" class="form-control" id="editPosteCode" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPosteDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editPosteDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="updatePoste()">
+                        <i class="fas fa-save me-1"></i>
+                        Mettre à jour
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                        Confirmer la suppression
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <p>Êtes-vous sûr de vouloir supprimer ce poste ?</p>
-                    <p class="text-danger"><small>Cette action est irréversible.</small></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-danger" onclick="confirmDeletePoste()">Supprimer</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                        <i class="fas fa-trash me-1"></i>
+                        Supprimer
+                    </button>
                 </div>
             </div>
         </div>
@@ -314,225 +281,123 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/sidebar.js"></script>
-    <script src="js/auth.js"></script>
-    
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
     <script>
         const API_BASE_URL = '/api';
-        let postes = [];
-        let deletePosteId = null;
+        let posteToDelete = null;
 
-        // Charger les postes au démarrage
         document.addEventListener('DOMContentLoaded', function() {
             loadPostes();
         });
 
-        // Charger les postes
         async function loadPostes() {
+            showLoading(true);
             try {
-                console.log('🔄 Chargement des postes...');
-                document.getElementById('loading').style.display = 'flex';
-                document.getElementById('postes-content').style.display = 'none';
-
                 const response = await fetch(`${API_BASE_URL}/postes`);
                 const data = await response.json();
-
-                console.log('📄 Réponse loadPostes:', data);
-
                 if (data.success) {
-                    // Gérer les deux formats de réponse possibles
-                    postes = data.data || data.postes || [];
-                    console.log('📋 Postes chargés:', postes.length, postes);
-                    displayPostes(postes);
-                    updateStatistics();
-                    loadTypeFilter();
+                    displayPostes(data.data);
                 } else {
-                    console.error('❌ Erreur API:', data);
                     showAlert('Erreur lors du chargement des postes', 'danger');
                 }
             } catch (error) {
-                console.error('❌ Erreur réseau:', error);
+                console.error('Erreur fetch:', error);
                 showAlert('Erreur de connexion', 'danger');
             } finally {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('postes-content').style.display = 'block';
+                showLoading(false);
             }
         }
 
-        // Afficher les postes
-        function displayPostes(postesToShow) {
-            const tbody = document.getElementById('postes-table-body');
+        function displayPostes(postes) {
+            const tbody = document.getElementById('postes-table');
             tbody.innerHTML = '';
+            if (postes.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="fas fa-briefcase fa-2x mb-3"></i>
+                            <p>Aucun poste trouvé</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
 
-            postesToShow.forEach(poste => {
+            postes.forEach(poste => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><strong>${poste.code}</strong></td>
                     <td>${poste.nom}</td>
-                    <td>${poste.type_collaborateur_nom || '-'}</td>
+                    <td>${poste.code}</td>
                     <td>${poste.description || '-'}</td>
-                    <td><span class="badge ${poste.statut === 'ACTIF' ? 'bg-success' : 'bg-secondary'}">${poste.statut}</span></td>
                     <td>
-                        <button class="btn btn-outline-warning btn-sm me-1" onclick="editPoste('${poste.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-outline-danger btn-sm" onclick="deletePoste('${poste.id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-warning" onclick="editPoste('${poste.id}')" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deletePoste('${poste.id}')" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        // Mettre à jour les statistiques
-        function updateStatistics() {
-            document.getElementById('total-postes').textContent = postes.length;
-            document.getElementById('actifs-postes').textContent = postes.filter(p => p.statut === 'ACTIF').length;
-            document.getElementById('inactifs-postes').textContent = postes.filter(p => p.statut === 'INACTIF').length;
-        }
-
-        // Charger le filtre par type
-        function loadTypeFilter() {
-            const types = [...new Set(postes.map(p => p.type_collaborateur_nom).filter(Boolean))];
-            const select = document.getElementById('type-filter');
-            select.innerHTML = '<option value="">Tous les types</option>';
-            
-            types.forEach(type => {
-                const option = document.createElement('option');
-                option.value = type;
-                option.textContent = type;
-                select.appendChild(option);
-            });
-        }
-
-        // Filtrer les postes
-        function filterPostes() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const typeFilter = document.getElementById('type-filter').value;
-
-            let filteredPostes = postes.filter(poste => {
-                const matchesSearch = poste.code.toLowerCase().includes(searchTerm) || 
-                                    poste.nom.toLowerCase().includes(searchTerm) ||
-                                    (poste.description && poste.description.toLowerCase().includes(searchTerm));
-                const matchesType = !typeFilter || poste.type_collaborateur_nom === typeFilter;
-                return matchesSearch && matchesType;
-            });
-
-            displayPostes(filteredPostes);
-        }
-
-
-
-        // Afficher le modal nouveau poste
         function showNewPosteModal() {
-            document.getElementById('posteModalTitle').textContent = 'Nouveau Poste';
-            document.getElementById('posteForm').reset();
-            document.getElementById('poste-id').value = '';
-            
-            const modal = new bootstrap.Modal(document.getElementById('posteModal'));
-            modal.show();
+            document.getElementById('newPosteForm').reset();
+            new bootstrap.Modal(document.getElementById('newPosteModal')).show();
         }
 
-        // Éditer un poste
-        function editPoste(posteId) {
-            const poste = postes.find(p => p.id === posteId);
-            if (!poste) return;
-
-            document.getElementById('posteModalTitle').textContent = 'Modifier Poste';
-            document.getElementById('poste-id').value = poste.id;
-            document.getElementById('poste-code').value = poste.code;
-            document.getElementById('poste-nom').value = poste.nom;
-            document.getElementById('poste-description').value = poste.description || '';
-            document.getElementById('poste-statut').value = poste.statut;
-
-            const modal = new bootstrap.Modal(document.getElementById('posteModal'));
-            modal.show();
-        }
-
-        // Sauvegarder un poste
-        async function savePoste() {
-            const posteId = document.getElementById('poste-id').value;
-            const code = document.getElementById('poste-code').value.trim();
-            const nom = document.getElementById('poste-nom').value.trim();
-            const description = document.getElementById('poste-description').value.trim();
-            const statut = document.getElementById('poste-statut').value;
-
-            if (!code || !nom) {
-                showAlert('Veuillez remplir tous les champs obligatoires', 'warning');
+        async function addPoste() {
+            const form = document.getElementById('newPosteForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
                 return;
             }
 
-            // Vérifier si le code existe déjà
-            const codeExists = postes.some(p => p.code === code && p.id !== posteId);
-            if (codeExists) {
-                showAlert('Ce code existe déjà. Veuillez utiliser un code unique.', 'warning');
-                return;
-            }
+            const formData = {
+                nom: document.getElementById('posteName').value,
+                code: document.getElementById('posteCode').value,
+                description: document.getElementById('posteDescription').value
+            };
 
             try {
-                const posteData = { code, nom, description, statut };
-                const url = posteId ? `${API_BASE_URL}/postes/${posteId}` : `${API_BASE_URL}/postes`;
-                const method = posteId ? 'PUT' : 'POST';
-
-                console.log('🔍 DEBUG FRONTEND:');
-                console.log('📤 Données envoyées:', posteData);
-                console.log('🌐 URL:', url);
-                console.log('📋 Méthode:', method);
-
-                const response = await fetch(url, {
-                    method: method,
+                const response = await fetch(`${API_BASE_URL}/postes`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(posteData)
+                    body: JSON.stringify(formData)
                 });
-
-                console.log('📡 Status:', response.status);
-                console.log('📋 Headers de réponse:', response.headers);
-
                 const data = await response.json();
-                console.log('📄 Réponse:', data);
-
                 if (data.success) {
-                    showAlert(posteId ? 'Poste modifié avec succès' : 'Poste créé avec succès', 'success');
-                    bootstrap.Modal.getInstance(document.getElementById('posteModal')).hide();
+                    showAlert('Poste ajouté avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('newPosteModal')).hide();
                     loadPostes();
                 } else {
-                    // Afficher le message d'erreur approprié
-                    const errorMessage = data.message || data.error || 'Erreur lors de la sauvegarde';
-                    showAlert(errorMessage, 'danger');
+                    showAlert(`Erreur lors de l\'ajout: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
                 }
             } catch (error) {
-                console.error('❌ Erreur détaillée:', error);
-                showAlert('Erreur de connexion', 'danger');
+                console.error('Erreur lors de l\'ajout:', error);
+                showAlert('Erreur lors de l\'ajout', 'danger');
             }
         }
 
-        // Supprimer un poste
-        function deletePoste(posteId) {
-            deletePosteId = posteId;
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            modal.show();
-        }
-
-        // Confirmer la suppression
-        async function confirmDeletePoste() {
-            if (!deletePosteId) return;
-
+        async function editPoste(id) {
             try {
-                const response = await fetch(`${API_BASE_URL}/postes/${deletePosteId}`, {
-                    method: 'DELETE'
-                });
-
+                const response = await fetch(`${API_BASE_URL}/postes/${id}`);
                 const data = await response.json();
-
                 if (data.success) {
-                    showAlert('Poste supprimé avec succès', 'success');
-                    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
-                    loadPostes();
+                    const poste = data.data;
+                    document.getElementById('editPosteId').value = poste.id;
+                    document.getElementById('editPosteName').value = poste.nom;
+                    document.getElementById('editPosteCode').value = poste.code;
+                    document.getElementById('editPosteDescription').value = poste.description || '';
+                    new bootstrap.Modal(document.getElementById('editPosteModal')).show();
                 } else {
-                    showAlert(data.message || 'Erreur lors de la suppression', 'danger');
+                    showAlert('Poste non trouvé', 'danger');
                 }
             } catch (error) {
                 console.error('Erreur:', error);
@@ -540,7 +405,73 @@
             }
         }
 
-        // Afficher une alerte
+        async function updatePoste() {
+            const form = document.getElementById('editPosteForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const id = document.getElementById('editPosteId').value;
+            const formData = {
+                nom: document.getElementById('editPosteName').value,
+                code: document.getElementById('editPosteCode').value,
+                description: document.getElementById('editPosteDescription').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/postes/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Poste mis à jour avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editPosteModal')).hide();
+                    loadPostes();
+                } else {
+                    showAlert('Erreur lors de la mise à jour', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour:', error);
+                showAlert('Erreur lors de la mise à jour', 'danger');
+            }
+        }
+
+        function deletePoste(id) {
+            posteToDelete = id;
+            new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+        }
+
+        async function confirmDelete() {
+            if (!posteToDelete) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/postes/${posteToDelete}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Poste supprimé avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+                    loadPostes();
+                } else {
+                    showAlert('Erreur lors de la suppression', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression:', error);
+                showAlert('Erreur lors de la suppression', 'danger');
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('postes-loading').style.display = show ? 'flex' : 'none';
+            document.getElementById('postes-content').style.display = show ? 'none' : 'block';
+        }
+
         function showAlert(message, type) {
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
@@ -549,9 +480,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
             
-            const container = document.querySelector('.main-content');
-            container.insertBefore(alertDiv, container.firstChild);
-
+            const container = document.querySelector('.main-content-area');
+            if (container) {
+                container.insertBefore(alertDiv, container.firstChild);
+            } else {
+                document.body.appendChild(alertDiv);
+            }
+            
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
@@ -560,4 +495,4 @@
         }
     </script>
 </body>
-</html> 
+</html>

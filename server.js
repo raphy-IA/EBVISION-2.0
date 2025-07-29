@@ -25,6 +25,10 @@ const reportsRoutes = require('./src/routes/reports');
 const typesCollaborateursRoutes = require('./src/routes/types-collaborateurs');
 const postesRoutes = require('./src/routes/postes');
 const tauxHorairesRoutes = require('./src/routes/taux-horaires');
+const opportunityRoutes = require('./src/routes/opportunities');
+const opportunityStageRoutes = require('./src/routes/opportunity-stages');
+const paysRoutes = require('./src/routes/pays');
+const secteursActiviteRoutes = require('./src/routes/secteurs-activite');
 
 // Import des middlewares
 const errorHandler = require('./src/middleware/errorHandler');
@@ -92,6 +96,10 @@ app.use('/api/reports', reportsRoutes);
 app.use('/api/types-collaborateurs', typesCollaborateursRoutes);
 app.use('/api/postes', postesRoutes);
 app.use('/api/taux-horaires', tauxHorairesRoutes);
+app.use('/api/opportunities', opportunityRoutes);
+app.use('/api/opportunity-stages', opportunityStageRoutes);
+app.use('/api/pays', paysRoutes);
+app.use('/api/secteurs-activite', secteursActiviteRoutes);
 
 // Route racine
 app.get('/', (req, res) => {

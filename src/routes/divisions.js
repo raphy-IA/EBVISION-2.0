@@ -21,7 +21,8 @@ router.get('/', async (req, res) => {
         res.json({
             success: true,
             message: 'Divisions récupérées avec succès',
-            data: result
+            data: result.divisions,
+            pagination: result.pagination
         });
 
     } catch (error) {

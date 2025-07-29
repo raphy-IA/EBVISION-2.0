@@ -51,16 +51,26 @@ CREATE TABLE fiscal_years (
 -- Table des clients
 CREATE TABLE clients (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code VARCHAR(50) UNIQUE,
     raison_sociale VARCHAR(200) NOT NULL,
-    siret VARCHAR(14) NOT NULL UNIQUE,
-    secteur_activite VARCHAR(100) NOT NULL,
-    effectif INTEGER NOT NULL DEFAULT 1,
-    ca_annuel DECIMAL(15,2) NOT NULL DEFAULT 0,
-    adresse TEXT NOT NULL,
-    pays VARCHAR(50) NOT NULL DEFAULT 'France',
-    statut VARCHAR(20) NOT NULL DEFAULT 'PROSPECT' CHECK (statut IN ('PROSPECT', 'CLIENT', 'CLIENT_FIDELE')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    nom VARCHAR(100),
+    email VARCHAR(255),
+    telephone VARCHAR(50),
+    adresse TEXT,
+    ville VARCHAR(100),
+    code_postal VARCHAR(20),
+    pays VARCHAR(50) DEFAULT 'France',
+    secteur_activite VARCHAR(100),
+    taille_entreprise VARCHAR(50),
+    statut VARCHAR(20) NOT NULL DEFAULT 'PROSPECT' CHECK (statut IN ('PROSPECT', 'CLIENT', 'CLIENT_FIDELE', 'ACTIF', 'INACTIF', 'ABANDONNE')),
+    source_prospection VARCHAR(100),
+    notes TEXT,
+    collaborateur_id UUID,
+    date_creation TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    date_derniere_activite TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100)
 );
 
 -- Index pour optimiser les performances

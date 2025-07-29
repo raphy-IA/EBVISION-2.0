@@ -1,0 +1,5 @@
+[33md585705[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Mise à jour du fichier REPRISE.md
+[33mea8fe66[m feat: Correction complète des boutons CRUD collaborateurs
+[33me69f2d4[m Fix collaborateur creation - Correction contrainte division_id et amélioration dropdowns
+[33ma93ed40[m feat: Refactorisation complète Business Units et Divisions - Migration base de données avec hiérarchie BU/Division - Nouveaux modèles BusinessUnit et Division avec relations - API complète pour Business Units et Divisions - Interfaces frontend modernes (business-units.html, divisions.html) - Mise à jour sidebar avec navigation Business Units - Scripts de test et migration des données - Documentation complète dans REPRISE.md - Correction des erreurs de base de données identifiées
+[33m619fe2d[m Initial commit: TRS Dashboard application with authentication, database models, and web interface

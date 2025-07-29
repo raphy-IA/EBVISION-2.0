@@ -1,9 +1,130 @@
 const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
+const { pool } = require('../utils/database');
 
 // Middleware d'authentification (à implémenter plus tard)
 // const auth = require('../middleware/auth');
+
+// Fonction pour résoudre l'ID d'un pays à partir de son nom
+async function resolvePaysId(paysNom) {
+    if (!paysNom) return null;
+    
+    const result = await pool.query(
+        'SELECT id FROM pays WHERE nom ILIKE $1 AND actif = true',
+        [paysNom]
+    );
+    
+    return result.rows.length > 0 ? result.rows[0].id : null;
+}
+
+// Fonction pour résoudre l'ID d'un secteur à partir de son nom
+async function resolveSecteurId(secteurNom) {
+    if (!secteurNom) return null;
+    
+    const result = await pool.query(
+        'SELECT id FROM secteurs_activite WHERE nom ILIKE $1 AND actif = true',
+        [secteurNom]
+    );
+    
+    return result.rows.length > 0 ? result.rows[0].id : null;
+}
+
+// GET /api/clients/form-data - Récupérer les données pour les formulaires
+router.get('/form-data', async (req, res) => {
+    try {
+        // Récupérer les données depuis les nouvelles tables
+        const [paysResult, secteursResult, sourcesResult, statutsResult] = await Promise.all([
+            pool.query('SELECT nom, code_pays, code_appel, devise FROM pays WHERE actif = true ORDER BY nom'),
+            pool.query(`
+                SELECT s.nom, s.code, s.couleur, s.icone, 
+                       array_agg(ss.nom ORDER BY ss.ordre) as sous_secteurs
+                FROM secteurs_activite s
+                LEFT JOIN sous_secteurs_activite ss ON s.id = ss.secteur_id AND ss.actif = true
+                WHERE s.actif = true
+                GROUP BY s.id, s.nom, s.code, s.couleur, s.icone
+                ORDER BY s.ordre, s.nom
+            `),
+            pool.query('SELECT DISTINCT source_prospection FROM clients WHERE source_prospection IS NOT NULL ORDER BY source_prospection'),
+            pool.query('SELECT DISTINCT statut FROM clients WHERE statut IS NOT NULL ORDER BY statut')
+        ]);
+
+        // Valeurs standardisées
+        const formData = {
+            pays: paysResult.rows.map(pays => ({
+                nom: pays.nom,
+                code: pays.code_pays,
+                code_appel: pays.code_appel,
+                devise: pays.devise
+            })),
+            secteurs: secteursResult.rows.map(secteur => ({
+                nom: secteur.nom,
+                code: secteur.code,
+                couleur: secteur.couleur,
+                icone: secteur.icone,
+                sous_secteurs: secteur.sous_secteurs.filter(ss => ss !== null)
+            })),
+            sources_prospection: [
+                'recommandation',
+                'web',
+                'salon',
+                'réseau',
+                'appel_froid',
+                'emailing',
+                'linkedin',
+                'partenaire',
+                'ancien_client',
+                'prospection_terrain',
+                'publicité',
+                'média',
+                'autre'
+            ],
+            statuts: [
+                'PROSPECT',
+                'CLIENT',
+                'CLIENT_FIDELE',
+                'ACTIF',
+                'INACTIF',
+                'ABANDONNE'
+            ],
+            tailles_entreprise: [
+                'TPE',
+                'PME',
+                'ETI',
+                'GE'
+            ],
+            formes_juridiques: [
+                'EI',
+                'EIRL',
+                'EURL',
+                'SARL',
+                'SAS',
+                'SASU',
+                'SA',
+                'SCOP',
+                'SCIC',
+                'Association',
+                'Fondation',
+                'Autre'
+            ],
+            // Valeurs existantes dans la base
+            sources_existantes: sourcesResult.rows.map(row => row.source_prospection),
+            statuts_existants: statutsResult.rows.map(row => row.statut)
+        };
+
+        res.json({
+            success: true,
+            data: formData
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des données de formulaire:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des données de formulaire',
+            error: error.message
+        });
+    }
+});
 
 // GET /api/clients - Récupérer tous les clients avec pagination et filtres
 router.get('/', async (req, res) => {
@@ -15,7 +136,7 @@ router.get('/', async (req, res) => {
             collaborateur_id,
             secteur_activite,
             search,
-            sortBy = 'date_creation',
+            sortBy = 'created_at',
             sortOrder = 'DESC'
         } = req.query;
 
@@ -34,7 +155,9 @@ router.get('/', async (req, res) => {
         
         res.json({
             success: true,
-            data: result.clients,
+            data: {
+                clients: result.clients
+            },
             pagination: result.pagination
         });
     } catch (error) {
@@ -161,9 +284,17 @@ router.post('/', async (req, res) => {
             });
         }
 
+        // Résoudre les IDs des pays et secteurs
+        const [paysId, secteurId] = await Promise.all([
+            resolvePaysId(req.body.pays),
+            resolveSecteurId(req.body.secteur_activite)
+        ]);
+
         const clientData = {
             ...req.body,
-            created_by: req.body.created_by || 'system' // À remplacer par l'ID de l'utilisateur connecté
+            pays_id: paysId,
+            secteur_activite_id: secteurId,
+            created_by: req.body.created_by || null // À remplacer par l'ID de l'utilisateur connecté
         };
 
         const client = await Client.create(clientData);
@@ -205,9 +336,17 @@ router.put('/:id', async (req, res) => {
             });
         }
 
+        // Résoudre les IDs des pays et secteurs
+        const [paysId, secteurId] = await Promise.all([
+            resolvePaysId(req.body.pays),
+            resolveSecteurId(req.body.secteur_activite)
+        ]);
+
         const updateData = {
             ...req.body,
-            updated_by: req.body.updated_by || 'system' // À remplacer par l'ID de l'utilisateur connecté
+            pays_id: paysId,
+            secteur_activite_id: secteurId,
+            updated_by: req.body.updated_by || null // À remplacer par l'ID de l'utilisateur connecté
         };
 
         const updatedClient = await client.update(updateData);
