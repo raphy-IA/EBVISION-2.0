@@ -1,42 +1,52 @@
-const db = require('../src/utils/database');
+const { pool } = require('../src/utils/database');
 
 async function checkClientsStructure() {
     try {
-        console.log('🔍 Vérification de la structure de la table clients...');
+        console.log('🔍 Vérification de la structure de la table clients...\n');
         
-        const result = await db.query(`
-            SELECT column_name, data_type, is_nullable, column_default
-            FROM information_schema.columns
+        // 1. Vérifier la structure actuelle
+        console.log('1. Structure actuelle:');
+        const structure = await pool.query(`
+            SELECT column_name, data_type 
+            FROM information_schema.columns 
             WHERE table_name = 'clients'
-            ORDER BY ordinal_position
+            ORDER BY ordinal_position;
         `);
         
-        console.log('Structure de la table clients:');
-        result.rows.forEach(col => {
-            console.log(`  - ${col.column_name}: ${col.data_type} (nullable: ${col.is_nullable})`);
+        structure.rows.forEach(col => {
+            console.log(`  - ${col.column_name}: ${col.data_type}`);
         });
         
-        // Vérifier si la colonne created_at existe
-        const hasCreatedAt = result.rows.some(col => col.column_name === 'created_at');
-        console.log('\nColonne created_at existe:', hasCreatedAt);
+        // 2. Vérifier quelques données
+        console.log('\n2. Exemple de données:');
+        const sampleData = await pool.query(`
+            SELECT * FROM clients LIMIT 3;
+        `);
         
-        if (!hasCreatedAt) {
-            console.log('⚠️  La colonne created_at n\'existe pas. Ajout de la colonne...');
-            
-            await db.query(`
-                ALTER TABLE clients 
-                ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            `);
-            
-            console.log('✅ Colonnes created_at et updated_at ajoutées');
-        }
+        sampleData.rows.forEach((client, index) => {
+            console.log(`  Client ${index + 1}:`, client);
+        });
         
-        process.exit(0);
-    } catch (err) {
-        console.error('❌ Erreur:', err);
-        process.exit(1);
+        // 3. Tester la requête API
+        console.log('\n3. Test de la requête API:');
+        const apiTest = await pool.query(`
+            SELECT id, nom, raison_sociale, email 
+            FROM clients 
+            ORDER BY nom ASC
+            LIMIT 5;
+        `);
+        
+        console.log('Résultats API:');
+        apiTest.rows.forEach(client => {
+            console.log(`  - ${client.nom || client.raison_sociale} (${client.email})`);
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+    } finally {
+        await pool.end();
     }
 }
 
-checkClientsStructure(); 
+// Exécuter le script
+checkClientsStructure().catch(console.error); 

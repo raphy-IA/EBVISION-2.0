@@ -300,6 +300,29 @@ class Collaborateur {
         return this;
     }
 
+    async updateTypeCollaborateur(typeCollaborateurId) {
+        // Méthode spéciale pour la mise à jour du type de collaborateur
+        const query = `
+            UPDATE collaborateurs SET
+                type_collaborateur_id = $1,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $2
+            RETURNING *
+        `;
+
+        const result = await pool.query(query, [
+            typeCollaborateurId,
+            this.id
+        ]);
+
+        if (result.rows.length === 0) {
+            throw new Error('Collaborateur non trouvé');
+        }
+
+        Object.assign(this, result.rows[0]);
+        return this;
+    }
+
     static async delete(id) {
         const query = `
             DELETE FROM collaborateurs WHERE id = $1
@@ -336,6 +359,8 @@ class Collaborateur {
 
     static async updateCurrentInfoFromEvolutions(collaborateurId) {
         try {
+            console.log(`🔄 DEBUG: Mise à jour des informations actuelles pour le collaborateur ${collaborateurId}`);
+            
             // Récupérer l'évolution de grade la plus récente
             const gradeQuery = `
                 SELECT grade_id, date_debut
@@ -345,6 +370,7 @@ class Collaborateur {
                 LIMIT 1
             `;
             const gradeResult = await pool.query(gradeQuery, [collaborateurId]);
+            console.log(`📊 DEBUG: ${gradeResult.rows.length} évolutions de grade trouvées`);
             
             // Récupérer l'évolution de poste la plus récente
             const posteQuery = `
@@ -355,6 +381,7 @@ class Collaborateur {
                 LIMIT 1
             `;
             const posteResult = await pool.query(posteQuery, [collaborateurId]);
+            console.log(`📊 DEBUG: ${posteResult.rows.length} évolutions de poste trouvées`);
             
             // Récupérer l'évolution organisationnelle la plus récente
             const orgQuery = `
@@ -365,6 +392,7 @@ class Collaborateur {
                 LIMIT 1
             `;
             const orgResult = await pool.query(orgQuery, [collaborateurId]);
+            console.log(`📊 DEBUG: ${orgResult.rows.length} évolutions organisationnelles trouvées`);
             
             // Préparer les mises à jour
             const updates = [];
@@ -374,11 +402,13 @@ class Collaborateur {
             if (gradeResult.rows.length > 0) {
                 updates.push(`grade_actuel_id = $${paramIndex++}`);
                 values.push(gradeResult.rows[0].grade_id);
+                console.log(`📊 DEBUG: Grade mis à jour: ${gradeResult.rows[0].grade_id}`);
             }
             
             if (posteResult.rows.length > 0) {
                 updates.push(`poste_actuel_id = $${paramIndex++}`);
                 values.push(posteResult.rows[0].poste_id);
+                console.log(`📊 DEBUG: Poste mis à jour: ${posteResult.rows[0].poste_id}`);
             }
             
             if (orgResult.rows.length > 0) {
@@ -386,7 +416,10 @@ class Collaborateur {
                 values.push(orgResult.rows[0].business_unit_id);
                 updates.push(`division_id = $${paramIndex++}`);
                 values.push(orgResult.rows[0].division_id);
+                console.log(`📊 DEBUG: Organisation mise à jour: BU=${orgResult.rows[0].business_unit_id}, DIV=${orgResult.rows[0].division_id}`);
             }
+            
+            console.log(`📊 DEBUG: ${updates.length} mises à jour à effectuer`);
             
             if (updates.length > 0) {
                 values.push(collaborateurId);
@@ -394,15 +427,22 @@ class Collaborateur {
                     UPDATE collaborateurs 
                     SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP
                     WHERE id = $${paramIndex}
+                    RETURNING *
                 `;
                 
-                await pool.query(updateQuery, values);
-                console.log(`✅ Informations actuelles mises à jour pour le collaborateur ${collaborateurId}`);
+                console.log(`📊 DEBUG: Query: ${updateQuery}`);
+                console.log(`📊 DEBUG: Values: ${JSON.stringify(values)}`);
+                
+                const updateResult = await pool.query(updateQuery, values);
+                console.log(`✅ DEBUG: ${updateResult.rowCount} lignes mises à jour`);
+                console.log(`✅ DEBUG: Données mises à jour: ${JSON.stringify(updateResult.rows[0])}`);
+            } else {
+                console.log(`ℹ️ DEBUG: Aucune mise à jour nécessaire pour le collaborateur ${collaborateurId}`);
             }
             
             return true;
         } catch (error) {
-            console.error('❌ Erreur lors de la mise à jour des informations actuelles:', error);
+            console.error('❌ DEBUG: Erreur lors de la mise à jour des informations actuelles:', error);
             throw error;
         }
     }

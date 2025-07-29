@@ -11,17 +11,21 @@ router.get('/', authenticateToken, async (req, res) => {
         const query = `
             SELECT 
                 ot.id,
+                ot.name,
                 ot.nom,
                 ot.code,
                 ot.description,
                 ot.couleur,
+                ot.default_probability,
+                ot.default_duration_days,
                 ot.created_at,
                 ot.updated_at,
                 COUNT(o.id) as nombre_opportunites
             FROM opportunity_types ot
             LEFT JOIN opportunities o ON ot.id = o.opportunity_type_id
-            GROUP BY ot.id, ot.nom, ot.code, ot.description, ot.couleur, ot.created_at, ot.updated_at
-            ORDER BY ot.nom ASC
+            WHERE ot.is_active = true
+            GROUP BY ot.id, ot.name, ot.nom, ot.code, ot.description, ot.couleur, ot.default_probability, ot.default_duration_days, ot.created_at, ot.updated_at
+            ORDER BY COALESCE(ot.nom, ot.name) ASC
         `;
         
         const { rows } = await pool.query(query);

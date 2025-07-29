@@ -324,6 +324,48 @@ router.put('/:id', async (req, res) => {
 });
 
 /**
+ * PUT /api/collaborateurs/:id/type
+ * Mettre à jour le type de collaborateur
+ */
+router.put('/:id/type', async (req, res) => {
+    try {
+        const collaborateur = await Collaborateur.findById(req.params.id);
+        
+        if (!collaborateur) {
+            return res.status(404).json({
+                success: false,
+                error: 'Collaborateur non trouvé'
+            });
+        }
+
+        if (!req.body.type_collaborateur_id) {
+            return res.status(400).json({
+                success: false,
+                error: 'Type de collaborateur requis'
+            });
+        }
+
+        const updatedCollaborateur = await collaborateur.updateTypeCollaborateur(req.body.type_collaborateur_id);
+        
+        // Mettre à jour les informations actuelles depuis l'historique RH
+        await Collaborateur.updateCurrentInfoFromEvolutions(collaborateur.id);
+        
+        res.json({
+            success: true,
+            data: updatedCollaborateur,
+            message: 'Type de collaborateur mis à jour avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du type de collaborateur:', error);
+        res.status(400).json({
+            success: false,
+            error: 'Erreur lors de la mise à jour du type de collaborateur',
+            details: error.message
+        });
+    }
+});
+
+/**
  * DELETE /api/collaborateurs/:id
  * Supprimer un collaborateur
  */

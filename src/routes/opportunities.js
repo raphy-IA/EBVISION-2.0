@@ -194,14 +194,13 @@ router.post('/', authenticateToken, async (req, res) => {
             business_unit_id,
             opportunity_type_id,
             statut,
-            type_opportunite,
             source,
             probabilite,
             montant_estime,
             devise,
             date_fermeture_prevue,
             notes,
-            created_by: req.user.id
+            created_by: req.user?.id || null
         });
 
         res.status(201).json({

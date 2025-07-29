@@ -8,7 +8,7 @@ const authenticateToken = (req, res, next) => {
     // Pour le développement, on accepte toutes les requêtes
     // En production, on vérifierait le token JWT
     req.user = {
-        id: 'dev-user-id',
+        id: '550e8400-e29b-41d4-a716-446655440000', // UUID valide pour le développement
         email: 'admin@trs.com',
         nom: 'Admin',
         prenom: 'TRS',

@@ -177,14 +177,14 @@ class Opportunity {
                 data.business_unit_id,
                 data.opportunity_type_id,
                 data.statut || 'EN_COURS',
-                data.type_opportunite,
+                data.opportunity_type_id, // Utiliser opportunity_type_id au lieu de type_opportunite
                 data.source,
                 data.probabilite || 50,
                 data.montant_estime,
                 data.devise || 'EUR',
                 data.date_fermeture_prevue,
                 data.notes,
-                data.created_by
+                data.created_by || null
             ];
             
             const result = await pool.query(query, values);
