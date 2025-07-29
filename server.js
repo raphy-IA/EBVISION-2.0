@@ -29,6 +29,9 @@ const opportunityRoutes = require('./src/routes/opportunities');
 const opportunityStageRoutes = require('./src/routes/opportunity-stages');
 const paysRoutes = require('./src/routes/pays');
 const secteursActiviteRoutes = require('./src/routes/secteurs-activite');
+const evolutionGradesRoutes = require('./src/routes/evolution-grades');
+const evolutionPostesRoutes = require('./src/routes/evolution-postes');
+const evolutionOrganisationsRoutes = require('./src/routes/evolution-organisations');
 
 // Import des middlewares
 const errorHandler = require('./src/middleware/errorHandler');
@@ -100,6 +103,9 @@ app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/opportunity-stages', opportunityStageRoutes);
 app.use('/api/pays', paysRoutes);
 app.use('/api/secteurs-activite', secteursActiviteRoutes);
+app.use('/api/evolution-grades', evolutionGradesRoutes);
+app.use('/api/evolution-postes', evolutionPostesRoutes);
+app.use('/api/evolution-organisations', evolutionOrganisationsRoutes);
 
 // Route racine
 app.get('/', (req, res) => {

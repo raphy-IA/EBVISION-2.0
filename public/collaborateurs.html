@@ -117,6 +117,37 @@
                 padding: 1rem;
             }
         }
+    
+        /* Styles pour la sidebar unifiée */
+        .main-content-wrapper {
+            margin-left: 300px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            padding: 0;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content-wrapper {
+                margin-left: 0;
+            }
+            
+            .sidebar-container {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar-container.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -202,12 +233,12 @@
                         <h5 class="card-title mb-0"><i class="fas fa-users me-2"></i>Liste des Collaborateurs</h5>
                     </div>
                     <div class="card-body">
-                        <div id="collaborateurs-loading" class="loading">
+                        <div id="collaborateurs-loading" class="loading" style="display: none;">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Chargement...</span>
                             </div>
                         </div>
-                        <div id="collaborateurs-content">
+                        <div id="collaborateurs-content" style="display: block;">
                             <div class="table-responsive">
                                 <table class="table table-hover">
                                     <thead>
@@ -220,6 +251,7 @@
                                             <th>Business Unit</th>
                                             <th>Division</th>
                                             <th>Grade</th>
+                                            <th>Poste</th>
                                             <th>Statut</th>
                                             <th>Actions</th>
                                         </tr>
@@ -294,32 +326,19 @@
                                 </select>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="typeCollaborateur-select" class="form-label">Type de collaborateur *</label>
-                                <select class="form-select" id="typeCollaborateur-select" required onchange="updatePosteForConsultant()">
-                                    <option value="">Sélectionner un type</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="poste-select" class="form-label">Poste *</label>
-                                <select class="form-select" id="poste-select" required>
-                                    <option value="">Sélectionner un poste</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="grade-select" class="form-label">Grade *</label>
-                                <select class="form-select" id="grade-select" required>
-                                    <option value="">Sélectionner un grade</option>
-                                </option>
+                                <label for="date-embauche-input" class="form-label">Date d'embauche *</label>
+                                <input type="date" class="form-control" id="date-embauche-input" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="statut-select" class="form-label">Statut</label>
                                 <select class="form-select" id="statut-select">
                                     <option value="ACTIF">Actif</option>
                                     <option value="INACTIF">Inactif</option>
+                                    <option value="CONGE">En congé</option>
+                                    <option value="DEPART">Départ</option>
                                 </select>
                             </div>
                         </div>
@@ -328,6 +347,11 @@
                             <label for="notes-input" class="form-label">Notes</label>
                             <textarea class="form-control" id="notes-input" rows="3" 
                                       placeholder="Notes additionnelles..."></textarea>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note :</strong> Les informations RH (Grade, Poste, Type de collaborateur) seront configurées après la création du collaborateur via le module de gestion RH.
                         </div>
                     </form>
                 </div>
@@ -474,6 +498,238 @@
         </div>
     </div>
 
+    <!-- Gestion RH Modal -->
+    <div class="modal fade" id="gestionRHModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-tie me-2 text-primary"></i>
+                        Gestion RH - <span id="rh-collaborateur-nom"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Informations du collaborateur -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary mb-3">
+                                        <i class="fas fa-user me-2"></i>Informations du Collaborateur
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <strong>Nom :</strong><br>
+                                            <span id="rh-collaborateur-nom-complet"></span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Email :</strong><br>
+                                            <span id="rh-collaborateur-email"></span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Business Unit :</strong><br>
+                                            <span id="rh-collaborateur-business-unit"></span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Division :</strong><br>
+                                            <span id="rh-collaborateur-division"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-3">
+                                            <strong>Date d'embauche :</strong><br>
+                                            <span id="rh-collaborateur-date-embauche"></span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Statut actuel :</strong><br>
+                                            <span id="rh-collaborateur-statut"></span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Grade actuel :</strong><br>
+                                            <span id="rh-collaborateur-grade-actuel"></span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Poste actuel :</strong><br>
+                                            <span id="rh-collaborateur-poste-actuel"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">Évolution des Grades</h6>
+                            <div class="mb-3">
+                                <label for="rh-grade-select" class="form-label">Nouveau Grade</label>
+                                <select class="form-select" id="rh-grade-select">
+                                    <option value="">Sélectionner un grade</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="rh-grade-date-effet" class="form-label">Date d'effet *</label>
+                                <input type="date" class="form-control" id="rh-grade-date-effet" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="rh-grade-motif" class="form-label">Motif</label>
+                                <textarea class="form-control" id="rh-grade-motif" rows="2" placeholder="Motif de l'évolution..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="rh-grade-salaire" class="form-label">Salaire de base (€)</label>
+                                <input type="number" class="form-control" id="rh-grade-salaire" step="0.01" min="0" placeholder="Salaire personnalisé (optionnel)">
+                                <small class="form-text text-muted">Laissez vide pour utiliser le salaire par défaut du grade</small>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="ajouterEvolutionGrade()">
+                                <i class="fas fa-plus me-1"></i>
+                                Ajouter Évolution Grade
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">Évolution des Postes</h6>
+                            <div class="mb-3">
+                                <label for="rh-type-collaborateur-select" class="form-label">Type de Collaborateur</label>
+                                <select class="form-select" id="rh-type-collaborateur-select" onchange="loadPostesForType()">
+                                    <option value="">Sélectionner un type</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="rh-poste-select" class="form-label">Nouveau Poste</label>
+                                <select class="form-select" id="rh-poste-select">
+                                    <option value="">Sélectionner un poste</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="rh-poste-date-effet" class="form-label">Date d'effet *</label>
+                                <input type="date" class="form-control" id="rh-poste-date-effet" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="rh-poste-motif" class="form-label">Motif</label>
+                                <textarea class="form-control" id="rh-poste-motif" rows="2" placeholder="Motif de l'évolution..."></textarea>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="ajouterEvolutionPoste()">
+                                <i class="fas fa-plus me-1"></i>
+                                Ajouter Évolution Poste
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-info mb-3">Évolution Organisationnelle</h6>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label for="rh-business-unit-select" class="form-label">Business Unit</label>
+                                    <select class="form-select" id="rh-business-unit-select" onchange="loadDivisionsForBusinessUnitForRH()">
+                                        <option value="">Sélectionner une business unit</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="rh-division-select" class="form-label">Division</label>
+                                    <select class="form-select" id="rh-division-select">
+                                        <option value="">Sélectionner une division</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="rh-organisation-date-effet" class="form-label">Date d'effet *</label>
+                                    <input type="date" class="form-control" id="rh-organisation-date-effet" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="rh-organisation-motif" class="form-label">Motif</label>
+                                    <textarea class="form-control" id="rh-organisation-motif" rows="1" placeholder="Motif de l'évolution..."></textarea>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-info" onclick="ajouterEvolutionOrganisation()">
+                                        <i class="fas fa-plus me-1"></i>
+                                        Ajouter Évolution Organisationnelle
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-success mb-3">Historique des Grades</h6>
+                            <div id="historique-grades" class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Grade</th>
+                                            <th>Date début</th>
+                                            <th>Date fin</th>
+                                            <th>Salaire personnalisé</th>
+                                            <th>Motif</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="historique-grades-body">
+                                        <!-- Rempli par JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-success mb-3">Historique des Postes</h6>
+                            <div id="historique-postes" class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Poste</th>
+                                            <th>Date début</th>
+                                            <th>Date fin</th>
+                                            <th>Motif</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="historique-postes-body">
+                                        <!-- Rempli par JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6 class="text-warning mb-3">Historique des Évolutions Organisationnelles</h6>
+                            <div id="historique-organisations" class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Business Unit</th>
+                                            <th>Division</th>
+                                            <th>Date début</th>
+                                            <th>Date fin</th>
+                                            <th>Motif</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="historique-organisations-body">
+                                        <!-- Rempli par JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary" onclick="reloadCollaborateursData()" title="Recharger les données">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Recharger les données
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- View Collaborateur Modal -->
     <div class="modal fade" id="viewCollaborateurModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -575,6 +831,8 @@
         let collaborateurs = [];
         let filteredCollaborateurs = [];
         let collaborateurToDelete = null;
+        let collaborateurRHId = null;
+        let isReloading = false; // Variable pour éviter les rechargements multiples
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
@@ -608,35 +866,45 @@
 
         async function loadCollaborateurs() {
             showLoading(true);
+            console.log('🔄 Chargement des collaborateurs...');
             
             try {
                 const response = await fetch(`${API_BASE_URL}/collaborateurs`);
                 const data = await response.json();
+                console.log('📊 Données reçues:', data);
                 
                 if (data.success) {
                     collaborateurs = data.data;
+                    console.log('👥 Collaborateurs chargés:', collaborateurs.length);
                     filteredCollaborateurs = [...collaborateurs];
                     displayCollaborateurs();
                     updateStatistics();
                 } else {
+                    console.error('❌ Erreur API:', data);
                     showAlert('Erreur lors du chargement des collaborateurs', 'danger');
                 }
             } catch (error) {
-                console.error('Erreur fetch:', error);
+                console.error('❌ Erreur fetch:', error);
                 showAlert('Erreur de connexion', 'danger');
             } finally {
                 showLoading(false);
+                console.log('✅ Chargement terminé');
             }
         }
 
         function displayCollaborateurs() {
+            console.log('🎨 Affichage des collaborateurs...');
             const tbody = document.getElementById('collaborateurs-table');
+            console.log('📋 Tbody trouvé:', tbody);
             tbody.innerHTML = '';
             
+            console.log('🔍 Nombre de collaborateurs à afficher:', filteredCollaborateurs.length);
+            
             if (filteredCollaborateurs.length === 0) {
+                console.log('📭 Aucun collaborateur à afficher');
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="10" class="text-center text-muted py-4">
+                        <td colspan="11" class="text-center text-muted py-4">
                             <i class="fas fa-users fa-2x mb-3"></i>
                             <p>Aucun collaborateur trouvé</p>
                         </td>
@@ -645,7 +913,9 @@
                 return;
             }
             
+            console.log('✅ Affichage de', filteredCollaborateurs.length, 'collaborateurs');
             filteredCollaborateurs.forEach((collaborateur, index) => {
+                console.log('👤 Affichage collaborateur:', collaborateur.nom, collaborateur.prenom);
                 const row = document.createElement('tr');
                 const initials = getInitials(collaborateur.nom, collaborateur.prenom);
                 
@@ -657,11 +927,12 @@
                     </td>
                     <td>${collaborateur.nom}</td>
                     <td>${collaborateur.prenom}</td>
-                    <td>${collaborateur.email || '-'}
-                    <td>${collaborateur.telephone || '-'}
-                    <td>${collaborateur.business_unit_nom || '-'}
-                    <td>${collaborateur.division_nom || '-'}
-                    <td>${collaborateur.grade_nom || '-'}
+                    <td>${collaborateur.email || '-'}</td>
+                    <td>${collaborateur.telephone || '-'}</td>
+                    <td>${collaborateur.business_unit_nom || '-'}</td>
+                    <td>${collaborateur.division_nom || '-'}</td>
+                    <td>${collaborateur.grade_nom || '-'}</td>
+                    <td>${collaborateur.poste_nom || '-'}</td>
                     <td><span class="status-badge status-${collaborateur.statut.toLowerCase()}">${getStatusLabel(collaborateur.statut)}</span></td>
                     <td>
                         <div class="btn-group btn-group-sm">
@@ -671,6 +942,9 @@
                             <button class="btn btn-outline-warning" onclick="editCollaborateur('${collaborateur.id}')" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </button>
+                            <button class="btn btn-outline-primary" onclick="gestionRH('${collaborateur.id}')" title="Gestion RH">
+                                <i class="fas fa-user-tie"></i>
+                            </button>
                             <button class="btn btn-outline-danger" onclick="deleteCollaborateur('${collaborateur.id}')" title="Supprimer">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -679,6 +953,7 @@
                 `;
                 tbody.appendChild(row);
             });
+            console.log('✅ Affichage terminé');
         }
 
         function updateStatistics() {
@@ -1032,7 +1307,7 @@
                 // Vérifier que la division sélectionnée existe bien dans les options
                 const divisionOption = divisionSelect.querySelector(`option[value="${selectedDivisionId}"]`);
                 if (!divisionOption || divisionOption.disabled) {
-                    showAlert('La division sélectionnée n'est pas valide. Veuillez en sélectionner une autre.', 'danger');
+                    showAlert('La division sélectionnée n\'est pas valide. Veuillez en sélectionner une autre.', 'danger');
                     return;
                 }
             }
@@ -1045,9 +1320,6 @@
                 telephone: document.getElementById('telephone-input').value,
                 business_unit_id: document.getElementById('business-unit-select').value,
                 division_id: selectedDivisionId || null,
-                type_collaborateur_id: document.getElementById('typeCollaborateur-select').value,
-                poste_actuel_id: document.getElementById('poste-select').value,
-                grade_actuel_id: document.getElementById('grade-select').value,
                 date_embauche: document.getElementById('date-embauche-input').value,
                 statut: document.getElementById('statut-select').value,
                 notes: document.getElementById('notes-input').value
@@ -1233,8 +1505,22 @@
         }
 
         function showLoading(show) {
-            document.getElementById('collaborateurs-loading').style.display = show ? 'flex' : 'none';
-            document.getElementById('collaborateurs-content').style.display = show ? 'none' : 'block';
+            console.log('🔄 showLoading:', show);
+            const loadingElement = document.getElementById('collaborateurs-loading');
+            const contentElement = document.getElementById('collaborateurs-content');
+            
+            console.log('📋 Loading element:', loadingElement);
+            console.log('📋 Content element:', contentElement);
+            
+            if (loadingElement) {
+                loadingElement.style.display = show ? 'flex' : 'none';
+            }
+            
+            if (contentElement) {
+                contentElement.style.display = show ? 'none' : 'block';
+            }
+            
+            console.log('✅ showLoading terminé');
         }
 
         function getInitials(nom, prenom) {
@@ -1244,7 +1530,9 @@
         function getStatusLabel(status) {
             const labels = {
                 'ACTIF': 'Actif',
-                'INACTIF': 'Inactif'
+                'INACTIF': 'Inactif',
+                'CONGE': 'En congé',
+                'DEPART': 'Départ'
             };
             return labels[status] || status;
         }
@@ -1269,6 +1557,719 @@
                     alertDiv.remove();
                 }
             }, 5000);
+        }
+
+        // =====================================================
+        // FONCTIONS DE GESTION RH
+        // =====================================================
+
+        function gestionRH(collaborateurId) {
+            console.log('🔧 Début gestionRH pour collaborateurId:', collaborateurId);
+            collaborateurRHId = collaborateurId;
+            const collaborateur = collaborateurs.find(c => c.id === collaborateurId);
+            
+            console.log('📊 Collaborateur trouvé:', collaborateur);
+            console.log('📋 Toutes les propriétés du collaborateur:', Object.keys(collaborateur || {}));
+            
+            if (!collaborateur) {
+                console.log('❌ Collaborateur non trouvé dans la liste');
+                showAlert('Collaborateur non trouvé', 'danger');
+                return;
+            }
+
+            console.log('✅ Collaborateur trouvé, mise à jour des informations...');
+            console.log('📝 Données du collaborateur:', {
+                id: collaborateur.id,
+                nom: collaborateur.nom,
+                prenom: collaborateur.prenom,
+                email: collaborateur.email,
+                business_unit_nom: collaborateur.business_unit_nom,
+                division_nom: collaborateur.division_nom,
+                grade_nom: collaborateur.grade_nom,
+                poste_nom: collaborateur.poste_nom,
+                date_embauche: collaborateur.date_embauche,
+                statut: collaborateur.statut
+            });
+
+            // Afficher le modal d'abord
+            const modal = new bootstrap.Modal(document.getElementById('gestionRHModal'));
+            modal.show();
+
+            // Attendre que le modal soit complètement affiché avant de mettre à jour les informations
+            setTimeout(() => {
+                console.log('🔄 Modal affiché, mise à jour des informations...');
+                
+                // Mettre à jour le titre du modal
+                const nomElement = document.getElementById('rh-collaborateur-nom');
+                const nomCompletElement = document.getElementById('rh-collaborateur-nom-complet');
+                const emailElement = document.getElementById('rh-collaborateur-email');
+                const buElement = document.getElementById('rh-collaborateur-business-unit');
+                const divisionElement = document.getElementById('rh-collaborateur-division');
+                const dateEmbElement = document.getElementById('rh-collaborateur-date-embauche');
+                const statutElement = document.getElementById('rh-collaborateur-statut');
+                const gradeElement = document.getElementById('rh-collaborateur-grade-actuel');
+                const posteElement = document.getElementById('rh-collaborateur-poste-actuel');
+
+                console.log('🔍 Éléments DOM trouvés:', {
+                    nom: !!nomElement,
+                    nomComplet: !!nomCompletElement,
+                    email: !!emailElement,
+                    bu: !!buElement,
+                    division: !!divisionElement,
+                    dateEmb: !!dateEmbElement,
+                    statut: !!statutElement,
+                    grade: !!gradeElement,
+                    poste: !!posteElement
+                });
+
+                if (nomElement) nomElement.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
+                if (nomCompletElement) nomCompletElement.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
+                if (emailElement) emailElement.textContent = collaborateur.email || 'Non renseigné';
+                if (buElement) buElement.textContent = collaborateur.business_unit_nom || 'Non assigné';
+                if (divisionElement) divisionElement.textContent = collaborateur.division_nom || 'Non assigné';
+                if (dateEmbElement) dateEmbElement.textContent = collaborateur.date_embauche ? new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : 'Non renseigné';
+                if (statutElement) statutElement.textContent = getStatusLabel(collaborateur.statut);
+                if (gradeElement) gradeElement.textContent = collaborateur.grade_nom || 'Non assigné';
+                if (posteElement) posteElement.textContent = collaborateur.poste_nom || 'Non assigné';
+
+                console.log('📝 Informations mises à jour:', {
+                    nom: `${collaborateur.nom} ${collaborateur.prenom}`,
+                    email: collaborateur.email || 'Non renseigné',
+                    bu: collaborateur.business_unit_nom || 'Non assigné',
+                    division: collaborateur.division_nom || 'Non assigné',
+                    grade: collaborateur.grade_nom || 'Non assigné',
+                    poste: collaborateur.poste_nom || 'Non assigné'
+                });
+
+                // Charger les données pour les selects
+                loadGradesForRH();
+                loadTypesCollaborateursForRH();
+                loadPostesForRH();
+                loadBusinessUnitsForRH();
+                loadDivisionsForBusinessUnitForRH();
+
+                // Charger l'historique
+                loadHistoriqueGrades(collaborateurId);
+                loadHistoriquePostes(collaborateurId);
+                loadHistoriqueOrganisations(collaborateurId);
+
+                // Pré-remplir les champs avec les informations actuelles après un délai supplémentaire
+                setTimeout(() => {
+                    preRemplirFormulaires();
+                }, 1000); // Délai plus long pour s'assurer que tous les éléments sont chargés
+            }, 500); // Délai pour laisser le modal s'afficher
+        }
+
+        async function loadGradesForRH() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/grades`);
+                const data = await response.json();
+                
+                const select = document.getElementById('rh-grade-select');
+                if (select) {
+                    select.innerHTML = '<option value="">Sélectionner un grade</option>';
+                    
+                    if (data.success && data.data) {
+                        data.data.forEach(grade => {
+                            const option = document.createElement('option');
+                            option.value = grade.id;
+                            option.textContent = `${grade.nom} (${grade.code})`;
+                            select.appendChild(option);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des grades:', error);
+            }
+        }
+
+        async function loadTypesCollaborateursForRH() {
+            try {
+                console.log('🔄 Chargement des types collaborateurs pour RH...');
+                const response = await fetch(`${API_BASE_URL}/types-collaborateurs`);
+                const data = await response.json();
+                
+                console.log('📥 Réponse API types collaborateurs:', data);
+                
+                const select = document.getElementById('rh-type-collaborateur-select');
+                if (select) {
+                    console.log('✅ Select type collaborateur trouvé');
+                    select.innerHTML = '<option value="">Sélectionner un type</option>';
+                    
+                    if (data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {
+                        console.log(`📋 ${data.data.length} types collaborateurs trouvés`);
+                        data.data.forEach(type => {
+                            const option = document.createElement('option');
+                            option.value = type.id;
+                            option.textContent = type.nom;
+                            select.appendChild(option);
+                            console.log(`➕ Option ajoutée: ${type.nom} (${type.id})`);
+                        });
+                    } else {
+                        console.log('⚠️ Aucun type collaborateur trouvé ou format invalide');
+                    }
+                } else {
+                    console.log('❌ Select type collaborateur non trouvé');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des types collaborateurs:', error);
+            }
+        }
+
+        async function loadPostesForRH() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/postes`);
+                const data = await response.json();
+                
+                const select = document.getElementById('rh-poste-select');
+                if (select) {
+                    select.innerHTML = '<option value="">Sélectionner un poste</option>';
+                    
+                    if (data.success && data.data) {
+                        data.data.forEach(poste => {
+                            const option = document.createElement('option');
+                            option.value = poste.id;
+                            option.textContent = poste.nom;
+                            select.appendChild(option);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des postes:', error);
+            }
+        }
+
+        async function loadBusinessUnitsForRH() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/business-units`);
+                const data = await response.json();
+                
+                const select = document.getElementById('rh-business-unit-select');
+                if (select) {
+                    select.innerHTML = '<option value="">Sélectionner une Business Unit</option>';
+                    
+                    if (data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {
+                        data.data.forEach(bu => {
+                            const option = document.createElement('option');
+                            option.value = bu.id;
+                            option.textContent = bu.nom;
+                            select.appendChild(option);
+                        });
+                    } else if (data.success && data.data && data.data.businessUnits && data.data.businessUnits.length > 0) {
+                        // Gérer le format alternatif
+                        data.data.businessUnits.forEach(bu => {
+                            const option = document.createElement('option');
+                            option.value = bu.id;
+                            option.textContent = bu.nom;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        // Ajouter une option par défaut
+                        const option = document.createElement('option');
+                        option.value = "";
+                        option.textContent = "Aucune business unit disponible";
+                        option.disabled = true;
+                        select.appendChild(option);
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des business units:', error);
+            }
+        }
+
+        async function loadDivisionsForBusinessUnitForRH() {
+            const businessUnitSelect = document.getElementById('rh-business-unit-select');
+            const divisionSelect = document.getElementById('rh-division-select');
+            
+            if (!businessUnitSelect || !divisionSelect) {
+                console.log('⚠️ Éléments du DOM non trouvés pour loadDivisionsForBusinessUnitForRH');
+                return;
+            }
+            
+            const businessUnitId = businessUnitSelect.value;
+            
+            divisionSelect.innerHTML = '<option value="">Sélectionner une division</option>';
+            
+            if (!businessUnitId) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/divisions?business_unit_id=${businessUnitId}`);
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.divisions) {
+                    data.data.divisions.forEach(division => {
+                        const option = document.createElement('option');
+                        option.value = division.id;
+                        option.textContent = division.nom;
+                        divisionSelect.appendChild(option);
+                    });
+                } else if (data.success && data.data && Array.isArray(data.data)) {
+                    // Gérer le cas où data.data est directement un array
+                    data.data.forEach(division => {
+                        const option = document.createElement('option');
+                        option.value = division.id;
+                        option.textContent = division.nom;
+                        divisionSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des divisions:', error);
+            }
+        }
+
+        async function loadPostesForType() {
+            const typeId = document.getElementById('rh-type-collaborateur-select').value;
+            if (!typeId) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/postes?type_collaborateur_id=${typeId}`);
+                const data = await response.json();
+                
+                const select = document.getElementById('rh-poste-select');
+                if (select) {
+                    select.innerHTML = '<option value="">Sélectionner un poste</option>';
+                    
+                    if (data.success && data.data) {
+                        data.data.forEach(poste => {
+                            const option = document.createElement('option');
+                            option.value = poste.id;
+                            option.textContent = poste.nom;
+                            select.appendChild(option);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des postes:', error);
+            }
+        }
+
+        async function ajouterEvolutionGrade() {
+            console.log('🔧 Début ajouterEvolutionGrade');
+            const gradeId = document.getElementById('rh-grade-select').value;
+            const dateEffet = document.getElementById('rh-grade-date-effet').value;
+            const motif = document.getElementById('rh-grade-motif').value;
+            const salaire = document.getElementById('rh-grade-salaire').value;
+
+            console.log('📊 Données récupérées:', { gradeId, dateEffet, motif, salaire, collaborateurRHId });
+
+            if (!gradeId || !dateEffet) {
+                console.log('❌ Validation échouée: champs manquants');
+                showAlert('Veuillez remplir tous les champs obligatoires', 'warning');
+                return;
+            }
+
+            try {
+                console.log('🌐 Envoi de la requête POST vers /api/evolution-grades');
+                const response = await fetch(`${API_BASE_URL}/evolution-grades`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        collaborateur_id: collaborateurRHId,
+                        grade_id: gradeId,
+                        date_debut: dateEffet,
+                        motif: motif,
+                        taux_horaire_personnalise: salaire || null
+                    })
+                });
+
+                console.log('📥 Réponse reçue:', response.status, response.statusText);
+                const data = await response.json();
+                console.log('📊 Données de réponse:', data);
+
+                if (data.success) {
+                    console.log('✅ Succès: évolution de grade ajoutée');
+                    showAlert('Évolution de grade ajoutée avec succès', 'success');
+                    loadHistoriqueGrades(collaborateurRHId);
+                    
+                    // Recharger les données de la page principale
+                    await reloadCollaborateursData();
+                    
+                    // Réinitialiser le formulaire
+                    document.getElementById('rh-grade-select').value = '';
+                    document.getElementById('rh-grade-date-effet').value = '';
+                    document.getElementById('rh-grade-motif').value = '';
+                    document.getElementById('rh-grade-salaire').value = '';
+                } else {
+                    console.log('❌ Erreur API:', data.error);
+                    showAlert(`Erreur lors de l'ajout: ${data.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'ajout de l\'évolution:', error);
+                showAlert('Erreur lors de l\'ajout', 'danger');
+            }
+        }
+
+        async function ajouterEvolutionPoste() {
+            console.log('🔧 Début ajouterEvolutionPoste');
+            const posteId = document.getElementById('rh-poste-select').value;
+            const dateEffet = document.getElementById('rh-poste-date-effet').value;
+            const motif = document.getElementById('rh-poste-motif').value;
+
+            console.log('📊 Données récupérées:', { posteId, dateEffet, motif, collaborateurRHId });
+
+            if (!posteId || !dateEffet) {
+                console.log('❌ Validation échouée: champs manquants');
+                showAlert('Veuillez remplir tous les champs obligatoires', 'warning');
+                return;
+            }
+
+            try {
+                console.log('🌐 Envoi de la requête POST vers /api/evolution-postes');
+                const response = await fetch(`${API_BASE_URL}/evolution-postes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        collaborateur_id: collaborateurRHId,
+                        poste_id: posteId,
+                        date_debut: dateEffet,
+                        motif: motif
+                    })
+                });
+
+                console.log('📥 Réponse reçue:', response.status, response.statusText);
+                const data = await response.json();
+                console.log('📊 Données de réponse:', data);
+
+                if (data.success) {
+                    console.log('✅ Succès: évolution de poste ajoutée');
+                    showAlert('Évolution de poste ajoutée avec succès', 'success');
+                    loadHistoriquePostes(collaborateurRHId);
+                    
+                    // Recharger les données de la page principale
+                    await reloadCollaborateursData();
+                    
+                    // Réinitialiser le formulaire
+                    document.getElementById('rh-poste-select').value = '';
+                    document.getElementById('rh-poste-date-effet').value = '';
+                    document.getElementById('rh-poste-motif').value = '';
+                } else {
+                    console.log('❌ Erreur API:', data.error);
+                    showAlert(`Erreur lors de l'ajout: ${data.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'ajout de l\'évolution:', error);
+                showAlert('Erreur lors de l\'ajout', 'danger');
+            }
+        }
+
+        async function ajouterEvolutionOrganisation() {
+            const buId = document.getElementById('rh-business-unit-select').value;
+            const divisionId = document.getElementById('rh-division-select').value;
+            const dateEffet = document.getElementById('rh-organisation-date-effet').value;
+            const motif = document.getElementById('rh-organisation-motif').value;
+
+            if (!buId || !divisionId || !dateEffet) {
+                showAlert('Veuillez remplir tous les champs obligatoires', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/evolution-organisations`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        collaborateur_id: collaborateurRHId,
+                        business_unit_id: buId,
+                        division_id: divisionId,
+                        date_debut: dateEffet,
+                        motif: motif
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Évolution organisationnelle ajoutée avec succès', 'success');
+                    // Recharger les données pour les selects de gestion RH
+                    loadBusinessUnitsForRH();
+                    loadDivisionsForBusinessUnitForRH();
+                    loadPostesForRH(); // Recharger les postes pour le type de collaborateur
+                    loadPostesForType(); // Recharger les postes pour le nouveau type
+                    loadHistoriqueOrganisations(collaborateurRHId);
+
+                    // Recharger les données de la page principale
+                    await reloadCollaborateursData();
+
+                    // Réinitialiser le formulaire
+                    document.getElementById('rh-business-unit-select').value = '';
+                    document.getElementById('rh-division-select').value = '';
+                    document.getElementById('rh-organisation-date-effet').value = '';
+                    document.getElementById('rh-organisation-motif').value = '';
+                } else {
+                    showAlert(`Erreur lors de l'ajout: ${data.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'ajout de l\'évolution organisationnelle:', error);
+                showAlert('Erreur lors de l\'ajout', 'danger');
+            }
+        }
+
+        async function loadHistoriqueGrades(collaborateurId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/evolution-grades/collaborateur/${collaborateurId}`);
+                const data = await response.json();
+
+                const tbody = document.getElementById('historique-grades-body');
+                if (tbody) {
+                    if (data.success && data.data && data.data.length > 0) {
+                        tbody.innerHTML = data.data.map(evolution => `
+                            <tr>
+                                <td>${evolution.grade_nom || 'N/A'}</td>
+                                <td>${new Date(evolution.date_debut).toLocaleDateString('fr-FR')}</td>
+                                <td>${evolution.date_fin ? new Date(evolution.date_fin).toLocaleDateString('fr-FR') : '-'}</td>
+                                <td>${evolution.taux_horaire_personnalise !== null ? evolution.taux_horaire_personnalise.toFixed(2) + ' €' : 'N/A'}</td>
+                                <td>${evolution.motif || '-'}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Aucun historique</td></tr>';
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement de l\'historique des grades:', error);
+            }
+        }
+
+        async function loadHistoriquePostes(collaborateurId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/evolution-postes/collaborateur/${collaborateurId}`);
+                const data = await response.json();
+
+                const tbody = document.getElementById('historique-postes-body');
+                if (tbody) {
+                    if (data.success && data.data && data.data.length > 0) {
+                        tbody.innerHTML = data.data.map(evolution => `
+                            <tr>
+                                <td>${evolution.poste_nom || 'N/A'}</td>
+                                <td>${new Date(evolution.date_debut).toLocaleDateString('fr-FR')}</td>
+                                <td>${evolution.date_fin ? new Date(evolution.date_fin).toLocaleDateString('fr-FR') : '-'}</td>
+                                <td>${evolution.motif || '-'}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Aucun historique</td></tr>';
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement de l\'historique des postes:', error);
+            }
+        }
+
+        async function loadHistoriqueOrganisations(collaborateurId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/evolution-organisations/collaborateur/${collaborateurId}`);
+                const data = await response.json();
+
+                const tbody = document.getElementById('historique-organisations-body');
+                if (tbody) {
+                    if (data.success && data.data && data.data.length > 0) {
+                        tbody.innerHTML = data.data.map(evolution => `
+                            <tr>
+                                <td>${evolution.business_unit_nom || 'N/A'}</td>
+                                <td>${evolution.division_nom || 'N/A'}</td>
+                                <td>${new Date(evolution.date_debut).toLocaleDateString('fr-FR')}</td>
+                                <td>${evolution.date_fin ? new Date(evolution.date_fin).toLocaleDateString('fr-FR') : '-'}</td>
+                                <td>${evolution.motif || '-'}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Aucun historique</td></tr>';
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement de l\'historique des organisations:', error);
+            }
+        }
+
+        function preRemplirFormulaires() {
+            const collaborateur = collaborateurs.find(c => c.id === collaborateurRHId);
+            if (!collaborateur) {
+                showAlert('Collaborateur non trouvé', 'danger');
+                return;
+            }
+
+            console.log('🔧 Début preRemplirFormulaires pour:', collaborateur.nom, collaborateur.prenom);
+            console.log('📊 Données collaborateur:', {
+                grade_actuel_id: collaborateur.grade_actuel_id,
+                poste_actuel_id: collaborateur.poste_actuel_id,
+                business_unit_id: collaborateur.business_unit_id,
+                division_id: collaborateur.division_id,
+                type_collaborateur_id: collaborateur.type_collaborateur_id
+            });
+
+            // Vérifier que tous les éléments du DOM existent
+            const elements = {
+                'rh-grade-select': document.getElementById('rh-grade-select'),
+                'rh-type-collaborateur-select': document.getElementById('rh-type-collaborateur-select'),
+                'rh-grade-date-effet': document.getElementById('rh-grade-date-effet'),
+                'rh-grade-salaire': document.getElementById('rh-grade-salaire'),
+                'rh-grade-motif': document.getElementById('rh-grade-motif'),
+                'rh-poste-select': document.getElementById('rh-poste-select'),
+                'rh-poste-date-effet': document.getElementById('rh-poste-date-effet'),
+                'rh-poste-motif': document.getElementById('rh-poste-motif'),
+                'rh-business-unit-select': document.getElementById('rh-business-unit-select'),
+                'rh-division-select': document.getElementById('rh-division-select'),
+                'rh-organisation-date-effet': document.getElementById('rh-organisation-date-effet'),
+                'rh-organisation-motif': document.getElementById('rh-organisation-motif')
+            };
+
+            // Vérifier si tous les éléments existent
+            const missingElements = Object.entries(elements)
+                .filter(([name, element]) => !element)
+                .map(([name]) => name);
+
+            if (missingElements.length > 0) {
+                console.log('⚠️ Éléments manquants:', missingElements);
+                console.log('🔄 Réessai dans 500ms...');
+                setTimeout(() => {
+                    preRemplirFormulaires();
+                }, 500);
+                return;
+            }
+
+            console.log('✅ Tous les éléments trouvés, pré-remplissage en cours...');
+
+            // Pré-remplir le type de collaborateur
+            if (elements['rh-type-collaborateur-select']) {
+                elements['rh-type-collaborateur-select'].value = collaborateur.type_collaborateur_id || '';
+                console.log('✅ Type de collaborateur pré-rempli:', collaborateur.type_collaborateur_id);
+                
+                // Charger les postes pour ce type de collaborateur
+                setTimeout(() => {
+                    loadPostesForType();
+                }, 100);
+            }
+
+            // Pré-remplir les champs de grade
+            elements['rh-grade-select'].value = collaborateur.grade_actuel_id || '';
+            elements['rh-grade-date-effet'].value = new Date().toISOString().split('T')[0]; // Date d'aujourd'hui
+            elements['rh-grade-salaire'].value = ''; // Réinitialiser le salaire personnalisé
+            elements['rh-grade-motif'].value = '';
+
+            // Pré-remplir les champs de poste
+            elements['rh-poste-select'].value = collaborateur.poste_actuel_id || '';
+            elements['rh-poste-date-effet'].value = new Date().toISOString().split('T')[0]; // Date d'aujourd'hui
+            elements['rh-poste-motif'].value = '';
+
+            // Pré-remplir les champs organisationnels
+            elements['rh-business-unit-select'].value = collaborateur.business_unit_id || '';
+            
+            // Charger les divisions pour la business unit actuelle
+            setTimeout(() => {
+                loadDivisionsForBusinessUnitForRH();
+                setTimeout(() => {
+                    if (elements['rh-division-select']) {
+                        elements['rh-division-select'].value = collaborateur.division_id || '';
+                        console.log('✅ Division pré-remplie:', collaborateur.division_id);
+                    }
+                }, 200);
+            }, 100);
+            
+            elements['rh-organisation-date-effet'].value = new Date().toISOString().split('T')[0]; // Date d'aujourd'hui
+            elements['rh-organisation-motif'].value = '';
+
+            // Vérifier si le collaborateur a des informations actuelles
+            const hasCurrentInfo = collaborateur.grade_actuel_id || collaborateur.poste_actuel_id || 
+                                  collaborateur.business_unit_id || collaborateur.division_id;
+
+            if (hasCurrentInfo) {
+                console.log('✅ Pré-remplissage terminé avec succès');
+                showAlert('Formulaires pré-remplis avec les informations actuelles', 'success');
+            } else {
+                console.log('ℹ️ Aucune information actuelle trouvée, formulaires vides');
+                showAlert('Aucune information actuelle trouvée. Vous pouvez ajouter de nouvelles évolutions.', 'info');
+            }
+        }
+
+        function reinitialiserFormulaires() {
+            document.getElementById('rh-grade-select').value = '';
+            document.getElementById('rh-grade-date-effet').value = '';
+            document.getElementById('rh-grade-motif').value = '';
+            document.getElementById('rh-grade-salaire').value = '';
+            document.getElementById('rh-poste-select').value = '';
+            document.getElementById('rh-poste-date-effet').value = '';
+            document.getElementById('rh-poste-motif').value = '';
+            // Recharger les postes pour le type de collaborateur actuel
+            loadPostesForType();
+        }
+
+        // Fonction pour recharger les données de la page principale
+        async function reloadCollaborateursData() {
+            // Éviter les rechargements multiples
+            if (isReloading) {
+                console.log('⚠️ Rechargement déjà en cours, ignoré');
+                return;
+            }
+            
+            isReloading = true;
+            console.log('🔄 Rechargement des données collaborateurs...');
+            
+            try {
+                // Ajouter un délai pour éviter l'erreur 429
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const response = await fetch(`${API_BASE_URL}/collaborateurs`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    collaborateurs = data.data;
+                    filteredCollaborateurs = [...collaborateurs];
+                    displayCollaborateurs();
+                    updateStatistics();
+                    console.log('✅ Données collaborateurs rechargées');
+                    
+                    // Si le modal de gestion RH est ouvert, mettre à jour les informations du collaborateur
+                    if (collaborateurRHId) {
+                        const collaborateur = collaborateurs.find(c => c.id === collaborateurRHId);
+                        if (collaborateur) {
+                            console.log('🔄 Mise à jour des informations du collaborateur dans le modal...');
+                            
+                            // Mettre à jour les informations affichées
+                            const nomElement = document.getElementById('rh-collaborateur-nom');
+                            const nomCompletElement = document.getElementById('rh-collaborateur-nom-complet');
+                            const emailElement = document.getElementById('rh-collaborateur-email');
+                            const buElement = document.getElementById('rh-collaborateur-business-unit');
+                            const divisionElement = document.getElementById('rh-collaborateur-division');
+                            const dateEmbElement = document.getElementById('rh-collaborateur-date-embauche');
+                            const statutElement = document.getElementById('rh-collaborateur-statut');
+                            const gradeElement = document.getElementById('rh-collaborateur-grade-actuel');
+                            const posteElement = document.getElementById('rh-collaborateur-poste-actuel');
+
+                            if (nomElement) nomElement.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
+                            if (nomCompletElement) nomCompletElement.textContent = `${collaborateur.nom} ${collaborateur.prenom}`;
+                            if (emailElement) emailElement.textContent = collaborateur.email || 'Non renseigné';
+                            if (buElement) buElement.textContent = collaborateur.business_unit_nom || 'Non assigné';
+                            if (divisionElement) divisionElement.textContent = collaborateur.division_nom || 'Non assigné';
+                            if (dateEmbElement) dateEmbElement.textContent = collaborateur.date_embauche ? new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : 'Non renseigné';
+                            if (statutElement) statutElement.textContent = getStatusLabel(collaborateur.statut);
+                            if (gradeElement) gradeElement.textContent = collaborateur.grade_nom || 'Non assigné';
+                            if (posteElement) posteElement.textContent = collaborateur.poste_nom || 'Non assigné';
+                            
+                            console.log('✅ Informations du collaborateur mises à jour dans le modal');
+                        }
+                    }
+                    
+                    // Afficher une notification de succès
+                    showAlert('Données rechargées avec succès', 'success');
+                } else {
+                    console.error('❌ Erreur lors du rechargement:', data);
+                    showAlert('Erreur lors du rechargement des données', 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du rechargement:', error);
+                showAlert('Erreur lors du rechargement des données', 'danger');
+            } finally {
+                // Réinitialiser le flag après un délai
+                setTimeout(() => {
+                    isReloading = false;
+                }, 2000);
+            }
         }
     </script>
 </body>

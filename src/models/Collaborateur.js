@@ -280,6 +280,79 @@ class Collaborateur {
         const result = await pool.query(query);
         return result.rows[0];
     }
+
+    static async updateCurrentInfoFromEvolutions(collaborateurId) {
+        try {
+            // Récupérer l'évolution de grade la plus récente
+            const gradeQuery = `
+                SELECT grade_id, date_debut
+                FROM evolution_grades
+                WHERE collaborateur_id = $1 AND date_fin IS NULL
+                ORDER BY date_debut DESC
+                LIMIT 1
+            `;
+            const gradeResult = await pool.query(gradeQuery, [collaborateurId]);
+            
+            // Récupérer l'évolution de poste la plus récente
+            const posteQuery = `
+                SELECT poste_id, date_debut
+                FROM evolution_postes
+                WHERE collaborateur_id = $1 AND date_fin IS NULL
+                ORDER BY date_debut DESC
+                LIMIT 1
+            `;
+            const posteResult = await pool.query(posteQuery, [collaborateurId]);
+            
+            // Récupérer l'évolution organisationnelle la plus récente
+            const orgQuery = `
+                SELECT business_unit_id, division_id, date_debut
+                FROM evolution_organisations
+                WHERE collaborateur_id = $1 AND date_fin IS NULL
+                ORDER BY date_debut DESC
+                LIMIT 1
+            `;
+            const orgResult = await pool.query(orgQuery, [collaborateurId]);
+            
+            // Préparer les mises à jour
+            const updates = [];
+            const values = [];
+            let paramIndex = 1;
+            
+            if (gradeResult.rows.length > 0) {
+                updates.push(`grade_actuel_id = $${paramIndex++}`);
+                values.push(gradeResult.rows[0].grade_id);
+            }
+            
+            if (posteResult.rows.length > 0) {
+                updates.push(`poste_actuel_id = $${paramIndex++}`);
+                values.push(posteResult.rows[0].poste_id);
+            }
+            
+            if (orgResult.rows.length > 0) {
+                updates.push(`business_unit_id = $${paramIndex++}`);
+                values.push(orgResult.rows[0].business_unit_id);
+                updates.push(`division_id = $${paramIndex++}`);
+                values.push(orgResult.rows[0].division_id);
+            }
+            
+            if (updates.length > 0) {
+                values.push(collaborateurId);
+                const updateQuery = `
+                    UPDATE collaborateurs 
+                    SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = $${paramIndex}
+                `;
+                
+                await pool.query(updateQuery, values);
+                console.log(`✅ Informations actuelles mises à jour pour le collaborateur ${collaborateurId}`);
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Erreur lors de la mise à jour des informations actuelles:', error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Collaborateur; 

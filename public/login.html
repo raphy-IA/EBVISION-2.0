@@ -409,11 +409,15 @@
                 });
                 
                 const data = await response.json();
+                console.log('Réponse API:', data); // Debug
                 
                 if (data.success) {
-                    // Stocker le token
-                    localStorage.setItem('authToken', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
+                    // Stocker le token (dans data.data.token)
+                    const token = data.data.token;
+                    const user = data.data.user;
+                    
+                    localStorage.setItem('authToken', token);
+                    localStorage.setItem('user', JSON.stringify(user));
                     
                     if (rememberMe) {
                         localStorage.setItem('rememberMe', 'true');
