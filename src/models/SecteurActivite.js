@@ -122,6 +122,76 @@ class SecteurActivite {
         }
     }
 
+    static async findAllSousSecteurs(options = {}) {
+        const {
+            page = 1,
+            limit = 10,
+            search = '',
+            actif = null,
+            secteur_id = null,
+            sortBy = 'ordre',
+            sortOrder = 'ASC'
+        } = options;
+
+        const offset = (page - 1) * limit;
+        const params = [];
+        let paramIndex = 1;
+
+        let whereClause = '';
+        if (search) {
+            whereClause += ` WHERE (ss.nom ILIKE $${paramIndex} OR ss.code ILIKE $${paramIndex} OR ss.description ILIKE $${paramIndex})`;
+            params.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        if (actif !== null) {
+            const operator = whereClause ? 'AND' : 'WHERE';
+            whereClause += ` ${operator} ss.actif = $${paramIndex}`;
+            params.push(actif);
+            paramIndex++;
+        }
+
+        if (secteur_id) {
+            const operator = whereClause ? 'AND' : 'WHERE';
+            whereClause += ` ${operator} ss.secteur_id = $${paramIndex}`;
+            params.push(secteur_id);
+            paramIndex++;
+        }
+
+        const query = `
+            SELECT ss.*, s.nom as secteur_nom, s.code as secteur_code
+            FROM sous_secteurs_activite ss
+            LEFT JOIN secteurs_activite s ON ss.secteur_id = s.id
+            ${whereClause}
+            ORDER BY ss.${sortBy} ${sortOrder}
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+        `;
+        params.push(limit, offset);
+
+        const countQuery = `
+            SELECT COUNT(*) as total FROM sous_secteurs_activite ss
+            LEFT JOIN secteurs_activite s ON ss.secteur_id = s.id
+            ${whereClause}
+        `;
+
+        try {
+            const [result, countResult] = await Promise.all([
+                pool.query(query, params),
+                pool.query(countQuery, params.slice(0, -2))
+            ]);
+
+            return {
+                sous_secteurs: result.rows,
+                total: parseInt(countResult.rows[0].total),
+                page,
+                limit,
+                totalPages: Math.ceil(parseInt(countResult.rows[0].total) / limit)
+            };
+        } catch (error) {
+            throw error;
+        }
+    }
+
     static async create(data) {
         try {
             const result = await pool.query(`

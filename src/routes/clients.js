@@ -6,28 +6,54 @@ const { pool } = require('../utils/database');
 // Middleware d'authentification (à implémenter plus tard)
 // const auth = require('../middleware/auth');
 
-// Fonction pour résoudre l'ID d'un pays à partir de son nom
+// Fonction pour résoudre l'ID d'un pays par son nom
 async function resolvePaysId(paysNom) {
     if (!paysNom) return null;
     
-    const result = await pool.query(
-        'SELECT id FROM pays WHERE nom ILIKE $1 AND actif = true',
-        [paysNom]
-    );
-    
-    return result.rows.length > 0 ? result.rows[0].id : null;
+    try {
+        const result = await pool.query(
+            'SELECT id FROM pays WHERE nom = $1',
+            [paysNom]
+        );
+        return result.rows.length > 0 ? result.rows[0].id : null;
+    } catch (error) {
+        console.error('Erreur lors de la résolution du pays:', error);
+        return null;
+    }
 }
 
-// Fonction pour résoudre l'ID d'un secteur à partir de son nom
+// Fonction pour résoudre l'ID d'un secteur par son nom
 async function resolveSecteurId(secteurNom) {
     if (!secteurNom) return null;
     
-    const result = await pool.query(
-        'SELECT id FROM secteurs_activite WHERE nom ILIKE $1 AND actif = true',
-        [secteurNom]
-    );
+    try {
+        const result = await pool.query(
+            'SELECT id FROM secteurs_activite WHERE nom = $1',
+            [secteurNom]
+        );
+        return result.rows.length > 0 ? result.rows[0].id : null;
+    } catch (error) {
+        console.error('Erreur lors de la résolution du secteur:', error);
+        return null;
+    }
+}
+
+// Fonction pour résoudre l'ID d'un sous-secteur par son nom et secteur
+async function resolveSousSecteurId(sousSecteurNom, secteurNom) {
+    if (!sousSecteurNom || !secteurNom) return null;
     
-    return result.rows.length > 0 ? result.rows[0].id : null;
+    try {
+        const result = await pool.query(`
+            SELECT ssa.id 
+            FROM sous_secteurs_activite ssa
+            JOIN secteurs_activite sa ON ssa.secteur_id = sa.id
+            WHERE ssa.nom = $1 AND sa.nom = $2
+        `, [sousSecteurNom, secteurNom]);
+        return result.rows.length > 0 ? result.rows[0].id : null;
+    } catch (error) {
+        console.error('Erreur lors de la résolution du sous-secteur:', error);
+        return null;
+    }
 }
 
 // GET /api/clients/form-data - Récupérer les données pour les formulaires
@@ -284,16 +310,18 @@ router.post('/', async (req, res) => {
             });
         }
 
-        // Résoudre les IDs des pays et secteurs
-        const [paysId, secteurId] = await Promise.all([
+        // Résoudre les IDs des pays, secteurs et sous-secteurs
+        const [paysId, secteurId, sousSecteurId] = await Promise.all([
             resolvePaysId(req.body.pays),
-            resolveSecteurId(req.body.secteur_activite)
+            resolveSecteurId(req.body.secteur_activite),
+            resolveSousSecteurId(req.body.sous_secteur_activite, req.body.secteur_activite)
         ]);
 
         const clientData = {
             ...req.body,
             pays_id: paysId,
             secteur_activite_id: secteurId,
+            sous_secteur_activite_id: sousSecteurId,
             created_by: req.body.created_by || null // À remplacer par l'ID de l'utilisateur connecté
         };
 
@@ -336,16 +364,18 @@ router.put('/:id', async (req, res) => {
             });
         }
 
-        // Résoudre les IDs des pays et secteurs
-        const [paysId, secteurId] = await Promise.all([
+        // Résoudre les IDs des pays, secteurs et sous-secteurs
+        const [paysId, secteurId, sousSecteurId] = await Promise.all([
             resolvePaysId(req.body.pays),
-            resolveSecteurId(req.body.secteur_activite)
+            resolveSecteurId(req.body.secteur_activite),
+            resolveSousSecteurId(req.body.sous_secteur_activite, req.body.secteur_activite)
         ]);
 
         const updateData = {
             ...req.body,
             pays_id: paysId,
             secteur_activite_id: secteurId,
+            sous_secteur_activite_id: sousSecteurId,
             updated_by: req.body.updated_by || null // À remplacer par l'ID de l'utilisateur connecté
         };
 

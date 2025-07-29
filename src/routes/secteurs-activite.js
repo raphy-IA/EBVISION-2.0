@@ -48,6 +48,55 @@ router.get('/actifs', async (req, res) => {
     }
 });
 
+// Routes pour les sous-secteurs (DOIT ÊTRE AVANT /:id)
+// GET /api/secteurs-activite/sous-secteurs - Récupérer tous les sous-secteurs
+router.get('/sous-secteurs', async (req, res) => {
+    try {
+        const options = {
+            page: parseInt(req.query.page) || 1,
+            limit: parseInt(req.query.limit) || 10,
+            search: req.query.search || '',
+            actif: req.query.actif !== undefined ? req.query.actif === 'true' : null,
+            secteur_id: req.query.secteur_id || null,
+            sortBy: req.query.sortBy || 'ordre',
+            sortOrder: req.query.sortOrder || 'ASC'
+        };
+
+        const result = await SecteurActivite.findAllSousSecteurs(options);
+
+        res.json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des sous-secteurs:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des sous-secteurs',
+            error: error.message
+        });
+    }
+});
+
+// GET /api/secteurs-activite/:secteurId/sous-secteurs - Récupérer les sous-secteurs d'un secteur
+router.get('/:secteurId/sous-secteurs', async (req, res) => {
+    try {
+        const sousSecteurs = await SecteurActivite.getSousSecteurs(req.params.secteurId);
+        
+        res.json({
+            success: true,
+            data: { sous_secteurs: sousSecteurs }
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des sous-secteurs:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des sous-secteurs',
+            error: error.message
+        });
+    }
+});
+
 // GET /api/secteurs-activite/:id - Récupérer un secteur par ID
 router.get('/:id', async (req, res) => {
     try {
@@ -212,7 +261,6 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-// Routes pour les sous-secteurs
 // POST /api/secteurs-activite/:secteurId/sous-secteurs - Créer un sous-secteur
 router.post('/:secteurId/sous-secteurs', async (req, res) => {
     try {

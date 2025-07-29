@@ -262,72 +262,80 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="clientEmail" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="clientEmail">
+                                <label for="clientSousSector" class="form-label">Sous-secteur d'activité</label>
+                                <select class="form-select" id="clientSousSector">
+                                    <option value="">Sélectionner un sous-secteur</option>
+                                </select>
                             </div>
                         </div>
                         <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="clientEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="clientEmail">
+                            </div>
                             <div class="col-md-6 mb-3">
                                 <label for="clientTelephone" class="form-label">Téléphone</label>
                                 <input type="tel" class="form-control" id="clientTelephone">
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="clientAdresse" class="form-label">Adresse</label>
                                 <textarea class="form-control" id="clientAdresse" rows="3"></textarea>
                             </div>
-                        </div>
-                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="clientStatut" class="form-label">Statut</label>
                                 <select class="form-select" id="clientStatut">
                                 </select>
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="clientVille" class="form-label">Ville</label>
                                 <input type="text" class="form-control" id="clientVille">
                             </div>
-                        </div>
-                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="clientCodePostal" class="form-label">Code Postal</label>
                                 <input type="text" class="form-control" id="clientCodePostal">
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="clientPays" class="form-label">Pays</label>
                                 <select class="form-select" id="clientPays">
                                     <option value="">Sélectionner un pays</option>
                                 </select>
                             </div>
-                        </div>
-                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="clientTailleEntreprise" class="form-label">Taille Entreprise</label>
                                 <select class="form-select" id="clientTailleEntreprise">
                                     <option value="">Sélectionner une taille</option>
                                 </select>
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="clientSourceProspection" class="form-label">Source Prospection</label>
                                 <select class="form-select" id="clientSourceProspection">
                                     <option value="">Sélectionner une source</option>
                                 </select>
                             </div>
-                        </div>
-                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="clientFormeJuridique" class="form-label">Forme Juridique</label>
                                 <select class="form-select" id="clientFormeJuridique">
                                     <option value="">Sélectionner une forme</option>
                                 </select>
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="clientEffectif" class="form-label">Effectif</label>
                                 <input type="number" class="form-control" id="clientEffectif" min="1">
                             </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="clientNotes" class="form-label">Notes</label>
-                            <textarea class="form-control" id="clientNotes" rows="3"></textarea>
+                            <div class="col-md-6 mb-3">
+                                <label for="clientNotes" class="form-label">Notes</label>
+                                <textarea class="form-control" id="clientNotes" rows="3"></textarea>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -349,6 +357,7 @@
         // Variables globales
         let clients = [];
         let currentClientId = null;
+        let secteurs = []; // Pour stocker les données des secteurs
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
@@ -368,7 +377,8 @@
                         populatePaysOptions('clientPays', responseData.data.pays);
                         
                         // Secteurs avec sous-secteurs
-                        populateSecteursOptions('clientSector', responseData.data.secteurs);
+                        secteurs = responseData.data.secteurs; // Stocker les secteurs
+                        populateSecteursOptions('clientSector', secteurs);
                         
                         // Autres listes simples
                         populateSelectOptions('clientStatut', responseData.data.statuts);
@@ -423,17 +433,27 @@
                     secteurOption.textContent = `📁 ${secteur.nom}`;
                     secteurOption.style.fontWeight = 'bold';
                     select.appendChild(secteurOption);
-                    
-                    // Sous-secteurs indentés
-                    if (secteur.sous_secteurs && secteur.sous_secteurs.length > 0) {
-                        secteur.sous_secteurs.forEach(sousSecteur => {
-                            const sousSecteurOption = document.createElement('option');
-                            sousSecteurOption.value = `${secteur.nom} > ${sousSecteur}`;
-                            sousSecteurOption.textContent = `  └─ ${sousSecteur}`;
-                            sousSecteurOption.style.paddingLeft = '20px';
-                            select.appendChild(sousSecteurOption);
-                        });
-                    }
+                });
+            }
+        }
+
+        // Fonction pour peupler les sous-secteurs selon le secteur sélectionné
+        function populateSousSecteursOptions(secteurNom) {
+            const sousSecteurSelect = document.getElementById('clientSousSector');
+            if (!sousSecteurSelect) return;
+            
+            sousSecteurSelect.innerHTML = `<option value="">Sélectionner un sous-secteur</option>`;
+            
+            if (!secteurNom) return;
+            
+            // Trouver le secteur sélectionné
+            const secteur = secteurs.find(s => s.nom === secteurNom);
+            if (secteur && secteur.sous_secteurs && secteur.sous_secteurs.length > 0) {
+                secteur.sous_secteurs.forEach(sousSecteur => {
+                    const option = document.createElement('option');
+                    option.value = sousSecteur;
+                    option.textContent = `└─ ${sousSecteur}`;
+                    sousSecteurSelect.appendChild(option);
                 });
             }
         }
@@ -443,6 +463,11 @@
             document.getElementById('statusFilter').addEventListener('change', filterClients);
             document.getElementById('sectorFilter').addEventListener('change', filterClients);
             document.getElementById('searchInput').addEventListener('input', filterClients);
+            
+            // Événement pour mettre à jour les sous-secteurs quand le secteur change
+            document.getElementById('clientSector').addEventListener('change', function() {
+                populateSousSecteursOptions(this.value);
+            });
         }
 
         // Chargement des clients
@@ -487,12 +512,20 @@
                     `${client.pays_nom} (${client.pays_code || 'N/A'})` : 
                     (client.pays || 'N/A');
                 
-                // Affichage du secteur avec couleur
-                const secteurDisplay = client.secteur_nom ? 
-                    `<span class="badge" style="background-color: ${client.secteur_couleur || '#3498db'}">
+                // Affichage du secteur avec couleur et sous-secteur
+                let secteurDisplay = 'N/A';
+                if (client.secteur_nom) {
+                    secteurDisplay = `<span class="badge" style="background-color: ${client.secteur_couleur || '#3498db'}">
                         ${client.secteur_nom}
-                    </span>` : 
-                    (client.secteur_activite || 'N/A');
+                    </span>`;
+                    
+                    // Ajouter le sous-secteur s'il existe
+                    if (client.sous_secteur_nom) {
+                        secteurDisplay += `<br><small class="text-muted">└─ ${client.sous_secteur_nom}</small>`;
+                    }
+                } else if (client.secteur_activite) {
+                    secteurDisplay = client.secteur_activite;
+                }
 
                 return `
                     <tr>
@@ -550,6 +583,7 @@
                 nom: document.getElementById('clientNom').value,
                 sigle: document.getElementById('clientSigle').value,
                 secteur_activite: document.getElementById('clientSector').value,
+                sous_secteur: document.getElementById('clientSousSector').value, // Ajout du sous-secteur
                 email: document.getElementById('clientEmail').value,
                 telephone: document.getElementById('clientTelephone').value,
                 adresse: document.getElementById('clientAdresse').value,
@@ -598,6 +632,7 @@
                 document.getElementById('clientNom').value = client.nom || '';
                 document.getElementById('clientSigle').value = client.sigle || '';
                 document.getElementById('clientSector').value = client.secteur_activite || '';
+                document.getElementById('clientSousSector').value = client.sous_secteur || ''; // Récupérer le sous-secteur
                 document.getElementById('clientEmail').value = client.email || '';
                 document.getElementById('clientTelephone').value = client.telephone || '';
                 document.getElementById('clientAdresse').value = client.adresse || '';

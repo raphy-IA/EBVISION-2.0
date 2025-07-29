@@ -14,6 +14,7 @@ class Client {
         this.pays_id = data.pays_id;
         this.secteur_activite = data.secteur_activite;
         this.secteur_activite_id = data.secteur_activite_id;
+        this.sous_secteur_activite_id = data.sous_secteur_activite_id;
         this.taille_entreprise = data.taille_entreprise;
         this.statut = data.statut;
         this.source_prospection = data.source_prospection;
@@ -50,6 +51,8 @@ class Client {
         this.secteur_nom = data.secteur_nom;
         this.secteur_code = data.secteur_code;
         this.secteur_couleur = data.secteur_couleur;
+        this.sous_secteur_nom = data.sous_secteur_nom;
+        this.sous_secteur_code = data.sous_secteur_code;
     }
 
     // Récupérer tous les clients avec pagination et filtres
@@ -104,12 +107,14 @@ class Client {
                 c.notation, c.risque_client, c.groupe_id, c.est_filiale, c.latitude, c.longitude,
                 c.site_web, c.linkedin_url, c.date_creation_entreprise, c.secteur_geographique,
                 c.classification_abc, c.nombre_missions, c.nombre_opportunites, c.chiffre_affaires_total,
-                c.pays_id, c.secteur_activite_id,
+                c.pays_id, c.secteur_activite_id, c.sous_secteur_activite_id,
                 p.nom as pays_nom, p.code_pays as pays_code,
-                sa.nom as secteur_nom, sa.code as secteur_code, sa.couleur as secteur_couleur
+                sa.nom as secteur_nom, sa.code as secteur_code, sa.couleur as secteur_couleur,
+                ssa.nom as sous_secteur_nom, ssa.code as sous_secteur_code
             FROM clients c
             LEFT JOIN pays p ON c.pays_id = p.id
             LEFT JOIN secteurs_activite sa ON c.secteur_activite_id = sa.id
+            LEFT JOIN sous_secteurs_activite ssa ON c.sous_secteur_activite_id = ssa.id
             ${whereClause}
             ORDER BY c.${sortBy} ${sortOrder}
             LIMIT $${paramIndex++} OFFSET $${paramIndex++}
@@ -120,6 +125,7 @@ class Client {
             FROM clients c
             LEFT JOIN pays p ON c.pays_id = p.id
             LEFT JOIN secteurs_activite sa ON c.secteur_activite_id = sa.id
+            LEFT JOIN sous_secteurs_activite ssa ON c.sous_secteur_activite_id = ssa.id
             ${whereClause}
         `;
 
@@ -153,12 +159,14 @@ class Client {
                 c.notation, c.risque_client, c.groupe_id, c.est_filiale, c.latitude, c.longitude,
                 c.site_web, c.linkedin_url, c.date_creation_entreprise, c.secteur_geographique,
                 c.classification_abc, c.nombre_missions, c.nombre_opportunites, c.chiffre_affaires_total,
-                c.pays_id, c.secteur_activite_id,
+                c.pays_id, c.secteur_activite_id, c.sous_secteur_activite_id,
                 p.nom as pays_nom, p.code_pays as pays_code,
-                sa.nom as secteur_nom, sa.code as secteur_code, sa.couleur as secteur_couleur
+                sa.nom as secteur_nom, sa.code as secteur_code, sa.couleur as secteur_couleur,
+                ssa.nom as sous_secteur_nom, ssa.code as sous_secteur_code
             FROM clients c
             LEFT JOIN pays p ON c.pays_id = p.id
             LEFT JOIN secteurs_activite sa ON c.secteur_activite_id = sa.id
+            LEFT JOIN sous_secteurs_activite ssa ON c.sous_secteur_activite_id = ssa.id
             WHERE c.id = $1
         `;
 
@@ -172,7 +180,7 @@ class Client {
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
             secteur_activite, taille_entreprise, statut, source_prospection,
             notes, collaborateur_id, created_by, pays_id, secteur_activite_id,
-            forme_juridique, effectif
+            sous_secteur_activite_id, forme_juridique, effectif
         } = clientData;
 
         const query = `
@@ -180,8 +188,8 @@ class Client {
                 nom, sigle, email, telephone, adresse, ville, code_postal, pays,
                 secteur_activite, taille_entreprise, statut, source_prospection,
                 notes, collaborateur_id, created_by, pays_id, secteur_activite_id,
-                forme_juridique, effectif
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+                sous_secteur_activite_id, forme_juridique, effectif
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
             RETURNING *
         `;
 
@@ -189,7 +197,7 @@ class Client {
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
             secteur_activite, taille_entreprise, statut, source_prospection,
             notes, collaborateur_id, created_by, pays_id, secteur_activite_id,
-            forme_juridique, effectif
+            sous_secteur_activite_id, forme_juridique, effectif
         ];
 
         try {
@@ -207,7 +215,7 @@ class Client {
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
             secteur_activite, taille_entreprise, statut, source_prospection,
             notes, collaborateur_id, updated_by, pays_id, secteur_activite_id,
-            forme_juridique, effectif
+            sous_secteur_activite_id, forme_juridique, effectif
         } = updateData;
 
         const query = `
@@ -228,18 +236,20 @@ class Client {
                 collaborateur_id = COALESCE($14, collaborateur_id),
                 pays_id = COALESCE($15, pays_id),
                 secteur_activite_id = COALESCE($16, secteur_activite_id),
-                forme_juridique = COALESCE($17, forme_juridique),
-                effectif = COALESCE($18, effectif),
-                updated_by = $19,
+                sous_secteur_activite_id = COALESCE($17, sous_secteur_activite_id),
+                forme_juridique = COALESCE($18, forme_juridique),
+                effectif = COALESCE($19, effectif),
+                updated_by = $20,
                 date_derniere_activite = CURRENT_TIMESTAMP
-            WHERE id = $20
+            WHERE id = $21
             RETURNING *
         `;
 
         const values = [
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
             secteur_activite, taille_entreprise, statut, source_prospection,
-            notes, collaborateur_id, pays_id, secteur_activite_id, forme_juridique, effectif, updated_by, this.id
+            notes, collaborateur_id, pays_id, secteur_activite_id, sous_secteur_activite_id, 
+            forme_juridique, effectif, updated_by, this.id
         ];
 
         try {

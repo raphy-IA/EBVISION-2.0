@@ -1,9 +1,10 @@
 -- Migration 029: Add code and raison_sociale to clients table and update statut constraint
 -- Date: 2025-07-29
 
+-- Add columns
 ALTER TABLE clients
 ADD COLUMN IF NOT EXISTS code VARCHAR(50) UNIQUE,
-ADD COLUMN IF NOT EXISTS raison_sociale VARCHAR(200) NOT NULL DEFAULT 'N/A';
+ADD COLUMN IF NOT EXISTS raison_sociale VARCHAR(200);
 
 -- Update statut column to allow new values
 ALTER TABLE clients DROP CONSTRAINT IF EXISTS clients_statut_check;
