@@ -120,6 +120,12 @@ class Task {
         return result.rowCount > 0;
     }
 
+    static async removeAssociation(taskId, missionTypeId) {
+        const query = 'DELETE FROM task_mission_types WHERE task_id = $1 AND mission_type_id = $2';
+        const result = await pool.query(query, [taskId, missionTypeId]);
+        return result.rowCount > 0;
+    }
+
     static async getStats() {
         const query = `
             SELECT 

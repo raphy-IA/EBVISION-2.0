@@ -6,6 +6,7 @@
     <title>Gestion des Tâches - TRS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -510,9 +511,24 @@
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
+            // Générer la sidebar
+            if (window.SidebarGenerator) {
+                window.SidebarGenerator.generateSidebar();
+            }
+            
             loadTasks();
             loadMissionTypes();
             loadStats();
+            
+            // Vérifier s'il y a un paramètre edit_task dans l'URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const editTaskId = urlParams.get('edit_task');
+            if (editTaskId) {
+                // Attendre que les tâches soient chargées puis ouvrir le modal d'édition
+                setTimeout(() => {
+                    editTask(editTaskId);
+                }, 1000);
+            }
         });
 
         // Charger les tâches

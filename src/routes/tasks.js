@@ -6,8 +6,17 @@ const MissionType = require('../models/MissionType');
 // GET /api/tasks - Liste des tâches
 router.get('/', async (req, res) => {
     try {
-        const tasks = await Task.findAll();
-        res.json(tasks);
+        const { mission_type_id } = req.query;
+        
+        if (mission_type_id) {
+            // Si un type de mission est spécifié, retourner seulement les tâches associées
+            const tasks = await Task.findByMissionType(mission_type_id);
+            res.json(tasks);
+        } else {
+            // Sinon, retourner toutes les tâches
+            const tasks = await Task.findAll();
+            res.json(tasks);
+        }
     } catch (error) {
         console.error('Erreur lors de la récupération des tâches:', error);
         res.status(500).json({ error: 'Erreur serveur' });
@@ -176,22 +185,6 @@ router.post('/:id/mission-types', async (req, res) => {
     }
 });
 
-// DELETE /api/tasks/:id/mission-types/:missionTypeId - Retirer une tâche d'un type de mission
-router.delete('/:id/mission-types/:missionTypeId', async (req, res) => {
-    try {
-        const success = await Task.removeFromMissionType(req.params.id, req.params.missionTypeId);
-        
-        if (!success) {
-            return res.status(404).json({ error: 'Association non trouvée' });
-        }
-        
-        res.json({ message: 'Association supprimée avec succès' });
-    } catch (error) {
-        console.error('Erreur lors de la suppression de l\'association:', error);
-        res.status(500).json({ error: 'Erreur serveur' });
-    }
-});
-
 // DELETE /api/tasks/:id/mission-types - Supprimer toutes les associations d'une tâche
 router.delete('/:id/mission-types', async (req, res) => {
     try {
@@ -200,6 +193,23 @@ router.delete('/:id/mission-types', async (req, res) => {
         res.json({ message: 'Toutes les associations supprimées avec succès' });
     } catch (error) {
         console.error('Erreur lors de la suppression des associations:', error);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+// Supprimer l'association entre une tâche et un type de mission spécifique
+router.delete('/:taskId/mission-types/:missionTypeId', async (req, res) => {
+    try {
+        const { taskId, missionTypeId } = req.params;
+        const success = await Task.removeAssociation(taskId, missionTypeId);
+        
+        if (success) {
+            res.json({ message: 'Association supprimée avec succès' });
+        } else {
+            res.status(404).json({ error: 'Association non trouvée' });
+        }
+    } catch (error) {
+        console.error('Erreur lors de la suppression de l\'association:', error);
         res.status(500).json({ error: 'Erreur serveur' });
     }
 });
