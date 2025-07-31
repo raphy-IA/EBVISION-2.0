@@ -116,6 +116,10 @@ function generateSidebar() {
                     <i class="fas fa-tag"></i>
                     Types de Mission
                 </a>
+                <a href="task-templates.html" class="sidebar-nav-link ${isActive('task-templates.html') ? 'active' : ''}">
+                    <i class="fas fa-tasks"></i>
+                    Tâches
+                </a>
             </div>
 
             <!-- Section Rapports -->

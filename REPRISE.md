@@ -1,6 +1,6 @@
 # REPRISE DU PROJET TRS-AFFICHAGE
 
-## 📋 ÉTAT ACTUEL DE L'APPLICATION (Mise à jour : 31/07/2025 - 12:35)
+## 📋 ÉTAT ACTUEL DE L'APPLICATION (Mise à jour : 31/07/2025 - 15:45)
 
 ### ✅ **ÉVOLUTIONS RÉCENTES TERMINÉES**
 
@@ -60,6 +60,20 @@
 - ✅ **Données de test** : 10 types de mission créés (AUDIT, CONSEIL, etc.)
 - ✅ **Tests validés** : Script de test complet avec succès
 - ✅ **Documentation** : Guide d'utilisation complet créé
+
+#### **8. MODULE TÂCHES** ✅ (NOUVEAU - 31/07/2025)
+- ✅ **Migration `029_create_tasks_tables.sql`** : Tables tasks, task_mission_types, mission_tasks, task_assignments
+- ✅ **Modèle `Task.js`** : CRUD complet avec associations aux types de mission
+- ✅ **Routes API** : `/api/tasks` avec tous les endpoints (création, modification, suppression, recherche, stats)
+- ✅ **Page `task-templates.html`** : Interface complète avec gestion des tâches
+- ✅ **Fonctionnalités** : Gestion des tâches, associations aux types de mission, filtres, statistiques
+- ✅ **Données de test** : 10 tâches créées avec associations aux types de mission
+- ✅ **Tests validés** : Script de test complet avec succès
+- ✅ **Intégration** : Lien ajouté dans la sidebar pour accéder aux tâches
+- ✅ **Améliorations** : Génération automatique des codes, sélection multiple des types de mission
+- ✅ **Gestion obligatoire/optionnel** : Interface pour définir le caractère obligatoire ou optionnel des tâches par type de mission
+- ✅ **Modal d'édition avancé** : Gestion complète des associations avec ajout/suppression dynamique
+- ✅ **API DELETE** : Endpoint pour supprimer toutes les associations d'une tâche
 
 #### **8. CORRECTIONS TECHNIQUES** ✅
 - ✅ **Erreur `m.titre`** dans `TimeEntry.js` → Corrigé vers `m.nom`
@@ -129,6 +143,16 @@
 - ✅ **Cause** : Middleware `authenticateToken` sur certaines routes GET alors que d'autres n'en avaient pas
 - ✅ **Solution** : Suppression du middleware `authenticateToken` des routes `/api/opportunity-types`, `/api/opportunities`, `/api/opportunities/:id` et `/api/opportunities/:id` (DELETE) pour cohérence
 - ✅ **Résultat** : Toutes les données de référence se chargent correctement
+
+#### **8. Problèmes du module Tâches** ✅ (NOUVEAU - 31/07/2025)
+- ✅ **Problème** : `404 (Not Found)` pour les endpoints `/api/tasks`
+- ✅ **Cause** : Serveur non redémarré après l'ajout des nouvelles routes
+- ✅ **Solution** : Redémarrage du serveur pour prendre en compte les nouvelles routes
+- ✅ **Problème** : Impossible de sélectionner plusieurs types de mission
+- ✅ **Solution** : Amélioration de l'interface avec `multiple size="4"` et instructions utilisateur
+- ✅ **Problème** : Code de tâche à saisir manuellement
+- ✅ **Solution** : Génération automatique basée sur le libellé avec bouton de régénération
+- ✅ **Résultat** : Module Tâches entièrement fonctionnel avec toutes les améliorations
 
 ### 🚀 **PLAN DE REPRISE STRUCTURÉ**
 
@@ -210,6 +234,19 @@ http://localhost:3000
 - ✅ **API REST complète** : 7 endpoints fonctionnels
 - ✅ **10 types par défaut** : AUDIT, CONSEIL, FORMATION, etc.
 
+#### **📋 TÂCHES** ✅ (NOUVEAU)
+- ✅ **Gestion complète des tâches** avec code, libellé, description, durée, priorité
+- ✅ **Association aux types de mission** avec ordre et caractère obligatoire/optionnel
+- ✅ **Statut actif/inactif** avec soft delete
+- ✅ **Interface CRUD** complète avec modals (création, modification, suppression, visualisation)
+- ✅ **Filtres avancés** : recherche, priorité, type de mission
+- ✅ **Statistiques en temps réel** : total, actifs, durée moyenne, par priorité
+- ✅ **API REST complète** : 9 endpoints fonctionnels (incluant DELETE pour associations)
+- ✅ **10 tâches par défaut** : AUDIT_COMPTES, VERIF_FISCALE, RAPPORT_FINAL, etc.
+- ✅ **Associations automatiques** : 21 associations créées entre tâches et types de mission
+- ✅ **Gestion avancée des associations** : Interface pour ajouter/supprimer dynamiquement les types de mission
+- ✅ **Caractère obligatoire/optionnel** : Switches pour définir si une tâche est obligatoire ou optionnelle par type de mission
+
 #### **💼 OPPORTUNITÉS AVANCÉES** (MAJOR UPDATE)
 - ✅ **Workflow configurable** avec types d'opportunités
 - ✅ **Étapes automatiques** basées sur les templates
@@ -279,8 +316,8 @@ public/
 ```
 Tables principales :
 - users, collaborateurs, clients
-- missions, mission_types, opportunities, opportunity_stages
-- opportunity_types, opportunity_stage_templates
+- missions, mission_types, tasks, task_mission_types, mission_tasks, task_assignments
+- opportunities, opportunity_stages, opportunity_types, opportunity_stage_templates
 - stage_actions, stage_documents, risk_parameters
 - notifications
 - business_units, divisions
