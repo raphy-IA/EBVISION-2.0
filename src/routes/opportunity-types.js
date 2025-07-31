@@ -48,13 +48,34 @@ router.get('/', async (req, res) => {
 // GET /api/opportunity-types/:id - Récupérer un type par ID
 router.get('/:id', authenticateToken, async (req, res) => {
     try {
-        const type = await OpportunityType.findById(req.params.id);
-        if (!type) {
+        const { pool } = require('../utils/database');
+        
+        const query = `
+            SELECT 
+                ot.id,
+                ot.name,
+                ot.nom,
+                ot.code,
+                ot.description,
+                ot.couleur,
+                ot.default_probability,
+                ot.default_duration_days,
+                ot.created_at,
+                ot.updated_at
+            FROM opportunity_types ot
+            WHERE ot.id = $1 AND ot.is_active = true
+        `;
+        
+        const result = await pool.query(query, [req.params.id]);
+        
+        if (result.rows.length === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'Type d\'opportunité non trouvé'
             });
         }
+        
+        const type = result.rows[0];
         
         res.json({
             success: true,
@@ -74,6 +95,8 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // POST /api/opportunity-types - Créer un nouveau type
 router.post('/', authenticateToken, async (req, res) => {
     try {
+        console.log('📋 Données reçues dans la route POST opportunity-types:', JSON.stringify(req.body, null, 2));
+        
         const { pool } = require('../utils/database');
         
         const {
@@ -95,13 +118,17 @@ router.post('/', authenticateToken, async (req, res) => {
 
         // Créer le type
         const insertQuery = `
-            INSERT INTO opportunity_types (nom, code, description, couleur, default_probability, default_duration_days)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO opportunity_types (name, nom, code, description, couleur, default_probability, default_duration_days)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING *
         `;
 
+        console.log('📋 Requête SQL:', insertQuery);
+        console.log('📋 Valeurs à insérer:', [nom, nom, code, description, couleur, default_probability || 50, default_duration_days || 30]);
+        
         const result = await pool.query(insertQuery, [
-            nom,
+            nom, // Utiliser nom pour name (colonne NOT NULL)
+            nom, // Garder aussi nom pour la compatibilité
             code,
             description,
             couleur,

@@ -155,6 +155,8 @@ router.get('/:id', async (req, res) => {
 // POST /api/opportunities - Créer une nouvelle opportunité
 router.post('/', authenticateToken, async (req, res) => {
     try {
+        console.log('📋 Données reçues dans la route POST:', JSON.stringify(req.body, null, 2));
+        
         const {
             nom,
             description,
@@ -186,13 +188,13 @@ router.post('/', authenticateToken, async (req, res) => {
             });
         }
 
-        const opportunity = await Opportunity.create({
+        const opportunityData = {
             nom,
             description,
             client_id,
             collaborateur_id,
             business_unit_id,
-            opportunity_type_id,
+            opportunity_type_id: type_opportunite, // Mapper type_opportunite vers opportunity_type_id
             statut,
             source,
             probabilite,
@@ -201,7 +203,11 @@ router.post('/', authenticateToken, async (req, res) => {
             date_fermeture_prevue,
             notes,
             created_by: req.user?.id || null
-        });
+        };
+        
+        console.log('📋 Données envoyées au modèle Opportunity.create:', JSON.stringify(opportunityData, null, 2));
+        
+        const opportunity = await Opportunity.create(opportunityData);
 
         res.status(201).json({
             success: true,

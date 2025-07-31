@@ -460,6 +460,235 @@
         </div>
     </div>
     
+    <!-- Modal de création d'opportunité -->
+    <div class="modal fade" id="newOpportunityModal" tabindex="-1" aria-labelledby="newOpportunityModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="newOpportunityModalLabel">
+                        <i class="fas fa-plus me-2"></i>
+                        Nouvelle Opportunité
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newOpportunityForm">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- Informations de base -->
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Informations de Base
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="new-opportunity-name" class="form-label">
+                                                <i class="fas fa-tag me-1"></i>Nom de l'Opportunité *
+                                            </label>
+                                            <input type="text" class="form-control" id="new-opportunity-name" 
+                                                   name="nom" required placeholder="Ex: Développement application mobile">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="new-opportunity-source" class="form-label">
+                                                <i class="fas fa-search me-1"></i>Source
+                                            </label>
+                                            <select class="form-select" id="new-opportunity-source" name="source">
+                                                <option value="">Sélectionner une source</option>
+                                                <option value="Site Web">Site Web</option>
+                                                <option value="Réseaux Sociaux">Réseaux Sociaux</option>
+                                                <option value="Recommandation">Recommandation</option>
+                                                <option value="Salon/Événement">Salon/Événement</option>
+                                                <option value="Prospection">Prospection</option>
+                                                <option value="Presse/Journal">Presse/Journal</option>
+                                                <option value="Radio/Télé">Radio/Télé</option>
+                                                <option value="Contact de proximité">Contact de proximité</option>
+                                                <option value="Besoin direct">Besoin direct</option>
+                                                <option value="Suivi événement/séminaire">Suivi événement/séminaire</option>
+                                                <option value="Réunion business">Réunion business</option>
+                                                <option value="Autre">Autre</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Parties prenantes -->
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-users me-2"></i>
+                                        Parties Prenantes
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="new-opportunity-client" class="form-label">
+                                                <i class="fas fa-building me-1"></i>Client *
+                                            </label>
+                                            <select class="form-select" id="new-opportunity-client" name="client_id" required>
+                                                <option value="">Sélectionner un client</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="new-opportunity-collaborateur" class="form-label">
+                                                <i class="fas fa-user-tie me-1"></i>Responsable *
+                                            </label>
+                                            <select class="form-select" id="new-opportunity-collaborateur" name="collaborateur_id" required>
+                                                <option value="">Sélectionner un collaborateur</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Organisation -->
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-sitemap me-2"></i>
+                                        Organisation
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="new-opportunity-business-unit" class="form-label">
+                                                <i class="fas fa-briefcase me-1"></i>Business Unit *
+                                            </label>
+                                            <select class="form-select" id="new-opportunity-business-unit" name="business_unit_id" required>
+                                                <option value="">Sélectionner une Business Unit</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="new-opportunity-type" class="form-label">
+                                                <i class="fas fa-layer-group me-1"></i>Type d'Opportunité *
+                                            </label>
+                                            <select class="form-select" id="new-opportunity-type" name="type_opportunite" required>
+                                                <option value="">Sélectionner un type</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Informations commerciales -->
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-chart-line me-2"></i>
+                                        Informations Commerciales
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="new-opportunity-amount" class="form-label">
+                                                <i class="fas fa-euro-sign me-1"></i>Montant Estimé
+                                            </label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" id="new-opportunity-amount" 
+                                                       name="montant_estime" min="0" step="0.01" placeholder="0.00">
+                                                <select class="form-select" id="new-opportunity-currency" name="devise" style="max-width: 100px;">
+                                                    <option value="EUR">EUR</option>
+                                                    <option value="USD">USD</option>
+                                                    <option value="GBP">GBP</option>
+                                                    <option value="CHF">CHF</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="new-opportunity-probability" class="form-label">
+                                                <i class="fas fa-percentage me-1"></i>Probabilité de Succès
+                                            </label>
+                                            <div class="input-group">
+                                                <input type="range" class="form-range" id="new-opportunity-probability" 
+                                                       name="probabilite" min="0" max="100" value="50">
+                                                <span class="input-group-text" id="probability-value">50%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Dates et statut -->
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-calendar me-2"></i>
+                                        Planning et Statut
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="new-opportunity-closing-date" class="form-label">
+                                                <i class="fas fa-calendar-check me-1"></i>Date de Fermeture Prévue
+                                            </label>
+                                            <input type="date" class="form-control" id="new-opportunity-closing-date" 
+                                                   name="date_fermeture_prevue">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="new-opportunity-status" class="form-label">
+                                                <i class="fas fa-flag me-1"></i>Statut *
+                                            </label>
+                                            <select class="form-select" id="new-opportunity-status" name="statut" required>
+                                                <option value="NOUVELLE">Nouvelle</option>
+                                                <option value="EN_COURS">En Cours</option>
+                                                <option value="GAGNEE">Gagnée</option>
+                                                <option value="PERDUE">Perdue</option>
+                                                <option value="ANNULEE">Annulée</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-align-left me-2"></i>
+                                        Description
+                                    </h6>
+                                    <textarea class="form-control" id="new-opportunity-description" 
+                                              name="description" rows="4" 
+                                              placeholder="Décrivez l'opportunité, les enjeux, les objectifs..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <!-- Panel d'informations -->
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-primary">
+                                            <i class="fas fa-lightbulb me-2"></i>
+                                            Conseils
+                                        </h6>
+                                        <div class="mb-3">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                <small>Donnez un nom clair et descriptif</small>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                <small>Sélectionnez le bon responsable</small>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                <small>Identifiez la source de l'opportunité</small>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                <small>Estimez le montant et la probabilité</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>Note :</strong> Les champs marqués d'un * sont obligatoires.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="saveNewOpportunity()">
+                        <i class="fas fa-save me-2"></i>Créer l'Opportunité
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/auth.js"></script>
@@ -838,9 +1067,244 @@
         }
         
         // Fonctions CRUD (a enrichir progressivement)
-        function newOpportunity() {
-            console.log('Creation d\'une nouvelle opportunite');
-            alert('Fonctionnalite "Nouvelle Opportunite" - A developper');
+        async function newOpportunity() {
+            console.log('➕ Ouverture du modal nouvelle opportunité');
+            
+            // Réinitialiser le formulaire
+            document.getElementById('newOpportunityForm').reset();
+            
+            // Charger les données de référence si pas encore fait
+            await ensureNewOpportunityDataLoaded();
+            
+            // Configurer les événements
+            setupNewOpportunityEvents();
+            
+            // Afficher le modal
+            const modal = new bootstrap.Modal(document.getElementById('newOpportunityModal'));
+            modal.show();
+        }
+        
+        async function ensureNewOpportunityDataLoaded() {
+            console.log('🔍 Vérification des données de référence pour nouvelle opportunité...');
+            
+            // Charger les clients si pas encore fait
+            if (!window.clients) {
+                console.log('🏢 Chargement des clients pour nouvelle opportunité...');
+                try {
+                    const clientsResponse = await fetch(`${API_BASE_URL}/clients`);
+                    const clientsData = await clientsResponse.json();
+                    if (clientsData.success) {
+                        window.clients = clientsData.data.clients;
+                        console.log(`✅ ${window.clients.length} clients chargés pour nouvelle opportunité`);
+                        populateNewOpportunityClientSelect();
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Impossible de charger les clients:', error);
+                }
+            } else {
+                console.log(`✅ ${window.clients.length} clients déjà chargés`);
+                populateNewOpportunityClientSelect();
+            }
+            
+            // Charger les business units si pas encore fait
+            if (!window.businessUnits) {
+                console.log('🏢 Chargement des business units pour nouvelle opportunité...');
+                try {
+                    const buResponse = await fetch(`${API_BASE_URL}/business-units`);
+                    const buData = await buResponse.json();
+                    if (buData.success) {
+                        window.businessUnits = buData.data;
+                        console.log(`✅ ${window.businessUnits.length} business units chargées pour nouvelle opportunité`);
+                        populateNewOpportunityBusinessUnitSelect();
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Impossible de charger les business units:', error);
+                }
+            } else {
+                console.log(`✅ ${window.businessUnits.length} business units déjà chargées`);
+                populateNewOpportunityBusinessUnitSelect();
+            }
+            
+            // Charger les collaborateurs si pas encore fait
+            if (!window.collaborateurs) {
+                console.log('👥 Chargement des collaborateurs pour nouvelle opportunité...');
+                try {
+                    const collabResponse = await fetch(`${API_BASE_URL}/collaborateurs`);
+                    const collabData = await collabResponse.json();
+                    if (collabData.success) {
+                        window.collaborateurs = collabData.data;
+                        console.log(`✅ ${window.collaborateurs.length} collaborateurs chargés pour nouvelle opportunité`);
+                        populateNewOpportunityCollaborateurSelect();
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Impossible de charger les collaborateurs:', error);
+                }
+            } else {
+                console.log(`✅ ${window.collaborateurs.length} collaborateurs déjà chargés`);
+                populateNewOpportunityCollaborateurSelect();
+            }
+            
+            // Charger les types d'opportunités si pas encore fait
+            if (!window.opportunityTypes) {
+                console.log('📊 Chargement des types d\'opportunités pour nouvelle opportunité...');
+                try {
+                    const typesResponse = await fetch(`${API_BASE_URL}/opportunity-types`);
+                    const typesData = await typesResponse.json();
+                    if (typesData.success) {
+                        window.opportunityTypes = typesData.data.opportunityTypes;
+                        console.log(`✅ ${window.opportunityTypes.length} types d'opportunités chargés pour nouvelle opportunité`);
+                        populateNewOpportunityTypeSelect();
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Impossible de charger les types d\'opportunités:', error);
+                }
+            } else {
+                console.log(`✅ ${window.opportunityTypes.length} types d'opportunités déjà chargés`);
+                populateNewOpportunityTypeSelect();
+            }
+            
+            console.log('✅ Toutes les données de référence sont prêtes pour nouvelle opportunité');
+        }
+        
+        function populateNewOpportunityClientSelect() {
+            const select = document.getElementById('new-opportunity-client');
+            if (select && window.clients) {
+                console.log('🏢 Remplissage du select client avec', window.clients.length, 'clients');
+                select.innerHTML = '<option value="">Sélectionner un client</option>';
+                window.clients.forEach(client => {
+                    const option = document.createElement('option');
+                    option.value = client.id;
+                    option.textContent = client.nom || client.raison_sociale || `Client ${client.id}`;
+                    select.appendChild(option);
+                });
+                console.log('✅ Select client rempli avec', select.options.length, 'options');
+            }
+        }
+        
+        function populateNewOpportunityBusinessUnitSelect() {
+            const select = document.getElementById('new-opportunity-business-unit');
+            if (select && window.businessUnits) {
+                console.log('🏢 Remplissage du select business unit avec', window.businessUnits.length, 'business units');
+                select.innerHTML = '<option value="">Sélectionner une Business Unit</option>';
+                window.businessUnits.forEach(bu => {
+                    const option = document.createElement('option');
+                    option.value = bu.id;
+                    option.textContent = bu.nom || bu.name || `BU ${bu.id}`;
+                    select.appendChild(option);
+                });
+                console.log('✅ Select business unit rempli avec', select.options.length, 'options');
+            }
+        }
+        
+        function populateNewOpportunityCollaborateurSelect() {
+            const select = document.getElementById('new-opportunity-collaborateur');
+            if (select && window.collaborateurs) {
+                console.log('👥 Remplissage du select collaborateur avec', window.collaborateurs.length, 'collaborateurs');
+                select.innerHTML = '<option value="">Sélectionner un collaborateur</option>';
+                window.collaborateurs.forEach(collab => {
+                    const option = document.createElement('option');
+                    option.value = collab.id;
+                    option.textContent = `${collab.nom || ''} ${collab.prenom || ''}`.trim() || `Collaborateur ${collab.id}`;
+                    select.appendChild(option);
+                });
+                console.log('✅ Select collaborateur rempli avec', select.options.length, 'options');
+            }
+        }
+        
+        function populateNewOpportunityTypeSelect() {
+            const select = document.getElementById('new-opportunity-type');
+            if (select && window.opportunityTypes) {
+                console.log('📊 Remplissage du select type avec', window.opportunityTypes.length, 'types');
+                select.innerHTML = '<option value="">Sélectionner un type</option>';
+                window.opportunityTypes.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type.id;
+                    option.textContent = type.nom || type.name || `Type ${type.id}`;
+                    select.appendChild(option);
+                });
+                console.log('✅ Select type rempli avec', select.options.length, 'options');
+            }
+        }
+        
+        function setupNewOpportunityEvents() {
+            // Événement pour le slider de probabilité
+            const probabilitySlider = document.getElementById('new-opportunity-probability');
+            const probabilityValue = document.getElementById('probability-value');
+            
+            if (probabilitySlider && probabilityValue) {
+                probabilitySlider.addEventListener('input', function() {
+                    probabilityValue.textContent = this.value + '%';
+                    console.log('📊 Probabilité mise à jour:', this.value + '%');
+                });
+            }
+        }
+        
+        async function saveNewOpportunity() {
+            console.log('💾 Sauvegarde de la nouvelle opportunité...');
+            
+            // Récupérer les données du formulaire
+            const form = document.getElementById('newOpportunityForm');
+            const formData = new FormData(form);
+            
+            // Validation côté client
+            if (!formData.get('nom') || !formData.get('client_id') || !formData.get('collaborateur_id') || 
+                !formData.get('business_unit_id') || !formData.get('type_opportunite') || !formData.get('statut')) {
+                showErrorMessage('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+            
+            // Préparer les données
+            const opportunityData = {
+                nom: formData.get('nom'),
+                client_id: formData.get('client_id'),
+                collaborateur_id: formData.get('collaborateur_id'),
+                business_unit_id: formData.get('business_unit_id'),
+                type_opportunite: formData.get('type_opportunite'),
+                statut: formData.get('statut'),
+                source: formData.get('source') || null,
+                montant_estime: formData.get('montant_estime') ? parseFloat(formData.get('montant_estime')) : null,
+                devise: formData.get('devise') || 'EUR',
+                probabilite: formData.get('probabilite') ? parseInt(formData.get('probabilite')) : null,
+                date_fermeture_prevue: formData.get('date_fermeture_prevue') || null,
+                description: formData.get('description') || null
+            };
+            
+            console.log('📋 Données de l\'opportunité:', opportunityData);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/opportunities`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(opportunityData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Opportunité créée avec succès:', data.data.opportunity);
+                    
+                    // Fermer le modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('newOpportunityModal'));
+                    modal.hide();
+                    
+                    // Afficher un message de succès
+                    showSuccessMessage('Opportunité créée avec succès');
+                    
+                    // Recharger la liste des opportunités
+                    loadOpportunities();
+                    
+                    // Réinitialiser le formulaire
+                    form.reset();
+                } else {
+                    console.error('❌ Erreur lors de la création:', data.error);
+                    showErrorMessage(data.error || 'Erreur lors de la création de l\'opportunité');
+                }
+            } catch (error) {
+                console.error('❌ Erreur de connexion lors de la création:', error);
+                showErrorMessage('Erreur de connexion lors de la création');
+            }
         }
         
         async function viewOpportunity(id) {

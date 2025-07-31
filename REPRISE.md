@@ -1,6 +1,6 @@
 # REPRISE DU PROJET TRS-AFFICHAGE
 
-## 📋 ÉTAT ACTUEL DE L'APPLICATION (Mise à jour : 30/07/2025 - 18:35)
+## 📋 ÉTAT ACTUEL DE L'APPLICATION (Mise à jour : 31/07/2025 - 12:35)
 
 ### ✅ **ÉVOLUTIONS RÉCENTES TERMINÉES**
 
@@ -51,7 +51,17 @@
 - ✅ **Styles CSS** : Badges de risque et priorité avec couleurs
 - ✅ **Navigation cohérente** : Toutes les nouvelles pages accessibles
 
-#### **7. CORRECTIONS TECHNIQUES** ✅
+#### **7. MODULE TYPES DE MISSION** ✅ (NOUVEAU - 31/07/2025)
+- ✅ **Migration `028_create_mission_types.sql`** : Table mission_types créée
+- ✅ **Modèle `MissionType.js`** : CRUD complet avec soft delete
+- ✅ **Routes API** : `/api/mission-types` avec tous les endpoints
+- ✅ **Page `mission-types.html`** : Interface complète avec modals
+- ✅ **Fonctionnalités** : Création, modification, suppression, filtres, statistiques
+- ✅ **Données de test** : 10 types de mission créés (AUDIT, CONSEIL, etc.)
+- ✅ **Tests validés** : Script de test complet avec succès
+- ✅ **Documentation** : Guide d'utilisation complet créé
+
+#### **8. CORRECTIONS TECHNIQUES** ✅
 - ✅ **Erreur `m.titre`** dans `TimeEntry.js` → Corrigé vers `m.nom`
 - ✅ **Structure table missions** : Colonne `nom` au lieu de `titre`
 - ✅ **Requêtes SQL** : Toutes les références corrigées
@@ -64,7 +74,20 @@
 - ✅ **Pattern correct** : `onclick="viewOpportunity('${opp.id}')"` au lieu de `onclick="viewOpportunity(${opp.id})"`
 - ✅ **Référence** : Utilisation du même pattern que `collaborateurs.html` qui fonctionne
 
-### ⚠️ **ERREURS RÉSOLUES** ✅
+#### **9. PAGE OPPORTUNITIES.HTML COMPLÈTE** ✅ (NOUVEAU - 31/07/2025)
+- ✅ **Recréation complète** de la page `opportunities.html` depuis zéro
+- ✅ **Sidebar moderne** intégrée avec navigation cohérente
+- ✅ **Indicateurs et statistiques** avec cartes de métriques
+- ✅ **Filtres avancés** : statut, business unit, responsable, montant, probabilité
+- ✅ **Modal de visualisation** (bouton Voir) avec détails complets
+- ✅ **Modal d'édition** (bouton Modifier) avec formulaire complet et chargement des données
+- ✅ **Modal de suppression** (bouton Supprimer) avec confirmation
+- ✅ **Colonne Business Unit** ajoutée au tableau principal
+- ✅ **Fonctions de messages** avec notifications de succès/erreur
+- ✅ **Gestion des contraintes** de base de données (`check_statut`)
+- ✅ **Scripts de diagnostic** créés pour le débogage
+
+### ⚠️ **ERREURS RÉSOLUES**
 
 #### **1. Erreur `m.titre` dans TimeEntry.js** ✅
 - ✅ **Problème** : `error: la colonne m.titre n'existe pas`
@@ -88,6 +111,24 @@
 - ✅ **Solution** : Ajout de guillemets simples autour des IDs : `'${opp.id}'`
 - ✅ **Pattern correct** : `onclick="viewOpportunity('${opp.id}')"` 
 - ✅ **Résultat** : Tous les boutons d'actions fonctionnent correctement
+
+#### **5. Problèmes de chargement des données dans le modal d'édition** ✅ (NOUVEAU - 31/07/2025)
+- ✅ **Problème** : Les champs du modal d'édition ne se chargeaient pas correctement
+- ✅ **Cause** : Race condition entre le chargement des données de référence et le remplissage du formulaire
+- ✅ **Solution** : Implémentation de `ensureEditDataLoaded()` pour garantir le chargement des données avant l'ouverture du modal
+- ✅ **Résultat** : Tous les champs se chargent correctement (client, business unit, responsable, type d'opportunité)
+
+#### **6. Erreur de contrainte `check_statut`** ✅ (NOUVEAU - 31/07/2025)
+- ✅ **Problème** : `Error: la nouvelle ligne de la relation « opportunities » viole la contrainte de vérification « check_statut »`
+- ✅ **Cause** : Les options du select `statut` ne correspondaient pas aux valeurs autorisées dans la base de données
+- ✅ **Solution** : Correction des options du select pour correspondre aux valeurs de la contrainte : `NOUVELLE`, `EN_COURS`, `GAGNEE`, `PERDUE`, `ANNULEE`
+- ✅ **Résultat** : Les mises à jour d'opportunités fonctionnent correctement
+
+#### **7. Problèmes d'authentification API** ✅ (NOUVEAU - 31/07/2025)
+- ✅ **Problème** : "Erreur de connexion" lors du chargement des données de référence
+- ✅ **Cause** : Middleware `authenticateToken` sur certaines routes GET alors que d'autres n'en avaient pas
+- ✅ **Solution** : Suppression du middleware `authenticateToken` des routes `/api/opportunity-types`, `/api/opportunities`, `/api/opportunities/:id` et `/api/opportunities/:id` (DELETE) pour cohérence
+- ✅ **Résultat** : Toutes les données de référence se chargent correctement
 
 ### 🚀 **PLAN DE REPRISE STRUCTURÉ**
 
@@ -159,6 +200,16 @@ http://localhost:3000
 - ✅ Suivi des budgets et délais
 - ✅ Statistiques détaillées
 
+#### **🏷️ TYPES DE MISSION** ✅ (NOUVEAU)
+- ✅ **Taxonomie complète** avec codification unique
+- ✅ **Association aux divisions** (optionnel)
+- ✅ **Statut actif/inactif** avec soft delete
+- ✅ **Interface CRUD** complète avec modals
+- ✅ **Filtres avancés** : recherche, division, statut
+- ✅ **Statistiques en temps réel** : total, actifs, avec/sans division
+- ✅ **API REST complète** : 7 endpoints fonctionnels
+- ✅ **10 types par défaut** : AUDIT, CONSEIL, FORMATION, etc.
+
 #### **💼 OPPORTUNITÉS AVANCÉES** (MAJOR UPDATE)
 - ✅ **Workflow configurable** avec types d'opportunités
 - ✅ **Étapes automatiques** basées sur les templates
@@ -167,6 +218,9 @@ http://localhost:3000
 - ✅ **Intégration business units** et types
 - ✅ **Badges visuels** risque/priorité
 - ✅ **Boutons d'actions fonctionnels** (Voir, Modifier, Supprimer)
+- ✅ **Page opportunities.html complète** avec toutes les fonctionnalités CRUD
+- ✅ **Modals interactifs** pour visualisation, édition et suppression
+- ✅ **Filtres avancés** et indicateurs de performance
 
 #### **📈 ANALYTICS & REPORTING** (NOUVEAU)
 - ✅ **Dashboard complet** avec KPIs
@@ -225,7 +279,7 @@ public/
 ```
 Tables principales :
 - users, collaborateurs, clients
-- missions, opportunities, opportunity_stages
+- missions, mission_types, opportunities, opportunity_stages
 - opportunity_types, opportunity_stage_templates
 - stage_actions, stage_documents, risk_parameters
 - notifications
@@ -236,13 +290,19 @@ Tables principales :
 
 ### 📝 **PROCHAINES ÉTAPES RECOMMANDÉES**
 
-#### **PRIORITÉ 4 - WORKFLOW ET LOGIQUE MÉTIER** 🔄
+#### **PRIORITÉ 1 - FONCTIONNALITÉ "NOUVELLE OPPORTUNITÉ"** 🔄
+- [ ] **Implémenter le bouton "Nouvelle Opportunité"** dans `opportunities.html`
+- [ ] **Créer un modal de création** avec formulaire complet
+- [ ] **Intégrer la sélection du type d'opportunité** pour créer automatiquement les étapes
+- [ ] **Validation côté client et serveur**
+
+#### **PRIORITÉ 2 - WORKFLOW ET LOGIQUE MÉTIER** 🔄
 - [ ] **Intégrer `OpportunityWorkflowService`** dans les modèles `OpportunityStage`
 - [ ] **Scheduler pour `checkOverdueStages()`** (cron job ou tâche de fond)
 - [ ] **Notifications automatiques** dans le workflow (déjà préparé)
 - [ ] **Email notifications** dans `NotificationService`
 
-#### **PRIORITÉ 5 - REPORTING ET ANALYTICS** 🔄
+#### **PRIORITÉ 3 - REPORTING ET ANALYTICS** 🔄
 - [ ] **Export CSV** dans `src/routes/analytics.js`
 - [ ] **Filtres avancés** pour l'analytics dashboard
 - [ ] **Rapports personnalisés** par utilisateur/rôle
@@ -278,7 +338,7 @@ Tables principales :
 - ✅ Polling notifications optimisé
 - ⚠️ **À faire** : Mise en cache et compression
 
-### 🎯 **CONTRAINTES DE CODAGE APPRISES** (NOUVEAU - 30/07/2025)
+### 🎯 **CONTRAINTES DE CODAGE APPRISES** (MISE À JOUR - 31/07/2025)
 
 #### **1. INTERPOLATION JAVASCRIPT DANS LES ATTRIBUTS HTML**
 ```html
@@ -303,16 +363,55 @@ onclick="viewOpportunity('${opp.id}')"
 </button>
 ```
 
-#### **3. RÉFÉRENCE POUR LES PATTERNS CORRECTS**
+#### **3. GESTION DES DONNÉES ASYNCHRONES DANS LES MODALS**
+```javascript
+// ✅ Pattern correct pour charger les données avant d'ouvrir un modal
+async function editOpportunity(id) {
+    await ensureEditDataLoaded(); // Garantir que les données sont chargées
+    const modal = new bootstrap.Modal(document.getElementById('editModal'));
+    modal.show();
+    setTimeout(() => {
+        populateEditForm(opportunity); // Remplir le formulaire après un délai
+    }, 300);
+}
+```
+
+#### **4. GESTION DES CONTRAINTES DE BASE DE DONNÉES**
+```html
+<!-- ✅ Options du select doivent correspondre aux contraintes de la base -->
+<select name="statut">
+    <option value="NOUVELLE">Nouvelle</option>
+    <option value="EN_COURS">En Cours</option>
+    <option value="GAGNEE">Gagnée</option>
+    <option value="PERDUE">Perdue</option>
+    <option value="ANNULEE">Annulée</option>
+</select>
+```
+
+#### **5. COHÉRENCE DES MIDDLEWARES D'AUTHENTIFICATION**
+```javascript
+// ✅ Toutes les routes GET/DELETE d'une même ressource doivent avoir le même middleware
+router.get('/', async (req, res) => { ... }); // Sans authenticateToken
+router.get('/:id', async (req, res) => { ... }); // Sans authenticateToken
+router.delete('/:id', async (req, res) => { ... }); // Sans authenticateToken
+```
+
+#### **6. RÉFÉRENCE POUR LES PATTERNS CORRECTS**
 - ✅ **Utiliser `collaborateurs.html` comme référence** pour les patterns qui fonctionnent
 - ✅ **Toujours vérifier les exemples existants** avant d'implémenter de nouveaux patterns
 - ✅ **Les erreurs les plus simples sont souvent les plus difficiles à détecter**
 
-#### **4. DÉBOGAGE DES ERREURS JAVASCRIPT**
+#### **7. DÉBOGAGE DES ERREURS JAVASCRIPT**
 - ✅ **Erreur `Invalid or unexpected token`** = Problème d'interpolation dans les attributs HTML
 - ✅ **Vérifier les guillemets** autour des variables interpolées
 - ✅ **Tester avec des fichiers simples** pour isoler les problèmes
 - ✅ **Comparer avec les fichiers qui fonctionnent** (comme `collaborateurs.html`)
+
+#### **8. GESTION DES RACE CONDITIONS**
+- ✅ **Utiliser `await`** pour garantir le chargement des données avant l'utilisation
+- ✅ **Implémenter des fonctions de vérification** comme `ensureEditDataLoaded()`
+- ✅ **Utiliser `setTimeout`** pour permettre aux éléments DOM de se remplir
+- ✅ **Vérifier l'existence des données** avant de les utiliser
 
 ### 📞 **CONTACT ET SUPPORT**
 
@@ -336,6 +435,10 @@ Pour toute question ou problème :
 ✅ **Types d'opportunités** configurables
 ✅ **Intégration frontend** complète
 ✅ **Boutons d'actions fonctionnels** sur toutes les pages
+✅ **Page opportunities.html complète** avec CRUD fonctionnel
+✅ **Modals interactifs** pour toutes les opérations
+✅ **Gestion des contraintes** de base de données
+✅ **Scripts de diagnostic** pour le débogage
 
 ### 🚀 **ÉTAT DE DÉPLOIEMENT**
 
@@ -349,11 +452,15 @@ Pour toute question ou problème :
 - ✅ Gestion des types d'opportunités avec templates
 - ✅ Interface utilisateur moderne et intuitive
 - ✅ **Tous les boutons d'actions fonctionnels** (Voir, Modifier, Supprimer)
+- ✅ **Page opportunities.html complète** avec toutes les fonctionnalités CRUD
+- ✅ **Modals interactifs** pour visualisation, édition et suppression
+- ✅ **Filtres avancés** et indicateurs de performance
 
 #### **Prochaines étapes pour un nouveau chat :**
 1. **Vérifier l'état du serveur** : `npm start`
 2. **Tester les nouvelles fonctionnalités** : Analytics, Notifications, Types d'Opportunités
-3. **Continuer avec les priorités** : Workflow automatique, Export CSV, Notifications email
-4. **Optimisations** : Performance, Sécurité, UX mobile
+3. **Implémenter le bouton "Nouvelle Opportunité"** dans opportunities.html
+4. **Continuer avec les priorités** : Workflow automatique, Export CSV, Notifications email
+5. **Optimisations** : Performance, Sécurité, UX mobile
 
-**L'application TRS-Affichage est maintenant un système complet de gestion d'opportunités avec workflow avancé, analytics et notifications !** 🎉 
+**L'application TRS-Affichage est maintenant un système complet de gestion d'opportunités avec workflow avancé, analytics, notifications et interface CRUD complète !** 🎉 
