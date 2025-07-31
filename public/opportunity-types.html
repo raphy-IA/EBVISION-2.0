@@ -158,9 +158,10 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Nom</th>
-                                        <th>Description</th>
+                                        <th>Code</th>
+                                        <th>Nom & Description</th>
+                                        <th>Probabilité</th>
+                                        <th>Durée</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -195,8 +196,30 @@
                             <input type="text" class="form-control" id="typeName" required>
                         </div>
                         <div class="mb-3">
+                            <label for="typeCode" class="form-label">Code</label>
+                            <input type="text" class="form-control" id="typeCode" placeholder="Ex: AUDIT, CONSEIL">
+                        </div>
+                        <div class="mb-3">
+                            <label for="typeColor" class="form-label">Couleur</label>
+                            <input type="color" class="form-control form-control-color" id="typeColor" value="#3498db">
+                        </div>
+                        <div class="mb-3">
                             <label for="typeDescription" class="form-label">Description</label>
                             <textarea class="form-control" id="typeDescription" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="typeProbability" class="form-label">Probabilité par défaut (%)</label>
+                                    <input type="number" class="form-control" id="typeProbability" min="0" max="100" value="50">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="typeDuration" class="form-label">Durée par défaut (jours)</label>
+                                    <input type="number" class="form-control" id="typeDuration" min="1" value="30">
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -230,8 +253,30 @@
                             <input type="text" class="form-control" id="editTypeName" required>
                         </div>
                         <div class="mb-3">
+                            <label for="editTypeCode" class="form-label">Code</label>
+                            <input type="text" class="form-control" id="editTypeCode" placeholder="Ex: AUDIT, CONSEIL">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTypeColor" class="form-label">Couleur</label>
+                            <input type="color" class="form-control form-control-color" id="editTypeColor" value="#3498db">
+                        </div>
+                        <div class="mb-3">
                             <label for="editTypeDescription" class="form-label">Description</label>
                             <textarea class="form-control" id="editTypeDescription" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editTypeProbability" class="form-label">Probabilité par défaut (%)</label>
+                                    <input type="number" class="form-control" id="editTypeProbability" min="0" max="100" value="50">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editTypeDuration" class="form-label">Durée par défaut (jours)</label>
+                                    <input type="number" class="form-control" id="editTypeDuration" min="1" value="30">
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -283,13 +328,49 @@
             loadTypes();
         });
 
+        function showLoading(show) {
+            const loading = document.getElementById('types-loading');
+            const content = document.getElementById('types-content');
+            if (show) {
+                loading.style.display = 'flex';
+                content.style.display = 'none';
+            } else {
+                loading.style.display = 'none';
+                content.style.display = 'block';
+            }
+        }
+
+        function showAlert(message, type = 'info') {
+            // Créer une alerte Bootstrap
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Insérer l'alerte au début du contenu principal
+            const mainContent = document.querySelector('.main-content-area');
+            mainContent.insertBefore(alertDiv, mainContent.firstChild);
+            
+            // Auto-supprimer après 5 secondes
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
         async function loadTypes() {
             showLoading(true);
             try {
                 const response = await fetch(`${API_BASE_URL}/opportunity-types`);
                 const data = await response.json();
+                console.log('API Response:', data); // Debug
                 if (data.success) {
-                    displayTypes(data.data);
+                    // L'API retourne data.data.opportunityTypes
+                    const types = data.data?.opportunityTypes || data.data || [];
+                    displayTypes(types);
                 } else {
                     showAlert('Erreur lors du chargement des types d\'opportunités', 'danger');
                 }
@@ -307,7 +388,7 @@
             if (types.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-4">
+                        <td colspan="5" class="text-center text-muted py-4">
                             <i class="fas fa-tags fa-2x mb-3"></i>
                             <p>Aucun type d'opportunité trouvé</p>
                         </td>
@@ -319,9 +400,23 @@
             types.forEach(type => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${type.id}</td>
-                    <td>${type.nom}</td>
-                    <td>${type.description || '-'}</td>
+                    <td>
+                        <span class="badge" style="background-color: ${type.couleur || '#6c757d'}; color: white;">
+                            ${type.code || type.nom?.substring(0, 3).toUpperCase() || 'N/A'}
+                        </span>
+                    </td>
+                    <td>
+                        <strong>${type.nom || type.name || 'Sans nom'}</strong>
+                        ${type.description ? `<br><small class="text-muted">${type.description}</small>` : ''}
+                    </td>
+                    <td>
+                        <span class="badge bg-info">${type.default_probability || 0}%</span>
+                        <br><small class="text-muted">Probabilité par défaut</small>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary">${type.default_duration_days || 0} jours</span>
+                        <br><small class="text-muted">Durée par défaut</small>
+                    </td>
                     <td>
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-outline-warning" onclick="editType('${type.id}')" title="Modifier">
@@ -345,9 +440,15 @@
             }
 
             const formData = {
-                nom: document.getElementById('typeName').value,
-                description: document.getElementById('typeDescription').value
+                nom: document.getElementById('typeName').value.trim(),
+                code: document.getElementById('typeCode').value.trim() || null,
+                description: document.getElementById('typeDescription').value.trim() || null,
+                couleur: document.getElementById('typeColor').value,
+                default_probability: parseInt(document.getElementById('typeProbability').value) || 50,
+                default_duration_days: parseInt(document.getElementById('typeDuration').value) || 30
             };
+
+            console.log('📤 Données à envoyer:', formData);
 
             try {
                 const response = await fetch(`${API_BASE_URL}/opportunity-types`, {
@@ -357,17 +458,22 @@
                     },
                     body: JSON.stringify(formData)
                 });
+                
                 const data = await response.json();
+                console.log('📡 Réponse API:', data);
+                
                 if (data.success) {
                     showAlert('Type d\'opportunité ajouté avec succès', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('addTypeModal')).hide();
+                    form.reset();
+                    document.getElementById('typeColor').value = '#3498db';
                     loadTypes();
                 } else {
-                    showAlert(`Erreur lors de l\'ajout: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
+                    showAlert(`Erreur lors de l'ajout: ${data.error || data.message || 'Erreur inconnue'}`, 'danger');
                 }
             } catch (error) {
                 console.error('Erreur lors de l\'ajout:', error);
-                showAlert('Erreur lors de l\'ajout', 'danger');
+                showAlert('Erreur de connexion lors de l\'ajout', 'danger');
             }
         }
 
@@ -375,18 +481,27 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/opportunity-types/${id}`);
                 const data = await response.json();
+                console.log('📡 Réponse API GET:', data);
+                
                 if (data.success) {
-                    const type = data.data;
+                    const type = data.data?.type || data.data;
+                    console.log('📋 Type à éditer:', type);
+                    
                     document.getElementById('editTypeId').value = type.id;
-                    document.getElementById('editTypeName').value = type.nom;
+                    document.getElementById('editTypeName').value = type.nom || type.name || '';
+                    document.getElementById('editTypeCode').value = type.code || '';
+                    document.getElementById('editTypeColor').value = type.couleur || '#3498db';
                     document.getElementById('editTypeDescription').value = type.description || '';
+                    document.getElementById('editTypeProbability').value = type.default_probability || 50;
+                    document.getElementById('editTypeDuration').value = type.default_duration_days || 30;
+                    
                     new bootstrap.Modal(document.getElementById('editTypeModal')).show();
                 } else {
-                    showAlert('Type d\'opportunité non trouvé', 'danger');
+                    showAlert(`Erreur: ${data.error || 'Type d\'opportunité non trouvé'}`, 'danger');
                 }
             } catch (error) {
-                console.error('Erreur:', error);
-                showAlert('Erreur de connexion', 'danger');
+                console.error('Erreur lors de la récupération:', error);
+                showAlert('Erreur de connexion lors de la récupération', 'danger');
             }
         }
 
@@ -399,9 +514,15 @@
 
             const id = document.getElementById('editTypeId').value;
             const formData = {
-                nom: document.getElementById('editTypeName').value,
-                description: document.getElementById('editTypeDescription').value
+                nom: document.getElementById('editTypeName').value.trim(),
+                code: document.getElementById('editTypeCode').value.trim() || null,
+                description: document.getElementById('editTypeDescription').value.trim() || null,
+                couleur: document.getElementById('editTypeColor').value,
+                default_probability: parseInt(document.getElementById('editTypeProbability').value) || 50,
+                default_duration_days: parseInt(document.getElementById('editTypeDuration').value) || 30
             };
+
+            console.log('📤 Données à mettre à jour:', formData);
 
             try {
                 const response = await fetch(`${API_BASE_URL}/opportunity-types/${id}`, {
@@ -411,17 +532,20 @@
                     },
                     body: JSON.stringify(formData)
                 });
+                
                 const data = await response.json();
+                console.log('📡 Réponse API UPDATE:', data);
+                
                 if (data.success) {
                     showAlert('Type d\'opportunité mis à jour avec succès', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('editTypeModal')).hide();
                     loadTypes();
                 } else {
-                    showAlert('Erreur lors de la mise à jour', 'danger');
+                    showAlert(`Erreur lors de la mise à jour: ${data.error || data.message || 'Erreur inconnue'}`, 'danger');
                 }
             } catch (error) {
                 console.error('Erreur lors de la mise à jour:', error);
-                showAlert('Erreur lors de la mise à jour', 'danger');
+                showAlert('Erreur de connexion lors de la mise à jour', 'danger');
             }
         }
 
@@ -437,19 +561,21 @@
                 const response = await fetch(`${API_BASE_URL}/opportunity-types/${typeToDelete}`, {
                     method: 'DELETE'
                 });
+                
                 const data = await response.json();
+                console.log('📡 Réponse API DELETE:', data);
+                
                 if (data.success) {
                     showAlert('Type d\'opportunité supprimé avec succès', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
                     loadTypes();
                 } else {
-                    showAlert('Erreur lors de la suppression', 'danger');
+                    showAlert(`Erreur lors de la suppression: ${data.error || data.message || 'Erreur inconnue'}`, 'danger');
                 }
             } catch (error) {
                 console.error('Erreur lors de la suppression:', error);
-                showAlert('Erreur lors de la suppression', 'danger');
-            }
-            finally {
+                showAlert('Erreur de connexion lors de la suppression', 'danger');
+            } finally {
                 typeToDelete = null;
             }
         }

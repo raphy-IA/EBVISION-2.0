@@ -4,7 +4,7 @@ const OpportunityType = require('../models/OpportunityType');
 const { authenticateToken } = require('../middleware/auth');
 
 // GET /api/opportunity-types - Récupérer tous les types d'opportunités
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const { pool } = require('../utils/database');
         
@@ -81,6 +81,8 @@ router.post('/', authenticateToken, async (req, res) => {
             code,
             description,
             couleur,
+            default_probability,
+            default_duration_days,
             templates
         } = req.body;
 
@@ -93,8 +95,8 @@ router.post('/', authenticateToken, async (req, res) => {
 
         // Créer le type
         const insertQuery = `
-            INSERT INTO opportunity_types (nom, code, description, couleur)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO opportunity_types (nom, code, description, couleur, default_probability, default_duration_days)
+            VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *
         `;
 
@@ -102,7 +104,9 @@ router.post('/', authenticateToken, async (req, res) => {
             nom,
             code,
             description,
-            couleur
+            couleur,
+            default_probability || 50,
+            default_duration_days || 30
         ]);
 
         const newType = result.rows[0];
@@ -149,6 +153,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
             code,
             description,
             couleur,
+            default_probability,
+            default_duration_days,
             templates
         } = req.body;
 
@@ -179,8 +185,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
                 code = $2,
                 description = $3,
                 couleur = $4,
+                default_probability = $5,
+                default_duration_days = $6,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id = $5
+            WHERE id = $7
             RETURNING *
         `;
 
@@ -189,6 +197,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
             code,
             description,
             couleur,
+            default_probability || 50,
+            default_duration_days || 30,
             req.params.id
         ]);
 

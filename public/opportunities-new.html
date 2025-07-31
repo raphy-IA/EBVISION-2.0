@@ -1,0 +1,221 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Opportunites - TRS</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-lightbulb me-2"></i>Gestion des Opportunites</h2>
+            <button class="btn btn-primary" onclick="newOpportunity()">
+                <i class="fas fa-plus me-2"></i>Nouvelle Opportunite
+            </button>
+        </div>
+        
+        <!-- Header avec bouton Actualiser -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Liste des Opportunites
+                </h5>
+                <button class="btn btn-outline-primary" onclick="loadOpportunities()">
+                    <i class="fas fa-sync-alt me-1"></i>
+                    Actualiser
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="opportunities-loading" class="text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+                <div id="opportunities-content">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Client</th>
+                                    <th>Responsable</th>
+                                    <th>Montant</th>
+                                    <th>Probabilite</th>
+                                    <th>Date Fermeture</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="opportunities-table">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE_URL = '/api';
+        let opportunities = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page opportunities.html chargee');
+            loadOpportunities();
+        });
+        
+        async function loadOpportunities() {
+            showLoading(true);
+            try {
+                console.log('Chargement des opportunites...');
+                const response = await fetch(`${API_BASE_URL}/opportunities`);
+                const data = await response.json();
+                
+                console.log('Reponse API:', data);
+                
+                if (data.success) {
+                    opportunities = data.data.opportunities;
+                    console.log(`${opportunities.length} opportunites chargees`);
+                    displayOpportunities();
+                } else {
+                    console.error('Erreur API:', data.error || data.message);
+                    showError('Erreur lors du chargement des opportunites');
+                }
+            } catch (error) {
+                console.error('Erreur de connexion:', error);
+                showError('Erreur de connexion');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function displayOpportunities() {
+            const tbody = document.getElementById('opportunities-table');
+            tbody.innerHTML = '';
+            
+            if (opportunities.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">Aucune opportunite trouvee</td></tr>';
+                return;
+            }
+            
+            opportunities.forEach(opp => {
+                const row = document.createElement('tr');
+                
+                const montant = opp.montant_estime ? formatCurrency(opp.montant_estime, opp.devise || "EUR") : '-';
+                const probabilite = opp.probabilite ? `${opp.probabilite}%` : '-';
+                const responsable = opp.collaborateur_nom ? `${opp.collaborateur_nom} ${opp.collaborateur_prenom}` : '-';
+                const dateFermeture = opp.date_fermeture_prevue ? new Date(opp.date_fermeture_prevue).toLocaleDateString('fr-FR') : '-';
+                const statusClass = getStatusClass(opp.statut);
+                const statusLabel = getStatusLabel(opp.statut);
+                
+                row.innerHTML = `
+                    <td><strong>${opp.nom}</strong></td>
+                    <td>${opp.client_nom || '-'}</td>
+                    <td>${responsable}</td>
+                    <td>${montant}</td>
+                    <td>${probabilite}</td>
+                    <td>${dateFermeture}</td>
+                    <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-info" onclick="viewOpportunity(${opp.id})" title="Voir">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-warning" onclick="editOpportunity(${opp.id})" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteOpportunity(${opp.id})" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            console.log('Opportunites affichees');
+        }
+        
+        function formatCurrency(value, currency = 'EUR') {
+            try {
+                return new Intl.NumberFormat('fr-FR', { 
+                    style: 'currency', 
+                    currency: currency 
+                }).format(value);
+            } catch (error) {
+                return `${value} ${currency}`;
+            }
+        }
+        
+        function getStatusClass(status) {
+            const classes = {
+                'EN_COURS': 'bg-primary',
+                'GAGNEE': 'bg-success',
+                'PERDUE': 'bg-danger',
+                'OPEN': 'bg-primary',
+                'WON': 'bg-success',
+                'LOST': 'bg-danger'
+            };
+            return classes[status] || 'bg-secondary';
+        }
+        
+        function getStatusLabel(status) {
+            const labels = {
+                'EN_COURS': 'En Cours',
+                'GAGNEE': 'Gagnee',
+                'PERDUE': 'Perdue',
+                'OPEN': 'Ouverte',
+                'WON': 'Gagnee',
+                'LOST': 'Perdue'
+            };
+            return labels[status] || status;
+        }
+        
+        function showLoading(show) {
+            document.getElementById('opportunities-loading').style.display = show ? 'block' : 'none';
+            document.getElementById('opportunities-content').style.display = show ? 'none' : 'block';
+        }
+        
+        function showError(message) {
+            const content = document.getElementById('opportunities-content');
+            content.style.display = 'block';
+            content.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${message}
+                </div>
+            `;
+        }
+        
+        // Fonctions CRUD (a enrichir progressivement)
+        function newOpportunity() {
+            console.log('Creation d\'une nouvelle opportunite');
+            alert('Fonctionnalite "Nouvelle Opportunite" - A developper');
+        }
+        
+        function viewOpportunity(id) {
+            console.log('Visualisation de l\'opportunite:', id);
+            alert(`Visualisation de l'opportunite ${id} - A developper`);
+        }
+        
+        function editOpportunity(id) {
+            console.log('Edition de l\'opportunite:', id);
+            alert(`Edition de l'opportunite ${id} - A developper`);
+        }
+        
+        function deleteOpportunity(id) {
+            console.log('Suppression de l\'opportunite:', id);
+            if (confirm('Etes-vous sur de vouloir supprimer cette opportunite ?')) {
+                alert(`Suppression de l'opportunite ${id} - A developper`);
+            }
+        }
+    </script>
+</body>
+</html>

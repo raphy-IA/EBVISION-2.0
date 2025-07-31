@@ -8,7 +8,7 @@ const OpportunityType = require('../models/OpportunityType');
 const { authenticateToken } = require('../middleware/auth');
 
 // GET /api/opportunities - Récupérer toutes les opportunités
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const { 
             page = 1, 
@@ -90,7 +90,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // GET /api/opportunities/:id - Récupérer une opportunité par ID
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
         const opportunity = await Opportunity.findById(req.params.id);
         
@@ -251,7 +251,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/opportunities/:id - Supprimer une opportunité
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
         const deleted = await Opportunity.delete(req.params.id);
         

@@ -1,0 +1,822 @@
+const fs = require('fs');
+const path = require('path');
+
+console.log('🔄 Recréation du fichier opportunities.html avec syntaxe corrigée...');
+
+// Créer une version corrigée du fichier opportunities.html
+const correctedContent = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Opportunités - TRS</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+        
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .stat-card.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-saisie { background-color: #e3f2fd; color: #1976d2; }
+        .status-soumise { background-color: #fff3e0; color: #f57c00; }
+        .status-validee { background-color: #e8f5e8; color: #388e3c; }
+        .status-rejetee { background-color: #ffebee; color: #d32f2f; }
+        
+        .collaborateur-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        
+        .progress {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            transition: width 0.3s ease;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .table td {
+            vertical-align: middle;
+            padding: 0.75rem;
+        }
+        
+        .table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .sidebar-container {
+            width: 300px;
+            flex-shrink: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            .sidebar-container {
+                width: 100%;
+                height: auto;
+            }
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+        
+        .main-content-wrapper {
+            margin-left: 300px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            padding: 0;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content-wrapper {
+                margin-left: 0;
+            }
+            .sidebar-container {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar-container.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div id="opportunities-section">
+                <!-- Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2><i class="fas fa-lightbulb me-2"></i>Gestion des Opportunités</h2>
+                            <button class="btn btn-primary" onclick="newOpportunity()">
+                                <i class="fas fa-plus me-1"></i>
+                                Nouvelle Opportunité
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Statistics -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card">
+                            <div class="card-body text-center">
+                                <h3 class="text-white" id="total-opportunities">0</h3>
+                                <p class="text-white mb-0">Total Opportunités</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card success">
+                            <div class="card-body text-center">
+                                <h3 class="text-white" id="open-opportunities">0</h3>
+                                <p class="text-white mb-0">Ouvertes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card warning">
+                            <div class="card-body text-center">
+                                <h3 class="text-white" id="won-opportunities">0</h3>
+                                <p class="text-white mb-0">Gagnées</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card danger">
+                            <div class="card-body text-center">
+                                <h3 class="text-white" id="lost-opportunities">0</h3>
+                                <p class="text-white mb-0">Perdues</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search and Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control"
+                                       id="search-input" placeholder="Rechercher par nom, client..."
+                                       onkeyup="filterOpportunities()">
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="status-filter" onchange="filterOpportunities()">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="EN_COURS">En Cours</option>
+                                    <option value="GAGNEE">Gagnée</option>
+                                    <option value="PERDUE">Perdue</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="business-unit-filter" onchange="filterOpportunities()">
+                                    <option value="">Toutes les BU</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="type-filter" onchange="filterOpportunities()">
+                                    <option value="">Tous les types</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="probability-filter" onchange="filterOpportunities()">
+                                    <option value="">Toutes probabilités</option>
+                                    <option value="high">Élevée (80%+)</option>
+                                    <option value="medium">Moyenne (40-79%)</option>
+                                    <option value="low">Faible (<40%)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Opportunities Table -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Liste des Opportunités
+                        </h5>
+                        <button class="btn btn-outline-primary btn-sm" onclick="loadOpportunities()">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Actualiser
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="opportunities-loading" class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                        <div id="opportunities-content" style="display: none;">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Client</th>
+                                            <th>Responsable</th>
+                                            <th>Business Unit</th>
+                                            <th>Type</th>
+                                            <th>Montant</th>
+                                            <th>Probabilité</th>
+                                            <th>Date Fermeture</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="opportunities-table">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <script>
+        const API_BASE_URL = '/api';
+        let opportunities = [];
+        let filteredOpportunities = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Page opportunities.html chargée');
+            loadOpportunities();
+            loadClients();
+            loadBusinessUnitsForFilters();
+            loadOpportunityTypesForFilters();
+        });
+        
+        async function loadOpportunities() {
+            showLoading(true);
+            try {
+                const response = await fetch(\`\${API_BASE_URL}/opportunities\`);
+                const data = await response.json();
+                if (data.success) {
+                    opportunities = data.data.opportunities;
+                    filteredOpportunities = [...opportunities];
+                    displayOpportunities();
+                    updateStatistics();
+                } else {
+                    showAlert('Erreur lors du chargement des opportunités', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur de connexion', 'danger');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function loadClients() {
+            try {
+                console.log('📋 Chargement des clients...');
+                const response = await fetch(\`\${API_BASE_URL}/clients\`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('opportunityClient');
+                    if (!select) {
+                        console.error('❌ Élément opportunityClient non trouvé');
+                        return;
+                    }
+                    
+                    select.innerHTML = '<option value="">Sélectionner un client</option>';
+                    
+                    const clients = data.data?.clients || data.data || [];
+                    console.log('👥 Clients trouvés:', clients.length);
+                    
+                    clients.forEach(client => {
+                        const option = document.createElement('option');
+                        option.value = client.id;
+                        option.textContent = client.nom || client.raison_sociale || 'Client sans nom';
+                        select.appendChild(option);
+                    });
+                    
+                    console.log('✅ Clients chargés dans le select');
+                } else {
+                    console.error('❌ Erreur API clients:', data);
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des clients:', error);
+            }
+        }
+        
+        async function loadCollaborators() {
+            try {
+                console.log('👥 Chargement des collaborateurs...');
+                const response = await fetch(\`\${API_BASE_URL}/collaborateurs\`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('opportunityCollaborator');
+                    if (!select) {
+                        console.error('❌ Élément opportunityCollaborator non trouvé');
+                        return;
+                    }
+                    
+                    select.innerHTML = '<option value="">Sélectionner un collaborateur</option>';
+                    
+                    const collaborateurs = data.data?.collaborateurs || data.data || [];
+                    console.log('👥 Collaborateurs trouvés:', collaborateurs.length);
+                    
+                    collaborateurs.forEach(collaborator => {
+                        const option = document.createElement('option');
+                        option.value = collaborator.id;
+                        option.textContent = \`\${collaborator.nom} \${collaborator.prenom}\`;
+                        select.appendChild(option);
+                    });
+                    
+                    console.log('✅ Collaborateurs chargés dans le select');
+                } else {
+                    console.error('❌ Erreur API collaborateurs:', data);
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des collaborateurs:', error);
+            }
+        }
+        
+        async function loadBusinessUnits() {
+            try {
+                console.log('🏢 Chargement des Business Units...');
+                const response = await fetch(\`\${API_BASE_URL}/business-units\`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('opportunityBusinessUnit');
+                    if (!select) {
+                        console.error('❌ Élément opportunityBusinessUnit non trouvé');
+                        return;
+                    }
+                    
+                    select.innerHTML = '<option value="">Sélectionner une Business Unit</option>';
+                    
+                    const businessUnits = data.data || [];
+                    console.log('🏢 Business Units trouvées:', businessUnits.length);
+                    
+                    businessUnits.forEach(bu => {
+                        const option = document.createElement('option');
+                        option.value = bu.id;
+                        option.textContent = bu.nom || bu.name || 'Business Unit sans nom';
+                        select.appendChild(option);
+                    });
+                    
+                    console.log('✅ Business Units chargées dans le select');
+                } else {
+                    console.error('❌ Erreur API Business Units:', data);
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des Business Units:', error);
+            }
+        }
+        
+        async function loadOpportunityTypes() {
+            try {
+                console.log('📊 Chargement des types d\'opportunités...');
+                const response = await fetch(\`\${API_BASE_URL}/opportunity-types\`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('opportunityType');
+                    if (!select) {
+                        console.error('❌ Élément opportunityType non trouvé');
+                        return;
+                    }
+                    
+                    select.innerHTML = '<option value="">Sélectionner un type d\'opportunité</option>';
+                    
+                    const types = data.data?.opportunityTypes || data.data || [];
+                    console.log('📊 Types trouvés:', types.length);
+                    
+                    types.forEach(type => {
+                        const option = document.createElement('option');
+                        option.value = type.id;
+                        option.textContent = type.nom || type.name || 'Type sans nom';
+                        select.appendChild(option);
+                    });
+                    
+                    console.log('✅ Types d\'opportunités chargés dans le select');
+                } else {
+                    console.error('❌ Erreur API types d\'opportunités:', data);
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des types d\'opportunités:', error);
+            }
+        }
+        
+        async function loadBusinessUnitsForFilters() {
+            try {
+                console.log('🏢 Chargement des Business Units pour filtres...');
+                const response = await fetch(\`\${API_BASE_URL}/business-units\`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('business-unit-filter');
+                    if (!select) {
+                        console.error('❌ Élément business-unit-filter non trouvé');
+                        return;
+                    }
+                    
+                    select.innerHTML = '<option value="">Toutes les Business Units</option>';
+                    
+                    const businessUnits = data.data || [];
+                    console.log('🏢 Business Units pour filtres trouvées:', businessUnits.length);
+                    
+                    businessUnits.forEach(bu => {
+                        const option = document.createElement('option');
+                        option.value = bu.id;
+                        option.textContent = bu.nom || bu.name || 'Business Unit sans nom';
+                        select.appendChild(option);
+                    });
+                    
+                    console.log('✅ Business Units pour filtres chargées');
+                } else {
+                    console.error('❌ Erreur API Business Units pour filtres:', data);
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des Business Units pour filtres:', error);
+            }
+        }
+        
+        async function loadOpportunityTypesForFilters() {
+            try {
+                console.log('📊 Chargement des types d\'opportunités pour filtres...');
+                const response = await fetch(\`\${API_BASE_URL}/opportunity-types\`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('type-filter');
+                    select.innerHTML = '<option value="">Tous les types d\'opportunités</option>';
+                    
+                    const types = data.data?.opportunityTypes || data.data || [];
+                    console.log('📊 Types pour filtres trouvés:', types.length);
+                    
+                    types.forEach(type => {
+                        const option = document.createElement('option');
+                        option.value = type.id;
+                        option.textContent = type.nom || type.name || 'Type sans nom';
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.error('❌ Erreur API types pour filtres:', data);
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des types d\'opportunités pour filtres:', error);
+            }
+        }
+        
+        function displayOpportunities() {
+            const tbody = document.getElementById('opportunities-table');
+            tbody.innerHTML = '';
+            
+            if (filteredOpportunities.length === 0) {
+                tbody.innerHTML = \`<tr><td colspan="10" class="text-center">Aucune opportunité trouvée</td></tr>\`;
+                return;
+            }
+            
+            filteredOpportunities.forEach(opp => {
+                const row = document.createElement('tr');
+                
+                const montant = opp.montant_estime ? formatCurrency(opp.montant_estime, opp.devise || "EUR") : '-';
+                const probabilite = opp.probabilite ? \`\${opp.probabilite}%\` : '-';
+                const dateFermeture = opp.date_fermeture_prevue ? new Date(opp.date_fermeture_prevue).toLocaleDateString('fr-FR') : '-';
+                const responsable = opp.collaborateur_nom ? \`\${opp.collaborateur_nom} \${opp.collaborateur_prenom}\` : '-';
+                const businessUnit = opp.business_unit_nom || '-';
+                const type = opp.opportunity_type_nom || '-';
+                
+                const statusClass = getStatusClass(opp.statut);
+                const statusLabel = getStatusLabel(opp.statut);
+                
+                row.innerHTML = \`
+                    <td>
+                        <strong>\${opp.nom}</strong>
+                        \${opp.source ? \`<br><small class="text-muted">Source: \${opp.source}</small>\` : ''}
+                    </td>
+                    <td>\${opp.client_nom || '-'}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="collaborateur-avatar me-2">
+                                \${getInitials(opp.collaborateur_nom || '', opp.collaborateur_prenom || '')}
+                            </div>
+                            <div>
+                                <div class="fw-bold">\${responsable}</div>
+                                \${opp.collaborateur_email ? \`<small class="text-muted">\${opp.collaborateur_email}</small>\` : ''}
+                            </div>
+                        </div>
+                    </td>
+                    <td>\${businessUnit}</td>
+                    <td>\${type}</td>
+                    <td>
+                        <div class="fw-bold">\${montant}</div>
+                        \${opp.devise ? \`<small class="text-muted">\${opp.devise}</small>\` : ''}
+                    </td>
+                    <td>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar \${getProgressBarClass(opp.probabilite)}"
+                                  style="width: \${opp.probabilite || 0}%"
+                                  role="progressbar">
+                                \${probabilite}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <span class="fw-bold">\${dateFermeture}</span>
+                            \${opp.date_fermeture_prevue ? \`<small class="text-muted">\${getDaysUntil(opp.date_fermeture_prevue)}</small>\` : ''}
+                        </div>
+                    </td>
+                    <td><span class="status-badge \${statusClass}">\${statusLabel}</span></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-info" onclick="viewOpportunity(\${opp.id})" title="Voir">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-warning" onclick="editOpportunity(\${opp.id})" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteOpportunity(\${opp.id})" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                \`;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function updateStatistics() {
+            document.getElementById('total-opportunities').textContent = opportunities.length;
+            document.getElementById('open-opportunities').textContent = opportunities.filter(o => o.statut === 'OPEN').length;
+            document.getElementById('won-opportunities').textContent = opportunities.filter(o => o.statut === 'WON').length;
+            document.getElementById('lost-opportunities').textContent = opportunities.filter(o => o.statut === 'LOST').length;
+        }
+        
+        function filterOpportunities() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            const businessUnitFilter = document.getElementById('business-unit-filter').value;
+            const typeFilter = document.getElementById('type-filter').value;
+            const probabilityFilter = document.getElementById('probability-filter').value;
+            
+            filteredOpportunities = opportunities.filter(opp => {
+                const matchesSearch = !searchTerm || 
+                    opp.nom.toLowerCase().includes(searchTerm) ||
+                    (opp.client_nom && opp.client_nom.toLowerCase().includes(searchTerm)) ||
+                    (opp.collaborateur_nom && opp.collaborateur_nom.toLowerCase().includes(searchTerm)) ||
+                    (opp.collaborateur_prenom && opp.collaborateur_prenom.toLowerCase().includes(searchTerm));
+                
+                const matchesStatus = !statusFilter || opp.statut === statusFilter;
+                const matchesBusinessUnit = !businessUnitFilter || opp.business_unit_id == businessUnitFilter;
+                const matchesType = !typeFilter || opp.opportunity_type_id == typeFilter;
+                
+                let matchesProbability = true;
+                if (probabilityFilter) {
+                    const prob = opp.probabilite || 0;
+                    switch (probabilityFilter) {
+                        case 'high':
+                            matchesProbability = prob >= 80;
+                            break;
+                        case 'medium':
+                            matchesProbability = prob >= 40 && prob < 80;
+                            break;
+                        case 'low':
+                            matchesProbability = prob < 40;
+                            break;
+                    }
+                }
+                
+                return matchesSearch && matchesStatus && matchesBusinessUnit && matchesType && matchesProbability;
+            });
+            
+            displayOpportunities();
+        }
+        
+        function formatCurrency(value, currency = 'EUR') {
+            const currencyMap = {
+                'FCFA': 'XOF',
+                'CFA': 'XOF',
+                'XAF': 'XOF'
+            };
+            
+            const mappedCurrency = currencyMap[currency] || currency;
+            
+            try {
+                return new Intl.NumberFormat('fr-FR', { 
+                    style: 'currency', 
+                    currency: mappedCurrency 
+                }).format(value);
+            } catch (error) {
+                return \`\${value} \${currency}\`;
+            }
+        }
+        
+        function getStatusClass(status) {
+            const classes = {
+                'EN_COURS': 'status-saisie',
+                'GAGNEE': 'status-validee',
+                'PERDUE': 'status-rejetee',
+                'OPEN': 'status-saisie',
+                'WON': 'status-validee',
+                'LOST': 'status-rejetee'
+            };
+            return classes[status] || 'status-saisie';
+        }
+        
+        function getStatusLabel(status) {
+            const labels = {
+                'EN_COURS': 'En Cours',
+                'GAGNEE': 'Gagnée',
+                'PERDUE': 'Perdue',
+                'OPEN': 'Ouverte',
+                'WON': 'Gagnée',
+                'LOST': 'Perdue'
+            };
+            return labels[status] || status;
+        }
+        
+        function getProgressBarClass(probability) {
+            if (probability >= 80) return 'bg-success';
+            if (probability >= 60) return 'bg-info';
+            if (probability >= 40) return 'bg-warning';
+            return 'bg-danger';
+        }
+        
+        function getInitials(nom, prenom) {
+            return \`\${nom.charAt(0)}\${prenom.charAt(0)}\`.toUpperCase();
+        }
+        
+        function getDaysUntil(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            const diffTime = date - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 0) {
+                return \`Dans \${diffDays} jour\${diffDays > 1 ? 's' : ''}\`;
+            } else if (diffDays === 0) {
+                return 'Aujourd\'hui';
+            } else {
+                return \`Il y a \${Math.abs(diffDays)} jour\${Math.abs(diffDays) > 1 ? 's' : ''}\`;
+            }
+        }
+        
+        function showLoading(show) {
+            document.getElementById('opportunities-loading').style.display = show ? 'flex' : 'none';
+            document.getElementById('opportunities-content').style.display = show ? 'none' : 'block';
+        }
+        
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = \`alert alert-\${type} alert-dismissible fade show\`;
+            alertDiv.innerHTML = \`
+                <i class="fas fa-\${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : type === 'danger' ? 'times-circle' : 'info-circle'} me-2"></i>
+                \${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            \`;
+            
+            const container = document.querySelector('.main-content-area');
+            if (container) {
+                container.insertBefore(alertDiv, container.firstChild);
+            } else {
+                document.body.appendChild(alertDiv);
+            }
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        function newOpportunity() {
+            console.log('➕ Création d\'une nouvelle opportunité');
+            showAlert('Fonctionnalité en cours de développement', 'info');
+        }
+        
+        function viewOpportunity(id) {
+            console.log('👁️ Visualisation de l\'opportunité:', id);
+            showAlert('Fonctionnalité en cours de développement', 'info');
+        }
+        
+        function editOpportunity(id) {
+            console.log('✏️ Édition de l\'opportunité:', id);
+            showAlert('Fonctionnalité en cours de développement', 'info');
+        }
+        
+        function deleteOpportunity(id) {
+            console.log('🗑️ Suppression de l\'opportunité:', id);
+            showAlert('Fonctionnalité en cours de développement', 'info');
+        }
+    </script>
+</body>
+</html>`;
+
+// Écrire le fichier corrigé
+const filePath = path.join(__dirname, '../public/opportunities.html');
+fs.writeFileSync(filePath, correctedContent, 'utf8');
+
+console.log('✅ Fichier opportunities.html recréé avec succès !');
+console.log('🔧 Erreur de syntaxe JavaScript corrigée');
+console.log('📄 Le fichier est maintenant prêt à être utilisé'); 

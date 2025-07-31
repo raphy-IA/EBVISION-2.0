@@ -1,6 +1,6 @@
 # REPRISE DU PROJET TRS-AFFICHAGE
 
-## 📋 ÉTAT ACTUEL DE L'APPLICATION (Mise à jour : 21/07/2025 - 19:30)
+## 📋 ÉTAT ACTUEL DE L'APPLICATION (Mise à jour : 30/07/2025 - 18:35)
 
 ### ✅ **ÉVOLUTIONS RÉCENTES TERMINÉES**
 
@@ -57,6 +57,13 @@
 - ✅ **Requêtes SQL** : Toutes les références corrigées
 - ✅ **Serveur** : Démarrage sans erreurs
 
+#### **8. CORRECTION CRITIQUE DES BOUTONS D'ACTIONS** ✅ (NOUVEAU - 30/07/2025)
+- ✅ **Problème résolu** : `Uncaught SyntaxError: Invalid or unexpected token` sur les boutons
+- ✅ **Cause identifiée** : Interpolation `${opp.id}` sans guillemets dans les attributs `onclick`
+- ✅ **Solution appliquée** : Ajout de guillemets simples autour des IDs
+- ✅ **Pattern correct** : `onclick="viewOpportunity('${opp.id}')"` au lieu de `onclick="viewOpportunity(${opp.id})"`
+- ✅ **Référence** : Utilisation du même pattern que `collaborateurs.html` qui fonctionne
+
 ### ⚠️ **ERREURS RÉSOLUES** ✅
 
 #### **1. Erreur `m.titre` dans TimeEntry.js** ✅
@@ -74,6 +81,13 @@
 - ✅ **Problème** : Notifications non intégrées dans l'interface principale
 - ✅ **Solution** : Ajout dropdown + modal dans dashboard.html
 - ✅ **Résultat** : Système de notifications complet et fonctionnel
+
+#### **4. Erreur critique des boutons d'actions** ✅ (NOUVEAU - 30/07/2025)
+- ✅ **Problème** : `Uncaught SyntaxError: Invalid or unexpected token (at opportunities.html:1:26)`
+- ✅ **Cause** : Interpolation JavaScript sans guillemets dans les attributs HTML `onclick`
+- ✅ **Solution** : Ajout de guillemets simples autour des IDs : `'${opp.id}'`
+- ✅ **Pattern correct** : `onclick="viewOpportunity('${opp.id}')"` 
+- ✅ **Résultat** : Tous les boutons d'actions fonctionnent correctement
 
 ### 🚀 **PLAN DE REPRISE STRUCTURÉ**
 
@@ -152,6 +166,7 @@ http://localhost:3000
 - ✅ **Actions et historique** complet
 - ✅ **Intégration business units** et types
 - ✅ **Badges visuels** risque/priorité
+- ✅ **Boutons d'actions fonctionnels** (Voir, Modifier, Supprimer)
 
 #### **📈 ANALYTICS & REPORTING** (NOUVEAU)
 - ✅ **Dashboard complet** avec KPIs
@@ -263,6 +278,42 @@ Tables principales :
 - ✅ Polling notifications optimisé
 - ⚠️ **À faire** : Mise en cache et compression
 
+### 🎯 **CONTRAINTES DE CODAGE APPRISES** (NOUVEAU - 30/07/2025)
+
+#### **1. INTERPOLATION JAVASCRIPT DANS LES ATTRIBUTS HTML**
+```html
+<!-- ❌ INCORRECT - Cause des erreurs "Invalid or unexpected token" -->
+onclick="viewOpportunity(${opp.id})"
+
+<!-- ✅ CORRECT - Utiliser des guillemets simples autour des IDs -->
+onclick="viewOpportunity('${opp.id}')"
+```
+
+#### **2. PATTERN STANDARD POUR LES BOUTONS D'ACTIONS**
+```html
+<!-- Pattern correct pour tous les boutons d'actions -->
+<button class="btn btn-outline-info" onclick="viewOpportunity('${opp.id}')" title="Voir">
+    <i class="fas fa-eye"></i>
+</button>
+<button class="btn btn-outline-warning" onclick="editOpportunity('${opp.id}')" title="Modifier">
+    <i class="fas fa-edit"></i>
+</button>
+<button class="btn btn-outline-danger" onclick="deleteOpportunity('${opp.id}')" title="Supprimer">
+    <i class="fas fa-trash"></i>
+</button>
+```
+
+#### **3. RÉFÉRENCE POUR LES PATTERNS CORRECTS**
+- ✅ **Utiliser `collaborateurs.html` comme référence** pour les patterns qui fonctionnent
+- ✅ **Toujours vérifier les exemples existants** avant d'implémenter de nouveaux patterns
+- ✅ **Les erreurs les plus simples sont souvent les plus difficiles à détecter**
+
+#### **4. DÉBOGAGE DES ERREURS JAVASCRIPT**
+- ✅ **Erreur `Invalid or unexpected token`** = Problème d'interpolation dans les attributs HTML
+- ✅ **Vérifier les guillemets** autour des variables interpolées
+- ✅ **Tester avec des fichiers simples** pour isoler les problèmes
+- ✅ **Comparer avec les fichiers qui fonctionnent** (comme `collaborateurs.html`)
+
 ### 📞 **CONTACT ET SUPPORT**
 
 Pour toute question ou problème :
@@ -284,6 +335,7 @@ Pour toute question ou problème :
 ✅ **Analytics dashboard** avec métriques détaillées
 ✅ **Types d'opportunités** configurables
 ✅ **Intégration frontend** complète
+✅ **Boutons d'actions fonctionnels** sur toutes les pages
 
 ### 🚀 **ÉTAT DE DÉPLOIEMENT**
 
@@ -296,6 +348,7 @@ Pour toute question ou problème :
 - ✅ Dashboard analytics avec graphiques interactifs
 - ✅ Gestion des types d'opportunités avec templates
 - ✅ Interface utilisateur moderne et intuitive
+- ✅ **Tous les boutons d'actions fonctionnels** (Voir, Modifier, Supprimer)
 
 #### **Prochaines étapes pour un nouveau chat :**
 1. **Vérifier l'état du serveur** : `npm start`
