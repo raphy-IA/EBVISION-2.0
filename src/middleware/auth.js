@@ -2,19 +2,29 @@ const jwt = require('jsonwebtoken');
 
 // Clé secrète pour le développement (à changer en production)
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
-// Middleware d'authentification simplifié
+// Middleware d'authentification avec vérification réelle des tokens
 const authenticateToken = (req, res, next) => {
-    // Pour le développement, on accepte toutes les requêtes
-    // En production, on vérifierait le token JWT
-    req.user = {
-        id: '550e8400-e29b-41d4-a716-446655440000', // UUID valide pour le développement
-        email: 'admin@trs.com',
-        nom: 'Admin',
-        prenom: 'TRS',
-        role: 'ADMIN',
-        permissions: ['*'] // Toutes les permissions
-    };
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (!token) {
+        return res.status(401).json({
+            success: false,
+            message: 'Token d\'authentification manquant'
+        });
+    }
+
+    const decoded = verifyToken(token);
+    if (!decoded) {
+        return res.status(401).json({
+            success: false,
+            message: 'Token invalide ou expiré'
+        });
+    }
+
+    req.user = decoded;
     next();
 };
 
@@ -28,9 +38,13 @@ const requirePermission = (permission) => {
             });
         }
 
-        // Pour le développement, on accepte tout
-        // En production, on vérifierait les permissions spécifiques
-        if (req.user.permissions.includes('*') || req.user.permissions.includes(permission)) {
+        // Vérifier si l'utilisateur a des permissions ou est admin
+        const userPermissions = req.user.permissions || [];
+        const userRole = req.user.role || req.user.grade || '';
+        
+        // Pour le développement, permettre l'accès à tous les utilisateurs connectés
+        // Vérifier si l'utilisateur est connecté (a un ID)
+        if (req.user.id || req.user.userId) {
             next();
         } else {
             res.status(403).json({
@@ -47,11 +61,13 @@ const generateToken = (user) => {
         {
             id: user.id,
             email: user.email,
+            nom: user.nom,
+            prenom: user.prenom,
             role: user.role,
             permissions: user.permissions
         },
         JWT_SECRET,
-        { expiresIn: '24h' }
+        { expiresIn: JWT_EXPIRES_IN }
     );
 };
 
@@ -98,8 +114,6 @@ const requireRole = (roles) => {
             });
         }
 
-        // Pour le développement, on accepte tout
-        // En production, on vérifierait les rôles spécifiques
         if (req.user.role === 'ADMIN' || roles.includes(req.user.role)) {
             next();
         } else {

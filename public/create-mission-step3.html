@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRS Dashboard - Création de Mission - Étape 3</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+        }
+        
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 1rem;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .step-number.active {
+            background-color: var(--success-color);
+        }
+        
+        .step-number.completed {
+            background-color: var(--success-color);
+        }
+        
+        .btn-next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        
+        .btn-next:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-prev {
+            background: var(--secondary-color);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-prev:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        
+        .info-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-section h6 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .budget-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .budget-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .budget-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .currency-input {
+            position: relative;
+        }
+        
+        .currency-input::before {
+            content: "€";
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-weight: bold;
+        }
+        
+        .currency-input input {
+            padding-left: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div class="container-fluid">
+                <!-- Indicateur d'étapes -->
+                <div class="step-indicator">
+                    <div class="step">
+                        <div class="step-number completed">1</div>
+                        <span>Sélection Opportunité & Type</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-number completed">2</div>
+                        <span>Configuration Mission</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-number active">3</div>
+                        <span>Configuration Financière</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <span>Planification</span>
+                    </div>
+                </div>
+
+                <!-- En-tête -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-euro-sign me-2"></i>Configuration Financière - Étape 3</h2>
+                    <a href="create-mission-step2.html" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à l'Étape 2
+                    </a>
+                </div>
+
+                <!-- Résumé de la mission -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Résumé de la Mission
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-tasks me-2"></i>Mission</h6>
+                                <div id="mission-summary">
+                                    <div class="info-badge mb-2">Chargement...</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-trophy me-2"></i>Opportunité Source</h6>
+                                <div id="opportunity-summary">
+                                    <div class="info-badge mb-2">Chargement...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration financière -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-calculator me-2"></i>Configuration Financière
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="financial-config-form">
+                            <!-- Honoraires -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-handshake me-2"></i>Honoraires</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="honorairesMontant" class="form-label">Montant des Honoraires (€) *</label>
+                                        <div class="currency-input">
+                                            <input type="number" class="form-control" id="honorairesMontant" min="0" step="0.01" required>
+                                        </div>
+                                        <div class="form-text">Montant des honoraires convenus dans le contrat</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="honorairesDevise" class="form-label">Devise</label>
+                                        <select class="form-select" id="honorairesDevise">
+                                            <option value="EUR">EUR (€)</option>
+                                            <option value="USD">USD ($)</option>
+                                            <option value="GBP">GBP (£)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="honorairesDescription" class="form-label">Description des Honoraires</label>
+                                        <textarea class="form-control" id="honorairesDescription" rows="2" placeholder="Détail des honoraires (ex: audit comptable, conseil fiscal, etc.)"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Débours -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-receipt me-2"></i>Débours</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="deboursMontant" class="form-label">Montant des Débours (€)</label>
+                                        <div class="currency-input">
+                                            <input type="number" class="form-control" id="deboursMontant" min="0" step="0.01" value="0">
+                                        </div>
+                                        <div class="form-text">Frais de déplacement, hébergement, etc.</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="deboursDevise" class="form-label">Devise</label>
+                                        <select class="form-select" id="deboursDevise">
+                                            <option value="EUR">EUR (€)</option>
+                                            <option value="USD">USD ($)</option>
+                                            <option value="GBP">GBP (£)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="deboursDescription" class="form-label">Description des Débours</label>
+                                        <textarea class="form-control" id="deboursDescription" rows="2" placeholder="Détail des débours (ex: frais de déplacement, hébergement, repas, etc.)"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Conditions de paiement -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-credit-card me-2"></i>Conditions de Paiement</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="paiementConditions" class="form-label">Conditions de Paiement</label>
+                                        <select class="form-select" id="paiementConditions">
+                                            <option value="30_jours">30 jours</option>
+                                            <option value="45_jours">45 jours</option>
+                                            <option value="60_jours">60 jours</option>
+                                            <option value="comptant">Comptant</option>
+                                            <option value="acompte">Acompte + solde</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="paiementAcompte" class="form-label">Acompte (%)</label>
+                                        <input type="number" class="form-control" id="paiementAcompte" min="0" max="100" value="0">
+                                        <div class="form-text">Pourcentage d'acompte si applicable</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Notes financières -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-sticky-note me-2"></i>Notes Financières</h6>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="notesFinancieres" class="form-label">Notes Additionnelles</label>
+                                        <textarea class="form-control" id="notesFinancieres" rows="3" placeholder="Notes spécifiques sur la configuration financière..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Résumé budgétaire -->
+                <div class="budget-summary">
+                    <h5 class="mb-3"><i class="fas fa-calculator me-2"></i>Résumé Budgétaire</h5>
+                    <div id="budget-summary-content">
+                        <div class="budget-item">
+                            <span>Budget Prévisionnel:</span>
+                            <span id="budget-previsionnel">€0.00</span>
+                        </div>
+                        <div class="budget-item">
+                            <span>Honoraires:</span>
+                            <span id="budget-honoraires">€0.00</span>
+                        </div>
+                        <div class="budget-item">
+                            <span>Débours:</span>
+                            <span id="budget-debours">€0.00</span>
+                        </div>
+                        <div class="budget-item">
+                            <span>Total:</span>
+                            <span id="budget-total">€0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons de navigation -->
+                <div class="text-center mt-4">
+                    <button id="btn-prev" class="btn btn-prev me-3">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à l'Étape 2
+                    </button>
+                    <button id="btn-next" class="btn btn-next">
+                        <i class="fas fa-arrow-right me-2"></i>Continuer vers l'Étape 4
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <script>
+        // Variables globales
+        let selectedOpportunity = null;
+        let selectedMissionType = null;
+        let missionData = null;
+
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Page create-mission-step3.html chargée');
+            await loadData();
+            setupEventListeners();
+        });
+
+        // Charger les données
+        async function loadData() {
+            try {
+                // Récupérer les données depuis sessionStorage
+                const opportunityData = sessionStorage.getItem('selectedOpportunity');
+                const missionTypeData = sessionStorage.getItem('selectedMissionType');
+                const missionDataStr = sessionStorage.getItem('missionData');
+
+                if (!opportunityData || !missionTypeData || !missionDataStr) {
+                    console.error('❌ Données manquantes');
+                    alert('Veuillez retourner à l\'étape 1 pour recommencer');
+                    window.location.href = 'create-mission-step1.html';
+                    return;
+                }
+
+                selectedOpportunity = JSON.parse(opportunityData);
+                selectedMissionType = JSON.parse(missionTypeData);
+                missionData = JSON.parse(missionDataStr);
+
+                console.log('✅ Données chargées:', { selectedOpportunity, selectedMissionType, missionData });
+
+                // Afficher les résumés
+                displaySummaries();
+                
+                // Pré-remplir le formulaire
+                populateForm();
+
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des données:', error);
+            }
+        }
+
+        // Afficher les résumés
+        function displaySummaries() {
+            // Résumé de la mission
+            const missionSummary = document.getElementById('mission-summary');
+            missionSummary.innerHTML = `
+                <div class="info-badge mb-2">${missionData.code}</div>
+                <p class="mb-1"><strong>Nom:</strong> ${missionData.nom}</p>
+                <p class="mb-1"><strong>Budget:</strong> ${formatCurrency(missionData.budget_prevue)}</p>
+                <p class="mb-1"><strong>Période:</strong> ${formatDate(missionData.date_debut)} - ${formatDate(missionData.date_fin_prevue)}</p>
+            `;
+
+            // Résumé de l'opportunité
+            const opportunitySummary = document.getElementById('opportunity-summary');
+            opportunitySummary.innerHTML = `
+                <div class="info-badge mb-2">${selectedOpportunity.nom}</div>
+                <p class="mb-1"><strong>Client:</strong> ${selectedOpportunity.client_nom}</p>
+                <p class="mb-1"><strong>Montant:</strong> ${formatCurrency(selectedOpportunity.montant_estime)}</p>
+                <p class="mb-1"><strong>Business Unit:</strong> ${selectedOpportunity.business_unit_nom || 'N/A'}</p>
+            `;
+        }
+
+        // Pré-remplir le formulaire
+        function populateForm() {
+            // Honoraires (basés sur le budget prévisionnel)
+            document.getElementById('honorairesMontant').value = missionData.budget_prevue || 0;
+            
+            // Débours (par défaut 0)
+            document.getElementById('deboursMontant').value = 0;
+            
+            // Conditions de paiement (par défaut 30 jours)
+            document.getElementById('paiementConditions').value = '30_jours';
+            
+            // Acompte (par défaut 0%)
+            document.getElementById('paiementAcompte').value = 0;
+            
+            // Mettre à jour le résumé budgétaire
+            updateBudgetSummary();
+        }
+
+        // Configuration des événements
+        function setupEventListeners() {
+            // Bouton retour
+            document.getElementById('btn-prev').addEventListener('click', function() {
+                window.location.href = 'create-mission-step2.html';
+            });
+
+            // Bouton suivant
+            document.getElementById('btn-next').addEventListener('click', function() {
+                if (validateForm()) {
+                    saveFinancialData();
+                    window.location.href = 'create-mission-step4.html';
+                }
+            });
+
+            // Écouter les changements pour mettre à jour le résumé
+            document.getElementById('honorairesMontant').addEventListener('input', updateBudgetSummary);
+            document.getElementById('deboursMontant').addEventListener('input', updateBudgetSummary);
+        }
+
+        // Mettre à jour le résumé budgétaire
+        function updateBudgetSummary() {
+            const honoraires = parseFloat(document.getElementById('honorairesMontant').value) || 0;
+            const debours = parseFloat(document.getElementById('deboursMontant').value) || 0;
+            const budgetPrevisionnel = missionData.budget_prevue || 0;
+            const total = honoraires + debours;
+
+            document.getElementById('budget-previsionnel').textContent = formatCurrency(budgetPrevisionnel);
+            document.getElementById('budget-honoraires').textContent = formatCurrency(honoraires);
+            document.getElementById('budget-debours').textContent = formatCurrency(debours);
+            document.getElementById('budget-total').textContent = formatCurrency(total);
+        }
+
+        // Validation du formulaire
+        function validateForm() {
+            const honoraires = parseFloat(document.getElementById('honorairesMontant').value) || 0;
+            
+            if (honoraires <= 0) {
+                alert('Le montant des honoraires doit être supérieur à 0');
+                document.getElementById('honorairesMontant').classList.add('is-invalid');
+                return false;
+            }
+
+            document.getElementById('honorairesMontant').classList.remove('is-invalid');
+            return true;
+        }
+
+        // Sauvegarder les données financières
+        function saveFinancialData() {
+            const financialData = {
+                honoraires_montant: parseFloat(document.getElementById('honorairesMontant').value) || 0,
+                honoraires_devise: document.getElementById('honorairesDevise').value,
+                honoraires_description: document.getElementById('honorairesDescription').value,
+                debours_montant: parseFloat(document.getElementById('deboursMontant').value) || 0,
+                debours_devise: document.getElementById('deboursDevise').value,
+                debours_description: document.getElementById('deboursDescription').value,
+                paiement_conditions: document.getElementById('paiementConditions').value,
+                paiement_acompte: parseFloat(document.getElementById('paiementAcompte').value) || 0,
+                notes_financieres: document.getElementById('notesFinancieres').value
+            };
+
+            // Stocker dans sessionStorage
+            sessionStorage.setItem('financialData', JSON.stringify(financialData));
+            console.log('✅ Données financières sauvegardées:', financialData);
+        }
+
+        // Fonction utilitaire pour formater les montants
+        function formatCurrency(amount) {
+            if (!amount) return '€0.00';
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(amount);
+        }
+
+        // Fonction utilitaire pour formater les dates
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR');
+        }
+    </script>
+</body>
+</html> 

@@ -22,12 +22,17 @@ router.post('/login', async (req, res) => {
 
         const { email, password } = value;
 
-        // Rechercher l'utilisateur
-        const user = await User.findByEmail(email);
+        // Rechercher l'utilisateur par email ou login
+        let user = await User.findByEmail(email);
+        if (!user) {
+            // Essayer par login
+            user = await User.findByLogin(email);
+        }
+        
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: 'Email ou mot de passe incorrect'
+                message: 'Identifiant ou mot de passe incorrect'
             });
         }
 
@@ -36,7 +41,7 @@ router.post('/login', async (req, res) => {
         if (!isValidPassword) {
             return res.status(401).json({
                 success: false,
-                message: 'Email ou mot de passe incorrect'
+                message: 'Identifiant ou mot de passe incorrect'
             });
         }
 
@@ -51,17 +56,21 @@ router.post('/login', async (req, res) => {
         // Mettre à jour la dernière connexion
         await User.updateLastLogin(user.id);
 
-        // Générer le token JWT
+        // Générer le token JWT avec permissions par défaut
+        const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
+        const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+        
         const token = jwt.sign(
             {
-                userId: user.id,
+                id: user.id,
                 email: user.email,
                 nom: user.nom,
                 prenom: user.prenom,
-                grade: user.grade
+                role: user.role, // Utiliser le rôle
+                permissions: ['users:read', 'users:create', 'users:update', 'users:delete'] // Permissions par défaut
             },
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRES_IN }
+            JWT_SECRET,
+            { expiresIn: JWT_EXPIRES_IN }
         );
 
         res.json({
@@ -74,9 +83,8 @@ router.post('/login', async (req, res) => {
                     nom: user.nom,
                     prenom: user.prenom,
                     email: user.email,
-                    initiales: user.initiales,
-                    grade: user.grade,
-                    division: user.division_nom
+                    login: user.login,
+                    role: user.role
                 }
             }
         });
@@ -104,7 +112,7 @@ router.post('/change-password', authenticateToken, async (req, res) => {
         }
 
         const { currentPassword, newPassword } = value;
-        const userId = req.user.userId;
+        const userId = req.user.id;
 
         // Récupérer l'utilisateur
         const user = await User.findById(userId);

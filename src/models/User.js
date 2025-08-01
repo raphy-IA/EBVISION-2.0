@@ -9,25 +9,25 @@ class User {
             prenom,
             email,
             password,
-            initiales,
-            grade,
-            division_id,
-            date_embauche,
-            taux_horaire
+            login,
+            role
         } = userData;
 
         // Hasher le mot de passe
         const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
+        // Générer un login basé sur les initiales si non fourni
+        const userLogin = login || (nom.substring(0, 1) + prenom.substring(0, 1)).toLowerCase();
+
         const sql = `
-            INSERT INTO users (nom, prenom, email, password_hash, initiales, grade, division_id, date_embauche, taux_horaire)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            RETURNING id, nom, prenom, email, initiales, grade, division_id, date_embauche, taux_horaire, statut, created_at
+            INSERT INTO users (nom, prenom, email, password_hash, login, role)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id, nom, prenom, email, login, role, statut, created_at
         `;
 
         const result = await query(sql, [
-            nom, prenom, email, passwordHash, initiales, grade, division_id, date_embauche, taux_horaire
+            nom, prenom, email, passwordHash, userLogin, role
         ]);
 
         return result.rows[0];
@@ -36,11 +36,9 @@ class User {
     // Récupérer un utilisateur par ID
     static async findById(id) {
         const sql = `
-            SELECT u.id, u.nom, u.prenom, u.email, u.initiales, u.grade, u.division_id, 
-                   u.date_embauche, u.taux_horaire, u.statut, u.last_login, u.created_at, u.updated_at,
-                   d.nom as division_nom, d.code as division_code
+            SELECT u.id, u.nom, u.prenom, u.email, u.login, u.role,
+                   u.statut, u.last_login, u.created_at, u.updated_at
             FROM users u
-            LEFT JOIN divisions d ON u.division_id = d.id
             WHERE u.id = $1
         `;
 
@@ -51,12 +49,9 @@ class User {
     // Récupérer un utilisateur par email
     static async findByEmail(email) {
         const sql = `
-            SELECT u.id, u.nom, u.prenom, u.email, u.password_hash, u.initiales, u.grade, 
-                   u.division_id, u.date_embauche, u.taux_horaire, u.statut, u.last_login, 
-                   u.created_at, u.updated_at,
-                   d.nom as division_nom, d.code as division_code
+            SELECT u.id, u.nom, u.prenom, u.email, u.password_hash, u.login, u.role,
+                   u.statut, u.last_login, u.created_at, u.updated_at
             FROM users u
-            LEFT JOIN divisions d ON u.division_id = d.id
             WHERE u.email = $1
         `;
 
@@ -64,14 +59,28 @@ class User {
         return result.rows[0] || null;
     }
 
+    // Récupérer un utilisateur par login
+    static async findByLogin(login) {
+        const sql = `
+            SELECT u.id, u.nom, u.prenom, u.email, u.password_hash, u.login, u.role,
+                   u.statut, u.last_login, u.created_at, u.updated_at
+            FROM users u
+            WHERE u.login = $1
+        `;
+
+        const result = await query(sql, [login]);
+        return result.rows[0] || null;
+    }
+
+
+
     // Récupérer tous les utilisateurs avec pagination
     static async findAll(options = {}) {
         const {
             page = 1,
             limit = 10,
             search = '',
-            grade = '',
-            division_id = '',
+            role = '',
             statut = ''
         } = options;
 
@@ -85,14 +94,9 @@ class User {
             params.push(`%${search}%`);
         }
 
-        if (grade) {
-            conditions.push(`u.grade = $${params.length + 1}`);
-            params.push(grade);
-        }
-
-        if (division_id) {
-            conditions.push(`u.division_id = $${params.length + 1}`);
-            params.push(division_id);
+        if (role) {
+            conditions.push(`u.role = $${params.length + 1}`);
+            params.push(role);
         }
 
         if (statut) {
@@ -114,11 +118,9 @@ class User {
 
         // Requête pour les données
         const sql = `
-            SELECT u.id, u.nom, u.prenom, u.email, u.initiales, u.grade, u.division_id, 
-                   u.date_embauche, u.taux_horaire, u.statut, u.last_login, u.created_at, u.updated_at,
-                   d.nom as division_nom, d.code as division_code
+            SELECT u.id, u.nom, u.prenom, u.email, u.login, u.role,
+                   u.statut, u.last_login, u.created_at, u.updated_at
             FROM users u
-            LEFT JOIN divisions d ON u.division_id = d.id
             ${whereClause}
             ORDER BY u.nom, u.prenom
             LIMIT $${params.length + 1} OFFSET $${params.length + 2}
@@ -139,7 +141,7 @@ class User {
 
     // Mettre à jour un utilisateur
     static async update(id, updateData) {
-        const allowedFields = ['nom', 'prenom', 'email', 'initiales', 'grade', 'division_id', 'taux_horaire', 'statut'];
+        const allowedFields = ['nom', 'prenom', 'email', 'login', 'role', 'statut'];
         const updates = [];
         const values = [];
 
@@ -159,7 +161,7 @@ class User {
             UPDATE users 
             SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP
             WHERE id = $1
-            RETURNING id, nom, prenom, email, initiales, grade, division_id, date_embauche, taux_horaire, statut, updated_at
+            RETURNING id, nom, prenom, email, login, role, statut, updated_at
         `;
 
         const result = await query(sql, [id, ...values]);
@@ -189,6 +191,19 @@ class User {
         const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
         const passwordHash = await bcrypt.hash(newPassword, saltRounds);
 
+        const sql = `
+            UPDATE users 
+            SET password_hash = $2, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $1
+            RETURNING id, email
+        `;
+
+        const result = await query(sql, [id, passwordHash]);
+        return result.rows[0] || null;
+    }
+
+    // Mettre à jour le mot de passe (alias pour updatePassword)
+    static async updatePassword(id, passwordHash) {
         const sql = `
             UPDATE users 
             SET password_hash = $2, updated_at = CURRENT_TIMESTAMP

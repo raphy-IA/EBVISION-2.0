@@ -829,6 +829,23 @@
     <script src="/js/sidebar.js" defer></script>
     <script>
         const API_BASE_URL = '/api';
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
         let collaborateurs = [];
         let filteredCollaborateurs = [];
         let collaborateurToDelete = null;
@@ -869,7 +886,7 @@
             console.log('🔄 Chargement des collaborateurs...');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs`);
                 const data = await response.json();
                 console.log('📊 Données reçues:', data);
                 
@@ -1002,7 +1019,7 @@
 
         async function loadBusinessUnits() {
             try {
-                const response = await fetch(`${API_BASE_URL}/business-units`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/business-units`);
                 const data = await response.json();
                 
                 const selects = ['business-unit-select', 'edit-business-unit-select', 'business-unit-filter'];
@@ -1043,7 +1060,7 @@
 
         async function loadGrades() {
             try {
-                const response = await fetch(`${API_BASE_URL}/grades`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/grades`);
                 const data = await response.json();
                 
                 const selects = ['grade-select', 'edit-grade-select'];
@@ -1069,7 +1086,7 @@
 
         async function loadDivisions() {
             try {
-                const response = await fetch(`${API_BASE_URL}/divisions`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions`);
                 const data = await response.json();
                 
                 const selects = ['division-select', 'edit-division-select'];
@@ -1103,7 +1120,7 @@
 
         async function loadTypesCollaborateurs() {
             try {
-                const response = await fetch(`${API_BASE_URL}/types-collaborateurs`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/types-collaborateurs`);
                 const data = await response.json();
                 
                 const selects = ['type-collaborateur-select', 'edit-type-collaborateur-select'];
@@ -1129,7 +1146,7 @@
 
         async function loadPostes() {
             try {
-                const response = await fetch(`${API_BASE_URL}/postes`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/postes`);
                 const data = await response.json();
                 
                 const selects = ['poste-select', 'edit-poste-select'];
@@ -1163,7 +1180,7 @@
             if (!businessUnitId) return;
             
             try {
-                const response = await fetch(`${API_BASE_URL}/divisions?business_unit_id=${businessUnitId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions?business_unit_id=${businessUnitId}`);
                 const data = await response.json();
                 
                 if (data.success && data.data && data.data.divisions) {
@@ -1197,7 +1214,7 @@
             if (!buId) return;
             
             try {
-                const response = await fetch(`${API_BASE_URL}/divisions?business_unit_id=${buId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions?business_unit_id=${buId}`);
                 const data = await response.json();
                 
                 let divisionsLoaded = 0;
@@ -1263,7 +1280,7 @@
             };
             
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1310,7 +1327,7 @@
                         motif: 'Initialisation - Création du collaborateur'
                     };
                     
-                    await fetch(`${API_BASE_URL}/evolution-grades`, {
+                    await authenticatedFetch(`${API_BASE_URL}/evolution-grades`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(gradeHistory)
@@ -1327,7 +1344,7 @@
                         motif: 'Initialisation - Création du collaborateur'
                     };
                     
-                    await fetch(`${API_BASE_URL}/evolution-postes`, {
+                    await authenticatedFetch(`${API_BASE_URL}/evolution-postes`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(posteHistory)
@@ -1348,7 +1365,7 @@
                         motif: 'Initialisation - Création du collaborateur'
                     };
                     
-                    await fetch(`${API_BASE_URL}/evolution-organisations`, {
+                    await authenticatedFetch(`${API_BASE_URL}/evolution-organisations`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(orgHistory)
@@ -1513,7 +1530,7 @@
 
         async function loadGradesForRH() {
             try {
-                const response = await fetch(`${API_BASE_URL}/grades`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/grades`);
                 const data = await response.json();
                 
                 const select = document.getElementById('rh-grade-select');
@@ -1536,7 +1553,7 @@
 
         async function loadTypesCollaborateursForRH() {
             try {
-                const response = await fetch(`${API_BASE_URL}/types-collaborateurs`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/types-collaborateurs`);
                 const data = await response.json();
                 
                 const select = document.getElementById('rh-type-collaborateur-select');
@@ -1559,7 +1576,7 @@
 
         async function loadPostesForRH() {
             try {
-                const response = await fetch(`${API_BASE_URL}/postes`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/postes`);
                 const data = await response.json();
                 
                 const select = document.getElementById('rh-poste-select');
@@ -1582,7 +1599,7 @@
 
         async function loadBusinessUnitsForRH() {
             try {
-                const response = await fetch(`${API_BASE_URL}/business-units`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/business-units`);
                 const data = await response.json();
                 
                 const select = document.getElementById('rh-business-unit-select');
@@ -1634,7 +1651,7 @@
             if (!businessUnitId) return;
             
             try {
-                const response = await fetch(`${API_BASE_URL}/divisions?business_unit_id=${businessUnitId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions?business_unit_id=${businessUnitId}`);
                 const data = await response.json();
                 
                 if (data.success && data.data && data.data.divisions) {
@@ -1667,7 +1684,7 @@
             if (!typeId) return;
             
             try {
-                const response = await fetch(`${API_BASE_URL}/postes?type_collaborateur_id=${typeId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/postes?type_collaborateur_id=${typeId}`);
                 const data = await response.json();
                 
                 if (data.success && data.data) {
@@ -1700,7 +1717,7 @@
 
             try {
                 console.log('🌐 Envoi de la requête POST vers /api/evolution-grades');
-                const response = await fetch(`${API_BASE_URL}/evolution-grades`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/evolution-grades`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1755,7 +1772,7 @@
 
             try {
                 console.log('🌐 Envoi de la requête POST vers /api/evolution-postes');
-                const response = await fetch(`${API_BASE_URL}/evolution-postes`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/evolution-postes`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1804,7 +1821,7 @@
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/evolution-organisations`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/evolution-organisations`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1847,7 +1864,7 @@
 
         async function loadHistoriqueGrades(collaborateurId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/evolution-grades/collaborateur/${collaborateurId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/evolution-grades/collaborateur/${collaborateurId}`);
                 const data = await response.json();
 
                 const tbody = document.getElementById('historique-grades-body');
@@ -1873,7 +1890,7 @@
 
         async function loadHistoriquePostes(collaborateurId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/evolution-postes/collaborateur/${collaborateurId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/evolution-postes/collaborateur/${collaborateurId}`);
                 const data = await response.json();
 
                 const tbody = document.getElementById('historique-postes-body');
@@ -1898,7 +1915,7 @@
 
         async function loadHistoriqueOrganisations(collaborateurId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/evolution-organisations/collaborateur/${collaborateurId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/evolution-organisations/collaborateur/${collaborateurId}`);
                 const data = await response.json();
 
                 const tbody = document.getElementById('historique-organisations-body');
@@ -2012,7 +2029,7 @@
 
         async function editCollaborateur(id) {
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs/${id}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${id}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -2057,7 +2074,7 @@
             };
             
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs/${id}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2089,7 +2106,7 @@
             if (!collaborateurToDelete) return;
             
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs/${collaborateurToDelete}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateurToDelete}`, {
                     method: 'DELETE'
                 });
                 
@@ -2157,7 +2174,7 @@
 
             try {
                 console.log('🌐 Envoi de la requête PUT vers /api/collaborateurs/' + collaborateurRHId + '/type');
-                const response = await fetch(`${API_BASE_URL}/collaborateurs/${collaborateurRHId}/type`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateurRHId}/type`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'

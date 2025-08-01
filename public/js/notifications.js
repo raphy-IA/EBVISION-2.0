@@ -21,7 +21,7 @@ async function loadNotifications(limit = 10, offset = 0) {
     try {
         const response = await fetch(`/api/notifications?limit=${limit}&offset=${offset}`, {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
         });
         
@@ -43,7 +43,7 @@ async function loadNotificationStats() {
     try {
         const response = await fetch('/api/notifications/stats', {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
         });
         
@@ -127,7 +127,7 @@ async function markAsRead(notificationId) {
         const response = await fetch(`/api/notifications/${notificationId}/read`, {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
         });
         
@@ -156,7 +156,7 @@ async function deleteNotification(notificationId) {
         const response = await fetch(`/api/notifications/${notificationId}`, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
         });
         
@@ -178,7 +178,7 @@ async function markAllAsRead() {
         const response = await fetch('/api/notifications/read-all', {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
         });
         
@@ -204,7 +204,7 @@ async function clearReadNotifications() {
         const response = await fetch('/api/notifications/clear-read', {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
         });
         

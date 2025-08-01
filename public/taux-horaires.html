@@ -300,6 +300,23 @@
     <script src="/js/sidebar.js" defer></script>
     <script>
         const API_BASE_URL = '/api';
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
         let tauxHoraires = [];
         let tauxHoraireToDelete = null;
 
@@ -312,7 +329,7 @@
         async function loadTauxHoraires() {
             showLoading(true);
             try {
-                const response = await fetch(`${API_BASE_URL}/taux-horaires`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/taux-horaires`);
                 const data = await response.json();
                 if (data.success) {
                     tauxHoraires = data.data;
@@ -369,7 +386,7 @@
 
         async function loadBusinessUnits() {
             try {
-                const response = await fetch(`${API_BASE_URL}/business-units`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/business-units`);
                 const data = await response.json();
                 const selects = ['bu-select', 'edit-bu-select'];
                 selects.forEach(selectId => {
@@ -402,7 +419,7 @@
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/divisions?business_unit_id=${buId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions?business_unit_id=${buId}`);
                 const data = await response.json();
                 divisionSelect.innerHTML = '<option value="">Sélectionner une division</option>';
                 if (data.success && data.data) {
@@ -424,7 +441,7 @@
 
         async function loadGrades() {
             try {
-                const response = await fetch(`${API_BASE_URL}/grades`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/grades`);
                 const data = await response.json();
                 const selects = ['grade-select', 'edit-grade-select'];
                 selects.forEach(selectId => {
@@ -470,7 +487,7 @@
             };
 
             try {
-                const response = await fetch(`${API_BASE_URL}/taux-horaires`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/taux-horaires`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
@@ -491,7 +508,7 @@
 
         async function editTauxHoraire(id) {
             try {
-                const response = await fetch(`${API_BASE_URL}/taux-horaires/${id}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/taux-horaires/${id}`);
                 const data = await response.json();
                 if (data.success) {
                     const taux = data.data;
@@ -535,7 +552,7 @@
             };
 
             try {
-                const response = await fetch(`${API_BASE_URL}/taux-horaires/${id}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/taux-horaires/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
@@ -563,7 +580,7 @@
             if (!tauxHoraireToDelete) return;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/taux-horaires/${tauxHoraireToDelete}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/taux-horaires/${tauxHoraireToDelete}`, {
                     method: 'DELETE'
                 });
                 const data = await response.json();

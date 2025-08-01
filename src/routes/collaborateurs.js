@@ -11,7 +11,7 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
  * GET /api/collaborateurs
  * Récupérer tous les collaborateurs avec pagination et filtres
  */
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const options = {
             page: parseInt(req.query.page) || 1,
@@ -43,7 +43,7 @@ router.get('/', async (req, res) => {
  * GET /api/collaborateurs/statistics
  * Récupérer les statistiques des collaborateurs
  */
-router.get('/statistics', async (req, res) => {
+router.get('/statistics', authenticateToken, async (req, res) => {
     try {
         const statistics = await Collaborateur.getStatistics();
         
@@ -266,7 +266,7 @@ router.post('/:id/reembaucher', async (req, res) => {
  * GET /api/collaborateurs/:id
  * Récupérer un collaborateur par ID
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const collaborateur = await Collaborateur.findById(req.params.id);
         

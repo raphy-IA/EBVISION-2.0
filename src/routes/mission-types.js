@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const { authenticateToken } = require('../middleware/auth');
 const MissionType = require('../models/MissionType');
 const Division = require('../models/Division');
 
 // GET /api/mission-types - Récupérer tous les types de mission
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const missionTypes = await MissionType.findAll();
         res.json(missionTypes);

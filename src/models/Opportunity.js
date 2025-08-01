@@ -160,12 +160,20 @@ class Opportunity {
 
     static async create(data) {
         try {
+            // Si aucune année fiscale n'est spécifiée, utiliser l'année active
+            let fiscalYearId = data.fiscal_year_id;
+            if (!fiscalYearId) {
+                const FiscalYear = require('./FiscalYear');
+                const activeFiscalYear = await FiscalYear.getActiveForNewItems();
+                fiscalYearId = activeFiscalYear ? activeFiscalYear.id : null;
+            }
+
             const query = `
                 INSERT INTO opportunities (
                     nom, description, client_id, collaborateur_id, business_unit_id, 
                     opportunity_type_id, statut, type_opportunite, source, probabilite,
-                    montant_estime, devise, date_fermeture_prevue, notes, created_by
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                    montant_estime, devise, date_fermeture_prevue, notes, created_by, fiscal_year_id
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
                 RETURNING *
             `;
             
@@ -184,7 +192,8 @@ class Opportunity {
                 data.devise || 'EUR',
                 data.date_fermeture_prevue,
                 data.notes,
-                data.created_by || null
+                data.created_by || null,
+                fiscalYearId
             ];
             
             const result = await pool.query(query, values);

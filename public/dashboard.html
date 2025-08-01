@@ -15,6 +15,13 @@
     <!-- Chart.js pour les graphiques -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+                
+                <!-- Scripts de zone utilisateur -->
+                <script src="js/user-header.js"></script>
+                <script src="js/user-modals.js"></script>
+    
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -340,13 +347,30 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/auth.js" defer></script>
+    <!-- Script d'authentification déjà inclus plus haut -->
     <script src="/js/sidebar.js" defer></script>
     <script src="/js/sidebar-generator.js" defer></script>
     <script src="/js/notifications.js" defer></script>
     <script>
         // Configuration
         const API_BASE_URL = '/api';
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
         let statusChart, evolutionChart;
 
         // Initialisation
@@ -381,7 +405,7 @@
 
         async function loadStatistics() {
             try {
-                const response = await fetch(`${API_BASE_URL}/time-entries/statistics`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/time-entries/statistics`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -398,7 +422,7 @@
 
         async function loadRecentEntries() {
             try {
-                const response = await fetch(`${API_BASE_URL}/time-entries`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/time-entries`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -528,7 +552,7 @@
 
         async function loadCollaborateurs() {
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs`);
                 const data = await response.json();
                 
                 const select = document.getElementById('collaborateur-select');
@@ -549,7 +573,7 @@
 
         async function loadMissions() {
             try {
-                const response = await fetch(`${API_BASE_URL}/missions`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/missions`);
                 const data = await response.json();
                 
                 const select = document.getElementById('mission-select');
@@ -585,7 +609,7 @@
             };
             
             try {
-                const response = await fetch(`${API_BASE_URL}/time-entries`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/time-entries`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

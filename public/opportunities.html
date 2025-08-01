@@ -12,6 +12,13 @@
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
     
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+                
+                <!-- Scripts de zone utilisateur -->
+                <script src="js/user-header.js"></script>
+                <script src="js/user-modals.js"></script>
+    
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -691,7 +698,7 @@
     
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/auth.js"></script>
+    <!-- Script d'authentification déjà inclus plus haut -->
     <script src="js/sidebar.js"></script>
     <script>
         const API_BASE_URL = '/api';
@@ -701,6 +708,23 @@
         let collaborateurs = [];
         let clients = [];
         let currentEditOpportunityId = null;
+
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
         
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('Page opportunities.html chargee');
@@ -714,7 +738,7 @@
                 
                 // Charger les clients
                 console.log('📋 Chargement des clients...');
-                const clientsResponse = await fetch(`${API_BASE_URL}/clients`);
+                const clientsResponse = await authenticatedFetch(`${API_BASE_URL}/clients`);
                 const clientsData = await clientsResponse.json();
                 if (clientsData.success) {
                     clients = clientsData.data.clients;
@@ -724,7 +748,7 @@
                 
                 // Charger les Business Units
                 console.log('🏢 Chargement des Business Units...');
-                const buResponse = await fetch(`${API_BASE_URL}/business-units`);
+                const buResponse = await authenticatedFetch(`${API_BASE_URL}/business-units`);
                 const buData = await buResponse.json();
                 if (buData.success) {
                     // L'API retourne data directement comme un tableau
@@ -735,7 +759,7 @@
                 
                 // Charger les collaborateurs
                 console.log('👥 Chargement des collaborateurs...');
-                const collabResponse = await fetch(`${API_BASE_URL}/collaborateurs`);
+                const collabResponse = await authenticatedFetch(`${API_BASE_URL}/collaborateurs`);
                 const collabData = await collabResponse.json();
                 if (collabData.success) {
                     // L'API retourne data directement comme un tableau
@@ -747,7 +771,7 @@
                 // Charger les types d'opportunités
                 console.log('📊 Chargement des types d\'opportunités...');
                 try {
-                    const typesResponse = await fetch(`${API_BASE_URL}/opportunity-types`);
+                    const typesResponse = await authenticatedFetch(`${API_BASE_URL}/opportunity-types`);
                     const typesData = await typesResponse.json();
                     if (typesData.success) {
                         window.opportunityTypes = typesData.data.opportunityTypes;
@@ -866,7 +890,7 @@
             showLoading(true);
             try {
                 console.log('Chargement des opportunites...');
-                const response = await fetch(`${API_BASE_URL}/opportunities`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities`);
                 const data = await response.json();
                 
                 console.log('Reponse API:', data);
@@ -1091,7 +1115,7 @@
             if (!window.clients) {
                 console.log('🏢 Chargement des clients pour nouvelle opportunité...');
                 try {
-                    const clientsResponse = await fetch(`${API_BASE_URL}/clients`);
+                    const clientsResponse = await authenticatedFetch(`${API_BASE_URL}/clients`);
                     const clientsData = await clientsResponse.json();
                     if (clientsData.success) {
                         window.clients = clientsData.data.clients;
@@ -1110,7 +1134,7 @@
             if (!window.businessUnits) {
                 console.log('🏢 Chargement des business units pour nouvelle opportunité...');
                 try {
-                    const buResponse = await fetch(`${API_BASE_URL}/business-units`);
+                    const buResponse = await authenticatedFetch(`${API_BASE_URL}/business-units`);
                     const buData = await buResponse.json();
                     if (buData.success) {
                         window.businessUnits = buData.data;
@@ -1129,7 +1153,7 @@
             if (!window.collaborateurs) {
                 console.log('👥 Chargement des collaborateurs pour nouvelle opportunité...');
                 try {
-                    const collabResponse = await fetch(`${API_BASE_URL}/collaborateurs`);
+                    const collabResponse = await authenticatedFetch(`${API_BASE_URL}/collaborateurs`);
                     const collabData = await collabResponse.json();
                     if (collabData.success) {
                         window.collaborateurs = collabData.data;
@@ -1148,7 +1172,7 @@
             if (!window.opportunityTypes) {
                 console.log('📊 Chargement des types d\'opportunités pour nouvelle opportunité...');
                 try {
-                    const typesResponse = await fetch(`${API_BASE_URL}/opportunity-types`);
+                    const typesResponse = await authenticatedFetch(`${API_BASE_URL}/opportunity-types`);
                     const typesData = await typesResponse.json();
                     if (typesData.success) {
                         window.opportunityTypes = typesData.data.opportunityTypes;
@@ -1272,7 +1296,7 @@
             console.log('📋 Données de l\'opportunité:', opportunityData);
             
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunities`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1316,7 +1340,7 @@
             
             try {
                 // Charger les details de l'opportunite
-                const response = await fetch(`${API_BASE_URL}/opportunities/${id}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${id}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1439,7 +1463,7 @@
                 
                 // Charger les details de l'opportunite
                 console.log('📊 Chargement des détails de l\'opportunité...');
-                const response = await fetch(`${API_BASE_URL}/opportunities/${id}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${id}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1472,7 +1496,7 @@
             // Charger les clients si pas encore fait
             if (!clients || clients.length === 0) {
                 console.log('📋 Chargement des clients pour édition...');
-                const clientsResponse = await fetch(`${API_BASE_URL}/clients`);
+                const clientsResponse = await authenticatedFetch(`${API_BASE_URL}/clients`);
                 const clientsData = await clientsResponse.json();
                 if (clientsData.success) {
                     clients = clientsData.data.clients;
@@ -1486,7 +1510,7 @@
             // Charger les Business Units si pas encore fait
             if (!businessUnits || businessUnits.length === 0) {
                 console.log('🏢 Chargement des Business Units pour édition...');
-                const buResponse = await fetch(`${API_BASE_URL}/business-units`);
+                const buResponse = await authenticatedFetch(`${API_BASE_URL}/business-units`);
                 const buData = await buResponse.json();
                 if (buData.success) {
                     // L'API retourne data directement comme un tableau
@@ -1501,7 +1525,7 @@
             // Charger les collaborateurs si pas encore fait
             if (!collaborateurs || collaborateurs.length === 0) {
                 console.log('👥 Chargement des collaborateurs pour édition...');
-                const collabResponse = await fetch(`${API_BASE_URL}/collaborateurs`);
+                const collabResponse = await authenticatedFetch(`${API_BASE_URL}/collaborateurs`);
                 const collabData = await collabResponse.json();
                 if (collabData.success) {
                     // L'API retourne data directement comme un tableau
@@ -1517,7 +1541,7 @@
             if (!window.opportunityTypes) {
                 console.log('📊 Chargement des types d\'opportunites pour édition...');
                 try {
-                    const typesResponse = await fetch(`${API_BASE_URL}/opportunity-types`);
+                    const typesResponse = await authenticatedFetch(`${API_BASE_URL}/opportunity-types`);
                     const typesData = await typesResponse.json();
                     if (typesData.success) {
                         window.opportunityTypes = typesData.data.opportunityTypes;
@@ -1680,7 +1704,7 @@
             
             try {
                 // Envoyer les modifications
-                const response = await fetch(`${API_BASE_URL}/opportunities/${currentEditOpportunityId}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${currentEditOpportunityId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1774,7 +1798,7 @@
             
             try {
                 // Appel API pour supprimer l'opportunité
-                const response = await fetch(`${API_BASE_URL}/opportunities/${currentDeleteOpportunityId}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${currentDeleteOpportunityId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'

@@ -35,6 +35,7 @@ const secteursActiviteRoutes = require('./src/routes/secteurs-activite');
 const evolutionGradesRoutes = require('./src/routes/evolution-grades');
 const evolutionPostesRoutes = require('./src/routes/evolution-postes');
 const evolutionOrganisationsRoutes = require('./src/routes/evolution-organisations');
+const notificationRoutes = require('./src/routes/notifications');
 
 // Import des middlewares
 const errorHandler = require('./src/middleware/errorHandler');
@@ -57,17 +58,41 @@ app.use(helmet({
     },
 }));
 
-// Rate limiting
+// Rate limiting - Configuration plus permissive pour le développement
 const limiter = rateLimit({
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000, // limite chaque IP à 1000 requêtes par fenêtre
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 10000, // Augmenté à 10000 requêtes par fenêtre
     message: {
         error: 'Trop de requêtes depuis cette IP, veuillez réessayer plus tard.'
     },
     standardHeaders: true,
     legacyHeaders: false,
 });
-app.use('/api/', limiter);
+
+// Rate limiter spécifique pour l'authentification (plus permissif)
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // 100 tentatives de login par 15 minutes
+    message: {
+        error: 'Trop de tentatives de connexion, veuillez réessayer plus tard.'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Appliquer le rate limiter général sur toutes les routes API sauf l'authentification
+// TEMPORAIREMENT DÉSACTIVÉ POUR LE DÉVELOPPEMENT
+/*
+app.use('/api/', (req, res, next) => {
+    if (req.path.startsWith('/auth')) {
+        return next(); // Skip rate limiting for auth routes
+    }
+    return limiter(req, res, next);
+});
+*/
+
+// Appliquer le rate limiter spécifique pour l'authentification
+app.use('/api/auth', authLimiter);
 
 // Middlewares
 app.use(compression());
@@ -112,6 +137,7 @@ app.use('/api/secteurs-activite', secteursActiviteRoutes);
 app.use('/api/evolution-grades', evolutionGradesRoutes);
 app.use('/api/evolution-postes', evolutionPostesRoutes);
 app.use('/api/evolution-organisations', evolutionOrganisationsRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Route racine
 app.get('/', (req, res) => {

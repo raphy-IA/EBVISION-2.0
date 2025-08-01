@@ -848,6 +848,23 @@
     <script src="/js/sidebar.js" defer></script>
     <script>
         const API_BASE_URL = '/api';
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
         let opportunities = [];
         let filteredOpportunities = [];
 
@@ -862,7 +879,7 @@
         async function loadOpportunities() {
             showLoading(true);
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunities`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities`);
                 const data = await response.json();
                 if (data.success) {
                     opportunities = data.data.opportunities;
@@ -883,7 +900,7 @@
         async function loadClients() {
             try {
                 console.log('🔄 Chargement des clients...');
-                const response = await fetch(`${API_BASE_URL}/clients`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/clients`);
                 const data = await response.json();
                 console.log('📊 Réponse clients:', data);
                 
@@ -919,7 +936,7 @@
         async function loadCollaborators() {
             try {
                 console.log('🔄 Chargement des collaborateurs...');
-                const response = await fetch(`${API_BASE_URL}/collaborateurs`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs`);
                 const data = await response.json();
                 console.log('📊 Réponse collaborateurs:', data);
                 
@@ -955,7 +972,7 @@
         async function loadBusinessUnits() {
             try {
                 console.log('🔄 Chargement des Business Units...');
-                const response = await fetch(`${API_BASE_URL}/business-units`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/business-units`);
                 const data = await response.json();
                 console.log('📊 Réponse Business Units:', data);
                 
@@ -991,7 +1008,7 @@
         async function loadOpportunityTypes() {
             try {
                 console.log('🔄 Chargement des types d\'opportunités...');
-                const response = await fetch(`${API_BASE_URL}/opportunity-types`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-types`);
                 const data = await response.json();
                 console.log('📊 Réponse types d\'opportunités:', data);
                 
@@ -1027,7 +1044,7 @@
         async function loadBusinessUnitsForFilters() {
             try {
                 console.log('🔄 Chargement des Business Units pour filtres...');
-                const response = await fetch(`${API_BASE_URL}/business-units`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/business-units`);
                 const data = await response.json();
                 console.log('📊 Réponse Business Units pour filtres:', data);
                 
@@ -1063,7 +1080,7 @@
         async function loadOpportunityTypesForFilters() {
             try {
                 console.log('🔄 Chargement des types d\'opportunités pour filtres...');
-                const response = await fetch(`${API_BASE_URL}/opportunity-types`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-types`);
                 const data = await response.json();
                 console.log('📊 Réponse types pour filtres:', data);
                 
@@ -1623,7 +1640,7 @@
             
             try {
                 // Charger les données détaillées de l'opportunité
-                const response = await fetch(`${API_BASE_URL}/opportunities/${id}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${id}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1718,7 +1735,7 @@
             console.log('✅ Confirmation de suppression:', id);
             
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunities/${id}`, { 
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${id}`, { 
                     method: 'DELETE' 
                 });
                 

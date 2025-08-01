@@ -26,31 +26,15 @@ const userValidation = {
                 'string.pattern.base': 'Le mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial',
                 'any.required': 'Le mot de passe est requis'
             }),
-        initiales: Joi.string().min(2).max(5).required()
+        login: Joi.string().min(3).max(50).optional()
             .messages({
-                'string.min': 'Les initiales doivent contenir au moins 2 caractères',
-                'string.max': 'Les initiales ne peuvent pas dépasser 5 caractères',
-                'any.required': 'Les initiales sont requises'
+                'string.min': 'Le login doit contenir au moins 3 caractères',
+                'string.max': 'Le login ne peut pas dépasser 50 caractères'
             }),
-        grade: Joi.string().valid('ASSISTANT', 'SENIOR', 'MANAGER', 'DIRECTOR', 'PARTNER').required()
+        role: Joi.string().valid('ADMIN', 'MANAGER', 'USER', 'ASSISTANT', 'SENIOR', 'DIRECTOR', 'PARTNER').required()
             .messages({
-                'any.only': 'Grade invalide',
-                'any.required': 'Le grade est requis'
-            }),
-        division_id: Joi.string().uuid().required()
-            .messages({
-                'string.guid': 'ID de division invalide',
-                'any.required': 'La division est requise'
-            }),
-        date_embauche: Joi.date().max('now').required()
-            .messages({
-                'date.max': 'La date d\'embauche ne peut pas être dans le futur',
-                'any.required': 'La date d\'embauche est requise'
-            }),
-        taux_horaire: Joi.number().positive().required()
-            .messages({
-                'number.positive': 'Le taux horaire doit être positif',
-                'any.required': 'Le taux horaire est requis'
+                'any.only': 'Rôle invalide',
+                'any.required': 'Le rôle est requis'
             })
     }),
 
@@ -69,26 +53,18 @@ const userValidation = {
             .messages({
                 'string.email': 'Format d\'email invalide'
             }),
-        initiales: Joi.string().min(2).max(5)
+        login: Joi.string().min(3).max(50)
             .messages({
-                'string.min': 'Les initiales doivent contenir au moins 2 caractères',
-                'string.max': 'Les initiales ne peuvent pas dépasser 5 caractères'
+                'string.min': 'Le login doit contenir au moins 3 caractères',
+                'string.max': 'Le login ne peut pas dépasser 50 caractères'
             }),
-        grade: Joi.string().valid('ASSISTANT', 'SENIOR', 'MANAGER', 'DIRECTOR', 'PARTNER')
+        role: Joi.string().valid('ADMIN', 'MANAGER', 'USER', 'ASSISTANT', 'SENIOR', 'DIRECTOR', 'PARTNER')
             .messages({
-                'any.only': 'Grade invalide'
-            }),
-        division_id: Joi.string().uuid()
-            .messages({
-                'string.guid': 'ID de division invalide'
+                'any.only': 'Rôle invalide'
             }),
         statut: Joi.string().valid('ACTIF', 'INACTIF', 'CONGE')
             .messages({
                 'any.only': 'Statut invalide'
-            }),
-        taux_horaire: Joi.number().positive()
-            .messages({
-                'number.positive': 'Le taux horaire doit être positif'
             })
     })
 };
@@ -376,6 +352,11 @@ const fiscalYearValidation = {
     }),
 
     update: Joi.object({
+        libelle: Joi.string().min(2).max(50)
+            .messages({
+                'string.min': 'Le libellé doit contenir au moins 2 caractères',
+                'string.max': 'Le libellé ne peut pas dépasser 50 caractères'
+            }),
         date_debut: Joi.date()
             .messages({
                 'any.required': 'La date de début est requise'
@@ -387,10 +368,6 @@ const fiscalYearValidation = {
         budget_global: Joi.number().positive()
             .messages({
                 'number.positive': 'Le budget global doit être positif'
-            }),
-        statut: Joi.string().valid('OUVERTE', 'FERMEE', 'EN_COURS')
-            .messages({
-                'any.only': 'Statut invalide'
             })
     })
 };
@@ -398,10 +375,9 @@ const fiscalYearValidation = {
 // Schémas de validation pour l'authentification
 const authValidation = {
     login: Joi.object({
-        email: Joi.string().email().required()
+        email: Joi.string().required()
             .messages({
-                'string.email': 'Format d\'email invalide',
-                'any.required': 'L\'email est requis'
+                'any.required': 'L\'identifiant (email ou login) est requis'
             }),
         password: Joi.string().required()
             .messages({

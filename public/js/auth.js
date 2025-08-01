@@ -1,6 +1,7 @@
 // Script pour gérer l'authentification et la déconnexion
 class AuthManager {
     constructor() {
+        this.isLoggingOut = false;
         this.init();
     }
 
@@ -38,25 +39,41 @@ class AuthManager {
         if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
             // Supprimer le token du localStorage
             localStorage.removeItem('authToken');
-            localStorage.removeItem('userData');
+            localStorage.removeItem('user');
             
-            // Rediriger vers la page de connexion
-            window.location.href = '/';
+            // Désactiver temporairement la vérification d'authentification
+            this.isLoggingOut = true;
+            
+            // Rediriger vers la page de connexion avec un délai
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 100);
         }
     }
 
     // Vérifier le statut d'authentification
     checkAuthStatus() {
+        // Ne pas vérifier si on est en train de se déconnecter
+        if (this.isLoggingOut) {
+            return;
+        }
+
         const token = localStorage.getItem('authToken');
+        
+        // Si on est sur la page de login, ne pas rediriger
+        if (window.location.pathname === '/' || window.location.pathname.includes('login')) {
+            return;
+        }
+
         if (!token) {
             // Si pas de token, rediriger vers la page de connexion
-            if (window.location.pathname !== '/' && !window.location.pathname.includes('login')) {
-                window.location.href = '/';
-            }
-        } else {
-            // Vérifier la validité du token
-            this.verifyToken(token);
+            console.log('🔒 Aucun token trouvé, redirection vers la page de connexion');
+            window.location.href = '/';
+            return;
         }
+
+        // Vérifier la validité du token
+        this.verifyToken(token);
     }
 
     // Vérifier la validité du token
@@ -71,23 +88,28 @@ class AuthManager {
             });
 
             if (!response.ok) {
+                console.log('🔒 Token invalide, redirection vers la page de connexion');
                 // Token invalide, supprimer et rediriger
                 localStorage.removeItem('authToken');
-                localStorage.removeItem('userData');
+                localStorage.removeItem('user');
                 window.location.href = '/';
+            } else {
+                console.log('✅ Token valide, utilisateur authentifié');
+                // Token valide, mettre à jour l'affichage
+                this.updateUserDisplay();
             }
         } catch (error) {
-            console.error('Erreur lors de la vérification du token:', error);
+            console.error('❌ Erreur lors de la vérification du token:', error);
             // En cas d'erreur, supprimer le token et rediriger
             localStorage.removeItem('authToken');
-            localStorage.removeItem('userData');
+            localStorage.removeItem('user');
             window.location.href = '/';
         }
     }
 
     // Obtenir les informations de l'utilisateur connecté
     getUserInfo() {
-        const userData = localStorage.getItem('userData');
+        const userData = localStorage.getItem('user');
         return userData ? JSON.parse(userData) : null;
     }
 
@@ -105,6 +127,15 @@ class AuthManager {
             }
         });
     }
+
+    // Obtenir le token d'authentification pour les requêtes API
+    getAuthHeaders() {
+        const token = localStorage.getItem('authToken');
+        return {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+    }
 }
 
 // Initialiser le gestionnaire d'authentification
@@ -119,7 +150,9 @@ function logout() {
     } else {
         // Fallback si le gestionnaire n'est pas initialisé
         localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
-        window.location.href = '/';
+        localStorage.removeItem('user');
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 100);
     }
 } 

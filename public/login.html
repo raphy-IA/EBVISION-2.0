@@ -349,6 +349,23 @@
     <script>
         // Configuration
         const API_BASE_URL = '/api';
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
         let isAuthenticated = false;
 
         // Initialisation
@@ -400,7 +417,7 @@
             setLoading(true);
             
             try {
-                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -445,7 +462,7 @@
         // Vérifier la validité du token
         async function verifyToken(token) {
             try {
-                const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/auth/verify`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -498,7 +515,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/auth/forgot-password`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

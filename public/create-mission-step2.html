@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRS Dashboard - Création de Mission - Étape 2</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+        }
+        
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 1rem;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .step-number.active {
+            background-color: var(--success-color);
+        }
+        
+        .step-number.completed {
+            background-color: var(--success-color);
+        }
+        
+        .btn-next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        
+        .btn-next:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-prev {
+            background: var(--secondary-color);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-prev:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        
+        .info-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-section h6 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div class="container-fluid">
+                <!-- Indicateur d'étapes -->
+                <div class="step-indicator">
+                    <div class="step">
+                        <div class="step-number completed">1</div>
+                        <span>Sélection Opportunité & Type</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-number active">2</div>
+                        <span>Configuration Mission</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <span>Configuration Financière</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <span>Planification</span>
+                    </div>
+                </div>
+
+                <!-- En-tête -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-cog me-2"></i>Configuration de la Mission - Étape 2</h2>
+                    <a href="create-mission-step1.html" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à l'Étape 1
+                    </a>
+                </div>
+
+                <!-- Résumé des sélections -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Résumé des Sélections
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-trophy me-2"></i>Opportunité Sélectionnée</h6>
+                                <div id="selected-opportunity-info">
+                                    <div class="info-badge mb-2">Chargement...</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-cog me-2"></i>Type de Mission Sélectionné</h6>
+                                <div id="selected-mission-type-info">
+                                    <div class="info-badge mb-2">Chargement...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulaire de configuration -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-edit me-2"></i>Configuration de la Mission
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="mission-config-form">
+                            <!-- Informations de base -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-info-circle me-2"></i>Informations de Base</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="missionCode" class="form-label">Code Mission *</label>
+                                        <input type="text" class="form-control" id="missionCode" required>
+                                        <div class="form-text">Code unique pour identifier la mission</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="missionName" class="form-label">Nom de la Mission *</label>
+                                        <input type="text" class="form-control" id="missionName" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="missionDescription" class="form-label">Description</label>
+                                        <textarea class="form-control" id="missionDescription" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Informations temporelles -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-calendar me-2"></i>Planning</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="missionStartDate" class="form-label">Date de Début *</label>
+                                        <input type="date" class="form-control" id="missionStartDate" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="missionEndDate" class="form-label">Date de Fin Prévisionnelle *</label>
+                                        <input type="date" class="form-control" id="missionEndDate" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Informations financières -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-euro-sign me-2"></i>Budget Prévisionnel</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="missionBudget" class="form-label">Budget Prévisionnel (€)</label>
+                                        <input type="number" class="form-control" id="missionBudget" min="0" step="0.01">
+                                        <div class="form-text">Montant prévisionnel de la mission</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="missionRate" class="form-label">Taux Horaire Moyen (€/h)</label>
+                                        <input type="number" class="form-control" id="missionRate" min="0" step="0.01">
+                                        <div class="form-text">Taux horaire moyen de l'équipe</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Informations organisationnelles -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-users me-2"></i>Organisation</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="missionDivision" class="form-label">Division</label>
+                                        <input type="text" class="form-control" id="missionDivision" readonly>
+                                        <div class="form-text">Division automatiquement assignée selon le type de mission</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="missionResponsible" class="form-label">Responsable</label>
+                                        <select class="form-select" id="missionResponsible">
+                                            <option value="">Sélectionner un responsable</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="missionPriority" class="form-label">Priorité</label>
+                                        <select class="form-select" id="missionPriority">
+                                            <option value="normale">Normale</option>
+                                            <option value="basse">Basse</option>
+                                            <option value="haute">Haute</option>
+                                            <option value="urgente">Urgente</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="missionStatus" class="form-label">Statut</label>
+                                        <select class="form-select" id="missionStatus">
+                                            <option value="en_cours">En cours</option>
+                                            <option value="planifiee">Planifiée</option>
+                                            <option value="suspendue">Suspendue</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-sticky-note me-2"></i>Notes Additionnelles</h6>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="missionNotes" class="form-label">Notes</label>
+                                        <textarea class="form-control" id="missionNotes" rows="3" placeholder="Notes additionnelles sur la mission..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Boutons de navigation -->
+                <div class="text-center mt-4">
+                    <button id="btn-prev" class="btn btn-prev me-3">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à l'Étape 1
+                    </button>
+                    <button id="btn-next" class="btn btn-next">
+                        <i class="fas fa-arrow-right me-2"></i>Continuer vers l'Étape 3
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <script>
+        // Variables globales
+        let selectedOpportunity = null;
+        let selectedMissionType = null;
+        let collaborateurs = [];
+
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Page create-mission-step2.html chargée');
+            await loadSelections();
+            await loadCollaborateurs();
+            setupEventListeners();
+        });
+
+        // Charger les sélections de l'étape précédente
+        async function loadSelections() {
+            try {
+                // Récupérer les sélections depuis sessionStorage
+                const opportunityData = sessionStorage.getItem('selectedOpportunity');
+                const missionTypeData = sessionStorage.getItem('selectedMissionType');
+
+                if (!opportunityData || !missionTypeData) {
+                    console.error('❌ Données de sélection manquantes');
+                    alert('Veuillez retourner à l\'étape 1 pour sélectionner une opportunité et un type de mission');
+                    window.location.href = 'create-mission-step1.html';
+                    return;
+                }
+
+                selectedOpportunity = JSON.parse(opportunityData);
+                selectedMissionType = JSON.parse(missionTypeData);
+
+                console.log('✅ Opportunité chargée:', selectedOpportunity);
+                console.log('✅ Type de mission chargé:', selectedMissionType);
+
+                // Afficher les informations de sélection
+                displaySelectionInfo();
+                
+                // Pré-remplir le formulaire
+                populateForm();
+
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des sélections:', error);
+            }
+        }
+
+        // Charger les collaborateurs
+        async function loadCollaborateurs() {
+            try {
+                console.log('👥 Chargement des collaborateurs...');
+                const response = await authenticatedFetch('/api/collaborateurs');
+                const data = await response.json();
+                
+                if (data.success) {
+                    collaborateurs = data.data.collaborateurs || data.data;
+                    console.log(`✅ ${collaborateurs.length} collaborateurs chargés`);
+                    populateCollaborateursSelect();
+                } else {
+                    console.error('❌ Erreur lors du chargement des collaborateurs:', data.error);
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des collaborateurs:', error);
+            }
+        }
+
+        // Afficher les informations de sélection
+        function displaySelectionInfo() {
+            // Opportunité
+            const oppInfo = document.getElementById('selected-opportunity-info');
+            oppInfo.innerHTML = `
+                <div class="info-badge mb-2">${selectedOpportunity.nom}</div>
+                <p class="mb-1"><strong>Client:</strong> ${selectedOpportunity.client_nom}</p>
+                <p class="mb-1"><strong>Montant:</strong> ${formatCurrency(selectedOpportunity.montant_estime)}</p>
+                <p class="mb-1"><strong>Business Unit:</strong> ${selectedOpportunity.business_unit_nom || 'N/A'}</p>
+            `;
+
+            // Type de mission
+            const mtInfo = document.getElementById('selected-mission-type-info');
+            mtInfo.innerHTML = `
+                <div class="info-badge mb-2">${selectedMissionType.codification} - ${selectedMissionType.libelle}</div>
+                <p class="mb-1"><strong>Division:</strong> ${selectedMissionType.division_nom || 'Non assignée'}</p>
+                <p class="mb-1"><strong>Description:</strong> ${selectedMissionType.description || 'Aucune description'}</p>
+            `;
+        }
+
+        // Pré-remplir le formulaire
+        function populateForm() {
+            // Code de mission (généré automatiquement)
+            const missionCode = generateMissionCode();
+            document.getElementById('missionCode').value = missionCode;
+
+            // Nom de la mission (basé sur l'opportunité)
+            document.getElementById('missionName').value = selectedOpportunity.nom;
+
+            // Description (basée sur l'opportunité)
+            document.getElementById('missionDescription').value = selectedOpportunity.description || '';
+
+            // Budget prévisionnel (basé sur l'opportunité)
+            document.getElementById('missionBudget').value = selectedOpportunity.montant_estime || '';
+
+            // Division (basée sur le type de mission)
+            document.getElementById('missionDivision').value = selectedMissionType.division_nom || 'Non assignée';
+
+            // Responsable (basé sur l'opportunité)
+            if (selectedOpportunity.collaborateur_id) {
+                document.getElementById('missionResponsible').value = selectedOpportunity.collaborateur_id;
+            }
+
+            // Dates (à définir par l'utilisateur)
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('missionStartDate').value = today;
+        }
+
+        // Remplir le select des collaborateurs
+        function populateCollaborateursSelect() {
+            const select = document.getElementById('missionResponsible');
+            select.innerHTML = '<option value="">Sélectionner un responsable</option>';
+            
+            collaborateurs.forEach(collab => {
+                const option = document.createElement('option');
+                option.value = collab.id;
+                option.textContent = `${collab.nom} ${collab.prenom}`;
+                select.appendChild(option);
+            });
+
+            // Sélectionner le responsable de l'opportunité si disponible
+            if (selectedOpportunity.collaborateur_id) {
+                select.value = selectedOpportunity.collaborateur_id;
+            }
+        }
+
+        // Générer un code de mission
+        function generateMissionCode() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            
+            return `MIS-${year}${month}${day}-${random}`;
+        }
+
+        // Configuration des événements
+        function setupEventListeners() {
+            // Bouton retour
+            document.getElementById('btn-prev').addEventListener('click', function() {
+                window.location.href = 'create-mission-step1.html';
+            });
+
+            // Bouton suivant
+            document.getElementById('btn-next').addEventListener('click', function() {
+                if (validateForm()) {
+                    saveMissionData();
+                    window.location.href = 'create-mission-step3.html';
+                }
+            });
+        }
+
+        // Validation du formulaire
+        function validateForm() {
+            const requiredFields = ['missionCode', 'missionName', 'missionStartDate', 'missionEndDate'];
+            let isValid = true;
+
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            // Validation des dates
+            const startDate = new Date(document.getElementById('missionStartDate').value);
+            const endDate = new Date(document.getElementById('missionEndDate').value);
+            
+            if (endDate <= startDate) {
+                alert('La date de fin doit être postérieure à la date de début');
+                document.getElementById('missionEndDate').classList.add('is-invalid');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                alert('Veuillez remplir tous les champs obligatoires');
+            }
+
+            return isValid;
+        }
+
+        // Sauvegarder les données de la mission
+        function saveMissionData() {
+            const missionData = {
+                code: document.getElementById('missionCode').value,
+                nom: document.getElementById('missionName').value,
+                description: document.getElementById('missionDescription').value,
+                date_debut: document.getElementById('missionStartDate').value,
+                date_fin_prevue: document.getElementById('missionEndDate').value,
+                budget_prevue: parseFloat(document.getElementById('missionBudget').value) || 0,
+                taux_horaire_moyen: parseFloat(document.getElementById('missionRate').value) || 0,
+                responsable_id: document.getElementById('missionResponsible').value || null,
+                priorite: document.getElementById('missionPriority').value,
+                statut: document.getElementById('missionStatus').value,
+                notes: document.getElementById('missionNotes').value,
+                division_id: selectedMissionType.division_id || null,
+                opportunity_id: selectedOpportunity.id,
+                mission_type_id: selectedMissionType.id
+            };
+
+            // Stocker dans sessionStorage
+            sessionStorage.setItem('missionData', JSON.stringify(missionData));
+            console.log('✅ Données de mission sauvegardées:', missionData);
+        }
+
+        // Fonction utilitaire pour formater les montants
+        function formatCurrency(amount) {
+            if (!amount) return 'N/A';
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(amount);
+        }
+    </script>
+</body>
+</html> 

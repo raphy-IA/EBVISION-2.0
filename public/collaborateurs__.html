@@ -1016,6 +1016,23 @@
     <script src="/js/sidebar.js" defer></script>
     <script>
         const API_BASE_URL = '/api';
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
         let collaborateurs = [];
         let filteredCollaborateurs = [];
         let collaborateurToDelete = null;
@@ -1057,7 +1074,7 @@
             console.log('🔄 Chargement des collaborateurs...');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs`);
                 const data = await response.json();
                 console.log('📊 Données reçues:', data);
                 
@@ -1385,7 +1402,7 @@ function loadDivisions() {
         async function loadPostes(typeCollaborateurId = null) {
             try {
                 console.log('🔄 Chargement des postes...');
-                const response = await fetch(`${API_BASE_URL}/postes`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/postes`);
                 const data = await response.json();
                 console.log('📥 Réponse API postes:', data);
                 
@@ -1439,7 +1456,7 @@ function loadDivisions() {
             if (!businessUnitId) return;
             
             try {
-                const response = await fetch(`${API_BASE_URL}/divisions?business_unit_id=${businessUnitId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions?business_unit_id=${businessUnitId}`);
                 const data = await response.json();
                 
                 if (data.success && data.data && data.data.divisions) {
@@ -1473,7 +1490,7 @@ function loadDivisions() {
             if (!buId) return;
             
             try {
-                const response = await fetch(`${API_BASE_URL}/divisions?business_unit_id=${buId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions?business_unit_id=${buId}`);
                 const data = await response.json();
                 
                 let divisionsLoaded = 0;
@@ -1510,7 +1527,7 @@ function loadDivisions() {
             if (selectedType) {
                 try {
                     // Charger tous les postes (sans filtre pour éviter l'erreur 500)
-                    const response = await fetch(`${API_BASE_URL}/postes`);
+                    const response = await authenticatedFetch(`${API_BASE_URL}/postes`);
                     const data = await response.json();
                     
                     if (data.success && data.data) {
@@ -1579,7 +1596,7 @@ function loadDivisions() {
             console.log('📤 Données envoyées:', JSON.stringify(formData, null, 2));
             
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1608,7 +1625,7 @@ function loadDivisions() {
 
         async function editCollaborateur(id) {
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs/${id}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${id}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1666,7 +1683,7 @@ function loadDivisions() {
             };
             
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs/${id}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1732,7 +1749,7 @@ function loadDivisions() {
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs/${collaborateur.id}/reembaucher`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateur.id}/reembaucher`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1762,7 +1779,7 @@ function loadDivisions() {
             if (!collaborateurToDelete) return;
             
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs/${collaborateurToDelete}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateurToDelete}`, {
                     method: 'DELETE'
                 });
                 
@@ -2101,7 +2118,7 @@ function loadDivisions() {
         async function loadGradesForRH() {
             try {
                 console.log('🔄 Chargement des grades pour RH...');
-                const response = await fetch(`${API_BASE_URL}/grades`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/grades`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -2143,7 +2160,7 @@ function loadDivisions() {
         async function loadTypesCollaborateursForRH() {
             try {
                 console.log('🔄 Chargement des types collaborateurs pour RH...');
-                const response = await fetch(`${API_BASE_URL}/types-collaborateurs`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/types-collaborateurs`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -2185,7 +2202,7 @@ function loadDivisions() {
         async function loadPostesForRH() {
             try {
                 console.log('🔄 Chargement des postes pour RH...');
-                const response = await fetch(`${API_BASE_URL}/postes`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/postes`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -2232,7 +2249,7 @@ function loadDivisions() {
 
         async function loadBusinessUnitsForRH() {
             try {
-                const response = await fetch(`${API_BASE_URL}/business-units`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/business-units`);
                 const data = await response.json();
                 
                 const select = document.getElementById('rh-business-unit-select');
@@ -2284,7 +2301,7 @@ function loadDivisions() {
             if (!businessUnitId) return;
             
             try {
-                const response = await fetch(`${API_BASE_URL}/divisions?business_unit_id=${businessUnitId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions?business_unit_id=${businessUnitId}`);
                 const data = await response.json();
                 
                 if (data.success && data.data && data.data.divisions) {
@@ -2314,7 +2331,7 @@ function loadDivisions() {
 
             try {
                 console.log('🔄 Chargement de tous les postes...');
-                const response = await fetch(`${API_BASE_URL}/postes`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/postes`);
                 const data = await response.json();
                 
                 console.log('📥 Réponse API postes:', data);
@@ -2367,7 +2384,7 @@ function loadDivisions() {
 
             try {
                 console.log('🌐 Envoi de la requête POST vers /api/evolution-grades');
-                const response = await fetch(`${API_BASE_URL}/evolution-grades`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/evolution-grades`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2429,7 +2446,7 @@ function loadDivisions() {
 
             try {
                 console.log('🌐 Envoi de la requête POST vers /api/evolution-postes');
-                const response = await fetch(`${API_BASE_URL}/evolution-postes`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/evolution-postes`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2485,7 +2502,7 @@ function loadDivisions() {
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/evolution-organisations`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/evolution-organisations`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2535,7 +2552,7 @@ function loadDivisions() {
 
         async function loadHistoriqueGrades(collaborateurId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/evolution-grades/collaborateur/${collaborateurId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/evolution-grades/collaborateur/${collaborateurId}`);
                 const data = await response.json();
 
                 const tbody = document.getElementById('historique-grades-body');
@@ -2561,7 +2578,7 @@ function loadDivisions() {
 
         async function loadHistoriquePostes(collaborateurId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/evolution-postes/collaborateur/${collaborateurId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/evolution-postes/collaborateur/${collaborateurId}`);
                 const data = await response.json();
 
                 const tbody = document.getElementById('historique-postes-body');
@@ -2586,7 +2603,7 @@ function loadDivisions() {
 
         async function loadHistoriqueOrganisations(collaborateurId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/evolution-organisations/collaborateur/${collaborateurId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/evolution-organisations/collaborateur/${collaborateurId}`);
                 const data = await response.json();
 
                 const tbody = document.getElementById('historique-organisations-body');
@@ -2746,7 +2763,7 @@ function loadDivisions() {
                 
                 console.log('🌐 Appel API /collaborateurs...');
                 const timestamp = new Date().getTime();
-                const response = await fetch(`${API_BASE_URL}/collaborateurs?t=${timestamp}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs?t=${timestamp}`, {
                     method: 'GET',
                     headers: {
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -2857,7 +2874,7 @@ function loadDivisions() {
             };
             
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs/${collaborateur.id}/depart`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateur.id}/depart`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

@@ -269,6 +269,23 @@
     <script src="/js/sidebar.js" defer></script>
     <script>
         const API_BASE_URL = '/api';
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
         let opportunityId = null;
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -283,7 +300,7 @@
 
         async function loadOpportunityDetails(id) {
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunities/${id}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${id}`);
                 const data = await response.json();
 
                 if (data.success) {
@@ -311,7 +328,7 @@
 
         async function loadAssociatedContacts(opportunityId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunities/${opportunityId}/contacts`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${opportunityId}/contacts`);
                 const data = await response.json();
                 const contactList = document.getElementById('contact-list');
                 contactList.innerHTML = '';
@@ -336,7 +353,7 @@
 
         async function loadActivityLog(opportunityId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunities/${opportunityId}/activities`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${opportunityId}/activities`);
                 const data = await response.json();
                 const activityLog = document.getElementById('activity-log');
                 activityLog.innerHTML = '';
@@ -361,7 +378,7 @@
 
         async function editOpportunity() {
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunities/${opportunityId}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${opportunityId}`);
                 const data = await response.json();
                 if (data.success) {
                     const opp = data.data;
@@ -406,7 +423,7 @@
             };
 
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunities/${id}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -429,7 +446,7 @@
 
         async function loadClients(selectId, selectedId = null) {
             try {
-                const response = await fetch(`${API_BASE_URL}/clients`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/clients`);
                 const data = await response.json();
                 const select = document.getElementById(selectId);
                 select.innerHTML = '<option value="">Sélectionner un client</option>';
@@ -451,7 +468,7 @@
 
         async function loadOpportunityTypes(selectId, selectedId = null) {
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunity-types`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-types`);
                 const data = await response.json();
                 const select = document.getElementById(selectId);
                 select.innerHTML = '<option value="">Sélectionner un type</option>';
@@ -473,7 +490,7 @@
 
         async function loadOpportunityStages(selectId, selectedId = null) {
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunity-stages`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-stages`);
                 const data = await response.json();
                 const select = document.getElementById(selectId);
                 select.innerHTML = '<option value="">Sélectionner un statut</option>';
@@ -495,7 +512,7 @@
 
         async function loadUsers(selectId, selectedId = null) {
             try {
-                const response = await fetch(`${API_BASE_URL}/users`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/users`);
                 const data = await response.json();
                 const select = document.getElementById(selectId);
                 select.innerHTML = '<option value="">Sélectionner un responsable</option>';

@@ -18,6 +18,7 @@ class Mission {
         this.priorite = data.priorite;
         this.division_id = data.division_id;
         this.responsable_id = data.responsable_id;
+        this.fiscal_year_id = data.fiscal_year_id;
         this.notes = data.notes;
         this.date_creation = data.date_creation;
         this.date_modification = data.date_modification;
@@ -36,6 +37,7 @@ class Mission {
             responsable_id,
             type_mission,
             priorite,
+            fiscal_year_id,
             search,
             sortBy = 'date_creation',
             sortOrder = 'DESC'
@@ -77,6 +79,11 @@ class Mission {
             params.push(priorite);
         }
 
+        if (fiscal_year_id) {
+            conditions.push(`m.fiscal_year_id = $${paramIndex++}`);
+            params.push(fiscal_year_id);
+        }
+
         if (search) {
             conditions.push(`(m.titre ILIKE $${paramIndex} OR m.description ILIKE $${paramIndex} OR c.nom ILIKE $${paramIndex})`);
             params.push(`%${search}%`);
@@ -93,15 +100,17 @@ class Mission {
                 col.nom as responsable_nom,
                 col.initiales as responsable_initiales,
                 d.nom as division_nom,
+                fy.annee as fiscal_year_annee,
                 COUNT(em.id) as nombre_collaborateurs,
                 COALESCE(SUM(em.taux_horaire_mission), 0) as total_taux_horaire
             FROM missions m
             LEFT JOIN clients c ON m.client_id = c.id
             LEFT JOIN collaborateurs col ON m.responsable_id = col.id
             LEFT JOIN divisions d ON m.division_id = d.id
+            LEFT JOIN fiscal_years fy ON m.fiscal_year_id = fy.id
             LEFT JOIN equipes_mission em ON m.id = em.mission_id
             ${whereClause}
-            GROUP BY m.id, c.nom, c.statut, col.nom, col.initiales, d.nom
+            GROUP BY m.id, c.nom, c.statut, col.nom, col.initiales, d.nom, fy.annee
             ORDER BY m.${sortBy} ${sortOrder}
             LIMIT $${paramIndex++} OFFSET $${paramIndex++}
         `;
@@ -172,22 +181,30 @@ class Mission {
         const {
             titre, description, client_id, statut, type_mission,
             date_debut, date_fin_prevue, budget_prevue, priorite,
-            division_id, responsable_id, notes, created_by
+            division_id, responsable_id, notes, created_by, fiscal_year_id
         } = missionData;
+
+        // Si aucune année fiscale n'est spécifiée, utiliser l'année active
+        let finalFiscalYearId = fiscal_year_id;
+        if (!finalFiscalYearId) {
+            const FiscalYear = require('./FiscalYear');
+            const activeFiscalYear = await FiscalYear.getActiveForNewItems();
+            finalFiscalYearId = activeFiscalYear ? activeFiscalYear.id : null;
+        }
 
         const query = `
             INSERT INTO missions (
                 titre, description, client_id, statut, type_mission,
                 date_debut, date_fin_prevue, budget_prevue, priorite,
-                division_id, responsable_id, notes, created_by
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                division_id, responsable_id, notes, created_by, fiscal_year_id
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             RETURNING *
         `;
 
         const values = [
             titre, description, client_id, statut, type_mission,
             date_debut, date_fin_prevue, budget_prevue, priorite,
-            division_id, responsable_id, notes, created_by
+            division_id, responsable_id, notes, created_by, finalFiscalYearId
         ];
 
         try {

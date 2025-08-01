@@ -1,7 +1,6 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-const { validateUser } = require('../utils/validators');
+const { userValidation } = require('../utils/validators');
 const { authenticateToken, requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
@@ -13,12 +12,17 @@ router.get('/', authenticateToken, requirePermission('users:read'), async (req, 
         const limit = parseInt(req.query.limit) || 10;
         const search = req.query.search || '';
 
-        const users = await User.findAll(page, limit, search);
+        const result = await User.findAll({
+            page,
+            limit,
+            search
+        });
 
         res.json({
             success: true,
             message: 'Utilisateurs récupérés avec succès',
-            data: users
+            data: result.users,
+            pagination: result.pagination
         });
 
     } catch (error) {
@@ -82,7 +86,7 @@ router.get('/:id', authenticateToken, requirePermission('users:read'), async (re
 router.post('/', authenticateToken, requirePermission('users:create'), async (req, res) => {
     try {
         // Validation des données
-        const { error, value } = validateUser.create.validate(req.body);
+        const { error, value } = userValidation.create.validate(req.body);
         if (error) {
             return res.status(400).json({
                 success: false,
@@ -100,27 +104,10 @@ router.post('/', authenticateToken, requirePermission('users:create'), async (re
             });
         }
 
-        // Vérifier si les initiales existent déjà
-        const existingInitiales = await User.findByInitiales(value.initiales);
-        if (existingInitiales) {
-            return res.status(400).json({
-                success: false,
-                message: 'Un utilisateur avec ces initiales existe déjà'
-            });
-        }
 
-        // Hasher le mot de passe
-        const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
-        const passwordHash = await bcrypt.hash(value.password, saltRounds);
 
-        // Créer l'utilisateur
-        const userData = {
-            ...value,
-            password_hash: passwordHash
-        };
-        delete userData.password;
-
-        const newUser = await User.create(userData);
+        // Créer l'utilisateur (le modèle User.create fait le hashage)
+        const newUser = await User.create(value);
 
         res.status(201).json({
             success: true,
@@ -143,7 +130,7 @@ router.put('/:id', authenticateToken, requirePermission('users:update'), async (
         const { id } = req.params;
 
         // Validation des données
-        const { error, value } = validateUser.update.validate(req.body);
+        const { error, value } = userValidation.update.validate(req.body);
         if (error) {
             return res.status(400).json({
                 success: false,
@@ -172,16 +159,7 @@ router.put('/:id', authenticateToken, requirePermission('users:update'), async (
             }
         }
 
-        // Vérifier si les initiales existent déjà (sauf pour cet utilisateur)
-        if (value.initiales && value.initiales !== existingUser.initiales) {
-            const userWithInitiales = await User.findByInitiales(value.initiales);
-            if (userWithInitiales && userWithInitiales.id !== id) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Un utilisateur avec ces initiales existe déjà'
-                });
-            }
-        }
+
 
         // Mettre à jour l'utilisateur
         const updatedUser = await User.update(id, value);

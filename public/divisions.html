@@ -281,6 +281,23 @@
     <script src="/js/sidebar.js" defer></script>
     <script>
         const API_BASE_URL = '/api';
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
         let divisionToDelete = null;
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -290,7 +307,7 @@
         async function loadDivisions() {
             showLoading(true);
             try {
-                const response = await fetch(`${API_BASE_URL}/divisions`, { cache: 'no-cache' });
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions`, { cache: 'no-cache' });
                 const data = await response.json();
                 if (data.success) {
                     displayDivisions(data.data);
@@ -352,7 +369,7 @@
 
         async function loadBusinessUnitsForSelect() {
             try {
-                const response = await fetch(`${API_BASE_URL}/business-units`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/business-units`);
                 const data = await response.json();
                 const select = document.getElementById('businessUnitSelect');
                 select.innerHTML = '<option value="">Sélectionner une Business Unit</option>';
@@ -411,7 +428,7 @@
 
         async function editDivision(id) {
             try {
-                const response = await fetch(`${API_BASE_URL}/divisions/${id}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions/${id}`);
                 const data = await response.json();
                 if (data.success) {
                     const division = data.data;
@@ -441,7 +458,7 @@
             if (!divisionToDelete) return;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/divisions/${divisionToDelete}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions/${divisionToDelete}`, {
                     method: 'DELETE'
                 });
                 const data = await response.json();

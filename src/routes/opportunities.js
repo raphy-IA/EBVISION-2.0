@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { pool } = require('../utils/database');
 const Opportunity = require('../models/Opportunity');
 const Client = require('../models/Client');
 const Collaborateur = require('../models/Collaborateur');
@@ -8,7 +9,7 @@ const OpportunityType = require('../models/OpportunityType');
 const { authenticateToken } = require('../middleware/auth');
 
 // GET /api/opportunities - Récupérer toutes les opportunités
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const { 
             page = 1, 
@@ -89,8 +90,51 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET /api/opportunities/won-for-mission - Opportunités gagnées sans mission
+router.get('/won-for-mission', authenticateToken, async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                o.*,
+                c.nom as client_nom,
+                c.email as client_email,
+                col.nom as collaborateur_nom,
+                col.prenom as collaborateur_prenom,
+                bu.nom as business_unit_nom,
+                bu.code as business_unit_code,
+                ot.name as opportunity_type_nom,
+                ot.description as opportunity_type_description
+            FROM opportunities o
+            LEFT JOIN clients c ON o.client_id = c.id
+            LEFT JOIN collaborateurs col ON o.collaborateur_id = col.id
+            LEFT JOIN business_units bu ON o.business_unit_id = bu.id
+            LEFT JOIN opportunity_types ot ON o.opportunity_type_id = ot.id
+            WHERE o.statut IN ('GAGNEE', 'WON')
+            AND NOT EXISTS (
+                SELECT 1 FROM missions m WHERE m.opportunity_id = o.id
+            )
+            ORDER BY o.created_at DESC
+        `;
+        
+        const result = await pool.query(query);
+        
+        res.json({
+            success: true,
+            data: {
+                opportunities: result.rows
+            }
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des opportunités gagnées:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération des opportunités gagnées'
+        });
+    }
+});
+
 // GET /api/opportunities/:id - Récupérer une opportunité par ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const opportunity = await Opportunity.findById(req.params.id);
         

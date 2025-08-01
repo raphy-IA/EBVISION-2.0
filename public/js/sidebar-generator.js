@@ -120,6 +120,10 @@ function generateSidebar() {
                     <i class="fas fa-tasks"></i>
                     Tâches
                 </a>
+                <a href="fiscal-years.html" class="sidebar-nav-link ${isActive('fiscal-years.html') ? 'active' : ''}">
+                    <i class="fas fa-calendar-alt"></i>
+                    Exercices Fiscaux
+                </a>
             </div>
 
             <!-- Section Rapports -->

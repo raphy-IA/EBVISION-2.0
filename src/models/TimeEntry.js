@@ -135,7 +135,7 @@ class TimeEntry {
         const query = `
             SELECT te.*, 
                    u.nom as user_nom,
-                   m.titre as mission_titre,
+                   m.nom as mission_titre,
                    c.nom as client_nom,
                    thnc.nom as type_non_chargeable_nom,
                    v.nom as validateur_nom
@@ -223,7 +223,7 @@ class TimeEntry {
         if (search) {
             whereConditions.push(`(
                 te.description ILIKE $${paramIndex} OR 
-                m.titre ILIKE $${paramIndex} OR 
+                m.nom ILIKE $${paramIndex} OR 
                 c.nom ILIKE $${paramIndex} OR
                 u.nom ILIKE $${paramIndex}
             )`);
@@ -251,7 +251,7 @@ class TimeEntry {
         const dataQuery = `
             SELECT te.*, 
                    u.nom as user_nom,
-                   m.titre as mission_titre,
+                   m.nom as mission_titre,
                    c.nom as client_nom,
                    thnc.nom as type_non_chargeable_nom,
                    v.nom as validateur_nom

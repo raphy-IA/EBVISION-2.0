@@ -384,6 +384,23 @@
     <script src="/js/sidebar.js" defer></script>
     <script>
         const API_BASE_URL = '/api';
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
         let currentPage = 1;
         let totalPages = 1;
         let currentFilters = {};
@@ -412,7 +429,7 @@
                     ...currentFilters
                 });
                 
-                const response = await fetch(`${API_BASE_URL}/time-entries?${queryParams}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/time-entries?${queryParams}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -543,7 +560,7 @@
 
         async function loadCollaborateurs() {
             try {
-                const response = await fetch(`${API_BASE_URL}/collaborateurs`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs`);
                 const data = await response.json();
                 
                 const selects = ['collaborateur-select', 'edit-collaborateur-select', 'filter-collaborateur'];
@@ -571,7 +588,7 @@
 
         async function loadMissions() {
             try {
-                const response = await fetch(`${API_BASE_URL}/missions`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/missions`);
                 const data = await response.json();
                 
                 const selects = ['mission-select', 'edit-mission-select', 'filter-mission'];
@@ -614,7 +631,7 @@
             };
             
             try {
-                const response = await fetch(`${API_BASE_URL}/time-entries`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/time-entries`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -639,7 +656,7 @@
 
         async function editEntry(id) {
             try {
-                const response = await fetch(`${API_BASE_URL}/time-entries/${id}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/time-entries/${id}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -680,7 +697,7 @@
             };
             
             try {
-                const response = await fetch(`${API_BASE_URL}/time-entries/${id}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/time-entries/${id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -712,7 +729,7 @@
             if (!entryToDelete) return;
             
             try {
-                const response = await fetch(`${API_BASE_URL}/time-entries/${entryToDelete}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/time-entries/${entryToDelete}`, {
                     method: 'DELETE'
                 });
                 

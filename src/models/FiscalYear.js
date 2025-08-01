@@ -23,7 +23,7 @@ class FiscalYear {
     // Récupérer une année fiscale par ID
     static async findById(id) {
         const sql = `
-            SELECT id, annee, date_debut, date_fin, budget_global, statut, created_at, updated_at
+            SELECT id, annee, libelle, date_debut, date_fin, budget_global, statut, created_at, updated_at
             FROM fiscal_years
             WHERE id = $1
         `;
@@ -35,7 +35,7 @@ class FiscalYear {
     // Récupérer une année fiscale par année
     static async findByYear(annee) {
         const sql = `
-            SELECT id, annee, date_debut, date_fin, budget_global, statut, created_at, updated_at
+            SELECT id, annee, libelle, date_debut, date_fin, budget_global, statut, created_at, updated_at
             FROM fiscal_years
             WHERE annee = $1
         `;
@@ -47,7 +47,7 @@ class FiscalYear {
     // Récupérer l'année fiscale actuelle
     static async getCurrent() {
         const sql = `
-            SELECT id, annee, date_debut, date_fin, budget_global, statut, created_at, updated_at
+            SELECT id, annee, libelle, date_debut, date_fin, budget_global, statut, created_at, updated_at
             FROM fiscal_years
             WHERE statut = 'EN_COURS'
             LIMIT 1
@@ -88,7 +88,7 @@ class FiscalYear {
 
         // Requête pour les données
         const sql = `
-            SELECT id, annee, date_debut, date_fin, budget_global, statut, created_at, updated_at
+            SELECT id, annee, libelle, date_debut, date_fin, budget_global, statut, created_at, updated_at
             FROM fiscal_years
             ${whereClause}
             ORDER BY annee DESC
@@ -111,7 +111,7 @@ class FiscalYear {
     // Récupérer toutes les années fiscales (pour les listes déroulantes)
     static async findActive() {
         const sql = `
-            SELECT id, annee, date_debut, date_fin, budget_global, statut
+            SELECT id, annee, libelle, date_debut, date_fin, budget_global, statut
             FROM fiscal_years
             WHERE statut IN ('OUVERTE', 'EN_COURS')
             ORDER BY annee DESC
@@ -123,7 +123,7 @@ class FiscalYear {
 
     // Mettre à jour une année fiscale
     static async update(id, updateData) {
-        const allowedFields = ['date_debut', 'date_fin', 'budget_global', 'statut'];
+        const allowedFields = ['libelle', 'date_debut', 'date_fin', 'budget_global'];
         const updates = [];
         const values = [];
 
@@ -143,7 +143,7 @@ class FiscalYear {
             UPDATE fiscal_years 
             SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP
             WHERE id = $1
-            RETURNING id, annee, date_debut, date_fin, budget_global, statut, updated_at
+            RETURNING id, annee, libelle, date_debut, date_fin, budget_global, statut, updated_at
         `;
 
         const result = await query(sql, [id, ...values]);
@@ -177,8 +177,8 @@ class FiscalYear {
 
     // Ouvrir une année fiscale
     static async open(id) {
-        // Fermer toutes les autres années ouvertes
-        await this.closeAllOpen();
+        // Ne fermer AUCUNE autre année (selon les exigences utilisateur)
+        // L'ouverture ne doit affecter que l'année concernée
 
         const sql = `
             UPDATE fiscal_years 
@@ -193,8 +193,13 @@ class FiscalYear {
 
     // Marquer une année comme en cours
     static async setAsCurrent(id) {
-        // Fermer toutes les autres années ouvertes
-        await this.closeAllOpen();
+        // Fermer seulement les autres années en cours (pas les années ouvertes)
+        const sqlCloseOthers = `
+            UPDATE fiscal_years 
+            SET statut = 'FERMEE', updated_at = CURRENT_TIMESTAMP
+            WHERE statut = 'EN_COURS' AND id != $1
+        `;
+        await query(sqlCloseOthers, [id]);
 
         const sql = `
             UPDATE fiscal_years 

@@ -322,6 +322,23 @@
     <script src="/js/sidebar.js" defer></script>
     <script>
         const API_BASE_URL = '/api';
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
         let typeToDelete = null;
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -364,7 +381,7 @@
         async function loadTypes() {
             showLoading(true);
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunity-types`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-types`);
                 const data = await response.json();
                 console.log('API Response:', data); // Debug
                 if (data.success) {
@@ -451,7 +468,7 @@
             console.log('📤 Données à envoyer:', formData);
 
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunity-types`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-types`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -479,7 +496,7 @@
 
         async function editType(id) {
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunity-types/${id}`);
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-types/${id}`);
                 const data = await response.json();
                 console.log('📡 Réponse API GET:', data);
                 
@@ -525,7 +542,7 @@
             console.log('📤 Données à mettre à jour:', formData);
 
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunity-types/${id}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-types/${id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -558,7 +575,7 @@
             if (!typeToDelete) return;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/opportunity-types/${typeToDelete}`, {
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-types/${typeToDelete}`, {
                     method: 'DELETE'
                 });
                 
