@@ -23,6 +23,7 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
+            overflow-x: hidden;
         }
         
         .page-wrapper {
@@ -133,6 +134,55 @@
             color: var(--primary-color);
             margin-bottom: 1rem;
             font-weight: 600;
+        }
+        
+        .file-upload-section {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload-section:hover {
+            border-color: var(--secondary-color);
+            background-color: #e3f2fd;
+        }
+        
+        .file-upload-section.has-file {
+            border-color: var(--success-color);
+            background-color: #e8f5e8;
+        }
+        
+        .file-info {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+        
+        .file-info.has-file {
+            color: var(--success-color);
+            font-weight: 500;
+        }
+
+        /* Styles spécifiques pour la sidebar */
+        .sidebar-container {
+            width: 300px;
+            flex-shrink: 0;
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            .sidebar-container {
+                width: 100%;
+                height: auto;
+            }
+            .main-content-area {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
@@ -255,9 +305,52 @@
                                         <div class="form-text">Montant prévisionnel de la mission</div>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="missionRate" class="form-label">Taux Horaire Moyen (€/h)</label>
-                                        <input type="number" class="form-control" id="missionRate" min="0" step="0.01">
-                                        <div class="form-text">Taux horaire moyen de l'équipe</div>
+                                        <label for="missionPriority" class="form-label">Priorité</label>
+                                        <select class="form-select" id="missionPriority">
+                                            <option value="MOYENNE">Normale</option>
+                                            <option value="BASSE">Basse</option>
+                                            <option value="HAUTE">Haute</option>
+                                            <option value="URGENTE">Urgente</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Documents de la mission -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-file-upload me-2"></i>Documents de la Mission</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="kycFile" class="form-label">
+                                            <i class="fas fa-file-upload me-1"></i>KYC (Know Your Customer) *
+                                        </label>
+                                        <div class="file-upload-section">
+                                            <input type="file" class="form-control" id="kycFile" accept=".pdf,.doc,.docx" required>
+                                            <div class="form-text">Document KYC du client</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="kycDate" class="form-label">
+                                            <i class="fas fa-calendar me-1"></i>Date du Document KYC *
+                                        </label>
+                                        <input type="date" class="form-control" id="kycDate" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="contractFile" class="form-label">
+                                            <i class="fas fa-file-contract me-1"></i>Contrat de la Mission *
+                                        </label>
+                                        <div class="file-upload-section">
+                                            <input type="file" class="form-control" id="contractFile" accept=".pdf,.doc,.docx" required>
+                                            <div class="form-text">Contrat de la mission</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="contractDate" class="form-label">
+                                            <i class="fas fa-calendar me-1"></i>Date du Contrat *
+                                        </label>
+                                        <input type="date" class="form-control" id="contractDate" required>
                                     </div>
                                 </div>
                             </div>
@@ -272,29 +365,23 @@
                                         <div class="form-text">Division automatiquement assignée selon le type de mission</div>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="missionResponsible" class="form-label">Responsable</label>
-                                        <select class="form-select" id="missionResponsible">
+                                        <label for="missionResponsible" class="form-label">Responsable de la Mission *</label>
+                                        <select class="form-select" id="missionResponsible" required>
                                             <option value="">Sélectionner un responsable</option>
                                         </select>
+                                        <div class="form-text">Manager de la mission</div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label for="missionPriority" class="form-label">Priorité</label>
-                                        <select class="form-select" id="missionPriority">
-                                            <option value="normale">Normale</option>
-                                            <option value="basse">Basse</option>
-                                            <option value="haute">Haute</option>
-                                            <option value="urgente">Urgente</option>
+                                        <label for="missionAssociate" class="form-label">Associé de la Mission *</label>
+                                        <select class="form-select" id="missionAssociate" required>
+                                            <option value="">Sélectionner un associé</option>
                                         </select>
+                                        <div class="form-text">Associé impliqué dans la mission</div>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="missionStatus" class="form-label">Statut</label>
-                                        <select class="form-select" id="missionStatus">
-                                            <option value="en_cours">En cours</option>
-                                            <option value="planifiee">Planifiée</option>
-                                            <option value="suspendue">Suspendue</option>
-                                        </select>
+                                        <!-- Espace réservé pour équilibrage de la mise en page -->
                                     </div>
                                 </div>
                             </div>
@@ -461,19 +548,30 @@
 
         // Remplir le select des collaborateurs
         function populateCollaborateursSelect() {
-            const select = document.getElementById('missionResponsible');
-            select.innerHTML = '<option value="">Sélectionner un responsable</option>';
+            const responsibleSelect = document.getElementById('missionResponsible');
+            const associateSelect = document.getElementById('missionAssociate');
+            
+            // Remplir le select du responsable
+            responsibleSelect.innerHTML = '<option value="">Sélectionner un responsable</option>';
+            associateSelect.innerHTML = '<option value="">Sélectionner un associé</option>';
             
             collaborateurs.forEach(collab => {
-                const option = document.createElement('option');
-                option.value = collab.id;
-                option.textContent = `${collab.nom} ${collab.prenom}`;
-                select.appendChild(option);
+                // Option pour le responsable
+                const responsibleOption = document.createElement('option');
+                responsibleOption.value = collab.id;
+                responsibleOption.textContent = `${collab.nom} ${collab.prenom}`;
+                responsibleSelect.appendChild(responsibleOption);
+                
+                // Option pour l'associé
+                const associateOption = document.createElement('option');
+                associateOption.value = collab.id;
+                associateOption.textContent = `${collab.nom} ${collab.prenom}`;
+                associateSelect.appendChild(associateOption);
             });
 
             // Sélectionner le responsable de l'opportunité si disponible
             if (selectedOpportunity.collaborateur_id) {
-                select.value = selectedOpportunity.collaborateur_id;
+                responsibleSelect.value = selectedOpportunity.collaborateur_id;
             }
         }
 
@@ -502,13 +600,79 @@
                     window.location.href = 'create-mission-step3.html';
                 }
             });
+
+            // Événements pour les fichiers
+            document.getElementById('kycFile').addEventListener('change', function() {
+                updateFileInfo('kycFile', 'kycFileInfo');
+            });
+
+            document.getElementById('contractFile').addEventListener('change', function() {
+                updateFileInfo('contractFile', 'contractFileInfo');
+            });
+
+            // Événements pour les dates
+            document.getElementById('kycDate').addEventListener('change', function() {
+                this.classList.remove('is-invalid');
+            });
+
+            document.getElementById('contractDate').addEventListener('change', function() {
+                this.classList.remove('is-invalid');
+            });
+
+            // Événements pour les champs obligatoires
+            document.getElementById('missionAssociate').addEventListener('change', function() {
+                this.classList.remove('is-invalid');
+            });
+        }
+
+        // Fonction pour mettre à jour l'information des fichiers
+        function updateFileInfo(fileInputId, infoElementId) {
+            const fileInput = document.getElementById(fileInputId);
+            const fileContainer = fileInput.closest('.col-md-6');
+            
+            if (fileInput.files && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileContainer.classList.add('has-file');
+                
+                // Créer ou mettre à jour l'élément d'information
+                let infoElement = document.getElementById(infoElementId);
+                if (!infoElement) {
+                    infoElement = document.createElement('div');
+                    infoElement.id = infoElementId;
+                    infoElement.className = 'file-info has-file';
+                    fileInput.parentNode.appendChild(infoElement);
+                }
+                
+                infoElement.innerHTML = `
+                    <i class="fas fa-check-circle me-1"></i>
+                    <strong>${file.name}</strong> (${formatFileSize(file.size)})
+                `;
+                
+                fileInput.classList.remove('is-invalid');
+            } else {
+                fileContainer.classList.remove('has-file');
+                const infoElement = document.getElementById(infoElementId);
+                if (infoElement) {
+                    infoElement.remove();
+                }
+            }
+        }
+
+        // Fonction pour formater la taille des fichiers
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
         // Validation du formulaire
         function validateForm() {
-            const requiredFields = ['missionCode', 'missionName', 'missionStartDate', 'missionEndDate'];
+            const requiredFields = ['missionCode', 'missionName', 'missionStartDate', 'missionEndDate', 'missionResponsible', 'missionAssociate'];
             let isValid = true;
 
+            // Validation des champs obligatoires
             requiredFields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
                 if (!field.value.trim()) {
@@ -518,6 +682,40 @@
                     field.classList.remove('is-invalid');
                 }
             });
+
+            // Validation des fichiers obligatoires
+            const kycFile = document.getElementById('kycFile');
+            const contractFile = document.getElementById('contractFile');
+            const kycDate = document.getElementById('kycDate');
+            const contractDate = document.getElementById('contractDate');
+
+            if (!kycFile.files || kycFile.files.length === 0) {
+                kycFile.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                kycFile.classList.remove('is-invalid');
+            }
+
+            if (!contractFile.files || contractFile.files.length === 0) {
+                contractFile.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                contractFile.classList.remove('is-invalid');
+            }
+
+            if (!kycDate.value) {
+                kycDate.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                kycDate.classList.remove('is-invalid');
+            }
+
+            if (!contractDate.value) {
+                contractDate.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                contractDate.classList.remove('is-invalid');
+            }
 
             // Validation des dates
             const startDate = new Date(document.getElementById('missionStartDate').value);
@@ -530,14 +728,42 @@
             }
 
             if (!isValid) {
-                alert('Veuillez remplir tous les champs obligatoires');
+                let missingFields = [];
+                
+                // Vérifier les champs manquants
+                if (!document.getElementById('missionCode').value.trim()) missingFields.push('Code Mission');
+                if (!document.getElementById('missionName').value.trim()) missingFields.push('Nom de la Mission');
+                if (!document.getElementById('missionStartDate').value) missingFields.push('Date de Début');
+                if (!document.getElementById('missionEndDate').value) missingFields.push('Date de Fin');
+                if (!document.getElementById('missionResponsible').value) missingFields.push('Responsable de la Mission');
+                if (!document.getElementById('missionAssociate').value) missingFields.push('Associé de la Mission');
+                if (!document.getElementById('kycFile').files || document.getElementById('kycFile').files.length === 0) missingFields.push('Document KYC');
+                if (!document.getElementById('kycDate').value) missingFields.push('Date du Document KYC');
+                if (!document.getElementById('contractFile').files || document.getElementById('contractFile').files.length === 0) missingFields.push('Contrat de la Mission');
+                if (!document.getElementById('contractDate').value) missingFields.push('Date du Contrat');
+                
+                alert(`Veuillez remplir tous les champs obligatoires et télécharger les documents requis.\n\nChamps manquants :\n${missingFields.join('\n')}`);
             }
 
             return isValid;
         }
 
+        // Calculer automatiquement le statut de la mission
+        function calculateMissionStatus() {
+            const today = new Date();
+            const startDate = new Date(document.getElementById('missionStartDate').value);
+            
+            // Si la date d'enregistrement est inférieure à la date de début : PLANIFIEE
+            // Sinon : EN_COURS
+            return today < startDate ? 'PLANIFIEE' : 'EN_COURS';
+        }
+
         // Sauvegarder les données de la mission
         function saveMissionData() {
+            // Préparer les fichiers pour le stockage
+            const kycFile = document.getElementById('kycFile').files[0];
+            const contractFile = document.getElementById('contractFile').files[0];
+            
             const missionData = {
                 code: document.getElementById('missionCode').value,
                 nom: document.getElementById('missionName').value,
@@ -545,14 +771,19 @@
                 date_debut: document.getElementById('missionStartDate').value,
                 date_fin_prevue: document.getElementById('missionEndDate').value,
                 budget_prevue: parseFloat(document.getElementById('missionBudget').value) || 0,
-                taux_horaire_moyen: parseFloat(document.getElementById('missionRate').value) || 0,
                 responsable_id: document.getElementById('missionResponsible').value || null,
+                associé_id: document.getElementById('missionAssociate').value || null,
                 priorite: document.getElementById('missionPriority').value,
-                statut: document.getElementById('missionStatus').value,
+                statut: calculateMissionStatus(), // Calcul automatique du statut
                 notes: document.getElementById('missionNotes').value,
                 division_id: selectedMissionType.division_id || null,
                 opportunity_id: selectedOpportunity.id,
-                mission_type_id: selectedMissionType.id
+                mission_type_id: selectedMissionType.id,
+                // Documents
+                kyc_file: kycFile,
+                kyc_date: document.getElementById('kycDate').value,
+                contract_file: contractFile,
+                contract_date: document.getElementById('contractDate').value
             };
 
             // Stocker dans sessionStorage

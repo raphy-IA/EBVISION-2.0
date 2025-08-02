@@ -161,23 +161,23 @@ router.post('/', authenticateToken, async (req, res) => {
         // 1. Créer la mission
         const missionQuery = `
             INSERT INTO missions (
-                code, titre, description, client_id, opportunity_id, mission_type_id,
-                date_debut, date_fin_prevue, budget_prevue, taux_horaire_moyen,
-                division_id, responsable_id, priorite, statut, notes,
+                code, nom, description, client_id, opportunity_id, mission_type_id,
+                date_debut, date_fin, budget_estime, devise,
+                priorite, statut, notes,
                 montant_honoraires, devise_honoraires, description_honoraires,
                 montant_debours, devise_debours, description_debours,
                 conditions_paiement, pourcentage_avance,
                 created_by
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
-                $16, $17, $18, $19, $20, $21, $22, $23, $24
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
+                $14, $15, $16, $17, $18, $19, $20, $21, $22
             ) RETURNING *
         `;
         
         const missionResult = await client.query(missionQuery, [
             code, titre, description, client_id, opportunity_id, mission_type_id,
-            date_debut, date_fin_prevue, budget_prevue, taux_horaire_moyen,
-            division_id, responsable_id, priorite, statut || 'en_cours', notes,
+            date_debut, date_fin_prevue, budget_prevue, devise_honoraires || 'EUR',
+            priorite, statut || 'PLANIFIEE', notes,
             montant_honoraires, devise_honoraires, description_honoraires,
             montant_debours, devise_debours, description_debours,
             conditions_paiement, pourcentage_avance,
@@ -192,17 +192,16 @@ router.post('/', authenticateToken, async (req, res) => {
                 // Créer la tâche de mission
                 const missionTaskQuery = `
                     INSERT INTO mission_tasks (
-                        mission_id, task_id, nom, description, priorite,
-                        date_debut_prevue, date_fin_prevue, heures_prevues,
-                        statut, created_by
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                        mission_id, task_id, statut, date_debut, date_fin,
+                        duree_planifiee, notes, created_at, updated_at
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                     RETURNING *
                 `;
                 
                 const missionTaskResult = await client.query(missionTaskQuery, [
-                    mission.id, task.task_id, task.nom, task.description, task.priorite,
+                    mission.id, task.task_id, 'PLANIFIEE',
                     task.date_debut_prevue, task.date_fin_prevue, task.heures_prevues,
-                    task.statut || 'en_cours', req.user.id
+                    task.description || ''
                 ]);
                 
                 const missionTask = missionTaskResult.rows[0];
@@ -211,18 +210,16 @@ router.post('/', authenticateToken, async (req, res) => {
                 if (task.assignments && Array.isArray(task.assignments)) {
                     for (const assignment of task.assignments) {
                         const assignmentQuery = `
-                            INSERT INTO equipes_mission (
-                                mission_id, mission_task_id, collaborateur_id,
-                                heures_prevues, taux_horaire, montant_prevue,
-                                date_debut, date_fin, statut, created_by
-                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                            INSERT INTO task_assignments (
+                                mission_task_id, collaborateur_id, heures_planifiees,
+                                taux_horaire, statut, created_at, updated_at
+                            ) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                         `;
                         
                         await client.query(assignmentQuery, [
-                            mission.id, missionTask.id, assignment.collaborateur_id,
+                            missionTask.id, assignment.collaborateur_id,
                             assignment.heures_prevues, assignment.taux_horaire,
-                            assignment.montant_prevue, assignment.date_debut,
-                            assignment.date_fin, assignment.statut || 'planifie', req.user.id
+                            'PLANIFIE'
                         ]);
                     }
                 }

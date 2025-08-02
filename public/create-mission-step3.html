@@ -135,6 +135,114 @@
             font-weight: 600;
         }
         
+        /* Styles pour les lignes de paiement */
+        .payment-line {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        
+        .payment-line-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .payment-line-number {
+            background: var(--secondary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .payment-line-remove {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-line-remove:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+        
+        .payment-line-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .payment-line-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .payment-line-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .payment-line-group input,
+        .payment-line-group select {
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 0.5rem;
+        }
+        
+        .payment-line-group input:focus,
+        .payment-line-group select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+        
+        .calculated-amount {
+            background: #e8f5e8;
+            border: 1px solid #28a745;
+            color: #155724;
+            padding: 0.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .payment-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+        
+        .payment-summary h6 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .payment-summary .row {
+            margin-bottom: 0.5rem;
+        }
+        
+        .payment-summary strong {
+            color: #f8f9fa;
+        }
+        
         .budget-summary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -307,21 +415,45 @@
                             <!-- Conditions de paiement -->
                             <div class="form-section">
                                 <h6><i class="fas fa-credit-card me-2"></i>Conditions de Paiement</h6>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="paiementConditions" class="form-label">Conditions de Paiement</label>
-                                        <select class="form-select" id="paiementConditions">
-                                            <option value="30_jours">30 jours</option>
-                                            <option value="45_jours">45 jours</option>
-                                            <option value="60_jours">60 jours</option>
-                                            <option value="comptant">Comptant</option>
-                                            <option value="acompte">Acompte + solde</option>
-                                        </select>
+                                <div class="mb-3">
+                                    <button type="button" class="btn btn-success" id="btn-add-payment-condition">
+                                        <i class="fas fa-plus me-2"></i>Ajouter une condition de paiement
+                                    </button>
+                                    <div class="form-text">Définissez les échéances de paiement pour cette mission</div>
+                                </div>
+                                
+                                <!-- Container pour les lignes de paiement -->
+                                <div id="payment-conditions-container">
+                                    <!-- Message d'avertissement quand aucune condition n'est configurée -->
+                                    <div id="no-payment-warning" class="alert alert-warning" style="display: none;">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Attention :</strong> Vous devez configurer au moins une condition de paiement pour continuer.
                                     </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="paiementAcompte" class="form-label">Acompte (%)</label>
-                                        <input type="number" class="form-control" id="paiementAcompte" min="0" max="100" value="0">
-                                        <div class="form-text">Pourcentage d'acompte si applicable</div>
+                                    <!-- Les lignes de paiement seront ajoutées ici dynamiquement -->
+                                </div>
+                                
+                                <!-- Résumé des conditions de paiement -->
+                                <div class="mt-4">
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-calculator me-2"></i>Résumé des Conditions de Paiement</h6>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <strong>Total Honoraires:</strong>
+                                                <span id="total-honoraires-payment">€0.00</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Total Débours:</strong>
+                                                <span id="total-debours-payment">€0.00</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Total Général:</strong>
+                                                <span id="total-general-payment">€0.00</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Nombre de tranches:</strong>
+                                                <span id="nombre-tranches">0</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -385,6 +517,8 @@
         let selectedOpportunity = null;
         let selectedMissionType = null;
         let missionData = null;
+        let paymentConditions = []; // Tableau pour stocker les conditions de paiement
+        let paymentLineCounter = 0; // Compteur pour les lignes de paiement
 
         // Fonction utilitaire pour les appels API authentifiés
         async function authenticatedFetch(url, options = {}) {
@@ -471,12 +605,6 @@
             // Débours (par défaut 0)
             document.getElementById('deboursMontant').value = 0;
             
-            // Conditions de paiement (par défaut 30 jours)
-            document.getElementById('paiementConditions').value = '30_jours';
-            
-            // Acompte (par défaut 0%)
-            document.getElementById('paiementAcompte').value = 0;
-            
             // Mettre à jour le résumé budgétaire
             updateBudgetSummary();
         }
@@ -497,8 +625,270 @@
             });
 
             // Écouter les changements pour mettre à jour le résumé
-            document.getElementById('honorairesMontant').addEventListener('input', updateBudgetSummary);
-            document.getElementById('deboursMontant').addEventListener('input', updateBudgetSummary);
+            document.getElementById('honorairesMontant').addEventListener('input', function() {
+                updateBudgetSummary();
+                updateAllPaymentCalculations();
+            });
+            document.getElementById('deboursMontant').addEventListener('input', function() {
+                updateBudgetSummary();
+                updateAllPaymentCalculations();
+            });
+            
+            // Bouton pour ajouter une condition de paiement
+            document.getElementById('btn-add-payment-condition').addEventListener('click', addPaymentCondition);
+        }
+        
+        // Fonction pour ajouter une nouvelle condition de paiement
+        function addPaymentCondition() {
+            paymentLineCounter++;
+            const lineId = `payment-line-${paymentLineCounter}`;
+            
+            const paymentLine = {
+                id: lineId,
+                numero: paymentLineCounter,
+                pourcentageHonoraires: 0,
+                montantHonoraires: 0,
+                pourcentageDebours: 0,
+                montantDebours: 0,
+                datePrevisionnelle: '',
+                details: ''
+            };
+            
+            paymentConditions.push(paymentLine);
+            
+            // Créer l'élément HTML
+            const paymentLineHTML = createPaymentLineHTML(paymentLine);
+            document.getElementById('payment-conditions-container').insertAdjacentHTML('beforeend', paymentLineHTML);
+            
+            // Ajouter les écouteurs d'événements pour cette ligne
+            addPaymentLineEventListeners(lineId);
+            
+            // Mettre à jour le résumé
+            updatePaymentSummary();
+        }
+        
+        // Fonction pour créer le HTML d'une ligne de paiement
+        function createPaymentLineHTML(paymentLine) {
+            return `
+                <div class="payment-line" id="${paymentLine.id}">
+                    <div class="payment-line-header">
+                        <span class="payment-line-number">Tranche ${paymentLine.numero}</span>
+                        <button type="button" class="payment-line-remove" onclick="removePaymentCondition('${paymentLine.id}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="payment-line-content">
+                        <div class="payment-line-group">
+                            <label>Pourcentage Honoraires (%)</label>
+                            <input type="number" class="form-control" 
+                                   id="${paymentLine.id}-pourcentage-honoraires" 
+                                   min="0" max="100" step="0.01" 
+                                   value="${paymentLine.pourcentageHonoraires}">
+                        </div>
+                        <div class="payment-line-group">
+                            <label>Montant Honoraires (€)</label>
+                            <div class="calculated-amount" id="${paymentLine.id}-montant-honoraires">
+                                €0.00
+                            </div>
+                        </div>
+                        <div class="payment-line-group">
+                            <label>Pourcentage Débours (%)</label>
+                            <input type="number" class="form-control" 
+                                   id="${paymentLine.id}-pourcentage-debours" 
+                                   min="0" max="100" step="0.01" 
+                                   value="${paymentLine.pourcentageDebours}">
+                        </div>
+                        <div class="payment-line-group">
+                            <label>Montant Débours (€)</label>
+                            <div class="calculated-amount" id="${paymentLine.id}-montant-debours">
+                                €0.00
+                            </div>
+                        </div>
+                        <div class="payment-line-group">
+                            <label>Date Prévisionnelle</label>
+                            <input type="date" class="form-control" 
+                                   id="${paymentLine.id}-date-previsionnelle" 
+                                   value="${paymentLine.datePrevisionnelle}"
+                                   onchange="updatePaymentLineData('${paymentLine.id}')">
+                        </div>
+                        <div class="payment-line-group">
+                            <label>Détails</label>
+                            <input type="text" class="form-control" 
+                                   id="${paymentLine.id}-details" 
+                                   placeholder="Ex: Avance de démarrage"
+                                   value="${paymentLine.details}"
+                                   onchange="updatePaymentLineData('${paymentLine.id}')">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Fonction pour ajouter les écouteurs d'événements à une ligne de paiement
+        function addPaymentLineEventListeners(lineId) {
+            // Attendre un peu que le DOM soit mis à jour
+            setTimeout(() => {
+                const pourcentageHonorairesInput = document.getElementById(`${lineId}-pourcentage-honoraires`);
+                const pourcentageDeboursInput = document.getElementById(`${lineId}-pourcentage-debours`);
+                const dateInput = document.getElementById(`${lineId}-date-previsionnelle`);
+                const detailsInput = document.getElementById(`${lineId}-details`);
+                
+                console.log(`🔧 Ajout des écouteurs pour la ligne ${lineId}:`, {
+                    honorairesInput: !!pourcentageHonorairesInput,
+                    deboursInput: !!pourcentageDeboursInput,
+                    dateInput: !!dateInput,
+                    detailsInput: !!detailsInput
+                });
+                
+                if (pourcentageHonorairesInput) {
+                    pourcentageHonorairesInput.addEventListener('input', () => {
+                        console.log(`📊 Changement pourcentage honoraires: ${lineId}`);
+                        updatePaymentLineCalculations(lineId);
+                    });
+                }
+                if (pourcentageDeboursInput) {
+                    pourcentageDeboursInput.addEventListener('input', () => {
+                        console.log(`📊 Changement pourcentage débours: ${lineId}`);
+                        updatePaymentLineCalculations(lineId);
+                    });
+                }
+                if (dateInput) {
+                    dateInput.addEventListener('input', () => {
+                        dateInput.classList.remove('is-invalid');
+                        updatePaymentLineData(lineId);
+                    });
+                }
+                if (detailsInput) {
+                    detailsInput.addEventListener('input', () => {
+                        detailsInput.classList.remove('is-invalid');
+                        updatePaymentLineData(lineId);
+                    });
+                }
+            }, 100);
+        }
+        
+        // Fonction pour mettre à jour les calculs d'une ligne de paiement
+        function updatePaymentLineCalculations(lineId) {
+            const paymentLine = paymentConditions.find(p => p.id === lineId);
+            if (!paymentLine) return;
+            
+            const pourcentageHonoraires = parseFloat(document.getElementById(`${lineId}-pourcentage-honoraires`).value) || 0;
+            const pourcentageDebours = parseFloat(document.getElementById(`${lineId}-pourcentage-debours`).value) || 0;
+            
+            const honorairesTotal = parseFloat(document.getElementById('honorairesMontant').value) || 0;
+            const deboursTotal = parseFloat(document.getElementById('deboursMontant').value) || 0;
+            
+            const montantHonoraires = (pourcentageHonoraires / 100) * honorairesTotal;
+            const montantDebours = (pourcentageDebours / 100) * deboursTotal;
+            
+            console.log(`🧮 Calculs pour ${lineId}:`, {
+                pourcentageHonoraires,
+                pourcentageDebours,
+                honorairesTotal,
+                deboursTotal,
+                montantHonoraires,
+                montantDebours
+            });
+            
+            // Mettre à jour l'affichage
+            document.getElementById(`${lineId}-montant-honoraires`).textContent = `€${montantHonoraires.toFixed(2)}`;
+            document.getElementById(`${lineId}-montant-debours`).textContent = `€${montantDebours.toFixed(2)}`;
+            
+            // Mettre à jour les données
+            paymentLine.pourcentageHonoraires = pourcentageHonoraires;
+            paymentLine.montantHonoraires = montantHonoraires;
+            paymentLine.pourcentageDebours = pourcentageDebours;
+            paymentLine.montantDebours = montantDebours;
+            
+            // Mettre à jour le résumé
+            updatePaymentSummary();
+        }
+        
+        // Fonction pour mettre à jour les données d'une ligne de paiement
+        function updatePaymentLineData(lineId) {
+            const paymentLine = paymentConditions.find(p => p.id === lineId);
+            if (!paymentLine) return;
+            
+            paymentLine.datePrevisionnelle = document.getElementById(`${lineId}-date-previsionnelle`).value;
+            paymentLine.details = document.getElementById(`${lineId}-details`).value;
+        }
+        
+        // Fonction pour supprimer une condition de paiement
+        function removePaymentCondition(lineId) {
+            const index = paymentConditions.findIndex(p => p.id === lineId);
+            if (index > -1) {
+                paymentConditions.splice(index, 1);
+                document.getElementById(lineId).remove();
+                
+                // Renuméroter toutes les tranches
+                renumberPaymentConditions();
+                
+                // Mettre à jour le résumé
+                updatePaymentSummary();
+            }
+        }
+        
+        // Fonction pour renuméroter les conditions de paiement
+        function renumberPaymentConditions() {
+            paymentConditions.forEach((condition, index) => {
+                condition.numero = index + 1;
+                const lineElement = document.getElementById(condition.id);
+                if (lineElement) {
+                    const numberElement = lineElement.querySelector('.payment-line-number');
+                    if (numberElement) {
+                        numberElement.textContent = `Tranche ${condition.numero}`;
+                    }
+                }
+            });
+            
+            // Mettre à jour le compteur pour la prochaine tranche
+            paymentLineCounter = paymentConditions.length;
+        }
+        
+        // Fonction pour mettre à jour tous les calculs de paiement
+        function updateAllPaymentCalculations() {
+            paymentConditions.forEach(condition => {
+                updatePaymentLineCalculations(condition.id);
+            });
+        }
+        
+        // Fonction pour mettre à jour le résumé des conditions de paiement
+        function updatePaymentSummary() {
+            const totalHonoraires = paymentConditions.reduce((sum, p) => sum + p.montantHonoraires, 0);
+            const totalDebours = paymentConditions.reduce((sum, p) => sum + p.montantDebours, 0);
+            const totalGeneral = totalHonoraires + totalDebours;
+            
+            const honorairesTotal = parseFloat(document.getElementById('honorairesMontant').value) || 0;
+            const deboursTotal = parseFloat(document.getElementById('deboursMontant').value) || 0;
+            
+            // Vérifier la cohérence des totaux
+            const tolerance = 0.01;
+            const honorairesOk = Math.abs(totalHonoraires - honorairesTotal) <= tolerance;
+            const deboursOk = Math.abs(totalDebours - deboursTotal) <= tolerance;
+            
+            // Mettre à jour l'affichage avec des indicateurs visuels
+            const honorairesElement = document.getElementById('total-honoraires-payment');
+            const deboursElement = document.getElementById('total-debours-payment');
+            
+            honorairesElement.textContent = `€${totalHonoraires.toFixed(2)}`;
+            deboursElement.textContent = `€${totalDebours.toFixed(2)}`;
+            
+            // Ajouter des indicateurs visuels
+            if (paymentConditions.length > 0) {
+                honorairesElement.innerHTML = `€${totalHonoraires.toFixed(2)} ${honorairesOk ? '<i class="fas fa-check text-success"></i>' : '<i class="fas fa-exclamation-triangle text-warning"></i>'}`;
+                deboursElement.innerHTML = `€${totalDebours.toFixed(2)} ${deboursOk ? '<i class="fas fa-check text-success"></i>' : '<i class="fas fa-exclamation-triangle text-warning"></i>'}`;
+            }
+            
+            document.getElementById('total-general-payment').textContent = `€${totalGeneral.toFixed(2)}`;
+            document.getElementById('nombre-tranches').textContent = paymentConditions.length;
+            
+            // Afficher/masquer le message d'avertissement
+            const warningElement = document.getElementById('no-payment-warning');
+            if (paymentConditions.length === 0) {
+                warningElement.style.display = 'block';
+            } else {
+                warningElement.style.display = 'none';
+            }
         }
 
         // Mettre à jour le résumé budgétaire
@@ -517,6 +907,7 @@
         // Validation du formulaire
         function validateForm() {
             const honoraires = parseFloat(document.getElementById('honorairesMontant').value) || 0;
+            const debours = parseFloat(document.getElementById('deboursMontant').value) || 0;
             
             if (honoraires <= 0) {
                 alert('Le montant des honoraires doit être supérieur à 0');
@@ -525,6 +916,64 @@
             }
 
             document.getElementById('honorairesMontant').classList.remove('is-invalid');
+            
+            // Validation obligatoire des conditions de paiement
+            if (paymentConditions.length === 0) {
+                alert('❌ Erreur : Vous devez configurer au moins une condition de paiement avant de pouvoir continuer.');
+                return false;
+            }
+            
+            // Validation des conditions de paiement
+            if (paymentConditions.length > 0) {
+                for (let i = 0; i < paymentConditions.length; i++) {
+                    const condition = paymentConditions[i];
+                    const lineId = condition.id;
+                    
+                    const dateInput = document.getElementById(`${lineId}-date-previsionnelle`);
+                    const detailsInput = document.getElementById(`${lineId}-details`);
+                    
+                    if (!dateInput.value.trim()) {
+                        alert(`La tranche ${condition.numero} doit avoir une date prévisionnelle`);
+                        dateInput.classList.add('is-invalid');
+                        return false;
+                    }
+                    
+                    if (!detailsInput.value.trim()) {
+                        alert(`La tranche ${condition.numero} doit avoir des détails`);
+                        detailsInput.classList.add('is-invalid');
+                        return false;
+                    }
+                    
+                    // Retirer les classes d'erreur si tout est valide
+                    dateInput.classList.remove('is-invalid');
+                    detailsInput.classList.remove('is-invalid');
+                }
+                
+                // Validation des totaux des tranches
+                const totalHonorairesTranches = paymentConditions.reduce((sum, p) => sum + p.montantHonoraires, 0);
+                const totalDeboursTranches = paymentConditions.reduce((sum, p) => sum + p.montantDebours, 0);
+                
+                // Tolérance de 0.01€ pour les arrondis
+                const tolerance = 0.01;
+                
+                if (Math.abs(totalHonorairesTranches - honoraires) > tolerance) {
+                    alert(`❌ Erreur de cohérence : Le total des honoraires des tranches (€${totalHonorairesTranches.toFixed(2)}) ne correspond pas au montant total des honoraires (€${honoraires.toFixed(2)})`);
+                    return false;
+                }
+                
+                if (Math.abs(totalDeboursTranches - debours) > tolerance) {
+                    alert(`❌ Erreur de cohérence : Le total des débours des tranches (€${totalDeboursTranches.toFixed(2)}) ne correspond pas au montant total des débours (€${debours.toFixed(2)})`);
+                    return false;
+                }
+                
+                console.log('✅ Validation des totaux réussie:', {
+                    totalHonorairesTranches,
+                    honoraires,
+                    totalDeboursTranches,
+                    debours
+                });
+            }
+            
             return true;
         }
 
@@ -537,8 +986,7 @@
                 debours_montant: parseFloat(document.getElementById('deboursMontant').value) || 0,
                 debours_devise: document.getElementById('deboursDevise').value,
                 debours_description: document.getElementById('deboursDescription').value,
-                paiement_conditions: document.getElementById('paiementConditions').value,
-                paiement_acompte: parseFloat(document.getElementById('paiementAcompte').value) || 0,
+                conditions_paiement: paymentConditions, // Nouvelles conditions de paiement
                 notes_financieres: document.getElementById('notesFinancieres').value
             };
 

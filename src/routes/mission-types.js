@@ -8,10 +8,19 @@ const Division = require('../models/Division');
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const missionTypes = await MissionType.findAll();
-        res.json(missionTypes);
+        res.json({
+            success: true,
+            message: 'Types de mission récupérés avec succès',
+            data: {
+                missionTypes: missionTypes
+            }
+        });
     } catch (error) {
         console.error('Erreur lors de la récupération des types de mission:', error);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ 
+            success: false,
+            error: 'Erreur serveur' 
+        });
     }
 });
 

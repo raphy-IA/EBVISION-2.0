@@ -30,6 +30,7 @@ class Collaborateur {
         this.type_collaborateur_code = data.type_collaborateur_code;
         this.poste_nom = data.poste_nom;
         this.poste_code = data.poste_code;
+        this.taux_horaire = data.taux_horaire || 0;
     }
 
     validate() {
@@ -173,13 +174,19 @@ class Collaborateur {
                    d.nom as division_nom, d.code as division_code,
                    g.nom as grade_nom, g.code as grade_code,
                    tc.nom as type_collaborateur_nom, tc.code as type_collaborateur_code,
-                   p.nom as poste_nom, p.code as poste_code
+                   p.nom as poste_nom, p.code as poste_code,
+                   COALESCE(th.taux_horaire, g.taux_horaire_default, 0) as taux_horaire
             FROM collaborateurs c
             LEFT JOIN business_units bu ON c.business_unit_id = bu.id
             LEFT JOIN divisions d ON c.division_id = d.id
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
             LEFT JOIN types_collaborateurs tc ON c.type_collaborateur_id = tc.id
             LEFT JOIN postes p ON c.poste_actuel_id = p.id
+            LEFT JOIN taux_horaires th ON th.grade_id = c.grade_actuel_id 
+                AND th.division_id = c.division_id 
+                AND th.statut = 'ACTIF'
+                AND (th.date_fin_effet IS NULL OR th.date_fin_effet >= CURRENT_DATE)
+                AND th.date_effet <= CURRENT_DATE
             ${whereClause}
             ORDER BY c.nom, c.prenom
             LIMIT $${paramIndex++} OFFSET $${paramIndex++}

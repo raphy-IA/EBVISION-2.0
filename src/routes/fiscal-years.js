@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
 });
 
 // Récupérer les statistiques des années fiscales
-router.get('/stats', async (req, res) => {
+router.get('/stats', authenticateToken, async (req, res) => {
     try {
         const stats = await FiscalYear.getGlobalStats();
         console.log('📊 Statistiques récupérées:', stats);

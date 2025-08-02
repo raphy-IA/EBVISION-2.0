@@ -41,10 +41,19 @@ router.get('/:id', async (req, res) => {
 router.get('/by-mission-type/:typeId', async (req, res) => {
     try {
         const tasks = await Task.findByMissionType(req.params.typeId);
-        res.json(tasks);
+        res.json({
+            success: true,
+            message: 'Tâches récupérées avec succès',
+            data: {
+                tasks: tasks
+            }
+        });
     } catch (error) {
         console.error('Erreur lors de la récupération des tâches par type:', error);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ 
+            success: false,
+            error: 'Erreur serveur' 
+        });
     }
 });
 
@@ -78,19 +87,26 @@ router.get('/stats/stats', async (req, res) => {
 // POST /api/tasks - Créer une tâche
 router.post('/', async (req, res) => {
     try {
-        const { code, libelle, description, duree_estimee, priorite } = req.body;
+        const { code, libelle, description, duree_estimee, priorite, mission_type_id, obligatoire = false } = req.body;
         
         // Validation
         if (!code || !libelle) {
-            return res.status(400).json({ error: 'Code et libellé sont requis' });
+            return res.status(400).json({ 
+                success: false,
+                error: 'Code et libellé sont requis' 
+            });
         }
         
         // Vérifier si le code existe déjà
         const existingTask = await Task.findByCode(code);
         if (existingTask) {
-            return res.status(400).json({ error: 'Ce code de tâche existe déjà' });
+            return res.status(400).json({ 
+                success: false,
+                error: 'Ce code de tâche existe déjà' 
+            });
         }
         
+        // Créer la tâche
         const task = await Task.create({
             code,
             libelle,
@@ -99,10 +115,22 @@ router.post('/', async (req, res) => {
             priorite: priorite || 'MOYENNE'
         });
         
-        res.status(201).json(task);
+        // Si un type de mission est spécifié, créer l'association
+        if (mission_type_id) {
+            await Task.addToMissionType(task.id, mission_type_id, 0, obligatoire);
+        }
+        
+        res.status(201).json({
+            success: true,
+            message: 'Tâche créée avec succès',
+            data: task
+        });
     } catch (error) {
         console.error('Erreur lors de la création de la tâche:', error);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ 
+            success: false,
+            error: 'Erreur serveur' 
+        });
     }
 });
 
