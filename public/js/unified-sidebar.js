@@ -81,6 +81,10 @@ class UnifiedSidebar {
                         <i class="fas fa-clock"></i>
                         Saisie de temps
                     </a>
+                    <a href="activities.html" class="sidebar-nav-link">
+                        <i class="fas fa-tasks"></i>
+                        Activités internes
+                    </a>
                     <a href="feuilles-temps.html" class="sidebar-nav-link">
                         <i class="fas fa-calendar-alt"></i>
                         Feuilles de temps

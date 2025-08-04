@@ -307,7 +307,7 @@ router.post('/:id/reject', authenticateToken, async (req, res) => {
  * @desc    Récupérer ou créer une feuille de temps pour un collaborateur et une semaine
  * @access  Private
  */
-router.get('/collaborateur/:collaborateurId/week/:semaine/:annee', auth, async (req, res) => {
+router.get('/collaborateur/:collaborateurId/week/:semaine/:annee', authenticateToken, async (req, res) => {
     try {
         const { collaborateurId, semaine, annee } = req.params;
         
@@ -336,7 +336,7 @@ router.get('/collaborateur/:collaborateurId/week/:semaine/:annee', auth, async (
  * @desc    Obtenir les statistiques des feuilles de temps
  * @access  Private
  */
-router.get('/statistics', auth, async (req, res) => {
+router.get('/statistics', authenticateToken, async (req, res) => {
     try {
         const { annee } = req.query;
         const statistics = await TimeSheet.getStatistics({ annee });
@@ -360,7 +360,7 @@ router.get('/statistics', auth, async (req, res) => {
  * @desc    Récupérer les feuilles de temps en retard
  * @access  Private
  */
-router.get('/overdue', auth, async (req, res) => {
+router.get('/overdue', authenticateToken, async (req, res) => {
     try {
         const overdueTimeSheets = await TimeSheet.findOverdue();
 
