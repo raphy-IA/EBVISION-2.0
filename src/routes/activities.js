@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const Activity = require('../models/Activity');
-const auth = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 
 /**
  * @route   GET /api/activities
  * @desc    Récupérer toutes les activités avec filtres
  * @access  Private
  */
-router.get('/', auth, async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const {
             business_unit_id,
@@ -50,7 +50,7 @@ router.get('/', auth, async (req, res) => {
  * @desc    Récupérer une activité par ID
  * @access  Private
  */
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const activity = await Activity.findById(id);
@@ -81,7 +81,7 @@ router.get('/:id', auth, async (req, res) => {
  * @desc    Créer une nouvelle activité
  * @access  Private
  */
-router.post('/', auth, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
     try {
         const activityData = {
             nom: req.body.nom,
@@ -114,7 +114,7 @@ router.post('/', auth, async (req, res) => {
  * @desc    Mettre à jour une activité
  * @access  Private
  */
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const activity = await Activity.findById(id);
@@ -164,7 +164,7 @@ router.put('/:id', auth, async (req, res) => {
  * @desc    Supprimer une activité
  * @access  Private
  */
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const deleted = await Activity.delete(id);
@@ -195,7 +195,7 @@ router.delete('/:id', auth, async (req, res) => {
  * @desc    Récupérer les activités d'une business unit
  * @access  Private
  */
-router.get('/business-unit/:businessUnitId', auth, async (req, res) => {
+router.get('/business-unit/:businessUnitId', authenticateToken, async (req, res) => {
     try {
         const { businessUnitId } = req.params;
         const { actif } = req.query;
@@ -223,7 +223,7 @@ router.get('/business-unit/:businessUnitId', auth, async (req, res) => {
  * @desc    Récupérer les activités par type
  * @access  Private
  */
-router.get('/type/:typeActivite', auth, async (req, res) => {
+router.get('/type/:typeActivite', authenticateToken, async (req, res) => {
     try {
         const { typeActivite } = req.params;
         const { actif } = req.query;
@@ -251,7 +251,7 @@ router.get('/type/:typeActivite', auth, async (req, res) => {
  * @desc    Obtenir les statistiques des activités
  * @access  Private
  */
-router.get('/statistics', auth, async (req, res) => {
+router.get('/statistics', authenticateToken, async (req, res) => {
     try {
         const statistics = await Activity.getStatistics();
 

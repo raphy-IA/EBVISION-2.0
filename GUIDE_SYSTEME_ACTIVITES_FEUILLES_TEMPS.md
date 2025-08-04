@@ -169,7 +169,7 @@ Recalcule automatiquement les totaux de la feuille de temps quand une saisie est
 
 ## 📱 Interface Utilisateur
 
-### Page des Activités (`/activities.html`)
+### Page des Activités Internes (`/activites-internes.html`)
 - Liste des activités avec filtres
 - Création/modification d'activités
 - Gestion des types et business units
@@ -249,7 +249,7 @@ node scripts/test-activities-system.js
 ```
 
 ### 2. Accéder à l'Interface
-- Ouvrir `http://localhost:3000/activities.html`
+- Ouvrir `http://localhost:3000/activites-internes.html`
 - Se connecter avec un compte utilisateur
 - Commencer à créer des activités
 

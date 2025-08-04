@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const TimeSheet = require('../models/TimeSheet');
-const auth = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 
 /**
  * @route   GET /api/time-sheets
  * @desc    Récupérer toutes les feuilles de temps avec filtres
  * @access  Private
  */
-router.get('/', auth, async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const {
             collaborateur_id,
@@ -52,7 +52,7 @@ router.get('/', auth, async (req, res) => {
  * @desc    Récupérer une feuille de temps par ID
  * @access  Private
  */
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const timeSheet = await TimeSheet.findById(id);
@@ -83,7 +83,7 @@ router.get('/:id', auth, async (req, res) => {
  * @desc    Créer une nouvelle feuille de temps
  * @access  Private
  */
-router.post('/', auth, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
     try {
         const timeSheetData = {
             collaborateur_id: req.body.collaborateur_id,
@@ -115,7 +115,7 @@ router.post('/', auth, async (req, res) => {
  * @desc    Mettre à jour une feuille de temps
  * @access  Private
  */
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const timeSheet = await TimeSheet.findById(id);
@@ -161,7 +161,7 @@ router.put('/:id', auth, async (req, res) => {
  * @desc    Supprimer une feuille de temps
  * @access  Private
  */
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const deleted = await TimeSheet.delete(id);
@@ -192,7 +192,7 @@ router.delete('/:id', auth, async (req, res) => {
  * @desc    Soumettre une feuille de temps
  * @access  Private
  */
-router.post('/:id/submit', auth, async (req, res) => {
+router.post('/:id/submit', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const timeSheet = await TimeSheet.findById(id);
@@ -226,7 +226,7 @@ router.post('/:id/submit', auth, async (req, res) => {
  * @desc    Valider une feuille de temps
  * @access  Private
  */
-router.post('/:id/validate', auth, async (req, res) => {
+router.post('/:id/validate', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { commentaire } = req.body;
@@ -263,7 +263,7 @@ router.post('/:id/validate', auth, async (req, res) => {
  * @desc    Rejeter une feuille de temps
  * @access  Private
  */
-router.post('/:id/reject', auth, async (req, res) => {
+router.post('/:id/reject', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { commentaire } = req.body;
