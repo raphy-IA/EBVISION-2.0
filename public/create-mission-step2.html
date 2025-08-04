@@ -165,22 +165,53 @@
             font-weight: 500;
         }
 
-        /* Styles spécifiques pour la sidebar */
+        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
         .sidebar-container {
-            width: 300px;
-            flex-shrink: 0;
+            width: 300px; /* Largeur fixe pour la sidebar */
+            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
         }
 
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column;
+                flex-direction: column; /* Empile la sidebar et le contenu */
             }
             .sidebar-container {
-                width: 100%;
-                height: auto;
+                width: 100%; /* La sidebar prend toute la largeur */
+                height: auto; /* Hauteur automatique */
             }
             .main-content-area {
+                padding: 1rem;
+            }
+        }
+    
+        /* Styles pour la sidebar unifiée */
+        .main-content-wrapper {
+            margin-left: 300px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            padding: 0;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content-wrapper {
+                margin-left: 0;
+            }
+            
+            .sidebar-container {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar-container.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
                 padding: 1rem;
             }
         }
@@ -223,6 +254,8 @@
                         <i class="fas fa-arrow-left me-2"></i>Retour à l'Étape 1
                     </a>
                 </div>
+
+
 
                 <!-- Résumé des sélections -->
                 <div class="card mb-4">
@@ -299,12 +332,19 @@
                             <div class="form-section">
                                 <h6><i class="fas fa-euro-sign me-2"></i>Budget Prévisionnel</h6>
                                 <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="missionBudget" class="form-label">Budget Prévisionnel (€)</label>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="missionBudget" class="form-label">Budget Prévisionnel</label>
                                         <input type="number" class="form-control" id="missionBudget" min="0" step="0.01">
                                         <div class="form-text">Montant prévisionnel de la mission</div>
                                     </div>
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="missionCurrency" class="form-label">Devise de la Mission *</label>
+                                        <select class="form-select" id="missionCurrency" required>
+                                            <!-- Les options seront générées dynamiquement par currency-config.js -->
+                                        </select>
+                                        <div class="form-text">Devise qui sera utilisée pour tous les montants de la mission</div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
                                         <label for="missionPriority" class="form-label">Priorité</label>
                                         <select class="form-select" id="missionPriority">
                                             <option value="MOYENNE">Normale</option>
@@ -360,10 +400,17 @@
                                 <h6><i class="fas fa-users me-2"></i>Organisation</h6>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
+                                        <label for="missionBusinessUnit" class="form-label">Business Unit</label>
+                                        <input type="text" class="form-control" id="missionBusinessUnit" readonly>
+                                        <div class="form-text">Business unit de l'opportunité</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
                                         <label for="missionDivision" class="form-label">Division</label>
                                         <input type="text" class="form-control" id="missionDivision" readonly>
                                         <div class="form-text">Division automatiquement assignée selon le type de mission</div>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="missionResponsible" class="form-label">Responsable de la Mission *</label>
                                         <select class="form-select" id="missionResponsible" required>
@@ -371,17 +418,12 @@
                                         </select>
                                         <div class="form-text">Manager de la mission</div>
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="missionAssociate" class="form-label">Associé de la Mission *</label>
                                         <select class="form-select" id="missionAssociate" required>
                                             <option value="">Sélectionner un associé</option>
                                         </select>
                                         <div class="form-text">Associé impliqué dans la mission</div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <!-- Espace réservé pour équilibrage de la mise en page -->
                                     </div>
                                 </div>
                             </div>
@@ -417,6 +459,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js" defer></script>
     <script src="/js/sidebar.js" defer></script>
+    <script src="/js/currency-config.js" defer></script>
     <script>
         // Variables globales
         let selectedOpportunity = null;
@@ -443,10 +486,24 @@
         // Initialisation
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('Page create-mission-step2.html chargée');
+            
+            // Initialiser la devise
+            initializeCurrencySelect();
+            
             await loadSelections();
             await loadCollaborateurs();
             setupEventListeners();
         });
+        
+        // Fonction pour initialiser le select de devise
+        function initializeCurrencySelect() {
+            const currencySelect = document.getElementById('missionCurrency');
+            if (currencySelect) {
+                currencySelect.innerHTML = CURRENCY_CONFIG.getCurrencyOptions();
+                // Définir XAF comme devise par défaut
+                currencySelect.value = 'XAF';
+            }
+        }
 
         // Charger les sélections de l'étape précédente
         async function loadSelections() {
@@ -516,6 +573,30 @@
                 <p class="mb-1"><strong>Division:</strong> ${selectedMissionType.division_nom || 'Non assignée'}</p>
                 <p class="mb-1"><strong>Description:</strong> ${selectedMissionType.description || 'Aucune description'}</p>
             `;
+
+            // Sauvegarder l'historique pour les pages suivantes
+            saveMissionHistory();
+        }
+
+        // Sauvegarder l'historique de création de mission
+        function saveMissionHistory() {
+            const history = {
+                step: 2,
+                opportunity: {
+                    id: selectedOpportunity.id,
+                    nom: selectedOpportunity.nom,
+                    client_nom: selectedOpportunity.client_nom,
+                    montant_estime: selectedOpportunity.montant_estime,
+                    business_unit_nom: selectedOpportunity.business_unit_nom
+                },
+                missionType: {
+                    id: selectedMissionType.id,
+                    codification: selectedMissionType.codification,
+                    libelle: selectedMissionType.libelle,
+                    division_nom: selectedMissionType.division_nom
+                }
+            };
+            sessionStorage.setItem('missionCreationHistory', JSON.stringify(history));
         }
 
         // Pré-remplir le formulaire
@@ -532,6 +613,15 @@
 
             // Budget prévisionnel (basé sur l'opportunité)
             document.getElementById('missionBudget').value = selectedOpportunity.montant_estime || '';
+
+            // Devise (basée sur l'opportunité ou XAF par défaut)
+            const currencySelect = document.getElementById('missionCurrency');
+            if (currencySelect) {
+                currencySelect.value = selectedOpportunity.devise || 'XAF';
+            }
+
+            // Business Unit (basée sur l'opportunité)
+            document.getElementById('missionBusinessUnit').value = selectedOpportunity.business_unit_nom || 'Non assignée';
 
             // Division (basée sur le type de mission)
             document.getElementById('missionDivision').value = selectedMissionType.division_nom || 'Non assignée';
@@ -669,7 +759,7 @@
 
         // Validation du formulaire
         function validateForm() {
-            const requiredFields = ['missionCode', 'missionName', 'missionStartDate', 'missionEndDate', 'missionResponsible', 'missionAssociate'];
+            const requiredFields = ['missionCode', 'missionName', 'missionStartDate', 'missionEndDate', 'missionResponsible', 'missionAssociate', 'missionCurrency'];
             let isValid = true;
 
             // Validation des champs obligatoires
@@ -737,6 +827,7 @@
                 if (!document.getElementById('missionEndDate').value) missingFields.push('Date de Fin');
                 if (!document.getElementById('missionResponsible').value) missingFields.push('Responsable de la Mission');
                 if (!document.getElementById('missionAssociate').value) missingFields.push('Associé de la Mission');
+                if (!document.getElementById('missionCurrency').value) missingFields.push('Devise de la Mission');
                 if (!document.getElementById('kycFile').files || document.getElementById('kycFile').files.length === 0) missingFields.push('Document KYC');
                 if (!document.getElementById('kycDate').value) missingFields.push('Date du Document KYC');
                 if (!document.getElementById('contractFile').files || document.getElementById('contractFile').files.length === 0) missingFields.push('Contrat de la Mission');
@@ -771,6 +862,7 @@
                 date_debut: document.getElementById('missionStartDate').value,
                 date_fin_prevue: document.getElementById('missionEndDate').value,
                 budget_prevue: parseFloat(document.getElementById('missionBudget').value) || 0,
+                devise: document.getElementById('missionCurrency').value, // Devise de la mission
                 responsable_id: document.getElementById('missionResponsible').value || null,
                 associé_id: document.getElementById('missionAssociate').value || null,
                 priorite: document.getElementById('missionPriority').value,

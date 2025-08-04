@@ -1,6 +1,6 @@
 # REPRISE DU PROJET TRS-AFFICHAGE
 
-## 📋 ÉTAT ACTUEL DE L'APPLICATION (Mise à jour : 01/08/2025 - 17:30)
+## 📋 ÉTAT ACTUEL DE L'APPLICATION (Mise à jour : 02/08/2025 - 00:35)
 
 ### ✅ **FONCTIONNALITÉS MAJEURES IMPLÉMENTÉES**
 
@@ -134,7 +134,7 @@ public/
 
 ### 🚀 **FONCTIONNALITÉS AVANCÉES**
 
-#### **WIZARD DE CRÉATION DE MISSIONS** ✅ (NOUVEAU - 01/08/2025)
+#### **WIZARD DE CRÉATION DE MISSIONS** ✅ (NOUVEAU - 02/08/2025)
 - ✅ **4 étapes complètes** : Sélection → Configuration → Financier → Planification
 - ✅ **Liaison opportunité-mission** avec contraintes d'intégrité
 - ✅ **API transactionnelle** pour la création complète
@@ -143,6 +143,13 @@ public/
 - ✅ **SessionStorage** : Stockage temporaire des données entre les étapes
 - ✅ **Calculs automatiques** : Budget prévisionnel d'exécution et marge
 - ✅ **Affectation multiple** : Plusieurs collaborateurs peuvent être assignés à une tâche
+- ✅ **Conditions de paiement dynamiques** : Système de tranches avec calculs automatiques
+- ✅ **Création de tâches** directement depuis l'étape 4
+- ✅ **Affichage des taux horaires** des collaborateurs avec calculs de coûts
+- ✅ **Validation obligatoire** des conditions de paiement
+- ✅ **Correction des erreurs de base de données** (colonnes mission_tasks)
+- ✅ **Gestion des contraintes** de priorité et statut
+- ✅ **Interface responsive** avec sidebar moderne
 
 #### **WORKFLOW D'OPPORTUNITÉS** ✅
 - ✅ **Étapes configurables** par type d'opportunité
@@ -158,15 +165,21 @@ public/
 
 ### ⚠️ **POINTS D'ATTENTION IDENTIFIÉS**
 
-#### **1. Erreur API `/api/opportunities/won-for-mission`**
+#### **1. Page `/mission-types.html`** ✅ **RÉSOLU**
+- ✅ **Correction de la structure de réponse API** : Gestion de `{success: true, data: {missionTypes: [...]}}`
+- ✅ **Vérification d'authentification** : Redirection vers login si non connecté
+- ✅ **Gestion d'erreur 401** : Messages clairs et redirection automatique
+- ✅ **Amélioration de la gestion d'erreur** : Messages détaillés et logs console
+
+#### **2. Erreur API `/api/opportunities/won-for-mission`**
 - ❌ **Erreur 500** dans le wizard de création de missions
 - 🔧 **À résoudre** : Problème SQL dans la requête
 
-#### **2. Fonctionnalité "Nouvelle Opportunité"**
+#### **3. Fonctionnalité "Nouvelle Opportunité"**
 - ❌ **Bouton manquant** dans `opportunities.html`
 - 🔧 **À implémenter** : Modal de création d'opportunité
 
-#### **3. Notifications réelles**
+#### **4. Notifications réelles**
 - ⚠️ **Données de test** actuellement utilisées dans `notifications.js`
 - 🔧 **À connecter** : Base de données réelle
 
@@ -178,10 +191,15 @@ public/
 node scripts/debug-opportunities.js
 ```
 
-#### **PRIORITÉ 2 - FINALISER LE WIZARD**
-- ✅ Tester le processus complet de création de mission
-- ✅ Résoudre l'erreur SQL dans l'API
-- ✅ Implémenter les notifications pour les collaborateurs
+#### **PRIORITÉ 2 - FINALISER LE WIZARD** ✅ **MAJORITÉ TERMINÉE**
+- ✅ **Tester le processus complet** de création de mission
+- ✅ **Corriger les erreurs de base de données** (colonnes mission_tasks)
+- ✅ **Implémenter les conditions de paiement** dynamiques
+- ✅ **Ajouter la création de tâches** depuis l'étape 4
+- ✅ **Afficher les taux horaires** des collaborateurs
+- ✅ **Validation obligatoire** des conditions de paiement
+- ❌ **Résoudre l'erreur SQL** dans l'API `/api/opportunities/won-for-mission`
+- ❌ **Implémenter les notifications** pour les collaborateurs
 
 #### **PRIORITÉ 3 - AMÉLIORATIONS UX**
 - ✅ Notifications en temps réel (WebSocket)
@@ -241,7 +259,7 @@ Pour toute question ou problème :
 ✅ **Modals interactifs** pour toutes les opérations
 ✅ **Gestion des contraintes** de base de données
 ✅ **Scripts de diagnostic** pour le débogage
-✅ **CRÉATION DE MISSIONS AVANCÉE** ✅ (NOUVEAU - 01/08/2025)
+✅ **CRÉATION DE MISSIONS AVANCÉE** ✅ (NOUVEAU - 02/08/2025)
   - ✅ **Wizard en 4 étapes** complètement fonctionnel
   - ✅ **Liaison opportunité-mission** avec contraintes d'intégrité
   - ✅ **API transactionnelle** pour la création complète
@@ -249,6 +267,12 @@ Pour toute question ou problème :
   - ✅ **Validation métier** et gestion des erreurs
   - ✅ **Calculs automatiques** de budget et marge
   - ✅ **Affectation multiple** de collaborateurs aux tâches
+  - ✅ **Conditions de paiement dynamiques** avec tranches et calculs
+  - ✅ **Création de tâches** directement depuis l'étape 4
+  - ✅ **Affichage des taux horaires** avec calculs de coûts
+  - ✅ **Validation obligatoire** des conditions de paiement
+  - ✅ **Correction des erreurs de base de données** (mission_tasks)
+  - ✅ **Gestion des contraintes** de priorité et statut
 ✅ **GESTION RH COMPLÈTE** ✅
   - ✅ **Collaborateurs** avec grades, postes, taux horaires
   - ✅ **Business Units & Divisions** hiérarchiques
@@ -288,9 +312,10 @@ Pour toute question ou problème :
 1. **Vérifier l'état du serveur** : `npm start`
 2. **Se connecter avec l'utilisateur de test** : `test@trs.com` / `Test123!`
 3. **Tester la création de missions** : Accéder à `http://localhost:3000/create-mission-step1.html`
-4. **Résoudre l'erreur 500** sur l'API `/api/opportunities/won-for-mission`
-5. **Implémenter les notifications** pour les collaborateurs assignés
-6. **Continuer avec les priorités** : Workflow automatique, Export CSV, Notifications email
-7. **Optimisations** : Performance, Sécurité, UX mobile
+4. **Tester la page mission-types** : Accéder à `http://localhost:3000/mission-types.html`
+5. **Résoudre l'erreur 500** sur l'API `/api/opportunities/won-for-mission`
+6. **Implémenter les notifications** pour les collaborateurs assignés
+7. **Continuer avec les priorités** : Workflow automatique, Export CSV, Notifications email
+8. **Optimisations** : Performance, Sécurité, UX mobile
 
 **L'application TRS-Affichage est maintenant un système complet de gestion d'opportunités, DE MISSIONS, DE RH ET DE TEMPS avec workflow avancé, analytics, notifications, création de missions en 4 étapes, gestion RH complète et interface CRUD complète !** 🎉 

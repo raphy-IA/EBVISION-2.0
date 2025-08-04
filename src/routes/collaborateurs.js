@@ -68,10 +68,12 @@ router.get('/statistics', authenticateToken, async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         console.log('📥 Données reçues pour création:', req.body);
+        console.log('🔍 createUserAccess dans req.body:', req.body.createUserAccess);
         
         // Créer le collaborateur
         const collaborateur = new Collaborateur(req.body);
         const created = await Collaborateur.create(collaborateur);
+        console.log('🔍 createUserAccess après création:', created.createUserAccess);
         
         console.log('✅ Collaborateur créé:', created.id);
         
@@ -360,6 +362,69 @@ router.put('/:id/type', async (req, res) => {
         res.status(400).json({
             success: false,
             error: 'Erreur lors de la mise à jour du type de collaborateur',
+            details: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/collaborateurs/:id/generate-user-account
+ * Générer un compte utilisateur pour un collaborateur
+ */
+router.post('/:id/generate-user-account', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { login, email, nom, prenom, role, password } = req.body;
+        
+        console.log('📥 Génération de compte utilisateur pour collaborateur:', id);
+        console.log('📋 Données reçues:', { login, email, nom, prenom, role });
+        
+        // Vérifier que le collaborateur existe
+        const collaborateur = await Collaborateur.findById(id);
+        if (!collaborateur) {
+            return res.status(404).json({
+                success: false,
+                message: 'Collaborateur non trouvé'
+            });
+        }
+        
+        // Vérifier que le collaborateur n'a pas déjà un compte utilisateur
+        if (collaborateur.user_id) {
+            return res.status(400).json({
+                success: false,
+                message: 'Ce collaborateur a déjà un compte utilisateur'
+            });
+        }
+        
+        // Créer le compte utilisateur
+        const UserAccessService = require('../services/userAccessService');
+        const userData = {
+            login,
+            email,
+            nom,
+            prenom,
+            role: role || 'USER',
+            password: password || 'TempPass123!'
+        };
+        
+        const userAccessResult = await UserAccessService.createUserAccessForCollaborateur({
+            ...collaborateur,
+            ...userData
+        });
+        
+        console.log('✅ Compte utilisateur créé:', userAccessResult);
+        
+        res.json({
+            success: true,
+            message: 'Compte utilisateur créé avec succès',
+            data: userAccessResult
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur lors de la génération du compte utilisateur:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la génération du compte utilisateur',
             details: error.message
         });
     }

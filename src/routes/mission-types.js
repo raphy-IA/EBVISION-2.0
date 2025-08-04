@@ -121,6 +121,43 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+// GET /api/mission-types/:id/tasks - Récupérer les tâches d'un type de mission
+router.get('/:id/tasks', authenticateToken, async (req, res) => {
+    try {
+        const { pool } = require('../utils/database');
+        
+        const query = `
+            SELECT 
+                t.id,
+                t.code,
+                t.libelle,
+                t.description,
+                t.duree_estimee,
+                t.priorite,
+                tmt.ordre,
+                tmt.obligatoire
+            FROM tasks t
+            INNER JOIN task_mission_types tmt ON t.id = tmt.task_id
+            WHERE tmt.mission_type_id = $1 AND t.actif = true
+            ORDER BY tmt.ordre, t.libelle
+        `;
+        
+        const result = await pool.query(query, [req.params.id]);
+        
+        res.json({
+            success: true,
+            tasks: result.rows
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des tâches:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération des tâches',
+            details: error.message
+        });
+    }
+});
+
 // DELETE /api/mission-types/:id - Supprimer un type de mission
 router.delete('/:id', async (req, res) => {
     try {

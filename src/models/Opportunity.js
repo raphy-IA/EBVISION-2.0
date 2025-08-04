@@ -158,16 +158,8 @@ class Opportunity {
         }
     }
 
-    static async create(data) {
+        static async create(data) {
         try {
-            // Si aucune année fiscale n'est spécifiée, utiliser l'année active
-            let fiscalYearId = data.fiscal_year_id;
-            if (!fiscalYearId) {
-                const FiscalYear = require('./FiscalYear');
-                const activeFiscalYear = await FiscalYear.getActiveForNewItems();
-                fiscalYearId = activeFiscalYear ? activeFiscalYear.id : null;
-            }
-
             const query = `
                 INSERT INTO opportunities (
                     nom, description, client_id, collaborateur_id, business_unit_id, 
@@ -184,29 +176,20 @@ class Opportunity {
                 data.collaborateur_id,
                 data.business_unit_id,
                 data.opportunity_type_id,
-                data.statut || 'EN_COURS',
-                data.opportunity_type_id, // Même valeur pour type_opportunite
+                data.statut || 'NOUVELLE',
+                data.type_opportunite,
                 data.source,
-                data.probabilite || 50,
+                data.probabilite || 0,
                 data.montant_estime,
-                data.devise || 'EUR',
+                data.devise || 'FCFA',
                 data.date_fermeture_prevue,
                 data.notes,
                 data.created_by || null,
-                fiscalYearId
+                data.fiscal_year_id || null
             ];
             
             const result = await pool.query(query, values);
             const opportunity = new Opportunity(result.rows[0]);
-            
-            // Si un type d'opportunité est spécifié, créer automatiquement les étapes
-            if (data.opportunity_type_id) {
-                const OpportunityType = require('./OpportunityType');
-                const opportunityType = await OpportunityType.findById(data.opportunity_type_id);
-                if (opportunityType) {
-                    await opportunityType.createStagesForOpportunity(opportunity.id);
-                }
-            }
             
             return opportunity;
         } catch (error) {

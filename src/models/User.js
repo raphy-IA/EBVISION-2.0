@@ -110,18 +110,22 @@ class User {
         const countSql = `
             SELECT COUNT(*) as total
             FROM users u
-            ${whereClause}
+            WHERE u.statut != 'INACTIF'
+            ${whereClause ? 'AND ' + whereClause.replace('WHERE ', '') : ''}
         `;
 
         const countResult = await query(countSql, params);
         const total = parseInt(countResult.rows[0].total);
 
-        // Requête pour les données
+        // Requête pour les données avec information des collaborateurs
         const sql = `
             SELECT u.id, u.nom, u.prenom, u.email, u.login, u.role,
-                   u.statut, u.last_login, u.created_at, u.updated_at
+                   u.statut, u.last_login, u.created_at, u.updated_at,
+                   c.id as collaborateur_id
             FROM users u
-            ${whereClause}
+            LEFT JOIN collaborateurs c ON u.id = c.user_id
+            WHERE u.statut != 'INACTIF'
+            ${whereClause ? 'AND ' + whereClause.replace('WHERE ', '') : ''}
             ORDER BY u.nom, u.prenom
             LIMIT $${params.length + 1} OFFSET $${params.length + 2}
         `;
@@ -144,12 +148,26 @@ class User {
         const allowedFields = ['nom', 'prenom', 'email', 'login', 'role', 'statut'];
         const updates = [];
         const values = [];
+        let passwordHash = null;
 
         // Construire la requête de mise à jour dynamiquement
-        Object.keys(updateData).forEach((key, index) => {
+        let paramIndex = 2; // Commencer à $2 car $1 est l'ID
+        
+        // Gérer le mot de passe séparément
+        if (updateData.password) {
+            const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
+            passwordHash = await bcrypt.hash(updateData.password, saltRounds);
+            updates.push(`password_hash = $${paramIndex}`);
+            values.push(passwordHash);
+            paramIndex++;
+        }
+
+        // Traiter les autres champs
+        Object.keys(updateData).forEach((key) => {
             if (allowedFields.includes(key) && updateData[key] !== undefined) {
-                updates.push(`${key} = $${index + 2}`);
+                updates.push(`${key} = $${paramIndex}`);
                 values.push(updateData[key]);
+                paramIndex++;
             }
         });
 
@@ -168,8 +186,8 @@ class User {
         return result.rows[0] || null;
     }
 
-    // Supprimer un utilisateur (soft delete)
-    static async delete(id) {
+    // Désactiver un utilisateur (soft delete)
+    static async deactivate(id) {
         const sql = `
             UPDATE users 
             SET statut = 'INACTIF', updated_at = CURRENT_TIMESTAMP
@@ -178,6 +196,30 @@ class User {
         `;
 
         const result = await query(sql, [id]);
+        return result.rows[0] || null;
+    }
+
+    // Supprimer définitivement un utilisateur (hard delete)
+    static async hardDelete(id) {
+        const sql = `
+            DELETE FROM users 
+            WHERE id = $1
+            RETURNING id, nom, prenom, email
+        `;
+
+        const result = await query(sql, [id]);
+        return result.rows[0] || null;
+    }
+
+    // Vérifier si un utilisateur est lié à un collaborateur
+    static async checkLinkedCollaborateur(userId) {
+        const sql = `
+            SELECT c.id, c.nom, c.prenom
+            FROM collaborateurs c
+            WHERE c.user_id = $1
+        `;
+
+        const result = await query(sql, [userId]);
         return result.rows[0] || null;
     }
 
@@ -222,6 +264,19 @@ class User {
             SET last_login = CURRENT_TIMESTAMP
             WHERE id = $1
             RETURNING id, last_login
+        `;
+
+        const result = await query(sql, [id]);
+        return result.rows[0] || null;
+    }
+
+    // Mettre à jour la dernière déconnexion
+    static async updateLastLogout(id) {
+        const sql = `
+            UPDATE users 
+            SET last_logout = CURRENT_TIMESTAMP
+            WHERE id = $1
+            RETURNING id, last_logout
         `;
 
         const result = await query(sql, [id]);
@@ -352,12 +407,11 @@ class User {
                 COUNT(*) as total_users,
                 COUNT(CASE WHEN statut = 'ACTIF' THEN 1 END) as active_users,
                 COUNT(CASE WHEN statut = 'INACTIF' THEN 1 END) as inactive_users,
-                COUNT(CASE WHEN statut = 'CONGE' THEN 1 END) as on_leave_users,
-                COUNT(CASE WHEN grade = 'ASSISTANT' THEN 1 END) as assistants,
-                COUNT(CASE WHEN grade = 'SENIOR' THEN 1 END) as seniors,
-                COUNT(CASE WHEN grade = 'MANAGER' THEN 1 END) as managers,
-                COUNT(CASE WHEN grade = 'DIRECTOR' THEN 1 END) as directors,
-                COUNT(CASE WHEN grade = 'PARTNER' THEN 1 END) as partners
+                COUNT(CASE WHEN role = 'ASSISTANT' THEN 1 END) as assistants,
+                COUNT(CASE WHEN role = 'SENIOR' THEN 1 END) as seniors,
+                COUNT(CASE WHEN role = 'MANAGER' THEN 1 END) as managers,
+                COUNT(CASE WHEN role = 'DIRECTOR' THEN 1 END) as directors,
+                COUNT(CASE WHEN role = 'PARTNER' THEN 1 END) as partners
             FROM users
         `;
 

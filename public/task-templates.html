@@ -368,7 +368,6 @@
                             </div>
                             <small class="form-text text-muted">Définissez si chaque tâche est obligatoire ou optionnelle pour chaque type de mission</small>
                         </div>
-                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -518,11 +517,22 @@
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Page task-templates.html chargée');
+            
+            // Test du bouton créer
+            const createButton = document.querySelector('button[onclick="createTask()"]');
+            console.log('🔍 Bouton créer trouvé:', createButton);
+            if (createButton) {
+                console.log('🔍 Bouton créer visible:', createButton.offsetParent !== null);
+                console.log('🔍 Bouton créer cliquable:', !createButton.disabled);
+            }
+            
             // Générer la sidebar
             if (window.SidebarGenerator) {
                 window.SidebarGenerator.generateSidebar();
             }
             
+            console.log('📋 Début du chargement des données...');
             loadTasks();
             loadMissionTypes();
             loadStats();
@@ -540,29 +550,65 @@
 
         // Charger les tâches
         async function loadTasks() {
+            console.log('🔍 Fonction loadTasks appelée');
             try {
-                const response = await fetch('/api/tasks');
+                console.log('🔍 Appel API /api/tasks...');
+                const response = await authenticatedFetch('/api/tasks');
+                console.log('🔍 Réponse reçue:', response.status, response.ok);
+                
                 if (!response.ok) throw new Error('Erreur de connexion');
                 
-                tasks = await response.json();
+                const result = await response.json();
+                console.log('📋 Réponse API tasks:', result);
+                
+                // S'assurer que tasks est un tableau
+                if (Array.isArray(result)) {
+                    tasks = result;
+                } else if (result.success && Array.isArray(result.data)) {
+                    tasks = result.data;
+                } else {
+                    tasks = [];
+                }
+                
+                console.log('📋 Tâches chargées:', tasks);
                 displayTasks();
             } catch (error) {
-                console.error('Erreur:', error);
+                console.error('❌ Erreur dans loadTasks:', error);
                 showAlert('Erreur lors du chargement des tâches', 'danger');
+                tasks = [];
             }
         }
 
         // Charger les types de mission
         async function loadMissionTypes() {
             try {
-                const response = await fetch('/api/mission-types');
+                const response = await authenticatedFetch('/api/mission-types');
                 if (!response.ok) throw new Error('Erreur de connexion');
                 
                 const result = await response.json();
-                missionTypes = result.data || result;
+                console.log('📋 Réponse API mission-types:', result);
+                
+                // S'assurer que missionTypes est un tableau
+                if (result.success && result.data) {
+                    // Vérifier si les données sont dans result.data.missionTypes
+                    if (result.data.missionTypes) {
+                        missionTypes = Array.isArray(result.data.missionTypes) ? result.data.missionTypes : [];
+                    } else if (Array.isArray(result.data)) {
+                        missionTypes = result.data;
+                    } else {
+                        missionTypes = [];
+                    }
+                } else if (Array.isArray(result)) {
+                    missionTypes = result;
+                } else {
+                    missionTypes = [];
+                }
+                
+                console.log('📋 Types de mission chargés:', missionTypes);
                 populateMissionTypeSelects();
             } catch (error) {
                 console.error('Erreur:', error);
+                missionTypes = [];
             }
         }
 
@@ -573,22 +619,30 @@
                 const select = document.getElementById(selectId);
                 if (select) {
                     select.innerHTML = '<option value="">Sélectionner...</option>';
-                    missionTypes.forEach(type => {
-                        const option = document.createElement('option');
-                        option.value = type.id;
-                        option.textContent = `${type.codification} - ${type.libelle}`;
-                        select.appendChild(option);
-                    });
+                    
+                    // Vérifier que missionTypes est un tableau
+                    if (Array.isArray(missionTypes)) {
+                        missionTypes.forEach(type => {
+                            const option = document.createElement('option');
+                            option.value = type.id;
+                            option.textContent = `${type.codification} - ${type.libelle}`;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        console.warn('⚠️ missionTypes n\'est pas un tableau:', missionTypes);
+                    }
                 }
             });
         }
 
         // Afficher les tâches
         function displayTasks() {
+            console.log('🎨 Fonction displayTasks appelée avec', tasks.length, 'tâches');
             const tbody = document.getElementById('tasksTableBody');
             tbody.innerHTML = '';
 
-            tasks.forEach(task => {
+            tasks.forEach((task, index) => {
+                console.log(`🎨 Affichage tâche ${index + 1}:`, task);
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><strong>${task.code}</strong></td>
@@ -683,7 +737,7 @@
         // Charger les statistiques
         async function loadStats() {
             try {
-                const response = await fetch('/api/tasks/stats/stats');
+                const response = await authenticatedFetch('/api/tasks/stats/stats');
                 if (!response.ok) throw new Error('Erreur de connexion');
                 
                 const stats = await response.json();
@@ -699,16 +753,28 @@
 
         // Ouvrir modal création
         function openCreateModal() {
+            console.log('🔍 Fonction openCreateModal appelée');
             document.getElementById('createForm').reset();
             document.getElementById('createCode').value = ''; // Réinitialiser le code
             document.getElementById('missionTypeOptionsSection').style.display = 'none'; // Masquer la section de configuration
             const modal = new bootstrap.Modal(document.getElementById('createModal'));
+            console.log('🔍 Modal trouvé:', document.getElementById('createModal'));
             modal.show();
+            console.log('🔍 Modal ouvert');
         }
 
         // Créer une tâche
         async function createTask() {
             try {
+                console.log('🚀 Début de la création de tâche...');
+                console.log('🔍 Fonction createTask appelée !');
+                console.log('🔍 Éléments du formulaire:', {
+                    code: document.getElementById('createCode')?.value,
+                    libelle: document.getElementById('createLibelle')?.value,
+                    description: document.getElementById('createDescription')?.value,
+                    duree: document.getElementById('createDuree')?.value
+                });
+                
                 // Validation des champs requis
                 const code = document.getElementById('createCode').value.trim();
                 const libelle = document.getElementById('createLibelle').value.trim();
@@ -726,25 +792,34 @@
                     priorite: document.getElementById('createPriority').value
                 };
 
-                const response = await fetch('/api/tasks', {
+                console.log('📋 Données de la tâche à créer:', formData);
+
+                const response = await authenticatedFetch('/api/tasks', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
+
+                console.log('📋 Réponse HTTP création tâche:', response.status, response.ok);
 
                 if (!response.ok) {
                     const error = await response.json();
                     throw new Error(error.error || 'Erreur lors de la création');
                 }
 
-                const task = await response.json();
+                const result = await response.json();
+                console.log('📋 Réponse création tâche:', result);
+                
+                // Extraire la tâche de la réponse
+                const task = result.success ? result.data : result;
+                console.log('📋 Tâche extraite de la réponse:', task);
                 
                 // Associer les types de mission sélectionnés avec leur configuration
                 const missionTypeConfig = getMissionTypeConfiguration();
                 if (missionTypeConfig.length > 0) {
                     for (const config of missionTypeConfig) {
                         try {
-                            await fetch(`/api/tasks/${task.id}/mission-types`, {
+                            await authenticatedFetch(`/api/tasks/${task.id}/mission-types`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
@@ -761,10 +836,18 @@
 
                 showAlert('Tâche créée avec succès !', 'success');
                 
+                console.log('📋 Fermeture du modal et rechargement des données...');
+                
                 // Fermer le modal et recharger
                 bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
-                loadTasks();
-                loadStats();
+                
+                console.log('📋 Appel de loadTasks() après création...');
+                await loadTasks();
+                
+                console.log('📋 Appel de loadStats() après création...');
+                await loadStats();
+                
+                console.log('📋 Création de tâche terminée avec succès');
             } catch (error) {
                 console.error('Erreur:', error);
                 showAlert(error.message, 'danger');
@@ -774,7 +857,7 @@
         // Voir une tâche
         async function viewTask(id) {
             try {
-                const response = await fetch(`/api/tasks/${id}`);
+                const response = await authenticatedFetch(`/api/tasks/${id}`);
                 if (!response.ok) throw new Error('Erreur de connexion');
                 
                 const task = await response.json();
@@ -804,7 +887,7 @@
         // Modifier une tâche
         async function editTask(id) {
             try {
-                const response = await fetch(`/api/tasks/${id}`);
+                const response = await authenticatedFetch(`/api/tasks/${id}`);
                 if (!response.ok) throw new Error('Erreur de connexion');
                 
                 const task = await response.json();
@@ -841,7 +924,7 @@
                     actif: document.getElementById('editActif').checked
                 };
 
-                const response = await fetch(`/api/tasks/${currentEditId}`, {
+                const response = await authenticatedFetch(`/api/tasks/${currentEditId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
@@ -857,7 +940,7 @@
                 
                 // Supprimer toutes les associations existantes
                 try {
-                    await fetch(`/api/tasks/${currentEditId}/mission-types`, {
+                    await authenticatedFetch(`/api/tasks/${currentEditId}/mission-types`, {
                         method: 'DELETE'
                     });
                 } catch (error) {
@@ -868,7 +951,7 @@
                 if (missionTypeConfig.length > 0) {
                     for (const config of missionTypeConfig) {
                         try {
-                            await fetch(`/api/tasks/${currentEditId}/mission-types`, {
+                            await authenticatedFetch(`/api/tasks/${currentEditId}/mission-types`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
@@ -900,7 +983,7 @@
             if (!confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) return;
 
             try {
-                const response = await fetch(`/api/tasks/${id}`, {
+                const response = await authenticatedFetch(`/api/tasks/${id}`, {
                     method: 'DELETE'
                 });
 

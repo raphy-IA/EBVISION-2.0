@@ -222,6 +222,9 @@
                                         <th>Date fin</th>
                                         <th>Statut</th>
                                         <th>Budget</th>
+                                        <th>Date création</th>
+                                        <th>Business Unit</th>
+                                        <th>Division</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -376,7 +379,8 @@
                 const response = await authenticatedFetch('/api/missions');
                 if (response.ok) {
                     const data = await response.json();
-                    missions = data.data || data; // Gérer les deux formats possibles
+                    // L'API missions retourne {data: Array} directement
+                    missions = data.data || data;
                     displayMissions(missions);
                 } else {
                     console.error('Erreur lors du chargement des missions');
@@ -394,7 +398,14 @@
                 const response = await authenticatedFetch('/api/clients');
                 if (response.ok) {
                     const data = await response.json();
-                    clients = data.data || data; // Gérer les deux formats possibles
+                    // Gérer la structure {data: {clients: Array}}
+                    if (data.data && data.data.clients) {
+                        clients = data.data.clients;
+                    } else if (data.data) {
+                        clients = data.data;
+                    } else {
+                        clients = data;
+                    }
                     populateClientFilters();
                 } else {
                     console.error('Erreur lors du chargement des clients');
@@ -411,7 +422,7 @@
             if (missionsToShow.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-center text-muted">
+                        <td colspan="11" class="text-center text-muted">
                             <i class="fas fa-inbox fa-2x mb-3"></i>
                             <p>Aucune mission trouvée</p>
                         </td>
@@ -429,12 +440,18 @@
                     <td>${formatDate(mission.date_debut)}</td>
                     <td>${formatDate(mission.date_fin)}</td>
                     <td><span class="status-badge status-${mission.statut?.toLowerCase()}">${mission.statut || 'N/A'}</span></td>
-                    <td>${formatCurrency(mission.budget)}</td>
+                    <td>${formatCurrency(mission.budget_estime || mission.budget_reel || 0, mission.devise)}</td>
+                    <td>${formatDate(mission.created_at)}</td>
+                    <td>${mission.business_unit_nom || 'N/A'}</td>
+                    <td>${mission.division_nom || 'N/A'}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editMission('${mission.id}')">
+                        <button class="btn btn-sm btn-outline-info me-1" onclick="viewMissionDetails('${mission.id}')" title="Voir les détails">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editMission('${mission.id}')" title="Modifier">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteMission('${mission.id}')">
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteMission('${mission.id}')" title="Supprimer">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -545,6 +562,11 @@
 
                 new bootstrap.Modal(document.getElementById('addMissionModal')).show();
             }
+        }
+
+        // Affichage des détails d'une mission
+        function viewMissionDetails(missionId) {
+            window.location.href = `mission-details.html?id=${missionId}`;
         }
 
         // Suppression d'une mission

@@ -197,6 +197,122 @@
                     </div>
                 </div>
 
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-2x mb-2"></i>
+                                <h4 id="total-users">-</h4>
+                                <p class="mb-0">Total Utilisateurs</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-user-check fa-2x mb-2"></i>
+                                <h4 id="active-users">-</h4>
+                                <p class="mb-0">Utilisateurs Actifs</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card warning">
+                            <div class="card-body text-center">
+                                <i class="fas fa-user-clock fa-2x mb-2"></i>
+                                <h4 id="recent-users">-</h4>
+                                <p class="mb-0">Nouveaux (30j)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card info">
+                            <div class="card-body text-center">
+                                <i class="fas fa-user-shield fa-2x mb-2"></i>
+                                <h4 id="admin-users">-</h4>
+                                <p class="mb-0">Administrateurs</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="search-input" class="form-label">Recherche</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                            <input type="text" class="form-control" id="search-input" placeholder="Nom, prénom, email, login...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="role-filter" class="form-label">Rôle</label>
+                                        <select class="form-select" id="role-filter">
+                                            <option value="">Tous les rôles</option>
+                                            <option value="ADMIN">Administrateur</option>
+                                            <option value="MANAGER">Manager</option>
+                                            <option value="USER">Utilisateur</option>
+                                            <option value="ASSISTANT">Assistant</option>
+                                            <option value="SENIOR">Senior</option>
+                                            <option value="DIRECTOR">Directeur</option>
+                                            <option value="PARTNER">Partenaire</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="status-filter" class="form-label">Statut</label>
+                                        <select class="form-select" id="status-filter">
+                                            <option value="">Tous les statuts</option>
+                                            <option value="ACTIF">Actif</option>
+                                            <option value="INACTIF">Inactif</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="type-filter" class="form-label">Type</label>
+                                        <select class="form-select" id="type-filter">
+                                            <option value="">Tous les types</option>
+                                            <option value="linked">Liés à collaborateur</option>
+                                            <option value="free">Libres</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="show-deleted" class="form-label">Affichage</label>
+                                        <select class="form-select" id="show-deleted">
+                                            <option value="active">Utilisateurs actifs</option>
+                                            <option value="deleted">Utilisateurs supprimés</option>
+                                            <option value="all">Tous les utilisateurs</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Actions rapides</h6>
+                                        <small class="text-muted">Filtres et actions</small>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">
+                                            <i class="fas fa-times me-1"></i>Effacer
+                                        </button>
+                                        <button class="btn btn-outline-primary btn-sm" onclick="exportUsers()">
+                                            <i class="fas fa-download me-1"></i>Exporter
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Users Table -->
                 <div class="card mb-4">
                     <div class="card-header">
@@ -218,6 +334,7 @@
                                             <th>Prénom</th>
                                             <th>Email</th>
                                             <th>Rôle</th>
+                                            <th>Type</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -312,13 +429,25 @@
                         <input type="hidden" id="editUserId">
                         <div class="mb-3">
                             <label for="editUserLogin" class="form-label">Login</label>
-                            <input type="text" class="form-control" id="editUserLogin" maxlength="50" placeholder="Ex: jdupont">
+                            <input type="text" class="form-control" id="editUserLogin" maxlength="50" placeholder="Ex: jdupont ou jdupont2">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle text-info"></i>
+                                Le login doit être unique. S'il existe déjà, un numéro sera ajouté automatiquement.
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="editUserPassword" class="form-label">Nouveau Mot de passe (laisser vide pour ne pas changer)</label>
-                            <input type="password" class="form-control" id="editUserPassword">
+                            <input type="password" class="form-control" id="editUserPassword" placeholder="Ex: MonMotDePasse123!">
                             <div class="form-text">
-                                Le mot de passe doit contenir au moins 8 caractères, une minuscule, une majuscule, un chiffre et un caractère spécial.
+                                <i class="fas fa-info-circle text-info"></i>
+                                <strong>Règles de sécurité :</strong>
+                                <ul class="mt-1 mb-0">
+                                    <li>Au moins 8 caractères</li>
+                                    <li>Au moins une minuscule (a-z)</li>
+                                    <li>Au moins une majuscule (A-Z)</li>
+                                    <li>Au moins un chiffre (0-9)</li>
+                                    <li>Au moins un caractère spécial (@$!%*?&)</li>
+                                </ul>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -384,6 +513,130 @@
         </div>
     </div>
 
+    <!-- Deactivate Confirmation Modal -->
+    <div class="modal fade" id="deactivateConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-pause me-2 text-warning"></i>
+                        Confirmer la désactivation
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir désactiver cet utilisateur ?</p>
+                    <p class="text-muted">L'utilisateur ne pourra plus se connecter mais ses données seront conservées.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-warning" onclick="confirmDeactivate()">
+                        <i class="fas fa-pause me-1"></i>
+                        Désactiver
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Collaborateur Modal -->
+    <div class="modal fade" id="viewCollaborateurModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-tie me-2 text-info"></i>
+                        Informations du Collaborateur
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nom</label>
+                                <p id="collaborateur-nom" class="form-control-plaintext"></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Prénom</label>
+                                <p id="collaborateur-prenom" class="form-control-plaintext"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Email</label>
+                                <p id="collaborateur-email" class="form-control-plaintext"></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Téléphone</label>
+                                <p id="collaborateur-telephone" class="form-control-plaintext"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Business Unit</label>
+                                <p id="collaborateur-business-unit" class="form-control-plaintext"></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Division</label>
+                                <p id="collaborateur-division" class="form-control-plaintext"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Poste</label>
+                                <p id="collaborateur-poste" class="form-control-plaintext"></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Grade</label>
+                                <p id="collaborateur-grade" class="form-control-plaintext"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Statut</label>
+                                <p id="collaborateur-statut" class="form-control-plaintext"></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Date d'embauche</label>
+                                <p id="collaborateur-date-embauche" class="form-control-plaintext"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" onclick="window.location.href='/collaborateurs.html'">
+                        <i class="fas fa-users me-1"></i>
+                        Voir tous les collaborateurs
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -413,16 +666,140 @@
         }
 
         let userToDelete = null;
+        let userToDeactivate = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             loadUsers();
+            loadStatistics();
+            setupEventListeners();
         });
+
+        // Variables globales pour les filtres
+        let allUsers = [];
+        let filteredUsers = [];
+
+        function setupEventListeners() {
+            // Recherche en temps réel
+            document.getElementById('search-input').addEventListener('input', filterUsers);
+            document.getElementById('role-filter').addEventListener('change', filterUsers);
+            document.getElementById('status-filter').addEventListener('change', filterUsers);
+            document.getElementById('type-filter').addEventListener('change', filterUsers);
+            document.getElementById('show-deleted').addEventListener('change', loadUsers);
+        }
+
+        async function loadStatistics() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await authenticatedFetch(`${API_BASE_URL}/users/statistics`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatistics(data.data);
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des statistiques:', error);
+            }
+        }
+
+        function updateStatistics(stats) {
+            document.getElementById('total-users').textContent = stats.total || 0;
+            document.getElementById('active-users').textContent = stats.active || 0;
+            document.getElementById('recent-users').textContent = stats.recent || 0;
+            document.getElementById('admin-users').textContent = stats.admins || 0;
+        }
+
+        function filterUsers() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const roleFilter = document.getElementById('role-filter').value;
+            const statusFilter = document.getElementById('status-filter').value;
+            const typeFilter = document.getElementById('type-filter').value;
+
+            filteredUsers = allUsers.filter(user => {
+                const isLinked = user.collaborateur_id || user.linked_to_collaborateur;
+                
+                const matchesSearch = !searchTerm || 
+                    user.nom.toLowerCase().includes(searchTerm) ||
+                    user.prenom.toLowerCase().includes(searchTerm) ||
+                    user.email.toLowerCase().includes(searchTerm) ||
+                    (user.login && user.login.toLowerCase().includes(searchTerm));
+                
+                const matchesRole = !roleFilter || user.role === roleFilter;
+                const matchesStatus = !statusFilter || user.statut === statusFilter;
+                const matchesType = !typeFilter || 
+                    (typeFilter === 'linked' && isLinked) ||
+                    (typeFilter === 'free' && !isLinked);
+
+                return matchesSearch && matchesRole && matchesStatus && matchesType;
+            });
+
+            displayUsers(filteredUsers);
+            updateFilteredCount();
+        }
+
+        function updateFilteredCount() {
+            const totalCount = allUsers.length;
+            const filteredCount = filteredUsers.length;
+            
+            // Mettre à jour le titre du tableau
+            const tableTitle = document.querySelector('.card-title');
+            if (tableTitle) {
+                tableTitle.innerHTML = `<i class="fas fa-list me-2"></i>Liste des Utilisateurs (${filteredCount}/${totalCount})`;
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('role-filter').value = '';
+            document.getElementById('status-filter').value = '';
+            document.getElementById('type-filter').value = '';
+            document.getElementById('show-deleted').value = 'active';
+            filterUsers();
+        }
+
+        function exportUsers() {
+            const csvContent = generateCSV(filteredUsers);
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `utilisateurs_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function generateCSV(users) {
+            const headers = ['Login', 'Nom', 'Prénom', 'Email', 'Rôle', 'Statut', 'Dernière connexion'];
+            const rows = users.map(user => [
+                user.login || '',
+                user.nom || '',
+                user.prenom || '',
+                user.email || '',
+                user.role || '',
+                user.statut || '',
+                user.last_login || ''
+            ]);
+            
+            return [headers, ...rows].map(row => 
+                row.map(field => `"${field}"`).join(',')
+            ).join('\n');
+        }
 
         async function loadUsers() {
             showLoading(true);
             try {
                 const token = localStorage.getItem('authToken');
-                const response = await authenticatedFetch(`${API_BASE_URL}/users`, {
+                const showDeleted = document.getElementById('show-deleted').value;
+                
+                let url = `${API_BASE_URL}/users?limit=100`;
+                if (showDeleted === 'deleted') {
+                    url += '&status=INACTIF';
+                } else if (showDeleted === 'active') {
+                    url += '&status=ACTIF';
+                }
+                
+                const response = await authenticatedFetch(url, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -430,7 +807,11 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    displayUsers(data.data);
+                    allUsers = data.data;
+                    filteredUsers = [...allUsers];
+                    displayUsers(filteredUsers);
+                    updateFilteredCount();
+                    console.log(`📊 ${data.data.length} utilisateurs chargés sur ${data.pagination.total} total`);
                 } else {
                     showAlert('Erreur lors du chargement des utilisateurs', 'danger');
                 }
@@ -448,7 +829,7 @@
             if (users.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
+                        <td colspan="7" class="text-center text-muted py-4">
                             <i class="fas fa-user-shield fa-2x mb-3"></i>
                             <p>Aucun utilisateur trouvé</p>
                         </td>
@@ -458,21 +839,67 @@
             }
 
             users.forEach(user => {
+                const isLinked = user.collaborateur_id || user.linked_to_collaborateur;
+                const isDeleted = user.statut === 'INACTIF';
                 const row = document.createElement('tr');
+                
+                if (isLinked) row.className = 'table-info';
+                if (isDeleted) row.className = 'table-danger';
+                
                 row.innerHTML = `
-                    <td><code>${user.login || '-'}</code></td>
-                    <td>${user.nom}</td>
-                    <td>${user.prenom}</td>
-                    <td>${user.email}</td>
+                    <td>
+                        <code>${user.login || '-'}</code>
+                        ${isLinked ? '<br><small class="text-muted">🔗 Lié à collaborateur</small>' : ''}
+                        ${isDeleted ? '<br><small class="text-danger">🗑️ Supprimé</small>' : ''}
+                    </td>
+                    <td>
+                        ${user.nom}
+                        ${isLinked ? '<br><small class="text-muted">(via collaborateur)</small>' : ''}
+                    </td>
+                    <td>
+                        ${user.prenom}
+                        ${isLinked ? '<br><small class="text-muted">(via collaborateur)</small>' : ''}
+                    </td>
+                    <td>
+                        ${user.email}
+                        ${isLinked ? '<br><small class="text-muted">(via collaborateur)</small>' : ''}
+                    </td>
                     <td><span class="badge bg-primary role-badge">${user.role}</span></td>
                     <td>
+                        <span class="badge ${isLinked ? 'bg-info' : 'bg-secondary'}">
+                            ${isLinked ? 'Lié' : 'Libre'}
+                        </span>
+                    </td>
+                    <td>
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-warning" onclick="editUser('${user.id}')" title="Modifier">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="deleteUser('${user.id}')" title="Supprimer">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            ${!isDeleted ? `
+                                ${isLinked ? `
+                                    <button class="btn btn-outline-success" onclick="manageUserAccount('${user.collaborateur_id}', '${user.id}')" title="Gérer le compte">
+                                        <i class="fas fa-user-shield"></i>
+                                    </button>
+                                ` : `
+                                    <button class="btn btn-outline-warning" onclick="editUser('${user.id}', ${isLinked})" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                `}
+                                <button class="btn btn-outline-secondary" onclick="deactivateUser('${user.id}')" title="Désactiver">
+                                    <i class="fas fa-pause"></i>
+                                </button>
+                                ${isLinked ? `
+                                    <button class="btn btn-outline-info" onclick="viewCollaborateur('${user.collaborateur_id}')" title="Voir le collaborateur">
+                                        <i class="fas fa-user-tie"></i>
+                                    </button>
+                                ` : ''}
+                                ${!isLinked ? `
+                                    <button class="btn btn-outline-danger" onclick="deleteUser('${user.id}')" title="Supprimer définitivement">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                ` : ''}
+                            ` : `
+                                <button class="btn btn-outline-success" onclick="restoreUser('${user.id}')" title="Activer">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            `}
                         </div>
                     </td>
                 `;
@@ -525,7 +952,7 @@
             }
         }
 
-        async function editUser(id) {
+        async function editUser(id, isLinked = false) {
             try {
                 const token = localStorage.getItem('authToken');
                 const response = await authenticatedFetch(`${API_BASE_URL}/users/${id}`, {
@@ -538,11 +965,75 @@
                 if (data.success) {
                     const user = data.data;
                     document.getElementById('editUserId').value = user.id;
-                    document.getElementById('editUserName').value = user.nom;
                     document.getElementById('editUserFirstName').value = user.prenom;
+                    document.getElementById('editUserName').value = user.nom;
                     document.getElementById('editUserEmail').value = user.email;
                     document.getElementById('editUserLogin').value = user.login || '';
                     document.getElementById('editUserRole').value = user.role;
+                    
+                    // Gérer les champs selon le type d'utilisateur
+                    const nameField = document.getElementById('editUserName');
+                    const firstNameField = document.getElementById('editUserFirstName');
+                    const emailField = document.getElementById('editUserEmail');
+                    
+                    if (isLinked) {
+                        // Utilisateur lié : désactiver nom, prénom, email
+                        nameField.disabled = true;
+                        firstNameField.disabled = true;
+                        emailField.disabled = true;
+                        nameField.classList.add('form-control-plaintext');
+                        firstNameField.classList.add('form-control-plaintext');
+                        emailField.classList.add('form-control-plaintext');
+                        
+                        // Ajouter des messages d'aide
+                        nameField.title = 'Ce champ est géré via le collaborateur associé. Cliquez sur "Voir le collaborateur" pour le modifier.';
+                        firstNameField.title = 'Ce champ est géré via le collaborateur associé. Cliquez sur "Voir le collaborateur" pour le modifier.';
+                        emailField.title = 'Ce champ est géré via le collaborateur associé. Cliquez sur "Voir le collaborateur" pour le modifier.';
+                        
+                        // Ajouter une note explicative
+                        const noteDiv = document.createElement('div');
+                        noteDiv.className = 'alert alert-info mb-3';
+                        noteDiv.innerHTML = `
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Compte lié à un collaborateur</strong><br>
+                            <small class="text-muted">
+                                Ce compte utilisateur est lié à un collaborateur. Seuls le login, le mot de passe et le rôle peuvent être modifiés ici.<br>
+                                Les informations de nom, prénom et email sont synchronisées avec le collaborateur associé.
+                            </small>
+                        `;
+                        
+                        // Insérer la note au début du formulaire
+                        const form = document.getElementById('editUserForm');
+                        form.insertBefore(noteDiv, form.firstChild);
+                        
+                        // Mettre à jour le titre du modal
+                        document.querySelector('#editUserModal .modal-title').innerHTML = 
+                            '<i class="fas fa-user-shield me-2"></i>Gérer le Compte Utilisateur (Lié à Collaborateur)';
+                    } else {
+                        // Utilisateur libre : activer tous les champs
+                        nameField.disabled = false;
+                        firstNameField.disabled = false;
+                        emailField.disabled = false;
+                        nameField.classList.remove('form-control-plaintext');
+                        firstNameField.classList.remove('form-control-plaintext');
+                        emailField.classList.remove('form-control-plaintext');
+                        
+                        // Retirer les messages d'aide
+                        nameField.title = '';
+                        firstNameField.title = '';
+                        emailField.title = '';
+                        
+                        // Supprimer la note explicative si elle existe
+                        const existingNote = document.querySelector('#editUserForm .alert-info');
+                        if (existingNote) {
+                            existingNote.remove();
+                        }
+                        
+                        // Mettre à jour le titre du modal
+                        document.querySelector('#editUserModal .modal-title').innerHTML = 
+                            '<i class="fas fa-edit me-2"></i>Modifier Utilisateur (Libre)';
+                    }
+                    
                     new bootstrap.Modal(document.getElementById('editUserModal')).show();
                 } else {
                     showAlert('Utilisateur non trouvé', 'danger');
@@ -561,18 +1052,41 @@
             }
 
             const id = document.getElementById('editUserId').value;
-            const formData = {
-                nom: document.getElementById('editUserName').value,
-                prenom: document.getElementById('editUserFirstName').value,
-                email: document.getElementById('editUserEmail').value,
-                login: document.getElementById('editUserLogin').value || null,
-                role: document.getElementById('editUserRole').value
-            };
+            const formData = {};
+
+            // Ajouter login seulement s'il n'est pas vide
+            const loginValue = document.getElementById('editUserLogin').value.trim();
+            if (loginValue) {
+                formData.login = loginValue;
+            }
+
+            // Ajouter rôle seulement s'il n'est pas vide
+            const roleValue = document.getElementById('editUserRole').value;
+            if (roleValue) {
+                formData.role = roleValue;
+            }
+
+            // Ajouter nom, prénom, email seulement si les champs ne sont pas désactivés et pas vides
+            const nameField = document.getElementById('editUserName');
+            const firstNameField = document.getElementById('editUserFirstName');
+            const emailField = document.getElementById('editUserEmail');
+            
+            if (!nameField.disabled && nameField.value.trim()) {
+                formData.nom = nameField.value.trim();
+            }
+            if (!firstNameField.disabled && firstNameField.value.trim()) {
+                formData.prenom = firstNameField.value.trim();
+            }
+            if (!emailField.disabled && emailField.value.trim()) {
+                formData.email = emailField.value.trim();
+            }
 
             const newPassword = document.getElementById('editUserPassword').value;
             if (newPassword) {
                 formData.password = newPassword;
             }
+
+            console.log('📤 Données envoyées:', formData);
 
             try {
                 const token = localStorage.getItem('authToken');
@@ -586,11 +1100,22 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    showAlert('Utilisateur mis à jour avec succès', 'success');
+                    showAlert('✅ Utilisateur mis à jour avec succès ! Les modifications ont été appliquées.', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
                     loadUsers();
                 } else {
-                    showAlert('Erreur lors de la mise à jour', 'danger');
+                    let errorMessage = data.message || 'Erreur inconnue';
+                    
+                    // Améliorer les messages d'erreur spécifiques
+                    if (data.errors && data.errors.length > 0) {
+                        errorMessage = 'Erreurs de validation :\n' + data.errors.join('\n');
+                    } else if (data.message && data.message.includes('mot de passe')) {
+                        errorMessage = 'Le mot de passe ne respecte pas les règles de sécurité. Vérifiez qu\'il contient au moins 8 caractères, une minuscule, une majuscule, un chiffre et un caractère spécial.';
+                    } else if (data.message && data.message.includes('email')) {
+                        errorMessage = 'L\'email fourni est invalide ou existe déjà dans le système.';
+                    }
+                    
+                    showAlert(errorMessage, 'danger');
                 }
             } catch (error) {
                 console.error('Erreur lors de la mise à jour:', error);
@@ -600,7 +1125,16 @@
 
         function deleteUser(id) {
             userToDelete = id;
+            document.getElementById('deleteConfirmModal').querySelector('.modal-title').textContent = 'Supprimer définitivement';
+            document.getElementById('deleteConfirmModal').querySelector('.modal-body').innerHTML = 
+                '<p class="text-danger"><i class="fas fa-exclamation-triangle"></i> Attention : Cette action est irréversible !</p>' +
+                '<p>L\'utilisateur sera définitivement supprimé de la base de données.</p>';
             new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+        }
+
+        function deactivateUser(id) {
+            userToDeactivate = id;
+            new bootstrap.Modal(document.getElementById('deactivateConfirmModal')).show();
         }
 
         async function confirmDelete() {
@@ -617,16 +1151,112 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    showAlert('Utilisateur supprimé avec succès', 'success');
+                    showAlert('Utilisateur supprimé définitivement', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
                     loadUsers();
+                    loadStatistics();
                 } else {
-                    showAlert('Erreur lors de la suppression', 'danger');
+                    showAlert(`Erreur lors de la suppression: ${data.message || 'Erreur inconnue'}`, 'danger');
                 }
             } catch (error) {
                 console.error('Erreur lors de la suppression:', error);
                 showAlert('Erreur lors de la suppression', 'danger');
             }
+        }
+
+        async function confirmDeactivate() {
+            if (!userToDeactivate) return;
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await authenticatedFetch(`${API_BASE_URL}/users/${userToDeactivate}/deactivate`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Utilisateur désactivé avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('deactivateConfirmModal')).hide();
+                    loadUsers();
+                    loadStatistics();
+                } else {
+                    showAlert(`Erreur lors de la désactivation: ${data.message || 'Erreur inconnue'}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la désactivation:', error);
+                showAlert('Erreur lors de la désactivation', 'danger');
+            }
+        }
+
+        async function restoreUser(id) {
+            if (!confirm('Êtes-vous sûr de vouloir restaurer cet utilisateur ?')) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await authenticatedFetch(`${API_BASE_URL}/users/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        statut: 'ACTIF'
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Utilisateur restauré avec succès', 'success');
+                    loadUsers();
+                    loadStatistics();
+                } else {
+                    showAlert(`Erreur lors de la restauration: ${data.message || 'Erreur inconnue'}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la restauration:', error);
+                showAlert('Erreur lors de la restauration', 'danger');
+            }
+        }
+
+        async function viewCollaborateur(collaborateurId) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateurId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const collaborateur = data.data;
+                    
+                    // Remplir le modal avec les informations du collaborateur
+                    document.getElementById('collaborateur-nom').textContent = collaborateur.nom;
+                    document.getElementById('collaborateur-prenom').textContent = collaborateur.prenom;
+                    document.getElementById('collaborateur-email').textContent = collaborateur.email || '-';
+                    document.getElementById('collaborateur-telephone').textContent = collaborateur.telephone || '-';
+                    document.getElementById('collaborateur-business-unit').textContent = collaborateur.business_unit_nom || '-';
+                    document.getElementById('collaborateur-division').textContent = collaborateur.division_nom || '-';
+                    document.getElementById('collaborateur-poste').textContent = collaborateur.poste_nom || '-';
+                    document.getElementById('collaborateur-grade').textContent = collaborateur.grade_nom || '-';
+                    document.getElementById('collaborateur-statut').textContent = collaborateur.statut || '-';
+                    document.getElementById('collaborateur-date-embauche').textContent = collaborateur.date_embauche ? new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : '-';
+                    
+                    // Afficher le modal
+                    new bootstrap.Modal(document.getElementById('viewCollaborateurModal')).show();
+                } else {
+                    showAlert('Erreur lors de la récupération des informations du collaborateur', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération du collaborateur:', error);
+                showAlert('Erreur lors de la récupération du collaborateur', 'danger');
+            }
+        }
+
+        function manageUserAccount(collaborateurId, userId) {
+            // Ouvrir le modal de modification pour l'utilisateur lié
+            editUser(userId, true);
         }
 
         function showLoading(show) {

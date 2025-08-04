@@ -240,6 +240,7 @@ router.post('/', authenticateToken, async (req, res) => {
             business_unit_id,
             opportunity_type_id: type_opportunite, // Mapper type_opportunite vers opportunity_type_id
             statut,
+            type_opportunite,
             source,
             probabilite,
             montant_estime,

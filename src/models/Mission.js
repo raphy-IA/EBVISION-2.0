@@ -3,7 +3,7 @@ const { pool } = require('../utils/database');
 class Mission {
     constructor(data) {
         this.id = data.id;
-        this.titre = data.titre;
+        this.titre = data.titre || data.nom;
         this.description = data.description;
         this.client_id = data.client_id;
         this.statut = data.statut;
@@ -24,6 +24,20 @@ class Mission {
         this.date_modification = data.date_modification;
         this.created_by = data.created_by;
         this.updated_by = data.updated_by;
+        
+        // Champs joints
+        this.client_nom = data.client_nom;
+        this.client_statut = data.client_statut;
+        this.responsable_nom = data.responsable_nom;
+        this.responsable_prenom = data.responsable_prenom;
+        this.responsable_initiales = data.responsable_initiales;
+        this.division_nom = data.division_nom;
+        this.business_unit_nom = data.business_unit_nom;
+        this.associe_nom = data.associe_nom;
+        this.associe_prenom = data.associe_prenom;
+        this.associe_initiales = data.associe_initiales;
+        this.nombre_collaborateurs = data.nombre_collaborateurs;
+        this.total_taux_horaire = data.total_taux_horaire;
     }
 
     // Récupérer toutes les missions avec pagination et filtres
@@ -153,18 +167,25 @@ class Mission {
                 m.*,
                 c.nom as client_nom,
                 c.statut as client_statut,
-                col.nom as responsable_nom,
-                col.initiales as responsable_initiales,
+                col_resp.nom as responsable_nom,
+                col_resp.prenom as responsable_prenom,
+                col_resp.initiales as responsable_initiales,
                 d.nom as division_nom,
+                bu.nom as business_unit_nom,
+                col_assoc.nom as associe_nom,
+                col_assoc.prenom as associe_prenom,
+                col_assoc.initiales as associe_initiales,
                 COUNT(em.id) as nombre_collaborateurs,
                 COALESCE(SUM(em.taux_horaire_mission), 0) as total_taux_horaire
             FROM missions m
             LEFT JOIN clients c ON m.client_id = c.id
-            LEFT JOIN collaborateurs col ON m.responsable_id = col.id
+            LEFT JOIN collaborateurs col_resp ON m.collaborateur_id = col_resp.id
             LEFT JOIN divisions d ON m.division_id = d.id
+            LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+            LEFT JOIN collaborateurs col_assoc ON m.associe_id = col_assoc.id
             LEFT JOIN equipes_mission em ON m.id = em.mission_id
             WHERE m.id = $1
-            GROUP BY m.id, c.nom, c.statut, col.nom, col.initiales, d.nom
+            GROUP BY m.id, c.nom, c.statut, col_resp.nom, col_resp.prenom, col_resp.initiales, d.nom, bu.nom, col_assoc.nom, col_assoc.prenom, col_assoc.initiales
         `;
 
         try {

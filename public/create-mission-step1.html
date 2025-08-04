@@ -135,6 +135,57 @@
             cursor: not-allowed;
             transform: none;
         }
+
+        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
+        .sidebar-container {
+            width: 300px; /* Largeur fixe pour la sidebar */
+            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            .sidebar-container {
+                width: 100%; /* La sidebar prend toute la largeur */
+                height: auto; /* Hauteur automatique */
+            }
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    
+        /* Styles pour la sidebar unifiée */
+        .main-content-wrapper {
+            margin-left: 300px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            padding: 0;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content-wrapper {
+                margin-left: 0;
+            }
+            
+            .sidebar-container {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar-container.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -147,6 +198,8 @@
         <!-- Main Content Area -->
         <div class="main-content-area">
             <div class="container-fluid">
+
+
                 <!-- Indicateur d'étapes -->
                 <div class="step-indicator">
                     <div class="step">
@@ -439,6 +492,25 @@
             // Stocker les sélections dans sessionStorage
             sessionStorage.setItem('selectedOpportunity', JSON.stringify(selectedOpportunity));
             sessionStorage.setItem('selectedMissionType', JSON.stringify(selectedMissionType));
+
+            // Sauvegarder l'historique de création
+            const history = {
+                step: 1,
+                opportunity: {
+                    id: selectedOpportunity.id,
+                    nom: selectedOpportunity.nom,
+                    client_nom: selectedOpportunity.client_nom,
+                    montant_estime: selectedOpportunity.montant_estime,
+                    business_unit_nom: selectedOpportunity.business_unit_nom
+                },
+                missionType: {
+                    id: selectedMissionType.id,
+                    codification: selectedMissionType.codification,
+                    libelle: selectedMissionType.libelle,
+                    division_nom: selectedMissionType.division_nom
+                }
+            };
+            sessionStorage.setItem('missionCreationHistory', JSON.stringify(history));
 
             // Rediriger vers l'étape 2
             window.location.href = 'create-mission-step2.html';

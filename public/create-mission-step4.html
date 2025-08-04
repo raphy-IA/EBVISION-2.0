@@ -10,6 +10,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-sidebar.css">
     
+    <!-- Import de la configuration des devises -->
+    <script src="/js/currency-config.js" defer></script>
+    
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -188,6 +191,46 @@
             margin-bottom: 0.5rem;
         }
         
+        .collaborateur-heures .row {
+            display: flex !important;
+            flex-direction: row !important;
+        }
+        
+                        .collaborateur-heures-row {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    background-color: #f8f9fa;
+                    border-radius: 0.375rem;
+                    padding: 0.75rem;
+                    margin-bottom: 0.5rem;
+                    gap: 1rem;
+                }
+                
+                .collaborateur-heures-row.hidden {
+                    display: none !important;
+                }
+        
+        .collaborateur-info {
+            flex: 0 0 25% !important;
+            min-width: 200px;
+        }
+        
+        .collaborateur-taux {
+            flex: 0 0 20% !important;
+            min-width: 150px;
+        }
+        
+        .collaborateur-heures {
+            flex: 0 0 20% !important;
+            min-width: 120px;
+        }
+        
+        .collaborateur-cout {
+            flex: 0 0 20% !important;
+            min-width: 150px;
+        }
+        
         .heures-par-collaborateur {
             max-height: 300px;
             overflow-y: auto;
@@ -221,6 +264,57 @@
             font-weight: bold;
             font-size: 1.2rem;
         }
+
+        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
+        .sidebar-container {
+            width: 300px; /* Largeur fixe pour la sidebar */
+            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            .sidebar-container {
+                width: 100%; /* La sidebar prend toute la largeur */
+                height: auto; /* Hauteur automatique */
+            }
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    
+        /* Styles pour la sidebar unifiée */
+        .main-content-wrapper {
+            margin-left: 300px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            padding: 0;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content-wrapper {
+                margin-left: 0;
+            }
+            
+            .sidebar-container {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar-container.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -233,6 +327,8 @@
         <!-- Main Content Area -->
         <div class="main-content-area">
             <div class="container-fluid">
+
+
                 <!-- Indicateur d'étapes -->
                 <div class="step-indicator">
                     <div class="step">
@@ -332,15 +428,19 @@
                     <h5 class="mb-3"><i class="fas fa-calculator me-2"></i>Budget Prévisionnel d'Exécution</h5>
                     <div id="budget-calculator-content">
                         <div class="budget-item">
-                            <span>Budget Total:</span>
+                            <span>Budget Total (Honoraires + Débours):</span>
                             <span id="budget-total">€0.00</span>
+                        </div>
+                        <div class="budget-item">
+                            <span>Budget Honoraires:</span>
+                            <span id="budget-honoraires">€0.00</span>
                         </div>
                         <div class="budget-item">
                             <span>Coût Personnel:</span>
                             <span id="budget-personnel">€0.00</span>
                         </div>
                         <div class="budget-item">
-                            <span>Marge:</span>
+                            <span>Marge (Honoraires - Personnel):</span>
                             <span id="budget-marge">€0.00</span>
                         </div>
                         <div class="budget-item">
@@ -469,8 +569,8 @@
             const totalBudget = financialData.honoraires_montant + financialData.debours_montant;
             budgetSummary.innerHTML = `
                 <div class="info-badge mb-2">${formatCurrency(totalBudget)}</div>
-                <p class="mb-1"><strong>Honoraires:</strong> ${formatCurrency(financialData.honoraires_montant)}</p>
-                <p class="mb-1"><strong>Débours:</strong> ${formatCurrency(financialData.debours_montant)}</p>
+                <p class="mb-1"><strong>Honoraires:</strong> ${formatCurrency(financialData.honoraires_montant, financialData.honoraires_devise)}</p>
+                <p class="mb-1"><strong>Débours:</strong> ${formatCurrency(financialData.debours_montant, financialData.debours_devise)}</p>
             `;
         }
 
@@ -630,6 +730,7 @@
             console.log('  - selectedTasks:', selectedTasks);
             console.log('  - collaborateurs:', collaborateurs);
             console.log('  - collaborateurs.length:', collaborateurs.length);
+            console.log('  - assignments:', assignments);
             
             if (selectedTasks.length === 0) {
                 container.innerHTML = '<p class="text-muted">Sélectionnez d\'abord les tâches pour voir les affectations disponibles.</p>';
@@ -639,6 +740,10 @@
             const assignmentsHtml = selectedTasks.map(taskId => {
                 const assignment = assignments[taskId];
                 const task = assignment.task;
+                
+                console.log(`🔍 Debug taskId ${taskId}:`);
+                console.log(`  - assignment:`, assignment);
+                console.log(`  - assignment.collaborateurs:`, assignment ? assignment.collaborateurs : 'undefined');
                 
                 return `
                     <div class="assignment-row">
@@ -653,18 +758,24 @@
                                 <label class="form-label">Collaborateurs assignés</label>
                                                                  <div class="collaborateurs-selection">
                                      ${collaborateurs.length > 0 ? 
-                                         collaborateurs.map(collab => `
-                                             <div class="form-check form-check-inline mb-2">
-                                                 <input class="form-check-input" type="checkbox" 
-                                                        id="collab_${taskId}_${collab.id}" 
-                                                        value="${collab.id}"
-                                                        onchange="updateCollaborateurAssignment('${taskId}', '${collab.id}', this.checked)">
-                                                 <label class="form-check-label" for="collab_${taskId}_${collab.id}">
-                                                     <strong>${collab.nom} ${collab.prenom}</strong><br>
-                                                     <small class="text-muted">${collab.grade_nom || 'N/A'} - ${collab.business_unit_nom || 'N/A'}</small>
-                                                 </label>
-                                             </div>
-                                         `).join('') : 
+                                         collaborateurs.map(collab => {
+                                             // Vérifier si ce collaborateur est déjà assigné à cette tâche
+                                             const isAssigned = assignment && assignment.collaborateurs && assignment.collaborateurs[collab.id] !== undefined;
+                                             console.log(`🔍 Debug collab ${collab.id} (${collab.nom}): isAssigned = ${isAssigned}`);
+                                             return `
+                                                 <div class="form-check form-check-inline mb-2">
+                                                     <input class="form-check-input" type="checkbox" 
+                                                            id="collab_${taskId}_${collab.id}" 
+                                                            value="${collab.id}"
+                                                            ${isAssigned ? 'checked' : ''}
+                                                            onchange="updateCollaborateurAssignment('${taskId}', '${collab.id}', this.checked)">
+                                                     <label class="form-check-label" for="collab_${taskId}_${collab.id}">
+                                                         <strong>${collab.nom} ${collab.prenom}</strong><br>
+                                                         <small class="text-muted">${collab.grade_nom || 'N/A'} - ${collab.business_unit_nom || 'N/A'}</small>
+                                                     </label>
+                                                 </div>
+                                             `;
+                                         }).join('') : 
                                          '<div class="alert alert-warning">Aucun collaborateur actif disponible</div>'
                                      }
                                  </div>
@@ -677,16 +788,18 @@
                             <div class="col-12">
                                 <label class="form-label">Heures et coûts par collaborateur</label>
                                 <div class="heures-par-collaborateur">
-                                    ${collaborateurs.map(collab => `
-                                        <div class="row mb-2 collaborateur-heures" id="heures_${taskId}_${collab.id}" style="display: none;">
-                                            <div class="col-md-3 d-flex align-items-center">
-                                                <div>
+                                    ${collaborateurs.map(collab => {
+                                        // Vérifier si ce collaborateur est déjà assigné à cette tâche
+                                        const isAssigned = assignment && assignment.collaborateurs && assignment.collaborateurs[collab.id] !== undefined;
+                                        console.log(`🔍 Debug collab ${collab.id} (${collab.nom}) heures row: isAssigned = ${isAssigned}, hidden class = ${!isAssigned}`);
+                                        return `
+                                            <div class="collaborateur-heures-row ${isAssigned ? '' : 'hidden'}" id="heures_${taskId}_${collab.id}">
+                                                <div class="collaborateur-info">
                                                     <strong>${collab.nom} ${collab.prenom}</strong><br>
                                                     <small class="text-muted">${collab.grade_nom || 'N/A'}</small>
                                                 </div>
-                                            </div>
-                                            <div class="col-md-3 d-flex align-items-center">
-                                                <div class="w-100">
+                                                <div class="collaborateur-taux">
+                                                    <label class="form-label small mb-1">Taux horaire</label>
                                                     <div class="input-group input-group-sm">
                                                         <input type="number" class="form-control" 
                                                                value="${collab.taux_horaire || 0}" 
@@ -695,24 +808,23 @@
                                                         <span class="input-group-text">€/h</span>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="col-md-3 d-flex align-items-center">
-                                                <div class="w-100">
+                                                <div class="collaborateur-heures">
+                                                    <label class="form-label small mb-1">Heures</label>
                                                     <input type="number" class="form-control form-control-sm" 
                                                            placeholder="Heures" min="0" step="0.5"
+                                                           value="${isAssigned ? (assignment.collaborateurs[collab.id].heures || 0) : ''}"
                                                            onchange="updateCollaborateurHeures('${taskId}', '${collab.id}', this.value)"
                                                            title="Heures">
                                                 </div>
-                                            </div>
-                                            <div class="col-md-3 d-flex align-items-center">
-                                                <div class="w-100">
+                                                <div class="collaborateur-cout">
+                                                    <label class="form-label small mb-1">Coût total</label>
                                                     <div class="form-control form-control-sm bg-light" id="cout_${taskId}_${collab.id}" title="Coût total">
-                                                        0,00 €
+                                                        ${isAssigned ? formatCurrency(assignment.collaborateurs[collab.id].cout || 0) : formatCurrency(0)}
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    `).join('')}
+                                        `;
+                                    }).join('')}
                                 </div>
                             </div>
                         </div>
@@ -728,7 +840,7 @@
                                         </div>
                                         <div class="col-md-6">
                                             <strong>Coût total de cette tâche:</strong> 
-                                            <span id="total_cout_${taskId}">0,00 €</span>
+                                            <span id="total_cout_${taskId}">${formatCurrency(0)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -740,12 +852,33 @@
 
             container.innerHTML = assignmentsHtml;
             
-            // Mettre à jour l'affichage des heures par collaborateur
-            updateCollaborateurHeuresDisplay();
+            // Debug après génération du HTML
+            console.log('🔍 Debug après génération HTML:');
+            selectedTasks.forEach(taskId => {
+                collaborateurs.forEach(collab => {
+                    const heuresDiv = document.getElementById(`heures_${taskId}_${collab.id}`);
+                    const checkbox = document.getElementById(`collab_${taskId}_${collab.id}`);
+                    if (heuresDiv) {
+                        console.log(`🔍 Element heures_${taskId}_${collab.id}:`, heuresDiv);
+                        console.log(`🔍 Style display:`, heuresDiv.style.display);
+                        console.log(`🔍 Computed style:`, window.getComputedStyle(heuresDiv).display);
+                    }
+                    if (checkbox) {
+                        console.log(`🔍 Checkbox collab_${taskId}_${collab.id}:`, checkbox);
+                        console.log(`🔍 Checked:`, checkbox.checked);
+                    }
+                });
+            });
         }
 
         // Mettre à jour l'affectation d'un collaborateur
         function updateCollaborateurAssignment(taskId, collaborateurId, isChecked) {
+            console.log('🔍 Debug updateCollaborateurAssignment:');
+            console.log(`  - taskId: ${taskId}`);
+            console.log(`  - collaborateurId: ${collaborateurId}`);
+            console.log(`  - isChecked: ${isChecked}`);
+            console.log(`  - assignments[${taskId}] before:`, assignments[taskId]);
+            
             if (!assignments[taskId]) {
                 assignments[taskId] = {
                     task: tasks.find(t => t.id === taskId),
@@ -753,6 +886,7 @@
                     totalHeures: 0,
                     totalCout: 0
                 };
+                console.log(`  - Created new assignment for taskId ${taskId}:`, assignments[taskId]);
             }
             
             if (isChecked) {
@@ -764,13 +898,23 @@
                     taux_horaire: collaborateur.taux_horaire || 0,
                     cout: 0
                 };
+                console.log(`  - Added collaborateur ${collaborateurId} to task ${taskId}`);
             } else {
                 // Retirer le collaborateur
                 delete assignments[taskId].collaborateurs[collaborateurId];
+                console.log(`  - Removed collaborateur ${collaborateurId} from task ${taskId}`);
             }
             
-            updateCollaborateurHeuresDisplay();
-            updateBudgetCalculator();
+            console.log(`  - assignments[${taskId}] after:`, assignments[taskId]);
+            console.log(`  - assignments[${taskId}].collaborateurs after:`, assignments[taskId].collaborateurs);
+            
+            // Mettre à jour l'affichage basé sur l'état des assignments
+            displayAssignments(); // Recréer les éléments DOM d'abord
+            // Attendre un peu que les éléments DOM soient créés
+            setTimeout(() => {
+                updateCollaborateurHeuresDisplay(); // Puis mettre à jour l'affichage
+                updateBudgetCalculator();
+            }, 100);
         }
         
         // Mettre à jour les heures d'un collaborateur
@@ -796,23 +940,49 @@
         
         // Mettre à jour l'affichage des heures par collaborateur
         function updateCollaborateurHeuresDisplay() {
+            console.log('🔍 Debug updateCollaborateurHeuresDisplay:');
+            console.log('  - selectedTasks:', selectedTasks);
+            console.log('  - assignments:', assignments);
+            
             selectedTasks.forEach(taskId => {
+                console.log(`🔍 Debug taskId ${taskId}:`);
+                console.log(`  - assignments[${taskId}]:`, assignments[taskId]);
+                console.log(`  - assignments[${taskId}].collaborateurs:`, assignments[taskId] ? assignments[taskId].collaborateurs : 'undefined');
+                
                 collaborateurs.forEach(collab => {
                     const heuresDiv = document.getElementById(`heures_${taskId}_${collab.id}`);
                     const checkbox = document.getElementById(`collab_${taskId}_${collab.id}`);
                     const coutDiv = document.getElementById(`cout_${taskId}_${collab.id}`);
                     
+                    console.log(`🔍 Debug collab ${collab.id} (${collab.nom}):`);
+                    console.log(`  - heuresDiv:`, heuresDiv);
+                    console.log(`  - checkbox:`, checkbox);
+                    console.log(`  - checkbox.checked:`, checkbox ? checkbox.checked : 'N/A');
+                    
                     if (heuresDiv && checkbox) {
-                        if (checkbox.checked) {
-                            heuresDiv.style.display = 'block';
+                        // Vérifier si le collaborateur est assigné dans les assignments
+                        const isAssigned = assignments[taskId] && assignments[taskId].collaborateurs && assignments[taskId].collaborateurs[collab.id] !== undefined;
+                        
+                        console.log(`  - isAssigned:`, isAssigned);
+                        console.log(`  - assignments[${taskId}].collaborateurs[${collab.id}]:`, assignments[taskId] && assignments[taskId].collaborateurs ? assignments[taskId].collaborateurs[collab.id] : 'undefined');
+                        
+                        if (isAssigned) {
+                            console.log(`  - Removing 'hidden' class for ${collab.nom}`);
+                            heuresDiv.classList.remove('hidden');
                             // Mettre à jour l'affichage du coût
-                            if (coutDiv && assignments[taskId] && assignments[taskId].collaborateurs[collab.id]) {
+                            if (coutDiv) {
                                 const cout = assignments[taskId].collaborateurs[collab.id].cout || 0;
                                 coutDiv.textContent = formatCurrency(cout);
                             }
                         } else {
-                            heuresDiv.style.display = 'none';
+                            console.log(`  - Adding 'hidden' class for ${collab.nom}`);
+                            heuresDiv.classList.add('hidden');
                         }
+                        
+                        console.log(`  - Has 'hidden' class:`, heuresDiv.classList.contains('hidden'));
+                        console.log(`  - Computed display style:`, window.getComputedStyle(heuresDiv).display);
+                    } else {
+                        console.log(`  - Missing elements: heuresDiv=${!!heuresDiv}, checkbox=${!!checkbox}`);
                     }
                 });
             });
@@ -866,10 +1036,17 @@
             // Calculer le taux horaire moyen
             const tauxHoraireMoyen = totalHeures > 0 ? totalCoutCollaborateurs / totalHeures : 0;
             
-            const budgetTotal = financialData.honoraires_montant + financialData.debours_montant;
-            const marge = budgetTotal - totalPersonnel;
+            // Budget total honoraires (seulement les honoraires)
+            const budgetTotalHonoraires = financialData.honoraires_montant;
+            
+            // Marge basée sur les honoraires seulement
+            const marge = budgetTotalHonoraires - totalPersonnel;
+            
+            // Budget total (honoraires + débours)
+            const budgetTotal = budgetTotalHonoraires + financialData.debours_montant;
             
             document.getElementById('budget-total').textContent = formatCurrency(budgetTotal);
+            document.getElementById('budget-honoraires').textContent = formatCurrency(budgetTotalHonoraires);
             document.getElementById('budget-personnel').textContent = formatCurrency(totalPersonnel);
             document.getElementById('budget-marge').textContent = formatCurrency(marge);
             document.getElementById('budget-heures-total').textContent = totalHeures;
@@ -919,7 +1096,7 @@
                 const missionPayload = {
                     // Données de base de la mission
                     code: missionData.code,
-                    titre: missionData.nom,
+                    nom: missionData.nom, // Utiliser 'nom' au lieu de 'titre' pour correspondre à la base de données
                     description: missionData.description,
                     client_id: selectedOpportunity.client_id, // Utiliser le client_id de l'opportunité
                     opportunity_id: selectedOpportunity.id,
@@ -936,10 +1113,9 @@
                     
                     // Configuration financière
                     montant_honoraires: financialData.honoraires_montant,
-                    devise_honoraires: financialData.honoraires_devise,
+                    devise: financialData.honoraires_devise, // Devise unifiée de la mission
                     description_honoraires: financialData.honoraires_description,
                     montant_debours: financialData.debours_montant,
-                    devise_debours: financialData.debours_devise,
                     description_debours: financialData.debours_description,
                     conditions_paiement: financialData.conditions_paiement,
                     pourcentage_avance: financialData.pourcentage_avance,
@@ -975,6 +1151,12 @@
                 };
                 
                 console.log('📦 Données de mission:', missionPayload);
+                console.log('🔍 Détails des données:', {
+                    missionData: missionData,
+                    financialData: financialData,
+                    selectedOpportunity: selectedOpportunity,
+                    selectedMissionType: selectedMissionType
+                });
                 
                 // Appel API pour créer la mission
                 const response = await authenticatedFetch('/api/missions', {
@@ -1004,12 +1186,33 @@
         }
 
         // Fonction utilitaire pour formater les montants
-        function formatCurrency(amount) {
-            if (!amount) return '€0.00';
-            return new Intl.NumberFormat('fr-FR', {
-                style: 'currency',
-                currency: 'EUR'
-            }).format(amount);
+        function formatCurrency(amount, currencyCode = null) {
+            if (!amount) {
+                if (currencyCode) {
+                    return CURRENCY_CONFIG.formatCurrency(0, currencyCode);
+                }
+                return CURRENCY_CONFIG.formatCurrency(0, 'XAF'); // Devise par défaut XAF
+            }
+            
+            // Si une devise spécifique est fournie, l'utiliser
+            if (currencyCode) {
+                return CURRENCY_CONFIG.formatCurrency(amount, currencyCode);
+            }
+            
+            // Sinon, essayer de récupérer la devise depuis financialData
+            try {
+                const financialDataStr = sessionStorage.getItem('financialData');
+                if (financialDataStr) {
+                    const financialData = JSON.parse(financialDataStr);
+                    // Utiliser la devise des honoraires par défaut
+                    return CURRENCY_CONFIG.formatCurrency(amount, financialData.honoraires_devise || 'XAF');
+                }
+            } catch (error) {
+                console.warn('Erreur lors de la récupération de la devise:', error);
+            }
+            
+            // Fallback vers XAF par défaut
+            return CURRENCY_CONFIG.formatCurrency(amount, 'XAF');
         }
 
         // Fonction utilitaire pour formater les dates

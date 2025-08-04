@@ -19,7 +19,8 @@
     "test:navigation": "node scripts/test_navigation.js",
     "open:pages": "node scripts/open_all_pages.js",
     "deploy": "node scripts/deploy_and_document.js",
-    "status": "node scripts/final_status_check.js"
+    "status": "node scripts/final_status_check.js",
+    "migrate-currency": "node scripts/apply-currency-migration.js"
   },
   "dependencies": {
     "axios": "^1.6.2",
@@ -37,7 +38,7 @@
     "morgan": "^1.10.0",
     "nodemon": "^3.0.1",
     "pg": "^8.11.3",
-    "puppeteer": "^21.5.2"
+    "puppeteer": "^21.11.0"
   },
   "keywords": [
     "trs",

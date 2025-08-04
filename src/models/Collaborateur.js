@@ -31,6 +31,7 @@ class Collaborateur {
         this.poste_nom = data.poste_nom;
         this.poste_code = data.poste_code;
         this.taux_horaire = data.taux_horaire || 0;
+        this.user_id = data.user_id;
     }
 
     validate() {
@@ -59,6 +60,11 @@ class Collaborateur {
             if (data.hasOwnProperty(field)) {
                 filteredData[field] = data[field];
             }
+        }
+        
+        // Préserver le paramètre createUserAccess pour la route
+        if (data.hasOwnProperty('createUserAccess')) {
+            filteredData.createUserAccess = data.createUserAccess;
         }
         
         const collaborateur = new Collaborateur(filteredData);
@@ -175,7 +181,8 @@ class Collaborateur {
                    g.nom as grade_nom, g.code as grade_code,
                    tc.nom as type_collaborateur_nom, tc.code as type_collaborateur_code,
                    p.nom as poste_nom, p.code as poste_code,
-                   COALESCE(th.taux_horaire, g.taux_horaire_default, 0) as taux_horaire
+                   COALESCE(th.taux_horaire, g.taux_horaire_default, 0) as taux_horaire,
+                   u.id as user_id
             FROM collaborateurs c
             LEFT JOIN business_units bu ON c.business_unit_id = bu.id
             LEFT JOIN divisions d ON c.division_id = d.id
@@ -187,6 +194,7 @@ class Collaborateur {
                 AND th.statut = 'ACTIF'
                 AND (th.date_fin_effet IS NULL OR th.date_fin_effet >= CURRENT_DATE)
                 AND th.date_effet <= CURRENT_DATE
+            LEFT JOIN users u ON c.user_id = u.id
             ${whereClause}
             ORDER BY c.nom, c.prenom
             LIMIT $${paramIndex++} OFFSET $${paramIndex++}

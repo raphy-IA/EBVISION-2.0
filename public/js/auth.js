@@ -1,59 +1,123 @@
-// Script pour gérer l'authentification et la déconnexion
+// Script amélioré pour gérer l'authentification et la déconnexion
 class AuthManager {
     constructor() {
         this.isLoggingOut = false;
+        this.logoutAttempts = 0;
+        this.maxLogoutAttempts = 3;
         this.init();
     }
 
     init() {
         this.addLogoutListeners();
         this.checkAuthStatus();
+        this.setupPeriodicTokenCheck();
     }
 
     // Ajouter les écouteurs d'événements pour les boutons de déconnexion
     addLogoutListeners() {
-        // Trouver tous les boutons de déconnexion
-        const logoutButtons = document.querySelectorAll('button');
-        
-        logoutButtons.forEach(button => {
-            if (button.textContent.includes('Déconnexion')) {
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.logout();
-                });
-            }
-        });
-
-        // Alternative : utiliser un sélecteur plus spécifique
+        // Écouteur global pour tous les boutons de déconnexion
         document.addEventListener('click', (e) => {
-            if (e.target.closest('button') && e.target.closest('button').textContent.includes('Déconnexion')) {
+            const button = e.target.closest('button, a, .logout-btn');
+            if (button && (
+                button.textContent.toLowerCase().includes('déconnexion') ||
+                button.textContent.toLowerCase().includes('logout') ||
+                button.classList.contains('logout-btn')
+            )) {
                 e.preventDefault();
+                e.stopPropagation();
                 this.logout();
             }
         });
+
+        // Écouteur spécifique pour les liens de déconnexion
+        const logoutLinks = document.querySelectorAll('a[href*="logout"], .logout-link');
+        logoutLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.logout();
+            });
+        });
     }
 
-    // Fonction de déconnexion
-    logout() {
-        // Afficher une confirmation
-        if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-            // Supprimer le token du localStorage
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('user');
-            
-            // Désactiver temporairement la vérification d'authentification
-            this.isLoggingOut = true;
-            
-            // Rediriger vers la page de connexion avec un délai
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 100);
+    // Fonction de déconnexion améliorée
+    async logout() {
+        if (this.isLoggingOut) {
+            console.log('⚠️ Déconnexion déjà en cours...');
+            return;
         }
+
+        this.logoutAttempts++;
+        
+        if (this.logoutAttempts > this.maxLogoutAttempts) {
+            console.log('⚠️ Trop de tentatives de déconnexion, redirection forcée');
+            this.forceLogout();
+            return;
+        }
+
+        console.log('🔒 Déconnexion en cours... (tentative ' + this.logoutAttempts + ')');
+        
+        try {
+            // Appeler l'API de déconnexion
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
+        } catch (error) {
+            console.log('⚠️ Erreur lors de l\'appel API de déconnexion:', error);
+        }
+
+        // Nettoyer complètement le localStorage
+        this.clearAllStorage();
+        
+        // Désactiver temporairement la vérification d'authentification
+        this.isLoggingOut = true;
+        
+        // Rediriger vers la page de connexion
+        setTimeout(() => {
+            window.location.href = '/login.html';
+        }, 100);
+    }
+
+    // Déconnexion forcée
+    forceLogout() {
+        this.clearAllStorage();
+        this.isLoggingOut = true;
+        window.location.href = '/login.html';
+    }
+
+    // Nettoyer tout le localStorage
+    clearAllStorage() {
+        const keysToRemove = [
+            'authToken',
+            'user',
+            'userInfo',
+            'token',
+            'session',
+            'auth',
+            'login'
+        ];
+        
+        keysToRemove.forEach(key => {
+            localStorage.removeItem(key);
+            sessionStorage.removeItem(key);
+        });
+        
+        // Nettoyer aussi les cookies
+        document.cookie.split(";").forEach(function(c) { 
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        
+        console.log('🧹 Stockage local nettoyé');
     }
 
     // Vérifier le statut d'authentification
     checkAuthStatus() {
-        // Ne pas vérifier si on est en train de se déconnecter
         if (this.isLoggingOut) {
             return;
         }
@@ -61,14 +125,15 @@ class AuthManager {
         const token = localStorage.getItem('authToken');
         
         // Si on est sur la page de login, ne pas rediriger
-        if (window.location.pathname === '/' || window.location.pathname.includes('login')) {
+        if (window.location.pathname === '/' || 
+            window.location.pathname.includes('login') ||
+            window.location.pathname.includes('index')) {
             return;
         }
 
         if (!token) {
-            // Si pas de token, rediriger vers la page de connexion
             console.log('🔒 Aucun token trouvé, redirection vers la page de connexion');
-            window.location.href = '/';
+            this.forceLogout();
             return;
         }
 
@@ -89,22 +154,24 @@ class AuthManager {
 
             if (!response.ok) {
                 console.log('🔒 Token invalide, redirection vers la page de connexion');
-                // Token invalide, supprimer et rediriger
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('user');
-                window.location.href = '/';
+                this.forceLogout();
             } else {
                 console.log('✅ Token valide, utilisateur authentifié');
-                // Token valide, mettre à jour l'affichage
                 this.updateUserDisplay();
             }
         } catch (error) {
-            console.error('❌ Erreur lors de la vérification du token:', error);
-            // En cas d'erreur, supprimer le token et rediriger
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('user');
-            window.location.href = '/';
+            console.log('❌ Erreur lors de la vérification du token:', error);
+            this.forceLogout();
         }
+    }
+
+    // Vérification périodique du token
+    setupPeriodicTokenCheck() {
+        setInterval(() => {
+            if (!this.isLoggingOut) {
+                this.checkAuthStatus();
+            }
+        }, 5 * 60 * 1000); // Vérifier toutes les 5 minutes
     }
 
     // Obtenir les informations de l'utilisateur connecté
@@ -155,4 +222,26 @@ function logout() {
             window.location.href = '/';
         }, 100);
     }
+}
+
+// Fonction globale pour les requêtes API authentifiées
+async function authenticatedFetch(url, options = {}) {
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
+        throw new Error('Token d\'authentification manquant');
+    }
+    
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        ...options.headers
+    };
+    
+    const fetchOptions = {
+        ...options,
+        headers
+    };
+    
+    return fetch(url, fetchOptions);
 } 

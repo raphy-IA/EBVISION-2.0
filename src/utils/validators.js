@@ -53,6 +53,11 @@ const userValidation = {
             .messages({
                 'string.email': 'Format d\'email invalide'
             }),
+        password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/).optional()
+            .messages({
+                'string.min': 'Le mot de passe doit contenir au moins 8 caractères',
+                'string.pattern.base': 'Le mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial (@$!%*?&)'
+            }),
         login: Joi.string().min(3).max(50)
             .messages({
                 'string.min': 'Le login doit contenir au moins 3 caractères',

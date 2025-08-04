@@ -91,6 +91,19 @@ class UnifiedSidebar {
                     </a>
                 </div>
 
+                <!-- Section Facturation -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">FACTURATION</div>
+                    <a href="invoices.html" class="sidebar-nav-link">
+                        <i class="fas fa-file-invoice"></i>
+                        Factures
+                    </a>
+                    <a href="payments.html" class="sidebar-nav-link">
+                        <i class="fas fa-credit-card"></i>
+                        Paiements
+                    </a>
+                </div>
+
                 <!-- Section Configuration -->
                 <div class="sidebar-section">
                     <div class="sidebar-section-title">CONFIGURATION</div>

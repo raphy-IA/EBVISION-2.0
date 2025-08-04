@@ -36,6 +36,9 @@ const evolutionGradesRoutes = require('./src/routes/evolution-grades');
 const evolutionPostesRoutes = require('./src/routes/evolution-postes');
 const evolutionOrganisationsRoutes = require('./src/routes/evolution-organisations');
 const notificationRoutes = require('./src/routes/notifications');
+const invoiceRoutes = require('./src/routes/invoices');
+const activityRoutes = require('./src/routes/activities');
+const timeSheetRoutes = require('./src/routes/time-sheets');
 
 // Import des middlewares
 const errorHandler = require('./src/middleware/errorHandler');
@@ -138,6 +141,9 @@ app.use('/api/evolution-grades', evolutionGradesRoutes);
 app.use('/api/evolution-postes', evolutionPostesRoutes);
 app.use('/api/evolution-organisations', evolutionOrganisationsRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/activities', activityRoutes);
+app.use('/api/time-sheets', timeSheetRoutes);
 
 // Route racine
 app.get('/', (req, res) => {

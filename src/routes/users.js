@@ -18,10 +18,20 @@ router.get('/', authenticateToken, requirePermission('users:read'), async (req, 
             search
         });
 
+        // Ajouter l'information de liaison avec les collaborateurs
+        const usersWithCollaborateurInfo = result.users.map(user => {
+            const isLinked = user.collaborateur_id !== null && user.collaborateur_id !== undefined;
+            return {
+                ...user,
+                linked_to_collaborateur: isLinked,
+                collaborateur_id: user.collaborateur_id || null
+            };
+        });
+
         res.json({
             success: true,
             message: 'Utilisateurs récupérés avec succès',
-            data: result.users,
+            data: usersWithCollaborateurInfo,
             pagination: result.pagination
         });
 
@@ -130,14 +140,18 @@ router.put('/:id', authenticateToken, requirePermission('users:update'), async (
         const { id } = req.params;
 
         // Validation des données
+        console.log('🔍 Données reçues pour mise à jour:', req.body);
         const { error, value } = userValidation.update.validate(req.body);
         if (error) {
+            console.log('❌ Erreur de validation:', error.details);
+            console.log('❌ Messages d\'erreur:', error.details.map(detail => detail.message));
             return res.status(400).json({
                 success: false,
                 message: 'Données invalides',
                 errors: error.details.map(detail => detail.message)
             });
         }
+        console.log('✅ Données validées:', value);
 
         // Vérifier si l'utilisateur existe
         const existingUser = await User.findById(id);
@@ -179,7 +193,38 @@ router.put('/:id', authenticateToken, requirePermission('users:update'), async (
     }
 });
 
-// Supprimer un utilisateur (soft delete)
+// Désactiver un utilisateur (soft delete)
+router.patch('/:id/deactivate', authenticateToken, requirePermission('users:update'), async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Vérifier si l'utilisateur existe
+        const existingUser = await User.findById(id);
+        if (!existingUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'Utilisateur non trouvé'
+            });
+        }
+
+        // Désactiver l'utilisateur (soft delete)
+        await User.deactivate(id);
+
+        res.json({
+            success: true,
+            message: 'Utilisateur désactivé avec succès'
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la désactivation de l\'utilisateur:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur interne du serveur'
+        });
+    }
+});
+
+// Supprimer définitivement un utilisateur (hard delete)
 router.delete('/:id', authenticateToken, requirePermission('users:delete'), async (req, res) => {
     try {
         const { id } = req.params;
@@ -193,12 +238,21 @@ router.delete('/:id', authenticateToken, requirePermission('users:delete'), asyn
             });
         }
 
-        // Soft delete (changer le statut à INACTIF)
-        await User.delete(id);
+        // Vérifier si l'utilisateur est lié à un collaborateur
+        const linkedCollaborateur = await User.checkLinkedCollaborateur(id);
+        if (linkedCollaborateur) {
+            return res.status(400).json({
+                success: false,
+                message: 'Impossible de supprimer un utilisateur lié à un collaborateur. Désactivez-le à la place.'
+            });
+        }
+
+        // Hard delete (suppression définitive)
+        await User.hardDelete(id);
 
         res.json({
             success: true,
-            message: 'Utilisateur supprimé avec succès'
+            message: 'Utilisateur supprimé définitivement'
         });
 
     } catch (error) {

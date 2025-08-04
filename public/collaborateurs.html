@@ -493,6 +493,95 @@
         </div>
     </div>
 
+    <!-- Generate User Account Modal -->
+    <div class="modal fade" id="generateUserAccountModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-plus me-2 text-primary"></i>
+                        Générer un compte utilisateur
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Prévisualisation du compte utilisateur</strong><br>
+                        Vérifiez les informations générées avant de créer le compte.
+                    </div>
+                    
+                    <form id="generateUserAccountForm">
+                        <input type="hidden" id="collaborateurIdForAccount">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="generatedNom" class="form-label">Nom *</label>
+                                    <input type="text" class="form-control" id="generatedNom" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="generatedPrenom" class="form-label">Prénom *</label>
+                                    <input type="text" class="form-control" id="generatedPrenom" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="generatedEmail" class="form-label">Email *</label>
+                                    <input type="email" class="form-control" id="generatedEmail" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="generatedLogin" class="form-label">Login *</label>
+                                    <input type="text" class="form-control" id="generatedLogin">
+                                    <div class="form-text">Première lettre du prénom + nom complet</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="generatedRole" class="form-label">Rôle *</label>
+                                    <select class="form-select" id="generatedRole">
+                                        <option value="USER">Utilisateur</option>
+                                        <option value="ADMIN">Administrateur</option>
+                                        <option value="MANAGER">Manager</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Mot de passe temporaire</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="generatedPassword" value="TempPass123!" readonly>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="generateNewPassword()">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">L'utilisateur devra changer son mot de passe à la première connexion</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmGenerateUserAccount()">
+                        <i class="fas fa-user-plus me-1"></i>
+                        Créer le compte
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Gestion RH Modal -->
     <div class="modal fade" id="gestionRHModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
@@ -976,6 +1065,14 @@
                             <button class="btn btn-outline-primary" onclick="gestionRH('${collaborateur.id}')" title="Gestion RH">
                                 <i class="fas fa-user-tie"></i>
                             </button>
+                            ${collaborateur.user_id ? 
+                                `<button class="btn btn-outline-success" onclick="manageUserAccount('${collaborateur.id}', '${collaborateur.user_id}')" title="Gérer le compte utilisateur">
+                                    <i class="fas fa-user-shield"></i>
+                                </button>` : 
+                                `<button class="btn btn-outline-secondary" onclick="generateUserAccount('${collaborateur.id}')" title="Générer un compte utilisateur">
+                                    <i class="fas fa-user-plus"></i>
+                                </button>`
+                            }
                             <button class="btn btn-outline-danger" onclick="deleteCollaborateur('${collaborateur.id}')" title="Supprimer">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -2115,6 +2212,242 @@
             new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
         }
 
+        function generateUserAccount(collaborateurId) {
+            // Récupérer les informations du collaborateur
+            const collaborateur = collaborateurs.find(c => c.id === collaborateurId);
+            if (!collaborateur) {
+                showAlert('Collaborateur non trouvé', 'danger');
+                return;
+            }
+
+            // Générer les informations de connexion
+            const login = generateLogin(collaborateur.prenom, collaborateur.nom);
+            const email = collaborateur.email;
+            const nom = collaborateur.nom;
+            const prenom = collaborateur.prenom;
+
+            // Afficher le modal de génération
+            document.getElementById('generatedLogin').value = login;
+            document.getElementById('generatedEmail').value = email;
+            document.getElementById('generatedNom').value = nom;
+            document.getElementById('generatedPrenom').value = prenom;
+            document.getElementById('collaborateurIdForAccount').value = collaborateurId;
+
+            new bootstrap.Modal(document.getElementById('generateUserAccountModal')).show();
+        }
+
+        async function manageUserAccount(collaborateurId, userId) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await authenticatedFetch(`${API_BASE_URL}/users/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const user = data.data;
+                    
+                    // Remplir le modal de modification
+                    document.getElementById('editUserId').value = user.id;
+                    document.getElementById('editUserFirstName').value = user.prenom;
+                    document.getElementById('editUserName').value = user.nom;
+                    document.getElementById('editUserEmail').value = user.email;
+                    document.getElementById('editUserLogin').value = user.login || '';
+                    document.getElementById('editUserRole').value = user.role;
+                    document.getElementById('editUserPassword').value = '';
+                    
+                    // Désactiver les champs nom, prénom, email (utilisateur lié)
+                    const nameField = document.getElementById('editUserName');
+                    const firstNameField = document.getElementById('editUserFirstName');
+                    const emailField = document.getElementById('editUserEmail');
+                    
+                    nameField.disabled = true;
+                    firstNameField.disabled = true;
+                    emailField.disabled = true;
+                    nameField.classList.add('form-control-plaintext');
+                    firstNameField.classList.add('form-control-plaintext');
+                    emailField.classList.add('form-control-plaintext');
+                    
+                    // Ajouter des messages d'aide
+                    nameField.title = 'Ce champ est géré via le collaborateur associé. Cliquez sur "Voir le collaborateur" pour le modifier.';
+                    firstNameField.title = 'Ce champ est géré via le collaborateur associé. Cliquez sur "Voir le collaborateur" pour le modifier.';
+                    emailField.title = 'Ce champ est géré via le collaborateur associé. Cliquez sur "Voir le collaborateur" pour le modifier.';
+                    
+                    // Ajouter une note explicative
+                    const noteDiv = document.createElement('div');
+                    noteDiv.className = 'alert alert-info mb-3';
+                    noteDiv.innerHTML = `
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Compte lié à un collaborateur</strong><br>
+                        <small class="text-muted">
+                            Ce compte utilisateur est lié à un collaborateur. Seuls le login, le mot de passe et le rôle peuvent être modifiés ici.<br>
+                            Les informations de nom, prénom et email sont synchronisées avec le collaborateur associé.
+                        </small>
+                    `;
+                    
+                    // Insérer la note au début du formulaire
+                    const form = document.getElementById('editUserForm');
+                    form.insertBefore(noteDiv, form.firstChild);
+                    
+                    // Mettre à jour le titre du modal
+                    document.querySelector('#editUserModal .modal-title').innerHTML = 
+                        '<i class="fas fa-user-shield me-2"></i>Gérer le Compte Utilisateur (Lié à Collaborateur)';
+                    
+                    // Afficher le modal
+                    new bootstrap.Modal(document.getElementById('editUserModal')).show();
+                } else {
+                    showAlert('Utilisateur non trouvé', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur de connexion', 'danger');
+            }
+        }
+
+        function generateLogin(prenom, nom) {
+            // Première lettre du prénom + nom complet
+            const firstLetter = prenom.charAt(0).toLowerCase();
+            const nomLower = nom.toLowerCase().replace(/\s+/g, '');
+            return firstLetter + nomLower;
+        }
+
+        async function updateUser() {
+            const form = document.getElementById('editUserForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const id = document.getElementById('editUserId').value;
+            const formData = {};
+
+            // Ajouter login seulement s'il n'est pas vide
+            const loginValue = document.getElementById('editUserLogin').value.trim();
+            if (loginValue) {
+                formData.login = loginValue;
+            }
+
+            // Ajouter rôle seulement s'il n'est pas vide
+            const roleValue = document.getElementById('editUserRole').value;
+            if (roleValue) {
+                formData.role = roleValue;
+            }
+
+            // Ajouter nom, prénom, email seulement si les champs ne sont pas désactivés et pas vides
+            const nameField = document.getElementById('editUserName');
+            const firstNameField = document.getElementById('editUserFirstName');
+            const emailField = document.getElementById('editUserEmail');
+            
+            if (!nameField.disabled && nameField.value.trim()) {
+                formData.nom = nameField.value.trim();
+            }
+            if (!firstNameField.disabled && firstNameField.value.trim()) {
+                formData.prenom = firstNameField.value.trim();
+            }
+            if (!emailField.disabled && emailField.value.trim()) {
+                formData.email = emailField.value.trim();
+            }
+
+            const newPassword = document.getElementById('editUserPassword').value;
+            if (newPassword) {
+                formData.password = newPassword;
+            }
+
+            console.log('📤 Données envoyées:', formData);
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await authenticatedFetch(`${API_BASE_URL}/users/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('✅ Utilisateur mis à jour avec succès ! Les modifications ont été appliquées.', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+                    loadCollaborateurs(); // Recharger la liste des collaborateurs
+                } else {
+                    let errorMessage = data.message || 'Erreur inconnue';
+                    
+                    // Améliorer les messages d'erreur spécifiques
+                    if (data.errors && data.errors.length > 0) {
+                        errorMessage = 'Erreurs de validation :\n' + data.errors.join('\n');
+                    } else if (data.message && data.message.includes('mot de passe')) {
+                        errorMessage = 'Le mot de passe ne respecte pas les règles de sécurité. Vérifiez qu\'il contient au moins 8 caractères, une minuscule, une majuscule, un chiffre et un caractère spécial.';
+                    } else if (data.message && data.message.includes('email')) {
+                        errorMessage = 'L\'email fourni est invalide ou existe déjà dans le système.';
+                    }
+                    
+                    showAlert(errorMessage, 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour:', error);
+                showAlert('Erreur lors de la mise à jour', 'danger');
+            }
+        }
+
+        async function confirmGenerateUserAccount() {
+            const collaborateurId = document.getElementById('collaborateurIdForAccount').value;
+            const login = document.getElementById('generatedLogin').value;
+            const email = document.getElementById('generatedEmail').value;
+            const nom = document.getElementById('generatedNom').value;
+            const prenom = document.getElementById('generatedPrenom').value;
+            const role = document.getElementById('generatedRole').value;
+            const password = document.getElementById('generatedPassword').value;
+
+            if (!login || !email || !nom || !prenom) {
+                showAlert('Veuillez remplir tous les champs obligatoires', 'danger');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateurId}/generate-user-account`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        login,
+                        email,
+                        nom,
+                        prenom,
+                        role,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Compte utilisateur créé avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('generateUserAccountModal')).hide();
+                    loadCollaborateurs(); // Recharger la liste
+                } else {
+                    showAlert(`Erreur lors de la création: ${data.message || 'Erreur inconnue'}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la création du compte:', error);
+                showAlert('Erreur lors de la création du compte', 'danger');
+            }
+        }
+
+        function generateNewPassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+            let password = '';
+            for (let i = 0; i < 12; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('generatedPassword').value = password;
+        }
+
         async function confirmDelete() {
             if (!collaborateurToDelete) return;
             
@@ -2228,5 +2561,80 @@
             }
         }
     </script>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>
+                        Modifier l'Utilisateur
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId">
+                        <div class="mb-3">
+                            <label for="editUserLogin" class="form-label">Login</label>
+                            <input type="text" class="form-control" id="editUserLogin" maxlength="50" placeholder="Ex: jdupont ou jdupont2">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle text-info"></i>
+                                Le login doit être unique. S'il existe déjà, un numéro sera ajouté automatiquement.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserPassword" class="form-label">Nouveau Mot de passe (laisser vide pour ne pas changer)</label>
+                            <input type="password" class="form-control" id="editUserPassword" placeholder="Ex: MonMotDePasse123!">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle text-info"></i>
+                                <strong>Règles de sécurité :</strong>
+                                <ul class="mt-1 mb-0">
+                                    <li>Au moins 8 caractères</li>
+                                    <li>Au moins une minuscule (a-z)</li>
+                                    <li>Au moins une majuscule (A-Z)</li>
+                                    <li>Au moins un chiffre (0-9)</li>
+                                    <li>Au moins un caractère spécial (@$!%*?&)</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserName" class="form-label">Nom *</label>
+                            <input type="text" class="form-control" id="editUserName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserFirstName" class="form-label">Prénom *</label>
+                            <input type="text" class="form-control" id="editUserFirstName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserEmail" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="editUserEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserRole" class="form-label">Rôle *</label>
+                            <select class="form-select" id="editUserRole" required>
+                                <option value="">Sélectionner un rôle</option>
+                                <option value="ADMIN">Administrateur</option>
+                                <option value="MANAGER">Manager</option>
+                                <option value="USER">Utilisateur</option>
+                                <option value="ASSISTANT">Assistant</option>
+                                <option value="SENIOR">Senior</option>
+                                <option value="DIRECTOR">Directeur</option>
+                                <option value="PARTNER">Partenaire</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="updateUser()">
+                        <i class="fas fa-save me-1"></i>
+                        Mettre à jour
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

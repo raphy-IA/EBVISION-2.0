@@ -66,8 +66,8 @@ router.post('/login', async (req, res) => {
                 email: user.email,
                 nom: user.nom,
                 prenom: user.prenom,
-                role: user.role, // Utiliser le rôle
-                permissions: ['users:read', 'users:create', 'users:update', 'users:delete'] // Permissions par défaut
+                role: user.role,
+                permissions: ['users:read', 'users:create', 'users:update', 'users:delete']
             },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
@@ -253,13 +253,36 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
-// Route de déconnexion
-router.post('/logout', authenticateToken, (req, res) => {
-    // En production, on pourrait invalider le token côté serveur
-    res.json({
-        success: true,
-        message: 'Déconnexion réussie'
-    });
+// Route de déconnexion améliorée
+router.post('/logout', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        // Log de déconnexion
+        console.log(`🔒 Déconnexion de l'utilisateur ${userId}`);
+        
+        // En production, on pourrait ajouter le token à une blacklist
+        // Pour le développement, on se contente de logger
+        
+        // Mettre à jour la dernière déconnexion
+        await User.updateLastLogout(userId);
+        
+        res.json({
+            success: true,
+            message: 'Déconnexion réussie',
+            data: {
+                timestamp: new Date().toISOString(),
+                userId: userId
+            }
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de la déconnexion:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la déconnexion'
+        });
+    }
 });
 
 module.exports = router; 
