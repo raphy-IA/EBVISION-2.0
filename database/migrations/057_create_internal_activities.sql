@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS internal_activities (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    estimated_hours DECIMAL(10,2) DEFAULT 0,
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -19,5 +18,4 @@ CREATE INDEX IF NOT EXISTS idx_internal_activities_active ON internal_activities
 COMMENT ON TABLE internal_activities IS 'Activités internes non liées aux missions';
 COMMENT ON COLUMN internal_activities.name IS 'Nom de l''activité interne';
 COMMENT ON COLUMN internal_activities.description IS 'Description détaillée de l''activité';
-COMMENT ON COLUMN internal_activities.estimated_hours IS 'Heures estimées pour cette activité';
 COMMENT ON COLUMN internal_activities.is_active IS 'Statut actif/inactif de l''activité'; 

@@ -225,7 +225,6 @@
                             <tr>
                                 <th>Nom</th>
                                 <th>Description</th>
-                                <th>Heures Estimées</th>
                                 <th>Business Units</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
@@ -261,20 +260,14 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="estimatedHours" class="form-label">Heures estimées</label>
-                                    <input type="number" class="form-control" id="estimatedHours" min="0" step="0.5" value="0">
+                                    <label for="activityDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="activityDescription" rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="activityDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="activityDescription" rows="3"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Business Units *</label>
-                            <div id="businessUnitsContainer" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
-                                <!-- Les business units seront chargées dynamiquement -->
-                            </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note :</strong> Vous pourrez affecter cette activité aux Business Units après sa création.
                         </div>
                     </form>
                 </div>
@@ -355,7 +348,6 @@
                 if (response.ok) {
                     const data = await response.json();
                     businessUnits = data.data;
-                    displayBusinessUnitsInModal();
                 } else {
                     console.error('Erreur lors du chargement des business units');
                 }
@@ -374,7 +366,6 @@
                 row.innerHTML = `
                     <td><strong>${activity.name}</strong></td>
                     <td>${activity.description || '-'}</td>
-                    <td>${activity.estimated_hours || 0}h</td>
                     <td>
                         <span class="badge badge-business-unit">${activity.business_units_count || 0} BU</span>
                     </td>
@@ -384,6 +375,9 @@
                     <td>
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="viewDetails('${activity.id}')">
                             <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-info me-1" onclick="assignToBusinessUnits('${activity.id}')">
+                            <i class="fas fa-link"></i>
                         </button>
                         <button class="btn btn-sm btn-outline-warning me-1" onclick="editActivity('${activity.id}')">
                             <i class="fas fa-edit"></i>
@@ -420,9 +414,6 @@
             document.getElementById('totalActivities').textContent = activities.length;
             document.getElementById('activeActivities').textContent = activities.filter(a => a.is_active).length;
             
-            const totalHours = activities.reduce((sum, activity) => sum + (parseFloat(activity.estimated_hours) || 0), 0);
-            document.getElementById('totalHours').textContent = totalHours + 'h';
-            
             const uniqueBusinessUnits = new Set();
             activities.forEach(activity => {
                 if (activity.business_units_count > 0) {
@@ -430,6 +421,7 @@
                 }
             });
             document.getElementById('totalBusinessUnits').textContent = uniqueBusinessUnits.size;
+            document.getElementById('totalHours').textContent = 'N/A';
         }
 
         // Ouvrir le modal de création
@@ -437,10 +429,6 @@
             currentActivityId = null;
             document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>Nouvelle Activité Interne';
             document.getElementById('activityForm').reset();
-            
-            // Décocher toutes les business units
-            const checkboxes = document.querySelectorAll('#businessUnitsContainer input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = false);
             
             const modal = new bootstrap.Modal(document.getElementById('activityModal'));
             modal.show();
@@ -463,18 +451,6 @@
                     document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Modifier l\'Activité';
                     document.getElementById('activityName').value = activity.name;
                     document.getElementById('activityDescription').value = activity.description || '';
-                    document.getElementById('estimatedHours').value = activity.estimated_hours || 0;
-                    
-                    // Cocher les business units affectées
-                    const checkboxes = document.querySelectorAll('#businessUnitsContainer input[type="checkbox"]');
-                    checkboxes.forEach(cb => cb.checked = false);
-                    
-                    if (activity.business_units) {
-                        activity.business_units.forEach(bu => {
-                            const checkbox = document.getElementById(`bu_${bu.id}`);
-                            if (checkbox) checkbox.checked = true;
-                        });
-                    }
                     
                     const modal = new bootstrap.Modal(document.getElementById('activityModal'));
                     modal.show();
@@ -492,20 +468,9 @@
                 return;
             }
 
-            const selectedBusinessUnits = Array.from(
-                document.querySelectorAll('#businessUnitsContainer input[type="checkbox"]:checked')
-            ).map(cb => cb.value);
-
-            if (selectedBusinessUnits.length === 0) {
-                alert('Veuillez sélectionner au moins une business unit');
-                return;
-            }
-
             const activityData = {
                 name: document.getElementById('activityName').value,
-                description: document.getElementById('activityDescription').value,
-                estimated_hours: parseFloat(document.getElementById('estimatedHours').value) || 0,
-                business_unit_ids: selectedBusinessUnits
+                description: document.getElementById('activityDescription').value
             };
 
             try {
@@ -593,7 +558,6 @@
                                 <h6>Informations générales</h6>
                                 <p><strong>Nom:</strong> ${activity.name}</p>
                                 <p><strong>Description:</strong> ${activity.description || 'Aucune description'}</p>
-                                <p><strong>Heures estimées:</strong> ${activity.estimated_hours || 0}h</p>
                                 <p><strong>Statut:</strong> <span class="badge bg-success">Actif</span></p>
                             </div>
                             <div class="col-md-6">
@@ -613,6 +577,112 @@
                 }
             } catch (error) {
                 console.error('Erreur:', error);
+            }
+        }
+
+        // Affecter une activité aux business units
+        async function assignToBusinessUnits(activityId) {
+            try {
+                // Charger les business units disponibles
+                const buResponse = await fetch('/api/internal-activities/business-units/list', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!buResponse.ok) {
+                    throw new Error('Erreur lors du chargement des business units');
+                }
+                
+                const buData = await buResponse.json();
+                const businessUnits = buData.data;
+                
+                // Charger les business units actuellement affectées
+                const currentResponse = await fetch(`/api/internal-activities/${activityId}/business-units`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                let currentAssignments = [];
+                if (currentResponse.ok) {
+                    const currentData = await currentResponse.json();
+                    currentAssignments = currentData.data.map(bu => bu.id);
+                }
+                
+                // Créer le modal d'affectation
+                const modalBody = document.getElementById('detailsModalBody');
+                modalBody.innerHTML = `
+                    <h6>Sélectionner les Business Units</h6>
+                    <div class="mb-3">
+                        <div class="row">
+                            ${businessUnits.map(bu => `
+                                <div class="col-md-6 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               value="${bu.id}" id="assign_bu_${bu.id}"
+                                               ${currentAssignments.includes(bu.id) ? 'checked' : ''}>
+                                        <label class="form-check-label" for="assign_bu_${bu.id}">
+                                            <strong>${bu.name}</strong>
+                                            <br>
+                                            <small class="text-muted">${bu.description || 'Aucune description'}</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button class="btn btn-primary" onclick="saveAssignment('${activityId}')">
+                            <i class="fas fa-save me-2"></i>Sauvegarder l'affectation
+                        </button>
+                    </div>
+                `;
+                
+                // Changer le titre du modal
+                document.querySelector('#detailsModal .modal-title').innerHTML = 
+                    '<i class="fas fa-link me-2"></i>Affecter aux Business Units';
+                
+                const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+                modal.show();
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors du chargement des business units');
+            }
+        }
+
+        // Sauvegarder l'affectation
+        async function saveAssignment(activityId) {
+            const selectedBusinessUnits = Array.from(
+                document.querySelectorAll('#detailsModalBody input[type="checkbox"]:checked')
+            ).map(cb => cb.value);
+
+            try {
+                const response = await fetch(`/api/internal-activities/${activityId}/assign`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        business_unit_ids: selectedBusinessUnits
+                    })
+                });
+
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('detailsModal'));
+                    modal.hide();
+                    
+                    await loadActivities();
+                    showNotification('Affectation sauvegardée avec succès', 'success');
+                } else {
+                    const error = await response.json();
+                    alert('Erreur: ' + error.message);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la sauvegarde de l\'affectation');
             }
         }
 

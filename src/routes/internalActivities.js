@@ -52,7 +52,7 @@ router.get('/:id', auth, async (req, res) => {
 // POST /api/internal-activities - Créer une nouvelle activité interne
 router.post('/', auth, async (req, res) => {
     try {
-        const { name, description, estimated_hours, business_unit_ids } = req.body;
+        const { name, description } = req.body;
         
         // Validation des données
         if (!name || name.trim().length === 0) {
@@ -64,9 +64,7 @@ router.post('/', auth, async (req, res) => {
         
         const activityData = {
             name: name.trim(),
-            description: description || '',
-            estimated_hours: estimated_hours || 0,
-            business_unit_ids: business_unit_ids || []
+            description: description || ''
         };
         
         const newActivity = await InternalActivity.create(activityData);
@@ -89,7 +87,7 @@ router.post('/', auth, async (req, res) => {
 // PUT /api/internal-activities/:id - Mettre à jour une activité interne
 router.put('/:id', auth, async (req, res) => {
     try {
-        const { name, description, estimated_hours, business_unit_ids } = req.body;
+        const { name, description } = req.body;
         
         // Validation des données
         if (!name || name.trim().length === 0) {
@@ -101,9 +99,7 @@ router.put('/:id', auth, async (req, res) => {
         
         const activityData = {
             name: name.trim(),
-            description: description || '',
-            estimated_hours: estimated_hours || 0,
-            business_unit_ids: business_unit_ids || []
+            description: description || ''
         };
         
         const updatedActivity = await InternalActivity.update(req.params.id, activityData);
@@ -209,6 +205,34 @@ router.get('/business-units/list', auth, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erreur lors de la récupération des business units',
+            error: error.message
+        });
+    }
+});
+
+// POST /api/internal-activities/:id/assign - Affecter une activité interne à des business units
+router.post('/:id/assign', auth, async (req, res) => {
+    try {
+        const { business_unit_ids } = req.body;
+        
+        if (!business_unit_ids || !Array.isArray(business_unit_ids)) {
+            return res.status(400).json({
+                success: false,
+                message: 'La liste des business units est requise'
+            });
+        }
+        
+        await InternalActivity.assignToBusinessUnits(req.params.id, business_unit_ids);
+        
+        res.json({
+            success: true,
+            message: 'Activité interne affectée aux business units avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur lors de l\'affectation aux business units:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de l\'affectation aux business units',
             error: error.message
         });
     }
