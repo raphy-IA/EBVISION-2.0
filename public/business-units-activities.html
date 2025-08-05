@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Activités Internes par Business Unit - TRS</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar-container {
+            width: 300px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-action {
+            border-radius: 25px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .business-unit-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .business-unit-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .activity-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .activity-item.assigned {
+            border-left-color: #27ae60;
+            background: #e8f5e8;
+        }
+        
+        .activity-item.assigned:hover {
+            background: #d4edda;
+        }
+        
+        .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+        
+        .stats-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .stats-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            
+            .sidebar-container {
+                width: 100%;
+                height: auto;
+            }
+            
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container" id="sidebar">
+            <!-- Le contenu de la sidebar sera injecté par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <!-- Header de la page -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1><i class="fas fa-cogs me-3"></i>Configuration Activités Internes</h1>
+                        <p class="mb-0">Configurez les activités internes par Business Unit</p>
+                    </div>
+                    <button class="btn btn-light btn-action" onclick="saveAllConfigurations()">
+                        <i class="fas fa-save me-2"></i>Sauvegarder Tout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card stats-card">
+                        <i class="fas fa-building text-primary"></i>
+                        <div class="stats-number" id="totalBusinessUnits">0</div>
+                        <div class="stats-label">Business Units</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card">
+                        <i class="fas fa-list text-success"></i>
+                        <div class="stats-number" id="totalActivities">0</div>
+                        <div class="stats-label">Activités Internes</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card">
+                        <i class="fas fa-link text-warning"></i>
+                        <div class="stats-number" id="totalAssignments">0</div>
+                        <div class="stats-label">Affectations</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card">
+                        <i class="fas fa-check-circle text-info"></i>
+                        <div class="stats-number" id="configuredUnits">0</div>
+                        <div class="stats-label">BU Configurées</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sélecteur de Business Unit -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-filter me-2"></i>Filtrer par Business Unit
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <select class="form-select" id="businessUnitFilter">
+                                <option value="">Toutes les Business Units</option>
+                                <!-- Les options seront chargées dynamiquement -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="showConfiguredOnly">
+                                <label class="form-check-label" for="showConfiguredOnly">
+                                    Afficher seulement les BU configurées
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des Business Units -->
+            <div id="businessUnitsContainer">
+                <!-- Les business units seront chargées dynamiquement -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de détails -->
+    <div class="modal fade" id="detailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>Détails de la Configuration
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="detailsModalBody">
+                    <!-- Les détails seront chargés dynamiquement -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/sidebar.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    
+    <script>
+        let businessUnits = [];
+        let activities = [];
+        let assignments = {};
+
+        // Charger les données au démarrage
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBusinessUnits();
+            loadActivities();
+        });
+
+        // Charger les business units
+        async function loadBusinessUnits() {
+            try {
+                const response = await fetch('/api/business-units', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    businessUnits = data.data;
+                    displayBusinessUnits();
+                    updateStatistics();
+                    populateFilter();
+                } else {
+                    console.error('Erreur lors du chargement des business units');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Charger les activités internes
+        async function loadActivities() {
+            try {
+                const response = await fetch('/api/internal-activities', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    activities = data.data;
+                    loadAssignments();
+                } else {
+                    console.error('Erreur lors du chargement des activités');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Charger les affectations existantes
+        async function loadAssignments() {
+            assignments = {};
+            
+            for (const bu of businessUnits) {
+                try {
+                    const response = await fetch(`/api/internal-activities/business-unit/${bu.id}`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        assignments[bu.id] = data.data.map(activity => activity.id);
+                    }
+                } catch (error) {
+                    console.error(`Erreur lors du chargement des affectations pour ${bu.name}:`, error);
+                    assignments[bu.id] = [];
+                }
+            }
+            
+            displayBusinessUnits();
+            updateStatistics();
+        }
+
+        // Afficher les business units
+        function displayBusinessUnits() {
+            const container = document.getElementById('businessUnitsContainer');
+            container.innerHTML = '';
+
+            const selectedBu = document.getElementById('businessUnitFilter').value;
+            const showConfiguredOnly = document.getElementById('showConfiguredOnly').checked;
+
+            businessUnits.forEach(bu => {
+                // Filtrer si nécessaire
+                if (selectedBu && bu.id !== selectedBu) return;
+                if (showConfiguredOnly && (!assignments[bu.id] || assignments[bu.id].length === 0)) return;
+
+                const card = document.createElement('div');
+                card.className = 'business-unit-card';
+                
+                const assignedActivities = assignments[bu.id] || [];
+                const assignedCount = assignedActivities.length;
+                
+                card.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="mb-1">
+                                <i class="fas fa-building me-2"></i>${bu.name}
+                            </h5>
+                            <p class="text-muted mb-0">${bu.description || 'Aucune description'}</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-primary">${assignedCount} activité${assignedCount > 1 ? 's' : ''}</span>
+                            <button class="btn btn-sm btn-outline-primary ms-2" onclick="viewDetails('${bu.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6><i class="fas fa-list me-2"></i>Activités Internes</h6>
+                        <div class="row">
+                            ${activities.map(activity => {
+                                const isAssigned = assignedActivities.includes(activity.id);
+                                return `
+                                    <div class="col-md-6 mb-2">
+                                        <div class="activity-item ${isAssigned ? 'assigned' : ''}">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       id="bu_${bu.id}_activity_${activity.id}"
+                                                       ${isAssigned ? 'checked' : ''}
+                                                       onchange="toggleAssignment('${bu.id}', '${activity.id}', this.checked)">
+                                                <label class="form-check-label" for="bu_${bu.id}_activity_${activity.id}">
+                                                    <strong>${activity.name}</strong>
+                                                    <br>
+                                                    <small class="text-muted">${activity.description || 'Aucune description'}</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Basculer une affectation
+        function toggleAssignment(businessUnitId, activityId, isAssigned) {
+            if (!assignments[businessUnitId]) {
+                assignments[businessUnitId] = [];
+            }
+            
+            if (isAssigned) {
+                if (!assignments[businessUnitId].includes(activityId)) {
+                    assignments[businessUnitId].push(activityId);
+                }
+            } else {
+                assignments[businessUnitId] = assignments[businessUnitId].filter(id => id !== activityId);
+            }
+            
+            updateStatistics();
+        }
+
+        // Sauvegarder toutes les configurations
+        async function saveAllConfigurations() {
+            const promises = [];
+            
+            for (const [businessUnitId, activityIds] of Object.entries(assignments)) {
+                // Pour chaque business unit, mettre à jour ses activités
+                const activity = activities.find(a => a.id === businessUnitId);
+                if (activity) {
+                    promises.push(
+                        fetch(`/api/internal-activities/${activity.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify({
+                                name: activity.name,
+                                description: activity.description,
+                                estimated_hours: activity.estimated_hours,
+                                business_unit_ids: activityIds
+                            })
+                        })
+                    );
+                }
+            }
+            
+            try {
+                await Promise.all(promises);
+                showNotification('Configurations sauvegardées avec succès', 'success');
+                await loadAssignments(); // Recharger les données
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde:', error);
+                showNotification('Erreur lors de la sauvegarde', 'danger');
+            }
+        }
+
+        // Voir les détails d'une business unit
+        async function viewDetails(businessUnitId) {
+            const bu = businessUnits.find(b => b.id === businessUnitId);
+            const assignedActivities = assignments[businessUnitId] || [];
+            
+            const modalBody = document.getElementById('detailsModalBody');
+            modalBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Informations Business Unit</h6>
+                        <p><strong>Nom:</strong> ${bu.name}</p>
+                        <p><strong>Description:</strong> ${bu.description || 'Aucune description'}</p>
+                        <p><strong>Activités assignées:</strong> ${assignedActivities.length}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Activités assignées</h6>
+                        ${assignedActivities.length > 0 
+                            ? activities.filter(a => assignedActivities.includes(a.id))
+                                .map(activity => `<span class="badge bg-primary me-1">${activity.name}</span>`)
+                                .join('')
+                            : '<p class="text-muted">Aucune activité assignée</p>'
+                        }
+                    </div>
+                </div>
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+            modal.show();
+        }
+
+        // Mettre à jour les statistiques
+        function updateStatistics() {
+            document.getElementById('totalBusinessUnits').textContent = businessUnits.length;
+            document.getElementById('totalActivities').textContent = activities.length;
+            
+            const totalAssignments = Object.values(assignments).reduce((sum, ids) => sum + ids.length, 0);
+            document.getElementById('totalAssignments').textContent = totalAssignments;
+            
+            const configuredUnits = Object.values(assignments).filter(ids => ids.length > 0).length;
+            document.getElementById('configuredUnits').textContent = configuredUnits;
+        }
+
+        // Peupler le filtre
+        function populateFilter() {
+            const select = document.getElementById('businessUnitFilter');
+            select.innerHTML = '<option value="">Toutes les Business Units</option>';
+            
+            businessUnits.forEach(bu => {
+                const option = document.createElement('option');
+                option.value = bu.id;
+                option.textContent = bu.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Événements de filtrage
+        document.getElementById('businessUnitFilter').addEventListener('change', displayBusinessUnits);
+        document.getElementById('showConfiguredOnly').addEventListener('change', displayBusinessUnits);
+
+        // Fonction pour afficher les notifications
+        function showNotification(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 

@@ -39,6 +39,7 @@ const notificationRoutes = require('./src/routes/notifications');
 const invoiceRoutes = require('./src/routes/invoices');
 const activityRoutes = require('./src/routes/activities');
 const timeSheetRoutes = require('./src/routes/time-sheets');
+const internalActivitiesRoutes = require('./src/routes/internalActivities');
 
 // Import des middlewares
 const errorHandler = require('./src/middleware/errorHandler');
@@ -144,6 +145,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/time-sheets', timeSheetRoutes);
+app.use('/api/internal-activities', internalActivitiesRoutes);
 
 // Route racine
 app.get('/', (req, res) => {
