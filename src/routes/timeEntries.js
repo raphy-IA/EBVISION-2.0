@@ -3,10 +3,19 @@ const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 const TimeEntry = require('../models/TimeEntry');
 
-// GET /api/time-entries - Récupérer toutes les entrées de temps de l'utilisateur
+// GET /api/time-entries - Récupérer les entrées de temps de l'utilisateur pour une période
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const timeEntries = await TimeEntry.findByUser(req.user.id);
+        const { week_start, week_end } = req.query;
+        
+        if (!week_start || !week_end) {
+            return res.status(400).json({
+                success: false,
+                message: 'Les paramètres week_start et week_end sont requis'
+            });
+        }
+
+        const timeEntries = await TimeEntry.findByUserAndPeriod(req.user.id, week_start, week_end);
         
         res.json({
             success: true,
@@ -26,7 +35,8 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/date/:date', authenticateToken, async (req, res) => {
     try {
         const { date } = req.params;
-        const timeEntries = await TimeEntry.findByUserAndDate(req.user.id, date);
+        // Utiliser la même date pour start et end pour obtenir les entrées d'une journée
+        const timeEntries = await TimeEntry.findByUserAndPeriod(req.user.id, date, date);
         
         res.json({
             success: true,
@@ -253,7 +263,16 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 // GET /api/time-entries/statistics - Récupérer les statistiques des entrées de temps
 router.get('/statistics', authenticateToken, async (req, res) => {
     try {
-        const statistics = await TimeEntry.getStatistics(req.user.id);
+        const { start_date, end_date } = req.query;
+        
+        if (!start_date || !end_date) {
+            return res.status(400).json({
+                success: false,
+                message: 'Les paramètres start_date et end_date sont requis'
+            });
+        }
+
+        const statistics = await TimeEntry.getStatisticsByUser(req.user.id, start_date, end_date);
         
         res.json({
             success: true,
