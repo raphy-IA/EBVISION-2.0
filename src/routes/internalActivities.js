@@ -4,12 +4,22 @@ const InternalActivity = require('../models/InternalActivity');
 const BusinessUnit = require('../models/BusinessUnit');
 
 // Middleware d'authentification
-const auth = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 
 // GET /api/internal-activities - Récupérer toutes les activités internes
-router.get('/', auth, async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
-        const activities = await InternalActivity.findAll();
+        const { business_unit_id } = req.query;
+        
+        let activities;
+        if (business_unit_id) {
+            // Filtrer par business unit
+            activities = await InternalActivity.findByBusinessUnit(business_unit_id);
+        } else {
+            // Récupérer toutes les activités
+            activities = await InternalActivity.findAll();
+        }
+        
         res.json({
             success: true,
             data: activities
@@ -25,7 +35,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // GET /api/internal-activities/:id - Récupérer une activité interne par ID
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const activity = await InternalActivity.findById(req.params.id);
         if (!activity) {
@@ -50,7 +60,7 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 // POST /api/internal-activities - Créer une nouvelle activité interne
-router.post('/', auth, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
     try {
         const { name, description } = req.body;
         
@@ -85,7 +95,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // PUT /api/internal-activities/:id - Mettre à jour une activité interne
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { name, description } = req.body;
         
@@ -127,7 +137,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // DELETE /api/internal-activities/:id - Supprimer une activité interne
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const deletedActivity = await InternalActivity.delete(req.params.id);
         
@@ -154,7 +164,7 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 // GET /api/internal-activities/business-unit/:businessUnitId - Récupérer les activités internes par business unit
-router.get('/business-unit/:businessUnitId', auth, async (req, res) => {
+router.get('/business-unit/:businessUnitId', authenticateToken, async (req, res) => {
     try {
         const activities = await InternalActivity.findByBusinessUnit(req.params.businessUnitId);
         
@@ -173,7 +183,7 @@ router.get('/business-unit/:businessUnitId', auth, async (req, res) => {
 });
 
 // GET /api/internal-activities/:id/business-units - Récupérer les business units d'une activité interne
-router.get('/:id/business-units', auth, async (req, res) => {
+router.get('/:id/business-units', authenticateToken, async (req, res) => {
     try {
         const businessUnits = await InternalActivity.getBusinessUnitsByActivity(req.params.id);
         
@@ -192,13 +202,15 @@ router.get('/:id/business-units', auth, async (req, res) => {
 });
 
 // GET /api/internal-activities/business-units/list - Récupérer la liste des business units pour les affectations
-router.get('/business-units/list', auth, async (req, res) => {
+router.get('/business-units/list', authenticateToken, async (req, res) => {
     try {
-        const businessUnits = await BusinessUnit.findAll();
+        const businessUnits = await BusinessUnit.findActive();
         
         res.json({
             success: true,
-            data: businessUnits
+            data: {
+                businessUnits: businessUnits
+            }
         });
     } catch (error) {
         console.error('Erreur lors de la récupération des business units:', error);
@@ -211,7 +223,7 @@ router.get('/business-units/list', auth, async (req, res) => {
 });
 
 // POST /api/internal-activities/:id/assign - Affecter une activité interne à des business units
-router.post('/:id/assign', auth, async (req, res) => {
+router.post('/:id/assign', authenticateToken, async (req, res) => {
     try {
         const { business_unit_ids } = req.body;
         

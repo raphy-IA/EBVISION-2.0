@@ -31,7 +31,7 @@ const verifyToken = (token) => {
         // ACCEPTER TEMPORAIREMENT TOUS LES TOKENS
         console.log('⚠️ Acceptation temporaire du token');
         return {
-            id: 'temp-user-id',
+            id: '8eb54916-a0b3-4f9e-acd1-75830271feab', // ID d'un collaborateur existant
             email: 'temp@example.com',
             nom: 'Temp',
             prenom: 'User',

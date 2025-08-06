@@ -1,380 +1,313 @@
 const express = require('express');
 const router = express.Router();
 const TimeSheet = require('../models/TimeSheet');
+const TimeEntry = require('../models/TimeEntry');
 const { authenticateToken } = require('../middleware/auth');
 
-/**
- * @route   GET /api/time-sheets
- * @desc    Récupérer toutes les feuilles de temps avec filtres
- * @access  Private
- */
-router.get('/', authenticateToken, async (req, res) => {
+// Obtenir la feuille de temps actuelle pour un utilisateur
+router.get('/current', authenticateToken, async (req, res) => {
     try {
-        const {
-            collaborateur_id,
-            statut,
-            semaine,
-            annee,
-            page = 1,
-            limit = 50,
-            search
-        } = req.query;
+        const userId = req.user.id;
+        const { week_start } = req.query;
 
-        const options = {
-            collaborateur_id,
-            statut,
-            semaine: semaine ? parseInt(semaine) : undefined,
-            annee: annee ? parseInt(annee) : undefined,
-            page: parseInt(page),
-            limit: parseInt(limit),
-            search
-        };
+        if (!week_start) {
+            return res.status(400).json({ error: 'Le paramètre week_start est requis' });
+        }
 
-        const result = await TimeSheet.findAll(options);
+        console.log('User ID:', userId);
+        console.log('Week start:', week_start);
+
+        // Calculer la fin de semaine (7 jours après le début)
+        const weekStartDate = new Date(week_start);
+        const weekEndDate = new Date(weekStartDate);
+        weekEndDate.setDate(weekStartDate.getDate() + 6);
+
+        const weekEnd = weekEndDate.toISOString().split('T')[0];
+
+        console.log('Full user object:', req.user);
+
+        // Trouver ou créer la feuille de temps
+        let timeSheet;
+        try {
+            timeSheet = await TimeSheet.findOrCreate(userId, week_start, weekEnd);
+        } catch (error) {
+            console.error('Erreur lors de la création de la feuille de temps:', error);
+            return res.status(500).json({ error: error.message });
+        }
+
+        if (!timeSheet) {
+            return res.status(500).json({ error: 'Impossible de créer ou récupérer la feuille de temps' });
+        }
+
+        // Récupérer les entrées d'heures de cette feuille de temps
+        const timeEntries = await TimeEntry.findByTimeSheet(timeSheet.id);
+
+        // Calculer les statistiques
+        const statistics = await TimeSheet.getStatistics(timeSheet.id);
 
         res.json({
-            success: true,
-            data: result.timeSheets,
-            pagination: result.pagination
+            timeSheet,
+            timeEntries,
+            statistics
         });
+
     } catch (error) {
-        console.error('Erreur lors de la récupération des feuilles de temps:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la récupération des feuilles de temps',
-            error: error.message
-        });
+        console.error('Erreur lors de la récupération de la feuille de temps actuelle:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
-/**
- * @route   GET /api/time-sheets/:id
- * @desc    Récupérer une feuille de temps par ID
- * @access  Private
- */
+// Obtenir toutes les feuilles de temps d'un utilisateur
+router.get('/user/:userId', authenticateToken, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { limit = 50 } = req.query;
+
+        const timeSheets = await TimeSheet.findByUser(userId, parseInt(limit));
+
+        res.json(timeSheets);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des feuilles de temps:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Obtenir une feuille de temps spécifique avec ses entrées
 router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const timeSheet = await TimeSheet.findById(id);
 
+        // Récupérer la feuille de temps
+        const timeSheet = await TimeSheet.findById(id);
         if (!timeSheet) {
-            return res.status(404).json({
-                success: false,
-                message: 'Feuille de temps non trouvée'
-            });
+            return res.status(404).json({ error: 'Feuille de temps non trouvée' });
         }
 
+        // Récupérer les entrées d'heures
+        const timeEntries = await TimeEntry.findByTimeSheet(id);
+
+        // Calculer les statistiques
+        const statistics = await TimeSheet.getStatistics(id);
+
         res.json({
-            success: true,
-            data: timeSheet
+            timeSheet,
+            timeEntries,
+            statistics
         });
+
     } catch (error) {
         console.error('Erreur lors de la récupération de la feuille de temps:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la récupération de la feuille de temps',
-            error: error.message
-        });
+        res.status(500).json({ error: error.message });
     }
 });
 
-/**
- * @route   POST /api/time-sheets
- * @desc    Créer une nouvelle feuille de temps
- * @access  Private
- */
-router.post('/', authenticateToken, async (req, res) => {
-    try {
-        const timeSheetData = {
-            collaborateur_id: req.body.collaborateur_id,
-            semaine: req.body.semaine,
-            annee: req.body.annee,
-            statut: req.body.statut || 'BROUILLON',
-            commentaire: req.body.commentaire
-        };
-
-        const timeSheet = await TimeSheet.create(timeSheetData);
-
-        res.status(201).json({
-            success: true,
-            message: 'Feuille de temps créée avec succès',
-            data: timeSheet
-        });
-    } catch (error) {
-        console.error('Erreur lors de la création de la feuille de temps:', error);
-        res.status(400).json({
-            success: false,
-            message: 'Erreur lors de la création de la feuille de temps',
-            error: error.message
-        });
-    }
-});
-
-/**
- * @route   PUT /api/time-sheets/:id
- * @desc    Mettre à jour une feuille de temps
- * @access  Private
- */
-router.put('/:id', authenticateToken, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const timeSheet = await TimeSheet.findById(id);
-
-        if (!timeSheet) {
-            return res.status(404).json({
-                success: false,
-                message: 'Feuille de temps non trouvée'
-            });
-        }
-
-        const updateData = {
-            statut: req.body.statut,
-            commentaire: req.body.commentaire
-        };
-
-        // Supprimer les champs undefined
-        Object.keys(updateData).forEach(key => {
-            if (updateData[key] === undefined) {
-                delete updateData[key];
-            }
-        });
-
-        const updatedTimeSheet = await timeSheet.update(updateData);
-
-        res.json({
-            success: true,
-            message: 'Feuille de temps mise à jour avec succès',
-            data: updatedTimeSheet
-        });
-    } catch (error) {
-        console.error('Erreur lors de la mise à jour de la feuille de temps:', error);
-        res.status(400).json({
-            success: false,
-            message: 'Erreur lors de la mise à jour de la feuille de temps',
-            error: error.message
-        });
-    }
-});
-
-/**
- * @route   DELETE /api/time-sheets/:id
- * @desc    Supprimer une feuille de temps
- * @access  Private
- */
-router.delete('/:id', authenticateToken, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const deleted = await TimeSheet.delete(id);
-
-        if (!deleted) {
-            return res.status(404).json({
-                success: false,
-                message: 'Feuille de temps non trouvée'
-            });
-        }
-
-        res.json({
-            success: true,
-            message: 'Feuille de temps supprimée avec succès'
-        });
-    } catch (error) {
-        console.error('Erreur lors de la suppression de la feuille de temps:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la suppression de la feuille de temps',
-            error: error.message
-        });
-    }
-});
-
-/**
- * @route   POST /api/time-sheets/:id/submit
- * @desc    Soumettre une feuille de temps
- * @access  Private
- */
+// Soumettre une feuille de temps
 router.post('/:id/submit', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const timeSheet = await TimeSheet.findById(id);
+        const userId = req.user.id;
 
+        // Vérifier que la feuille de temps appartient à l'utilisateur
+        const timeSheet = await TimeSheet.findById(id);
         if (!timeSheet) {
-            return res.status(404).json({
-                success: false,
-                message: 'Feuille de temps non trouvée'
-            });
+            return res.status(404).json({ error: 'Feuille de temps non trouvée' });
         }
 
-        const submittedTimeSheet = await timeSheet.submit();
+        if (timeSheet.user_id !== userId) {
+            return res.status(403).json({ error: 'Accès non autorisé' });
+        }
+
+        // Soumettre la feuille de temps
+        const updatedTimeSheet = await TimeSheet.submit(id);
 
         res.json({
-            success: true,
             message: 'Feuille de temps soumise avec succès',
-            data: submittedTimeSheet
+            timeSheet: updatedTimeSheet
         });
+
     } catch (error) {
         console.error('Erreur lors de la soumission de la feuille de temps:', error);
-        res.status(400).json({
-            success: false,
-            message: 'Erreur lors de la soumission de la feuille de temps',
-            error: error.message
-        });
+        res.status(500).json({ error: error.message });
     }
 });
 
-/**
- * @route   POST /api/time-sheets/:id/validate
- * @desc    Valider une feuille de temps
- * @access  Private
- */
+// Valider une feuille de temps (pour les superviseurs)
 router.post('/:id/validate', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { commentaire } = req.body;
         const validateurId = req.user.id;
 
-        const timeSheet = await TimeSheet.findById(id);
-
-        if (!timeSheet) {
-            return res.status(404).json({
-                success: false,
-                message: 'Feuille de temps non trouvée'
-            });
+        // Vérifier que l'utilisateur a les permissions de validation
+        if (!req.user.permissions || !req.user.permissions.includes('timesheets:validate')) {
+            return res.status(403).json({ error: 'Permissions insuffisantes' });
         }
 
-        const validatedTimeSheet = await timeSheet.validate(validateurId, commentaire);
+        // Valider la feuille de temps
+        const updatedTimeSheet = await TimeSheet.validate(id, validateurId);
 
         res.json({
-            success: true,
             message: 'Feuille de temps validée avec succès',
-            data: validatedTimeSheet
+            timeSheet: updatedTimeSheet
         });
+
     } catch (error) {
         console.error('Erreur lors de la validation de la feuille de temps:', error);
-        res.status(400).json({
-            success: false,
-            message: 'Erreur lors de la validation de la feuille de temps',
-            error: error.message
-        });
+        res.status(500).json({ error: error.message });
     }
 });
 
-/**
- * @route   POST /api/time-sheets/:id/reject
- * @desc    Rejeter une feuille de temps
- * @access  Private
- */
+// Rejeter une feuille de temps (pour les superviseurs)
 router.post('/:id/reject', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { commentaire } = req.body;
+        const { notes_rejet } = req.body;
         const validateurId = req.user.id;
 
-        if (!commentaire) {
-            return res.status(400).json({
-                success: false,
-                message: 'Un commentaire est requis pour rejeter une feuille de temps'
-            });
+        // Vérifier que l'utilisateur a les permissions de validation
+        if (!req.user.permissions || !req.user.permissions.includes('timesheets:validate')) {
+            return res.status(403).json({ error: 'Permissions insuffisantes' });
         }
 
-        const timeSheet = await TimeSheet.findById(id);
-
-        if (!timeSheet) {
-            return res.status(404).json({
-                success: false,
-                message: 'Feuille de temps non trouvée'
-            });
+        if (!notes_rejet) {
+            return res.status(400).json({ error: 'Les notes de rejet sont requises' });
         }
 
-        const rejectedTimeSheet = await timeSheet.reject(validateurId, commentaire);
+        // Rejeter la feuille de temps
+        const updatedTimeSheet = await TimeSheet.reject(id, validateurId, notes_rejet);
 
         res.json({
-            success: true,
             message: 'Feuille de temps rejetée',
-            data: rejectedTimeSheet
+            timeSheet: updatedTimeSheet
         });
+
     } catch (error) {
         console.error('Erreur lors du rejet de la feuille de temps:', error);
-        res.status(400).json({
-            success: false,
-            message: 'Erreur lors du rejet de la feuille de temps',
-            error: error.message
-        });
+        res.status(500).json({ error: error.message });
     }
 });
 
-/**
- * @route   GET /api/time-sheets/collaborateur/:collaborateurId/week/:semaine/:annee
- * @desc    Récupérer ou créer une feuille de temps pour un collaborateur et une semaine
- * @access  Private
- */
-router.get('/collaborateur/:collaborateurId/week/:semaine/:annee', authenticateToken, async (req, res) => {
+// Obtenir les feuilles de temps en attente de validation
+router.get('/pending/validation', authenticateToken, async (req, res) => {
     try {
-        const { collaborateurId, semaine, annee } = req.params;
-        
-        const timeSheet = await TimeSheet.getOrCreate(
-            collaborateurId,
-            parseInt(semaine),
-            parseInt(annee)
-        );
+        // Vérifier que l'utilisateur a les permissions de validation
+        if (!req.user.permissions || !req.user.permissions.includes('timesheets:validate')) {
+            return res.status(403).json({ error: 'Permissions insuffisantes' });
+        }
 
-        res.json({
-            success: true,
-            data: timeSheet
-        });
+        const { limit = 50 } = req.query;
+        const pendingTimeSheets = await TimeSheet.findPendingValidation(parseInt(limit));
+
+        res.json(pendingTimeSheets);
+
     } catch (error) {
-        console.error('Erreur lors de la récupération/création de la feuille de temps:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la récupération de la feuille de temps',
-            error: error.message
-        });
+        console.error('Erreur lors de la récupération des feuilles en attente:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
-/**
- * @route   GET /api/time-sheets/statistics
- * @desc    Obtenir les statistiques des feuilles de temps
- * @access  Private
- */
-router.get('/statistics', authenticateToken, async (req, res) => {
+// Créer une nouvelle feuille de temps
+router.post('/', authenticateToken, async (req, res) => {
     try {
-        const { annee } = req.query;
-        const statistics = await TimeSheet.getStatistics({ annee });
+        const userId = req.user.id;
+        const { week_start, week_end, statut = 'sauvegardé' } = req.body;
 
-        res.json({
-            success: true,
-            data: statistics
+        // Validation des données
+        if (!week_start || !week_end) {
+            return res.status(400).json({ error: 'Les dates de début et fin de semaine sont requises' });
+        }
+
+        // Vérifier que la semaine n'existe pas déjà pour cet utilisateur
+        const existingTimeSheet = await TimeSheet.findByWeekStart(userId, week_start);
+        if (existingTimeSheet) {
+            return res.status(409).json({ error: 'Une feuille de temps existe déjà pour cette semaine' });
+        }
+
+        // Créer la nouvelle feuille de temps
+        const newTimeSheet = await TimeSheet.create({
+            user_id: userId,
+            week_start,
+            week_end,
+            statut
         });
+
+        res.status(201).json({
+            message: 'Feuille de temps créée avec succès',
+            timeSheet: newTimeSheet
+        });
+
     } catch (error) {
-        console.error('Erreur lors de la récupération des statistiques:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la récupération des statistiques',
-            error: error.message
-        });
+        console.error('Erreur lors de la création de la feuille de temps:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
-/**
- * @route   GET /api/time-sheets/overdue
- * @desc    Récupérer les feuilles de temps en retard
- * @access  Private
- */
-router.get('/overdue', authenticateToken, async (req, res) => {
+// Mettre à jour une feuille de temps
+router.put('/:id', authenticateToken, async (req, res) => {
     try {
-        const overdueTimeSheets = await TimeSheet.findOverdue();
+        const { id } = req.params;
+        const updateData = req.body;
+        const userId = req.user.id;
+
+        // Vérifier que la feuille de temps appartient à l'utilisateur
+        const timeSheet = await TimeSheet.findById(id);
+        if (!timeSheet) {
+            return res.status(404).json({ error: 'Feuille de temps non trouvée' });
+        }
+
+        if (timeSheet.user_id !== userId) {
+            return res.status(403).json({ error: 'Accès non autorisé' });
+        }
+
+        // Vérifier que la feuille de temps n'est pas en statut final
+        if (['validé', 'rejeté'].includes(timeSheet.statut)) {
+            return res.status(400).json({ error: 'Impossible de modifier une feuille de temps validée ou rejetée' });
+        }
+
+        // Mettre à jour la feuille de temps
+        const updatedTimeSheet = await TimeSheet.update(id, updateData);
 
         res.json({
-            success: true,
-            data: overdueTimeSheets
+            message: 'Feuille de temps mise à jour avec succès',
+            timeSheet: updatedTimeSheet
         });
+
     } catch (error) {
-        console.error('Erreur lors de la récupération des feuilles en retard:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la récupération des feuilles en retard',
-            error: error.message
+        console.error('Erreur lors de la mise à jour de la feuille de temps:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Supprimer une feuille de temps
+router.delete('/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        // Vérifier que la feuille de temps appartient à l'utilisateur
+        const timeSheet = await TimeSheet.findById(id);
+        if (!timeSheet) {
+            return res.status(404).json({ error: 'Feuille de temps non trouvée' });
+        }
+
+        if (timeSheet.user_id !== userId) {
+            return res.status(403).json({ error: 'Accès non autorisé' });
+        }
+
+        // Vérifier que la feuille de temps n'est pas en statut final
+        if (['soumis', 'validé', 'rejeté'].includes(timeSheet.statut)) {
+            return res.status(400).json({ error: 'Impossible de supprimer une feuille de temps soumise, validée ou rejetée' });
+        }
+
+        // Supprimer la feuille de temps (et ses entrées via CASCADE)
+        await TimeSheet.delete(id);
+
+        res.json({
+            message: 'Feuille de temps supprimée avec succès'
         });
+
+    } catch (error) {
+        console.error('Erreur lors de la suppression de la feuille de temps:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 

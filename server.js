@@ -20,7 +20,7 @@ const gradeRoutes = require('./src/routes/grades');
 const collaborateurRoutes = require('./src/routes/collaborateurs');
 const healthRoutes = require('./src/routes/health');
 const feuillesTempsRoutes = require('./src/routes/feuilles-temps');
-const timeEntriesRoutes = require('./src/routes/time-entries');
+const timeEntriesRoutes = require('./src/routes/timeEntries');
 const reportsRoutes = require('./src/routes/reports');
 const typesCollaborateursRoutes = require('./src/routes/types-collaborateurs');
 const postesRoutes = require('./src/routes/postes');
@@ -38,7 +38,7 @@ const evolutionOrganisationsRoutes = require('./src/routes/evolution-organisatio
 const notificationRoutes = require('./src/routes/notifications');
 const invoiceRoutes = require('./src/routes/invoices');
 const activityRoutes = require('./src/routes/activities');
-const timeSheetRoutes = require('./src/routes/time-sheets');
+const timeSheetsRoutes = require('./src/routes/time-sheets');
 const internalActivitiesRoutes = require('./src/routes/internalActivities');
 
 // Import des middlewares
@@ -127,6 +127,7 @@ app.use('/api/collaborateurs', collaborateurRoutes);
 app.use('/api/missions', missionRoutes);
 app.use('/api/feuilles-temps', feuillesTempsRoutes);
 app.use('/api/time-entries', timeEntriesRoutes);
+app.use('/api/time-sheets', timeSheetsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/types-collaborateurs', typesCollaborateursRoutes);
 app.use('/api/postes', postesRoutes);
@@ -144,38 +145,29 @@ app.use('/api/evolution-organisations', evolutionOrganisationsRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/activities', activityRoutes);
-app.use('/api/time-sheets', timeSheetRoutes);
 app.use('/api/internal-activities', internalActivitiesRoutes);
 
-// Route racine
+// Route par défaut
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-
-// Gestion des routes non trouvées
-app.use('*', (req, res) => {
-    res.status(404).json({
-        error: 'Route non trouvée',
-        path: req.originalUrl
-    });
+    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
 // Middleware de gestion d'erreurs
 app.use(errorHandler);
 
-// Démarrage du serveur
+// Fonction de démarrage du serveur
 async function startServer() {
     try {
         // Connexion à la base de données
         await connectDatabase();
-        console.log('✅ Connexion à la base de données établie');
-
+        console.log('✅ Connexion à PostgreSQL réussie');
+        
         // Démarrage du serveur
         app.listen(PORT, () => {
-            console.log(`🚀 Serveur démarré sur le port ${PORT}`);
-            console.log(`📊 Environnement: ${process.env.NODE_ENV}`);
-            console.log(`🔗 URL: http://localhost:${PORT}`);
-            console.log(`📚 API Documentation: http://localhost:${PORT}/api/health`);
+            console.log('🚀 Serveur démarré sur le port', PORT);
+            console.log('📊 Environnement:', process.env.NODE_ENV || 'development');
+            console.log('🔗 URL: http://localhost:' + PORT);
+            console.log('📚 API Documentation: http://localhost:' + PORT + '/api/health');
         });
     } catch (error) {
         console.error('❌ Erreur lors du démarrage du serveur:', error);
@@ -183,26 +175,15 @@ async function startServer() {
     }
 }
 
-// Gestion des signaux d'arrêt
-process.on('SIGTERM', () => {
-    console.log('🛑 Signal SIGTERM reçu, arrêt gracieux du serveur');
-    process.exit(0);
-});
-
-process.on('SIGINT', () => {
-    console.log('🛑 Signal SIGINT reçu, arrêt gracieux du serveur');
-    process.exit(0);
-});
-
 // Gestion des erreurs non capturées
-process.on('uncaughtException', (error) => {
-    console.error('❌ Erreur non capturée:', error);
-    process.exit(1);
-});
-
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('❌ Promesse rejetée non gérée:', reason);
+    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('❌ Uncaught Exception:', error);
     process.exit(1);
 });
 
+// Démarrage du serveur
 startServer(); 

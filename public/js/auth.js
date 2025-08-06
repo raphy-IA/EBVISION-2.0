@@ -124,10 +124,9 @@ class AuthManager {
 
         const token = localStorage.getItem('authToken');
         
-        // Si on est sur la page de login, ne pas rediriger
-        if (window.location.pathname === '/' || 
-            window.location.pathname.includes('login') ||
-            window.location.pathname.includes('index')) {
+        // Si on est sur la page de login ou d'accueil, ne pas rediriger
+        if (window.location.pathname === '/login.html' || 
+            window.location.pathname.includes('login')) {
             return;
         }
 
@@ -219,7 +218,7 @@ function logout() {
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
         setTimeout(() => {
-            window.location.href = '/';
+            window.location.href = '/login.html';
         }, 100);
     }
 }
@@ -229,6 +228,8 @@ async function authenticatedFetch(url, options = {}) {
     const token = localStorage.getItem('authToken');
     
     if (!token) {
+        // Rediriger vers la page de connexion si pas de token
+        window.location.href = '/login.html';
         throw new Error('Token d\'authentification manquant');
     }
     
@@ -243,5 +244,15 @@ async function authenticatedFetch(url, options = {}) {
         headers
     };
     
-    return fetch(url, fetchOptions);
+    const response = await fetch(url, fetchOptions);
+    
+    // Si la réponse est 401 (non autorisé), rediriger vers la page de connexion
+    if (response.status === 401) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login.html';
+        throw new Error('Session expirée');
+    }
+    
+    return response;
 } 

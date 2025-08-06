@@ -595,7 +595,7 @@
                 }
                 
                 const buData = await buResponse.json();
-                const businessUnits = buData.data;
+                const businessUnits = buData.data.businessUnits;
                 
                 // Charger les business units actuellement affectées
                 const currentResponse = await fetch(`/api/internal-activities/${activityId}/business-units`, {
@@ -623,7 +623,7 @@
                                                value="${bu.id}" id="assign_bu_${bu.id}"
                                                ${currentAssignments.includes(bu.id) ? 'checked' : ''}>
                                         <label class="form-check-label" for="assign_bu_${bu.id}">
-                                            <strong>${bu.name}</strong>
+                                            <strong>${bu.nom}</strong>
                                             <br>
                                             <small class="text-muted">${bu.description || 'Aucune description'}</small>
                                         </label>

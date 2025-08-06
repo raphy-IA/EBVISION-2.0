@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saisie de Temps - TRS Dashboard</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+        
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar-container {
+            width: 300px;
+            flex-shrink: 0;
+        }
+        
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+        
+        .time-entry-row {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .time-entry-row:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .time-entry-row.chargeable {
+            border-left-color: #27ae60;
+        }
+        
+        .time-entry-row.non-chargeable {
+            border-left-color: #f39c12;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .summary-item {
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .summary-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-action {
+            border-radius: 25px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 25px 25px 0 0;
+            margin-right: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+        
+        .nav-tabs .nav-link:not(.active) {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        .nav-tabs .nav-link:hover:not(.active) {
+            background: #e9ecef;
+            color: #495057;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            
+            .sidebar-container {
+                width: 100%;
+                height: auto;
+            }
+            
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container" id="sidebar">
+            <!-- Le contenu de la sidebar sera injecté par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <!-- Header de la page -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1><i class="fas fa-clock me-3"></i>Saisie de Temps</h1>
+                        <p class="mb-0">Enregistrez vos heures de travail</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-light btn-action me-2" onclick="saveAllEntries()">
+                            <i class="fas fa-save me-2"></i>Sauvegarder
+                        </button>
+                        <button class="btn btn-light btn-action" onclick="clearAllEntries()">
+                            <i class="fas fa-trash me-2"></i>Effacer Tout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Résumé en temps réel -->
+            <div class="summary-card">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="summary-item">
+                            <div class="summary-number" id="totalHours">0.00</div>
+                            <div class="summary-label">Total Heures</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="summary-item">
+                            <div class="summary-number" id="chargeableHours">0.00</div>
+                            <div class="summary-label">Heures Chargeables</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="summary-item">
+                            <div class="summary-number" id="nonChargeableHours">0.00</div>
+                            <div class="summary-label">Heures Non-Chargeables</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="summary-item">
+                            <div class="summary-number" id="currentDate">--</div>
+                            <div class="summary-label">Date</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sélecteur de date -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="entryDate" class="form-label">
+                                <i class="fas fa-calendar me-2"></i>Date de saisie
+                            </label>
+                            <input type="date" class="form-control" id="entryDate" onchange="loadEntriesForDate()">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="businessUnitFilter" class="form-label">
+                                <i class="fas fa-building me-2"></i>Business Unit
+                            </label>
+                            <select class="form-select" id="businessUnitFilter" onchange="filterEntries()">
+                                <option value="">Toutes les Business Units</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <i class="fas fa-plus me-2"></i>Actions
+                            </label>
+                            <div>
+                                <button class="btn btn-primary btn-sm me-2" onclick="addChargeableEntry()">
+                                    <i class="fas fa-plus me-1"></i>HC
+                                </button>
+                                <button class="btn btn-warning btn-sm" onclick="addNonChargeableEntry()">
+                                    <i class="fas fa-plus me-1"></i>HNC
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglets de saisie -->
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="timeEntryTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="chargeable-tab" data-bs-toggle="tab" data-bs-target="#chargeable" type="button" role="tab" aria-controls="chargeable" aria-selected="true">
+                                <i class="fas fa-check-circle me-2"></i>Heures Chargeables (HC)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="non-chargeable-tab" data-bs-toggle="tab" data-bs-target="#non-chargeable" type="button" role="tab" aria-controls="non-chargeable" aria-selected="false">
+                                <i class="fas fa-clock me-2"></i>Heures Non-Chargeables (HNC)
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="timeEntryTabContent">
+                        <!-- Onglet Heures Chargeables -->
+                        <div class="tab-pane fade show active" id="chargeable" role="tabpanel" aria-labelledby="chargeable-tab">
+                            <div id="chargeableEntriesContainer">
+                                <!-- Les entrées chargeables seront chargées ici -->
+                            </div>
+                        </div>
+                        
+                        <!-- Onglet Heures Non-Chargeables -->
+                        <div class="tab-pane fade" id="non-chargeable" role="tabpanel" aria-labelledby="non-chargeable-tab">
+                            <div id="nonChargeableEntriesContainer">
+                                <!-- Les entrées non-chargeables seront chargées ici -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour ajouter/modifier une entrée -->
+    <div class="modal fade" id="timeEntryModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="timeEntryModalLabel">
+                        <i class="fas fa-clock me-2"></i>Nouvelle Entrée de Temps
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="timeEntryForm">
+                        <input type="hidden" id="entryId">
+                        <input type="hidden" id="entryType">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="modalDate" class="form-label">Date *</label>
+                                    <input type="date" class="form-control" id="modalDate" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="modalHours" class="form-label">Heures *</label>
+                                    <input type="number" class="form-control" id="modalHours" min="0.25" max="24" step="0.25" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="modalBusinessUnit" class="form-label">Business Unit *</label>
+                                    <select class="form-select" id="modalBusinessUnit" required>
+                                        <option value="">Sélectionner une Business Unit</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="modalProject" class="form-label">Projet/Mission</label>
+                                    <select class="form-select" id="modalProject">
+                                        <option value="">Sélectionner un projet</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="modalTask" class="form-label">Tâche/Activité</label>
+                                    <select class="form-select" id="modalTask">
+                                        <option value="">Sélectionner une tâche</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="modalDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="modalDescription" rows="3" placeholder="Description détaillée du travail effectué"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTimeEntry()">
+                        <i class="fas fa-save me-1"></i>Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/sidebar.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    
+    <script>
+        // Variables globales
+        let timeEntries = [];
+        let businessUnits = [];
+        let missions = [];
+        let tasks = [];
+        let internalActivities = [];
+        let currentDate = new Date().toISOString().split('T')[0];
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('entryDate').value = currentDate;
+            loadBusinessUnits();
+            loadMissions();
+            loadInternalActivities();
+            loadEntriesForDate();
+        });
+
+        // Charger les business units
+        async function loadBusinessUnits() {
+            try {
+                const response = await fetch('/api/business-units', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    businessUnits = data.data;
+                    populateBusinessUnitFilters();
+                } else {
+                    console.error('Erreur lors du chargement des business units');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Charger les missions
+        async function loadMissions() {
+            try {
+                const response = await fetch('/api/missions', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    missions = data.data;
+                } else {
+                    console.error('Erreur lors du chargement des missions');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Charger les activités internes
+        async function loadInternalActivities() {
+            try {
+                const response = await fetch('/api/internal-activities', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    internalActivities = data.data;
+                } else {
+                    console.error('Erreur lors du chargement des activités internes');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Peupler les filtres de business unit
+        function populateBusinessUnitFilters() {
+            const filter = document.getElementById('businessUnitFilter');
+            const modalFilter = document.getElementById('modalBusinessUnit');
+            
+            filter.innerHTML = '<option value="">Toutes les Business Units</option>';
+            modalFilter.innerHTML = '<option value="">Sélectionner une Business Unit</option>';
+            
+            businessUnits.forEach(bu => {
+                const option1 = document.createElement('option');
+                option1.value = bu.id;
+                option1.textContent = bu.nom;
+                filter.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = bu.id;
+                option2.textContent = bu.nom;
+                modalFilter.appendChild(option2);
+            });
+        }
+
+        // Charger les entrées pour une date donnée
+        async function loadEntriesForDate() {
+            const date = document.getElementById('entryDate').value;
+            if (!date) return;
+
+            try {
+                const response = await fetch(`/api/time-entries/date/${date}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    timeEntries = data.data || [];
+                    displayEntries();
+                    updateSummary();
+                } else {
+                    console.error('Erreur lors du chargement des entrées');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Afficher les entrées
+        function displayEntries() {
+            displayChargeableEntries();
+            displayNonChargeableEntries();
+        }
+
+        // Afficher les entrées chargeables
+        function displayChargeableEntries() {
+            const container = document.getElementById('chargeableEntriesContainer');
+            const chargeableEntries = timeEntries.filter(entry => entry.type === 'chargeable');
+            
+            if (chargeableEntries.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-clock fa-2x mb-3"></i>
+                        <p>Aucune entrée chargeable pour cette date</p>
+                        <button class="btn btn-primary" onclick="addChargeableEntry()">
+                            <i class="fas fa-plus me-2"></i>Ajouter une entrée
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = chargeableEntries.map(entry => `
+                <div class="time-entry-row chargeable" data-id="${entry.id}">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <strong>${entry.business_unit_name}</strong>
+                            <br>
+                            <small class="text-muted">${entry.project_name || 'N/A'}</small>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>${entry.task_name || 'N/A'}</strong>
+                            <br>
+                            <small class="text-muted">${entry.description || 'Aucune description'}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge bg-success">${entry.hours}h</span>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted">${entry.date}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-warning" onclick="editEntry('${entry.id}')" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="deleteEntry('${entry.id}')" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Afficher les entrées non-chargeables
+        function displayNonChargeableEntries() {
+            const container = document.getElementById('nonChargeableEntriesContainer');
+            const nonChargeableEntries = timeEntries.filter(entry => entry.type === 'non-chargeable');
+            
+            if (nonChargeableEntries.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-clock fa-2x mb-3"></i>
+                        <p>Aucune entrée non-chargeable pour cette date</p>
+                        <button class="btn btn-warning" onclick="addNonChargeableEntry()">
+                            <i class="fas fa-plus me-2"></i>Ajouter une entrée
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = nonChargeableEntries.map(entry => `
+                <div class="time-entry-row non-chargeable" data-id="${entry.id}">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <strong>${entry.business_unit_name}</strong>
+                            <br>
+                            <small class="text-muted">${entry.activity_name || 'N/A'}</small>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Activité Interne</strong>
+                            <br>
+                            <small class="text-muted">${entry.description || 'Aucune description'}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge bg-warning">${entry.hours}h</span>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted">${entry.date}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-warning" onclick="editEntry('${entry.id}')" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="deleteEntry('${entry.id}')" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Mettre à jour le résumé
+        function updateSummary() {
+            const totalHours = timeEntries.reduce((sum, entry) => sum + parseFloat(entry.hours), 0);
+            const chargeableHours = timeEntries
+                .filter(entry => entry.type === 'chargeable')
+                .reduce((sum, entry) => sum + parseFloat(entry.hours), 0);
+            const nonChargeableHours = timeEntries
+                .filter(entry => entry.type === 'non-chargeable')
+                .reduce((sum, entry) => sum + parseFloat(entry.hours), 0);
+
+            document.getElementById('totalHours').textContent = totalHours.toFixed(2);
+            document.getElementById('chargeableHours').textContent = chargeableHours.toFixed(2);
+            document.getElementById('nonChargeableHours').textContent = nonChargeableHours.toFixed(2);
+            document.getElementById('currentDate').textContent = document.getElementById('entryDate').value;
+        }
+
+        // Ajouter une entrée chargeable
+        function addChargeableEntry() {
+            document.getElementById('entryType').value = 'chargeable';
+            document.getElementById('timeEntryModalLabel').innerHTML = '<i class="fas fa-check-circle me-2"></i>Nouvelle Entrée Chargeable';
+            document.getElementById('modalDate').value = document.getElementById('entryDate').value;
+            document.getElementById('timeEntryForm').reset();
+            document.getElementById('entryId').value = '';
+            
+            // Afficher les champs appropriés
+            document.getElementById('modalProject').style.display = 'block';
+            document.getElementById('modalTask').style.display = 'block';
+            
+            new bootstrap.Modal(document.getElementById('timeEntryModal')).show();
+        }
+
+        // Ajouter une entrée non-chargeable
+        function addNonChargeableEntry() {
+            document.getElementById('entryType').value = 'non-chargeable';
+            document.getElementById('timeEntryModalLabel').innerHTML = '<i class="fas fa-clock me-2"></i>Nouvelle Entrée Non-Chargeable';
+            document.getElementById('modalDate').value = document.getElementById('entryDate').value;
+            document.getElementById('timeEntryForm').reset();
+            document.getElementById('entryId').value = '';
+            
+            // Masquer les champs inappropriés
+            document.getElementById('modalProject').style.display = 'none';
+            document.getElementById('modalTask').style.display = 'none';
+            
+            new bootstrap.Modal(document.getElementById('timeEntryModal')).show();
+        }
+
+        // Sauvegarder une entrée de temps
+        async function saveTimeEntry() {
+            const form = document.getElementById('timeEntryForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const entryData = {
+                date: document.getElementById('modalDate').value,
+                hours: parseFloat(document.getElementById('modalHours').value),
+                business_unit_id: document.getElementById('modalBusinessUnit').value,
+                description: document.getElementById('modalDescription').value,
+                type: document.getElementById('entryType').value
+            };
+
+            if (entryData.type === 'chargeable') {
+                entryData.project_id = document.getElementById('modalProject').value;
+                entryData.task_id = document.getElementById('modalTask').value;
+            } else {
+                entryData.activity_id = document.getElementById('modalTask').value;
+            }
+
+            try {
+                const entryId = document.getElementById('entryId').value;
+                const url = entryId ? `/api/time-entries/${entryId}` : '/api/time-entries';
+                const method = entryId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(entryData)
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showAlert(`Entrée ${entryId ? 'modifiée' : 'créée'} avec succès`, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('timeEntryModal')).hide();
+                    loadEntriesForDate();
+                } else {
+                    showAlert(`Erreur: ${data.message || 'Erreur inconnue'}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde:', error);
+                showAlert('Erreur lors de la sauvegarde', 'danger');
+            }
+        }
+
+        // Modifier une entrée
+        function editEntry(entryId) {
+            const entry = timeEntries.find(e => e.id === entryId);
+            if (!entry) return;
+
+            document.getElementById('entryId').value = entry.id;
+            document.getElementById('entryType').value = entry.type;
+            document.getElementById('modalDate').value = entry.date;
+            document.getElementById('modalHours').value = entry.hours;
+            document.getElementById('modalBusinessUnit').value = entry.business_unit_id;
+            document.getElementById('modalDescription').value = entry.description || '';
+
+            if (entry.type === 'chargeable') {
+                document.getElementById('timeEntryModalLabel').innerHTML = '<i class="fas fa-check-circle me-2"></i>Modifier Entrée Chargeable';
+                document.getElementById('modalProject').value = entry.project_id || '';
+                document.getElementById('modalTask').value = entry.task_id || '';
+                document.getElementById('modalProject').style.display = 'block';
+                document.getElementById('modalTask').style.display = 'block';
+            } else {
+                document.getElementById('timeEntryModalLabel').innerHTML = '<i class="fas fa-clock me-2"></i>Modifier Entrée Non-Chargeable';
+                document.getElementById('modalTask').value = entry.activity_id || '';
+                document.getElementById('modalProject').style.display = 'none';
+                document.getElementById('modalTask').style.display = 'block';
+            }
+
+            new bootstrap.Modal(document.getElementById('timeEntryModal')).show();
+        }
+
+        // Supprimer une entrée
+        async function deleteEntry(entryId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) return;
+
+            try {
+                const response = await fetch(`/api/time-entries/${entryId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Entrée supprimée avec succès', 'success');
+                    loadEntriesForDate();
+                } else {
+                    showAlert('Erreur lors de la suppression', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression:', error);
+                showAlert('Erreur lors de la suppression', 'danger');
+            }
+        }
+
+        // Sauvegarder toutes les entrées
+        async function saveAllEntries() {
+            // Cette fonction pourrait être utilisée pour une sauvegarde en lot
+            showAlert('Toutes les entrées sont sauvegardées automatiquement', 'info');
+        }
+
+        // Effacer toutes les entrées
+        function clearAllEntries() {
+            if (!confirm('Êtes-vous sûr de vouloir effacer toutes les entrées pour cette date ?')) return;
+            
+            timeEntries = [];
+            displayEntries();
+            updateSummary();
+            showAlert('Toutes les entrées ont été effacées', 'warning');
+        }
+
+        // Filtrer les entrées
+        function filterEntries() {
+            // Implémentation du filtrage par Business Unit
+            displayEntries();
+        }
+
+        // Afficher une alerte
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.main-content-area');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 

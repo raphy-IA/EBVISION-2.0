@@ -31,7 +31,7 @@ class InternalActivity {
                 json_agg(
                     json_build_object(
                         'id', bu.id,
-                        'name', bu.name,
+                        'name', bu.nom,
                         'is_active', iabu.is_active
                     )
                 ) as business_units
@@ -90,8 +90,8 @@ class InternalActivity {
             // Mettre à jour l'activité interne
             const updateQuery = `
                 UPDATE internal_activities 
-                SET name = $1, description = $2, updated_at = CURRENT_TIMESTAMP
-                WHERE id = $4
+                SET name = $1::text, description = $2::text, updated_at = CURRENT_TIMESTAMP
+                WHERE id = $3::uuid
                 RETURNING *
             `;
             const activityResult = await client.query(updateQuery, [name, description, id]);
@@ -151,12 +151,15 @@ class InternalActivity {
     static async getBusinessUnitsByActivity(activityId) {
         const query = `
             SELECT 
-                bu.*,
+                bu.id,
+                bu.nom,
+                bu.description,
+                bu.is_active,
                 iabu.is_active as is_assigned
             FROM business_units bu
             INNER JOIN internal_activity_business_units iabu ON bu.id = iabu.business_unit_id
             WHERE iabu.internal_activity_id = $1
-            ORDER BY bu.name
+            ORDER BY bu.nom
         `;
         
         try {
@@ -206,10 +209,10 @@ class InternalActivity {
     // Récupérer toutes les business units disponibles (pour l'affectation)
     static async getAvailableBusinessUnits() {
         const query = `
-            SELECT id, name, description
+            SELECT id, nom, description
             FROM business_units
             WHERE is_active = true
-            ORDER BY name
+            ORDER BY nom
         `;
         
         try {
