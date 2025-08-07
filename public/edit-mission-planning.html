@@ -254,7 +254,7 @@
             
             // Récupérer l'ID de la mission depuis l'URL
             const urlParams = new URLSearchParams(window.location.search);
-            missionId = urlParams.get('id');
+            missionId = urlParams.get('mission_id') || urlParams.get('id');
             
             if (!missionId) {
                 alert('Erreur: ID de mission manquant');
@@ -262,19 +262,38 @@
                 return;
             }
 
-            // Charger les données
-            loadMissionData();
-            loadAvailableTasks();
-            loadCollaborators();
-            loadCurrentPlanning();
+            // Charger les données dans l'ordre correct
+            initializePlanningEditor();
         });
+
+        // Initialiser l'éditeur de planning
+        async function initializePlanningEditor() {
+            try {
+                // 1. Charger d'abord les données de la mission
+                await loadMissionData();
+                
+                // 2. Charger les collaborateurs (indépendant de la mission)
+                await loadCollaborators();
+                
+                // 3. Charger les tâches disponibles (dépend du type de mission)
+                await loadAvailableTasks();
+                
+                // 4. Charger le planning actuel
+                await loadCurrentPlanning();
+                
+                console.log('✅ Éditeur de planning initialisé avec succès');
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'initialisation:', error);
+                alert('Erreur lors du chargement des données: ' + error.message);
+            }
+        }
 
         // Charger les données de la mission
         async function loadMissionData() {
             try {
                 const response = await fetch(`/api/missions/${missionId}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
 
@@ -295,34 +314,56 @@
         // Charger les tâches disponibles pour ce type de mission
         async function loadAvailableTasks() {
             try {
+                console.log('🔍 Chargement des tâches disponibles...');
+                console.log('  - missionData:', missionData);
+                console.log('  - mission_type_id:', missionData?.mission_type_id);
+                
                 if (!missionData || !missionData.mission_type_id) {
-                    console.log('Type de mission non disponible');
+                    console.log('❌ Type de mission non disponible');
+                    document.getElementById('availableTasks').innerHTML = '<option value="">Aucune tâche disponible - Type de mission manquant</option>';
                     return;
                 }
 
-                const response = await fetch(`/api/mission-types/${missionData.mission_type_id}/tasks`, {
+                const url = `/api/mission-types/${missionData.mission_type_id}/tasks`;
+                console.log('📡 Appel API:', url);
+                
+                const response = await fetch(url, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
 
+                console.log('📊 Réponse API:', response.status, response.statusText);
+
                 if (response.ok) {
                     const result = await response.json();
-                    availableTasks = result.tasks || [];
+                    console.log('📋 Données reçues:', result);
+                    
+                    availableTasks = result.tasks || result.data || [];
+                    console.log(`✅ ${availableTasks.length} tâches chargées:`, availableTasks);
                     
                     // Remplir le select des tâches disponibles
                     const select = document.getElementById('availableTasks');
                     select.innerHTML = '<option value="">Sélectionner une tâche...</option>';
                     
-                    availableTasks.forEach(task => {
-                        const option = document.createElement('option');
-                        option.value = task.id;
-                        option.textContent = `${task.code} - ${task.libelle}`;
-                        select.appendChild(option);
-                    });
+                    if (availableTasks.length === 0) {
+                        select.innerHTML = '<option value="">Aucune tâche disponible pour ce type de mission</option>';
+                    } else {
+                        availableTasks.forEach(task => {
+                            const option = document.createElement('option');
+                            option.value = task.id;
+                            option.textContent = `${task.code || 'N/A'} - ${task.libelle || task.description || 'Sans nom'}`;
+                            select.appendChild(option);
+                        });
+                    }
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Erreur API:', response.status, errorText);
+                    document.getElementById('availableTasks').innerHTML = '<option value="">Erreur lors du chargement des tâches</option>';
                 }
             } catch (error) {
-                console.error('Erreur lors du chargement des tâches disponibles:', error);
+                console.error('❌ Erreur lors du chargement des tâches disponibles:', error);
+                document.getElementById('availableTasks').innerHTML = '<option value="">Erreur de connexion</option>';
             }
         }
 
@@ -331,7 +372,7 @@
             try {
                 const response = await fetch('/api/collaborateurs', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
 
@@ -349,7 +390,7 @@
             try {
                 const response = await fetch(`/api/missions/${missionId}/planning`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
 
@@ -626,7 +667,7 @@
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     },
                     body: JSON.stringify({
                         tasks: currentTasks

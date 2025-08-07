@@ -91,18 +91,21 @@ router.get('/:id', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
     try {
         const {
+            time_sheet_id,
             date_saisie,
             heures,
             mission_id,
+            task_id,
+            internal_activity_id,
             description,
             type_heures
         } = req.body;
 
         // Validation des données
-        if (!date_saisie || !heures || !type_heures) {
+        if (!time_sheet_id || !date_saisie || !heures || !type_heures) {
             return res.status(400).json({
                 success: false,
-                message: 'Données manquantes'
+                message: 'Données manquantes: time_sheet_id, date_saisie, heures et type_heures sont requis'
             });
         }
 
@@ -114,13 +117,93 @@ router.post('/', authenticateToken, async (req, res) => {
             });
         }
 
+        // Convertir type_heures du frontend vers le backend
+        let backendTypeHeures = type_heures;
+        if (type_heures === 'chargeable') {
+            backendTypeHeures = 'HC';
+        } else if (type_heures === 'non-chargeable') {
+            backendTypeHeures = 'HNC';
+        }
+
+        // Validation des clés étrangères
+        let validatedTaskId = task_id;
+        let validatedInternalActivityId = internal_activity_id;
+
+        // Validation des tâches si fournies
+        if (task_id && task_id !== 'null' && task_id !== '') {
+            try {
+                const { query } = require('../utils/database');
+                const taskResult = await query('SELECT id FROM tasks WHERE id = $1', [task_id]);
+                if (taskResult.rows.length === 0) {
+                    console.error(`❌ Task ID invalide: ${task_id} - la tâche n'existe pas en base`);
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: `La tâche avec l'ID ${task_id} n'existe pas en base de données` 
+                    });
+                } else {
+                    console.log(`✅ Task trouvée (ID: ${task_id})`);
+                    validatedTaskId = task_id;
+                }
+            } catch (error) {
+                console.error(`❌ Erreur lors de la vérification du task_id: ${error.message}`);
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Erreur lors de la vérification de la tâche' 
+                });
+            }
+        }
+
+        // Validation des activités internes si fournies
+        if (internal_activity_id && internal_activity_id !== 'null' && internal_activity_id !== '') {
+            try {
+                const { query } = require('../utils/database');
+                const activityResult = await query('SELECT id FROM internal_activities WHERE id = $1', [internal_activity_id]);
+                if (activityResult.rows.length === 0) {
+                    console.error(`❌ Internal Activity ID invalide: ${internal_activity_id} - l'activité n'existe pas en base`);
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: `L'activité interne avec l'ID ${internal_activity_id} n'existe pas en base de données` 
+                    });
+                } else {
+                    console.log(`✅ Activité interne trouvée (ID: ${internal_activity_id})`);
+                    validatedInternalActivityId = internal_activity_id;
+                }
+            } catch (error) {
+                console.error(`❌ Erreur lors de la vérification du internal_activity_id: ${error.message}`);
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Erreur lors de la vérification de l\'activité interne' 
+                });
+            }
+        }
+
+        // Validation stricte des contraintes de base de données
+        if (backendTypeHeures === 'HC' && !validatedTaskId) {
+            console.error('❌ Heures chargeables (HC) sans tâche valide - rejet de l\'entrée');
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Les heures chargeables nécessitent une tâche valide' 
+            });
+        }
+
+        if (backendTypeHeures === 'HNC' && !validatedInternalActivityId) {
+            console.error('❌ Heures non-chargeables (HNC) sans activité interne valide - rejet de l\'entrée');
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Les heures non-chargeables nécessitent une activité interne valide' 
+            });
+        }
+
         const timeEntryData = {
+            time_sheet_id,
             user_id: req.user.id,
             date_saisie,
             heures: parseFloat(heures),
             mission_id: mission_id || null,
+            task_id: validatedTaskId || null,
             description: description || '',
-            type_heures
+            type_heures: backendTypeHeures,
+            internal_activity_id: validatedInternalActivityId || null
         };
 
         const newTimeEntry = await TimeEntry.create(timeEntryData);

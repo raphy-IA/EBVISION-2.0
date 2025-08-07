@@ -367,8 +367,74 @@ router.delete('/:id', async (req, res) => {
 });
 
 /**
+ * GET /api/missions/:id/available-tasks
+ * Récupérer les tâches disponibles pour une mission (basées sur le type de mission)
+ */
+router.get('/:id/available-tasks', authenticateToken, async (req, res) => {
+    try {
+        const { pool } = require('../utils/database');
+        
+        // 1. Récupérer le type de mission de cette mission
+        const missionQuery = `
+            SELECT mission_type_id 
+            FROM missions 
+            WHERE id = $1
+        `;
+        
+        const missionResult = await pool.query(missionQuery, [req.params.id]);
+        
+        if (missionResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Mission non trouvée'
+            });
+        }
+        
+        const missionTypeId = missionResult.rows[0].mission_type_id;
+        
+        if (!missionTypeId) {
+            return res.json({
+                success: true,
+                data: []
+            });
+        }
+        
+        // 2. Récupérer les tâches disponibles pour ce type de mission
+        const tasksQuery = `
+            SELECT 
+                t.id,
+                t.code,
+                t.libelle,
+                t.description,
+                t.duree_estimee,
+                t.priorite,
+                tmt.ordre,
+                tmt.obligatoire
+            FROM tasks t
+            INNER JOIN task_mission_types tmt ON t.id = tmt.task_id
+            WHERE tmt.mission_type_id = $1 AND t.actif = true
+            ORDER BY tmt.ordre, t.libelle
+        `;
+        
+        const tasksResult = await pool.query(tasksQuery, [missionTypeId]);
+        
+        res.json({
+            success: true,
+            data: tasksResult.rows
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des tâches disponibles:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération des tâches disponibles',
+            details: error.message
+        });
+    }
+});
+
+/**
  * GET /api/missions/:id/tasks
- * Récupérer les tâches d'une mission
+ * Récupérer les tâches configurées d'une mission
  */
 router.get('/:id/tasks', authenticateToken, async (req, res) => {
     try {
@@ -376,19 +442,24 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
         
         const query = `
             SELECT 
-                mt.id,
+                mt.id as mission_task_id,
+                mt.task_id,
                 mt.statut,
                 mt.date_debut,
                 mt.date_fin,
                 mt.duree_planifiee,
                 mt.duree_reelle,
                 mt.notes,
+                t.id,
+                t.code,
                 t.libelle as task_libelle,
-                t.description as task_description
+                t.description as task_description,
+                t.duree_estimee,
+                t.priorite
             FROM mission_tasks mt
             LEFT JOIN tasks t ON mt.task_id = t.id
             WHERE mt.mission_id = $1
-            ORDER BY mt.date_debut
+            ORDER BY mt.date_debut, t.libelle
         `;
         
         const result = await pool.query(query, [req.params.id]);

@@ -268,11 +268,21 @@
 
                             <!-- Onglet Planning -->
                             <div class="tab-pane fade" id="planning" role="tabpanel">
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5><i class="fas fa-calendar-alt me-2"></i>Planning de la Mission</h5>
+                                            <button class="btn btn-primary" onclick="openPlanningEditor()">
+                                                <i class="fas fa-edit me-2"></i>Modifier le Planning
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="card">
                                             <div class="card-header">
-                                                <h6>Équipe de mission</h6>
+                                                <h6><i class="fas fa-users me-2"></i>Équipe de mission</h6>
                                             </div>
                                             <div class="card-body">
                                                 <div id="missionTeam">...</div>
@@ -283,7 +293,7 @@
                                     <div class="col-md-6">
                                         <div class="card">
                                             <div class="card-header">
-                                                <h6>Tâches planifiées</h6>
+                                                <h6><i class="fas fa-tasks me-2"></i>Tâches planifiées</h6>
                                             </div>
                                             <div class="card-body">
                                                 <div id="missionTasks">...</div>
@@ -955,6 +965,18 @@
             if (container) {
                 container.insertBefore(alertDiv, container.firstChild);
             }
+        }
+
+        // Fonction pour ouvrir l'éditeur de planning
+        function openPlanningEditor() {
+            if (!missionId) {
+                showError('ID de mission non disponible');
+                return;
+            }
+            
+            // Ouvrir l'éditeur de planning dans une nouvelle fenêtre
+            const planningUrl = `edit-mission-planning.html?mission_id=${missionId}`;
+            window.open(planningUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
         }
     </script>
 </body>

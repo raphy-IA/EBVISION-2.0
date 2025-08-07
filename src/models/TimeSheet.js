@@ -10,6 +10,14 @@ class TimeSheet {
             statut = 'sauvegardé'
         } = timeSheetData;
 
+        // S'assurer que les dates sont au format YYYY-MM-DD sans timezone
+        const formattedWeekStart = week_start.split('T')[0];
+        const formattedWeekEnd = week_end.split('T')[0];
+
+        console.log('📋 Création feuille de temps avec dates:');
+        console.log('  - week_start:', formattedWeekStart);
+        console.log('  - week_end:', formattedWeekEnd);
+
         const query = `
             INSERT INTO time_sheets (user_id, week_start, week_end, statut)
             VALUES ($1, $2, $3, $4)
@@ -17,7 +25,7 @@ class TimeSheet {
         `;
 
         try {
-            const result = await pool.query(query, [user_id, week_start, week_end, statut]);
+            const result = await pool.query(query, [user_id, formattedWeekStart, formattedWeekEnd, statut]);
             return result.rows[0];
         } catch (error) {
             console.error('Erreur lors de la création de la feuille de temps:', error);
@@ -60,15 +68,23 @@ class TimeSheet {
     // Trouver ou créer une feuille de temps pour une semaine
     static async findOrCreate(userId, weekStart, weekEnd) {
         try {
+            // S'assurer que les dates sont au format YYYY-MM-DD sans timezone
+            const formattedWeekStart = weekStart.split('T')[0];
+            const formattedWeekEnd = weekEnd.split('T')[0];
+            
+            console.log('🔍 Recherche/création feuille de temps:');
+            console.log('  - week_start:', formattedWeekStart);
+            console.log('  - week_end:', formattedWeekEnd);
+            
             // Essayer de trouver une feuille existante
-            let timeSheet = await this.findByWeekStart(userId, weekStart);
+            let timeSheet = await this.findByWeekStart(userId, formattedWeekStart);
             
             if (!timeSheet) {
                 // Créer une nouvelle feuille de temps
                 timeSheet = await this.create({
                     user_id: userId,
-                    week_start: weekStart,
-                    week_end: weekEnd,
+                    week_start: formattedWeekStart,
+                    week_end: formattedWeekEnd,
                     statut: 'sauvegardé'
                 });
             }

@@ -4,6 +4,54 @@ const TimeSheet = require('../models/TimeSheet');
 const TimeEntry = require('../models/TimeEntry');
 const { authenticateToken } = require('../middleware/auth');
 
+// Créer une nouvelle feuille de temps
+router.post('/', authenticateToken, async (req, res) => {
+    try {
+        const { user_id, week_start, week_end, statut = 'sauvegardé' } = req.body;
+        
+        if (!user_id || !week_start || !week_end) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Les paramètres user_id, week_start et week_end sont requis' 
+            });
+        }
+
+        // Vérifier si une feuille de temps existe déjà pour cette semaine et cet utilisateur
+        const existingTimeSheet = await TimeSheet.findByWeekStart(user_id, week_start);
+        
+        if (existingTimeSheet) {
+            return res.status(409).json({ 
+                success: false, 
+                message: 'Une feuille de temps existe déjà pour cette semaine et cet utilisateur',
+                data: existingTimeSheet
+            });
+        }
+
+        // Créer la nouvelle feuille de temps
+        const timeSheetData = {
+            user_id,
+            week_start,
+            week_end,
+            statut
+        };
+
+        const newTimeSheet = await TimeSheet.create(timeSheetData);
+        
+        res.status(201).json({ 
+            success: true, 
+            message: 'Feuille de temps créée avec succès', 
+            data: newTimeSheet 
+        });
+    } catch (error) {
+        console.error('Erreur lors de la création de la feuille de temps:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur lors de la création de la feuille de temps', 
+            error: error.message 
+        });
+    }
+});
+
 // Obtenir la feuille de temps actuelle pour un utilisateur
 router.get('/current', authenticateToken, async (req, res) => {
     try {
@@ -18,11 +66,17 @@ router.get('/current', authenticateToken, async (req, res) => {
         console.log('Week start:', week_start);
 
         // Calculer la fin de semaine (7 jours après le début)
-        const weekStartDate = new Date(week_start);
+        // S'assurer que les dates sont traitées sans timezone
+        const weekStartDate = new Date(week_start + 'T00:00:00');
         const weekEndDate = new Date(weekStartDate);
-        weekEndDate.setDate(weekStartDate.getDate() + 6);
+        weekEndDate.setDate(weekStartDate.getDate() + 6); // +6 pour aller du lundi au dimanche
 
         const weekEnd = weekEndDate.toISOString().split('T')[0];
+        
+        console.log('📅 Calcul des dates de semaine:');
+        console.log('  - Début (lundi):', week_start);
+        console.log('  - Fin (dimanche):', weekEnd);
+        console.log('  - Vérification: Lundi au Dimanche (7 jours)');
 
         console.log('Full user object:', req.user);
 
@@ -183,6 +237,51 @@ router.post('/:id/reject', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Erreur lors du rejet de la feuille de temps:', error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+// Créer une nouvelle feuille de temps
+router.post('/', authenticateToken, async (req, res) => {
+    try {
+        const { user_id, week_start, week_end, statut = 'sauvegardé' } = req.body;
+
+        // Validation des données
+        if (!user_id || !week_start || !week_end) {
+            return res.status(400).json({
+                success: false,
+                message: 'Les champs user_id, week_start et week_end sont requis'
+            });
+        }
+
+        // Vérifier que l'utilisateur crée sa propre feuille de temps
+        if (user_id !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Vous ne pouvez créer que votre propre feuille de temps'
+            });
+        }
+
+        // Créer la feuille de temps
+        const timeSheet = await TimeSheet.create({
+            user_id,
+            week_start,
+            week_end,
+            statut
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Feuille de temps créée avec succès',
+            timeSheet
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la création de la feuille de temps:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la création de la feuille de temps',
+            error: error.message
+        });
     }
 });
 

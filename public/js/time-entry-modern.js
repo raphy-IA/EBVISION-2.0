@@ -403,7 +403,7 @@ document.addEventListener('change', function(e) {
     }
 });
 
-// Ajouter une activité
+// Ajouter une activité (sans sauvegarder automatiquement)
 async function addActivity() {
     const activityType = document.querySelector('input[name="activityType"]:checked').value;
     const hours = parseFloat(document.getElementById('activityHours').value);
@@ -414,11 +414,14 @@ async function addActivity() {
         return;
     }
     
+    // Créer l'objet activité pour l'affichage (sans sauvegarde)
     let activityData = {
+        id: 'temp-' + Date.now(), // ID temporaire
         date_saisie: currentWeekStart.toISOString().split('T')[0],
         heures: hours,
         description: description,
-        type_heures: activityType === 'mission' ? 'chargeable' : 'non-chargeable'
+        type_heures: activityType === 'mission' ? 'chargeable' : 'non-chargeable',
+        isTemporary: true // Marquer comme temporaire
     };
     
     if (activityType === 'mission') {
@@ -432,6 +435,8 @@ async function addActivity() {
         
         activityData.mission_id = missionId;
         activityData.task_id = taskId;
+        activityData.project_name = document.getElementById('missionSelect').options[document.getElementById('missionSelect').selectedIndex].text;
+        activityData.task_name = taskId ? document.getElementById('taskSelect').options[document.getElementById('taskSelect').selectedIndex].text : '';
     } else {
         const businessUnitId = document.getElementById('businessUnitSelect').value;
         const activityId = document.getElementById('internalActivitySelect').value;
@@ -443,37 +448,18 @@ async function addActivity() {
         
         activityData.business_unit_id = businessUnitId;
         activityData.internal_activity_id = activityId;
+        activityData.internal_activity_name = document.getElementById('internalActivitySelect').options[document.getElementById('internalActivitySelect').selectedIndex].text;
     }
     
-    try {
-        const response = await fetch('/api/time-entries', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify(activityData)
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            const newEntry = data.data || data;
-            addActivityToDisplay(newEntry);
-            updateTotals();
-            
-            // Fermer le modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('activityModal'));
-            modal.hide();
-            
-            showAlert('Activité ajoutée avec succès', 'success');
-        } else {
-            const error = await response.json();
-            showAlert(error.message || 'Erreur lors de l\'ajout de l\'activité', 'danger');
-        }
-    } catch (error) {
-        console.error('Erreur lors de l\'ajout de l\'activité:', error);
-        showAlert('Erreur lors de l\'ajout de l\'activité', 'danger');
-    }
+    // Ajouter à l'affichage sans sauvegarder
+    addActivityToDisplay(activityData);
+    updateTotals();
+    
+    // Fermer le modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('activityModal'));
+    modal.hide();
+    
+    showAlert('Activité ajoutée (cliquez sur Sauvegarder pour enregistrer)', 'info');
 }
 
 // Ajouter une activité à l'affichage
@@ -513,6 +499,20 @@ function addActivityToDisplay(activity) {
 async function deleteActivity(activityId) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette activité ?')) return;
     
+    // Si c'est une activité temporaire, la supprimer directement de l'affichage
+    if (activityId.startsWith('temp-')) {
+        const activityElement = document.querySelector(`[onclick*="${activityId}"]`).closest('.activity-item');
+        if (activityElement) {
+            const dayIndex = activityElement.closest('.activities-container').id.replace('activities-', '');
+            activityElement.remove();
+            updateDayTotal(parseInt(dayIndex));
+            updateTotals();
+        }
+        showAlert('Activité supprimée', 'success');
+        return;
+    }
+    
+    // Sinon, supprimer de la base de données
     try {
         const response = await fetch(`/api/time-entries/${activityId}`, {
             method: 'DELETE',
@@ -561,27 +561,84 @@ function updateTotals() {
 // Sauvegarder la feuille de temps
 async function saveTimeSheet() {
     try {
-        const response = await fetch(`/api/time-sheets/${currentTimeSheet.id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({
-                statut: 'draft'
-            })
+        // S'assurer qu'une feuille de temps existe
+        if (!currentTimeSheet || !currentTimeSheet.id) {
+            console.log('📋 Création d\'une nouvelle feuille de temps pour la semaine');
+            await createNewTimeSheet();
+            if (!currentTimeSheet || !currentTimeSheet.id) {
+                throw new Error('Impossible de créer la feuille de temps');
+            }
+        }
+        
+        // Récupérer toutes les activités temporaires
+        const temporaryActivities = [];
+        const activityContainers = document.querySelectorAll('.activities-container');
+        
+        activityContainers.forEach((container, dayIndex) => {
+            const activities = container.querySelectorAll('.activity-item');
+            activities.forEach(activityElement => {
+                const activityId = activityElement.querySelector('button').getAttribute('onclick').match(/'([^']+)'/)[1];
+                if (activityId.startsWith('temp-')) {
+                    // C'est une activité temporaire, la sauvegarder
+                    const hoursElement = activityElement.querySelector('.badge');
+                    const hours = parseFloat(hoursElement.textContent.replace('h', ''));
+                    const descriptionElement = activityElement.querySelector('small');
+                    const description = descriptionElement ? descriptionElement.textContent : '';
+                    
+                    // Déterminer le type d'activité
+                    const isChargeable = activityElement.style.backgroundColor === 'rgb(227, 242, 253)';
+                    
+                    const activityData = {
+                        time_sheet_id: currentTimeSheet.id,
+                        date_saisie: new Date(currentWeekStart.getTime() + dayIndex * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        heures: hours,
+                        description: description,
+                        type_heures: isChargeable ? 'chargeable' : 'non-chargeable'
+                    };
+                    
+                    temporaryActivities.push(activityData);
+                }
+            });
         });
         
-        if (response.ok) {
-            showAlert('Feuille de temps sauvegardée', 'success');
-            loadWeekData();
-        } else {
-            const error = await response.json();
-            showAlert(error.message || 'Erreur lors de la sauvegarde', 'danger');
+        // Sauvegarder toutes les activités temporaires
+        const savedActivities = [];
+        for (const activityData of temporaryActivities) {
+            try {
+                const response = await fetch('/api/time-entries', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(activityData)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    savedActivities.push(data.data || data);
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Erreur lors de la sauvegarde d\'une activité');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde d\'une activité:', error);
+                throw error;
+            }
         }
+        
+        // Mettre à jour l'affichage avec les vraies données
+        if (savedActivities.length > 0) {
+            // Recharger les données pour avoir les vrais IDs
+            await loadWeekData();
+            showAlert(`${savedActivities.length} activité(s) sauvegardée(s) avec succès`, 'success');
+        } else {
+            showAlert('Aucune activité à sauvegarder', 'info');
+        }
+        
     } catch (error) {
         console.error('Erreur lors de la sauvegarde:', error);
-        showAlert('Erreur lors de la sauvegarde', 'danger');
+        showAlert('Erreur lors de la sauvegarde: ' + error.message, 'danger');
     }
 }
 
