@@ -119,4 +119,42 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 });
 
+// PUT /api/time-entries/:id - Mettre à jour une entrée existante
+router.put('/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { heures } = req.body;
+
+        if (heures === undefined) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Heures requises' 
+            });
+        }
+
+        const updatedEntry = await TimeEntry.update(id, { heures: parseFloat(heures) || 0 });
+
+        if (!updatedEntry) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Entrée non trouvée' 
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Entrée mise à jour avec succès',
+            data: updatedEntry
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de l\'entrée de temps:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur lors de la mise à jour de l\'entrée de temps',
+            error: error.message 
+        });
+    }
+});
+
 module.exports = router; 

@@ -12,6 +12,9 @@
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
     
+    <!-- CSS pour le verrouillage de la feuille de temps -->
+    <link rel="stylesheet" href="css/time-sheet-lock.css">
+    
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
     
@@ -201,6 +204,43 @@
                 </div>
             </div>
 
+            <!-- Récapitulatif quotidien -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Récapitulatif des heures par jour</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Jour</th>
+                                    <th class="text-center">Lun.</th>
+                                    <th class="text-center">Mar.</th>
+                                    <th class="text-center">Mer.</th>
+                                    <th class="text-center">Jeu.</th>
+                                    <th class="text-center">Ven.</th>
+                                    <th class="text-center">Sam.</th>
+                                    <th class="text-center">Dim.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="daily-summary">
+                                <tr class="table-info">
+                                    <td><strong>Total (HC + HNC)</strong></td>
+                                    <td class="text-center">0.0h</td>
+                                    <td class="text-center">0.0h</td>
+                                    <td class="text-center">0.0h</td>
+                                    <td class="text-center">0.0h</td>
+                                    <td class="text-center">0.0h</td>
+                                    <td class="text-center">0.0h</td>
+                                    <td class="text-center">0.0h</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Action Buttons -->
             <div class="row mb-4">
                 <div class="col-12">
@@ -213,8 +253,11 @@
                     <button class="btn btn-warning me-2" onclick="submitTimeSheet()">
                         <i class="fas fa-paper-plane me-2"></i>Soumettre
                     </button>
-                    <button class="btn btn-info" onclick="exportTimeSheet()">
+                    <button class="btn btn-info me-2" onclick="exportTimeSheet()">
                         <i class="fas fa-download me-2"></i>Exporter
+                    </button>
+                    <button class="btn btn-danger" onclick="resetTimeSheet()">
+                        <i class="fas fa-undo me-2"></i>Remettre à zéro
                     </button>
                 </div>
             </div>

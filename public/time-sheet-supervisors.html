@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration des Superviseurs - Feuilles de Temps</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/modern-sidebar.css" rel="stylesheet">
+    
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+                
+    <!-- Scripts de zone utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/user-modals.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Le conteneur principal de la page qui contient la sidebar et le contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Styles pour le contenu principal */
+        .main-content-area {
+            flex-grow: 1; /* Prend l'espace restant */
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .supervisor-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .supervisor-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .supervisor-info {
+            flex: 1;
+        }
+        
+        .supervisor-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .collaborateur-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .collaborateur-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .collaborateur-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-badge {
+            font-size: 0.8em;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .add-supervisor-form {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        /* Styles pour le select multiple */
+        #collaborateurs-select {
+            min-height: 120px;
+        }
+        
+        #collaborateurs-select option {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        #collaborateurs-select option:checked {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        #collaborateurs-select option:hover {
+            background-color: #e9ecef;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
+        .sidebar-container {
+            width: 300px; /* Largeur fixe pour la sidebar */
+            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            .sidebar-container {
+                width: 100%; /* La sidebar prend toute la largeur */
+                height: auto; /* Hauteur automatique */
+            }
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+    
+    <script src="js/global-auth.js"></script>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-users-cog"></i> Configuration des Superviseurs</h1>
+                <div id="user-header"></div>
+            </div>
+
+            <!-- Alertes -->
+            <div id="alert-container"></div>
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number" id="total-supervisors">0</div>
+                        <div>Superviseurs configurés</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number" id="total-collaborateurs">0</div>
+                        <div>Collaborateurs avec superviseurs</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number" id="pending-approvals">0</div>
+                        <div>Feuilles en attente</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number" id="total-relations">0</div>
+                        <div>Relations configurées</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire d'ajout de superviseur -->
+            <div class="add-supervisor-form">
+                <h3><i class="fas fa-plus-circle"></i> Ajouter des relations superviseur</h3>
+                <form id="add-supervisor-form">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="supervisor-select" class="form-label">Superviseur</label>
+                            <select class="form-select" id="supervisor-select" required>
+                                <option value="">Sélectionner un superviseur</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="collaborateurs-select" class="form-label">Collaborateurs à superviser</label>
+                            <select class="form-select" id="collaborateurs-select" multiple size="6" required>
+                                <!-- Les options seront remplies par JavaScript -->
+                            </select>
+                            <small class="form-text text-muted">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs collaborateurs</small>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-plus"></i> Ajouter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Liste des superviseurs -->
+            <div class="row">
+                <div class="col-12">
+                    <h3><i class="fas fa-list"></i> Superviseurs configurés</h3>
+                    <div id="supervisors-container">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de suppression -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmer la suppression</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer cette relation superviseur ?</p>
+                    <p><strong>Collaborateur:</strong> <span id="delete-collaborateur-name"></span></p>
+                    <p><strong>Superviseur:</strong> <span id="delete-supervisor-name"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/sidebar.js" defer></script>
+    <script src="js/time-sheet-supervisors.js"></script>
+</body>
+</html> 

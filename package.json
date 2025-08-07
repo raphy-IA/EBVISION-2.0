@@ -36,6 +36,7 @@
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "node-fetch": "^3.3.2",
     "nodemon": "^3.0.1",
     "pg": "^8.11.3",
     "puppeteer": "^21.11.0"

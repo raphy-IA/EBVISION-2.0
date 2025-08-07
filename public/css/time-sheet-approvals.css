@@ -1,0 +1,224 @@
+/* Styles pour la page de validation des feuilles de temps */
+
+.approval-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.approval-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.approval-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.collaborateur-info h5 {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.collaborateur-info p {
+    margin: 5px 0 0 0;
+    font-size: 0.9em;
+}
+
+.week-info h6 {
+    margin: 0;
+    color: #34495e;
+    font-weight: 500;
+}
+
+.week-info small {
+    font-size: 0.8em;
+}
+
+.approval-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-submitted {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.status-approved {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.time-entries-summary {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.time-entries-summary h6 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    font-weight: 600;
+}
+
+.entry-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.entry-row:last-child {
+    border-bottom: none;
+    font-weight: 600;
+}
+
+.total-hours {
+    font-weight: 600;
+    color: #007bff;
+}
+
+/* Styles pour l'historique des approbations */
+.approval-history {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.approval-history h6 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.approval-entry {
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.approval-entry:last-child {
+    border-bottom: none;
+}
+
+.approval-action {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.approval-action.text-success {
+    color: #28a745;
+}
+
+.approval-action.text-danger {
+    color: #dc3545;
+}
+
+.approval-comment {
+    margin-top: 5px;
+    padding: 5px 8px;
+    background: #fff;
+    border-radius: 4px;
+    border-left: 3px solid #007bff;
+    font-style: italic;
+}
+
+/* Filtres */
+.filter-buttons {
+    margin-bottom: 20px;
+}
+
+.filter-buttons .btn {
+    margin-right: 10px;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.9em;
+}
+
+.filter-buttons .btn.active {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+/* Statistiques */
+.stats-summary {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.stats-summary .badge {
+    font-size: 0.8em;
+    padding: 6px 12px;
+}
+
+/* État vide */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3em;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.empty-state h4 {
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .approval-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .approval-actions {
+        align-items: flex-start;
+        width: 100%;
+    }
+    
+    .entry-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+}

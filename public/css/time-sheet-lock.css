@@ -1,0 +1,118 @@
+/* Styles pour l'interface verrouillée de la feuille de temps */
+.time-sheet-locked {
+    position: relative;
+}
+
+.time-sheet-locked::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(248, 249, 250, 0.3);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.time-sheet-locked .time-sheet-container {
+    position: relative;
+    z-index: 2;
+}
+
+/* Style pour les éléments désactivés */
+.time-sheet-locked input[disabled],
+.time-sheet-locked select[disabled],
+.time-sheet-locked button[disabled] {
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+}
+
+/* Style pour les boutons désactivés */
+.time-sheet-locked .btn[disabled] {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+/* Message d'information pour les feuilles verrouillées */
+.time-sheet-locked .status-badge {
+    position: relative;
+}
+
+.time-sheet-locked .status-badge::after {
+    content: '🔒';
+    margin-left: 5px;
+    font-size: 0.9em;
+}
+
+/* Style pour les champs de saisie désactivés */
+.time-sheet-locked input[type="number"][disabled] {
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    color: #6c757d !important;
+}
+
+/* Style pour les sélecteurs désactivés */
+.time-sheet-locked select[disabled] {
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    color: #6c757d !important;
+}
+
+/* Animation de verrouillage */
+@keyframes lockAnimation {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 0.6; }
+}
+
+.time-sheet-locked .btn[disabled] {
+    animation: lockAnimation 0.3s ease-in-out;
+}
+
+/* Message d'avertissement pour les feuilles verrouillées */
+.time-sheet-locked .alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    border: 1px solid;
+}
+
+/* Style pour les totaux en mode verrouillé */
+.time-sheet-locked .totals-section {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+/* Indicateur visuel de verrouillage */
+.lock-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    color: white;
+}
+
+/* Couleur pour les feuilles soumises */
+.lock-indicator[data-status="submitted"] {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+/* Couleur pour les feuilles approuvées */
+.lock-indicator[data-status="approved"] {
+    background-color: #28a745;
+    color: white;
+}

@@ -17,8 +17,8 @@ class TimeEntry {
         const query = `
             INSERT INTO time_entries (
                 time_sheet_id, user_id, date_saisie, heures, type_heures,
-                mission_id, task_id, internal_activity_id, statut
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'saisie')
+                mission_id, task_id, internal_activity_id, status
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'saved')
             RETURNING *
         `;
 
@@ -37,7 +37,7 @@ class TimeEntry {
     // Trouver une entrée d'heures par ID
     static async findById(id) {
         const query = `
-            SELECT te.*, ts.statut as time_sheet_statut
+            SELECT te.*, ts.status as time_sheet_status
             FROM time_entries te
             JOIN time_sheets ts ON te.time_sheet_id = ts.id
             WHERE te.id = $1
@@ -77,7 +77,7 @@ class TimeEntry {
 
     // Mettre à jour une entrée d'heures
     static async update(id, updateData) {
-        const allowedFields = ['heures', 'statut'];
+        const allowedFields = ['heures', 'status'];
         const updates = [];
         const values = [];
         let paramCount = 1;
@@ -170,7 +170,7 @@ class TimeEntry {
         const query = `
             SELECT te.*, 
                    m.nom as mission_nom,
-                   t.description as task_nom,
+                   COALESCE(t.description, t.libelle) as task_nom,
                    ia.description as internal_activity_nom
             FROM time_entries te
             LEFT JOIN missions m ON te.mission_id = m.id
@@ -194,7 +194,7 @@ class TimeEntry {
         const query = `
             SELECT te.*, ts.week_start, ts.week_end,
                    m.nom as mission_nom,
-                   t.description as task_nom,
+                   COALESCE(t.description, t.libelle) as task_nom,
                    ia.description as internal_activity_nom
             FROM time_entries te
             JOIN time_sheets ts ON te.time_sheet_id = ts.id
@@ -244,7 +244,7 @@ class TimeEntry {
         const query = `
             SELECT te.*, 
                    m.nom as mission_nom,
-                   t.description as task_nom,
+                   COALESCE(t.description, t.libelle) as task_nom,
                    ia.description as internal_activity_nom
             FROM time_entries te
             LEFT JOIN missions m ON te.mission_id = m.id
@@ -263,11 +263,11 @@ class TimeEntry {
         }
     }
 
-    // Mettre à jour le statut de toutes les entrées d'une feuille de temps
+    // Mettre à jour le status de toutes les entrées d'une feuille de temps
     static async updateStatusByTimeSheet(timeSheetId, newStatus) {
         const query = `
             UPDATE time_entries 
-            SET statut = $1, updated_at = CURRENT_TIMESTAMP
+            SET status = $1, updated_at = CURRENT_TIMESTAMP
             WHERE time_sheet_id = $2
             RETURNING *
         `;

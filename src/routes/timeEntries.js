@@ -6,8 +6,20 @@ const TimeEntry = require('../models/TimeEntry');
 // GET /api/time-entries - Récupérer les entrées de temps de l'utilisateur pour une période
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const { week_start, week_end } = req.query;
+        const { week_start, week_end, time_sheet_id } = req.query;
         
+        // Si time_sheet_id est fourni, récupérer les entrées pour cette feuille de temps
+        if (time_sheet_id) {
+            const timeEntries = await TimeEntry.findByTimeSheet(time_sheet_id);
+            
+            res.json({
+                success: true,
+                data: timeEntries
+            });
+            return;
+        }
+        
+        // Sinon, utiliser week_start et week_end
         if (!week_start || !week_end) {
             return res.status(400).json({
                 success: false,

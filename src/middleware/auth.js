@@ -28,16 +28,9 @@ const verifyToken = (token) => {
         return decoded;
     } catch (error) {
         console.error('❌ Erreur token:', error.message);
-        // ACCEPTER TEMPORAIREMENT TOUS LES TOKENS
-        console.log('⚠️ Acceptation temporaire du token');
-        return {
-            id: '8eb54916-a0b3-4f9e-acd1-75830271feab', // ID d'un collaborateur existant
-            email: 'temp@example.com',
-            nom: 'Temp',
-            prenom: 'User',
-            role: 'ADMIN',
-            permissions: ['users:read', 'users:create', 'users:update', 'users:delete']
-        };
+        // DÉSACTIVER LE FALLBACK POUR TESTER LA VRAIE AUTHENTIFICATION
+        console.log('⚠️ Token invalide, pas de fallback');
+        return null;
     }
 };
 

@@ -1,57 +1,55 @@
-const { Pool } = require('pg');
 require('dotenv').config();
+const { Pool } = require('pg');
 
 const pool = new Pool({
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
     database: process.env.DB_NAME || 'eb_vision_2_0',
     user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres'
+    password: process.env.DB_PASSWORD || 'password',
 });
 
-async function checkTimeSheetsTable() {
+async function checkTimeSheetsStructure() {
+    const client = await pool.connect();
+    
     try {
         console.log('🔍 Vérification de la structure de la table time_sheets...');
         
-        // Vérifier si la table time_sheets existe
-        const tableExists = await pool.query(`
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'public' 
-                AND table_name = 'time_sheets'
-            );
-        `);
-        
-        if (!tableExists.rows[0].exists) {
-            console.log('❌ La table time_sheets n\'existe pas');
-            return;
-        }
-        
-        console.log('✅ La table time_sheets existe');
-        
-        // Récupérer la structure de la table time_sheets
-        const structure = await pool.query(`
+        const result = await client.query(`
             SELECT column_name, data_type, is_nullable, column_default
             FROM information_schema.columns 
-            WHERE table_schema = 'public' 
-            AND table_name = 'time_sheets'
-            ORDER BY ordinal_position;
+            WHERE table_name = 'time_sheets' 
+            ORDER BY ordinal_position
         `);
         
         console.log('\n📋 Structure de la table time_sheets:');
-        structure.rows.forEach(row => {
-            console.log(`  - ${row.column_name} (${row.data_type}, nullable: ${row.is_nullable})`);
+        console.log('=' .repeat(60));
+        
+        result.rows.forEach(row => {
+            console.log(`  - ${row.column_name}: ${row.data_type} ${row.is_nullable === 'YES' ? '(nullable)' : '(NOT NULL)'} ${row.column_default ? `DEFAULT: ${row.column_default}` : ''}`);
         });
         
-        // Vérifier s'il y a des données
-        const count = await pool.query('SELECT COUNT(*) FROM time_sheets');
-        console.log(`\n📊 Nombre de feuilles de temps: ${count.rows[0].count}`);
+        console.log('\n📊 Nombre de colonnes:', result.rows.length);
+        
+        // Vérifier si les colonnes nécessaires existent
+        const columnNames = result.rows.map(row => row.column_name);
+        const requiredColumns = ['id', 'user_id', 'week_start', 'week_end', 'status'];
+        
+        console.log('\n✅ Colonnes requises:');
+        requiredColumns.forEach(col => {
+            if (columnNames.includes(col)) {
+                console.log(`  ✅ ${col}`);
+            } else {
+                console.log(`  ❌ ${col} - MANQUANTE`);
+            }
+        });
         
     } catch (error) {
-        console.error('❌ Erreur lors de la vérification:', error.message);
+        console.error('❌ Erreur:', error.message);
     } finally {
+        client.release();
         await pool.end();
     }
 }
 
-checkTimeSheetsTable(); 
+checkTimeSheetsStructure(); 

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation des Feuilles de Temps - TRS Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/modern-sidebar.css" rel="stylesheet">
+    <link href="css/time-sheet-approvals.css" rel="stylesheet">
+    
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+                
+    <!-- Scripts de zone utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/user-modals.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Le conteneur principal de la page qui contient la sidebar et le contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Styles pour le contenu principal */
+        .main-content-area {
+            flex-grow: 1; /* Prend l'espace restant */
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .approval-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .approval-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .approval-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .collaborateur-info {
+            flex: 1;
+        }
+        
+        .week-info {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .approval-actions {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            justify-content: flex-end;
+        }
+        
+        .status-badge {
+            font-size: 0.8em;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        
+        .status-submitted {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .time-entries-summary {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .entry-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .entry-row:last-child {
+            border-bottom: none;
+        }
+        
+        .total-hours {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .approval-form {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .filter-buttons {
+            margin-bottom: 20px;
+        }
+        
+        .filter-buttons .btn {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        /* Styles pour le tableau de détails */
+        .time-sheet-details {
+            margin-top: 20px;
+        }
+        
+        .time-sheet-details .table {
+            font-size: 0.9em;
+        }
+        
+        .time-sheet-details .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .time-sheet-details .table td {
+            vertical-align: middle;
+        }
+        
+        .time-sheet-details .table tfoot th {
+            background-color: #e9ecef;
+            font-weight: bold;
+        }
+        
+        /* Styles pour les statistiques */
+        .stats-summary {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .stats-summary .badge {
+            font-size: 0.8em;
+        }
+        
+        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
+        .sidebar-container {
+            width: 300px; /* Largeur fixe pour la sidebar */
+            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            .sidebar-container {
+                width: 100%; /* La sidebar prend toute la largeur */
+                height: auto; /* Hauteur automatique */
+            }
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+        
+        /* Styles pour le modal de validation */
+        .modal-xl {
+            max-width: 95vw;
+        }
+        
+        .modal-xl .modal-body {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        /* Optimisation des tableaux dans le modal */
+        .modal-xl .table-responsive {
+            font-size: 0.9rem;
+        }
+        
+        .modal-xl .table th,
+        .modal-xl .table td {
+            padding: 0.5rem;
+            vertical-align: middle;
+        }
+        
+        /* Styles pour les onglets dans le modal */
+        .modal-xl .nav-tabs {
+            font-size: 0.9rem;
+        }
+        
+        .modal-xl .nav-tabs .nav-link {
+            padding: 0.5rem 1rem;
+        }
+    </style>
+    
+    <script src="js/global-auth.js"></script>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-clipboard-check"></i> Validation des Feuilles de Temps</h1>
+                <div id="user-header"></div>
+            </div>
+
+            <!-- Alertes -->
+            <div id="alert-container"></div>
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number" id="pending-count">0</div>
+                        <div>En attente</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number" id="approved-count">0</div>
+                        <div>Approuvées</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number" id="rejected-count">0</div>
+                        <div>Rejetées</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-number" id="total-count">0</div>
+                        <div>Total</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtres -->
+            <div class="filter-buttons">
+                <button class="btn btn-outline-primary active" onclick="filterTimeSheets('all')">
+                    <i class="fas fa-list"></i> Toutes
+                </button>
+                <button class="btn btn-outline-warning" onclick="filterTimeSheets('submitted')">
+                    <i class="fas fa-clock"></i> En attente
+                </button>
+                
+                <!-- Filtre par collaborateur -->
+                <div id="collaborateur-filter-container" class="mt-3">
+                    <!-- Le filtre sera généré par JavaScript -->
+                </div>
+                <button class="btn btn-outline-success" onclick="filterTimeSheets('approved')">
+                    <i class="fas fa-check"></i> Approuvées
+                </button>
+                <button class="btn btn-outline-danger" onclick="filterTimeSheets('rejected')">
+                    <i class="fas fa-times"></i> Rejetées
+                </button>
+            </div>
+
+            <!-- Liste des feuilles de temps -->
+            <div class="row">
+                <div class="col-12">
+                    <div id="time-sheets-container">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal d'approbation/rejet -->
+    <div class="modal fade" id="approvalModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="approvalModalTitle">Validation de la feuille de temps</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="approvalModalContent">
+                        <!-- Le contenu sera rempli dynamiquement -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de commentaire -->
+    <div class="modal fade" id="commentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="commentModalTitle">Commentaire</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="comment-text" class="form-label">Commentaire (optionnel)</label>
+                        <textarea class="form-control" id="comment-text" rows="3" placeholder="Ajoutez un commentaire..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confirm-action-btn">Confirmer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/sidebar.js" defer></script>
+    <script src="js/time-sheet-approvals.js"></script>
+
+    <script>
+        // Script de débogage pour la page de validation
+        console.log('🔍 Débogage de la page de validation des feuilles de temps');
+        
+        // Vérifier que tous les éléments nécessaires sont présents
+        document.addEventListener('DOMContentLoaded', function() {
+            const requiredElements = [
+                'time-sheets-container',
+                'pending-count',
+                'approved-count',
+                'rejected-count',
+                'total-count',
+                'collaborateur-filter-container',
+                'approvalModal',
+                'commentModal'
+            ];
+            
+            console.log('🔍 Vérification des éléments requis:');
+            requiredElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    console.log(`✅ ${id}: présent`);
+                } else {
+                    console.log(`❌ ${id}: manquant`);
+                }
+            });
+            
+            // Vérifier les boutons de filtre
+            const filterButtons = document.querySelectorAll('.filter-buttons .btn');
+            console.log(`📊 Boutons de filtre trouvés: ${filterButtons.length}`);
+            
+            // Vérifier les modals
+            const approvalModal = document.getElementById('approvalModal');
+            const commentModal = document.getElementById('commentModal');
+            
+            if (approvalModal) {
+                console.log('✅ Modal d\'approbation: présent');
+            } else {
+                console.log('❌ Modal d\'approbation: manquant');
+            }
+            
+            if (commentModal) {
+                console.log('✅ Modal de commentaire: présent');
+            } else {
+                console.log('❌ Modal de commentaire: manquant');
+            }
+        });
+    </script>
+</body>
+</html> 

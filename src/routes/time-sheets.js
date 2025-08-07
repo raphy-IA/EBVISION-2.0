@@ -7,7 +7,7 @@ const { authenticateToken } = require('../middleware/auth');
 // Créer une nouvelle feuille de temps
 router.post('/', authenticateToken, async (req, res) => {
     try {
-        const { user_id, week_start, week_end, statut = 'sauvegardé' } = req.body;
+        const { user_id, week_start, week_end, status = 'saved' } = req.body;
         
         if (!user_id || !week_start || !week_end) {
             return res.status(400).json({ 
@@ -32,7 +32,7 @@ router.post('/', authenticateToken, async (req, res) => {
             user_id,
             week_start,
             week_end,
-            statut
+            status
         };
 
         const newTimeSheet = await TimeSheet.create(timeSheetData);
@@ -357,9 +357,9 @@ router.put('/:id', authenticateToken, async (req, res) => {
             return res.status(403).json({ error: 'Accès non autorisé' });
         }
 
-        // Vérifier que la feuille de temps n'est pas en statut final
-        if (['validé', 'rejeté'].includes(timeSheet.statut)) {
-            return res.status(400).json({ error: 'Impossible de modifier une feuille de temps validée ou rejetée' });
+        // Vérifier que la feuille de temps n'est pas en statut final ou soumise
+        if (['approved', 'submitted'].includes(timeSheet.status)) {
+            return res.status(400).json({ error: 'Impossible de modifier une feuille de temps validée ou soumise' });
         }
 
         // Mettre à jour la feuille de temps
@@ -393,7 +393,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         }
 
         // Vérifier que la feuille de temps n'est pas en statut final
-        if (['soumis', 'validé', 'rejeté'].includes(timeSheet.statut)) {
+        if (['submitted', 'approved', 'rejected'].includes(timeSheet.status)) {
             return res.status(400).json({ error: 'Impossible de supprimer une feuille de temps soumise, validée ou rejetée' });
         }
 

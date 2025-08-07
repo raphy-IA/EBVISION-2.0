@@ -40,6 +40,8 @@ const invoiceRoutes = require('./src/routes/invoices');
 const activityRoutes = require('./src/routes/activities');
 const timeSheetsRoutes = require('./src/routes/time-sheets');
 const internalActivitiesRoutes = require('./src/routes/internalActivities');
+const timeSheetSupervisorsRoutes = require('./src/routes/time-sheet-supervisors');
+const timeSheetApprovalsRoutes = require('./src/routes/time-sheet-approvals');
 
 // Import des middlewares
 const errorHandler = require('./src/middleware/errorHandler');
@@ -146,6 +148,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/internal-activities', internalActivitiesRoutes);
+app.use('/api/time-sheet-supervisors', timeSheetSupervisorsRoutes);
+app.use('/api/time-sheet-approvals', timeSheetApprovalsRoutes);
 
 // Route par défaut
 app.get('/', (req, res) => {
