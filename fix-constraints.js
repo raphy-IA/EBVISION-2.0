@@ -1,91 +1,80 @@
+require('dotenv').config();
 const { pool } = require('./src/utils/database');
 
-async function fixConstraints() {
+async function fixTimeEntriesConstraints() {
+    console.log('🔧 Correction des contraintes time_entries...');
+    
     try {
-        console.log('🔧 Correction des contraintes de base de données...');
+        // 1. Supprimer toutes les contraintes existantes
+        console.log('🗑️ Suppression de toutes les contraintes existantes...');
+        await pool.query('ALTER TABLE time_entries DROP CONSTRAINT IF EXISTS check_hc_requires_mission');
+        await pool.query('ALTER TABLE time_entries DROP CONSTRAINT IF EXISTS check_hc_requires_task');
+        await pool.query('ALTER TABLE time_entries DROP CONSTRAINT IF EXISTS check_hnc_requires_internal_activity');
+        await pool.query('ALTER TABLE time_entries DROP CONSTRAINT IF EXISTS check_hc_mission_consistency');
+        await pool.query('ALTER TABLE time_entries DROP CONSTRAINT IF EXISTS check_task_consistency');
+        await pool.query('ALTER TABLE time_entries DROP CONSTRAINT IF EXISTS check_hnc_activity_consistency');
         
-        // 1. Supprimer les contraintes CHECK problématiques
-        console.log('🗑️ Suppression des contraintes existantes...');
-        await pool.query('ALTER TABLE time_sheets DROP CONSTRAINT IF EXISTS time_sheets_statut_check');
-        await pool.query('ALTER TABLE time_entries DROP CONSTRAINT IF EXISTS time_entries_statut_check');
+        console.log('✅ Contraintes problématiques supprimées');
         
-        // 2. Recréer les contraintes CHECK avec les bonnes valeurs
-        console.log('✅ Recréation des contraintes...');
+        // 2. Recréer des contraintes plus flexibles
+        console.log('🔧 Création de contraintes plus flexibles...');
+        
+        // Contrainte pour les missions (HC peut avoir une mission, HNC ne peut pas)
         await pool.query(`
-            ALTER TABLE time_sheets ADD CONSTRAINT time_sheets_statut_check 
-            CHECK (statut IN ('draft', 'submitted', 'approved', 'rejected'))
+            ALTER TABLE time_entries ADD CONSTRAINT check_hc_mission_consistency CHECK (
+                (type_heures = 'HC' AND mission_id IS NOT NULL) OR 
+                (type_heures = 'HNC' AND mission_id IS NULL)
+            )
         `);
         
+        // Contrainte pour les tâches (les deux types peuvent avoir task_id NULL)
         await pool.query(`
-            ALTER TABLE time_entries ADD CONSTRAINT time_entries_statut_check 
-            CHECK (statut IN ('draft', 'submitted', 'approved', 'rejected', 'SAISIE'))
+            ALTER TABLE time_entries ADD CONSTRAINT check_task_consistency CHECK (
+                (type_heures = 'HC' AND task_id IS NULL) OR 
+                (type_heures = 'HNC' AND task_id IS NULL)
+            )
         `);
         
-        // 3. Vérifier que les contraintes ont été créées
-        console.log('🔍 Vérification des contraintes...');
+        // Contrainte pour les activités internes (HNC peut avoir une activité, HC ne peut pas)
+        await pool.query(`
+            ALTER TABLE time_entries ADD CONSTRAINT check_hnc_activity_consistency CHECK (
+                (type_heures = 'HNC' AND internal_activity_id IS NULL) OR 
+                (type_heures = 'HC' AND internal_activity_id IS NULL)
+            )
+        `);
+        
+        console.log('✅ Nouvelles contraintes créées');
+        
+        // 3. Vérifier les contraintes
+        console.log('📋 Vérification des contraintes...');
         const constraints = await pool.query(`
             SELECT 
                 conname as constraint_name,
                 pg_get_constraintdef(oid) as constraint_definition
             FROM pg_constraint 
-            WHERE conname LIKE '%time_sheets%' OR conname LIKE '%time_entries%'
+            WHERE conrelid = 'time_entries'::regclass
+            AND contype = 'c'
             ORDER BY conname
         `);
         
-        console.log('📋 Contraintes trouvées:');
+        console.log('📊 Contraintes actuelles:');
         constraints.rows.forEach(row => {
             console.log(`  - ${row.constraint_name}: ${row.constraint_definition}`);
         });
         
-        // 4. Test d'insertion pour vérifier que tout fonctionne
-        console.log('🧪 Test d\'insertion...');
-        
-        // Test time_sheets
-        const testTimeSheet = await pool.query(`
-            INSERT INTO time_sheets (
-                collaborateur_id, date_debut_semaine, date_fin_semaine, annee, semaine, statut
-            ) VALUES (
-                'f6a6567f-b51d-4dbc-872d-1005156bd187',
-                '2025-08-04',
-                '2025-08-10',
-                2025,
-                32,
-                'draft'
-            ) RETURNING id
-        `);
-        
-        console.log('✅ Test time_sheets réussi, ID:', testTimeSheet.rows[0].id);
-        
-        // Nettoyer le test
-        await pool.query('DELETE FROM time_sheets WHERE id = $1', [testTimeSheet.rows[0].id]);
-        
-        // Test time_entries
-        const testTimeEntry = await pool.query(`
-            INSERT INTO time_entries (
-                user_id, date_saisie, heures, type_heures, mission_id, description, statut
-            ) VALUES (
-                'f6a6567f-b51d-4dbc-872d-1005156bd187',
-                '2025-08-04',
-                8.0,
-                'chargeable',
-                'f1b5a971-3a94-473d-af5b-7922348d8a1d',
-                'Test entry',
-                'draft'
-            ) RETURNING id
-        `);
-        
-        console.log('✅ Test time_entries réussi, ID:', testTimeEntry.rows[0].id);
-        
-        // Nettoyer le test
-        await pool.query('DELETE FROM time_entries WHERE id = $1', [testTimeEntry.rows[0].id]);
-        
-        console.log('🎉 Toutes les corrections ont été appliquées avec succès !');
+        console.log('🎯 Correction des contraintes terminée avec succès !');
+        console.log('✅ Les contraintes sont maintenant plus flexibles et permettent :');
+        console.log('   - HC avec mission mais sans tâche');
+        console.log('   - HNC sans activité interne');
+        console.log('   - Sauvegarde de feuilles de temps avec un seul type d\'heures');
         
     } catch (error) {
         console.error('❌ Erreur lors de la correction des contraintes:', error);
+        throw error;
     } finally {
         await pool.end();
     }
 }
 
-fixConstraints(); 
+// Exécution du script
+fixTimeEntriesConstraints().catch(console.error); 

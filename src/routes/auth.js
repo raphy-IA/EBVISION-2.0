@@ -164,6 +164,74 @@ router.get('/verify', authenticateToken, (req, res) => {
     });
 });
 
+// Route pour récupérer le profil de l'utilisateur connecté
+router.get('/me', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Utilisateur non trouvé'
+            });
+        }
+
+        // Récupérer les informations du collaborateur associé si elles existent
+        let collaborateurInfo = null;
+        console.log('🔍 Recherche collaborateur pour utilisateur:', user.id, 'collaborateur_id:', user.collaborateur_id);
+        
+        if (user.collaborateur_id) {
+            try {
+                const Collaborateur = require('../models/Collaborateur');
+                collaborateurInfo = await Collaborateur.findById(user.collaborateur_id);
+                console.log('✅ Collaborateur trouvé:', collaborateurInfo ? {
+                    id: collaborateurInfo.id,
+                    nom: collaborateurInfo.nom,
+                    prenom: collaborateurInfo.prenom,
+                    business_unit_id: collaborateurInfo.business_unit_id,
+                    business_unit_nom: collaborateurInfo.business_unit_nom
+                } : 'null');
+            } catch (error) {
+                console.error('❌ Erreur lors de la récupération des informations collaborateur:', error);
+            }
+        } else {
+            console.log('⚠️ Aucun collaborateur_id pour cet utilisateur');
+        }
+
+        res.json({
+            success: true,
+            message: 'Profil récupéré avec succès',
+            data: {
+                user: {
+                    id: user.id,
+                    nom: user.nom,
+                    prenom: user.prenom,
+                    email: user.email,
+                    login: user.login,
+                    role: user.role,
+                    statut: user.statut,
+                    collaborateur_id: user.collaborateur_id,
+                    business_unit_id: user.business_unit_id || null,
+                    business_unit_nom: user.business_unit_nom || null,
+                    division_id: user.division_id || null,
+                    division_nom: user.division_nom || null,
+                    grade_nom: user.grade_nom || null,
+                    poste_nom: user.poste_nom || null,
+                    collaborateur_email: user.collaborateur_email || null
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération du profil:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur interne du serveur'
+        });
+    }
+});
+
 // Route de mot de passe oublié
 router.post('/forgot-password', async (req, res) => {
     try {

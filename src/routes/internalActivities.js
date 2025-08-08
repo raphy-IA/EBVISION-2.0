@@ -250,4 +250,23 @@ router.post('/:id/assign', authenticateToken, async (req, res) => {
     }
 });
 
+// DELETE /api/internal-activities/clear-business-unit/:businessUnitId - Supprimer toutes les affectations d'une business unit
+router.delete('/clear-business-unit/:businessUnitId', authenticateToken, async (req, res) => {
+    try {
+        await InternalActivity.clearBusinessUnitAssignments(req.params.businessUnitId);
+        
+        res.json({
+            success: true,
+            message: 'Toutes les affectations de la business unit ont été supprimées avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la suppression des affectations de la business unit:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la suppression des affectations de la business unit',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router; 

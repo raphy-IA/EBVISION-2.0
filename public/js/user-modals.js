@@ -1,4 +1,4 @@
-// Script pour gérer les modales utilisateur (profil et mot de passe)
+// Gestionnaire des modales utilisateur
 class UserModalsManager {
     constructor() {
         this.init();
@@ -9,325 +9,551 @@ class UserModalsManager {
         this.setupEventListeners();
     }
 
-    // Créer les modales
     createModals() {
-        const modalsHTML = `
-            <!-- Modal Profil Utilisateur -->
+        // Créer les modales si elles n'existent pas déjà
+        if (!document.getElementById('profileModal')) {
+            this.createProfileModal();
+        }
+        if (!document.getElementById('passwordModal')) {
+            this.createPasswordModal();
+        }
+        if (!document.getElementById('userProfileModal')) {
+            this.createUserProfileModal();
+        }
+    }
+
+    createProfileModal() {
+        const modalHTML = `
             <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="profileModalLabel">
-                                <i class="fas fa-user me-2"></i>
-                                Mon Profil
-                            </h5>
+                            <h5 class="modal-title" id="profileModalLabel">Modifier le Profil</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <form id="profileForm">
                                 <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="profileNom" class="form-label">Nom</label>
-                                        <input type="text" class="form-control" id="profileNom" name="nom" required>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="editNom" class="form-label">Nom</label>
+                                            <input type="text" class="form-control" id="editNom" name="nom" required>
+                                        </div>
                                     </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="profilePrenom" class="form-label">Prénom</label>
-                                        <input type="text" class="form-control" id="profilePrenom" name="prenom" required>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="profileEmail" class="form-label">Email</label>
-                                        <input type="email" class="form-control" id="profileEmail" name="email" required>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="profileTelephone" class="form-label">Téléphone</label>
-                                        <input type="tel" class="form-control" id="profileTelephone" name="telephone">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="editPrenom" class="form-label">Prénom</label>
+                                            <input type="text" class="form-control" id="editPrenom" name="prenom" required>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="profileRole" class="form-label">Rôle</label>
-                                    <input type="text" class="form-control" id="profileRole" name="role" readonly>
+                                    <label for="editEmail" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="editEmail" name="email" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="profileDepartement" class="form-label">Département</label>
-                                    <input type="text" class="form-control" id="profileDepartement" name="departement">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="profileBio" class="form-label">Biographie</label>
-                                    <textarea class="form-control" id="profileBio" name="bio" rows="3" placeholder="Parlez-nous de vous..."></textarea>
+                                    <label for="editLogin" class="form-label">Login</label>
+                                    <input type="text" class="form-control" id="editLogin" name="login" required>
                                 </div>
                             </form>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                            <button type="button" class="btn btn-primary" onclick="saveProfile()">
-                                <i class="fas fa-save me-2"></i>
-                                Sauvegarder
-                            </button>
+                            <button type="button" class="btn btn-primary" onclick="saveProfile()">Enregistrer</button>
                         </div>
                     </div>
                 </div>
             </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
 
-            <!-- Modal Changement de Mot de Passe -->
+    createPasswordModal() {
+        const modalHTML = `
             <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="passwordModalLabel">
-                                <i class="fas fa-key me-2"></i>
-                                Changer le Mot de Passe
-                            </h5>
+                            <h5 class="modal-title" id="passwordModalLabel">Changer le Mot de Passe</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <form id="passwordForm">
                                 <div class="mb-3">
                                     <label for="currentPassword" class="form-label">Mot de passe actuel</label>
-                                    <div class="input-group">
-                                        <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
-                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('currentPassword')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
+                                    <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="newPassword" class="form-label">Nouveau mot de passe</label>
-                                    <div class="input-group">
-                                        <input type="password" class="form-control" id="newPassword" name="newPassword" required>
-                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('newPassword')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                    <div class="form-text">
-                                        <small class="text-muted">
-                                            Le mot de passe doit contenir au moins 8 caractères, incluant des lettres majuscules, minuscules et des chiffres.
-                                        </small>
-                                    </div>
+                                    <input type="password" class="form-control" id="newPassword" name="newPassword" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="confirmPassword" class="form-label">Confirmer le nouveau mot de passe</label>
-                                    <div class="input-group">
-                                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    <strong>Conseils de sécurité :</strong>
-                                    <ul class="mb-0 mt-2">
-                                        <li>Utilisez un mot de passe unique pour chaque compte</li>
-                                        <li>Évitez les informations personnelles facilement devinables</li>
-                                        <li>Changez régulièrement votre mot de passe</li>
-                                    </ul>
+                                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
                                 </div>
                             </form>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                            <button type="button" class="btn btn-primary" onclick="changePassword()">
-                                <i class="fas fa-key me-2"></i>
-                                Changer le mot de passe
-                            </button>
+                            <button type="button" class="btn btn-primary" onclick="changePassword()">Changer le mot de passe</button>
                         </div>
                     </div>
                 </div>
             </div>
         `;
-
-        // Ajouter les modales au body
-        document.body.insertAdjacentHTML('beforeend', modalsHTML);
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
 
-    // Configurer les écouteurs d'événements
-    setupEventListeners() {
-        // Charger les données du profil quand la modale s'ouvre
-        document.getElementById('profileModal').addEventListener('show.bs.modal', (event) => {
-            this.loadProfileData();
-        });
+    createUserProfileModal() {
+        const modalHTML = `
+            <div class="modal fade" id="userProfileModal" tabindex="-1" aria-labelledby="userProfileModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="userProfileModalLabel">Mon Profil</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Loading State -->
+                            <div id="profileLoadingState" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Chargement...</span>
+                                </div>
+                                <p class="mt-2">Chargement du profil...</p>
+                            </div>
 
-        // Réinitialiser le formulaire de mot de passe quand la modale se ferme
-        document.getElementById('passwordModal').addEventListener('hidden.bs.modal', (event) => {
-            document.getElementById('passwordForm').reset();
-        });
+                            <!-- Error State -->
+                            <div id="profileErrorState" class="alert alert-danger" style="display: none;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <span id="profileErrorMessage">Une erreur est survenue lors du chargement du profil.</span>
+                            </div>
 
-        // Validation en temps réel du mot de passe
-        document.getElementById('newPassword').addEventListener('input', (event) => {
-            this.validatePassword(event.target.value);
-        });
+                            <!-- Profile Content -->
+                            <div id="profileModalContent" style="display: none;">
+                                <!-- Profile Header -->
+                                <div class="text-center mb-4">
+                                    <div class="profile-avatar-modal mb-3">
+                                        <i class="fas fa-user fa-2x text-primary"></i>
+                                    </div>
+                                    <h4 id="profileModalName">Chargement...</h4>
+                                    <p class="text-muted" id="profileModalRole">Chargement...</p>
+                                    <span id="profileModalStatus" class="badge">Chargement...</span>
+                                </div>
 
-        document.getElementById('confirmPassword').addEventListener('input', (event) => {
-            this.validatePasswordConfirmation();
-        });
-    }
+                                <!-- Profile Information -->
+                                <div class="row">
+                                    <!-- Personal Information -->
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-user-circle me-2"></i>
+                                            Informations Personnelles
+                                        </h6>
+                                        <div class="mb-3">
+                                            <small class="text-muted">Nom</small>
+                                            <div id="profileModalNom" class="fw-bold">-</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <small class="text-muted">Prénom</small>
+                                            <div id="profileModalPrenom" class="fw-bold">-</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <small class="text-muted">Email</small>
+                                            <div id="profileModalEmail" class="fw-bold">-</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <small class="text-muted">Login</small>
+                                            <div id="profileModalLogin" class="fw-bold">-</div>
+                                        </div>
+                                    </div>
 
-    // Charger les données du profil
-    loadProfileData() {
-        const userInfo = this.getUserInfo();
-        if (userInfo) {
-            document.getElementById('profileNom').value = userInfo.nom || '';
-            document.getElementById('profilePrenom').value = userInfo.prenom || '';
-            document.getElementById('profileEmail').value = userInfo.email || '';
-            document.getElementById('profileTelephone').value = userInfo.telephone || '';
-            document.getElementById('profileRole').value = userInfo.role || 'Utilisateur';
-            document.getElementById('profileDepartement').value = userInfo.departement || '';
-            document.getElementById('profileBio').value = userInfo.bio || '';
-        }
-    }
+                                    <!-- Account Information -->
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-shield-alt me-2"></i>
+                                            Informations du Compte
+                                        </h6>
+                                        <div class="mb-3">
+                                            <small class="text-muted">Rôle</small>
+                                            <div id="profileModalRoleBadge" class="fw-bold">-</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <small class="text-muted">Statut</small>
+                                            <div id="profileModalStatut" class="fw-bold">-</div>
+                                        </div>
+                                    </div>
+                                </div>
 
-    // Obtenir les informations utilisateur
-    getUserInfo() {
-        const userData = localStorage.getItem('user');
-        return userData ? JSON.parse(userData) : null;
-    }
+                                <!-- Collaborator Information -->
+                                <div id="profileModalCollaboratorSection" style="display: none;">
+                                    <hr>
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-users me-2"></i>
+                                        Informations Collaborateur
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <small class="text-muted">Nom Collaborateur</small>
+                                                <div id="profileModalCollaborateurNom" class="fw-bold">-</div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <small class="text-muted">Email</small>
+                                                <div id="profileModalCollaborateurEmail" class="fw-bold">-</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <small class="text-muted">Grade</small>
+                                                <div id="profileModalCollaborateurGrade" class="fw-bold">-</div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <small class="text-muted">Poste</small>
+                                                <div id="profileModalCollaborateurPoste" class="fw-bold">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-    // Valider le mot de passe
-    validatePassword(password) {
-        const requirements = {
-            length: password.length >= 8,
-            uppercase: /[A-Z]/.test(password),
-            lowercase: /[a-z]/.test(password),
-            number: /[0-9]/.test(password),
-            special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
-        };
+                                <!-- Business Unit and Division -->
+                                <div id="profileModalBusinessUnitSection" style="display: none;">
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary mb-3">
+                                                <i class="fas fa-building me-2"></i>
+                                                Business Unit
+                                            </h6>
+                                            <div id="profileModalBusinessUnitNom" class="fw-bold">-</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary mb-3">
+                                                <i class="fas fa-sitemap me-2"></i>
+                                                Division
+                                            </h6>
+                                            <div id="profileModalDivisionNom" class="fw-bold">-</div>
+                                        </div>
+                                    </div>
+                                </div>
 
-        const strength = Object.values(requirements).filter(Boolean).length;
-        const strengthText = ['Très faible', 'Faible', 'Moyen', 'Fort', 'Très fort'][strength - 1];
-        const strengthColor = ['danger', 'warning', 'info', 'success', 'success'][strength - 1];
-
-        // Afficher l'indicateur de force
-        let strengthIndicator = document.getElementById('passwordStrength');
-        if (!strengthIndicator) {
-            strengthIndicator = document.createElement('div');
-            strengthIndicator.id = 'passwordStrength';
-            strengthIndicator.className = 'mt-2';
-            document.getElementById('newPassword').parentNode.appendChild(strengthIndicator);
-        }
-
-        strengthIndicator.innerHTML = `
-            <div class="progress mb-2" style="height: 5px;">
-                <div class="progress-bar bg-${strengthColor}" style="width: ${(strength / 5) * 100}%"></div>
+                                <!-- No Collaborator Message -->
+                                <div id="profileModalNoCollaboratorSection" style="display: none;">
+                                    <hr>
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                        <h6>Aucun Collaborateur Associé</h6>
+                                        <p class="small">Cet utilisateur n'est pas lié à un profil collaborateur.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" onclick="openEditProfileModal()">
+                                <i class="fas fa-edit me-2"></i>
+                                Modifier le Profil
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="openChangePasswordModal()">
+                                <i class="fas fa-key me-2"></i>
+                                Changer le Mot de Passe
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <small class="text-${strengthColor}">Force du mot de passe : ${strengthText}</small>
         `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
 
-    // Valider la confirmation du mot de passe
-    validatePasswordConfirmation() {
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const confirmField = document.getElementById('confirmPassword');
+    setupEventListeners() {
+        // Écouter l'ouverture de la modale de profil
+        const userProfileModal = document.getElementById('userProfileModal');
+        if (userProfileModal) {
+            userProfileModal.addEventListener('show.bs.modal', () => {
+                this.loadProfileData();
+            });
+        }
+    }
 
-        if (confirmPassword && newPassword !== confirmPassword) {
-            confirmField.setCustomValidity('Les mots de passe ne correspondent pas');
-            confirmField.classList.add('is-invalid');
+    async loadProfileData() {
+        try {
+            // Afficher le loading
+            document.getElementById('profileLoadingState').style.display = 'block';
+            document.getElementById('profileErrorState').style.display = 'none';
+            document.getElementById('profileModalContent').style.display = 'none';
+
+            // Initialiser le SessionManager si nécessaire
+            if (window.sessionManager && !window.sessionManager.isLoaded) {
+                await window.sessionManager.initialize();
+            }
+
+            // Récupérer les données
+            const user = window.sessionManager.getUser();
+            const collaborateur = window.sessionManager.getCollaborateur();
+            const businessUnit = window.sessionManager.getBusinessUnit();
+            const division = window.sessionManager.getDivision();
+
+            // Mettre à jour l'interface
+            this.updateProfileModal(user, collaborateur, businessUnit, division);
+
+            // Masquer le loading et afficher le contenu
+            document.getElementById('profileLoadingState').style.display = 'none';
+            document.getElementById('profileModalContent').style.display = 'block';
+
+        } catch (error) {
+            console.error('Erreur lors du chargement du profil:', error);
+            document.getElementById('profileLoadingState').style.display = 'none';
+            document.getElementById('profileErrorMessage').textContent = 'Erreur lors du chargement du profil: ' + error.message;
+            document.getElementById('profileErrorState').style.display = 'block';
+        }
+    }
+
+    updateProfileModal(user, collaborateur, businessUnit, division) {
+        // En-tête du profil
+        const fullName = `${user.prenom} ${user.nom}`;
+        document.getElementById('profileModalName').textContent = fullName;
+        document.getElementById('profileModalRole').textContent = user.role;
+        
+        const statusClass = user.statut === 'ACTIF' ? 'bg-success' : 'bg-danger';
+        const statusElement = document.getElementById('profileModalStatus');
+        statusElement.textContent = user.statut;
+        statusElement.className = `badge ${statusClass}`;
+
+        // Informations personnelles
+        document.getElementById('profileModalNom').textContent = user.nom || '-';
+        document.getElementById('profileModalPrenom').textContent = user.prenom || '-';
+        document.getElementById('profileModalEmail').textContent = user.email || '-';
+        document.getElementById('profileModalLogin').textContent = user.login || '-';
+
+        // Informations du compte
+        document.getElementById('profileModalRoleBadge').textContent = user.role || '-';
+        document.getElementById('profileModalStatut').textContent = user.statut || '-';
+
+        // Informations collaborateur
+        if (collaborateur) {
+            document.getElementById('profileModalCollaboratorSection').style.display = 'block';
+            document.getElementById('profileModalNoCollaboratorSection').style.display = 'none';
+            
+            document.getElementById('profileModalCollaborateurNom').textContent = `${collaborateur.prenom} ${collaborateur.nom}`;
+            document.getElementById('profileModalCollaborateurEmail').textContent = collaborateur.email || '-';
+            document.getElementById('profileModalCollaborateurGrade').textContent = collaborateur.grade_nom || '-';
+            document.getElementById('profileModalCollaborateurPoste').textContent = collaborateur.poste_nom || '-';
         } else {
-            confirmField.setCustomValidity('');
-            confirmField.classList.remove('is-invalid');
+            document.getElementById('profileModalCollaboratorSection').style.display = 'none';
+            document.getElementById('profileModalNoCollaboratorSection').style.display = 'block';
+        }
+
+        // Business Unit et Division
+        if (businessUnit || division) {
+            document.getElementById('profileModalBusinessUnitSection').style.display = 'block';
+            document.getElementById('profileModalBusinessUnitNom').textContent = businessUnit?.nom || '-';
+            document.getElementById('profileModalDivisionNom').textContent = division?.nom || '-';
+        } else {
+            document.getElementById('profileModalBusinessUnitSection').style.display = 'none';
         }
     }
 }
 
-// Fonction pour sauvegarder le profil
-function saveProfile() {
-    const form = document.getElementById('profileForm');
-    const formData = new FormData(form);
-    const profileData = Object.fromEntries(formData.entries());
-
-    // Simuler la sauvegarde
-    console.log('Sauvegarde du profil:', profileData);
-    
-    // Mettre à jour les données utilisateur locales
-    const currentUserInfo = JSON.parse(localStorage.getItem('user') || '{}');
-    const updatedUserInfo = { ...currentUserInfo, ...profileData };
-    localStorage.setItem('user', JSON.stringify(updatedUserInfo));
-
-    // Mettre à jour l'affichage
-    if (window.UserHeaderManager) {
-        window.UserHeaderManager.updateUserDisplay(updatedUserInfo);
+// Fonctions globales
+function openEditModal() {
+    const userInfo = getUserInfo();
+    if (userInfo) {
+        document.getElementById('editNom').value = userInfo.nom || '';
+        document.getElementById('editPrenom').value = userInfo.prenom || '';
+        document.getElementById('editEmail').value = userInfo.email || '';
+        document.getElementById('editLogin').value = userInfo.login || '';
     }
-
-    // Afficher un message de succès
-    showAlert('Profil mis à jour avec succès !', 'success');
     
-    // Fermer la modale
-    const modal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
-    modal.hide();
+    const modal = new bootstrap.Modal(document.getElementById('profileModal'));
+    modal.show();
 }
 
-// Fonction pour changer le mot de passe
-function changePassword() {
-    const form = document.getElementById('passwordForm');
-    const formData = new FormData(form);
-    const passwordData = Object.fromEntries(formData.entries());
+function openPasswordModal() {
+    const modal = new bootstrap.Modal(document.getElementById('passwordModal'));
+    modal.show();
+}
 
-    // Validation
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
+function openUserProfileModal() {
+    const modal = new bootstrap.Modal(document.getElementById('userProfileModal'));
+    modal.show();
+}
+
+function openEditProfileModal() {
+    // Fermer la modale de profil et ouvrir la modale d'édition
+    const profileModal = bootstrap.Modal.getInstance(document.getElementById('userProfileModal'));
+    profileModal.hide();
+    
+    setTimeout(() => {
+        openEditModal();
+    }, 300);
+}
+
+function openChangePasswordModal() {
+    // Fermer la modale de profil et ouvrir la modale de changement de mot de passe
+    const profileModal = bootstrap.Modal.getInstance(document.getElementById('userProfileModal'));
+    profileModal.hide();
+    
+    setTimeout(() => {
+        openPasswordModal();
+    }, 300);
+}
+
+function getUserInfo() {
+    // Utiliser le SessionManager si disponible, sinon fallback sur localStorage
+    if (window.sessionManager && window.sessionManager.isLoaded) {
+        try {
+            return window.sessionManager.getUser();
+        } catch (error) {
+            console.warn('SessionManager non disponible, utilisation du fallback localStorage');
+        }
+    }
+    
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
+}
+
+async function saveProfile() {
+    const formData = {
+        nom: document.getElementById('editNom').value,
+        prenom: document.getElementById('editPrenom').value,
+        email: document.getElementById('editEmail').value,
+        login: document.getElementById('editLogin').value
+    };
+
+    try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch('/api/auth/update-profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Mettre à jour les données locales
+            const userInfo = getUserInfo();
+            if (userInfo) {
+                Object.assign(userInfo, formData);
+                localStorage.setItem('user', JSON.stringify(userInfo));
+            }
+
+            // Rafraîchir le SessionManager si disponible
+            if (window.sessionManager) {
+                await window.sessionManager.refresh();
+            }
+
+            // Fermer la modale
+            const modal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
+            modal.hide();
+
+            // Afficher un message de succès
+            showAlert('Profil mis à jour avec succès', 'success');
+        } else {
+            showAlert(data.message || 'Erreur lors de la mise à jour du profil', 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde:', error);
+        showAlert('Erreur lors de la sauvegarde du profil', 'danger');
+    }
+}
+
+async function changePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (newPassword !== confirmPassword) {
         showAlert('Les mots de passe ne correspondent pas', 'danger');
         return;
     }
 
-    if (passwordData.newPassword.length < 8) {
-        showAlert('Le mot de passe doit contenir au moins 8 caractères', 'danger');
-        return;
-    }
+    try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch('/api/auth/change-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                currentPassword,
+                newPassword
+            })
+        });
 
-    // Simuler le changement de mot de passe
-    console.log('Changement de mot de passe:', { currentPassword: '***', newPassword: '***' });
-    
-    // Afficher un message de succès
-    showAlert('Mot de passe changé avec succès !', 'success');
-    
-    // Fermer la modale
-    const modal = bootstrap.Modal.getInstance(document.getElementById('passwordModal'));
-    modal.hide();
+        const data = await response.json();
+
+        if (data.success) {
+            // Fermer la modale
+            const modal = bootstrap.Modal.getInstance(document.getElementById('passwordModal'));
+            modal.hide();
+
+            // Réinitialiser le formulaire
+            document.getElementById('passwordForm').reset();
+
+            // Afficher un message de succès
+            showAlert('Mot de passe modifié avec succès', 'success');
+        } else {
+            showAlert(data.message || 'Erreur lors du changement de mot de passe', 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur lors du changement de mot de passe:', error);
+        showAlert('Erreur lors du changement de mot de passe', 'danger');
+    }
 }
 
-// Fonction pour basculer la visibilité du mot de passe
-function togglePassword(fieldId) {
-    const field = document.getElementById(fieldId);
-    const button = field.nextElementSibling;
-    const icon = button.querySelector('i');
-
-    if (field.type === 'password') {
-        field.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    } else {
-        field.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-    }
-}
-
-// Fonction pour afficher des alertes
-function showAlert(message, type = 'info') {
-    // Créer l'alerte
-    const alertHTML = `
-        <div class="alert alert-${type} alert-dismissible fade show position-fixed" 
-             style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+function showAlert(message, type) {
+    // Créer une alerte Bootstrap
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
-
-    // Ajouter l'alerte au body
-    document.body.insertAdjacentHTML('beforeend', alertHTML);
-
+    
+    document.body.appendChild(alertDiv);
+    
     // Supprimer automatiquement après 5 secondes
     setTimeout(() => {
-        const alert = document.querySelector('.alert');
-        if (alert) {
-            alert.remove();
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
         }
     }, 5000);
 }
 
-// Initialiser les modales quand le DOM est chargé
+// Initialiser le gestionnaire de modales
 document.addEventListener('DOMContentLoaded', function() {
-    window.UserModalsManager = new UserModalsManager();
-}); 
+    window.userModalsManager = new UserModalsManager();
+});
+
+// Styles CSS pour la modale de profil
+const profileModalStyles = `
+<style>
+.profile-avatar-modal {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    color: white;
+}
+
+.modal-lg {
+    max-width: 800px;
+}
+
+#userProfileModal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+</style>
+`;
+
+document.head.insertAdjacentHTML('beforeend', profileModalStyles); 

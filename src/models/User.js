@@ -37,8 +37,19 @@ class User {
     static async findById(id) {
         const sql = `
             SELECT u.id, u.nom, u.prenom, u.email, u.login, u.role,
-                   u.statut, u.last_login, u.created_at, u.updated_at
+                   u.statut, u.last_login, u.created_at, u.updated_at, u.collaborateur_id,
+                   c.business_unit_id, c.division_id,
+                   bu.nom as business_unit_nom, bu.code as business_unit_code,
+                   d.nom as division_nom, d.code as division_code,
+                   g.nom as grade_nom, g.code as grade_code,
+                   p.nom as poste_nom, p.code as poste_code,
+                   c.email as collaborateur_email
             FROM users u
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN business_units bu ON c.business_unit_id = bu.id
+            LEFT JOIN divisions d ON c.division_id = d.id
+            LEFT JOIN grades g ON c.grade_actuel_id = g.id
+            LEFT JOIN postes p ON c.poste_actuel_id = p.id
             WHERE u.id = $1
         `;
 

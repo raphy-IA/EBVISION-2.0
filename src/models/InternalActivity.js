@@ -154,7 +154,7 @@ class InternalActivity {
                 bu.id,
                 bu.nom,
                 bu.description,
-                bu.is_active,
+                bu.statut,
                 iabu.is_active as is_assigned
             FROM business_units bu
             INNER JOIN internal_activity_business_units iabu ON bu.id = iabu.business_unit_id
@@ -211,7 +211,7 @@ class InternalActivity {
         const query = `
             SELECT id, nom, description
             FROM business_units
-            WHERE is_active = true
+            WHERE statut = 'ACTIF'
             ORDER BY nom
         `;
         
@@ -220,6 +220,22 @@ class InternalActivity {
             return result.rows;
         } catch (error) {
             console.error('Erreur lors de la récupération des business units disponibles:', error);
+            throw error;
+        }
+    }
+
+    // Supprimer toutes les affectations d'une business unit
+    static async clearBusinessUnitAssignments(businessUnitId) {
+        const query = `
+            DELETE FROM internal_activity_business_units 
+            WHERE business_unit_id = $1
+        `;
+        
+        try {
+            const result = await pool.query(query, [businessUnitId]);
+            return result.rowCount;
+        } catch (error) {
+            console.error('Erreur lors de la suppression des affectations de la business unit:', error);
             throw error;
         }
     }

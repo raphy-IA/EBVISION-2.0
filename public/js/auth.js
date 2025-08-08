@@ -175,6 +175,15 @@ class AuthManager {
 
     // Obtenir les informations de l'utilisateur connecté
     getUserInfo() {
+        // Utiliser le SessionManager si disponible, sinon fallback sur localStorage
+        if (window.sessionManager && window.sessionManager.isLoaded) {
+            try {
+                return window.sessionManager.getUser();
+            } catch (error) {
+                console.warn('SessionManager non disponible, utilisation du fallback localStorage');
+            }
+        }
+        
         const userData = localStorage.getItem('user');
         return userData ? JSON.parse(userData) : null;
     }

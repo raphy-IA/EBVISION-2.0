@@ -56,12 +56,12 @@ class TimeEntry {
     static async findExisting(timeSheetId, dateSaisie, typeHeures, missionId = null, taskId = null, internalActivityId = null) {
         const query = `
             SELECT * FROM time_entries 
-            WHERE time_sheet_id = $1 
-            AND date_saisie = $2 
-            AND type_heures = $3
-            AND COALESCE(mission_id, '') = COALESCE($4, '')
-            AND COALESCE(task_id, '') = COALESCE($5, '')
-            AND COALESCE(internal_activity_id, '') = COALESCE($6, '')
+            WHERE time_sheet_id = $1::uuid
+            AND date_saisie = $2::date
+            AND type_heures = $3::text
+            AND (mission_id IS NULL AND $4::uuid IS NULL OR mission_id = $4::uuid)
+            AND (task_id IS NULL AND $5::uuid IS NULL OR task_id = $5::uuid)
+            AND (internal_activity_id IS NULL AND $6::uuid IS NULL OR internal_activity_id = $6::uuid)
         `;
 
         try {
@@ -161,6 +161,24 @@ class TimeEntry {
             return result.rows[0];
         } catch (error) {
             console.error('Erreur lors de la suppression de l\'entrée de temps:', error);
+            throw error;
+        }
+    }
+
+    // Supprimer toutes les entrées d'un utilisateur pour une période
+    static async deleteByUserAndPeriod(userId, startDate, endDate) {
+        const query = `
+            DELETE FROM time_entries 
+            WHERE user_id = $1 
+            AND date_saisie BETWEEN $2 AND $3
+            RETURNING *
+        `;
+
+        try {
+            const result = await pool.query(query, [userId, startDate, endDate]);
+            return result.rows.length;
+        } catch (error) {
+            console.error('Erreur lors de la suppression des entrées par période:', error);
             throw error;
         }
     }

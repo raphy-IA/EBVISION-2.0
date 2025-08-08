@@ -183,7 +183,8 @@ class TimeSheetApproval {
                 JOIN time_sheet_supervisors tss ON c.id = tss.collaborateur_id
                 JOIN collaborateurs supervisor_c ON supervisor_c.user_id = $1
                 LEFT JOIN time_sheet_approvals tsa ON ts.id = tsa.time_sheet_id
-                LEFT JOIN users approver_u ON tsa.approver_id = approver_u.id
+                LEFT JOIN collaborateurs approver_c ON tsa.supervisor_id = approver_c.id
+                LEFT JOIN users approver_u ON approver_c.user_id = approver_u.id
                 WHERE tss.supervisor_id = supervisor_c.id 
                 AND ts.status IN ('submitted', 'approved', 'rejected')
                 GROUP BY ts.id, ts.week_start, ts.week_end, ts.status, ts.created_at, ts.updated_at,

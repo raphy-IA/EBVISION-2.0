@@ -98,7 +98,7 @@ class UserHeaderManager {
                                         <li><h6 class="dropdown-header">Profil utilisateur</h6></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
-                                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">
+                                            <a class="dropdown-item" href="#" onclick="openUserProfileModal(); return false;">
                                                 <i class="fas fa-user me-2"></i>
                                                 Mon profil
                                             </a>
@@ -155,6 +155,15 @@ class UserHeaderManager {
 
     // Obtenir les informations utilisateur
     getUserInfo() {
+        // Utiliser le SessionManager si disponible, sinon fallback sur localStorage
+        if (window.sessionManager && window.sessionManager.isLoaded) {
+            try {
+                return window.sessionManager.getUser();
+            } catch (error) {
+                console.warn('SessionManager non disponible, utilisation du fallback localStorage');
+            }
+        }
+        
         const userData = localStorage.getItem('user');
         return userData ? JSON.parse(userData) : null;
     }

@@ -8,32 +8,37 @@ const { authenticateToken } = require('../middleware/auth');
 // GET /api/time-entries - Récupérer les entrées d'un utilisateur (compatibilité)
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const { user_id, date, week_start, week_end } = req.query;
+        const { user_id, date, week_start, week_end, time_sheet_id } = req.query;
         const userId = user_id || req.user.id;
-
-        if (!userId) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'ID utilisateur requis' 
-            });
-        }
 
         let entries = [];
         
-        if (week_start && week_end) {
-            // Récupérer les entrées pour une période spécifique
-            entries = await TimeEntry.findByUserAndPeriod(userId, week_start, week_end);
-        } else if (date) {
-            // Récupérer les entrées pour une date spécifique
-            const weekStart = new Date(date);
-            weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekStart.getDate() + 6);
-            
-            entries = await TimeEntry.findByUserAndPeriod(userId, weekStart.toISOString().split('T')[0], weekEnd.toISOString().split('T')[0]);
+        if (time_sheet_id) {
+            // Récupérer les entrées pour une feuille de temps spécifique
+            console.log(`🔍 Récupération des entrées pour la feuille de temps: ${time_sheet_id}`);
+            entries = await TimeEntry.findByTimeSheet(time_sheet_id);
+            console.log(`✅ ${entries.length} entrées trouvées pour la feuille ${time_sheet_id}`);
+        } else if (userId) {
+            if (week_start && week_end) {
+                // Récupérer les entrées pour une période spécifique
+                entries = await TimeEntry.findByUserAndPeriod(userId, week_start, week_end);
+            } else if (date) {
+                // Récupérer les entrées pour une date spécifique
+                const weekStart = new Date(date);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                
+                entries = await TimeEntry.findByUserAndPeriod(userId, weekStart.toISOString().split('T')[0], weekEnd.toISOString().split('T')[0]);
+            } else {
+                // Retourner un tableau vide pour la compatibilité
+                entries = [];
+            }
         } else {
-            // Retourner un tableau vide pour la compatibilité
-            entries = [];
+            return res.status(400).json({ 
+                success: false, 
+                message: 'ID utilisateur ou ID feuille de temps requis' 
+            });
         }
 
         res.json({
@@ -62,7 +67,8 @@ router.post('/', authenticateToken, async (req, res) => {
             mission_id,
             task_id,
             internal_activity_id,
-            type_heures = 'HC'
+            type_heures = 'HC',
+            description
         } = req.body;
 
         // Validation des données
@@ -95,10 +101,11 @@ router.post('/', authenticateToken, async (req, res) => {
             user_id: userId,
             date_saisie,
             heures: parseFloat(heures) || 0,
-            type_heures: type_heures === 'chargeable' ? 'HC' : 'HNC',
-            mission_id: type_heures === 'chargeable' ? mission_id : null,
-            task_id: type_heures === 'chargeable' ? task_id : null,
-            internal_activity_id: type_heures === 'non-chargeable' ? internal_activity_id : null
+            type_heures: type_heures, // Utiliser directement la valeur envoyée par le frontend
+            mission_id: type_heures === 'HC' ? mission_id : null,
+            task_id: type_heures === 'HC' ? task_id : null,
+            internal_activity_id: type_heures === 'HNC' ? internal_activity_id : null,
+            description: description || 'Saisie automatique'
         };
 
         const entry = await TimeEntry.findOrCreate(timeEntryData);
@@ -152,6 +159,92 @@ router.put('/:id', authenticateToken, async (req, res) => {
         res.status(500).json({ 
             success: false, 
             message: 'Erreur lors de la mise à jour de l\'entrée de temps',
+            error: error.message 
+        });
+    }
+});
+
+// DELETE /api/time-entries/delete-week - Supprimer toutes les entrées d'une semaine
+router.delete('/delete-week', authenticateToken, async (req, res) => {
+    try {
+        const { user_id, week_start, week_end } = req.query;
+        const userId = user_id || req.user.id;
+
+        if (!userId || !week_start || !week_end) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Paramètres manquants: user_id, week_start, week_end' 
+            });
+        }
+
+        // Vérifier que l'utilisateur demande la suppression de ses propres entrées
+        if (user_id && user_id !== req.user.id) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Accès non autorisé' 
+            });
+        }
+
+        // Supprimer toutes les entrées de la semaine pour cet utilisateur
+        const deletedCount = await TimeEntry.deleteByUserAndPeriod(userId, week_start, week_end);
+
+        res.json({
+            success: true,
+            message: `${deletedCount} entrée(s) supprimée(s) avec succès`,
+            deletedCount
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la suppression des entrées de la semaine:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur lors de la suppression des entrées de la semaine',
+            error: error.message 
+        });
+    }
+});
+
+// DELETE /api/time-entries/:id - Supprimer une entrée individuelle
+router.delete('/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        // Vérifier que l'entrée appartient à l'utilisateur connecté
+        const entry = await TimeEntry.findById(id);
+        if (!entry) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Entrée non trouvée' 
+            });
+        }
+
+        if (entry.user_id !== userId) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Accès non autorisé' 
+            });
+        }
+
+        const deleted = await TimeEntry.delete(id);
+
+        if (!deleted) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Entrée non trouvée' 
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Entrée supprimée avec succès'
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la suppression de l\'entrée de temps:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur lors de la suppression de l\'entrée de temps',
             error: error.message 
         });
     }

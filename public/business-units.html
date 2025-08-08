@@ -911,7 +911,7 @@
             try {
                 const response = await fetch('/api/internal-activities', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
                 
@@ -937,7 +937,7 @@
                 try {
                     const response = await fetch(`/api/internal-activities/business-unit/${bu.id}`, {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                         }
                     });
                     
@@ -953,6 +953,13 @@
             
             displayBusinessUnitsConfig();
             updateConfigStatistics();
+            
+            // Initialiser le statut "sauvegardé" pour toutes les BU après un délai pour laisser le DOM se charger
+            setTimeout(() => {
+                businessUnits.forEach(bu => {
+                    updateBusinessUnitStatus(bu.id, true);
+                });
+            }, 100);
         }
 
         // Afficher les business units pour la configuration
@@ -1014,6 +1021,16 @@
                                 }).join('')}
                             </div>
                         </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted small">
+                                <i class="fas fa-info-circle me-1"></i>
+                                <span id="status_${bu.id}">Modifications non sauvegardées</span>
+                            </div>
+                            <button class="btn btn-sm btn-success" onclick="saveBusinessUnitConfigurations('${bu.id}')" id="save_btn_${bu.id}">
+                                <i class="fas fa-save me-1"></i>Sauvegarder
+                            </button>
+                        </div>
                     </div>
                 `;
                 
@@ -1035,10 +1052,101 @@
                 assignmentsConfig[businessUnitId] = assignmentsConfig[businessUnitId].filter(id => id !== activityId);
             }
             
+            // Mettre à jour le statut pour indiquer qu'il y a des modifications non sauvegardées
+            updateBusinessUnitStatus(businessUnitId, false);
             updateConfigStatistics();
         }
 
-        // Sauvegarder toutes les configurations d'activités
+        // Mettre à jour le statut d'une business unit
+        function updateBusinessUnitStatus(businessUnitId, isSaved = false) {
+            const statusElement = document.getElementById(`status_${businessUnitId}`);
+            const saveButton = document.getElementById(`save_btn_${businessUnitId}`);
+            
+            if (statusElement && saveButton) {
+                if (isSaved) {
+                    statusElement.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i>Sauvegardé';
+                    statusElement.className = 'text-success small';
+                    saveButton.disabled = true;
+                    saveButton.innerHTML = '<i class="fas fa-check me-1"></i>Sauvegardé';
+                    saveButton.className = 'btn btn-sm btn-outline-success';
+                } else {
+                    statusElement.innerHTML = '<i class="fas fa-exclamation-triangle text-warning me-1"></i>Modifications non sauvegardées';
+                    statusElement.className = 'text-warning small';
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Sauvegarder';
+                    saveButton.className = 'btn btn-sm btn-success';
+                }
+            }
+        }
+
+        // Sauvegarder les configurations d'activités pour une business unit spécifique
+        async function saveBusinessUnitConfigurations(businessUnitId) {
+            try {
+                const activityIds = assignmentsConfig[businessUnitId] || [];
+                const saveButton = document.getElementById(`save_btn_${businessUnitId}`);
+                
+                // Désactiver le bouton pendant la sauvegarde
+                if (saveButton) {
+                    saveButton.disabled = true;
+                    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Sauvegarde...';
+                }
+                
+                // Si aucune activité n'est assignée, supprimer toutes les affectations
+                if (activityIds.length === 0) {
+                    // Supprimer toutes les affectations existantes pour cette BU
+                    const response = await fetch(`/api/internal-activities/clear-business-unit/${businessUnitId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        updateBusinessUnitStatus(businessUnitId, true);
+                        showAlert(`Configuration de la BU sauvegardée avec succès`, 'success');
+                    } else {
+                        throw new Error('Erreur lors de la suppression des affectations');
+                    }
+                } else {
+                    // Affecter les activités sélectionnées à cette BU
+                    const promises = activityIds.map(activityId =>
+                        fetch(`/api/internal-activities/${activityId}/assign`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                            },
+                            body: JSON.stringify({
+                                business_unit_ids: [businessUnitId]
+                            })
+                        })
+                    );
+                    
+                    const responses = await Promise.all(promises);
+                    const allSuccessful = responses.every(response => response.ok);
+                    
+                    if (allSuccessful) {
+                        updateBusinessUnitStatus(businessUnitId, true);
+                        showAlert(`Configuration de la BU sauvegardée avec succès`, 'success');
+                    } else {
+                        throw new Error('Erreur lors de la sauvegarde des affectations');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde:', error);
+                showAlert('Erreur lors de la sauvegarde', 'danger');
+                
+                // Réactiver le bouton en cas d'erreur
+                const saveButton = document.getElementById(`save_btn_${businessUnitId}`);
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Sauvegarder';
+                }
+            }
+        }
+
+        // Sauvegarder toutes les configurations d'activités (fonction existante)
         async function saveAllActivityConfigurations() {
             const promises = [];
             
@@ -1049,7 +1157,7 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                             },
                             body: JSON.stringify({
                                 business_unit_ids: activityIds
@@ -1128,5 +1236,8 @@
         document.getElementById('businessUnitFilter').addEventListener('change', displayBusinessUnitsConfig);
         document.getElementById('showConfiguredOnly').addEventListener('change', displayBusinessUnitsConfig);
     </script>
+
+    <!-- SessionManager pour la gestion centralisée des sessions -->
+    <script src="js/session-manager.js"></script>
 </body>
 </html>
