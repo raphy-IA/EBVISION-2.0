@@ -49,6 +49,33 @@ router.get('/opportunity/:opportunityId', authenticateToken, async (req, res) =>
     }
 });
 
+// Récupérer les alertes (retards/risques élevés) d'une opportunité
+router.get('/opportunity/:opportunityId/alerts', authenticateToken, async (req, res) => {
+    try {
+        const { pool } = require('../utils/database');
+        const { opportunityId } = req.params;
+
+        const query = `
+            SELECT id, stage_name, stage_order, status, due_date, risk_level, priority_level
+            FROM opportunity_stages
+            WHERE opportunity_id = $1
+            ORDER BY stage_order ASC
+        `;
+        const { rows } = await pool.query(query, [opportunityId]);
+
+        const now = new Date();
+        const alerts = rows.filter(st => (
+            (st.status !== 'COMPLETED' && st.due_date && new Date(st.due_date) < now) ||
+            (st.risk_level === 'HIGH' || st.risk_level === 'CRITICAL')
+        ));
+
+        res.json({ success: true, data: { alerts } });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des alertes:', error);
+        res.status(500).json({ success: false, error: 'Erreur lors de la récupération des alertes' });
+    }
+});
+
 // Récupérer une étape spécifique
 router.get('/:stageId', authenticateToken, async (req, res) => {
     try {
@@ -167,66 +194,7 @@ router.delete('/:stageId', authenticateToken, async (req, res) => {
     }
 });
 
-// Démarrer une étape
-router.post('/:stageId/start', authenticateToken, async (req, res) => {
-    try {
-        const { stageId } = req.params;
-        
-        const stage = await OpportunityStage.findById(stageId);
-        if (!stage) {
-            return res.status(404).json({
-                success: false,
-                error: 'Étape non trouvée'
-            });
-        }
-
-        const startedStage = await stage.start();
-
-        res.json({
-            success: true,
-            data: {
-                stage: startedStage
-            }
-        });
-    } catch (error) {
-        console.error('Erreur lors du démarrage de l\'étape:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Erreur lors du démarrage de l\'étape'
-        });
-    }
-});
-
-// Terminer une étape
-router.post('/:stageId/complete', authenticateToken, async (req, res) => {
-    try {
-        const { stageId } = req.params;
-        const { validated_by } = req.body;
-        
-        const stage = await OpportunityStage.findById(stageId);
-        if (!stage) {
-            return res.status(404).json({
-                success: false,
-                error: 'Étape non trouvée'
-            });
-        }
-
-        const completedStage = await stage.complete(validated_by);
-
-        res.json({
-            success: true,
-            data: {
-                stage: completedStage
-            }
-        });
-    } catch (error) {
-        console.error('Erreur lors de la finalisation de l\'étape:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Erreur lors de la finalisation de l\'étape'
-        });
-    }
-});
+// (Supprimé) Routes directes sur le modèle pour start/complete afin d'unifier via le service de workflow
 
 // Démarrer une étape
 router.post('/:stageId/start', authenticateToken, async (req, res) => {
@@ -344,6 +312,53 @@ router.get('/opportunity/:opportunityId/stats', authenticateToken, async (req, r
             success: false,
             error: 'Erreur lors de la récupération des statistiques'
         });
+    }
+});
+
+// Mettre à jour l'échéance (due_date) et les notes d'une étape
+router.put('/:stageId/schedule', authenticateToken, async (req, res) => {
+    try {
+        const { stageId } = req.params;
+        const { due_date, notes } = req.body;
+
+        const stage = await OpportunityStage.findById(stageId);
+        if (!stage) {
+            return res.status(404).json({ success: false, error: 'Étape non trouvée' });
+        }
+
+        const updated = await stage.update({
+            due_date: due_date ? new Date(due_date) : stage.due_date,
+            notes: notes !== undefined ? notes : stage.notes
+        });
+
+        res.json({ success: true, data: { stage: updated } });
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'échéance:", error);
+        res.status(500).json({ success: false, error: "Erreur lors de la mise à jour de l'échéance" });
+    }
+});
+
+// Recalculer le risque/priorité d'une étape
+router.post('/:stageId/recompute-risk', authenticateToken, async (req, res) => {
+    try {
+        const OpportunityWorkflowService = require('../services/opportunityWorkflowService');
+        const updatedStage = await OpportunityWorkflowService.updateStageRiskAndPriority(req.params.stageId);
+        res.json({ success: true, data: { stage: updatedStage } });
+    } catch (error) {
+        console.error('Erreur lors du recalcul du risque/priorité:', error);
+        res.status(500).json({ success: false, error: 'Erreur lors du recalcul du risque/priorité' });
+    }
+});
+
+// Déclencher un scan des étapes en retard (global)
+router.post('/check-overdue/run', authenticateToken, async (req, res) => {
+    try {
+        const OpportunityWorkflowService = require('../services/opportunityWorkflowService');
+        const overdueStages = await OpportunityWorkflowService.checkOverdueStages();
+        res.json({ success: true, data: { overdueStages } });
+    } catch (error) {
+        console.error('Erreur lors du scan des étapes en retard:', error);
+        res.status(500).json({ success: false, error: 'Erreur lors du scan des étapes en retard' });
     }
 });
 

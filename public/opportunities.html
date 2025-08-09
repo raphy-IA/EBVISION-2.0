@@ -610,11 +610,11 @@
                                     </div>
                                 </div>
 
-                                <!-- Dates et statut -->
+                                <!-- Dates -->
                                 <div class="mb-4">
                                     <h6 class="text-primary mb-3">
                                         <i class="fas fa-calendar me-2"></i>
-                                        Planning et Statut
+                                        Planning
                                     </h6>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
@@ -623,18 +623,6 @@
                                             </label>
                                             <input type="date" class="form-control" id="new-opportunity-closing-date" 
                                                    name="date_fermeture_prevue">
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="new-opportunity-status" class="form-label">
-                                                <i class="fas fa-flag me-1"></i>Statut *
-                                            </label>
-                                            <select class="form-select" id="new-opportunity-status" name="statut" required>
-                                                <option value="NOUVELLE">Nouvelle</option>
-                                                <option value="EN_COURS">En Cours</option>
-                                                <option value="GAGNEE">Gagnée</option>
-                                                <option value="PERDUE">Perdue</option>
-                                                <option value="ANNULEE">Annulée</option>
-                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -951,6 +939,9 @@
                             <button class="btn btn-outline-info" onclick="viewOpportunity('${opp.id}')" title="Voir">
                                 <i class="fas fa-eye"></i>
                             </button>
+                            <button class="btn btn-outline-secondary" onclick="goToStages('${opp.id}')" title="Gérer les étapes">
+                                <i class="fas fa-list-check"></i>
+                            </button>
                             <button class="btn btn-outline-warning" onclick="editOpportunity('${opp.id}')" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </button>
@@ -1096,6 +1087,10 @@
             `;
         }
         
+        function goToStages(id) {
+            window.location.href = `/opportunity-stages.html?opportunity_id=${id}`;
+        }
+
         // Fonctions CRUD (a enrichir progressivement)
         async function newOpportunity() {
             console.log('➕ Ouverture du modal nouvelle opportunité');
@@ -1278,7 +1273,7 @@
             
             // Validation côté client
             if (!formData.get('nom') || !formData.get('client_id') || !formData.get('collaborateur_id') || 
-                !formData.get('business_unit_id') || !formData.get('type_opportunite') || !formData.get('statut')) {
+                !formData.get('business_unit_id') || !formData.get('type_opportunite')) {
                 showErrorMessage('Veuillez remplir tous les champs obligatoires');
                 return;
             }
@@ -1290,7 +1285,6 @@
                 collaborateur_id: formData.get('collaborateur_id'),
                 business_unit_id: formData.get('business_unit_id'),
                 type_opportunite: formData.get('type_opportunite'),
-                statut: formData.get('statut'),
                 source: formData.get('source') || null,
                 montant_estime: formData.get('montant_estime') ? parseFloat(formData.get('montant_estime')) : null,
                 devise: formData.get('devise') || 'EUR',

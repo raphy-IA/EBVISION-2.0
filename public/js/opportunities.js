@@ -337,13 +337,15 @@ async function createOpportunity() {
     }
     
     const formData = new FormData(form);
+    const selectedStatus = (document.getElementById('opportunityStatus')?.value || '').trim();
     const opportunityData = {
         nom: document.getElementById('opportunityName').value,
         business_unit_id: document.getElementById('opportunityBusinessUnit').value,
         opportunity_type_id: document.getElementById('opportunityType').value || null,
         client_id: document.getElementById('opportunityClient').value || null,
         collaborateur_id: document.getElementById('opportunityCollaborateur').value || null,
-        statut: document.getElementById('opportunityStatus').value,
+        // Ne pas envoyer de statut: le backend appliquera 'NOUVELLE' par défaut
+        // statut: selectedStatus !== '' ? selectedStatus : null,
         type: document.getElementById('opportunityTypeOld').value || null,
         source: document.getElementById('opportunitySource').value || null,
         montant_estime: parseFloat(document.getElementById('opportunityAmount').value) || null,

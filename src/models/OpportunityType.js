@@ -132,6 +132,15 @@ class OpportunityType {
     // Créer automatiquement les étapes pour une opportunité
     async createStagesForOpportunity(opportunityId) {
         try {
+            // Éviter toute duplication: si des étapes existent déjà pour cette opportunité, ne rien créer
+            const existingStages = await pool.query(
+                'SELECT 1 FROM opportunity_stages WHERE opportunity_id = $1 LIMIT 1',
+                [opportunityId]
+            );
+            if (existingStages.rows.length > 0) {
+                return [];
+            }
+
             const templates = await this.getStageTemplates();
             const stages = [];
 

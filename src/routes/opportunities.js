@@ -238,7 +238,8 @@ router.post('/', authenticateToken, async (req, res) => {
             client_id,
             collaborateur_id,
             business_unit_id,
-            opportunity_type_id: type_opportunite, // Mapper type_opportunite vers opportunity_type_id
+            opportunity_type_id: opportunity_type_id || type_opportunite || null,
+            // Laisser le backend définir NOUVELLE si non fourni
             statut,
             type_opportunite,
             source,
@@ -253,6 +254,19 @@ router.post('/', authenticateToken, async (req, res) => {
         console.log('📋 Données envoyées au modèle Opportunity.create:', JSON.stringify(opportunityData, null, 2));
         
         const opportunity = await Opportunity.create(opportunityData);
+
+        // Instancier les étapes depuis les templates si un type est fourni
+        try {
+            const typeIdToUse = opportunity_type_id || type_opportunite || null;
+            if (typeIdToUse) {
+                const type = await OpportunityType.findById(typeIdToUse);
+                if (type) {
+                    await type.createStagesForOpportunity(opportunity.id);
+                }
+            }
+        } catch (e) {
+            console.warn('⚠️ Impossible d\'instancier les étapes depuis les templates:', e.message);
+        }
 
         res.status(201).json({
             success: true,

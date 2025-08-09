@@ -68,26 +68,25 @@ class OpportunityWorkflowService {
                 throw new Error('Cette étape ne peut pas être terminée');
             }
 
-            // Mettre à jour le statut de l'étape
+            // Mettre à jour le statut de l'étape (schéma sans colonne outcome)
             const updateQuery = `
                 UPDATE opportunity_stages 
                 SET 
                     status = 'COMPLETED',
                     completed_date = CURRENT_TIMESTAMP,
-                    outcome = $1,
                     updated_at = CURRENT_TIMESTAMP
-                WHERE id = $2
+                WHERE id = $1
                 RETURNING *
             `;
 
-            const result = await pool.query(updateQuery, [outcome, stageId]);
+            const result = await pool.query(updateQuery, [stageId]);
             const updatedStage = result.rows[0];
 
             // Ajouter une action de finalisation
             await this.addStageAction(stageId, {
                 action_type: 'STAGE_COMPLETE',
                 action_title: 'Étape terminée',
-                action_description: `L'étape "${updatedStage.nom}" a été terminée${outcome ? ` avec le résultat: ${outcome}` : ''}`,
+                action_description: `L'étape "${updatedStage.nom || updatedStage.stage_name}" a été terminée` + (outcome ? ` (résultat: ${outcome})` : ''),
                 performed_by: userId
             });
 
