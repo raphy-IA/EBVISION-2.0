@@ -352,7 +352,6 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/auth.js" defer></script>
     <script src="/js/sidebar.js" defer></script>
     <script>
         // Variables globales
@@ -586,12 +585,47 @@
             let tasksHtml = '';
             tasks.forEach(task => {
                 const statusClass = getStatusClass(task.statut);
+                
+                // Générer l'affichage des collaborateurs affectés
+                let collaborateursHtml = '';
+                if (task.collaborateurs_affectes && task.collaborateurs_affectes.length > 0) {
+                    collaborateursHtml = `
+                        <div class="mt-2">
+                            <small class="text-primary"><i class="fas fa-users me-1"></i>Collaborateurs affectés:</small>
+                            ${task.collaborateurs_affectes.map(collab => `
+                                <div class="ms-3 mt-1">
+                                    <small>
+                                        <i class="fas fa-user me-1"></i>
+                                        <strong>${collab.prenom} ${collab.nom}</strong>
+                                        ${collab.grade_nom ? `(${collab.grade_nom})` : ''}
+                                    </small>
+                                    <br>
+                                    <small class="text-muted">
+                                        ${collab.heures_planifiees || 0}h planifiées - 
+                                        ${collab.heures_effectuees || 0}h effectuées
+                                        ${collab.taux_horaire ? ` - ${collab.taux_horaire}€/h` : ''}
+                                    </small>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    collaborateursHtml = `
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>Aucun collaborateur affecté
+                            </small>
+                        </div>
+                    `;
+                }
+                
                 tasksHtml += `
                     <div class="border-bottom pb-2 mb-2">
                         <div class="row">
                             <div class="col-md-4">
                                 <strong>${task.task_libelle || 'N/A'}</strong>
                                 <br><small class="text-muted">${task.task_description || ''}</small>
+                                ${collaborateursHtml}
                             </div>
                             <div class="col-md-2">
                                 <span class="badge ${statusClass}">${task.statut || 'N/A'}</span>
@@ -783,11 +817,11 @@
 
         // Affichage des données de progression
         function displayProgressData(progressData) {
-            const { stats, tasks } = progressData;
+            const { stats, tasks, has_validated_hours } = progressData;
             
             let progressHtml = `
                 <div class="row mb-4">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="card text-center">
                             <div class="card-body">
                                 <h5 class="card-title">${stats.total_tasks || 0}</h5>
@@ -795,7 +829,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="card text-center">
                             <div class="card-body">
                                 <h5 class="card-title text-success">${stats.completed_tasks || 0}</h5>
@@ -803,7 +837,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="card text-center">
                             <div class="card-body">
                                 <h5 class="card-title text-warning">${stats.in_progress_tasks || 0}</h5>
@@ -811,11 +845,29 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="card text-center">
                             <div class="card-body">
                                 <h5 class="card-title text-info">${stats.planned_tasks || 0}</h5>
                                 <p class="card-text">Planifiées</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary">${stats.total_validated_hours || 0}h</h5>
+                                <p class="card-text">Heures Validées</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title ${has_validated_hours ? 'text-success' : 'text-muted'}">
+                                    <i class="fas fa-${has_validated_hours ? 'check-circle' : 'clock'}"></i>
+                                </h5>
+                                <p class="card-text">${has_validated_hours ? 'Active' : 'En attente'}</p>
                             </div>
                         </div>
                     </div>
@@ -824,17 +876,40 @@
                     <div class="col-md-6">
                         <div class="card">
                             <div class="card-header">
-                                <h6>Heures planifiées vs effectuées</h6>
+                                <h6><i class="fas fa-chart-bar me-2"></i>Heures planifiées vs validées</h6>
                             </div>
                             <div class="card-body">
                                 <p><strong>Planifiées:</strong> ${stats.total_planned_hours || 0} heures</p>
-                                <p><strong>Effectuées:</strong> ${stats.total_actual_hours || 0} heures</p>
+                                <p><strong>Validées:</strong> ${stats.total_validated_hours || 0} heures</p>
                                 <div class="progress">
-                                    <div class="progress-bar" role="progressbar" 
-                                         style="width: ${stats.total_planned_hours > 0 ? (stats.total_actual_hours / stats.total_planned_hours) * 100 : 0}%">
-                                        ${stats.total_planned_hours > 0 ? Math.round((stats.total_actual_hours / stats.total_planned_hours) * 100) : 0}%
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: ${stats.total_planned_hours > 0 ? (stats.total_validated_hours / stats.total_planned_hours) * 100 : 0}%">
+                                        ${stats.total_planned_hours > 0 ? Math.round((stats.total_validated_hours / stats.total_planned_hours) * 100) : 0}%
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fas fa-info-circle me-2"></i>Statut de la mission</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Statut actuel:</strong> 
+                                    <span class="badge bg-${has_validated_hours ? 'success' : 'secondary'}">
+                                        ${has_validated_hours ? 'EN_COURS' : 'PLANIFIEE'}
+                                    </span>
+                                </p>
+                                <p><strong>Heures validées:</strong> 
+                                    <span class="text-${has_validated_hours ? 'success' : 'muted'}">
+                                        ${has_validated_hours ? 'Oui' : 'Non'}
+                                    </span>
+                                </p>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    La mission passe automatiquement en "EN_COURS" dès qu'elle a des heures validées
+                                </small>
                             </div>
                         </div>
                     </div>
@@ -851,27 +926,34 @@
                 `;
                 
                 tasks.forEach(task => {
-                    const statusClass = getStatusClass(task.statut);
+                    const statusClass = getStatusClass(task.effective_status || task.statut);
+                    const hasValidatedHours = task.validated_hours > 0;
                     progressHtml += `
                         <div class="border-bottom pb-2 mb-2">
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <strong>${task.task_libelle || 'N/A'}</strong>
+                                    ${hasValidatedHours ? '<br><small class="text-success"><i class="fas fa-check-circle me-1"></i>Heures validées</small>' : ''}
                                 </div>
                                 <div class="col-md-2">
-                                    <span class="badge ${statusClass}">${task.statut || 'N/A'}</span>
+                                    <span class="badge ${statusClass}">${task.effective_status || task.statut || 'N/A'}</span>
+                                    ${hasValidatedHours && task.statut === 'PLANIFIEE' ? '<br><small class="text-success">→ EN_COURS</small>' : ''}
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <small>Planifié: ${task.duree_planifiee || 0}h</small>
+                                    <br><small class="text-success">Validé: ${task.validated_hours || 0}h</small>
                                     <br><small class="text-muted">Effectué: ${task.duree_reelle || 0}h</small>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="progress">
-                                        <div class="progress-bar" role="progressbar" 
+                                        <div class="progress-bar bg-success" role="progressbar" 
                                              style="width: ${task.progress_percentage || 0}%">
                                             ${task.progress_percentage || 0}%
                                         </div>
                                     </div>
+                                    <small class="text-muted">
+                                        Progression basée sur les heures validées
+                                    </small>
                                 </div>
                             </div>
                         </div>

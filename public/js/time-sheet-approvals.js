@@ -882,21 +882,32 @@ async function loadTimeSheetDetails(timeSheetId) {
                                  </div>
              </div>
              
-             <!-- Boutons d'approbation/rejet pour les feuilles soumises -->
-             ${timeSheet.status === 'submitted' ? `
-                 <div class="row mt-4">
-                     <div class="col-12">
-                         <div class="d-flex justify-content-center gap-3">
-                             <button class="btn btn-success btn-lg" onclick="openApprovalModal('${timeSheet.id}', 'approve')">
-                                 <i class="fas fa-check me-2"></i>Approuver la feuille de temps
-                             </button>
-                             <button class="btn btn-danger btn-lg" onclick="openApprovalModal('${timeSheet.id}', 'reject')">
-                                 <i class="fas fa-times me-2"></i>Rejeter la feuille de temps
-                             </button>
-                         </div>
+             <!-- Boutons d'approbation/rejet -->
+             <div class="row mt-4">
+                 <div class="col-12">
+                     <div class="d-flex justify-content-center gap-3">
+                         <button class="btn btn-success btn-lg ${timeSheet.status !== 'submitted' ? 'disabled' : ''}" 
+                                 onclick="${timeSheet.status === 'submitted' ? `openApprovalModal('${timeSheet.id}', 'approve')` : 'return false'}"
+                                 title="${timeSheet.status !== 'submitted' ? 'Feuille déjà traitée' : 'Approuver la feuille de temps'}">
+                             <i class="fas fa-check me-2"></i>Approuver la feuille de temps
+                         </button>
+                         <button class="btn btn-danger btn-lg ${timeSheet.status !== 'submitted' ? 'disabled' : ''}" 
+                                 onclick="${timeSheet.status === 'submitted' ? `openApprovalModal('${timeSheet.id}', 'reject')` : 'return false'}"
+                                 title="${timeSheet.status !== 'submitted' ? 'Feuille déjà traitée' : 'Rejeter la feuille de temps'}">
+                             <i class="fas fa-times me-2"></i>Rejeter la feuille de temps
+                         </button>
                      </div>
+                     ${timeSheet.status !== 'submitted' ? `
+                         <div class="text-center mt-2">
+                             <small class="text-muted">
+                                 <i class="fas fa-info-circle"></i> 
+                                 Feuille ${timeSheet.status === 'approved' ? 'approuvée' : 'rejetée'} - 
+                                 Plus d'actions possibles
+                             </small>
+                         </div>
+                     ` : ''}
                  </div>
-             ` : ''}
+             </div>
              
              ${timeSheet.approvals && timeSheet.approvals.length > 0 ? `
                  <div class="mt-3">

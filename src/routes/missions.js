@@ -434,7 +434,7 @@ router.get('/:id/available-tasks', authenticateToken, async (req, res) => {
 
 /**
  * GET /api/missions/:id/tasks
- * Récupérer les tâches configurées d'une mission
+ * Récupérer les tâches configurées d'une mission avec les collaborateurs affectés
  */
 router.get('/:id/tasks', authenticateToken, async (req, res) => {
     try {
@@ -455,7 +455,28 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                 t.libelle as task_libelle,
                 t.description as task_description,
                 t.duree_estimee,
-                t.priorite
+                t.priorite,
+                -- Informations sur les collaborateurs affectés
+                COALESCE(
+                    (SELECT json_agg(
+                        json_build_object(
+                            'id', c.id,
+                            'nom', c.nom,
+                            'prenom', c.prenom,
+                            'email', c.email,
+                            'grade_nom', g.nom,
+                            'heures_planifiees', ta.heures_planifiees,
+                            'heures_effectuees', ta.heures_effectuees,
+                            'taux_horaire', ta.taux_horaire,
+                            'statut', ta.statut
+                        )
+                    )
+                    FROM task_assignments ta
+                    JOIN collaborateurs c ON ta.collaborateur_id = c.id
+                    LEFT JOIN grades g ON c.grade_actuel_id = g.id
+                    WHERE ta.mission_task_id = mt.id), 
+                    '[]'::json
+                ) as collaborateurs_affectes
             FROM mission_tasks mt
             LEFT JOIN tasks t ON mt.task_id = t.id
             WHERE mt.mission_id = $1
@@ -785,29 +806,49 @@ router.get('/:id/collaborateurs-taux', authenticateToken, async (req, res) => {
 
 /**
  * GET /api/missions/:id/progress
- * Récupérer la progression d'une mission
+ * Récupérer la progression d'une mission avec les heures validées
  */
 router.get('/:id/progress', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
         
-        // Statistiques des tâches
+        // Statistiques des tâches avec heures validées
         const tasksStatsQuery = `
             SELECT 
                 COUNT(*) as total_tasks,
-                COUNT(CASE WHEN statut = 'TERMINEE' THEN 1 END) as completed_tasks,
-                COUNT(CASE WHEN statut = 'EN_COURS' THEN 1 END) as in_progress_tasks,
-                COUNT(CASE WHEN statut = 'PLANIFIEE' THEN 1 END) as planned_tasks,
-                SUM(duree_planifiee) as total_planned_hours,
-                SUM(duree_reelle) as total_actual_hours
-            FROM mission_tasks
-            WHERE mission_id = $1
+                COUNT(CASE 
+                    WHEN mt.statut = 'TERMINEE' THEN 1 
+                    END) as completed_tasks,
+                COUNT(CASE 
+                    WHEN COALESCE(validated_hours.hours_validated, 0) > 0 THEN 1
+                    WHEN mt.statut = 'EN_COURS' THEN 1 
+                    END) as in_progress_tasks,
+                COUNT(CASE 
+                    WHEN COALESCE(validated_hours.hours_validated, 0) = 0 
+                    AND mt.statut = 'PLANIFIEE' THEN 1 
+                    END) as planned_tasks,
+                SUM(mt.duree_planifiee) as total_planned_hours,
+                SUM(mt.duree_reelle) as total_actual_hours,
+                COALESCE(SUM(validated_hours.hours_validated), 0) as total_validated_hours
+            FROM mission_tasks mt
+            LEFT JOIN (
+                SELECT 
+                    te.task_id,
+                    SUM(te.heures) as hours_validated
+                FROM time_entries te
+                JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                WHERE te.mission_id = $1 
+                AND te.type_heures = 'HC'
+                AND ts.status IN ('approved', 'submitted')
+                GROUP BY te.task_id
+            ) validated_hours ON mt.task_id = validated_hours.task_id
+            WHERE mt.mission_id = $1
         `;
         
         const tasksStatsResult = await pool.query(tasksStatsQuery, [req.params.id]);
         const tasksStats = tasksStatsResult.rows[0];
         
-        // Progression par tâche
+        // Progression par tâche avec heures validées
         const tasksProgressQuery = `
             SELECT 
                 mt.id,
@@ -815,26 +856,59 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
                 mt.duree_planifiee,
                 mt.duree_reelle,
                 t.libelle as task_libelle,
+                COALESCE(validated_hours.hours_validated, 0) as validated_hours,
                 ROUND(
                     CASE 
                         WHEN mt.duree_planifiee > 0 
-                        THEN (COALESCE(mt.duree_reelle, 0) / mt.duree_planifiee) * 100
+                        THEN (COALESCE(validated_hours.hours_validated, 0) / mt.duree_planifiee) * 100
                         ELSE 0 
                     END, 2
-                ) as progress_percentage
+                ) as progress_percentage,
+                CASE 
+                    WHEN COALESCE(validated_hours.hours_validated, 0) > 0 THEN 'EN_COURS'
+                    WHEN mt.statut = 'PLANIFIEE' THEN 'PLANIFIEE'
+                    WHEN mt.statut = 'TERMINEE' THEN 'TERMINEE'
+                    ELSE mt.statut
+                END as effective_status
             FROM mission_tasks mt
             LEFT JOIN tasks t ON mt.task_id = t.id
+            LEFT JOIN (
+                SELECT 
+                    te.task_id,
+                    SUM(te.heures) as hours_validated
+                FROM time_entries te
+                JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                WHERE te.mission_id = $1 
+                AND te.type_heures = 'HC'
+                AND ts.status IN ('approved', 'submitted')
+                GROUP BY te.task_id
+            ) validated_hours ON mt.task_id = validated_hours.task_id
             WHERE mt.mission_id = $1
             ORDER BY mt.date_debut
         `;
         
         const tasksProgressResult = await pool.query(tasksProgressQuery, [req.params.id]);
         
+        // Mettre à jour le statut de la mission si des heures sont validées
+        const hasValidatedHours = tasksStats.total_validated_hours > 0;
+        if (hasValidatedHours) {
+            const updateMissionStatusQuery = `
+                UPDATE missions 
+                SET statut = CASE 
+                    WHEN statut = 'PLANIFIEE' THEN 'EN_COURS'
+                    ELSE statut
+                END
+                WHERE id = $1 AND statut = 'PLANIFIEE'
+            `;
+            await pool.query(updateMissionStatusQuery, [req.params.id]);
+        }
+        
         res.json({
             success: true,
             data: {
                 stats: tasksStats,
-                tasks: tasksProgressResult.rows
+                tasks: tasksProgressResult.rows,
+                has_validated_hours: hasValidatedHours
             }
         });
     } catch (error) {

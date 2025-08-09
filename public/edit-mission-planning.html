@@ -184,6 +184,51 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
+                                    <!-- Résumé du planning -->
+                                    <div id="planningSummary" class="mb-4" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="card bg-primary text-white">
+                                                    <div class="card-body text-center">
+                                                        <h6 class="card-title">
+                                                            <i class="fas fa-tasks me-2"></i>Tâches
+                                                        </h6>
+                                                        <h4 id="totalTasks">0</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-success text-white">
+                                                    <div class="card-body text-center">
+                                                        <h6 class="card-title">
+                                                            <i class="fas fa-users me-2"></i>Collaborateurs
+                                                        </h6>
+                                                        <h4 id="totalCollaborators">0</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-info text-white">
+                                                    <div class="card-body text-center">
+                                                        <h6 class="card-title">
+                                                            <i class="fas fa-clock me-2"></i>Heures planifiées
+                                                        </h6>
+                                                        <h4 id="totalPlannedHours">0h</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-warning text-white">
+                                                    <div class="card-body text-center">
+                                                        <h6 class="card-title">
+                                                            <i class="fas fa-check-circle me-2"></i>Heures effectuées
+                                                        </h6>
+                                                        <h4 id="totalCompletedHours">0h</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <!-- Available Tasks -->
                                     <div class="mb-4">
                                         <h6>
@@ -404,6 +449,40 @@
             }
         }
 
+        // Mettre à jour le résumé du planning
+        function updatePlanningSummary() {
+            const summaryContainer = document.getElementById('planningSummary');
+            
+            if (currentTasks.length === 0) {
+                summaryContainer.style.display = 'none';
+                return;
+            }
+            
+            // Calculer les totaux
+            let totalTasks = currentTasks.length;
+            let totalCollaborators = 0;
+            let totalPlannedHours = 0;
+            let totalCompletedHours = 0;
+            
+            currentTasks.forEach(task => {
+                if (task.assignments) {
+                    totalCollaborators += task.assignments.length;
+                    task.assignments.forEach(assignment => {
+                        totalPlannedHours += parseFloat(assignment.heures_planifiees) || 0;
+                        totalCompletedHours += parseFloat(assignment.heures_effectuees) || 0;
+                    });
+                }
+            });
+            
+            // Mettre à jour l'affichage
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('totalCollaborators').textContent = totalCollaborators;
+            document.getElementById('totalPlannedHours').textContent = totalPlannedHours + 'h';
+            document.getElementById('totalCompletedHours').textContent = totalCompletedHours + 'h';
+            
+            summaryContainer.style.display = 'block';
+        }
+
         // Afficher les tâches actuelles
         function renderCurrentTasks() {
             const container = document.getElementById('currentTasks');
@@ -416,18 +495,33 @@
                         <p class="text-muted">Ajoutez des tâches pour commencer le planning.</p>
                     </div>
                 `;
+                updatePlanningSummary();
                 return;
             }
 
             let html = '<h6 class="mb-3"><i class="fas fa-list me-2"></i>Tâches planifiées</h6>';
             
             currentTasks.forEach((task, taskIndex) => {
+                // Calculer les totaux pour cette tâche
+                const totalHeuresPlanifiees = task.assignments ? task.assignments.reduce((sum, a) => sum + (parseFloat(a.heures_planifiees) || 0), 0) : 0;
+                const totalHeuresEffectuees = task.assignments ? task.assignments.reduce((sum, a) => sum + (parseFloat(a.heures_effectuees) || 0), 0) : 0;
+                const nombreCollaborateurs = task.assignments ? task.assignments.length : 0;
+                
                 html += `
                     <div class="task-card">
                         <div class="task-header d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1">${task.libelle}</h6>
                                 <small class="text-muted">${task.code}</small>
+                                <div class="mt-1">
+                                    <small class="text-primary">
+                                        <i class="fas fa-users me-1"></i>${nombreCollaborateurs} collaborateur(s) assigné(s)
+                                    </small>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>${totalHeuresPlanifiees}h planifiées - ${totalHeuresEffectuees}h effectuées
+                                    </small>
+                                </div>
                             </div>
                             <div class="task-actions">
                                 <span class="badge bg-${getStatusColor(task.statut)} task-status">${task.statut}</span>
@@ -467,7 +561,7 @@
                             <div class="mb-3">
                                 <h6 class="mb-2">
                                     <i class="fas fa-users me-2"></i>
-                                    Collaborateurs assignés
+                                    Collaborateurs assignés (${nombreCollaborateurs})
                                 </h6>
                                 <div id="assignments-${taskIndex}">
                 `;
@@ -491,18 +585,23 @@
             });
 
             container.innerHTML = html;
+            updatePlanningSummary();
         }
 
         // Créer une ligne d'affectation
         function createAssignmentRow(taskIndex, assignmentIndex, assignment = null) {
             const collaborateurId = assignment ? assignment.collaborateur_id : '';
             const heuresPlanifiees = assignment ? assignment.heures_planifiees : 0;
+            const heuresEffectuees = assignment ? assignment.heures_effectuees : 0;
             const tauxHoraire = assignment ? assignment.taux_horaire : 0;
+            const nom = assignment ? assignment.nom : '';
+            const prenom = assignment ? assignment.prenom : '';
+            const gradeNom = assignment ? assignment.grade_nom : '';
 
             return `
                 <div class="assignment-row">
                     <div class="row align-items-center">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label">Collaborateur</label>
                             <select class="form-select collaborateur-select" onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'collaborateur_id', this.value)">
                                 <option value="">Sélectionner...</option>
@@ -512,11 +611,22 @@
                                     </option>
                                 `).join('')}
                             </select>
+                            ${assignment && nom ? `
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>${prenom} ${nom}
+                                    ${gradeNom ? `(${gradeNom})` : ''}
+                                </small>
+                            ` : ''}
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Heures planifiées</label>
                             <input type="number" class="form-control hours-input" value="${heuresPlanifiees}" 
                                    onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'heures_planifiees', this.value)">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Heures effectuées</label>
+                            <input type="number" class="form-control hours-input" value="${heuresEffectuees}" 
+                                   onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'heures_effectuees', this.value)">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Taux horaire (€)</label>
@@ -531,7 +641,7 @@
                                 <option value="TERMINE" ${assignment && assignment.statut === 'TERMINE' ? 'selected' : ''}>Terminé</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             <label class="form-label">&nbsp;</label>
                             <button type="button" class="btn btn-remove-assignment" onclick="removeAssignment(${taskIndex}, ${assignmentIndex})">
                                 <i class="fas fa-trash"></i>
