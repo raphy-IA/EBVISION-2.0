@@ -98,6 +98,43 @@
             height: 300px;
         }
 
+        /* Styles pour les modals de visualisation */
+        .modal-dialog {
+            max-width: 800px;
+        }
+
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .list-group-item {
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .list-group-item .description-text {
+            max-width: 70%;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        .list-group-item .timestamp {
+            min-width: 120px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .list-group-item .file-info {
+            max-width: 60%;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
         /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
         .sidebar-container {
             width: 300px; /* Largeur fixe pour la sidebar */
@@ -211,14 +248,23 @@
                 </div>
             </div>
 
+            <!-- Bouton pour voir l'historique complet -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <button class="btn btn-info" onclick="showCompleteHistory()">
+                        <i class="fas fa-history"></i> Voir l'historique complet de l'opportunité
+                    </button>
+                </div>
+            </div>
+
             <!-- Alertes -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0"><i class="fas fa-bell me-2"></i>Alertes</h5>
                     <button class="btn btn-sm btn-outline-secondary" id="btn-refresh-alerts">
                         <i class="fas fa-rotate"></i> Actualiser
-                    </button>
-                </div>
+                        </button>
+                    </div>
                 <div class="card-body" id="alerts-container">
                     <div class="text-muted">Chargement des alertes…</div>
                 </div>
@@ -247,8 +293,142 @@
                 </div>
             </div>
 
-            <!-- Tableau des étapes -->
+            <!-- Exigences (Actions/Docs requis) -->
             <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clipboard-check me-2"></i>
+                        Exigences de l'étape courante
+                        <span id="current-stage-name" class="text-primary ms-2"></span>
+                    </h5>
+                    <div class="d-flex gap-2" id="action-buttons">
+                        <button class="btn btn-sm btn-outline-secondary" id="btn-refresh-req">
+                            <i class="fas fa-rotate"></i> Actualiser
+                        </button>
+                        <button class="btn btn-sm btn-primary" id="btn-validate-stage">
+                            <i class="fas fa-flag-checkered"></i> Valider l'étape
+                        </button>
+                        <button class="btn btn-sm btn-danger" id="btn-abandon-opportunity">
+                            <i class="fas fa-times-circle"></i> Abandonner l'opportunité
+                        </button>
+                        <button class="btn btn-sm btn-success" id="btn-reopen-opportunity" style="display: none;">
+                            <i class="fas fa-play-circle"></i> Réouvrir l'opportunité
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6 class="mb-2">Actions obligatoires</h6>
+                            <ul class="list-group" id="required-actions"></ul>
+                            <div class="mt-3">
+                                <h6 class="mb-2">Actions supplémentaires</h6>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select" id="extra-action-type">
+                                        <option value="">Sélectionner une action…</option>
+                                        <optgroup label="Actions commerciales principales">
+                                            <option value="premier_contact">Premier contact prospect</option>
+                                            <option value="qualification_besoin">Qualification initiale du besoin</option>
+                                            <option value="rdv_planifie">Planification rendez-vous</option>
+                                            <option value="rdv_realise">Rendez-vous client effectué</option>
+                                            <option value="analyse_besoin_approfondie">Analyse détaillée besoins</option>
+                                            <option value="proposition_envoyee">Envoi proposition commerciale</option>
+                                            <option value="negociation_menee">Négociation conditions</option>
+                                            <option value="conditions_acceptees">Validation conditions finales</option>
+                                            <option value="contrat_prepare">Préparation contrat final</option>
+                                            <option value="contrat_signe">Signature contrat</option>
+                                        </optgroup>
+                                        <optgroup label="Actions de suivi">
+                                            <option value="relance_effectuee">Relance prospect/client</option>
+                                            <option value="email_envoye">Email de suivi envoyé</option>
+                                            <option value="appel_telephonique">Contact téléphonique</option>
+                                            <option value="reunion_interne">Point équipe interne</option>
+                                            <option value="presentation_equipe">Présentation équipe projet</option>
+                                        </optgroup>
+                                        <optgroup label="Actions spécialisées">
+                                            <option value="visite_locaux">Visite des locaux client</option>
+                                            <option value="audit_express">Pré-audit ou diagnostic</option>
+                                            <option value="consultation_partenaire">Consultation expert externe</option>
+                                            <option value="validation_juridique">Validation aspects juridiques</option>
+                                            <option value="chiffrage_detaille">Chiffrage précis de la mission</option>
+                                        </optgroup>
+                                    </select>
+                                    <button class="btn btn-outline-success" id="btn-add-extra-action"><i class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-2">Documents obligatoires</h6>
+                            <ul class="list-group" id="required-documents"></ul>
+                            <div class="mt-3">
+                                <h6 class="mb-2">Documents additionnels</h6>
+                                <div class="input-group input-group-sm">
+                                    <select class="form-select" id="extra-doc-type">
+                                        <option value="">Sélectionner un document…</option>
+                                        <optgroup label="Documents prospect/client">
+                                            <option value="fiche_prospect">Fiche d'information prospect</option>
+                                            <option value="compte_rendu_rdv">Compte-rendu de réunion</option>
+                                            <option value="presentation_cabinet">Présentation du cabinet</option>
+                                            <option value="references_clients">Références et témoignages</option>
+                                        </optgroup>
+                                        <optgroup label="Documents commerciaux">
+                                            <option value="proposition_commerciale">Offre commerciale détaillée</option>
+                                            <option value="elements_techniques">Spécifications techniques</option>
+                                            <option value="conditions_generales">Conditions générales de vente</option>
+                                            <option value="tarification">Grille tarifaire</option>
+                                        </optgroup>
+                                        <optgroup label="Documents contractuels">
+                                            <option value="conditions_finales">Conditions négociées finales</option>
+                                            <option value="planning_mission">Planning détaillé mission</option>
+                                            <option value="contrat_signe">Contrat de prestation signé</option>
+                                            <option value="bon_commande">Bon de commande client</option>
+                                        </optgroup>
+                                        <optgroup label="Documents supports">
+                                            <option value="etats_financiers">Documents financiers client</option>
+                                            <option value="statuts_societe">Statuts et informations légales</option>
+                                            <option value="organigramme">Structure organisationnelle</option>
+                                            <option value="proces_verbaux">PV d'assemblées/conseils</option>
+                                        </optgroup>
+                                    </select>
+                                    <button class="btn btn-outline-primary" id="btn-add-extra-doc"><i class="fas fa-upload"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compléments Étape: Actions/Docs additionnels visibles -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-layer-group me-2"></i>Compléments de l'étape</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6 class="mb-2">Actions additionnelles</h6>
+                            <ul class="list-group" id="extra-actions-list"></ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-2">Documents additionnels</h6>
+                            <ul class="list-group" id="extra-docs-list"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historique -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-clock-rotate-left me-2"></i>Historique</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group" id="history-list"></ul>
+                </div>
+            </div>
+
+            <!-- Tableau des étapes (masqué car jugé non nécessaire) -->
+            <div class="card mb-4" style="display:none;">
                 <div class="card-header">
                     <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Étapes de l'opportunité</h5>
                 </div>
@@ -396,6 +576,47 @@
             'GAGNEE': 'bg-success',
             'PERDUE': 'bg-danger'
         };
+        // Libellés lisibles des actions et documents
+        const ACTION_LABELS = {
+            premier_contact: 'Premier contact prospect',
+            qualification_besoin: 'Qualification initiale du besoin',
+            rdv_planifie: 'Planification rendez-vous',
+            rdv_realise: 'Rendez-vous client effectué',
+            analyse_besoin_approfondie: 'Analyse détaillée besoins',
+            proposition_envoyee: 'Envoi proposition commerciale',
+            negociation_menee: 'Négociation conditions',
+            conditions_acceptees: 'Validation conditions finales',
+            contrat_prepare: 'Préparation contrat final',
+            contrat_signe: 'Signature contrat',
+            relance_effectuee: 'Relance prospect/client',
+            email_envoye: 'Email de suivi envoyé',
+            appel_telephonique: 'Contact téléphonique',
+            reunion_interne: 'Point équipe interne',
+            presentation_equipe: 'Présentation équipe projet',
+            visite_locaux: 'Visite des locaux client',
+            audit_express: 'Pré-audit ou diagnostic',
+            consultation_partenaire: 'Consultation expert externe',
+            validation_juridique: 'Validation aspects juridiques',
+            chiffrage_detaille: 'Chiffrage précis de la mission'
+        };
+        const DOC_LABELS = {
+            fiche_prospect: "Fiche d'information prospect",
+            compte_rendu_rdv: 'Compte-rendu de réunion',
+            presentation_cabinet: 'Présentation du cabinet',
+            references_clients: 'Références et témoignages',
+            proposition_commerciale: 'Offre commerciale détaillée',
+            elements_techniques: 'Spécifications techniques',
+            conditions_generales: 'Conditions générales de vente',
+            tarification: 'Grille tarifaire',
+            conditions_finales: 'Conditions négociées finales',
+            planning_mission: 'Planning détaillé mission',
+            contrat_signe: 'Contrat de prestation signé',
+            bon_commande: 'Bon de commande client',
+            etats_financiers: 'Documents financiers client',
+            statuts_societe: 'Statuts et informations légales',
+            organigramme: 'Structure organisationnelle',
+            proces_verbaux: "PV d'assemblées/conseils"
+        };
 
         // Appel API authentifié (utilise auth.js)
         async function authenticatedFetch(url, options = {}) {
@@ -405,7 +626,7 @@
                 'Content-Type': 'application/json',
                 ...(options.headers || {})
             };
-            return fetch(url, { ...options, headers });
+            return fetch(url, { cache: 'no-store', ...options, headers });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -415,6 +636,23 @@
                 return;
             }
             loadOpportunityStages(oppId);
+            loadRequirements(oppId);
+            document.getElementById('btn-refresh-req').addEventListener('click', () => loadRequirements(oppId));
+            document.getElementById('btn-validate-stage').addEventListener('click', () => validateCurrentStage(oppId));
+            document.getElementById('btn-abandon-opportunity').addEventListener('click', () => showAbandonDialog(oppId));
+            document.getElementById('btn-add-extra-action').addEventListener('click', onAddExtraAction);
+            document.getElementById('btn-add-extra-doc').addEventListener('click', onAddExtraDoc);
+            loadHistory(oppId);
+            loadComplements(oppId);
+            
+            // Vérifier si on doit afficher automatiquement l'historique complet
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('show_history') === 'true') {
+                // Attendre un peu que la page soit chargée puis afficher l'historique
+                setTimeout(() => {
+                    showCompleteHistory();
+                }, 1000);
+            }
         });
 
         function getOpportunityIdFromUrl() {
@@ -425,7 +663,7 @@
         async function loadOpportunityStages(opportunityId) {
             showLoading(true);
             try {
-                const resp = await authenticatedFetch(`${API_BASE_URL}/opportunity-stages/opportunity/${opportunityId}`);
+                const resp = await authenticatedFetch(`${API_BASE_URL}/opportunity-stages/opportunity/${opportunityId}?t=${Date.now()}`);
                 const json = await resp.json();
                 if (!json.success) throw new Error(json.error || 'Erreur API');
 
@@ -442,6 +680,19 @@
             }
         }
 
+        async function loadOpportunityStagesData(opportunityId = null) {
+            try {
+                const oppId = opportunityId || getOpportunityIdFromUrl();
+                const resp = await authenticatedFetch(`${API_BASE_URL}/opportunity-stages/opportunity/${oppId}?t=${Date.now()}`);
+                const json = await resp.json();
+                if (!json.success) throw new Error(json.error || 'Erreur API');
+                return json.data.stages || [];
+            } catch (e) {
+                console.error(e);
+                return [];
+            }
+        }
+
         function renderOpportunityHeader(opportunity) {
             if (!opportunity) return;
             const nameEl = document.getElementById('opp-name');
@@ -450,6 +701,82 @@
             statusEl.textContent = opportunity.statut || '';
             const badgeClass = statusBadges[opportunity.statut] || 'bg-secondary';
             statusEl.className = `badge ${badgeClass}`;
+            
+            // Gérer l'affichage des boutons selon le statut
+            manageActionButtons(opportunity.statut);
+        }
+
+        function manageActionButtons(opportunityStatus) {
+            const actionButtons = document.getElementById('action-buttons');
+            const oppId = getOpportunityIdFromUrl();
+            
+            switch (opportunityStatus) {
+                case 'GAGNEE':
+                case 'PERDUE':
+                    // État final : aucun bouton d'action
+                    actionButtons.innerHTML = `
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Cette opportunité est ${opportunityStatus === 'GAGNEE' ? 'gagnée' : 'perdue'}. Aucune modification n'est possible.
+                        </div>
+                    `;
+                    break;
+                    
+                case 'ANNULEE':
+                    // Opportunité abandonnée : peut être réouverte
+                    actionButtons.innerHTML = `
+                        <button class="btn btn-sm btn-outline-secondary" id="btn-refresh-req">
+                            <i class="fas fa-rotate"></i> Actualiser
+                        </button>
+                        <button class="btn btn-sm btn-success" id="btn-reopen-opportunity">
+                            <i class="fas fa-play-circle"></i> Réouvrir l'opportunité
+                        </button>
+                    `;
+                    
+                    // Ajouter les écouteurs d'événements
+                    setTimeout(() => {
+                        const btnRefresh = document.getElementById('btn-refresh-req');
+                        const btnReopen = document.getElementById('btn-reopen-opportunity');
+                        if (btnRefresh) {
+                            btnRefresh.addEventListener('click', () => loadRequirements(oppId));
+                        }
+                        if (btnReopen) {
+                            btnReopen.addEventListener('click', () => showReopenDialog(oppId));
+                        }
+                    }, 100);
+                    break;
+                    
+                default:
+                    // État normal : tous les boutons disponibles
+                    actionButtons.innerHTML = `
+                        <button class="btn btn-sm btn-outline-secondary" id="btn-refresh-req">
+                            <i class="fas fa-rotate"></i> Actualiser
+                        </button>
+                        <button class="btn btn-sm btn-primary" id="btn-validate-stage">
+                            <i class="fas fa-flag-checkered"></i> Valider l'étape
+                        </button>
+                        <button class="btn btn-sm btn-danger" id="btn-abandon-opportunity">
+                            <i class="fas fa-times-circle"></i> Abandonner l'opportunité
+                        </button>
+                    `;
+                    
+                    // Ajouter les écouteurs d'événements
+                    setTimeout(() => {
+                        const btnRefresh = document.getElementById('btn-refresh-req');
+                        const btnValidate = document.getElementById('btn-validate-stage');
+                        const btnAbandon = document.getElementById('btn-abandon-opportunity');
+                        if (btnRefresh) {
+                            btnRefresh.addEventListener('click', () => loadRequirements(oppId));
+                        }
+                        if (btnValidate) {
+                            btnValidate.addEventListener('click', () => validateCurrentStage(oppId));
+                        }
+                        if (btnAbandon) {
+                            btnAbandon.addEventListener('click', () => showAbandonDialog(oppId));
+                        }
+                    }, 100);
+                    break;
+            }
         }
 
         function renderStats(stats) {
@@ -475,9 +802,15 @@
                 return;
             }
 
+            // Récupérer le statut de l'opportunité depuis l'en-tête
+            const statusEl = document.getElementById('opp-status');
+            const opportunityStatus = statusEl ? statusEl.textContent : '';
+            const isFinalState = ['GAGNEE', 'PERDUE'].includes(opportunityStatus);
+
             stages.forEach((st) => {
-                const canStart = st.status === 'PENDING';
-                const canComplete = st.status === 'IN_PROGRESS';
+                const canStart = st.status === 'PENDING' && !isFinalState;
+                const canComplete = st.status === 'IN_PROGRESS' && !isFinalState;
+                const canSchedule = !isFinalState;
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${st.stage_order}</td>
@@ -502,7 +835,7 @@
                             <button class="btn btn-outline-secondary" ${canComplete ? '' : 'disabled'} onclick="nextStage('${st.id}')" title="Terminer et passer à la suivante">
                                 <i class="fas fa-forward"></i>
                             </button>
-                            <button class="btn btn-outline-info" onclick="openSchedule('${st.id}', '${st.due_date || ''}', '${(st.notes || '').toString().replace(/"/g, '&quot;')}')" title="Planifier / Notes">
+                            <button class="btn btn-outline-info" ${canSchedule ? '' : 'disabled'} onclick="openSchedule('${st.id}', '${st.due_date || ''}', '${(st.notes || '').toString().replace(/"/g, '&quot;')}')" title="Planifier / Notes">
                                 <i class="fas fa-calendar-alt"></i>
                             </button>
                         </div>
@@ -582,17 +915,525 @@
 
         async function completeStage(stageId) {
             try {
-                const resp = await authenticatedFetch(`${API_BASE_URL}/opportunity-stages/${stageId}/complete`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                });
-                const json = await resp.json();
-                if (!json.success) throw new Error(json.error || 'Erreur');
+                // Vérifier si c'est l'étape de négociation ou de décision
+                const stages = await loadOpportunityStagesData();
+                const currentStage = stages.find(s => s.id === stageId);
+                
+                if (currentStage && (currentStage.stage_name === 'Négociation' || currentStage.stage_name === 'Décision')) {
+                    // Pour la négociation et la décision, demander le résultat
+                    const outcome = await showOutcomeDialog(currentStage.stage_name);
+                    if (!outcome) return; // Annulé par l'utilisateur
+                    
+                    // Gérer le nouveau format avec raisons
+                    let requestBody = {};
+                    if (typeof outcome === 'string') {
+                        // Ancien format simple
+                        requestBody = { outcome: outcome };
+                    } else if (outcome && outcome.outcome) {
+                        // Nouveau format avec raisons
+                        requestBody = { 
+                            outcome: outcome.outcome,
+                            reason: outcome.reason,
+                            details: outcome.details
+                        };
+                    }
+                    
+                    const resp = await authenticatedFetch(`${API_BASE_URL}/opportunity-stages/${stageId}/complete`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                    });
+                    const json = await resp.json();
+                    if (!json.success) throw new Error(json.error || 'Erreur');
+                } else {
+                    // Pour les autres étapes, procédure normale
+                    const resp = await authenticatedFetch(`${API_BASE_URL}/opportunity-stages/${stageId}/complete`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    });
+                    const json = await resp.json();
+                    if (!json.success) throw new Error(json.error || 'Erreur');
+                }
+                
                 reload();
             } catch (e) {
                 console.error(e);
                 showAlert(e.message || "Erreur lors de la finalisation de l'étape", 'danger');
+            }
+        }
+
+        function showOutcomeDialog(stageName) {
+            return new Promise((resolve) => {
+                const modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.innerHTML = `
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Résultat de la ${stageName.toLowerCase()}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Veuillez spécifier le résultat de la ${stageName.toLowerCase()} :</p>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <button class="btn btn-success btn-lg w-100 mb-2" onclick="selectOutcomeWithReason('gagnée')">
+                                            <i class="fas fa-trophy"></i> ${stageName} Gagnée
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button class="btn btn-danger btn-lg w-100 mb-2" onclick="selectOutcomeWithReason('perdue')">
+                                            <i class="fas fa-times-circle"></i> ${stageName} Perdue
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div id="outcome-reason-section" style="display: none;">
+                                    <hr>
+                                    <div class="mb-3">
+                                        <label for="outcome-reason" class="form-label">
+                                            <strong>Raison de la perte *</strong>
+                                        </label>
+                                        <select class="form-select" id="outcome-reason" required>
+                                            <option value="">Sélectionner une raison...</option>
+                                            <optgroup label="Raisons commerciales">
+                                                <option value="concurrence_plus_competitive">Concurrence plus compétitive</option>
+                                                <option value="prix_trop_eleve">Prix trop élevé</option>
+                                                <option value="delais_incompatibles">Délais incompatibles</option>
+                                                <option value="scope_inadequat">Scope de mission inadéquat</option>
+                                                <option value="conditions_commerciales">Conditions commerciales non acceptées</option>
+                                            </optgroup>
+                                            <optgroup label="Raisons techniques">
+                                                <option value="competences_manquantes">Compétences techniques manquantes</option>
+                                                <option value="technologie_non_maitrisee">Technologie non maîtrisée</option>
+                                                <option value="methodologie_inadequat">Méthodologie inadaptée</option>
+                                                <option value="experience_insuffisante">Expérience insuffisante</option>
+                                            </optgroup>
+                                            <optgroup label="Raisons client">
+                                                <option value="budget_insuffisant">Budget insuffisant</option>
+                                                <option value="priorites_changees">Priorités du client changées</option>
+                                                <option value="contact_perdu">Contact client perdu</option>
+                                                <option value="decision_interne">Décision interne du client</option>
+                                                <option value="changement_direction">Changement de direction</option>
+                                            </optgroup>
+                                            <optgroup label="Raisons internes">
+                                                <option value="ressources_indisponibles">Ressources indisponibles</option>
+                                                <option value="priorites_autres_projets">Priorité donnée à d'autres projets</option>
+                                                <option value="strategie_entreprise">Changement de stratégie</option>
+                                            </optgroup>
+                                            <option value="autre">Autre raison</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="outcome-details" class="form-label">
+                                            <strong>Détails supplémentaires</strong>
+                                        </label>
+                                        <textarea class="form-control" id="outcome-details" rows="3" 
+                                                  placeholder="Précisez les détails, les leçons apprises, etc..."></textarea>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-secondary" onclick="cancelOutcomeReason()">
+                                            <i class="fas fa-times"></i> Annuler
+                                        </button>
+                                        <button class="btn btn-primary" onclick="confirmOutcomeWithReason()">
+                                            <i class="fas fa-check"></i> Confirmer
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-outline-secondary" onclick="selectOutcome(null)">
+                                        Annuler
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+                
+                // Stocker la fonction de résolution et l'état
+                window.__outcomeResolver = resolve;
+                window.__outcomeStageName = stageName;
+                
+                // Nettoyer après fermeture
+                modal.addEventListener('hidden.bs.modal', () => {
+                    document.body.removeChild(modal);
+                    if (window.__outcomeResolver) {
+                        window.__outcomeResolver(null);
+                        window.__outcomeResolver = null;
+                    }
+                    window.__outcomeStageName = null;
+                });
+            });
+        }
+
+        function selectOutcomeWithReason(outcome) {
+            if (outcome === 'gagnée') {
+                // Pour une victoire, pas besoin de raison
+                if (window.__outcomeResolver) {
+                    window.__outcomeResolver(outcome);
+                    window.__outcomeResolver = null;
+                }
+                // Fermer le modal
+                const modal = document.querySelector('.modal.show');
+                if (modal) {
+                    const bsModal = bootstrap.Modal.getInstance(modal);
+                    if (bsModal) bsModal.hide();
+                }
+            } else if (outcome === 'perdue') {
+                // Pour une perte, afficher la section des raisons
+                document.getElementById('outcome-reason-section').style.display = 'block';
+            }
+        }
+
+        function cancelOutcomeReason() {
+            document.getElementById('outcome-reason-section').style.display = 'none';
+            document.getElementById('outcome-reason').value = '';
+            document.getElementById('outcome-details').value = '';
+        }
+
+        function confirmOutcomeWithReason() {
+            const reason = document.getElementById('outcome-reason').value;
+            const details = document.getElementById('outcome-details').value;
+            
+            if (!reason) {
+                showAlert('Veuillez sélectionner une raison de perte', 'warning');
+                return;
+            }
+            
+            if (window.__outcomeResolver) {
+                window.__outcomeResolver({
+                    outcome: 'perdue',
+                    reason: reason,
+                    details: details
+                });
+                window.__outcomeResolver = null;
+            }
+            
+            // Fermer le modal
+            const modal = document.querySelector('.modal.show');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) bsModal.hide();
+            }
+        }
+
+        function selectOutcome(outcome) {
+            if (window.__outcomeResolver) {
+                window.__outcomeResolver(outcome);
+                window.__outcomeResolver = null;
+            }
+            // Fermer le modal
+            const modal = document.querySelector('.modal.show');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) bsModal.hide();
+            }
+        }
+
+        // Fonction pour afficher le dialogue d'abandon d'opportunité
+        function showAbandonDialog(opportunityId) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Abandonner l'opportunité
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Attention :</strong> Cette action est irréversible. L'opportunité sera marquée comme abandonnée.
+                            </div>
+                            
+                            <form id="abandon-form">
+                                <div class="mb-3">
+                                    <label for="abandon-reason" class="form-label">
+                                        <strong>Raison de l'abandon *</strong>
+                                    </label>
+                                    <select class="form-select" id="abandon-reason" required>
+                                        <option value="">Sélectionner une raison...</option>
+                                        <optgroup label="Raisons commerciales">
+                                            <option value="budget_insuffisant">Budget insuffisant du client</option>
+                                            <option value="concurrence_plus_competitive">Concurrence plus compétitive</option>
+                                            <option value="delais_incompatibles">Délais incompatibles avec nos capacités</option>
+                                            <option value="scope_trop_important">Scope de mission trop important</option>
+                                            <option value="client_exigeant">Client trop exigeant sur les conditions</option>
+                                        </optgroup>
+                                        <optgroup label="Raisons techniques">
+                                            <option value="competences_manquantes">Compétences techniques manquantes</option>
+                                            <option value="technologie_non_maitrisee">Technologie non maîtrisée</option>
+                                            <option value="ressources_indisponibles">Ressources humaines indisponibles</option>
+                                            <option value="outils_inadequats">Outils ou méthodes inadaptés</option>
+                                        </optgroup>
+                                        <optgroup label="Raisons organisationnelles">
+                                            <option value="priorites_autres_projets">Priorité donnée à d'autres projets</option>
+                                            <option value="restructuration_interne">Restructuration interne en cours</option>
+                                            <option value="strategie_entreprise">Changement de stratégie d'entreprise</option>
+                                            <option value="partenariat_rompu">Partenariat rompu</option>
+                                        </optgroup>
+                                        <optgroup label="Raisons client">
+                                            <option value="contact_perdu">Contact client perdu</option>
+                                            <option value="projet_annule_client">Projet annulé par le client</option>
+                                            <option value="decision_interne_client">Décision interne du client</option>
+                                            <option value="changement_direction">Changement de direction client</option>
+                                        </optgroup>
+                                        <option value="autre">Autre raison</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="abandon-details" class="form-label">
+                                        <strong>Détails supplémentaires</strong>
+                                    </label>
+                                    <textarea class="form-control" id="abandon-details" rows="4" 
+                                              placeholder="Précisez les détails de l'abandon, les leçons apprises, etc..."></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <strong>Actions à effectuer</strong>
+                                    </label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="notify-managers" checked>
+                                        <label class="form-check-label" for="notify-managers">
+                                            Notifier les managers et l'équipe commerciale
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="archive-documents" checked>
+                                        <label class="form-check-label" for="archive-documents">
+                                            Archiver les documents associés
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="update-crm">
+                                        <label class="form-check-label" for="update-crm">
+                                            Mettre à jour le CRM avec la raison
+                                        </label>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times"></i> Annuler
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="confirmAbandon('${opportunityId}')">
+                                <i class="fas fa-check"></i> Confirmer l'abandon
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Nettoyer après fermeture
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        // Fonction pour confirmer l'abandon
+        async function confirmAbandon(opportunityId) {
+            const reason = document.getElementById('abandon-reason').value;
+            const details = document.getElementById('abandon-details').value;
+            const notifyManagers = document.getElementById('notify-managers').checked;
+            const archiveDocuments = document.getElementById('archive-documents').checked;
+            const updateCrm = document.getElementById('update-crm').checked;
+            
+            if (!reason) {
+                showAlert('Veuillez sélectionner une raison d\'abandon', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${opportunityId}/abandon`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        reason: reason,
+                        details: details,
+                        notify_managers: notifyManagers,
+                        archive_documents: archiveDocuments,
+                        update_crm: updateCrm
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Opportunité abandonnée avec succès', 'success');
+                    // Rediriger vers la liste des opportunités
+                    setTimeout(() => {
+                        window.location.href = '/opportunities.html';
+                    }, 2000);
+                } else {
+                    throw new Error(result.error || 'Erreur lors de l\'abandon');
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'abandon:', error);
+                showAlert('Erreur lors de l\'abandon de l\'opportunité: ' + error.message, 'danger');
+            }
+        }
+
+        // Fonction pour afficher le dialogue de réouverture d'opportunité
+        function showReopenDialog(opportunityId) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-play-circle me-2"></i>
+                                Réouvrir l'opportunité
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Information :</strong> Vous êtes sur le point de réouvrir cette opportunité abandonnée. Elle reprendra son statut "EN_COURS".
+                            </div>
+                            
+                            <form id="reopen-form">
+                                <div class="mb-3">
+                                    <label for="reopen-reason" class="form-label">
+                                        <strong>Raison de la réouverture *</strong>
+                                    </label>
+                                    <select class="form-select" id="reopen-reason" required>
+                                        <option value="">Sélectionner une raison...</option>
+                                        <optgroup label="Raisons commerciales">
+                                            <option value="nouveau_contact_client">Nouveau contact client</option>
+                                            <option value="conditions_changees">Conditions commerciales changées</option>
+                                            <option value="budget_disponible">Budget maintenant disponible</option>
+                                            <option value="delais_etendus">Délais étendus</option>
+                                            <option value="scope_reduit">Scope de mission réduit</option>
+                                        </optgroup>
+                                        <optgroup label="Raisons techniques">
+                                            <option value="competences_acquises">Compétences techniques acquises</option>
+                                            <option value="technologie_maitrisee">Technologie maintenant maîtrisée</option>
+                                            <option value="ressources_disponibles">Ressources humaines disponibles</option>
+                                            <option value="outils_adaptes">Outils ou méthodes adaptés</option>
+                                        </optgroup>
+                                        <optgroup label="Raisons organisationnelles">
+                                            <option value="priorites_changees">Priorités organisationnelles changées</option>
+                                            <option value="strategie_entreprise">Changement de stratégie d'entreprise</option>
+                                            <option value="nouveau_partenariat">Nouveau partenariat</option>
+                                            <option value="opportunite_marché">Nouvelle opportunité de marché</option>
+                                        </optgroup>
+                                        <option value="autre">Autre raison</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="reopen-details" class="form-label">
+                                        <strong>Détails supplémentaires</strong>
+                                    </label>
+                                    <textarea class="form-control" id="reopen-details" rows="4" 
+                                              placeholder="Précisez les détails de la réouverture, les nouvelles conditions, etc..."></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <strong>Actions à effectuer</strong>
+                                    </label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="notify-team" checked>
+                                        <label class="form-check-label" for="notify-team">
+                                            Notifier l'équipe commerciale
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="reactivate-stages" checked>
+                                        <label class="form-check-label" for="reactivate-stages">
+                                            Réactiver les étapes en cours
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="update-crm-reopen">
+                                        <label class="form-check-label" for="update-crm-reopen">
+                                            Mettre à jour le CRM
+                                        </label>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times"></i> Annuler
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="confirmReopen('${opportunityId}')">
+                                <i class="fas fa-check"></i> Confirmer la réouverture
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Nettoyer après fermeture
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        // Fonction pour confirmer la réouverture
+        async function confirmReopen(opportunityId) {
+            const reason = document.getElementById('reopen-reason').value;
+            const details = document.getElementById('reopen-details').value;
+            const notifyTeam = document.getElementById('notify-team').checked;
+            const reactivateStages = document.getElementById('reactivate-stages').checked;
+            const updateCrm = document.getElementById('update-crm-reopen').checked;
+            
+            if (!reason) {
+                showAlert('Veuillez sélectionner une raison de réouverture', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${opportunityId}/reopen`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        reason: reason,
+                        details: details,
+                        notify_team: notifyTeam,
+                        reactivate_stages: reactivateStages,
+                        update_crm: updateCrm
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Opportunité réouverte avec succès', 'success');
+                    // Recharger la page pour mettre à jour l'interface
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    throw new Error(result.error || 'Erreur lors de la réouverture');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la réouverture:', error);
+                showAlert('Erreur lors de la réouverture de l\'opportunité: ' + error.message, 'danger');
             }
         }
 
@@ -610,14 +1451,212 @@
 
         function reload() {
             const oppId = getOpportunityIdFromUrl();
-            if (oppId) loadOpportunityStages(oppId);
+            if (oppId) {
+                loadOpportunityStages(oppId);
+                loadRequirements(oppId);
+                loadHistory(oppId);
+                loadComplements(oppId);
+            }
+        }
+
+        // Exigences (Actions/Docs requis)
+        async function loadRequirements(opportunityId) {
+            try {
+                const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${opportunityId}/requirements?t=${Date.now()}`);
+                const json = await resp.json();
+                if (!json.success) throw new Error(json.error || 'Erreur requirements');
+                window.__lastRequirements = json.data;
+                const stage = json.data.stage;
+                const reqActions = json.data.requiredActions || [];
+                const reqDocs = json.data.requiredDocuments || [];
+                renderRequirements(stage, reqActions, reqDocs);
+            } catch (e) {
+                console.error(e);
+                showAlert("Erreur lors du chargement des exigences", 'warning');
+            }
+        }
+
+        function renderRequirements(stage, reqActions, reqDocs) {
+            const actionsUl = document.getElementById('required-actions');
+            const docsUl = document.getElementById('required-documents');
+            actionsUl.innerHTML = '';
+            docsUl.innerHTML = '';
+            const stageId = stage?.id || null;
+
+            // Afficher le nom de l'étape courante dans l'en-tête
+            const stageNameEl = document.getElementById('current-stage-name');
+            if (stageNameEl) {
+                stageNameEl.textContent = stageId ? `— ${stage.stage_name || stage.nom || ''}` : '';
+            }
+
+            // Vérifier le statut de l'opportunité pour désactiver les actions
+            const statusEl = document.getElementById('opp-status');
+            const opportunityStatus = statusEl ? statusEl.textContent : '';
+            const isFinalState = ['GAGNEE', 'PERDUE'].includes(opportunityStatus);
+
+            if (!stageId) {
+                actionsUl.innerHTML = '<li class="list-group-item text-muted">Aucune étape courante</li>';
+                docsUl.innerHTML = '<li class="list-group-item text-muted">Aucune étape courante</li>';
+                return;
+            }
+
+            // Désactiver les actions supplémentaires et documents additionnels si état final
+            const extraActionSelect = document.getElementById('extra-action-type');
+            const extraActionBtn = document.getElementById('btn-add-extra-action');
+            const extraDocSelect = document.getElementById('extra-doc-type');
+            const extraDocBtn = document.getElementById('btn-add-extra-doc');
+
+            if (extraActionSelect) extraActionSelect.disabled = isFinalState;
+            if (extraActionBtn) extraActionBtn.disabled = isFinalState;
+            if (extraDocSelect) extraDocSelect.disabled = isFinalState;
+            if (extraDocBtn) extraDocBtn.disabled = isFinalState;
+
+            if (isFinalState) {
+                if (extraActionSelect) extraActionSelect.title = 'Actions non disponibles - Opportunité terminée';
+                if (extraDocSelect) extraDocSelect.title = 'Documents non disponibles - Opportunité terminée';
+            }
+
+            const actionCounts = window.__lastRequirements?.actionCounts || {};
+            const documentCounts = window.__lastRequirements?.documentCounts || {};
+
+            if (reqActions.length === 0) {
+                actionsUl.innerHTML = '<li class="list-group-item text-muted">Aucune action obligatoire configurée</li>';
+            } else {
+                reqActions.forEach(a => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    const countInfo = actionCounts[a.action_type];
+                    const doneBadge = countInfo ? `<span class=\"badge bg-success ms-2\">Fait (${countInfo.count})</span>` : '';
+                    const lastDate = countInfo?.last_performed_at ? new Date(countInfo.last_performed_at).toLocaleDateString('fr-FR') : '';
+                    li.innerHTML = `
+                        <div>
+                            <span class="badge bg-secondary me-2">${a.validation_order ?? ''}</span>
+                            ${ACTION_LABELS[a.action_type] || a.action_type} ${doneBadge} ${lastDate ? `<span class=\"text-muted small\">— ${lastDate}</span>` : ''}
+                        </div>
+                        <div class=\"btn-group btn-group-sm\">
+                            <button class=\"btn btn-outline-secondary\" onclick=\"viewActionsOfType('${a.action_type}')\"><i class=\"fas fa-eye\"></i> Voir</button>
+                            <button class=\"btn btn-outline-success\" onclick=\"addActionForStage('${stageId}','${a.action_type}')\"><i class=\"fas fa-plus\"></i> Enregistrer</button>
+                        </div>
+                    `;
+                    actionsUl.appendChild(li);
+                });
+            }
+
+            if (reqDocs.length === 0) {
+                docsUl.innerHTML = '<li class="list-group-item text-muted">Aucun document obligatoire configuré</li>';
+            } else {
+                reqDocs.forEach(d => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    const dCount = documentCounts[d.document_type];
+                    const docBadge = dCount ? `<span class=\"badge bg-success ms-2\">Téléversé (${dCount.count})</span>` : '';
+                    const valBadge = dCount ? `<span class=\"badge ${dCount.validated_count>0?'bg-primary':'bg-warning text-dark'} ms-2\">${dCount.validated_count>0?'Validé':'En attente'}</span>` : '';
+                    li.innerHTML = `
+                        <div>${DOC_LABELS[d.document_type] || d.document_type} ${docBadge} ${valBadge}</div>
+                        <div class=\"btn-group btn-group-sm\">
+                            <button class=\"btn btn-outline-secondary\" onclick=\"viewDocumentsOfType('${d.document_type}')\"><i class=\"fas fa-eye\"></i> Voir</button>
+                            <button class=\"btn btn-outline-primary\" onclick=\"addDocumentForStage('${stageId}','${d.document_type}')\"><i class=\"fas fa-upload\"></i> Ajouter</button>
+                        </div>
+                    `;
+                    docsUl.appendChild(li);
+                });
+            }
+        }
+
+        async function addActionForStage(stageId, actionType) {
+            try {
+                const oppId = getOpportunityIdFromUrl();
+                const description = prompt("Description de l'action (optionnel)", '');
+                // Si l'utilisateur annule ou ne saisit rien, ne rien enregistrer
+                if (description === null) return; // fermeture du prompt
+                if (description.trim() === '') { showAlert('Action annulée: aucune saisie', 'info'); return; }
+                const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${oppId}/actions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stage_id: stageId, action_type: actionType, description })
+                });
+                const json = await resp.json();
+                if (!json.success) throw new Error(json.error || 'Erreur action');
+                reload();
+            } catch (e) {
+                console.error(e);
+                showAlert("Erreur lors de l'enregistrement de l'action", 'danger');
+            }
+        }
+
+        async function onAddExtraAction() {
+            const select = document.getElementById('extra-action-type');
+            const actionType = select.value;
+            if (!actionType) return;
+            const stage = window.__lastRequirements?.stage;
+            if (!stage?.id) { showAlert("Aucune étape courante", 'warning'); return; }
+            await addActionForStage(stage.id, actionType);
+            select.value = '';
+        }
+
+        async function onAddExtraDoc() {
+            const select = document.getElementById('extra-doc-type');
+            const docType = select.value;
+            if (!docType) return;
+            const stage = window.__lastRequirements?.stage;
+            if (!stage?.id) { showAlert("Aucune étape courante", 'warning'); return; }
+            await addDocumentForStage(stage.id, docType);
+            select.value = '';
+        }
+
+        async function addDocumentForStage(stageId, documentType) {
+            try {
+                const oppId = getOpportunityIdFromUrl();
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.pdf,.doc,.docx,.png,.jpg,.jpeg';
+                input.onchange = async () => {
+                    if (!input.files || input.files.length === 0) return;
+                    const file = input.files[0];
+                    const form = new FormData();
+                    form.append('file', file);
+                    form.append('stage_id', stageId);
+                    form.append('document_type', documentType);
+                    const token = localStorage.getItem('authToken');
+                    const resp = await fetch(`${API_BASE_URL}/opportunities/${oppId}/documents/upload`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        body: form
+                    });
+                    const json = await resp.json();
+                    if (!json.success) throw new Error(json.error || 'Erreur document');
+                    showAlert('Document chargé avec succès', 'success');
+                    reload();
+                };
+                input.click();
+            } catch (e) {
+                console.error(e);
+                showAlert("Erreur lors de l'ajout du document", 'danger');
+            }
+        }
+
+        async function validateCurrentStage(opportunityId) {
+            try {
+                const resp = await authenticatedFetch(`${API_BASE_URL}/workflow/validate-stage/${opportunityId}`, { method: 'POST' });
+                const json = await resp.json();
+                if (!json.success) throw new Error(json.error || 'Erreur validation');
+                if (json.data?.reason === 'requirements_not_met') {
+                    showAlert("Exigences non satisfaites: ajoutez les actions/documents obligatoires.", 'warning');
+                } else if (json.data?.transitioned) {
+                    showAlert("Étape validée et transition effectuée.", 'success');
+                }
+                reload();
+            } catch (e) {
+                console.error(e);
+                showAlert("Erreur lors de la validation d'étape", 'danger');
+            }
         }
 
         // Alertes
         async function loadAlerts(opportunityId) {
             try {
                 const cont = document.getElementById('alerts-container');
-                const resp = await authenticatedFetch(`${API_BASE_URL}/opportunity-stages/opportunity/${opportunityId}/alerts`);
+                const resp = await authenticatedFetch(`${API_BASE_URL}/opportunity-stages/opportunity/${opportunityId}/alerts?t=${Date.now()}`);
                 const json = await resp.json();
                 const alerts = json?.data?.alerts || [];
                 if (alerts.length === 0) { cont.innerHTML = '<div class="text-muted">Aucune alerte.</div>'; return; }
@@ -651,6 +1690,160 @@
                 console.error(e);
                 showAlert("Erreur lors du recalcul du risque", 'danger');
             }
+        }
+
+        // Historique (étape + global)
+        async function loadHistory(opportunityId) {
+            try {
+                const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${opportunityId}/workflow?t=${Date.now()}`);
+                const json = await resp.json();
+                if (!json.success) throw new Error(json.error || 'Erreur workflow');
+                const currentStageId = window.__lastRequirements?.stage?.id;
+                const actions = json.data.actions || [];
+                const documents = json.data.documents || [];
+                const items = [];
+                actions.forEach(a => items.push({
+                    ts: a.performed_at,
+                    html: `<i class=\"fas fa-check-circle text-success me-2\"></i>Action <strong>${ACTION_LABELS[a.action_type] || a.action_type}</strong>${a.stage_id===currentStageId?' <span class=\"badge bg-info ms-1\">Étape courante</span>':''} — ${a.description||''}`
+                }));
+                documents.forEach(d => items.push({
+                    ts: d.uploaded_at,
+                    html: `<i class=\"fas fa-file-arrow-up text-primary me-2\"></i>Document <strong>${d.document_type}</strong>${d.stage_id===currentStageId?' <span class=\"badge bg-info ms-1\">Étape courante</span>':''} — ${d.file_name||''} ${d.validation_status?`<span class=\"badge ms-1 ${d.validation_status==='validated'?'bg-primary':'bg-warning text-dark'}\">${d.validation_status}</span>`:''}`
+                }));
+                items.sort((a,b) => new Date(b.ts) - new Date(a.ts));
+                const ul = document.getElementById('history-list');
+                ul.innerHTML = items.length? items.map(it => `<li class=\"list-group-item\">${it.html}<span class=\"text-muted small float-end\">${new Date(it.ts).toLocaleString('fr-FR')}</span></li>`).join('') : '<li class="list-group-item text-muted">Aucun historique</li>';
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Compléments (listes dédiées au current stage)
+        async function loadComplements(opportunityId) {
+            try {
+                const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${opportunityId}/workflow?t=${Date.now()}`);
+                const json = await resp.json();
+                if (!json.success) throw new Error(json.error || 'Erreur workflow');
+                const currentStageId = window.__lastRequirements?.stage?.id;
+                const reqActions = window.__lastRequirements?.requiredActions || [];
+                const reqDocs = window.__lastRequirements?.requiredDocuments || [];
+                const reqActionSet = new Set(reqActions.map(a => a.action_type));
+                const reqDocSet = new Set(reqDocs.map(d => d.document_type));
+
+                const actions = (json.data.actions || []).filter(a => a.stage_id === currentStageId && !reqActionSet.has(a.action_type));
+                const documents = (json.data.documents || []).filter(d => d.stage_id === currentStageId && !reqDocSet.has(d.document_type));
+
+                const aUl = document.getElementById('extra-actions-list');
+                aUl.innerHTML = actions.length ? actions.map(a => `<li class=\"list-group-item d-flex justify-content-between align-items-center\"><div><strong>${ACTION_LABELS[a.action_type] || a.action_type}</strong> — ${a.description||''}</div><span class=\"text-muted small\">${new Date(a.performed_at).toLocaleString('fr-FR')}</span></li>`).join('') : '<li class=\"list-group-item text-muted\">Aucune action additionnelle</li>';
+
+                const dUl = document.getElementById('extra-docs-list');
+                dUl.innerHTML = documents.length ? documents.map(d => `<li class=\"list-group-item d-flex justify-content-between align-items-center\"><div><strong>${DOC_LABELS[d.document_type] || d.document_type}</strong> — ${d.file_name||''} ${d.file_path?`<a href=\"${d.file_path}\" target=\"_blank\" class=\"ms-2\"><i class=\"fas fa-link\"></i></a>`:''}</div><span class=\"badge ${d.validation_status==='validated'?'bg-primary':'bg-warning text-dark'}\">${d.validation_status||'pending'}</span></li>`).join('') : '<li class=\"list-group-item text-muted\">Aucun document additionnel</li>';
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Voir (modale)
+        function openViewModal(title, itemsHtml) {
+            const modalId = 'viewItemsModal';
+            let modalEl = document.getElementById(modalId);
+            if (!modalEl) {
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `
+                <div class=\"modal fade\" id=\"${modalId}\" tabindex=\"-1\">
+                  <div class=\"modal-dialog modal-lg\">
+                    <div class=\"modal-content\">
+                      <div class=\"modal-header\"><h5 class=\"modal-title\"></h5><button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\"></button></div>
+                      <div class=\"modal-body\"><ul class=\"list-group\" id=\"view-items-list\"></ul></div>
+                      <div class=\"modal-footer\"><button class=\"btn btn-secondary\" data-bs-dismiss=\"modal\">Fermer</button></div>
+                    </div>
+                  </div>
+                </div>`;
+                document.body.appendChild(wrapper.firstElementChild);
+                modalEl = document.getElementById(modalId);
+            }
+            modalEl.querySelector('.modal-title').textContent = title;
+            modalEl.querySelector('#view-items-list').innerHTML = itemsHtml;
+            const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            // Évite d'ajouter un backdrop supplémentaire si déjà ouvert
+            if (!modalEl.classList.contains('show')) bsModal.show();
+        }
+
+        async function viewActionsOfType(actionType) {
+            const oppId = getOpportunityIdFromUrl();
+            const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${oppId}/workflow?t=${Date.now()}`);
+            const json = await resp.json();
+            const currentStageId = window.__lastRequirements?.stage?.id;
+            const items = (json.data.actions||[]).filter(a => a.action_type === actionType && a.stage_id === currentStageId)
+              .map(a => `<li class=\"list-group-item d-flex justify-content-between align-items-start\"><div class=\"description-text\">${a.description||''}</div><span class=\"text-muted small timestamp\">${new Date(a.performed_at).toLocaleString('fr-FR')}</span></li>`)
+              .join('') || '<li class="list-group-item text-muted">Aucune saisie</li>';
+            openViewModal(`Actions: ${ACTION_LABELS[actionType] || actionType}`, items);
+        }
+
+        async function viewDocumentsOfType(documentType) {
+            const oppId = getOpportunityIdFromUrl();
+            const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${oppId}/workflow?t=${Date.now()}`);
+            const json = await resp.json();
+            const currentStageId = window.__lastRequirements?.stage?.id;
+            const items = (json.data.documents||[])
+              .filter(d => d.document_type === documentType && d.stage_id === currentStageId)
+              .map(d => `<li class=\"list-group-item d-flex justify-content-between align-items-start\">`
+                + `<div class=\"file-info\">${d.file_name||''} ${d.file_path?`<a href=\"${d.file_path}\" target=\"_blank\" class=\"ms-2\"><i class=\"fas fa-link\"></i></a>`:''}</div>`
+                + `<div class=\"d-flex align-items-center gap-2\">`
+                + `<span class=\"badge ${d.validation_status==='validated'?'bg-primary':'bg-warning text-dark'}\">${d.validation_status||'pending'}</span>`
+                + `<div class=\"btn-group btn-group-sm\">`
+                + `<button class=\"btn btn-outline-primary\" ${d.validation_status==='validated'?'disabled':''} onclick=\"setDocumentStatus('${d.id}','validated','${documentType}')\"><i class=\"fas fa-check\"></i></button>`
+                + `<button class=\"btn btn-outline-danger\" ${d.validation_status==='rejected'?'disabled':''} onclick=\"setDocumentStatus('${d.id}','rejected','${documentType}')\"><i class=\"fas fa-times\"></i></button>`
+                + `</div>`
+                + `</div>`
+                + `</li>`)
+              .join('') || '<li class="list-group-item text-muted">Aucun document</li>';
+            openViewModal(`Documents: ${DOC_LABELS[documentType] || documentType}`, items);
+        }
+
+        async function setDocumentStatus(docId, status, documentType) {
+            try {
+                const oppId = getOpportunityIdFromUrl();
+                const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${oppId}/documents/${docId}/validate`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                const json = await resp.json();
+                if (!json.success) throw new Error(json.error || 'Erreur validation document');
+                showAlert(status === 'validated' ? 'Document validé' : 'Document rejeté', 'success');
+                // Rafraîchir UI + la modale actuelle
+                loadRequirements(oppId);
+                loadComplements(oppId);
+                await refreshDocumentsModal(documentType);
+            } catch (e) {
+                console.error(e);
+                showAlert("Erreur lors de la mise à jour du statut du document", 'danger');
+            }
+        }
+
+        async function refreshDocumentsModal(documentType) {
+            const modalEl = document.getElementById('viewItemsModal');
+            if (!modalEl) return;
+            const oppId = getOpportunityIdFromUrl();
+            const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${oppId}/workflow?t=${Date.now()}`);
+            const json = await resp.json();
+            const currentStageId = window.__lastRequirements?.stage?.id;
+            const items = (json.data.documents||[])
+              .filter(d => d.document_type === documentType && d.stage_id === currentStageId)
+              .map(d => `<li class=\"list-group-item d-flex justify-content-between align-items-start\">`
+                + `<div class=\"file-info\">${d.file_name||''} ${d.file_path?`<a href=\"${d.file_path}\" target=\"_blank\" class=\"ms-2\"><i class=\"fas fa-link\"></i></a>`:''}</div>`
+                + `<div class=\"d-flex align-items-center gap-2\">`
+                + `<span class=\"badge ${d.validation_status==='validated'?'bg-primary':'bg-warning text-dark'}\">${d.validation_status||'pending'}</span>`
+                + `<div class=\"btn-group btn-group-sm\">`
+                + `<button class=\"btn btn-outline-primary\" ${d.validation_status==='validated'?'disabled':''} onclick=\"setDocumentStatus('${d.id}','validated','${documentType}')\"><i class=\"fas fa-check\"></i></button>`
+                + `<button class=\"btn btn-outline-danger\" ${d.validation_status==='rejected'?'disabled':''} onclick=\"setDocumentStatus('${d.id}','rejected','${documentType}')\"><i class=\"fas fa-times\"></i></button>`
+                + `</div>`
+                + `</div>`
+                + `</li>`)
+              .join('') || '<li class="list-group-item text-muted">Aucun document</li>';
+            const list = modalEl.querySelector('#view-items-list');
+            if (list) list.innerHTML = items;
         }
 
         // Planification (due_date, notes)
@@ -698,6 +1891,714 @@
                 if (alertDiv.parentNode) alertDiv.remove();
             }, 5000);
         }
+
+        // Fonction pour afficher l'historique complet de l'opportunité
+        async function showCompleteHistory() {
+            try {
+                const oppId = getOpportunityIdFromUrl();
+                const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${oppId}/history?t=${Date.now()}`);
+                const json = await resp.json();
+                
+                if (!json.success) throw new Error(json.error || 'Erreur');
+                
+                const history = json.data;
+                displayCompleteHistoryModal(history);
+            } catch (e) {
+                console.error(e);
+                showAlert(e.message || "Erreur lors du chargement de l'historique", 'danger');
+            }
+        }
+
+        function displayCompleteHistoryModal(history) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-fullscreen" style="max-width: 100vw; width: 100vw; margin: 0; height: 100vh;">
+                    <div class="modal-content" style="height: 100vh; border-radius: 0; border: none;">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-chart-line"></i> Suivi détaillé de l'opportunité
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-0">
+                            <!-- En-tête avec informations clés -->
+                            <div class="opportunity-header">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h4 class="mb-2">${history.opportunity.nom}</h4>
+                                        <p class="client-info mb-0">
+                                            <i class="fas fa-building me-2"></i>${history.opportunity.client_name || 'Client non spécifié'}
+                                            <span class="mx-3">|</span>
+                                            <i class="fas fa-user me-2"></i>${history.opportunity.collaborateur_name || 'Responsable non assigné'}
+                                        </p>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="d-flex flex-column align-items-end">
+                                            <span class="badge bg-${getStatusBadgeColor(history.opportunity.statut)} status-badge mb-2">${history.opportunity.statut}</span>
+                                            <div class="amount mb-2">${history.opportunity.montant_estime} ${history.opportunity.devise}</div>
+                                            <div class="progress" style="width: 200px; height: 10px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: ${getProgressPercentage(history.stages)}%"></div>
+                                            </div>
+                                            <small class="text-muted">${getCompletedStagesCount(history.stages)}/${history.stages.length} étapes</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contenu principal -->
+                            <div class="main-content-container">
+                                <!-- Navigation par étapes -->
+                                <div class="stage-navigation border-end" style="overflow-y: auto;">
+                                    <div class="p-3">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-layer-group"></i> Progression par étapes
+                                        </h6>
+                                        ${generateStagesNavigationHTML(history.stages)}
+                                    </div>
+                                </div>
+
+                                <!-- Contenu détaillé de l'étape sélectionnée -->
+                                <div class="stage-content-area" style="overflow-y: auto;">
+                                    <div class="p-4">
+                                        <div id="stage-content">
+                                            <div class="text-center text-muted py-5">
+                                                <i class="fas fa-hand-point-left fa-3x mb-3"></i>
+                                                <h5>Sélectionnez une étape pour voir les détails</h5>
+                                                <p>Cliquez sur une étape dans la liste de gauche pour consulter les actions et documents</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" onclick="exportHistoryToPDF()">
+                                <i class="fas fa-file-pdf"></i> Exporter en PDF
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Stocker les données pour l'utilisation dans les fonctions
+            window.__historyData = history;
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+                window.__historyData = null;
+            });
+        }
+
+        function getStatusBadgeColor(status) {
+            switch(status) {
+                case 'GAGNEE': return 'success';
+                case 'PERDUE': return 'danger';
+                case 'EN_COURS': return 'warning';
+                case 'NOUVELLE': return 'info';
+                default: return 'secondary';
+            }
+        }
+
+        function getProgressPercentage(stages) {
+            const completed = stages.filter(s => s.status === 'COMPLETED').length;
+            return stages.length > 0 ? Math.round((completed / stages.length) * 100) : 0;
+        }
+
+        function getCompletedStagesCount(stages) {
+            return stages.filter(s => s.status === 'COMPLETED').length;
+        }
+
+        function generateStagesNavigationHTML(stages) {
+            return stages.map(stage => {
+                const statusIcon = getStageStatusIcon(stage.status);
+                const statusColor = getStageStatusColor(stage.status);
+                const isActive = stage.status === 'IN_PROGRESS';
+                
+                return `
+                    <div class="stage-nav-item mb-2 ${isActive ? 'active' : ''}" onclick="showStageDetails('${stage.id}')">
+                        <div class="card border-${statusColor} ${isActive ? 'border-3' : 'border-1'} h-100">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="stage-icon me-2">
+                                        <i class="fas ${statusIcon} text-${statusColor}"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold">${stage.stage_name || stage.nom}</h6>
+                                        <small class="text-muted">Étape ${stage.stage_order}</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-${statusColor}">${getStageStatusLabel(stage.status)}</span>
+                                    ${stage.completed_date ? `<small class="text-muted">${new Date(stage.completed_date).toLocaleDateString('fr-FR')}</small>` : ''}
+                                </div>
+                                ${stage.notes ? `<small class="text-muted d-block mt-2"><i class="fas fa-sticky-note"></i> ${stage.notes}</small>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function showStageDetails(stageId) {
+            const history = window.__historyData;
+            if (!history) return;
+
+            const stage = history.stages.find(s => s.id === stageId);
+            if (!stage) return;
+
+            // Filtrer les actions et documents pour cette étape
+            const stageActions = history.timeline.filter(item => 
+                item.stage_order === stage.stage_order && item.type === 'action'
+            );
+            const stageDocuments = history.timeline.filter(item => 
+                item.stage_order === stage.stage_order && item.type === 'document'
+            );
+
+            // Générer le HTML des actions de manière asynchrone
+            const actionsHTML = await generateActionsHTML(stageActions);
+
+            const content = `
+                <div class="stage-details">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="text-primary">
+                            <i class="fas ${getStageStatusIcon(stage.status)} text-${getStageStatusColor(stage.status)}"></i>
+                            ${stage.stage_name || stage.nom}
+                        </h4>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-${getStageStatusColor(stage.status)} fs-6">${getStageStatusLabel(stage.status)}</span>
+                            ${stage.due_date ? `<span class="badge bg-info">Échéance: ${new Date(stage.due_date).toLocaleDateString('fr-FR')}</span>` : ''}
+                        </div>
+                    </div>
+
+                    ${stage.notes ? `
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-sticky-note me-2"></i>
+                            <strong>Notes:</strong> ${stage.notes}
+                        </div>
+                    ` : ''}
+
+                    <div class="row">
+                        <!-- Actions réalisées -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-tasks me-2"></i>Actions réalisées
+                                        <span class="badge bg-light text-dark ms-2">${stageActions.length}</span>
+                                    </h6>
+                                </div>
+                                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                    ${actionsHTML}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Documents téléversés -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-file-alt me-2"></i>Documents
+                                        <span class="badge bg-light text-dark ms-2">${stageDocuments.length}</span>
+                                    </h6>
+                                </div>
+                                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                    ${generateDocumentsHTML(stageDocuments)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline de l'étape -->
+                    <div class="mt-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-clock me-2"></i>Chronologie de l'étape
+                        </h6>
+                        <div class="timeline-stage">
+                            ${generateStageTimelineHTML(stage, history.timeline)}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('stage-content').innerHTML = content;
+        }
+
+        // Cache pour les noms d'utilisateurs
+        const userNamesCache = {};
+
+        // Fonction pour récupérer le nom d'un utilisateur
+        async function getUserName(userId) {
+            if (userNamesCache[userId]) {
+                return userNamesCache[userId];
+            }
+            
+            // Vérifier d'abord si c'est l'utilisateur connecté (depuis localStorage)
+            try {
+                const userData = localStorage.getItem('user');
+                if (userData) {
+                    const currentUser = JSON.parse(userData);
+                    if (currentUser && currentUser.id === userId) {
+                        const userName = currentUser.nom + ' ' + currentUser.prenom;
+                        userNamesCache[userId] = userName;
+                        return userName;
+                    }
+                }
+            } catch (error) {
+                console.warn('Erreur lors de la lecture des données utilisateur locales:', error);
+            }
+            
+            // Si ce n'est pas l'utilisateur connecté, faire un appel API
+            try {
+                const response = await authenticatedFetch(`/api/users/${userId}`);
+                if (response.ok) {
+                    const user = await response.json();
+                    const userName = user.nom + ' ' + user.prenom;
+                    userNamesCache[userId] = userName;
+                    return userName;
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération du nom utilisateur:', error);
+            }
+            
+            return userId; // Retourner l'ID si on ne peut pas récupérer le nom
+        }
+
+        async function generateActionsHTML(actions) {
+            if (actions.length === 0) {
+                return '<div class="text-muted text-center py-4">Aucune action enregistrée</div>';
+            }
+
+            const actionsHTML = [];
+            
+            for (const action of actions) {
+                const date = new Date(action.date).toLocaleString('fr-FR');
+                const actionLabel = ACTION_LABELS[action.data.action_type] || action.data.action_type;
+                
+                // Debug: afficher la structure des données
+                console.log('Action data structure:', action);
+                
+                // Essayer différentes structures possibles pour la description
+                let actionDescription = 'Aucune description';
+                if (action.data && action.data.action_description) {
+                    actionDescription = action.data.action_description;
+                } else if (action.data && action.data.description) {
+                    actionDescription = action.data.description;
+                } else if (action.description) {
+                    actionDescription = action.description;
+                } else if (action.data && typeof action.data === 'string') {
+                    actionDescription = action.data;
+                }
+                
+                // Récupérer le nom de l'utilisateur
+                let performerName = 'Utilisateur inconnu';
+                if (action.data.performed_by) {
+                    performerName = await getUserName(action.data.performed_by);
+                }
+                
+                actionsHTML.push(`
+                    <div class="action-item border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-1 text-primary">${actionLabel}</h6>
+                            <small class="text-muted">${date}</small>
+                        </div>
+                        <p class="mb-2 text-muted">${actionDescription}</p>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-light text-dark">${action.data.action_type}</span>
+                            <span class="badge bg-secondary">Par: ${performerName}</span>
+                        </div>
+                    </div>
+                `);
+            }
+            
+            return actionsHTML.join('');
+        }
+
+        function generateDocumentsHTML(documents) {
+            if (documents.length === 0) {
+                return '<div class="text-muted text-center py-4">Aucun document téléversé</div>';
+            }
+
+            return documents.map(doc => {
+                const date = new Date(doc.date).toLocaleString('fr-FR');
+                const validationStatus = doc.data.validation_status;
+                const statusColor = validationStatus === 'validated' ? 'success' : 
+                                  validationStatus === 'rejected' ? 'danger' : 'warning';
+                const documentLabel = DOC_LABELS[doc.data.document_type] || doc.data.document_type;
+                
+                return `
+                    <div class="document-item border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-1 text-info">
+                                <i class="fas fa-file-alt me-2"></i>${doc.data.file_name}
+                            </h6>
+                            <small class="text-muted">${date}</small>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex gap-2">
+                                <span class="badge bg-${statusColor}">${validationStatus || 'En attente'}</span>
+                                <span class="badge bg-light text-dark">${documentLabel}</span>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <a href="${doc.data.file_path}" target="_blank" class="btn btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Voir
+                                </a>
+                                <a href="${doc.data.file_path}" download class="btn btn-outline-success">
+                                    <i class="fas fa-download"></i> Télécharger
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function generateStageTimelineHTML(stage, timeline) {
+            const stageEvents = timeline.filter(item => item.stage_order === stage.stage_order);
+            
+            if (stageEvents.length === 0) {
+                return '<div class="text-muted text-center py-4">Aucun événement pour cette étape</div>';
+            }
+
+            return stageEvents.map(event => {
+                const date = new Date(event.date).toLocaleString('fr-FR');
+                const icon = getTimelineIcon(event.type);
+                const color = getTimelineColor(event.type);
+                
+                // Générer le titre et la description selon le type d'événement
+                let title, description;
+                
+                if (event.type === 'action') {
+                    title = ACTION_LABELS[event.data.action_type] || event.data.action_type;
+                    
+                    // Debug: afficher la structure des données
+                    console.log('Timeline action data structure:', event);
+                    
+                    // Essayer différentes structures possibles pour la description
+                    let actionDescription = 'Aucune description';
+                    if (event.data && event.data.action_description) {
+                        actionDescription = event.data.action_description;
+                    } else if (event.data && event.data.description) {
+                        actionDescription = event.data.description;
+                    } else if (event.description) {
+                        actionDescription = event.description;
+                    } else if (event.data && typeof event.data === 'string') {
+                        actionDescription = event.data;
+                    }
+                    
+                    description = actionDescription;
+                } else if (event.type === 'document') {
+                    title = `Document ${DOC_LABELS[event.data.document_type] || event.data.document_type}`;
+                    description = event.data.file_name || 'Document téléversé';
+                } else if (event.type === 'stage_start') {
+                    title = `Début de l'étape: ${stage.stage_name}`;
+                    description = `L'étape ${stage.stage_name} a commencé`;
+                } else if (event.type === 'stage_complete') {
+                    title = `Fin de l'étape: ${stage.stage_name}`;
+                    description = `L'étape ${stage.stage_name} a été terminée`;
+                } else {
+                    title = event.title || 'Événement';
+                    description = event.description || 'Aucune description';
+                }
+                
+                return `
+                    <div class="timeline-item d-flex align-items-start mb-3">
+                        <div class="timeline-icon me-3">
+                            <i class="fas ${icon} text-${color}"></i>
+                        </div>
+                        <div class="timeline-content flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="mb-1">${title}</h6>
+                                <small class="text-muted">${date}</small>
+                            </div>
+                            <p class="mb-1 text-muted">${description}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTimelineIcon(type) {
+            switch(type) {
+                case 'action': return 'fa-tasks';
+                case 'document': return 'fa-file-alt';
+                case 'stage_start': return 'fa-play-circle';
+                case 'stage_complete': return 'fa-check-circle';
+                default: return 'fa-circle';
+            }
+        }
+
+        function getTimelineColor(type) {
+            switch(type) {
+                case 'action': return 'primary';
+                case 'document': return 'info';
+                case 'stage_start': return 'warning';
+                case 'stage_complete': return 'success';
+                default: return 'secondary';
+            }
+        }
+
+        // Fonctions utilitaires pour les statuts des étapes
+        function getStageStatusIcon(status) {
+            switch(status) {
+                case 'COMPLETED': return 'fa-check-circle';
+                case 'IN_PROGRESS': return 'fa-play-circle';
+                case 'PENDING': return 'fa-clock';
+                default: return 'fa-circle';
+            }
+        }
+
+        function getStageStatusColor(status) {
+            switch(status) {
+                case 'COMPLETED': return 'success';
+                case 'IN_PROGRESS': return 'warning';
+                case 'PENDING': return 'secondary';
+                default: return 'secondary';
+            }
+        }
+
+        function getStageStatusLabel(status) {
+            switch(status) {
+                case 'COMPLETED': return 'Terminée';
+                case 'IN_PROGRESS': return 'En cours';
+                case 'PENDING': return 'En attente';
+                default: return 'Inconnu';
+            }
+        }
+
+        // Fonction d'export PDF (placeholder)
+        function exportHistoryToPDF() {
+            showAlert('Fonctionnalité d\'export PDF en cours de développement', 'info');
+        }
+
+        // Styles CSS pour l'historique
+        const historyStyles = `
+            <style>
+                /* Modal plein écran avec largeur maximale */
+                .modal-fullscreen {
+                    padding: 0 !important;
+                }
+                
+                .modal-fullscreen .modal-dialog {
+                    max-width: 100vw !important;
+                    width: 100vw !important;
+                    margin: 0 !important;
+                    height: 100vh !important;
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    bottom: 0 !important;
+                }
+                
+                .modal-fullscreen .modal-content {
+                    height: 100vh !important;
+                    border-radius: 0 !important;
+                    border: none !important;
+                    width: 100vw !important;
+                    max-width: 100vw !important;
+                }
+                
+                /* Forcer le modal à être plein écran */
+                .modal.show .modal-dialog.modal-fullscreen {
+                    transform: none !important;
+                    max-width: 100vw !important;
+                    width: 100vw !important;
+                }
+                
+                .modal-fullscreen .modal-body {
+                    overflow: hidden;
+                    padding: 0 !important;
+                    height: calc(100vh - 60px) !important;
+                }
+                
+                .modal-fullscreen .modal-header {
+                    padding: 0.25rem 2rem !important;
+                    min-height: auto !important;
+                    height: auto !important;
+                }
+                
+                .modal-fullscreen .modal-header .btn-close {
+                    padding: 0.25rem !important;
+                    font-size: 0.875rem !important;
+                }
+                
+                .modal-fullscreen .modal-footer {
+                    padding: 0.25rem 2rem !important;
+                    min-height: auto !important;
+                    height: auto !important;
+                }
+                
+                .modal-fullscreen .modal-footer .btn {
+                    padding: 0.25rem 0.75rem !important;
+                    font-size: 0.875rem !important;
+                }
+                
+                /* Navigation des étapes */
+                .stage-nav-item {
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+                
+                .stage-nav-item:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                }
+                
+                .stage-nav-item.active .card {
+                    border-color: #0d6efd !important;
+                    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+                }
+                
+                /* Colonne de navigation plus large */
+                .stage-navigation {
+                    width: 400px !important;
+                    min-width: 400px !important;
+                    max-width: 400px !important;
+                    flex-shrink: 0 !important;
+                }
+                
+                /* Zone de contenu principale */
+                .stage-content-area {
+                    flex: 1 !important;
+                    min-width: 0 !important;
+                    width: calc(100vw - 400px) !important;
+                }
+                
+                /* Conteneur principal */
+                .main-content-container {
+                    display: flex !important;
+                    width: 100vw !important;
+                    height: calc(100vh - 80px) !important;
+                }
+                
+                /* Timeline */
+                .timeline-stage {
+                    position: relative;
+                    padding-left: 30px;
+                }
+                
+                .timeline-stage::before {
+                    content: '';
+                    position: absolute;
+                    left: 15px;
+                    top: 0;
+                    bottom: 0;
+                    width: 2px;
+                    background: #dee2e6;
+                }
+                
+                .timeline-item {
+                    position: relative;
+                }
+                
+                .timeline-icon {
+                    position: absolute;
+                    left: -22px;
+                    top: 0;
+                    width: 30px;
+                    height: 30px;
+                    background: white;
+                    border: 2px solid #dee2e6;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                /* Éléments interactifs */
+                .action-item, .document-item {
+                    transition: background-color 0.2s ease;
+                    padding: 1rem;
+                    border-radius: 0.5rem;
+                }
+                
+                .action-item:hover, .document-item:hover {
+                    background-color: #f8f9fa;
+                }
+                
+                /* En-tête d'informations */
+                .opportunity-header {
+                    padding: 1rem 2rem;
+                    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                    border-bottom: 2px solid #dee2e6;
+                }
+                
+                .opportunity-header h4 {
+                    font-size: 1.75rem;
+                    font-weight: 600;
+                    color: #2c3e50;
+                }
+                
+                .opportunity-header .client-info {
+                    font-size: 1.1rem;
+                    color: #6c757d;
+                }
+                
+                .opportunity-header .status-badge {
+                    font-size: 1rem;
+                    padding: 0.5rem 1rem;
+                }
+                
+                .opportunity-header .amount {
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    color: #0d6efd;
+                }
+                
+                /* Cartes de contenu */
+                .card-header {
+                    border-bottom: none;
+                    padding: 1rem 1.5rem;
+                }
+                
+                .card-body {
+                    padding: 1.5rem;
+                }
+                
+                /* Boutons */
+                .btn-group-sm .btn {
+                    font-size: 0.8rem;
+                    padding: 0.375rem 0.75rem;
+                }
+                
+                /* Responsive */
+                @media (max-width: 1200px) {
+                    .stage-navigation {
+                        width: 300px !important;
+                        min-width: 300px !important;
+                        max-width: 300px !important;
+                    }
+                }
+                
+                @media (max-width: 768px) {
+                    .modal-fullscreen .modal-body {
+                        flex-direction: column;
+                    }
+                    
+                    .stage-navigation {
+                        width: 100% !important;
+                        min-width: 100% !important;
+                        max-width: 100% !important;
+                        height: auto !important;
+                        max-height: 200px !important;
+                    }
+                    
+                    .stage-content-area {
+                        height: auto !important;
+                    }
+                }
+            </style>
+        `;
+
+        // Injecter les styles
+        document.head.insertAdjacentHTML('beforeend', historyStyles);
     </script>
 
     <!-- SessionManager pour la gestion centralisée des sessions -->

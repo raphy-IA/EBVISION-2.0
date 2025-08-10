@@ -1,4 +1,5 @@
 const { pool } = require('../utils/database');
+const EmailService = require('./emailService');
 
 class NotificationService {
     
@@ -47,20 +48,16 @@ class NotificationService {
                 }
             });
 
-            // TODO: Envoyer email si configuré
+            // Envoyer un email si l'utilisateur a une adresse email
             if (data.user_email) {
-                await this.sendEmailNotification(data.user_email, {
-                    subject: 'Alerte: Étape en retard',
-                    template: 'stage_overdue',
-                    data: {
-                        userName: data.user_name,
-                        stageName: data.stage_name,
-                        opportunityName: data.opportunity_name,
-                        dueDate: new Date(data.due_date).toLocaleDateString('fr-FR'),
-                        businessUnit: data.business_unit_name,
-                        daysOverdue: Math.ceil((new Date() - new Date(data.due_date)) / (1000 * 60 * 60 * 24))
-                    }
-                });
+                const daysOverdue = Math.ceil((new Date() - new Date(data.due_date)) / (1000 * 60 * 60 * 24));
+                await EmailService.sendOverdueStageEmail(
+                    data.user_email,
+                    data.user_name,
+                    data.opportunity_name,
+                    data.stage_name,
+                    daysOverdue
+                );
             }
 
             return true;
@@ -219,19 +216,14 @@ class NotificationService {
                 }
             });
 
-            // TODO: Envoyer email de félicitations
+            // Envoyer un email de félicitations si l'utilisateur a une adresse email
             if (data.user_email) {
-                await this.sendEmailNotification(data.user_email, {
-                    subject: 'Félicitations ! Opportunité gagnée',
-                    template: 'opportunity_won',
-                    data: {
-                        userName: data.user_name,
-                        opportunityName: data.opportunity_name,
-                        amount: data.montant_estime,
-                        currency: data.devise,
-                        businessUnit: data.business_unit_name
-                    }
-                });
+                await EmailService.sendOpportunityWonEmail(
+                    data.user_email,
+                    data.user_name,
+                    data.opportunity_name,
+                    `${data.montant_estime} ${data.devise}`
+                );
             }
 
             return true;

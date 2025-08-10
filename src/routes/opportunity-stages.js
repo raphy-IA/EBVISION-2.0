@@ -222,9 +222,9 @@ router.post('/:stageId/start', authenticateToken, async (req, res) => {
 router.post('/:stageId/complete', authenticateToken, async (req, res) => {
     try {
         const OpportunityWorkflowService = require('../services/opportunityWorkflowService');
-        const { outcome } = req.body;
+        const { outcome, reason, details } = req.body;
         
-        const updatedStage = await OpportunityWorkflowService.completeStage(req.params.stageId, req.user.id, outcome);
+        const updatedStage = await OpportunityWorkflowService.completeStage(req.params.stageId, req.user.id, outcome, reason, details);
         
         res.json({
             success: true,

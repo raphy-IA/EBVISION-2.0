@@ -20,7 +20,13 @@
     "open:pages": "node scripts/open_all_pages.js",
     "deploy": "node scripts/deploy_and_document.js",
     "status": "node scripts/final_status_check.js",
-    "migrate-currency": "node scripts/apply-currency-migration.js"
+    "migrate-currency": "node scripts/apply-currency-migration.js",
+    "test:notifications": "node scripts/test-notification-system.js",
+    "fix:notifications": "node scripts/fix-notification-anomalies.js",
+    "check:notifications": "node scripts/run-notification-check.js",
+    "notifications:full-check": "node scripts/complete-notification-system-check.js",
+    "test:opportunity-config": "node scripts/test-opportunity-type-configuration.js",
+    "test:complete-opportunity": "node scripts/test-complete-opportunity-system.js"
   },
   "dependencies": {
     "axios": "^1.11.0",
@@ -36,7 +42,10 @@
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
     "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.5",
     "nodemon": "^3.0.1",
     "pg": "^8.11.3",
     "puppeteer": "^21.11.0"

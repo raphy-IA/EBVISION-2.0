@@ -942,6 +942,9 @@
                             <button class="btn btn-outline-secondary" onclick="goToStages('${opp.id}')" title="Gérer les étapes">
                                 <i class="fas fa-list-check"></i>
                             </button>
+                            <button class="btn btn-outline-primary" onclick="showCompleteHistory('${opp.id}')" title="Suivi détaillé">
+                                <i class="fas fa-history"></i>
+                            </button>
                             <button class="btn btn-outline-warning" onclick="editOpportunity('${opp.id}')" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </button>
@@ -1089,6 +1092,10 @@
         
         function goToStages(id) {
             window.location.href = `/opportunity-stages.html?opportunity_id=${id}`;
+        }
+
+        function showCompleteHistory(id) {
+            window.location.href = `/opportunity-stages.html?opportunity_id=${id}&show_history=true`;
         }
 
         // Fonctions CRUD (a enrichir progressivement)

@@ -28,6 +28,7 @@ const tauxHorairesRoutes = require('./src/routes/taux-horaires');
 const opportunityRoutes = require('./src/routes/opportunities');
 const opportunityTypesRoutes = require('./src/routes/opportunity-types');
 const opportunityStageRoutes = require('./src/routes/opportunity-stages');
+const workflowRoutes = require('./src/routes/workflow');
 const missionTypesRoutes = require('./src/routes/mission-types');
 const tasksRoutes = require('./src/routes/tasks');
 const paysRoutes = require('./src/routes/pays');
@@ -42,10 +43,14 @@ const timeSheetsRoutes = require('./src/routes/time-sheets');
 const internalActivitiesRoutes = require('./src/routes/internalActivities');
 const timeSheetSupervisorsRoutes = require('./src/routes/time-sheet-supervisors');
 const timeSheetApprovalsRoutes = require('./src/routes/time-sheet-approvals');
+const notificationSettingsRoutes = require('./src/routes/notification-settings');
 
 // Import des middlewares
 const errorHandler = require('./src/middleware/errorHandler');
 const { connectDatabase } = require('./src/utils/database');
+
+// Import des services
+const CronService = require('./src/services/cronService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -137,6 +142,7 @@ app.use('/api/taux-horaires', tauxHorairesRoutes);
 app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/opportunity-types', opportunityTypesRoutes);
 app.use('/api/opportunity-stages', opportunityStageRoutes);
+app.use('/api/workflow', workflowRoutes);
 app.use('/api/mission-types', missionTypesRoutes);
 app.use('/api/tasks', tasksRoutes);
 app.use('/api/pays', paysRoutes);
@@ -145,6 +151,7 @@ app.use('/api/evolution-grades', evolutionGradesRoutes);
 app.use('/api/evolution-postes', evolutionPostesRoutes);
 app.use('/api/evolution-organisations', evolutionOrganisationsRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/notification-settings', notificationSettingsRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/internal-activities', internalActivitiesRoutes);
@@ -165,6 +172,9 @@ async function startServer() {
         // Connexion à la base de données
         await connectDatabase();
         console.log('✅ Connexion à PostgreSQL réussie');
+        
+        // Initialiser les tâches cron
+        CronService.initCronJobs();
         
         // Démarrage du serveur
         app.listen(PORT, () => {

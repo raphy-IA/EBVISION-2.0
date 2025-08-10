@@ -354,4 +354,203 @@ router.get('/:id/templates', authenticateToken, async (req, res) => {
     }
 });
 
+// POST /api/opportunity-types/:id/create-default-stages - Créer les étapes par défaut pour un type
+router.post('/:id/create-default-stages', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { pool } = require('../utils/database');
+        
+        // Vérifier que le type existe
+        const typeCheck = await pool.query('SELECT * FROM opportunity_types WHERE id = $1', [id]);
+        if (typeCheck.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Type d\'opportunité non trouvé'
+            });
+        }
+
+        // Étapes par défaut pour tous les types
+        const defaultStages = [
+            {
+                stage_name: 'Prospection',
+                stage_order: 1,
+                description: 'Identification et premier contact avec le prospect',
+                min_duration_days: 1,
+                max_duration_days: 7,
+                is_mandatory: true,
+                validation_required: true
+            },
+            {
+                stage_name: 'Qualification',
+                stage_order: 2,
+                description: 'Validation du besoin, budget, décideurs et timing',
+                min_duration_days: 3,
+                max_duration_days: 10,
+                is_mandatory: true,
+                validation_required: true
+            },
+            {
+                stage_name: 'Proposition',
+                stage_order: 3,
+                description: 'Production et envoi de l\'offre commerciale',
+                min_duration_days: 3,
+                max_duration_days: 10,
+                is_mandatory: true,
+                validation_required: true
+            },
+            {
+                stage_name: 'Négociation',
+                stage_order: 4,
+                description: 'Convergence sur prix, périmètre, délais et conditions',
+                min_duration_days: 5,
+                max_duration_days: 15,
+                is_mandatory: true,
+                validation_required: false
+            },
+            {
+                stage_name: 'Décision',
+                stage_order: 5,
+                description: 'Validation finale et signature du contrat',
+                min_duration_days: 1,
+                max_duration_days: 7,
+                is_mandatory: true,
+                validation_required: true
+            }
+        ];
+
+        await pool.query('BEGIN');
+
+        // Créer les étapes
+        for (const stage of defaultStages) {
+            const stageResult = await pool.query(`
+                INSERT INTO opportunity_stage_templates (
+                    opportunity_type_id, stage_name, stage_order, description,
+                    min_duration_days, max_duration_days, is_mandatory, validation_required
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                RETURNING id
+            `, [
+                id, stage.stage_name, stage.stage_order, stage.description,
+                stage.min_duration_days, stage.max_duration_days, stage.is_mandatory, stage.validation_required
+            ]);
+
+            const stageId = stageResult.rows[0].id;
+
+            // Ajouter les actions requises selon l'étape
+            const stageActions = getDefaultActionsForStage(stage.stage_name);
+            for (const action of stageActions) {
+                await pool.query(`
+                    INSERT INTO stage_required_actions (stage_template_id, action_type, is_mandatory, validation_order)
+                    VALUES ($1, $2, $3, $4)
+                `, [stageId, action.type, action.mandatory, action.order]);
+            }
+
+            // Ajouter les documents requis selon l'étape
+            const stageDocuments = getDefaultDocumentsForStage(stage.stage_name);
+            for (const doc of stageDocuments) {
+                await pool.query(`
+                    INSERT INTO stage_required_documents (stage_template_id, document_type, is_mandatory)
+                    VALUES ($1, $2, $3)
+                `, [stageId, doc.type, doc.mandatory]);
+            }
+        }
+
+        await pool.query('COMMIT');
+
+        res.json({
+            success: true,
+            message: 'Étapes par défaut créées avec succès'
+        });
+    } catch (error) {
+        await pool.query('ROLLBACK');
+        console.error('Erreur lors de la création des étapes par défaut:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la création des étapes par défaut'
+        });
+    }
+});
+
+// POST /api/opportunity-types/:id/save-configuration - Sauvegarder la configuration complète
+router.post('/:id/save-configuration', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { pool } = require('../utils/database');
+        
+        // Vérifier que le type existe
+        const typeCheck = await pool.query('SELECT * FROM opportunity_types WHERE id = $1', [id]);
+        if (typeCheck.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Type d\'opportunité non trouvé'
+            });
+        }
+
+        // Cette route peut être utilisée pour des opérations de validation ou de post-traitement
+        // après la sauvegarde de la configuration via les routes workflow
+        
+        res.json({
+            success: true,
+            message: 'Configuration sauvegardée avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde de la configuration:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la sauvegarde de la configuration'
+        });
+    }
+});
+
+// Fonctions utilitaires pour les actions et documents par défaut
+function getDefaultActionsForStage(stageName) {
+    const actionsMap = {
+        'Prospection': [
+            { type: 'premier_contact', mandatory: true, order: 1 },
+            { type: 'qualification_besoin', mandatory: true, order: 2 }
+        ],
+        'Qualification': [
+            { type: 'rdv_planifie', mandatory: true, order: 1 },
+            { type: 'rdv_realise', mandatory: true, order: 2 },
+            { type: 'analyse_besoin_approfondie', mandatory: true, order: 3 }
+        ],
+        'Proposition': [
+            { type: 'proposition_envoyee', mandatory: true, order: 1 }
+        ],
+        'Négociation': [
+            { type: 'negociation_menee', mandatory: true, order: 1 },
+            { type: 'conditions_acceptees', mandatory: true, order: 2 }
+        ],
+        'Décision': [
+            { type: 'contrat_prepare', mandatory: true, order: 1 },
+            { type: 'contrat_signe', mandatory: true, order: 2 }
+        ]
+    };
+    
+    return actionsMap[stageName] || [];
+}
+
+function getDefaultDocumentsForStage(stageName) {
+    const documentsMap = {
+        'Prospection': [
+            { type: 'fiche_prospect', mandatory: true }
+        ],
+        'Qualification': [
+            { type: 'compte_rendu_rdv', mandatory: true },
+            { type: 'presentation_cabinet', mandatory: false }
+        ],
+        'Proposition': [
+            { type: 'proposition_commerciale', mandatory: true },
+            { type: 'elements_techniques', mandatory: false }
+        ],
+        'Négociation': [
+            { type: 'conditions_finales', mandatory: true }
+        ],
+        'Décision': [
+            { type: 'contrat_signe', mandatory: true }
+        ]
+    };
+    
+    return documentsMap[stageName] || [];
+}
+
 module.exports = router; 

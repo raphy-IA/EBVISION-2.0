@@ -27,8 +27,7 @@ async function loadNotifications(limit = 10, offset = 0) {
         
         if (response.ok) {
             const result = await response.json();
-            notifications = result.data.notifications;
-            notificationStats = result.data.stats;
+            notifications = result.data || [];
             
             updateNotificationBadge();
             displayNotifications();
@@ -49,7 +48,7 @@ async function loadNotificationStats() {
         
         if (response.ok) {
             const result = await response.json();
-            notificationStats = result.data.stats;
+            notificationStats = result.data || {};
             updateNotificationBadge();
         }
     } catch (error) {
@@ -61,7 +60,7 @@ async function loadNotificationStats() {
 function updateNotificationBadge() {
     const badge = document.getElementById('notificationBadge');
     if (badge) {
-        const unreadCount = notificationStats.unread_notifications || 0;
+        const unreadCount = notificationStats.unread || 0;
         if (unreadCount > 0) {
             badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
             badge.classList.remove('d-none');
