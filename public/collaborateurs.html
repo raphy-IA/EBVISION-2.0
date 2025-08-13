@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRS Dashboard - Gestion des Collaborateurs</title>
+    <title>EBVISION 2.0 - Gestion des Collaborateurs</title>
     
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,12 +11,12 @@
     
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
+    <link rel="stylesheet" href="css/user-header.css">
     
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
                 
                 <!-- Scripts de zone utilisateur -->
-                <script src="js/user-header.js"></script>
                 <script src="js/user-modals.js"></script>
     
     <style>
@@ -118,21 +118,12 @@
             height: 300px;
         }
 
-        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
-        .sidebar-container {
-            width: 300px; /* Largeur fixe pour la sidebar */
-            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
-        }
-
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
                 flex-direction: column; /* Empile la sidebar et le contenu */
             }
-            .sidebar-container {
-                width: 100%; /* La sidebar prend toute la largeur */
-                height: auto; /* Hauteur automatique */
-            }
+            
             .main-content-area {
                 padding: 1rem;
             }
@@ -154,12 +145,7 @@
             .main-content-wrapper {
                 margin-left: 0;
             }
-            
-            .sidebar-container {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-            
+
             .sidebar-container.open {
                 transform: translateX(0);
             }
@@ -168,11 +154,47 @@
                 padding: 1rem;
             }
         }
+
+        /* Compacte l'espacement des onglets et du contenu */
+        .tab-content { margin-top: 0 !important; padding-top: 0 !important; }
+        .tab-content .tab-pane { margin-top: 0 !important; padding-top: 0 !important; }
+        .tab-pane > .row:first-child, .tab-pane > .card:first-child { margin-top: 0 !important; }
+        /* Force toujours un seul contenu d'onglet visible (corrige les styles inline résiduels) */
+        #collaborateursTabsContent .tab-pane { display: none !important; }
+        #collaborateursTabsContent .tab-pane.active.show { display: block !important; }
+
+        /* Onglets plus visibles (materialisés) */
+        #collaborateursTabs { border-bottom: none; gap: .5rem; }
+        #collaborateursTabs .nav-link {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            border: none;
+            border-radius: 999px;
+            padding: .5rem 1rem;
+            color: #344767;
+            background: #f1f4f8;
+            transition: all .2s ease;
+        }
+        #collaborateursTabs .nav-link:hover { filter: brightness(0.96); }
+        #collaborateursTabs .nav-link.active {
+            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 12px rgba(118,75,162,.3);
+        }
     </style>
 
         <script src="js/global-auth.js"></script>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    <script src="js/user-header-utils.js"></script>
+    <script src="js/user-header-main.js"></script>
+    <script src="js/user-header-init.js"></script>
 </head>
 <body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
     <div class="page-wrapper">
         <!-- Sidebar Container -->
         <div class="sidebar-container">
@@ -182,118 +204,230 @@
         <!-- Main Content Area -->
         <div class="main-content-area">
             <div id="collaborateurs-section">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-1">
                     <h2><i class="fas fa-users me-2"></i>Gestion des Collaborateurs</h2>
                     <button class="btn btn-primary" onclick="showNewCollaborateurModal()">
                         <i class="fas fa-plus me-2"></i>Nouveau Collaborateur
                     </button>
                 </div>
 
-                <!-- Statistics Cards -->
-                <div class="row mb-4">
-                    <div class="col-md-3 mb-3">
-                        <div class="card stat-card">
-                            <div class="card-body text-center">
-                                <i class="fas fa-users fa-2x mb-2"></i>
-                                <div class="stat-number" id="total-collaborateurs">0</div>
-                                <div>Total Collaborateurs</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card stat-card success">
-                            <div class="card-body text-center">
-                                <i class="fas fa-user-check fa-2x mb-2"></i>
-                                <div class="stat-number" id="actifs-collaborateurs">0</div>
-                                <div>Actifs</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card stat-card warning">
-                            <div class="card-body text-center">
-                                <i class="fas fa-clock fa-2x mb-2"></i>
-                                <div class="stat-number" id="total-heures">0</div>
-                                <div>Heures Total</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card stat-card info">
-                            <div class="card-body text-center">
-                                <i class="fas fa-chart-line fa-2x mb-2"></i>
-                                <div class="stat-number" id="moyenne-heures">0</div>
-                                <div>Moyenne/H</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
 
-                <!-- Filters and Search -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="search-input" class="form-label">Rechercher</label>
-                                <input type="text" class="form-control" id="search-input" placeholder="Nom, prénom, email..." onkeyup="filterCollaborateurs()">
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="business-unit-filter" class="form-label">Business Unit</label>
-                                <select id="business-unit-filter" class="form-select" onchange="filterCollaborateurs()">
-                                    <option value="">Toutes les business units</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="status-filter" class="form-label">Statut</label>
-                                <select id="status-filter" class="form-select" onchange="filterCollaborateurs()">
-                                    <option value="">Tous les statuts</option>
-                                    <option value="ACTIF">Actif</option>
-                                    <option value="INACTIF">Inactif</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2 text-end">
-                                <button class="btn btn-outline-secondary" onclick="exportCollaborateurs()">
-                                    <i class="fas fa-file-excel me-2"></i>Export Excel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Onglets -->
+                <ul class="nav nav-tabs mb-2" id="collaborateursTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="collaborateurs-tab" data-bs-toggle="tab" data-bs-target="#collaborateurs-content" type="button" role="tab" aria-controls="collaborateurs-content" aria-selected="true">
+                            <i class="fas fa-users me-2"></i>Collaborateurs
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="superviseurs-tab" data-bs-toggle="tab" data-bs-target="#superviseurs-content" type="button" role="tab" aria-controls="superviseurs-content" aria-selected="false">
+                            <i class="fas fa-user-shield me-2"></i>Superviseurs
+                        </button>
+                    </li>
+                </ul>
 
-                <!-- Collaborateurs Table -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0"><i class="fas fa-users me-2"></i>Liste des Collaborateurs</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="collaborateurs-loading" class="loading" style="display: none;">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Chargement...</span>
+                <!-- Contenu des onglets -->
+                <div class="tab-content mt-0 pt-0" id="collaborateursTabsContent">
+                    <!-- Onglet Collaborateurs -->
+                    <div class="tab-pane fade show active p-0" id="collaborateurs-content" role="tabpanel" aria-labelledby="collaborateurs-tab">
+                        <!-- Statistiques (cartes colorées) -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <div class="card stat-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-users fa-2x mb-2"></i>
+                                        <div class="stat-number" id="total-collaborateurs">0</div>
+                                        <div>Total Collaborateurs</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stat-card success">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-check fa-2x mb-2"></i>
+                                        <div class="stat-number" id="actifs-collaborateurs">0</div>
+                                        <div>Actifs</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stat-card warning">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-clock fa-2x mb-2"></i>
+                                        <div class="stat-number" id="total-heures">0</div>
+                                        <div>Heures Total</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stat-card info">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-chart-line fa-2x mb-2"></i>
+                                        <div class="stat-number" id="moyenne-heures">0</div>
+                                        <div>Moyenne/H</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div id="collaborateurs-content" style="display: block;">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th>Nom</th>
-                                            <th>Prénom</th>
-                                            <th>Email</th>
-                                            <th>Téléphone</th>
-                                            <th>Business Unit</th>
-                                            <th>Division</th>
-                                            <th>Type de Collaborateur</th>
-                                            <th>Poste</th>
-                                            <th>Grade</th>
-                                            <th>Statut</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="collaborateurs-table">
-                                        <!-- Collaborateurs will be loaded here by JavaScript -->
-                                    </tbody>
-                                </table>
+                        <!-- Filters and Search -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="search-input" class="form-label">Rechercher</label>
+                                        <input type="text" class="form-control" id="search-input" placeholder="Nom, prénom, email..." onkeyup="filterCollaborateurs()">
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="business-unit-filter" class="form-label">Business Unit</label>
+                                        <select id="business-unit-filter" class="form-select" onchange="filterCollaborateurs()">
+                                            <option value="">Toutes les business units</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="status-filter" class="form-label">Statut</label>
+                                        <select id="status-filter" class="form-select" onchange="filterCollaborateurs()">
+                                            <option value="">Tous les statuts</option>
+                                            <option value="ACTIF">Actif</option>
+                                            <option value="INACTIF">Inactif</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <button class="btn btn-outline-secondary" onclick="exportCollaborateurs()">
+                                            <i class="fas fa-file-excel me-2"></i>Export Excel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collaborateurs Table -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0"><i class="fas fa-users me-2"></i>Liste des Collaborateurs</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="collaborateurs-loading" class="loading" style="display: none;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Chargement...</span>
+                                    </div>
+                                </div>
+                                <div id="collaborateurs-table-content" style="display: block;">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>Nom</th>
+                                                    <th>Prénom</th>
+                                                    <th>Email</th>
+                                                    <th>Téléphone</th>
+                                                    <th>Business Unit</th>
+                                                    <th>Division</th>
+                                                    <th>Type de Collaborateur</th>
+                                                    <th>Poste</th>
+                                                    <th>Grade</th>
+                                                    <th>Statut</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="collaborateurs-table">
+                                                <!-- Collaborateurs will be loaded here by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Onglet Superviseurs -->
+                    <div class="tab-pane fade p-0" id="superviseurs-content" role="tabpanel" aria-labelledby="superviseurs-tab">
+                        <!-- Statistiques des superviseurs -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card stat-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-shield fa-2x mb-2"></i>
+                                        <div class="stat-number" id="total-supervisors">0</div>
+                                        <div>Superviseurs configurés</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stat-card success">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-users fa-2x mb-2"></i>
+                                        <div class="stat-number" id="total-collaborateurs-supervised">0</div>
+                                        <div>Collaborateurs avec superviseurs</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stat-card warning">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-clock fa-2x mb-2"></i>
+                                        <div class="stat-number" id="pending-approvals">0</div>
+                                        <div>Feuilles en attente</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stat-card info">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-link fa-2x mb-2"></i>
+                                        <div class="stat-number" id="total-relations">0</div>
+                                        <div>Relations configurées</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Formulaire d'ajout de superviseur -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0"><i class="fas fa-plus-circle me-2"></i>Ajouter des relations superviseur</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="add-supervisor-form">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label for="supervisor-select" class="form-label">Superviseur</label>
+                                            <select class="form-select" id="supervisor-select" required>
+                                                <option value="">Sélectionner un superviseur</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="collaborateurs-select" class="form-label">Collaborateurs à superviser</label>
+                                            <select class="form-select" id="collaborateurs-select" multiple size="6" required>
+                                                <!-- Les options seront remplies par JavaScript -->
+                                            </select>
+                                            <small class="form-text text-muted">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs collaborateurs</small>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">&nbsp;</label>
+                                            <button type="submit" class="btn btn-primary w-100">
+                                                <i class="fas fa-plus"></i> Ajouter
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Liste des superviseurs -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Superviseurs configurés</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="supervisors-container">
+                                    <div class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Chargement...</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1090,15 +1224,20 @@
         }
 
         function updateStatistics() {
-            const total = collaborateurs.length;
-            const actifs = collaborateurs.filter(c => c.statut === 'ACTIF').length;
+            const total = Array.isArray(collaborateurs) ? collaborateurs.length : 0;
+            const actifs = Array.isArray(collaborateurs) ? collaborateurs.filter(c => c.statut === 'ACTIF').length : 0;
             const totalHeures = 0; // TODO: Calculate from time entries
             const moyenneHeures = total > 0 ? (totalHeures / total).toFixed(1) : 0;
-            
-            document.getElementById('total-collaborateurs').textContent = total;
-            document.getElementById('actifs-collaborateurs').textContent = actifs;
-            document.getElementById('total-heures').textContent = totalHeures;
-            document.getElementById('moyenne-heures').textContent = moyenneHeures;
+
+            const elTotal = document.getElementById('total-collaborateurs');
+            const elActifs = document.getElementById('actifs-collaborateurs');
+            const elTotalHeures = document.getElementById('total-heures');
+            const elMoyenneHeures = document.getElementById('moyenne-heures');
+
+            if (elTotal) elTotal.textContent = total;
+            if (elActifs) elActifs.textContent = actifs;
+            if (elTotalHeures) elTotalHeures.textContent = totalHeures;
+            if (elMoyenneHeures) elMoyenneHeures.textContent = moyenneHeures;
         }
 
         function filterCollaborateurs() {
@@ -1500,19 +1639,22 @@
         function showLoading(show) {
             console.log('🔄 showLoading:', show);
             const loadingElement = document.getElementById('collaborateurs-loading');
+            // Ne jamais forcer l'affichage des autres onglets: respecter Bootstrap
+            const activePane = document.querySelector('#collaborateursTabsContent .tab-pane.show.active');
             const contentElement = document.getElementById('collaborateurs-content');
-            
+
             console.log('📋 Loading element:', loadingElement);
-            console.log('📋 Content element:', contentElement);
-            
+            console.log('📋 Active pane:', activePane);
+
             if (loadingElement) {
                 loadingElement.style.display = show ? 'flex' : 'none';
             }
-            
-            if (contentElement) {
+
+            // Ne masquer/afficher le contenu que si l'onglet Collaborateurs est l'onglet actif
+            if (contentElement && activePane && activePane.id === 'collaborateurs-content') {
                 contentElement.style.display = show ? 'none' : 'block';
             }
-            
+
             console.log('✅ showLoading terminé');
         }
 
@@ -2565,7 +2707,256 @@
                 showAlert(`Erreur de connexion: ${error.message}`, 'danger');
             }
         }
+
+        // ========================================
+        // FONCTIONS POUR LES SUPERVISEURS
+        // ========================================
+
+        // Charger les statistiques des superviseurs
+        async function loadSupervisorsStats() {
+            try {
+                const response = await authenticatedFetch('/api/supervisors/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('total-supervisors').textContent = data.data.total_supervisors || 0;
+                    document.getElementById('total-collaborateurs-supervised').textContent = data.data.total_collaborateurs || 0;
+                    document.getElementById('pending-approvals').textContent = data.data.pending_approvals || 0;
+                    document.getElementById('total-relations').textContent = data.data.total_relations || 0;
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des stats superviseurs:', error);
+            }
+        }
+
+        // Charger les superviseurs disponibles
+        async function loadSupervisors() {
+            try {
+                const response = await authenticatedFetch('/api/supervisors');
+                const data = await response.json();
+                
+                const select = document.getElementById('supervisor-select');
+                select.innerHTML = '<option value="">Sélectionner un superviseur</option>';
+                
+                if (data.success && data.data) {
+                    data.data.forEach(supervisor => {
+                        const option = document.createElement('option');
+                        option.value = supervisor.id;
+                        option.textContent = `${supervisor.nom} ${supervisor.prenom}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des superviseurs:', error);
+            }
+        }
+
+        // Charger les collaborateurs pour la sélection
+        async function loadCollaborateursForSupervision() {
+            try {
+                const response = await authenticatedFetch('/api/collaborateurs');
+                const data = await response.json();
+                
+                const select = document.getElementById('collaborateurs-select');
+                select.innerHTML = '';
+                
+                if (data.success && data.data) {
+                    data.data.forEach(collaborateur => {
+                        const option = document.createElement('option');
+                        option.value = collaborateur.id;
+                        option.textContent = `${collaborateur.nom} ${collaborateur.prenom} - ${collaborateur.business_unit_nom || 'Sans BU'}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des collaborateurs:', error);
+            }
+        }
+
+        // Charger les relations superviseur (affichage compact avec dépliage des collaborateurs)
+        async function loadSupervisorRelations() {
+            try {
+                const response = await authenticatedFetch('/api/supervisors/relations');
+                const data = await response.json();
+
+                const container = document.getElementById('supervisors-container');
+
+                if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted">Aucune relation superviseur configurée</div>';
+                    return;
+                }
+
+                // Regrouper par superviseur
+                const supervisorIdToGroup = new Map();
+                for (const rel of data.data) {
+                    if (!supervisorIdToGroup.has(rel.supervisor_id)) {
+                        supervisorIdToGroup.set(rel.supervisor_id, {
+                            supervisor_id: rel.supervisor_id,
+                            supervisor_nom: rel.supervisor_nom,
+                            supervisor_prenom: rel.supervisor_prenom,
+                            collaborators: []
+                        });
+                    }
+                    supervisorIdToGroup.get(rel.supervisor_id).collaborators.push({
+                        relation_id: rel.id,
+                        collaborateur_id: rel.collaborateur_id,
+                        collaborateur_nom: rel.collaborateur_nom,
+                        collaborateur_prenom: rel.collaborateur_prenom
+                    });
+                }
+
+                // Construire l'affichage: une ligne par superviseur, clic pour déplier
+                let html = '';
+                for (const group of supervisorIdToGroup.values()) {
+                    const collapseId = `sup-collabs-${group.supervisor_id}`;
+                    const count = group.collaborators.length;
+                    html += `
+                        <div class="card mb-2">
+                            <div class="card-header d-flex align-items-center justify-content-between py-2" role="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" aria-controls="${collapseId}">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-user-shield text-primary"></i>
+                                    <strong>${group.supervisor_nom} ${group.supervisor_prenom}</strong>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="badge bg-success"><i class="fas fa-users me-1"></i>${count}</span>
+                                    <i class="fas fa-chevron-down text-muted"></i>
+                                </div>
+                            </div>
+                            <div id="${collapseId}" class="collapse">
+                                <div class="card-body py-2">
+                                    <ul class="list-group list-group-flush">
+                                        ${group.collaborators.map(col => `
+                                            <li class="list-group-item d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <i class="fas fa-user text-secondary me-2"></i>
+                                                    ${col.collaborateur_nom} ${col.collaborateur_prenom}
+                                                </div>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteSupervisorRelation('${col.relation_id}')" title="Supprimer la relation">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des relations:', error);
+                document.getElementById('supervisors-container').innerHTML = '<div class="text-center text-muted">Erreur lors du chargement des relations</div>';
+            }
+        }
+
+        // Ajouter une relation superviseur
+        async function addSupervisorRelation(event) {
+            event.preventDefault();
+            
+            const supervisorId = document.getElementById('supervisor-select').value;
+            const collaborateurIds = Array.from(document.getElementById('collaborateurs-select').selectedOptions).map(option => option.value);
+            
+            if (!supervisorId || collaborateurIds.length === 0) {
+                showAlert('Veuillez sélectionner un superviseur et au moins un collaborateur', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await authenticatedFetch('/api/supervisors/relations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        supervisor_id: supervisorId,
+                        collaborateur_ids: collaborateurIds
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Relation superviseur ajoutée avec succès', 'success');
+                    document.getElementById('add-supervisor-form').reset();
+                    loadSupervisorRelations();
+                    loadSupervisorsStats();
+                } else {
+                    showAlert(`Erreur: ${data.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'ajout de la relation:', error);
+                showAlert('Erreur lors de l\'ajout de la relation', 'danger');
+            }
+        }
+
+        // Supprimer une relation superviseur
+        async function deleteSupervisorRelation(relationId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette relation superviseur ?')) {
+                return;
+            }
+            
+            try {
+                const response = await authenticatedFetch(`/api/supervisors/relations/${relationId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Relation superviseur supprimée avec succès', 'success');
+                    loadSupervisorRelations();
+                    loadSupervisorsStats();
+                } else {
+                    showAlert(`Erreur: ${data.error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors de la suppression:', error);
+                showAlert('Erreur lors de la suppression', 'danger');
+            }
+        }
+
+        // Initialiser les superviseurs quand l'onglet est activé
+        document.addEventListener('DOMContentLoaded', function() {
+            // Écouter le changement d'onglet
+            const superviseursTab = document.getElementById('superviseurs-tab');
+            if (superviseursTab) {
+                superviseursTab.addEventListener('shown.bs.tab', function() {
+                    loadSupervisorsStats();
+                    loadSupervisors();
+                    loadCollaborateursForSupervision();
+                    loadSupervisorRelations();
+                });
+            }
+            
+            // Écouter le formulaire d'ajout de superviseur
+            const addSupervisorForm = document.getElementById('add-supervisor-form');
+            if (addSupervisorForm) {
+                addSupervisorForm.addEventListener('submit', addSupervisorRelation);
+            }
+        });
     </script>
+
+    <!-- Modal de confirmation de suppression superviseur -->
+    <div class="modal fade" id="deleteSupervisorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmer la suppression</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer cette relation superviseur ?</p>
+                    <p><strong>Collaborateur:</strong> <span id="delete-collaborateur-name"></span></p>
+                    <p><strong>Superviseur:</strong> <span id="delete-supervisor-name"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-supervisor">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Edit User Modal -->
     <div class="modal fade" id="editUserModal" tabindex="-1">
@@ -2641,5 +3032,5 @@
             </div>
         </div>
     </div>
-</body>
+    </body>
 </html>

@@ -42,7 +42,10 @@ const activityRoutes = require('./src/routes/activities');
 const timeSheetsRoutes = require('./src/routes/time-sheets');
 const internalActivitiesRoutes = require('./src/routes/internalActivities');
 const timeSheetSupervisorsRoutes = require('./src/routes/time-sheet-supervisors');
+const supervisorsRoutes = require('./src/routes/supervisors');
 const timeSheetApprovalsRoutes = require('./src/routes/time-sheet-approvals');
+const dashboardAnalyticsRoutes = require('./src/routes/dashboard-analytics');
+const analyticsRoutes = require('./src/routes/analytics');
 const notificationSettingsRoutes = require('./src/routes/notification-settings');
 
 // Import des middlewares
@@ -103,7 +106,12 @@ app.use('/api/', (req, res, next) => {
 */
 
 // Appliquer le rate limiter spécifique pour l'authentification
-app.use('/api/auth', authLimiter);
+// En développement: désactivé totalement pour éviter blocages
+if ((process.env.NODE_ENV || 'development') === 'development' || process.env.RATE_LIMIT_BYPASS === 'true') {
+    app.use('/api/auth', (req, res, next) => next());
+} else {
+    app.use('/api/auth', authLimiter);
+}
 
 // Middlewares
 app.use(compression());
@@ -156,7 +164,10 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/internal-activities', internalActivitiesRoutes);
 app.use('/api/time-sheet-supervisors', timeSheetSupervisorsRoutes);
+app.use('/api/supervisors', supervisorsRoutes);
 app.use('/api/time-sheet-approvals', timeSheetApprovalsRoutes);
+app.use('/api/analytics', dashboardAnalyticsRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Route par défaut
 app.get('/', (req, res) => {

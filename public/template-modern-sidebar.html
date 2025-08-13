@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRS - Template Moderne</title>
+    <title>EBVISION 2.0 - Template Moderne</title>
     
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,6 +11,7 @@
     
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
+    <link rel="stylesheet" href="css/user-header.css">
     
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
@@ -81,6 +82,10 @@
             }
         }
     </style>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    <script src="js/user-header-utils.js"></script>
+    <script src="js/user-header-main.js"></script>
+    <script src="js/user-header-init.js"></script>
 </head>
 <body>
     <!-- Bouton toggle pour mobile -->
@@ -93,102 +98,152 @@
         <!-- Header de la sidebar -->
         <div class="sidebar-header">
             <h3>
-                <i class="fas fa-chart-line"></i>
-                TRS Dashboard
+                <i class="fas fa-eye"></i>
+                EBVISION 2.0
             </h3>
-            <p>Gestion des Temps & Ressources</p>
+            <p>Gestion Intelligente des Ressources</p>
         </div>
 
         <!-- Navigation principale -->
         <nav class="sidebar-nav">
             <!-- Section Dashboard -->
             <div class="sidebar-section">
-                <div class="sidebar-section-title">DASHBOARD</div>
-                <a href="dashboard.html" class="sidebar-nav-link">
+                <div class="sidebar-section-title">
                     <i class="fas fa-tachometer-alt"></i>
-                    Tableau de bord
+                    DASHBOARD
+                </div>
+                <a href="dashboard.html" class="sidebar-nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    Tableau de bord principal
+                </a>
+                <a href="dashboard-personnel.html" class="sidebar-nav-link">
+                    <i class="fas fa-user-chart"></i>
+                    Dashboard Personnel
+                </a>
+                <a href="dashboard-equipe.html" class="sidebar-nav-link">
+                    <i class="fas fa-users-chart"></i>
+                    Dashboard Équipe
+                </a>
+                <a href="dashboard-direction.html" class="sidebar-nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    Dashboard Direction
+                </a>
+                <a href="dashboard-recouvrement.html" class="sidebar-nav-link">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    Dashboard Recouvrement
+                </a>
+                <a href="dashboard-rentabilite.html" class="sidebar-nav-link">
+                    <i class="fas fa-scale-balanced"></i>
+                    Dashboard Rentabilité
+                </a>
+                <a href="dashboard-chargeabilite.html" class="sidebar-nav-link">
+                    <i class="fas fa-user-clock"></i>
+                    Dashboard Chargeabilité
                 </a>
                 <a href="analytics.html" class="sidebar-nav-link">
                     <i class="fas fa-chart-bar"></i>
-                    Analytics
-                    <span class="badge">3</span>
+                    Analytics & Indicateurs
+                </a>
+                <a href="dashboard-optimise.html" class="sidebar-nav-link">
+                    <i class="fas fa-rocket"></i>
+                    Dashboard Optimisé
                 </a>
             </div>
 
-            <!-- Section Gestion -->
+            <!-- Section Rapports -->
             <div class="sidebar-section">
-                <div class="sidebar-section-title">GESTION</div>
+                <div class="sidebar-section-title">
+                    <i class="fas fa-file-alt"></i>
+                    RAPPORTS
+                </div>
+                <a href="reports.html" class="sidebar-nav-link">
+                    <i class="fas fa-chart-pie"></i>
+                    Rapports généraux
+                </a>
+                <a href="reports.html?type=missions" class="sidebar-nav-link">
+                    <i class="fas fa-briefcase"></i>
+                    Rapports missions
+                </a>
+                <a href="reports.html?type=opportunities" class="sidebar-nav-link">
+                    <i class="fas fa-lightbulb"></i>
+                    Rapports opportunités
+                </a>
+                <a href="reports.html?type=rh" class="sidebar-nav-link">
+                    <i class="fas fa-users"></i>
+                    Rapports RH
+                </a>
+            </div>
+
+            <!-- Section Gestion des Temps -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">
+                    <i class="fas fa-clock"></i>
+                    GESTION DES TEMPS
+                </div>
+                <a href="time-sheet-modern.html" class="sidebar-nav-link">
+                    <i class="fas fa-calendar-alt"></i>
+                    Saisie des temps
+                </a>
+                <a href="time-sheet-approvals.html" class="sidebar-nav-link">
+                    <i class="fas fa-check-circle"></i>
+                    Validation des temps
+                </a>
+            </div>
+
+            <!-- Section Gestion Mission -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">
+                    <i class="fas fa-briefcase"></i>
+                    GESTION MISSION
+                </div>
+                <a href="missions.html" class="sidebar-nav-link">
+                    <i class="fas fa-tasks"></i>
+                    Missions
+                </a>
+                <a href="mission-types.html" class="sidebar-nav-link">
+                    <i class="fas fa-tag"></i>
+                    Types de mission
+                </a>
+                <a href="task-templates.html" class="sidebar-nav-link">
+                    <i class="fas fa-clipboard-list"></i>
+                    Tâches
+                </a>
+                <a href="invoices.html" class="sidebar-nav-link">
+                    <i class="fas fa-file-invoice"></i>
+                    Factures et paiements
+                </a>
+            </div>
+
+            <!-- Section Market Pipeline -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">
+                    <i class="fas fa-funnel-dollar"></i>
+                    MARKET PIPELINE
+                </div>
                 <a href="clients.html" class="sidebar-nav-link">
                     <i class="fas fa-users"></i>
-                    Clients
-                </a>
-                <a href="collaborateurs.html" class="sidebar-nav-link">
-                    <i class="fas fa-user-tie"></i>
-                    Collaborateurs
-                </a>
-                <a href="missions.html" class="sidebar-nav-link">
-                    <i class="fas fa-briefcase"></i>
-                    Missions
+                    Clients et prospects
                 </a>
                 <a href="opportunities.html" class="sidebar-nav-link">
                     <i class="fas fa-lightbulb"></i>
                     Opportunités
-                    <span class="badge">5</span>
                 </a>
-                <a href="activites-internes.html" class="sidebar-nav-link">
-                    <i class="fas fa-list"></i>
-                    Activités Internes
-                </a>
-                <a href="time-sheet-modern.html" class="sidebar-nav-link">
-                    <i class="fas fa-clock"></i>
-                    Saisie de Temps
-                </a>
-                <a href="time-sheet.html" class="sidebar-nav-link">
-                    <i class="fas fa-calendar-week"></i>
-                    Feuille de Temps
-                </a>
-                <a href="invoices.html" class="sidebar-nav-link">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                    Factures
-                </a>
-                <a href="opportunity-stages.html" class="sidebar-nav-link">
-                    <i class="fas fa-layer-group"></i>
-                    Étapes Opportunités
+                <a href="opportunity-types.html" class="sidebar-nav-link">
+                    <i class="fas fa-tags"></i>
+                    Types d'opportunité
                 </a>
             </div>
 
-            <!-- Section Temps -->
+            <!-- Section Gestion RH -->
             <div class="sidebar-section">
-                <div class="sidebar-section-title">TEMPS</div>
-                <a href="time-entries.html" class="sidebar-nav-link">
-                    <i class="fas fa-clock"></i>
-                    Saisie de temps
-                </a>
-                <a href="feuilles-temps.html" class="sidebar-nav-link">
-                    <i class="fas fa-calendar-alt"></i>
-                    Feuilles de temps
-                </a>
-                <a href="time-sheet-modern.html" class="sidebar-nav-link">
-                    <i class="fas fa-calendar-week"></i>
-                    Saisie moderne
-                </a>
-                <a href="time-sheet-supervisors.html" class="sidebar-nav-link">
+                <div class="sidebar-section-title">
                     <i class="fas fa-users-cog"></i>
-                    Configuration superviseurs
+                    GESTION RH
+                </div>
+                <a href="collaborateurs.html" class="sidebar-nav-link">
+                    <i class="fas fa-user-tie"></i>
+                    Collaborateurs
                 </a>
-                <a href="time-sheet-approvals.html" class="sidebar-nav-link">
-                    <i class="fas fa-clipboard-check"></i>
-                    Validation feuilles
-                </a>
-                <a href="taux-horaires.html" class="sidebar-nav-link">
-                    <i class="fas fa-dollar-sign"></i>
-                    Taux horaires
-                </a>
-            </div>
-
-            <!-- Section Configuration -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">CONFIGURATION</div>
                 <a href="grades.html" class="sidebar-nav-link">
                     <i class="fas fa-star"></i>
                     Grades
@@ -197,72 +252,65 @@
                     <i class="fas fa-id-badge"></i>
                     Postes
                 </a>
-                <a href="divisions.html" class="sidebar-nav-link">
-                    <i class="fas fa-sitemap"></i>
-                    Divisions
-                </a>
-                <a href="business-units.html" class="sidebar-nav-link">
-                    <i class="fas fa-building"></i>
-                    Unités d'affaires
-                </a>
+            </div>
+
+            <!-- Section Configurations -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">
+                    <i class="fas fa-cogs"></i>
+                    CONFIGURATIONS
+                </div>
                 <a href="fiscal-years.html" class="sidebar-nav-link">
-                    <i class="fas fa-calendar-alt"></i>
+                    <i class="fas fa-calendar"></i>
                     Années fiscales
                 </a>
                 <a href="pays.html" class="sidebar-nav-link">
                     <i class="fas fa-globe"></i>
                     Pays
                 </a>
+            </div>
+
+            <!-- Section Business Unit -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">
+                    <i class="fas fa-building"></i>
+                    BUSINESS UNIT
+                </div>
+                <a href="business-units.html" class="sidebar-nav-link">
+                    <i class="fas fa-building"></i>
+                    Unités d'affaires
+                </a>
+                <a href="divisions.html" class="sidebar-nav-link">
+                    <i class="fas fa-sitemap"></i>
+                    Divisions
+                </a>
                 <a href="secteurs-activite.html" class="sidebar-nav-link">
                     <i class="fas fa-industry"></i>
                     Secteurs d'activité
                 </a>
-                <a href="opportunity-types.html" class="sidebar-nav-link">
-                    <i class="fas fa-tags"></i>
-                    Types d'Opportunités
-                </a>
-                <a href="mission-types.html" class="sidebar-nav-link">
-                    <i class="fas fa-tag"></i>
-                    Types de Mission
-                </a>
-                <a href="task-templates.html" class="sidebar-nav-link">
-                    <i class="fas fa-tasks"></i>
-                    Tâches
+                <a href="opportunity-type-configuration.html" class="sidebar-nav-link">
+                    <i class="fas fa-cog"></i>
+                    Configuration types d'opportunité
                 </a>
             </div>
 
-            <!-- Section Rapports -->
+            <!-- Section Paramètres Administration -->
             <div class="sidebar-section">
-                <div class="sidebar-section-title">RAPPORTS</div>
-                <a href="reports.html" class="sidebar-nav-link">
-                    <i class="fas fa-file-alt"></i>
-                    Rapports
-                </a>
-                <a href="validation.html" class="sidebar-nav-link">
-                    <i class="fas fa-check-circle"></i>
-                    Validation
-                    <span class="badge">2</span>
-                </a>
-            </div>
-
-            <!-- Section Administration -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">ADMINISTRATION</div>
-                <a href="users.html" class="sidebar-nav-link">
+                <div class="sidebar-section-title">
                     <i class="fas fa-user-cog"></i>
+                    PARAMÈTRES ADMINISTRATION
+                </div>
+                <a href="notification-settings.html" class="sidebar-nav-link">
+                    <i class="fas fa-bell"></i>
+                    Configuration notifications
+                </a>
+                <a href="users.html" class="sidebar-nav-link">
+                    <i class="fas fa-users"></i>
                     Utilisateurs
                 </a>
-                <a href="settings.html" class="sidebar-nav-link">
-                    <i class="fas fa-cog"></i>
-                    Paramètres
-                </a>
-                <a href="notification-settings.html" class="sidebar-nav-link">
-                    <i class="fas fa-bell-gear"></i>
-                    Configuration Notifications
-                </a>
-                <a href="opportunity-type-configuration.html" class="sidebar-nav-link">
-                    <i class="fas fa-cogs"></i>
-                    Configuration Types d'Opportunités
+                <a href="profile.html" class="sidebar-nav-link">
+                    <i class="fas fa-user"></i>
+                    Profil utilisateur
                 </a>
             </div>
         </nav>
@@ -274,101 +322,7 @@
                 <span>Admin User</span>
                 <small style="display: block; opacity: 0.7; margin-top: 2px;">Administrateur</small>
             </div>
-        </div>
-    </div>
-
-    <!-- Contenu principal -->
-    <div class="main-content">
-        <!-- Header de la page -->
-        <div class="page-header">
-            <h1><i class="fas fa-tachometer-alt me-3"></i>Tableau de Bord</h1>
-            <p>Vue d'ensemble de votre activité</p>
-        </div>
-
-        <!-- Contenu de la page -->
-        <div class="row">
-            <div class="col-md-3 mb-4">
-                <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-users fa-2x mb-3"></i>
-                        <div class="stat-number">156</div>
-                        <div class="stat-label">Clients Actifs</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-4">
-                <div class="card stat-card success">
-                    <div class="card-body text-center">
-                        <i class="fas fa-clock fa-2x mb-3"></i>
-                        <div class="stat-number">1,247</div>
-                        <div class="stat-label">Heures Saisies</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-4">
-                <div class="card stat-card warning">
-                    <div class="card-body text-center">
-                        <i class="fas fa-briefcase fa-2x mb-3"></i>
-                        <div class="stat-number">89</div>
-                        <div class="stat-label">Missions en Cours</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-4">
-                <div class="card stat-card info">
-                    <div class="card-body text-center">
-                        <i class="fas fa-dollar-sign fa-2x mb-3"></i>
-                        <div class="stat-number">€45,230</div>
-                        <div class="stat-label">Chiffre d'Affaires</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-8 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-chart-line me-2"></i>
-                            Activité Récente
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted">Graphique d'activité des dernières semaines...</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-bell me-2"></i>
-                            Notifications
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Nouvelle mission assignée
-                        </div>
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Validation de temps en attente
-                        </div>
-                        <div class="alert alert-success">
-                            <i class="fas fa-check-circle me-2"></i>
-                            Rapport mensuel généré
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        </div></div>
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
