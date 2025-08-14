@@ -25,6 +25,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Gérer le toggle sur mobile
                     setupSidebarToggle();
+                    
+                    // Gérer l'expansion/réduction des sections
+                    setupSectionToggle();
+                    
+                    // Ajouter les indicateurs visuels pour l'expansion
+                    addExpandIndicators();
                 } else {
                     console.error("Le contenu de la sidebar (.sidebar-container) n'a pas été trouvé dans le template.");
                     sidebarContainer.innerHTML = '<p class="text-danger p-3">Erreur: Impossible de charger le menu.</p>';
@@ -41,28 +47,34 @@ document.addEventListener('DOMContentLoaded', function() {
     function setActiveLink() {
         // Récupérer le chemin de la page actuelle (ex: "/dashboard.html")
         const currentPage = window.location.pathname;
+        const currentSearch = window.location.search;
         
         // Trouver tous les liens dans la sidebar
         const navLinks = document.querySelectorAll('.sidebar-container .sidebar-nav-link');
 
         navLinks.forEach(link => {
-            const linkPath = new URL(link.href).pathname;
+            const linkUrl = new URL(link.href);
+            const linkPath = linkUrl.pathname;
+            const linkSearch = linkUrl.search;
 
             // Si le chemin du lien correspond à la page actuelle
             if (linkPath === currentPage) {
-                link.classList.add('active');
-
-                // Optionnel : ouvrir la section parente si c'est un accordéon
-                const parentSection = link.closest('.sidebar-section');
-                if (parentSection) {
-                    // Logique pour déplier une section si nécessaire (non implémenté dans ce template)
+                // Vérifier aussi les paramètres de recherche si présents
+                if (linkSearch === currentSearch || (!linkSearch && !currentSearch)) {
+                    link.classList.add('active');
+                    
+                    // Ouvrir la section parente
+                    const parentSection = link.closest('.sidebar-section');
+                    if (parentSection) {
+                        parentSection.classList.add('expanded');
+                    }
                 }
             }
         });
     }
 
     function setupSidebarToggle() {
-        const sidebarToggle = document.getElementById('sidebarToggle'); // Assurez-vous que ce bouton existe dans votre HTML principal
+        const sidebarToggle = document.querySelector('.sidebar-toggle'); // Utiliser la classe au lieu de l'ID
         const sidebar = document.querySelector('.sidebar-container');
 
         if (sidebarToggle && sidebar) {
@@ -71,4 +83,143 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
+
+    function setupSectionToggle() {
+        // Ajouter des écouteurs d'événements pour les titres de section
+        const sectionTitles = document.querySelectorAll('.sidebar-section-title');
+        
+        sectionTitles.forEach(title => {
+            title.addEventListener('click', function() {
+                const section = this.closest('.sidebar-section');
+                const isExpanded = section.classList.contains('expanded');
+                
+                // Fermer toutes les autres sections
+                document.querySelectorAll('.sidebar-section').forEach(s => {
+                    s.classList.remove('expanded');
+                });
+                
+                // Basculer l'état de la section actuelle
+                if (!isExpanded) {
+                    section.classList.add('expanded');
+                }
+            });
+            
+            // Ajouter le curseur pointer pour indiquer que c'est cliquable
+            title.style.cursor = 'pointer';
+        });
+    }
+
+    function addExpandIndicators() {
+        // Ajouter des indicateurs visuels pour l'expansion
+        const sectionTitles = document.querySelectorAll('.sidebar-section-title');
+        
+        sectionTitles.forEach(title => {
+            // Ajouter une icône de flèche après le titre
+            const arrow = document.createElement('i');
+            arrow.className = 'fas fa-chevron-down expand-arrow';
+            arrow.style.marginLeft = 'auto';
+            arrow.style.transition = 'transform 0.3s ease';
+            
+            title.appendChild(arrow);
+            
+            // Mettre à jour l'icône quand la section est étendue
+            const section = title.closest('.sidebar-section');
+            if (section.classList.contains('expanded')) {
+                arrow.style.transform = 'rotate(180deg)';
+            }
+            
+            // Écouter les changements de classe pour mettre à jour l'icône
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        if (section.classList.contains('expanded')) {
+                            arrow.style.transform = 'rotate(180deg)';
+                        } else {
+                            arrow.style.transform = 'rotate(0deg)';
+                        }
+                    }
+                });
+            });
+            
+            observer.observe(section, { attributes: true });
+        });
+    }
+
+    // Fonction pour mettre à jour les informations utilisateur
+    window.updateUserInfo = function(name, role) {
+        const userInfo = document.querySelector('.sidebar-user-info');
+        if (userInfo) {
+            const nameSpan = userInfo.querySelector('span');
+            const roleSmall = userInfo.querySelector('small');
+            
+            if (nameSpan) nameSpan.textContent = name;
+            if (roleSmall) roleSmall.textContent = role;
+        }
+    };
+
+    // Fonction pour ajouter un badge de notification
+    window.addNotificationBadge = function(selector, count) {
+        const link = document.querySelector(selector);
+        if (link) {
+            // Supprimer l'ancien badge s'il existe
+            const existingBadge = link.querySelector('.notification-badge');
+            if (existingBadge) {
+                existingBadge.remove();
+            }
+            
+            // Ajouter le nouveau badge
+            const badge = document.createElement('span');
+            badge.className = 'notification-badge';
+            badge.textContent = count;
+            badge.style.cssText = `
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                background: #dc3545;
+                color: white;
+                border-radius: 50%;
+                width: 18px;
+                height: 18px;
+                font-size: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+            `;
+            
+            link.style.position = 'relative';
+            link.appendChild(badge);
+        }
+    };
+
+    // Fonction pour ajouter un indicateur de statut
+    window.addStatusIndicator = function(selector, status) {
+        const link = document.querySelector(selector);
+        if (link) {
+            // Supprimer l'ancien indicateur s'il existe
+            const existingIndicator = link.querySelector('.status-indicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+            
+            // Ajouter le nouvel indicateur
+            const indicator = document.createElement('span');
+            indicator.className = 'status-indicator';
+            indicator.style.cssText = `
+                position: absolute;
+                top: 50%;
+                right: 10px;
+                transform: translateY(-50%);
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: ${status === 'success' ? '#28a745' : 
+                           status === 'warning' ? '#ffc107' : 
+                           status === 'error' ? '#dc3545' : '#6c757d'};
+            `;
+            
+            link.style.position = 'relative';
+            link.appendChild(indicator);
+        }
+    };
 });

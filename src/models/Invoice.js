@@ -32,6 +32,13 @@ class Invoice {
         this.client_code = data.client_code;
         this.created_by_nom = data.created_by_nom;
         this.created_by_prenom = data.created_by_prenom;
+        // Contexte organisationnel de la mission liée
+        this.business_unit_id = data.business_unit_id;
+        this.business_unit_nom = data.business_unit_nom;
+        this.business_unit_code = data.business_unit_code;
+        this.division_id = data.division_id;
+        this.division_nom = data.division_nom;
+        this.division_code = data.division_code;
     }
 
     // Créer une nouvelle facture
@@ -40,16 +47,44 @@ class Invoice {
         try {
             await client.query('BEGIN');
 
+            // Générer un numéro unique au format FACT-<BUCODE>-YYYYMM-XXXX (séquence par BU et mois)
+            const now = new Date(invoiceData.date_emission || new Date());
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+
+            // Récupérer le code BU depuis la mission liée
+            const buQuery = `
+                SELECT bu.code AS bu_code
+                FROM missions m
+                LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+                WHERE m.id = $1
+            `;
+            const buRes = await client.query(buQuery, [invoiceData.mission_id]);
+            const buCode = (buRes.rows[0]?.bu_code || 'GEN').toUpperCase();
+
+            const prefix = `FACT-${buCode}-${year}${month}-`;
+
+            // Séquence par BU et mois
+            const seqQuery = `
+                SELECT COALESCE(MAX(CAST(RIGHT(numero_facture, 4) AS INTEGER)), 0) AS last_seq
+                FROM invoices
+                WHERE numero_facture LIKE $1
+            `;
+            const seqResult = await client.query(seqQuery, [prefix + '%']);
+            const nextSeq = (seqResult.rows[0]?.last_seq || 0) + 1;
+            const numeroFacture = prefix + String(nextSeq).padStart(4, '0');
+
             const query = `
                 INSERT INTO invoices (
-                    mission_id, client_id, date_emission, date_echeance, statut,
+                    numero_facture, mission_id, client_id, date_emission, date_echeance, statut,
                     conditions_paiement, taux_tva, adresse_facturation, notes_facture,
                     created_by
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                 RETURNING *
             `;
 
             const values = [
+                numeroFacture,
                 invoiceData.mission_id,
                 invoiceData.client_id,
                 invoiceData.date_emission || new Date(),
@@ -82,10 +117,18 @@ class Invoice {
                 c.nom as client_nom,
                 c.code as client_code,
                 u1.nom as created_by_nom,
-                u1.prenom as created_by_prenom
+                u1.prenom as created_by_prenom,
+                m.business_unit_id,
+                bu.nom as business_unit_nom,
+                bu.code as business_unit_code,
+                m.division_id,
+                d.nom as division_nom,
+                d.code as division_code
             FROM invoices i
             LEFT JOIN missions m ON i.mission_id = m.id
             LEFT JOIN clients c ON i.client_id = c.id
+            LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+            LEFT JOIN divisions d ON m.division_id = d.id
             LEFT JOIN users u1 ON i.created_by = u1.id
             WHERE i.id = $1
         `;
@@ -102,6 +145,8 @@ class Invoice {
             statut,
             client_id,
             mission_id,
+            business_unit_id,
+            division_id,
             date_debut,
             date_fin,
             search
@@ -127,6 +172,18 @@ class Invoice {
         if (mission_id) {
             conditions.push(`i.mission_id = $${valueIndex}`);
             values.push(mission_id);
+            valueIndex++;
+        }
+
+        if (business_unit_id) {
+            conditions.push(`m.business_unit_id = $${valueIndex}`);
+            values.push(business_unit_id);
+            valueIndex++;
+        }
+
+        if (division_id) {
+            conditions.push(`m.division_id = $${valueIndex}`);
+            values.push(division_id);
             valueIndex++;
         }
 
@@ -175,10 +232,18 @@ class Invoice {
                 c.nom as client_nom,
                 c.code as client_code,
                 u1.nom as created_by_nom,
-                u1.prenom as created_by_prenom
+                u1.prenom as created_by_prenom,
+                m.business_unit_id,
+                bu.nom as business_unit_nom,
+                bu.code as business_unit_code,
+                m.division_id,
+                d.nom as division_nom,
+                d.code as division_code
             FROM invoices i
             LEFT JOIN missions m ON i.mission_id = m.id
             LEFT JOIN clients c ON i.client_id = c.id
+            LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+            LEFT JOIN divisions d ON m.division_id = d.id
             LEFT JOIN users u1 ON i.created_by = u1.id
             ${whereClause}
             ORDER BY i.created_at DESC
@@ -414,51 +479,90 @@ class Invoice {
             // Supprimer les lignes existantes
             await client.query('DELETE FROM invoice_items WHERE invoice_id = $1', [this.id]);
 
-            // Parser les conditions de paiement
+            // Parser les conditions de paiement avec fallback
             let paymentConditions = [];
-            try {
-                // Essayer de parser comme un tableau JSON
-                paymentConditions = JSON.parse(mission.conditions_paiement);
-                
-                // Si c'est un objet avec des clés numériques, le convertir en tableau
-                if (typeof paymentConditions === 'object' && !Array.isArray(paymentConditions)) {
-                    paymentConditions = Object.values(paymentConditions).map(condition => {
-                        if (typeof condition === 'string') {
-                            return JSON.parse(condition);
-                        }
-                        return condition;
-                    });
+            let useFallbackFromTotals = false;
+            if (mission.conditions_paiement) {
+                try {
+                    // Essayer de parser comme un tableau JSON
+                    paymentConditions = JSON.parse(mission.conditions_paiement);
+
+                    // Si c'est un objet avec des clés numériques, le convertir en tableau
+                    if (typeof paymentConditions === 'object' && !Array.isArray(paymentConditions)) {
+                        paymentConditions = Object.values(paymentConditions).map(condition => {
+                            if (typeof condition === 'string') {
+                                return JSON.parse(condition);
+                            }
+                            return condition;
+                        });
+                    }
+                    // Si après parsing ce n'est toujours pas un tableau, fallback
+                    if (!Array.isArray(paymentConditions)) {
+                        useFallbackFromTotals = true;
+                    }
+                } catch (parseError) {
+                    console.warn('Erreur parsing conditions_paiement, fallback montants totaux:', parseError);
+                    useFallbackFromTotals = true;
                 }
-            } catch (parseError) {
-                console.error('Erreur lors du parsing des conditions de paiement:', parseError);
-                throw new Error('Format des conditions de paiement invalide');
+            } else {
+                useFallbackFromTotals = true;
             }
 
-            // Générer les lignes de facture basées sur les conditions de paiement
-            for (const condition of paymentConditions) {
+            if (useFallbackFromTotals) {
+                // Générer 1 à 2 lignes à partir des montants totaux honoraires/débours
+                const deviseTaux = this.taux_tva;
+                const hon = parseFloat(mission.montant_honoraires || 0);
+                const deb = parseFloat(mission.montant_debours || 0);
+                if (hon > 0) {
+                    const montantHT = hon;
+                    await client.query(
+                        `INSERT INTO invoice_items (invoice_id, description, quantite, unite, prix_unitaire, taux_tva)
+                         VALUES ($1, $2, $3, $4, $5, $6)`,
+                        [
+                            this.id,
+                            `Honoraires - ${mission.mission_nom || ''}`.trim(),
+                            1,
+                            'forfait',
+                            montantHT,
+                            deviseTaux
+                        ]
+                    );
+                }
+                if (deb > 0) {
+                    const montantHT = deb;
+                    await client.query(
+                        `INSERT INTO invoice_items (invoice_id, description, quantite, unite, prix_unitaire, taux_tva)
+                         VALUES ($1, $2, $3, $4, $5, $6)`,
+                        [
+                            this.id,
+                            `Débours - ${mission.mission_nom || ''}`.trim(),
+                            1,
+                            'forfait',
+                            montantHT,
+                            deviseTaux
+                        ]
+                    );
+                }
+            } else {
+                // Générer les lignes de facture basées sur les conditions de paiement
+                for (const condition of paymentConditions) {
                 // Ligne pour les honoraires
                 if (condition.montant_honoraires && condition.montant_honoraires > 0) {
                     const honorairesItemQuery = `
                         INSERT INTO invoice_items (
-                            invoice_id, description, quantite, unite, prix_unitaire,
-                            taux_tva, montant_ht, montant_tva, montant_ttc
-                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                            invoice_id, description, quantite, unite, prix_unitaire, taux_tva
+                        ) VALUES ($1, $2, $3, $4, $5, $6)
                     `;
 
                     const montantHT = parseFloat(condition.montant_honoraires);
                     const montantTVA = montantHT * (this.taux_tva / 100);
-                    const montantTTC = montantHT + montantTVA;
-
                     const honorairesValues = [
                         this.id,
                         `Honoraires - ${condition.details || 'Tranche ' + (condition.numero || '')}`,
                         1,
                         'forfait',
                         montantHT,
-                        this.taux_tva,
-                        montantHT,
-                        montantTVA,
-                        montantTTC
+                        this.taux_tva
                     ];
 
                     await client.query(honorairesItemQuery, honorairesValues);
@@ -468,28 +572,23 @@ class Invoice {
                 if (condition.montant_debours && condition.montant_debours > 0) {
                     const deboursItemQuery = `
                         INSERT INTO invoice_items (
-                            invoice_id, description, quantite, unite, prix_unitaire,
-                            taux_tva, montant_ht, montant_tva, montant_ttc
-                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                            invoice_id, description, quantite, unite, prix_unitaire, taux_tva
+                        ) VALUES ($1, $2, $3, $4, $5, $6)
                     `;
 
                     const montantHT = parseFloat(condition.montant_debours);
                     const montantTVA = montantHT * (this.taux_tva / 100);
-                    const montantTTC = montantHT + montantTVA;
-
                     const deboursValues = [
                         this.id,
                         `Débours - ${condition.details || 'Tranche ' + (condition.numero || '')}`,
                         1,
                         'forfait',
                         montantHT,
-                        this.taux_tva,
-                        montantHT,
-                        montantTVA,
-                        montantTTC
+                        this.taux_tva
                     ];
 
                     await client.query(deboursItemQuery, deboursValues);
+                }
                 }
             }
 

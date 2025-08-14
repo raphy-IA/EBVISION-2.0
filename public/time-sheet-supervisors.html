@@ -142,22 +142,13 @@
             font-size: 2em;
             font-weight: bold;
         }
-        
-        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
-        .sidebar-container {
-            width: 300px; /* Largeur fixe pour la sidebar */
-            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
-        }
 
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
                 flex-direction: column; /* Empile la sidebar et le contenu */
             }
-            .sidebar-container {
-                width: 100%; /* La sidebar prend toute la largeur */
-                height: auto; /* Hauteur automatique */
-            }
+            
             .main-content-area {
                 padding: 1rem;
             }
@@ -165,8 +156,16 @@
     </style>
     
     <script src="js/global-auth.js"></script>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    <script src="js/user-header-utils.js"></script>
+    <script src="js/user-header-main.js"></script>
+    <script src="js/user-header-init.js"></script>
 </head>
 <body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
     <div class="page-wrapper">
         <!-- Sidebar Container -->
         <div class="sidebar-container">
@@ -283,5 +282,5 @@
     <!-- SessionManager pour la gestion centralisée des sessions -->
     <script src="js/session-manager.js"></script>
     <script src="js/time-sheet-supervisors.js"></script>
-</body>
+    </body>
 </html> 

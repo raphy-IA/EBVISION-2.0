@@ -351,6 +351,17 @@ class Collaborateur {
         return true;
     }
 
+    // Récupérer les collaborateurs dont le grade actuel correspond à gradeId
+    static async findByGrade(gradeId) {
+        const query = `
+            SELECT id, nom, prenom, statut, grade_actuel_id
+            FROM collaborateurs
+            WHERE grade_actuel_id = $1
+        `;
+        const result = await pool.query(query, [gradeId]);
+        return result.rows.map(row => new Collaborateur(row));
+    }
+
     static async getStatistics(options = {}) {
         const query = `
             SELECT 

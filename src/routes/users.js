@@ -284,4 +284,156 @@ router.get('/stats/overview', authenticateToken, requirePermission('users:read')
     }
 });
 
+// API POUR LE DASHBOARD PERSONNEL
+
+// GET /api/users/objectives/:userId - Objectifs de l'utilisateur
+router.get('/objectives/:userId', authenticateToken, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Vérifier que l'utilisateur demande ses propres objectifs
+        if (userId !== req.user.id) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Accès non autorisé' 
+            });
+        }
+
+        // Pour l'instant, retourner des objectifs simulés
+        // TODO: Implémenter une vraie table d'objectifs
+        const data = {
+            heures: {
+                actuel: 120,
+                cible: 160,
+                progression: 75
+            },
+            facturation: {
+                actuel: 85,
+                cible: 90,
+                progression: 94
+            },
+            qualite: {
+                actuel: 92,
+                cible: 95,
+                progression: 97
+            },
+            missions: {
+                actuel: 3,
+                cible: 5,
+                progression: 60
+            }
+        };
+        
+        res.json({
+            success: true,
+            data: data
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de la récupération des objectifs:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur lors de la récupération des objectifs',
+            error: error.message 
+        });
+    }
+});
+
+// GET /api/users/alerts/:userId - Alertes de l'utilisateur
+router.get('/alerts/:userId', authenticateToken, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Vérifier que l'utilisateur demande ses propres alertes
+        if (userId !== req.user.id) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Accès non autorisé' 
+            });
+        }
+
+        const pool = require('../utils/database');
+        
+        // Récupérer les alertes personnelles
+        const alertsQuery = `
+            SELECT 
+                'OBJECTIF' as type,
+                'Objectif heures non atteint' as titre,
+                'Vous êtes à 75% de votre objectif mensuel' as message,
+                'WARNING' as severity,
+                NOW() as created_at
+            WHERE EXISTS (
+                SELECT 1 FROM time_entries te 
+                WHERE te.user_id = $1 
+                AND te.date_saisie >= DATE_TRUNC('month', CURRENT_DATE)
+                AND te.date_saisie < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+                HAVING COALESCE(SUM(te.heures), 0) < 160
+            )
+            UNION ALL
+            SELECT 
+                'MISSION' as type,
+                'Mission en retard' as titre,
+                'La mission "Développement Frontend" est en retard' as message,
+                'URGENT' as severity,
+                NOW() as created_at
+            WHERE EXISTS (
+                SELECT 1 FROM missions m 
+                WHERE m.date_fin < CURRENT_DATE 
+                AND m.statut = 'EN_COURS'
+            )
+            UNION ALL
+            SELECT 
+                'PERFORMANCE' as type,
+                'Performance excellente' as titre,
+                'Vous avez dépassé votre objectif de facturation' as message,
+                'SUCCESS' as severity,
+                NOW() as created_at
+            WHERE EXISTS (
+                SELECT 1 FROM time_entries te 
+                WHERE te.user_id = $1 
+                AND te.date_saisie >= DATE_TRUNC('month', CURRENT_DATE)
+                AND te.date_saisie < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+                HAVING COALESCE(SUM(te.heures), 0) > 160
+            )
+            LIMIT 5
+        `;
+        
+        const alertsResult = await pool.query(alertsQuery, [userId]);
+        
+        // Si pas d'alertes réelles, retourner des alertes simulées
+        let alerts = alertsResult.rows;
+        if (alerts.length === 0) {
+            alerts = [
+                {
+                    type: 'OBJECTIF',
+                    titre: 'Objectif heures non atteint',
+                    message: 'Vous êtes à 75% de votre objectif mensuel',
+                    severity: 'WARNING',
+                    created_at: new Date().toISOString()
+                },
+                {
+                    type: 'PERFORMANCE',
+                    titre: 'Performance excellente',
+                    message: 'Vous avez dépassé votre objectif de facturation',
+                    severity: 'SUCCESS',
+                    created_at: new Date().toISOString()
+                }
+            ];
+        }
+        
+        res.json({
+            success: true,
+            data: alerts
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de la récupération des alertes:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur lors de la récupération des alertes',
+            error: error.message 
+        });
+    }
+});
+
 module.exports = router; 

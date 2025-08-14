@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Poste = require('../models/Poste');
+const { pool } = require('../utils/database');
 
 // GET /api/postes - Liste des postes
 router.get('/', async (req, res) => {
@@ -176,7 +177,22 @@ router.delete('/:id', async (req, res) => {
                 success: false,
                 error: 'Poste utilisé',
                 message: 'Impossible de supprimer ce poste car il est utilisé par des collaborateurs',
-                details: 'Vous devez d\'abord réassigner les collaborateurs à un autre poste'
+                details: 'Vous devez d\'abord réassigner les collaborateurs à un autre poste',
+                data: { nb_collaborateurs: parseInt(checkResult.rows[0].count) }
+            });
+        }
+
+        // Bloquer si le poste a déjà été utilisé historiquement (évolutions de poste)
+        const evoCheck = await pool.query(
+            `SELECT 1 FROM evolution_postes WHERE poste_id = $1 LIMIT 1`,
+            [req.params.id]
+        );
+        if (evoCheck.rows.length > 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Poste déjà utilisé dans l\'historique',
+                message: 'Impossible de supprimer ce poste car il a déjà été utilisé dans l\'historique (évolutions)',
+                data: { historique: true }
             });
         }
         

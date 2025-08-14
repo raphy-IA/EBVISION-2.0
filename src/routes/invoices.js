@@ -1,21 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Invoice = require('../models/Invoice');
-// Middleware temporaire pour le développement (sans authentification)
-const tempAuthMiddleware = (req, res, next) => {
-    // Pour le développement, on accepte toutes les requêtes
-    req.user = {
-        id: 'temp-user-id',
-        email: 'dev@example.com',
-        nom: 'Dev',
-        prenom: 'User',
-        role: 'ADMIN'
-    };
-    next();
-};
-
-// Middleware d'authentification pour toutes les routes
-router.use(tempAuthMiddleware);
+const { authenticateToken } = require('../middleware/auth');
+// Appliquer l'authentification réelle
+router.use(authenticateToken);
 
 // GET /api/invoices - Liste des factures avec filtres et pagination
 router.get('/', async (req, res) => {
@@ -43,7 +31,21 @@ router.get('/', async (req, res) => {
         };
 
         const result = await Invoice.findAll(options);
-        
+        // Debug léger: vérifier que BU/Division sont bien présents dans les objets renvoyés
+        try {
+            if (Array.isArray(result.invoices) && result.invoices.length > 0) {
+                const sample = result.invoices.slice(0, 3).map(i => ({
+                    id: i.id,
+                    numero: i.numero_facture,
+                    bu: i.business_unit_nom,
+                    bu_id: i.business_unit_id,
+                    division: i.division_nom,
+                    division_id: i.division_id
+                }));
+                console.log('🧾 Aperçu factures BU/Division:', sample);
+            }
+        } catch (_) {}
+
         res.json({
             success: true,
             data: result.invoices,
@@ -109,6 +111,17 @@ router.get('/:id', async (req, res) => {
         
         // Récupérer les paiements
         const payments = await invoice.getPayments();
+
+        try {
+            console.log('🧾 Détail facture BU/Division:', {
+                id: invoice.id,
+                numero: invoice.numero_facture,
+                bu_id: invoice.business_unit_id,
+                bu: invoice.business_unit_nom,
+                division_id: invoice.division_id,
+                division: invoice.division_nom
+            });
+        } catch (_) {}
 
         res.json({
             success: true,

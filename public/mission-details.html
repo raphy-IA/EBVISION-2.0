@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRS Dashboard - Détails Mission</title>
+    <title>EBVISION 2.0 - Détails Mission</title>
     
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-sidebar.css">
+    <link rel="stylesheet" href="css/user-header.css">
     <script src="/js/currency-config.js" defer></script>
     
     <!-- Script d'authentification -->
@@ -17,7 +18,6 @@
     <script src="js/session-manager.js"></script>
     
     <!-- Scripts de zone utilisateur -->
-    <script src="js/user-header.js"></script>
     <script src="js/user-modals.js"></script>
     
     <style>
@@ -46,22 +46,13 @@
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
-        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
-        .sidebar-container {
-            width: 300px; /* Largeur fixe pour la sidebar */
-            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
-        }
 
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
                 flex-direction: column; /* Empile la sidebar et le contenu */
             }
-            .sidebar-container {
-                width: 100%; /* La sidebar prend toute la largeur */
-                height: auto; /* Hauteur automatique */
-            }
+            
             .main-content-area {
                 padding: 1rem;
             }
@@ -118,8 +109,16 @@
             text-decoration: none;
         }
     </style>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    <script src="js/user-header-utils.js"></script>
+    <script src="js/user-header-main.js"></script>
+    <script src="js/user-header-init.js"></script>
 </head>
 <body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
     <div class="page-wrapper">
         <!-- Sidebar Container -->
         <div class="sidebar-container">
@@ -1063,5 +1062,5 @@
             window.open(planningUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
         }
     </script>
-</body>
+    </body>
 </html> 

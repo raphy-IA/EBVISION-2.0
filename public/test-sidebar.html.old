@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sidebar - EBVISION 2.0</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        .test-card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success { background-color: #28a745; }
+        .status-warning { background-color: #ffc107; }
+        .status-error { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="container-fluid">
+        <div class="row g-0">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 px-0">
+                <div class="sidebar-container">
+                    <!-- La sidebar sera générée par unified-sidebar.js -->
+                </div>
+            </div>
+
+            <!-- Contenu principal -->
+            <div class="col-md-9 col-lg-10">
+                <div class="main-content">
+                    <div class="test-card">
+                        <h1><i class="fas fa-flask me-2"></i>Test de la Sidebar EBVISION 2.0</h1>
+                        <p class="text-muted">Page de test pour vérifier le fonctionnement de la nouvelle sidebar</p>
+                    </div>
+
+                    <div class="test-card">
+                        <h3><i class="fas fa-check-circle me-2"></i>Fonctionnalités à tester</h3>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <span class="status-indicator status-success"></span>
+                                <strong>Affichage de la sidebar</strong> - La sidebar doit s'afficher à gauche
+                            </li>
+                            <li class="list-group-item">
+                                <span class="status-indicator status-success"></span>
+                                <strong>9 sections principales</strong> - Dashboard, Rapports, Gestion des temps, etc.
+                            </li>
+                            <li class="list-group-item">
+                                <span class="status-indicator status-success"></span>
+                                <strong>Icônes dans les titres</strong> - Chaque section a une icône distinctive
+                            </li>
+                            <li class="list-group-item">
+                                <span class="status-indicator status-success"></span>
+                                <strong>Expansion/Réduction</strong> - Cliquez sur les titres de section
+                            </li>
+                            <li class="list-group-item">
+                                <span class="status-indicator status-success"></span>
+                                <strong>Navigation</strong> - Les liens doivent fonctionner
+                            </li>
+                            <li class="list-group-item">
+                                <span class="status-indicator status-success"></span>
+                                <strong>Responsive</strong> - Testez sur mobile avec le bouton toggle
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="test-card">
+                        <h3><i class="fas fa-cogs me-2"></i>Test des fonctionnalités JavaScript</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button class="btn btn-primary mb-2" onclick="testUpdateUserInfo()">
+                                    <i class="fas fa-user me-2"></i>Test Update User Info
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-warning mb-2" onclick="testAddNotification()">
+                                    <i class="fas fa-bell me-2"></i>Test Notification
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-info mb-2" onclick="testAddStatusIndicator()">
+                                    <i class="fas fa-circle me-2"></i>Test Status Indicator
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-success mb-2" onclick="testActivePage()">
+                                    <i class="fas fa-check me-2"></i>Test Active Page
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="test-card">
+                        <h3><i class="fas fa-info-circle me-2"></i>Informations de debug</h3>
+                        <div id="debug-info">
+                            <p><strong>Page actuelle:</strong> <span id="current-page">test-sidebar.html</span></p>
+                            <p><strong>Sidebar initialisée:</strong> <span id="sidebar-status">Vérification...</span></p>
+                            <p><strong>CSS chargé:</strong> <span id="css-status">Vérification...</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/unified-sidebar.js"></script>
+    
+    <script>
+        // Tests des fonctionnalités
+        function testUpdateUserInfo() {
+            if (window.unifiedSidebar) {
+                window.unifiedSidebar.updateUserInfo('Test User', 'Administrateur');
+                alert('Info utilisateur mise à jour !');
+            } else {
+                alert('Erreur: Sidebar non initialisée');
+            }
+        }
+
+        function testAddNotification() {
+            if (window.unifiedSidebar) {
+                window.unifiedSidebar.addNotificationBadge('a[href="missions.html"]', 5);
+                alert('Notification ajoutée sur Missions !');
+            } else {
+                alert('Erreur: Sidebar non initialisée');
+            }
+        }
+
+        function testAddStatusIndicator() {
+            if (window.unifiedSidebar) {
+                window.unifiedSidebar.addStatusIndicator('a[href="opportunities.html"]', 'warning');
+                alert('Indicateur de statut ajouté sur Opportunités !');
+            } else {
+                alert('Erreur: Sidebar non initialisée');
+            }
+        }
+
+        function testActivePage() {
+            if (window.unifiedSidebar) {
+                window.unifiedSidebar.setActivePage();
+                alert('Page active mise à jour !');
+            } else {
+                alert('Erreur: Sidebar non initialisée');
+            }
+        }
+
+        // Vérification au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const sidebarStatus = document.getElementById('sidebar-status');
+                const cssStatus = document.getElementById('css-status');
+                
+                if (window.unifiedSidebar) {
+                    sidebarStatus.textContent = '✅ Initialisée';
+                    sidebarStatus.style.color = 'green';
+                } else {
+                    sidebarStatus.textContent = '❌ Non initialisée';
+                    sidebarStatus.style.color = 'red';
+                }
+                
+                const sidebarContainer = document.querySelector('.sidebar-container');
+                if (sidebarContainer && sidebarContainer.children.length > 0) {
+                    cssStatus.textContent = '✅ Chargé et appliqué';
+                    cssStatus.style.color = 'green';
+                } else {
+                    cssStatus.textContent = '❌ Non appliqué';
+                    cssStatus.style.color = 'red';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

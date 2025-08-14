@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Business Units - TRS Dashboard</title>
+    <title>Gestion des Business Units - EBVISION 2.0</title>
     
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,6 +11,7 @@
     
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
+    <link rel="stylesheet" href="css/user-header.css">
     
     <style>
         :root {
@@ -98,21 +99,12 @@
             height: 300px;
         }
 
-        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
-        .sidebar-container {
-            width: 300px; /* Largeur fixe pour la sidebar */
-            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
-        }
-
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
                 flex-direction: column; /* Empile la sidebar et le contenu */
             }
-            .sidebar-container {
-                width: 100%; /* La sidebar prend toute la largeur */
-                height: auto; /* Hauteur automatique */
-            }
+            
             .main-content-area {
                 padding: 1rem;
             }
@@ -134,12 +126,7 @@
             .main-content-wrapper {
                 margin-left: 0;
             }
-            
-            .sidebar-container {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-            
+
             .sidebar-container.open {
                 transform: translateX(0);
             }
@@ -149,8 +136,16 @@
             }
         }
     </style>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    <script src="js/user-header-utils.js"></script>
+    <script src="js/user-header-main.js"></script>
+    <script src="js/user-header-init.js"></script>
 </head>
 <body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
     <div class="page-wrapper">
         <!-- Sidebar Container -->
         <div class="sidebar-container">
@@ -620,11 +615,8 @@
                 const url = id ? `${API_BASE_URL}/business-units/${id}` : `${API_BASE_URL}/business-units`;
                 const method = id ? 'PUT' : 'POST';
 
-                const response = await fetch(url, {
+                const response = await authenticatedFetch(url, {
                     method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify(formData)
                 });
                 const data = await response.json();
@@ -711,12 +703,33 @@
                     showAlert('Erreur lors du chargement des divisions', 'danger');
                 }
                 
-                // Afficher le modal
-                new bootstrap.Modal(document.getElementById('divisionsModal')).show();
+                // Afficher le modal (éviter de le ré-ouvrir si déjà affiché)
+                const divisionsModalEl = document.getElementById('divisionsModal');
+                const existingModal = bootstrap.Modal.getInstance(divisionsModalEl) || new bootstrap.Modal(divisionsModalEl);
+                if (!divisionsModalEl.classList.contains('show')) {
+                    existingModal.show();
+                }
                 
             } catch (error) {
                 console.error('Erreur lors du chargement des divisions:', error);
                 showAlert('Erreur de connexion', 'danger');
+            } finally {
+                showDivisionsLoading(false);
+            }
+        }
+
+        // Recharger les divisions pour la BU courante sans ré-ouvrir le modal
+        async function reloadDivisionsForCurrentBu() {
+            if (!currentBuId) return;
+            try {
+                showDivisionsLoading(true);
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions?business_unit_id=${currentBuId}`);
+                const data = await response.json();
+                if (data.success) {
+                    displayDivisions(data.data);
+                }
+            } catch (error) {
+                console.error('Erreur lors du rechargement des divisions:', error);
             } finally {
                 showDivisionsLoading(false);
             }
@@ -763,6 +776,24 @@
             document.getElementById('divisions-loading').style.display = show ? 'flex' : 'none';
             document.getElementById('divisions-content').style.display = show ? 'none' : 'block';
         }
+
+        // Nettoyage de sécurité des backdrops et de la classe body après fermeture d'un modal
+        function cleanupModalArtifacts() {
+            // S'il n'y a plus de modal visible, retirer les backdrops et la classe sur le body
+            const anyOpenModal = document.querySelector('.modal.show');
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            if (!anyOpenModal) {
+                backdrops.forEach(bd => bd.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.removeProperty('padding-right');
+            } else if (backdrops.length > 1) {
+                // Éviter l'empilement: garder un backdrop si un modal est ouvert
+                backdrops.forEach((bd, idx) => {
+                    if (idx < backdrops.length - 1) bd.remove();
+                });
+            }
+        }
+        document.addEventListener('hidden.bs.modal', cleanupModalArtifacts);
 
         function showLoading(show) {
             document.getElementById('bu-loading').style.display = show ? 'flex' : 'none';
@@ -823,19 +854,16 @@
                 const url = id ? `${API_BASE_URL}/divisions/${id}` : `${API_BASE_URL}/divisions`;
                 const method = id ? 'PUT' : 'POST';
 
-                const response = await fetch(url, {
+                const response = await authenticatedFetch(url, {
                     method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify(formData)
                 });
                 const data = await response.json();
                 if (data.success) {
                     showAlert(`Division ${id ? 'mise à jour' : 'créée'} avec succès`, 'success');
                     bootstrap.Modal.getInstance(document.getElementById('divisionModal')).hide();
-                    // Recharger les divisions de la BU courante
-                    await viewDivisions(currentBuId, document.getElementById('bu-name-display').textContent);
+                    // Recharger les divisions de la BU courante sans ré-ouvrir le modal
+                    await reloadDivisionsForCurrentBu();
                 } else {
                     showAlert(`Erreur lors de la sauvegarde: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
                 }
@@ -882,8 +910,8 @@
                 if (data.success) {
                     showAlert('Division supprimée avec succès', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('deleteDivisionConfirmModal')).hide();
-                    // Recharger les divisions de la BU courante
-                    await viewDivisions(currentBuId, document.getElementById('bu-name-display').textContent);
+                    // Recharger les divisions de la BU courante sans ré-ouvrir le modal
+                    await reloadDivisionsForCurrentBu();
                 } else {
                     showAlert('Erreur lors de la suppression', 'danger');
                 }
@@ -1239,5 +1267,5 @@
 
     <!-- SessionManager pour la gestion centralisée des sessions -->
     <script src="js/session-manager.js"></script>
-</body>
+    </body>
 </html>

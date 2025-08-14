@@ -6,6 +6,8 @@ const EvolutionOrganisation = require('../models/EvolutionOrganisation');
 const EvolutionGrade = require('../models/EvolutionGrade');
 const DepartCollaborateur = require('../models/DepartCollaborateur');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const User = require('../models/User');
+const { pool } = require('../utils/database');
 
 /**
  * GET /api/collaborateurs
@@ -309,6 +311,53 @@ router.put('/:id', async (req, res) => {
         }
 
         const updatedCollaborateur = await collaborateur.update(req.body);
+
+        // Synchroniser automatiquement l'utilisateur lié (nom, prénom, email)
+        try {
+            let linkedUserId = updatedCollaborateur.user_id || collaborateur.user_id || null;
+
+            // 1) Chercher par relation users.collaborateur_id si nécessaire
+            if (!linkedUserId) {
+                const byLink = await pool.query(
+                    'SELECT id FROM users WHERE collaborateur_id = $1 LIMIT 1',
+                    [updatedCollaborateur.id]
+                );
+                if (byLink.rows.length > 0) {
+                    linkedUserId = byLink.rows[0].id;
+                }
+            }
+
+            // 2) Fallback: chercher par ancien email si aucun lien direct
+            if (!linkedUserId && collaborateur.email) {
+                const byOldEmail = await User.findByEmail(collaborateur.email);
+                if (byOldEmail) {
+                    linkedUserId = byOldEmail.id;
+                }
+            }
+
+            if (linkedUserId) {
+                // S'assurer que le lien collaborateur_id est posé
+                await pool.query(
+                    `UPDATE users SET collaborateur_id = $2, updated_at = CURRENT_TIMESTAMP
+                     WHERE id = $1 AND (collaborateur_id IS DISTINCT FROM $2)`,
+                    [linkedUserId, updatedCollaborateur.id]
+                );
+
+                // Tentative de mise à jour des infos d'identité (nom, prénom, email)
+                try {
+                    await User.update(linkedUserId, {
+                        nom: updatedCollaborateur.nom,
+                        prenom: updatedCollaborateur.prenom,
+                        email: updatedCollaborateur.email
+                    });
+                } catch (syncErr) {
+                    // Conflit d'email ou autre; on log sans bloquer la mise à jour du collaborateur
+                    console.warn('⚠️ Échec sync user (nom/prenom/email):', syncErr.message);
+                }
+            }
+        } catch (linkErr) {
+            console.warn('⚠️ Échec de synchronisation utilisateur lié:', linkErr.message);
+        }
         
         res.json({
             success: true,

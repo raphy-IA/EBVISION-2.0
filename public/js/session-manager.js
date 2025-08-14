@@ -91,24 +91,38 @@ class SessionManager {
     /**
      * Extrait les informations collaborateur des données utilisateur
      */
-                    _extractCollaborateurInfo(userData) {
-                    if (!userData.collaborateur_id) {
-                        return null;
-                    }
+    _extractCollaborateurInfo(userData) {
+        console.log('🔍 SessionManager: Extraction des infos collaborateur:', {
+            collaborateur_id: userData.collaborateur_id,
+            nom: userData.nom,
+            prenom: userData.prenom,
+            business_unit_id: userData.business_unit_id,
+            division_id: userData.division_id,
+            grade_nom: userData.grade_nom,
+            poste_nom: userData.poste_nom
+        });
+        
+        if (!userData.collaborateur_id) {
+            console.log('❌ SessionManager: Aucun collaborateur_id trouvé');
+            return null;
+        }
 
-                    return {
-                        id: userData.collaborateur_id,
-                        nom: userData.nom,
-                        prenom: userData.prenom,
-                        email: userData.collaborateur_email || userData.email,
-                        business_unit_id: userData.business_unit_id,
-                        business_unit_nom: userData.business_unit_nom,
-                        division_id: userData.division_id,
-                        division_nom: userData.division_nom,
-                        grade_nom: userData.grade_nom,
-                        poste_nom: userData.poste_nom
-                    };
-                }
+        const collaborateurInfo = {
+            id: userData.collaborateur_id,
+            nom: userData.nom,
+            prenom: userData.prenom,
+            email: userData.collaborateur_email || userData.email,
+            business_unit_id: userData.business_unit_id,
+            business_unit_nom: userData.business_unit_nom,
+            division_id: userData.division_id,
+            division_nom: userData.division_nom,
+            grade_nom: userData.grade_nom,
+            poste_nom: userData.poste_nom
+        };
+        
+        console.log('✅ SessionManager: Informations collaborateur extraites:', collaborateurInfo);
+        return collaborateurInfo;
+    }
 
     /**
      * Récupère les informations utilisateur (depuis le cache)

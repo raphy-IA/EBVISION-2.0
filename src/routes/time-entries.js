@@ -250,4 +250,178 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// API POUR LE DASHBOARD PERSONNEL
+
+// GET /api/time-entries/personal-stats/:userId - Statistiques personnelles
+router.get('/personal-stats/:userId', authenticateToken, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Vérifier que l'utilisateur demande ses propres statistiques
+        if (userId !== req.user.id) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Accès non autorisé' 
+            });
+        }
+
+        const pool = require('../utils/database');
+        
+        // Calculer la date de début du mois en cours
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        
+        // Statistiques du mois en cours
+        const statsQuery = `
+            SELECT 
+                COALESCE(SUM(te.heures), 0) as heures_mois,
+                COUNT(DISTINCT m.id) as missions_actives,
+                COALESCE(AVG(te.heures), 0) as moyenne_quotidienne
+            FROM time_entries te
+            LEFT JOIN missions m ON te.mission_id = m.id
+            WHERE te.user_id = $1 
+            AND te.date_saisie >= $2 
+            AND te.date_saisie <= $3
+        `;
+        
+        const statsResult = await pool.query(statsQuery, [userId, monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]]);
+        
+        // Statistiques du mois précédent pour calculer les tendances
+        const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+        
+        const prevStatsQuery = `
+            SELECT COALESCE(SUM(te.heures), 0) as heures_mois_precedent
+            FROM time_entries te
+            WHERE te.user_id = $1 
+            AND te.date_saisie >= $2 
+            AND te.date_saisie <= $3
+        `;
+        
+        const prevStatsResult = await pool.query(prevStatsQuery, [userId, prevMonthStart.toISOString().split('T')[0], prevMonthEnd.toISOString().split('T')[0]]);
+        
+        const stats = statsResult.rows[0];
+        const prevStats = prevStatsResult.rows[0];
+        
+        // Calculer les tendances
+        const heuresMois = stats.heures_mois || 0;
+        const heuresMoisPrecedent = prevStats.heures_mois_precedent || 0;
+        const tendanceHeures = heuresMoisPrecedent > 0 ? ((heuresMois - heuresMoisPrecedent) / heuresMoisPrecedent) * 100 : 0;
+        
+        // Objectif mensuel (exemple: 160h)
+        const objectifMensuel = 160;
+        const objectifAtteint = (heuresMois / objectifMensuel) * 100;
+        
+        // Taux de facturation (exemple: 85%)
+        const tauxFacturation = 85.0;
+        const tendanceFacturation = 2.5; // Simulation
+        
+        const data = {
+            heures_mois: Math.round(heuresMois * 10) / 10,
+            tendance_heures: Math.round(tendanceHeures * 10) / 10,
+            missions_actives: stats.missions_actives || 0,
+            tendance_missions: 5.2, // Simulation
+            objectif_atteint: Math.min(objectifAtteint, 100),
+            tendance_objectif: 3.1, // Simulation
+            taux_facturation: tauxFacturation,
+            tendance_facturation: tendanceFacturation,
+            moyenne_quotidienne: Math.round((stats.moyenne_quotidienne || 0) * 10) / 10
+        };
+        
+        res.json({
+            success: true,
+            data: data
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de la récupération des statistiques personnelles:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur lors de la récupération des statistiques personnelles',
+            error: error.message 
+        });
+    }
+});
+
+// GET /api/time-entries/personal-chart-data/:userId - Données pour les graphiques
+router.get('/personal-chart-data/:userId', authenticateToken, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Vérifier que l'utilisateur demande ses propres données
+        if (userId !== req.user.id) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Accès non autorisé' 
+            });
+        }
+
+        const pool = require('../utils/database');
+        
+        // Données pour les 30 derniers jours
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30);
+        
+        // Évolution des heures par jour
+        const evolutionQuery = `
+            SELECT 
+                te.date_saisie,
+                COALESCE(SUM(te.heures), 0) as heures_jour
+            FROM time_entries te
+            WHERE te.user_id = $1 
+            AND te.date_saisie >= $2 
+            AND te.date_saisie <= $3
+            GROUP BY te.date_saisie
+            ORDER BY te.date_saisie
+        `;
+        
+        const evolutionResult = await pool.query(evolutionQuery, [userId, startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]]);
+        
+        // Répartition par type d'heures
+        const repartitionQuery = `
+            SELECT 
+                te.type_heures,
+                COALESCE(SUM(te.heures), 0) as total_heures
+            FROM time_entries te
+            WHERE te.user_id = $1 
+            AND te.date_saisie >= $2 
+            AND te.date_saisie <= $3
+            GROUP BY te.type_heures
+        `;
+        
+        const repartitionResult = await pool.query(repartitionQuery, [userId, startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]]);
+        
+        // Préparer les données pour les graphiques
+        const evolutionData = evolutionResult.rows.map(row => ({
+            date: row.date_saisie,
+            heures: parseFloat(row.heures_jour)
+        }));
+        
+        const repartitionData = repartitionResult.rows.map(row => ({
+            type: row.type_heures,
+            heures: parseFloat(row.total_heures)
+        }));
+        
+        const data = {
+            evolution: evolutionData,
+            repartition: repartitionData
+        };
+        
+        res.json({
+            success: true,
+            data: data
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de la récupération des données graphiques:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur lors de la récupération des données graphiques',
+            error: error.message 
+        });
+    }
+});
+
 module.exports = router; 

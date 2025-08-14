@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Détails Facture - TRS</title>
+    <title>Détails Facture - EBVISION 2.0</title>
     
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,6 +11,7 @@
     
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
+    <link rel="stylesheet" href="css/user-header.css">
     
     <style>
         .invoice-status {
@@ -25,22 +26,41 @@
         .status-payee { background-color: #28a745; color: white; }
         .status-annulee { background-color: #dc3545; color: white; }
         
-        .main-content {
-            margin-left: 300px;
+        .main-content-area {
+            flex-grow: 1;
             padding: 2rem;
             min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        /* Garantir l'agencement côte à côte sidebar + contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar-container {
+            width: 300px;
+            flex-shrink: 0;
         }
     </style>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    <script src="js/user-header-utils.js"></script>
+    <script src="js/user-header-main.js"></script>
+    <script src="js/user-header-init.js"></script>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div id="sidebar" class="sidebar">
-        <!-- Le contenu de la sidebar sera chargé par sidebar.js -->
-    </div>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <!-- Sidebar unifiée -->
+        <div class="sidebar-container"></div>
 
-    <!-- Contenu principal -->
-    <div class="main-content">
-        <div class="container-fluid">
+        <!-- Zone de contenu principale -->
+        <div class="main-content-area">
+            <div class="container-fluid">
+            <!-- Contenu existant -->
+
             <div class="row">
                 <div class="col-12">
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -49,7 +69,7 @@
                             <p class="text-muted" id="invoiceSubtitle">Chargement...</p>
                         </div>
                         <div>
-                            <button class="btn btn-outline-secondary me-2" onclick="window.history.back()">
+                            <button class="btn btn-outline-secondary me-2" onclick="goBack()">
                                 <i class="fas fa-arrow-left me-2"></i>Retour
                             </button>
                             <button class="btn btn-primary" onclick="printInvoice()">
@@ -74,7 +94,8 @@
                                 <div class="col-md-6">
                                     <p><strong>Client:</strong> <span id="invoiceClient">...</span></p>
                                     <p><strong>Mission:</strong> <span id="invoiceMission">...</span></p>
-                                    <p><strong>TVA:</strong> <span id="invoiceTVA">...</span></p>
+                                     <p><strong>Unité d'affaires:</strong> <span id="invoiceBU">...</span></p>
+                                    <p><strong>TVA:</strong> <span id="invoiceTVARate">...</span></p>
                                     <p><strong>Créé par:</strong> <span id="invoiceCreatedBy">...</span></p>
                                 </div>
                             </div>
@@ -95,7 +116,7 @@
                             <div class="card text-center">
                                 <div class="card-body">
                                     <h6>Montant TVA</h6>
-                                    <h4 id="invoiceTVA">...</h4>
+                                    <h4 id="invoiceTVAAmount">...</h4>
                                 </div>
                             </div>
                         </div>
@@ -175,6 +196,7 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
     </div>
 
@@ -198,8 +220,7 @@
                                 <div class="mb-3">
                                     <label for="itemQuantity" class="form-label">Quantité</label>
                                     <input type="number" class="form-control" id="itemQuantity" value="1" min="0" step="0.01" required>
-                                </div>
-                            </div>
+    </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="itemUnit" class="form-label">Unité</label>
@@ -355,6 +376,19 @@
             }
         });
 
+        // Bouton retour robuste
+        function goBack() {
+            try {
+                if (document.referrer && document.referrer !== '' && document.referrer.indexOf(window.location.hostname) !== -1) {
+                    window.history.back();
+                } else {
+                    window.location.href = '/invoices.html';
+                }
+            } catch (e) {
+                window.location.href = '/invoices.html';
+            }
+        }
+
         // Chargement des détails de la facture
         async function loadInvoiceDetails(id) {
             try {
@@ -387,13 +421,14 @@
             document.getElementById('invoiceDueDate').textContent = formatDate(currentInvoice.date_echeance);
             document.getElementById('invoiceClient').textContent = currentInvoice.client_nom || 'N/A';
             document.getElementById('invoiceMission').textContent = currentInvoice.mission_nom || 'N/A';
-            document.getElementById('invoiceTVA').textContent = `${currentInvoice.taux_tva}%`;
+            document.getElementById('invoiceBU').textContent = currentInvoice.business_unit_nom || currentInvoice.business_unit_code || 'N/A';
+            document.getElementById('invoiceTVARate').textContent = `${currentInvoice.taux_tva}%`;
             document.getElementById('invoiceCreatedBy').textContent = currentInvoice.created_by_prenom ? 
                 `${currentInvoice.created_by_prenom} ${currentInvoice.created_by_nom}` : 'N/A';
 
             // Montants
             document.getElementById('invoiceHT').textContent = formatCurrency(currentInvoice.montant_ht);
-            document.getElementById('invoiceTVA').textContent = formatCurrency(currentInvoice.montant_tva);
+            document.getElementById('invoiceTVAAmount').textContent = formatCurrency(currentInvoice.montant_tva);
             document.getElementById('invoiceTTC').textContent = formatCurrency(currentInvoice.montant_ttc);
             document.getElementById('invoicePaid').textContent = formatCurrency(currentInvoice.montant_paye);
 

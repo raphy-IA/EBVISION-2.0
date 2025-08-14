@@ -21,7 +21,7 @@ function generateSidebar() {
         <div class="sidebar-header">
             <h3>
                 <i class="fas fa-chart-line"></i>
-                TRS Dashboard
+                EBVISION 2.0
             </h3>
             <p>Gestion des Temps & Ressources</p>
         </div>
@@ -133,11 +133,7 @@ function generateSidebar() {
                     <i class="fas fa-file-alt"></i>
                     Rapports
                 </a>
-                <a href="validation.html" class="sidebar-nav-link ${isActive('validation.html') ? 'active' : ''}">
-                    <i class="fas fa-check-circle"></i>
-                    Validation
-                    <span class="badge">2</span>
-                </a>
+
             </div>
 
             <!-- Section Administration -->

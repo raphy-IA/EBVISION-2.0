@@ -232,6 +232,40 @@ function logout() {
     }
 }
 
+// Fonction globale pour vérifier l'authentification
+function isAuthenticated() {
+    const token = localStorage.getItem('authToken');
+    return !!token;
+}
+
+// Fonction globale pour obtenir l'ID de l'utilisateur connecté
+function getCurrentUserId() {
+    const userInfo = localStorage.getItem('user');
+    if (userInfo) {
+        try {
+            const user = JSON.parse(userInfo);
+            return user.id;
+        } catch (error) {
+            console.error('Erreur lors du parsing des données utilisateur:', error);
+        }
+    }
+    return null;
+}
+
+// Fonction globale pour obtenir les informations complètes de l'utilisateur connecté
+function getCurrentUser() {
+    const userInfo = localStorage.getItem('user');
+    if (userInfo) {
+        try {
+            const user = JSON.parse(userInfo);
+            return user;
+        } catch (error) {
+            console.error('Erreur lors du parsing des données utilisateur:', error);
+        }
+    }
+    return null;
+}
+
 // Fonction globale pour les requêtes API authentifiées
 async function authenticatedFetch(url, options = {}) {
     const token = localStorage.getItem('authToken');

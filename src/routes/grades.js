@@ -281,15 +281,27 @@ router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req, res
             });
         }
 
-        // Vérifier s'il y a des collaborateurs avec ce grade
+        // Vérifier s'il y a des collaborateurs avec ce grade (actuels)
         const collaborateurs = await require('../models/Collaborateur').findByGrade(grade.id);
         if (collaborateurs.length > 0) {
             return res.status(400).json({
                 success: false,
                 message: 'Impossible de supprimer ce grade car il est utilisé par des collaborateurs',
-                data: {
-                    nb_collaborateurs: collaborateurs.length
-                }
+                data: { nb_collaborateurs: collaborateurs.length }
+            });
+        }
+
+        // Vérifier si le grade a déjà été utilisé historiquement (évolutions de grade)
+        const { pool } = require('../utils/database');
+        const evo = await pool.query(
+            `SELECT 1 FROM evolution_grades WHERE grade_id = $1 LIMIT 1`,
+            [grade.id]
+        );
+        if (evo.rows.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Impossible de supprimer ce grade car il a déjà été utilisé dans l\'historique (évolutions)',
+                data: { historique: true }
             });
         }
 
