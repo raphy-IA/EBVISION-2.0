@@ -47,6 +47,19 @@
                             </div>
                         </div>
                         <div class="row g-2 mt-2">
+                            <div class="col-md-3">
+                                <select id="tplBU" class="form-select">
+                                    <option value="">(BU - optionnel)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="tplDivision" class="form-select" disabled>
+                                    <option value="">(Division - optionnel)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6"></div>
+                        </div>
+                        <div class="row g-2 mt-2">
                             <div class="col-12">
                                 <textarea id="tplBody" class="form-control" rows="6" placeholder="Corps du message (placeholders possibles: {{company_name}}, {{bu_name}}, ...)"></textarea>
                             </div>
@@ -83,9 +96,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js" defer></script>
     <script src="/js/sidebar.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <script>
-        const API = '/api/prospecting';
+        const API = new URL('/api/prospecting', window.location.origin).toString();
+        const API_BU = new URL('/api/business-units', window.location.origin).toString();
+        const API_DIV = new URL('/api/divisions', window.location.origin).toString();
 
         function getAuthHeader() {
             const token = localStorage.getItem('authToken');
@@ -116,15 +131,20 @@
             const type_courrier = document.getElementById('tplType').value;
             const subject = document.getElementById('tplSubject').value.trim();
             const body_template = document.getElementById('tplBody').value.trim();
+            const business_unit_id = document.getElementById('tplBU').value || null;
+            const division_id = document.getElementById('tplDivision').value || null;
             if (!name || !body_template) { alert('Nom et corps requis'); return; }
             const res = await fetch(`${API}/templates`, {
                 method: 'POST', headers: getAuthHeader(),
-                body: JSON.stringify({ name, channel, type_courrier, subject, body_template })
+                body: JSON.stringify({ name, channel, type_courrier, subject, body_template, business_unit_id, division_id })
             });
             if (res.ok) {
                 document.getElementById('tplName').value = '';
                 document.getElementById('tplSubject').value = '';
                 document.getElementById('tplBody').value = '';
+                document.getElementById('tplBU').value = '';
+                document.getElementById('tplDivision').innerHTML = '<option value="">(Division - optionnel)</option>';
+                document.getElementById('tplDivision').disabled = true;
                 await loadTemplates();
             } else {
                 const d = await res.json().catch(() => ({}));
@@ -145,7 +165,39 @@
             document.getElementById('tplBody').value = t.body_template || '';
         }
 
-        document.addEventListener('DOMContentLoaded', loadTemplates);
+        async function loadBUs() {
+            const res = await fetch(API_BU, { headers: getAuthHeader() });
+            const data = await res.json();
+            const buSel = document.getElementById('tplBU');
+            buSel.innerHTML = '<option value="">(BU - optionnel)</option>';
+            (data.data || data || []).forEach(bu => {
+                const opt = document.createElement('option');
+                opt.value = bu.id;
+                opt.textContent = bu.nom;
+                buSel.appendChild(opt);
+            });
+        }
+
+        async function loadDivisionsForBU(buId) {
+            const divSel = document.getElementById('tplDivision');
+            divSel.innerHTML = '<option value="">(Division - optionnel)</option>';
+            divSel.disabled = !buId;
+            if (!buId) return;
+            const res = await fetch(`${API_DIV}?business_unit_id=${encodeURIComponent(buId)}`, { headers: getAuthHeader() });
+            const data = await res.json();
+            (data.data || data || []).forEach(dv => {
+                const opt = document.createElement('option');
+                opt.value = dv.id;
+                opt.textContent = dv.nom;
+                divSel.appendChild(opt);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadTemplates();
+            await loadBUs();
+        });
+        document.getElementById('tplBU').addEventListener('change', (e) => loadDivisionsForBU(e.target.value));
     </script>
     <script src="js/session-manager.js"></script>
 </body>
