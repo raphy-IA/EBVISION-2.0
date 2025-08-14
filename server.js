@@ -47,6 +47,7 @@ const timeSheetApprovalsRoutes = require('./src/routes/time-sheet-approvals');
 const dashboardAnalyticsRoutes = require('./src/routes/dashboard-analytics');
 const analyticsRoutes = require('./src/routes/analytics');
 const notificationSettingsRoutes = require('./src/routes/notification-settings');
+const prospectingRoutes = require('./src/routes/prospecting');
 
 // Import des middlewares
 const errorHandler = require('./src/middleware/errorHandler');
@@ -168,6 +169,7 @@ app.use('/api/supervisors', supervisorsRoutes);
 app.use('/api/time-sheet-approvals', timeSheetApprovalsRoutes);
 app.use('/api/analytics', dashboardAnalyticsRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/prospecting', prospectingRoutes);
 
 // Route par défaut
 app.get('/', (req, res) => {
