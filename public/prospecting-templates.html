@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prospection - Modèles</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    <link rel="stylesheet" href="css/user-header.css">
+    <script src="js/user-header-utils.js"></script>
+    <script src="js/user-header-main.js"></script>
+    <script src="js/user-header-init.js"></script>
+</head>
+<body>
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <div class="sidebar-container"></div>
+        <div class="main-content-area">
+            <div class="container-fluid py-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2><i class="fas fa-envelope-open-text me-2"></i>Modèles de prospection</h2>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">Créer un modèle</div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <input id="tplName" class="form-control" placeholder="Nom du modèle">
+                            </div>
+                            <div class="col-md-2">
+                                <select id="tplChannel" class="form-select">
+                                    <option value="EMAIL">Emails</option>
+                                    <option value="PHYSIQUE">Physique</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="tplType" class="form-select">
+                                    <option value="PRESENTATION_GENERALE">Présentation générale</option>
+                                    <option value="SERVICE_SPECIFIQUE">Service spécifique</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <input id="tplSubject" class="form-control" placeholder="Objet (emails)">
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-2">
+                            <div class="col-12">
+                                <textarea id="tplBody" class="form-control" rows="6" placeholder="Corps du message (placeholders possibles: {{company_name}}, {{bu_name}}, ...)"></textarea>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-end">
+                            <button class="btn btn-primary" onclick="createTemplate()"><i class="fas fa-save me-1"></i>Enregistrer</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Liste des modèles</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Canal</th>
+                                        <th>Type</th>
+                                        <th>Objet</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tplTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        const API = '/api/prospecting';
+
+        function getAuthHeader() {
+            const token = localStorage.getItem('authToken');
+            return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+        }
+
+        async function loadTemplates() {
+            const res = await fetch(`${API}/templates`, { headers: getAuthHeader() });
+            const data = await res.json();
+            const tbody = document.getElementById('tplTable');
+            tbody.innerHTML = '';
+            (data.data || []).forEach(t => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${t.name}</td>
+                    <td>${t.channel}</td>
+                    <td>${t.type_courrier}</td>
+                    <td>${t.subject || ''}</td>
+                    <td><button class="btn btn-sm btn-outline-secondary" onclick="prefill('${t.id}')"><i class="fas fa-pen"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function createTemplate() {
+            const name = document.getElementById('tplName').value.trim();
+            const channel = document.getElementById('tplChannel').value;
+            const type_courrier = document.getElementById('tplType').value;
+            const subject = document.getElementById('tplSubject').value.trim();
+            const body_template = document.getElementById('tplBody').value.trim();
+            if (!name || !body_template) { alert('Nom et corps requis'); return; }
+            const res = await fetch(`${API}/templates`, {
+                method: 'POST', headers: getAuthHeader(),
+                body: JSON.stringify({ name, channel, type_courrier, subject, body_template })
+            });
+            if (res.ok) {
+                document.getElementById('tplName').value = '';
+                document.getElementById('tplSubject').value = '';
+                document.getElementById('tplBody').value = '';
+                await loadTemplates();
+            } else {
+                const d = await res.json().catch(() => ({}));
+                alert('Erreur: ' + (d.message || d.error || res.status));
+            }
+        }
+
+        async function prefill(id) {
+            // Simple stratégie: récupérer la liste et trouver le template par id
+            const res = await fetch(`${API}/templates`, { headers: getAuthHeader() });
+            const data = await res.json();
+            const t = (data.data || []).find(x => x.id === id);
+            if (!t) return;
+            document.getElementById('tplName').value = t.name || '';
+            document.getElementById('tplChannel').value = t.channel || 'EMAIL';
+            document.getElementById('tplType').value = t.type_courrier || 'PRESENTATION_GENERALE';
+            document.getElementById('tplSubject').value = t.subject || '';
+            document.getElementById('tplBody').value = t.body_template || '';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadTemplates);
+    </script>
+    <script src="js/session-manager.js"></script>
+</body>
+</html>
+
+
