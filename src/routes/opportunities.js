@@ -420,6 +420,21 @@ router.post('/', authenticateToken, async (req, res) => {
             notes,
             created_by: req.user?.id || null
         };
+
+        // Affecter automatiquement l'année fiscale en cours si non fournie
+        try {
+            if (!opportunityData.fiscal_year_id) {
+                const fy = await pool.query(`
+                    SELECT id FROM fiscal_years 
+                    WHERE date_debut <= CURRENT_DATE AND date_fin >= CURRENT_DATE 
+                    AND statut = 'EN_COURS' 
+                    LIMIT 1
+                `);
+                opportunityData.fiscal_year_id = fy.rows.length > 0 ? fy.rows[0].id : null;
+            }
+        } catch (fyErr) {
+            console.warn('⚠️ Impossible de déterminer l\'année fiscale en cours pour l\'opportunité:', fyErr.message);
+        }
         
         console.log('📋 Données envoyées au modèle Opportunity.create:', JSON.stringify(opportunityData, null, 2));
         

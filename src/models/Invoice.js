@@ -74,12 +74,33 @@ class Invoice {
             const nextSeq = (seqResult.rows[0]?.last_seq || 0) + 1;
             const numeroFacture = prefix + String(nextSeq).padStart(4, '0');
 
+            // Déterminer l'année fiscale de la facture
+            let fiscalYearId = null;
+            try {
+                if (invoiceData.mission_id) {
+                    const fyFromMission = await client.query(
+                        'SELECT fiscal_year_id FROM missions WHERE id = $1',
+                        [invoiceData.mission_id]
+                    );
+                    fiscalYearId = fyFromMission.rows[0]?.fiscal_year_id || null;
+                }
+                if (!fiscalYearId) {
+                    const fyCurrent = await client.query(`
+                        SELECT id FROM fiscal_years 
+                        WHERE date_debut <= CURRENT_DATE AND date_fin >= CURRENT_DATE 
+                        AND statut = 'EN_COURS' 
+                        LIMIT 1
+                    `);
+                    fiscalYearId = fyCurrent.rows[0]?.id || null;
+                }
+            } catch (_) {}
+
             const query = `
                 INSERT INTO invoices (
                     numero_facture, mission_id, client_id, date_emission, date_echeance, statut,
                     conditions_paiement, taux_tva, adresse_facturation, notes_facture,
-                    created_by
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                    created_by, fiscal_year_id
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                 RETURNING *
             `;
 
@@ -94,7 +115,8 @@ class Invoice {
                 invoiceData.taux_tva || 19.25,
                 invoiceData.adresse_facturation,
                 invoiceData.notes_facture,
-                invoiceData.created_by
+                invoiceData.created_by,
+                fiscalYearId
             ];
 
             const result = await client.query(query, values);

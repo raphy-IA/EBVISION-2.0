@@ -231,7 +231,7 @@ router.post('/', authenticateToken, async (req, res) => {
         const fiscalYearQuery = `
             SELECT id FROM fiscal_years 
             WHERE date_debut <= CURRENT_DATE AND date_fin >= CURRENT_DATE 
-            AND statut = 'ACTIF' 
+            AND statut = 'EN_COURS' 
             LIMIT 1
         `;
         const fiscalYearResult = await client.query(fiscalYearQuery);
