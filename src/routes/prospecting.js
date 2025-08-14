@@ -74,6 +74,12 @@ router.get('/sources/:sourceId/companies', authenticateToken, async (req, res) =
     res.json({ success: true, data: list });
 });
 
+router.get('/companies/search', authenticateToken, async (req, res) => {
+    const { q, source_id, limit, offset } = req.query;
+    const result = await Company.search({ q, source_id, limit: parseInt(limit)||20, offset: parseInt(offset)||0 });
+    res.json({ success: true, data: result.companies, pagination: result.pagination });
+});
+
 // Templates de campagne
 router.get('/templates', authenticateToken, async (req, res) => {
     const list = await ProspectingTemplate.findAll();
@@ -83,6 +89,11 @@ router.get('/templates', authenticateToken, async (req, res) => {
 router.post('/templates', authenticateToken, async (req, res) => {
     const created = await ProspectingTemplate.create(req.body);
     res.status(201).json({ success: true, data: created });
+});
+
+router.put('/templates/:id', authenticateToken, async (req, res) => {
+    const updated = await ProspectingTemplate.update(req.params.id, req.body);
+    res.json({ success: true, data: updated });
 });
 
 // Campagnes
@@ -98,6 +109,29 @@ router.post('/campaigns/:id/companies', authenticateToken, async (req, res) => {
     }
     const result = await ProspectingCampaign.addCompanies(req.params.id, company_ids);
     res.json({ success: true, data: result });
+});
+
+router.get('/campaigns', authenticateToken, async (req, res) => {
+    const { limit, offset } = req.query;
+    const result = await ProspectingCampaign.findAll({ limit: parseInt(limit)||20, offset: parseInt(offset)||0 });
+    res.json({ success: true, data: result.campaigns, pagination: result.pagination });
+});
+
+router.get('/campaigns/:id', authenticateToken, async (req, res) => {
+    const campaign = await ProspectingCampaign.findById(req.params.id);
+    if (!campaign) return res.status(404).json({ success: false, error: 'Campagne non trouvée' });
+    res.json({ success: true, data: campaign });
+});
+
+router.get('/campaigns/:id/companies', authenticateToken, async (req, res) => {
+    const { limit, offset } = req.query;
+    const result = await ProspectingCampaign.getCompanies(req.params.id, { limit: parseInt(limit)||50, offset: parseInt(offset)||0 });
+    res.json({ success: true, data: result.companies, pagination: result.pagination });
+});
+
+router.put('/campaigns/:id', authenticateToken, async (req, res) => {
+    const updated = await ProspectingCampaign.update(req.params.id, req.body);
+    res.json({ success: true, data: updated });
 });
 
 module.exports = router;
