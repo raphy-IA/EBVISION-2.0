@@ -33,8 +33,10 @@
                                         <th>Nom</th>
                                         <th>Canal</th>
                                         <th>Statut</th>
+                                        <th>Modèle</th>
                                         <th>Planifiée</th>
                                         <th>Entreprises</th>
+                                        <th>Créée le</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -83,6 +85,166 @@
         </div>
     </div>
 
+    <!-- Modal d'affectation d'entreprises -->
+    <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen-lg-down modal-xl" style="max-width: 95vw;">
+            <div class="modal-content" style="height: 90vh;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignModalLabel">
+                        <i class="fas fa-users me-2"></i>Affecter des entreprises à la campagne
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="height: calc(90vh - 140px); overflow-y: auto;">
+                    <div class="row h-100">
+                        <!-- Section gauche : Sélection et ajout d'entreprises -->
+                        <div class="col-md-7">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-plus me-2"></i>Ajouter des entreprises</h6>
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <!-- Sélection de source -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Source d'entreprises :</label>
+                                        <select id="sourceSelect" class="form-select" onchange="loadSourceCompanies()">
+                                            <option value="">Sélectionnez une source...</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Filtres avancés -->
+                                    <div class="mb-3" id="filtersSection" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Secteur d'activité</label>
+                                                <select id="filterIndustry" class="form-select form-select-sm" onchange="applyFilters()">
+                                                    <option value="">Tous les secteurs</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Ville</label>
+                                                <select id="filterCity" class="form-select form-select-sm" onchange="applyFilters()">
+                                                    <option value="">Toutes les villes</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Taille</label>
+                                                <select id="filterSize" class="form-select form-select-sm" onchange="applyFilters()">
+                                                    <option value="">Toutes les tailles</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Recherche dans la source -->
+                                    <div class="mb-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                            <input type="text" id="companySearch" class="form-control" placeholder="Rechercher une entreprise..." oninput="filterCompanies()">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="clearFilters()">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Liste des entreprises de la source -->
+                                    <div class="mb-3 flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted">
+                                                Entreprises de la source 
+                                                <span id="companiesCount" class="badge bg-secondary ms-2">0</span>
+                                            </small>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="selectAllSource" onchange="toggleSelectAllSource()">
+                                                <label class="form-check-label" for="selectAllSource">Tout sélectionner</label>
+                                            </div>
+                                        </div>
+                                        <div id="sourceCompaniesList" style="height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem;">
+                                            <div class="text-center py-4">
+                                                <i class="fas fa-database fa-2x text-muted"></i>
+                                                <p class="text-muted mt-2">Sélectionnez une source pour voir les entreprises</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Pagination -->
+                                        <div class="d-flex justify-content-between align-items-center mt-2" id="paginationSection" style="display: none;">
+                                            <div class="d-flex align-items-center">
+                                                <span class="text-muted me-2">Page</span>
+                                                <select id="pageSelect" class="form-select form-select-sm" style="width: auto;" onchange="goToPage()">
+                                                </select>
+                                                <span class="text-muted ms-2">sur <span id="totalPages">0</span></span>
+                                            </div>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-secondary" onclick="previousPage()" id="prevBtn">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </button>
+                                                <button class="btn btn-outline-secondary" onclick="nextPage()" id="nextBtn">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bouton d'ajout -->
+                                    <button class="btn btn-primary w-100" onclick="addSelectedCompanies()" id="addCompaniesBtn" disabled>
+                                        <i class="fas fa-plus me-2"></i>Ajouter les entreprises sélectionnées
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section droite : Entreprises de la campagne -->
+                        <div class="col-md-5">
+                            <div class="row h-100">
+                                <!-- Entreprises sélectionnées pour ajout -->
+                                <div class="col-12 mb-3">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-clock me-2"></i>À ajouter (<span id="selectedCount">0</span>)</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="selectedCompaniesList" style="max-height: 200px; overflow-y: auto;">
+                                                <div class="text-center py-3">
+                                                    <i class="fas fa-list fa-2x text-muted"></i>
+                                                    <p class="text-muted mt-2">Aucune entreprise sélectionnée</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Entreprises déjà affectées -->
+                                <div class="col-12 flex-grow-1">
+                                    <div class="card h-100">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-check me-2"></i>Déjà affectées (<span id="assignedCount">0</span>)</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="assignedCompaniesList" style="height: 300px; overflow-y: auto;">
+                                                <div class="text-center py-3">
+                                                    <div class="spinner-border spinner-border-sm" role="status">
+                                                        <span class="visually-hidden">Chargement...</span>
+                                                    </div>
+                                                    <p class="text-muted mt-2">Chargement...</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-success" onclick="saveAssignments()" id="saveAssignmentsBtn">
+                        <i class="fas fa-save me-2"></i>Sauvegarder les affectations
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js" defer></script>
     <script src="/js/sidebar.js" defer></script>
@@ -93,30 +255,96 @@
 
         function getAuthHeader() {
             const token = localStorage.getItem('authToken');
+            console.log('🔍 [DEBUG] Token d\'authentification:', token ? 'Présent' : 'Absent');
             return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
         }
 
         async function loadCampaigns() {
+            try {
             const res = await fetch(`${API}/campaigns`, { headers: getAuthHeader() });
             const data = await res.json();
             const tbody = document.getElementById('campaignsTable');
             tbody.innerHTML = '';
+                
+                if (!data.data || data.data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="fas fa-bullhorn fa-2x text-muted mb-3"></i>
+                                <p class="text-muted">Aucune campagne créée pour le moment</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
             (data.data || []).forEach(c => {
                 const tr = document.createElement('tr');
+                    const statusClass = getStatusClass(c.status);
+                    const channelClass = c.channel === 'EMAIL' ? 'info' : 'secondary';
+                    const createdDate = c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '-';
+                    const scheduledDate = c.scheduled_date ? new Date(c.scheduled_date).toLocaleDateString('fr-FR') : '-';
+                    
                 tr.innerHTML = `
-                    <td>${c.name}</td>
-                    <td><span class="badge bg-${c.channel==='EMAIL'?'info':'secondary'}">${c.channel}</span></td>
-                    <td><span class="badge bg-${c.status==='DRAFT'?'warning':(c.status==='READY'?'primary':(c.status==='SENT'?'success':'secondary'))}">${c.status}</span></td>
-                    <td>${c.scheduled_date || '-'}</td>
+                        <td><strong>${c.name}</strong></td>
+                        <td><span class="badge bg-${channelClass}">${c.channel}</span></td>
+                        <td><span class="badge bg-${statusClass}">${getStatusText(c.status)}</span></td>
+                        <td>${c.template_name || '-'}</td>
+                        <td>${scheduledDate}</td>
                     <td><span class="badge bg-light text-dark">${c.companies_count || 0}</span></td>
+                        <td><small class="text-muted">${createdDate}</small></td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <a class="btn btn-outline-secondary" href="prospecting-sources.html"><i class="fas fa-building"></i> Entreprises</a>
+                                <button class="btn btn-outline-primary" onclick="assignCompanies('${c.id}')" title="Affecter des entreprises">
+                                    <i class="fas fa-users"></i> Affecter
+                                </button>
+                                <a class="btn btn-outline-info" href="prospecting-campaign-summary.html?id=${c.id}" title="Voir récapitulatif">
+                                    <i class="fas fa-eye"></i> Récap
+                                </a>
+                                <button class="btn btn-outline-warning" onclick="editCampaign('${c.id}')" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="deleteCampaign('${c.id}')" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                         </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+            } catch (error) {
+                console.error('Erreur chargement campagnes:', error);
+                document.getElementById('campaignsTable').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Erreur lors du chargement des campagnes
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'DRAFT': return 'warning';
+                case 'READY': return 'primary';
+                case 'SENT': return 'success';
+                case 'ARCHIVED': return 'secondary';
+                default: return 'secondary';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'DRAFT': return 'Brouillon';
+                case 'READY': return 'Prête';
+                case 'SENT': return 'Envoyée';
+                case 'ARCHIVED': return 'Archivée';
+                default: return status;
+            }
         }
 
         async function loadTemplates() {
@@ -133,11 +361,8 @@
         }
 
         function openCreateModal() {
+            resetCreateModal();
             if (!campaignModal) campaignModal = new bootstrap.Modal(document.getElementById('campaignModal'));
-            document.getElementById('campName').value = '';
-            document.getElementById('campChannel').value = 'EMAIL';
-            document.getElementById('campTemplate').value = '';
-            document.getElementById('campDate').value = '';
             campaignModal.show();
         }
 
@@ -158,6 +383,744 @@
             } else {
                 const d = await res.json().catch(() => ({}));
                 alert('Erreur: ' + (d.message || d.error || res.status));
+            }
+        }
+
+        // Fonction pour affecter des entreprises à une campagne
+        function assignCompanies(campaignId) {
+            // Ouvrir le modal d'affectation d'entreprises
+            openAssignModal(campaignId);
+        }
+
+        // Fonction pour éditer une campagne
+        async function editCampaign(campaignId) {
+            try {
+                const res = await fetch(`${API}/campaigns/${campaignId}`, { headers: getAuthHeader() });
+                const data = await res.json();
+                
+                if (res.ok && data.data) {
+                    const campaign = data.data;
+                    
+                    // Remplir le formulaire avec les données existantes
+                    document.getElementById('campName').value = campaign.name;
+                    document.getElementById('campChannel').value = campaign.channel;
+                    document.getElementById('campTemplate').value = campaign.template_id || '';
+                    document.getElementById('campDate').value = campaign.scheduled_date || '';
+                    
+                    // Changer le titre du modal
+                    document.querySelector('#campaignModal .modal-title').textContent = 'Modifier la campagne';
+                    
+                    // Changer le bouton
+                    const saveBtn = document.querySelector('#campaignModal .btn-primary');
+                    saveBtn.textContent = 'Mettre à jour';
+                    saveBtn.onclick = () => updateCampaign(campaignId);
+                    
+                    // Afficher le modal
+                    if (!campaignModal) campaignModal = new bootstrap.Modal(document.getElementById('campaignModal'));
+                    campaignModal.show();
+                } else {
+                    alert('Erreur lors du chargement de la campagne');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors du chargement de la campagne');
+            }
+        }
+
+        // Fonction pour mettre à jour une campagne
+        async function updateCampaign(campaignId) {
+            const name = document.getElementById('campName').value.trim();
+            const channel = document.getElementById('campChannel').value;
+            const template_id = document.getElementById('campTemplate').value || null;
+            const scheduled_date = document.getElementById('campDate').value || null;
+            
+            if (!name) { alert('Nom requis'); return; }
+            
+            try {
+                const res = await fetch(`${API}/campaigns/${campaignId}`, {
+                    method: 'PUT',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ name, channel, template_id, scheduled_date })
+                });
+                
+                if (res.ok) {
+                    campaignModal.hide();
+            await loadCampaigns();
+                    alert('Campagne mise à jour avec succès !');
+                } else {
+                    const d = await res.json().catch(() => ({}));
+                    alert('Erreur: ' + (d.message || d.error || res.status));
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la mise à jour');
+            }
+        }
+
+        // Fonction pour supprimer une campagne
+        async function deleteCampaign(campaignId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette campagne ? Cette action est irréversible.')) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API}/campaigns/${campaignId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeader()
+                });
+                
+                if (res.ok) {
+                    await loadCampaigns();
+                    alert('Campagne supprimée avec succès !');
+                } else {
+                    const d = await res.json().catch(() => ({}));
+                    alert('Erreur: ' + (d.message || d.error || res.status));
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la suppression');
+            }
+        }
+
+        // Fonction pour réinitialiser le modal de création
+        function resetCreateModal() {
+            document.getElementById('campName').value = '';
+            document.getElementById('campChannel').value = 'EMAIL';
+            document.getElementById('campTemplate').value = '';
+            document.getElementById('campDate').value = '';
+            
+            // Remettre le titre et le bouton par défaut
+            document.querySelector('#campaignModal .modal-title').textContent = 'Nouvelle campagne';
+            const saveBtn = document.querySelector('#campaignModal .btn-primary');
+            saveBtn.textContent = 'Enregistrer';
+            saveBtn.onclick = createCampaign;
+        }
+
+        // ===== FONCTIONS DU MODAL D'AFFECTATION =====
+        
+        let assignModal;
+        let currentCampaignId;
+        let currentSourceCompanies = [];
+        let selectedCompanies = new Set();
+        let assignedCompanies = new Set();
+
+        // Ouvrir le modal d'affectation
+        async function openAssignModal(campaignId) {
+            currentCampaignId = campaignId;
+            selectedCompanies.clear();
+            assignedCompanies.clear();
+            
+            // Réinitialiser l'interface
+            resetAssignModal();
+            
+            // Charger les sources et les entreprises déjà affectées
+            await Promise.all([
+                loadSources(),
+                loadAssignedCompanies()
+            ]);
+            
+            // Afficher le modal
+            if (!assignModal) {
+                assignModal = new bootstrap.Modal(document.getElementById('assignModal'));
+            }
+            assignModal.show();
+        }
+
+        // Réinitialiser le modal
+        function resetAssignModal() {
+            document.getElementById('sourceSelect').value = '';
+            document.getElementById('companySearch').value = '';
+            document.getElementById('selectAllSource').checked = false;
+            document.getElementById('addCompaniesBtn').disabled = true;
+            
+            // Réinitialiser les filtres
+            document.getElementById('filterIndustry').value = '';
+            document.getElementById('filterCity').value = '';
+            document.getElementById('filterSize').value = '';
+            document.getElementById('filtersSection').style.display = 'none';
+            
+            // Réinitialiser la pagination
+            currentPage = 1;
+            allSourceCompanies = [];
+            filteredCompanies = [];
+            
+            // Vider les listes
+            document.getElementById('sourceCompaniesList').innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-database fa-2x text-muted"></i>
+                    <p class="text-muted mt-2">Sélectionnez une source pour voir les entreprises</p>
+                </div>
+            `;
+            
+            // Masquer la pagination
+            document.getElementById('paginationSection').style.display = 'none';
+            
+            updateSelectedCompaniesList();
+            updateCounts();
+        }
+
+        // Charger les sources
+        async function loadSources() {
+            try {
+                console.log('🔍 [DEBUG] Chargement des sources...');
+                const res = await fetch(`${API}/sources`, { headers: getAuthHeader() });
+                console.log('🔍 [DEBUG] Réponse sources:', res.status, res.statusText);
+                
+                const data = await res.json();
+                console.log('🔍 [DEBUG] Données sources:', data);
+                
+                const select = document.getElementById('sourceSelect');
+                
+                // Garder l'option par défaut
+                select.innerHTML = '<option value="">Sélectionnez une source...</option>';
+                
+                if (data.data && data.data.length > 0) {
+                    console.log('🔍 [DEBUG] Sources trouvées:', data.data.length);
+                    data.data.forEach(source => {
+                        const option = document.createElement('option');
+                        option.value = source.id;
+                        option.textContent = source.name;
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.log('🔍 [DEBUG] Aucune source trouvée');
+                }
+            } catch (error) {
+                console.error('❌ [DEBUG] Erreur chargement sources:', error);
+            }
+        }
+
+        // Charger les entreprises d'une source
+        async function loadSourceCompanies() {
+            const sourceId = document.getElementById('sourceSelect').value;
+            console.log('🔍 [DEBUG] Chargement entreprises pour source:', sourceId);
+            
+            if (!sourceId) {
+                console.log('🔍 [DEBUG] Aucune source sélectionnée');
+                resetSourceCompaniesList();
+                return;
+            }
+
+            try {
+                console.log('🔍 [DEBUG] Appel API:', `${API}/sources/${sourceId}/companies`);
+                const res = await fetch(`${API}/sources/${sourceId}/companies`, { headers: getAuthHeader() });
+                console.log('🔍 [DEBUG] Réponse entreprises:', res.status, res.statusText);
+                
+                const data = await res.json();
+                console.log('🔍 [DEBUG] Données entreprises:', data);
+                
+                allSourceCompanies = data.data || [];
+                currentSourceCompanies = allSourceCompanies;
+                console.log('🔍 [DEBUG] Nombre d\'entreprises trouvées:', allSourceCompanies.length);
+                
+                // Réinitialiser la pagination
+                currentPage = 1;
+                
+                // Charger les filtres
+                loadFilters();
+                
+                // Afficher les entreprises
+                renderSourceCompanies(currentSourceCompanies);
+                
+                // Afficher la section des filtres si il y a des entreprises
+                if (allSourceCompanies.length > 0) {
+                    document.getElementById('filtersSection').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('❌ [DEBUG] Erreur chargement entreprises source:', error);
+                resetSourceCompaniesList();
+            }
+        }
+
+        // Variables pour la pagination
+        let currentPage = 1;
+        let companiesPerPage = 20;
+        let allSourceCompanies = [];
+        let filteredCompanies = [];
+
+        // Afficher les entreprises de la source
+        function renderSourceCompanies(companies) {
+            const container = document.getElementById('sourceCompaniesList');
+            
+            if (companies.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-building fa-2x text-muted"></i>
+                        <p class="text-muted mt-2">Aucune entreprise dans cette source</p>
+                        <small class="text-muted">Essayez de sélectionner une autre source ou importez des entreprises via la page "Sources d'entreprises"</small>
+                    </div>
+                `;
+                return;
+            }
+
+            // Calculer la pagination
+            const startIndex = (currentPage - 1) * companiesPerPage;
+            const endIndex = startIndex + companiesPerPage;
+            const companiesToShow = companies.slice(startIndex, endIndex);
+
+            container.innerHTML = companiesToShow.map(company => `
+                <div class="form-check mb-3 company-item p-3 border rounded" data-company-id="${company.id}">
+                    <div class="d-flex align-items-start">
+                        <input class="form-check-input mt-1 me-3" type="checkbox" value="${company.id}" id="company_${company.id}" onchange="toggleCompanySelection('${company.id}')">
+                        <div class="flex-grow-1">
+                            <label class="form-check-label w-100" for="company_${company.id}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold">${company.name}</h6>
+                                        <div class="row text-muted small">
+                                            <div class="col-md-6">
+                                                <i class="fas fa-industry me-1"></i>
+                                                <strong>Secteur:</strong> ${company.industry || 'Non renseigné'}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                <strong>Ville:</strong> ${company.city || 'Non renseigné'}
+                                            </div>
+                                        </div>
+                                        <div class="row text-muted small mt-1">
+                                            <div class="col-md-6">
+                                                <i class="fas fa-envelope me-1"></i>
+                                                <strong>Email:</strong> ${company.email || 'Non renseigné'}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <i class="fas fa-phone me-1"></i>
+                                                <strong>Téléphone:</strong> ${company.phone || 'Non renseigné'}
+                                            </div>
+                                        </div>
+                                        ${company.website ? `
+                                        <div class="row text-muted small mt-1">
+                                            <div class="col-12">
+                                                <i class="fas fa-globe me-1"></i>
+                                                <strong>Site web:</strong> <a href="${company.website}" target="_blank" class="text-decoration-none">${company.website}</a>
+                                            </div>
+                                        </div>
+                                        ` : ''}
+                                        ${company.size_label ? `
+                                        <div class="row text-muted small mt-1">
+                                            <div class="col-12">
+                                                <i class="fas fa-users me-1"></i>
+                                                <strong>Taille:</strong> ${company.size_label}
+                                            </div>
+                                        </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Mettre à jour la pagination
+            updatePagination(companies.length);
+        }
+
+        // Réinitialiser la liste des entreprises de la source
+        function resetSourceCompaniesList() {
+            document.getElementById('sourceCompaniesList').innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-database fa-2x text-muted"></i>
+                    <p class="text-muted mt-2">Sélectionnez une source pour voir les entreprises</p>
+                </div>
+            `;
+        }
+
+        // Charger les filtres
+        function loadFilters() {
+            const industries = [...new Set(allSourceCompanies.map(c => c.industry).filter(Boolean))].sort();
+            const cities = [...new Set(allSourceCompanies.map(c => c.city).filter(Boolean))].sort();
+            const sizes = [...new Set(allSourceCompanies.map(c => c.size_label).filter(Boolean))].sort();
+
+            // Remplir les filtres
+            const industrySelect = document.getElementById('filterIndustry');
+            const citySelect = document.getElementById('filterCity');
+            const sizeSelect = document.getElementById('filterSize');
+
+            industrySelect.innerHTML = '<option value="">Tous les secteurs</option>';
+            citySelect.innerHTML = '<option value="">Toutes les villes</option>';
+            sizeSelect.innerHTML = '<option value="">Toutes les tailles</option>';
+
+            industries.forEach(industry => {
+                const option = document.createElement('option');
+                option.value = industry;
+                option.textContent = industry;
+                industrySelect.appendChild(option);
+            });
+
+            cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+
+            sizes.forEach(size => {
+                const option = document.createElement('option');
+                option.value = size;
+                option.textContent = size;
+                sizeSelect.appendChild(option);
+            });
+        }
+
+        // Appliquer les filtres
+        function applyFilters() {
+            const searchTerm = document.getElementById('companySearch').value.toLowerCase();
+            const industryFilter = document.getElementById('filterIndustry').value;
+            const cityFilter = document.getElementById('filterCity').value;
+            const sizeFilter = document.getElementById('filterSize').value;
+
+            filteredCompanies = allSourceCompanies.filter(company => {
+                const matchesSearch = !searchTerm || 
+                    company.name.toLowerCase().includes(searchTerm) ||
+                    (company.industry && company.industry.toLowerCase().includes(searchTerm)) ||
+                    (company.city && company.city.toLowerCase().includes(searchTerm));
+
+                const matchesIndustry = !industryFilter || company.industry === industryFilter;
+                const matchesCity = !cityFilter || company.city === cityFilter;
+                const matchesSize = !sizeFilter || company.size_label === sizeFilter;
+
+                return matchesSearch && matchesIndustry && matchesCity && matchesSize;
+            });
+
+            currentSourceCompanies = filteredCompanies;
+            currentPage = 1;
+            renderSourceCompanies(currentSourceCompanies);
+        }
+
+        // Filtrer les entreprises (recherche en temps réel)
+        function filterCompanies() {
+            applyFilters();
+        }
+
+        // Effacer tous les filtres
+        function clearFilters() {
+            document.getElementById('companySearch').value = '';
+            document.getElementById('filterIndustry').value = '';
+            document.getElementById('filterCity').value = '';
+            document.getElementById('filterSize').value = '';
+            
+            currentSourceCompanies = allSourceCompanies;
+            currentPage = 1;
+            renderSourceCompanies(currentSourceCompanies);
+        }
+
+        // Mettre à jour la pagination
+        function updatePagination(totalCompanies) {
+            const totalPages = Math.ceil(totalCompanies / companiesPerPage);
+            const paginationSection = document.getElementById('paginationSection');
+            const pageSelect = document.getElementById('pageSelect');
+            const totalPagesSpan = document.getElementById('totalPages');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (totalPages <= 1) {
+                paginationSection.style.display = 'none';
+                return;
+            }
+
+            paginationSection.style.display = 'flex';
+            totalPagesSpan.textContent = totalPages;
+
+            // Mettre à jour le sélecteur de page
+            pageSelect.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                if (i === currentPage) option.selected = true;
+                pageSelect.appendChild(option);
+            }
+
+            // Mettre à jour les boutons
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+
+            // Mettre à jour le compteur
+            document.getElementById('companiesCount').textContent = totalCompanies;
+        }
+
+        // Aller à une page spécifique
+        function goToPage() {
+            const pageSelect = document.getElementById('pageSelect');
+            currentPage = parseInt(pageSelect.value);
+            renderSourceCompanies(currentSourceCompanies);
+        }
+
+        // Page précédente
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderSourceCompanies(currentSourceCompanies);
+            }
+        }
+
+        // Page suivante
+        function nextPage() {
+            const totalPages = Math.ceil(currentSourceCompanies.length / companiesPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderSourceCompanies(currentSourceCompanies);
+            }
+        }
+
+        // Sélectionner/désélectionner tout
+        function toggleSelectAllSource() {
+            const selectAll = document.getElementById('selectAllSource');
+            const checkboxes = document.querySelectorAll('#sourceCompaniesList input[type="checkbox"]:not([style*="display: none"])');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+                if (selectAll.checked) {
+                    selectedCompanies.add(checkbox.value);
+                } else {
+                    selectedCompanies.delete(checkbox.value);
+                }
+            });
+            
+            updateSelectedCompaniesList();
+            updateCounts();
+            updateAddButton();
+        }
+
+        // Basculer la sélection d'une entreprise
+        function toggleCompanySelection(companyId) {
+            if (selectedCompanies.has(companyId)) {
+                selectedCompanies.delete(companyId);
+            } else {
+                selectedCompanies.add(companyId);
+            }
+            
+            updateSelectedCompaniesList();
+            updateCounts();
+            updateAddButton();
+        }
+
+        // Mettre à jour la liste des entreprises sélectionnées
+        function updateSelectedCompaniesList() {
+            const container = document.getElementById('selectedCompaniesList');
+            
+            if (selectedCompanies.size === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="fas fa-list fa-2x text-muted"></i>
+                        <p class="text-muted mt-2">Aucune entreprise sélectionnée</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = Array.from(selectedCompanies).map(companyId => {
+                const company = currentSourceCompanies.find(c => c.id === companyId);
+                if (!company) return '';
+                
+                return `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div>
+                            <strong>${company.name}</strong><br>
+                            <small class="text-muted">${company.industry || 'N/A'} • ${company.city || 'N/A'}</small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeSelectedCompany('${companyId}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Supprimer une entreprise de la sélection
+        function removeSelectedCompany(companyId) {
+            selectedCompanies.delete(companyId);
+            
+            // Décocher la checkbox correspondante
+            const checkbox = document.getElementById(`company_${companyId}`);
+            if (checkbox) checkbox.checked = false;
+            
+            updateSelectedCompaniesList();
+            updateCounts();
+            updateAddButton();
+        }
+
+        // Ajouter les entreprises sélectionnées
+        function addSelectedCompanies() {
+            if (selectedCompanies.size === 0) return;
+            
+            // Ajouter aux entreprises assignées et stocker leurs détails
+            selectedCompanies.forEach(companyId => {
+                assignedCompanies.add(companyId);
+                
+                // Suivre les ajouts
+                if (!originalAssignedCompanies.has(companyId)) {
+                    addedCompanies.add(companyId);
+                }
+                // Si l'entreprise était marquée comme supprimée, la retirer de cette liste
+                removedCompanies.delete(companyId);
+                
+                // Trouver les détails de l'entreprise dans currentSourceCompanies
+                const companyDetails = currentSourceCompanies.find(c => c.id === companyId);
+                if (companyDetails) {
+                    // Ajouter aux détails des entreprises assignées
+                    if (!window.assignedCompaniesDetails) {
+                        window.assignedCompaniesDetails = [];
+                    }
+                    window.assignedCompaniesDetails.push(companyDetails);
+                }
+            });
+            
+            // Vider la sélection
+            selectedCompanies.clear();
+            
+            // Mettre à jour l'interface
+            updateSelectedCompaniesList();
+            updateAssignedCompaniesList();
+            updateCounts();
+            updateAddButton();
+            
+            // Décocher toutes les checkboxes
+            document.querySelectorAll('#sourceCompaniesList input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            document.getElementById('selectAllSource').checked = false;
+        }
+
+        // Charger les entreprises déjà affectées
+        async function loadAssignedCompanies() {
+            try {
+                const res = await fetch(`${API}/campaigns/${currentCampaignId}/companies`, { headers: getAuthHeader() });
+                const data = await res.json();
+                
+                assignedCompanies.clear();
+                originalAssignedCompanies.clear();
+                addedCompanies.clear();
+                removedCompanies.clear();
+                
+                // Stocker les détails complets des entreprises assignées
+                window.assignedCompaniesDetails = data.data || [];
+                
+                (data.data || []).forEach(company => {
+                    assignedCompanies.add(company.id);
+                    originalAssignedCompanies.add(company.id); // Garder une copie des entreprises originales
+                });
+                
+                updateAssignedCompaniesList();
+                updateCounts();
+            } catch (error) {
+                console.error('Erreur chargement entreprises assignées:', error);
+            }
+        }
+
+        // Mettre à jour la liste des entreprises assignées
+        function updateAssignedCompaniesList() {
+            const container = document.getElementById('assignedCompaniesList');
+            
+            if (assignedCompanies.size === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="fas fa-check fa-2x text-muted"></i>
+                        <p class="text-muted mt-2">Aucune entreprise affectée</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Afficher les vraies informations des entreprises assignées
+            container.innerHTML = (window.assignedCompaniesDetails || []).map(company => `
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                    <div>
+                        <strong>${company.name}</strong><br>
+                        <small class="text-muted">
+                            ${company.industry || 'N/A'} • ${company.city || 'N/A'}
+                            ${company.email ? ` • ${company.email}` : ''}
+                        </small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeAssignedCompany('${company.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Supprimer une entreprise assignée
+        function removeAssignedCompany(companyId) {
+            assignedCompanies.delete(companyId);
+            
+            // Suivre les suppressions
+            if (originalAssignedCompanies.has(companyId)) {
+                removedCompanies.add(companyId);
+            }
+            // Si l'entreprise était marquée comme ajoutée, la retirer de cette liste
+            addedCompanies.delete(companyId);
+            
+            // Supprimer aussi des détails
+            if (window.assignedCompaniesDetails) {
+                window.assignedCompaniesDetails = window.assignedCompaniesDetails.filter(c => c.id !== companyId);
+            }
+            
+            updateAssignedCompaniesList();
+            updateCounts();
+        }
+
+        // Mettre à jour les compteurs
+        function updateCounts() {
+            document.getElementById('selectedCount').textContent = selectedCompanies.size;
+            document.getElementById('assignedCount').textContent = assignedCompanies.size;
+        }
+
+        // Mettre à jour l'état du bouton d'ajout
+        function updateAddButton() {
+            const btn = document.getElementById('addCompaniesBtn');
+            btn.disabled = selectedCompanies.size === 0;
+        }
+
+                // Variables pour suivre les modifications
+        let originalAssignedCompanies = new Set();
+        let addedCompanies = new Set();
+        let removedCompanies = new Set();
+
+        // Sauvegarder les affectations
+        async function saveAssignments() {
+            try {
+                console.log('🔍 [DEBUG] Sauvegarde des affectations...');
+                console.log('🔍 [DEBUG] Entreprises originales:', originalAssignedCompanies.size);
+                console.log('🔍 [DEBUG] Entreprises ajoutées:', addedCompanies.size);
+                console.log('🔍 [DEBUG] Entreprises supprimées:', removedCompanies.size);
+                console.log('🔍 [DEBUG] Entreprises finales:', assignedCompanies.size);
+
+                // Si aucune modification, ne rien faire
+                if (addedCompanies.size === 0 && removedCompanies.size === 0) {
+                    alert('Aucune modification à sauvegarder');
+                    return;
+                }
+
+                // Préparer les données pour l'API
+                const data = {
+                    added_company_ids: Array.from(addedCompanies),
+                    removed_company_ids: Array.from(removedCompanies)
+                };
+
+                console.log('🔍 [DEBUG] Données à envoyer:', data);
+
+                const res = await fetch(`${API}/campaigns/${currentCampaignId}/companies/batch`, {
+                    method: 'PUT',
+                    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    const result = await res.json();
+                    const message = [];
+                    if (addedCompanies.size > 0) message.push(`${addedCompanies.size} entreprise(s) ajoutée(s)`);
+                    if (removedCompanies.size > 0) message.push(`${removedCompanies.size} entreprise(s) supprimée(s)`);
+                    
+                    alert(`Modifications sauvegardées avec succès !\n${message.join('\n')}`);
+                    assignModal.hide();
+                    await loadCampaigns(); // Recharger la liste des campagnes
+                } else {
+                    const error = await res.json();
+                    alert('Erreur lors de la sauvegarde : ' + (error.error || 'Erreur inconnue'));
+                }
+            } catch (error) {
+                console.error('❌ [DEBUG] Erreur sauvegarde affectations:', error);
+                alert('Erreur lors de la sauvegarde des affectations');
             }
         }
 

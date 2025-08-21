@@ -127,6 +127,7 @@ class Collaborateur {
             grade,
             statut,
             division_id,
+            business_unit_id,
             search
         } = options;
 
@@ -147,6 +148,11 @@ class Collaborateur {
         if (division_id) {
             whereConditions.push(`c.division_id = $${paramIndex++}`);
             queryParams.push(division_id);
+        }
+
+        if (business_unit_id) {
+            whereConditions.push(`c.business_unit_id = $${paramIndex++}`);
+            queryParams.push(business_unit_id);
         }
 
         if (search) {

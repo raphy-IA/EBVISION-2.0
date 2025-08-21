@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validations de Campagnes - Prospection</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    <link rel="stylesheet" href="css/user-header.css">
+    <style>
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+        }
+        
+        .validation-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        
+        .validation-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .validation-card.urgent {
+            border-left: 5px solid #dc3545;
+        }
+        
+        .validation-card.warning {
+            border-left: 5px solid #ffc107;
+        }
+        
+        .campaign-stats {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .stats-item {
+            text-align: center;
+        }
+        
+        .stats-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .days-remaining {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .days-remaining.urgent {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .days-remaining.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .days-remaining.normal {
+            background: #28a745;
+            color: white;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .demandeur-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .demandeur-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <div class="sidebar-container"></div>
+        <div class="main-content-area">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="fas fa-clipboard-check me-3"></i>Validations de Campagnes</h1>
+                    <button class="btn btn-outline-primary" onclick="loadValidations()">
+                        <i class="fas fa-sync me-1"></i>Actualiser
+                    </button>
+                </div>
+
+                <!-- Statistiques des validations -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-warning mb-1" id="pendingCount">0</h3>
+                                <p class="mb-0">En attente</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-danger mb-1" id="urgentCount">0</h3>
+                                <p class="mb-0">Urgentes (< 2 jours)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-success mb-1" id="approvedCount">0</h3>
+                                <p class="mb-0">Approuvées ce mois</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-secondary mb-1" id="rejectedCount">0</h3>
+                                <p class="mb-0">Rejetées ce mois</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtres -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label">Statut</label>
+                                <select class="form-select" id="statusFilter" onchange="filterValidations()">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="EN_ATTENTE">En attente</option>
+                                    <option value="APPROUVE">Approuvé</option>
+                                    <option value="REFUSE">Refusé</option>
+                                    <option value="EXPIRE">Expiré</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Niveau</label>
+                                <select class="form-select" id="levelFilter" onchange="filterValidations()">
+                                    <option value="">Tous les niveaux</option>
+                                    <option value="DIVISION">Division</option>
+                                    <option value="BUSINESS_UNIT">Business Unit</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Priorité</label>
+                                <select class="form-select" id="priorityFilter" onchange="filterValidations()">
+                                    <option value="">Toutes</option>
+                                    <option value="urgent">Urgentes</option>
+                                    <option value="warning">Bientôt expirées</option>
+                                    <option value="normal">Normales</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                                    <i class="fas fa-times me-1"></i>Effacer filtres
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste des validations -->
+                <div class="row">
+                    <div class="col-12">
+                        <div id="validationsContainer">
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Chargement...</span>
+                                </div>
+                                <p class="mt-2">Chargement des validations...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de traitement de validation -->
+    <div class="modal fade" id="processValidationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-gavel me-2"></i>
+                        Traiter la validation
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="validationId">
+                    <input type="hidden" id="campaignId">
+                    
+                    <!-- Informations de la campagne -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">Informations de la campagne</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Nom :</strong> <span id="modalCampaignName"></span></p>
+                                    <p><strong>Canal :</strong> <span id="modalCampaignChannel"></span></p>
+                                    <p><strong>Niveau requis :</strong> <span id="modalValidationLevel"></span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Demandeur :</strong> <span id="modalDemandeur"></span></p>
+                                    <p><strong>Date demande :</strong> <span id="modalRequestDate"></span></p>
+                                    <p><strong>Expire le :</strong> <span id="modalExpiryDate"></span></p>
+                                </div>
+                            </div>
+                            <div id="modalDemandeurComment" class="mt-2"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistiques de la campagne -->
+                    <div class="campaign-stats">
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <div class="stats-item">
+                                    <div class="stats-number" id="modalStatsCompanies">0</div>
+                                    <small class="text-muted">Entreprises</small>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="stats-item">
+                                    <div class="stats-number" id="modalStatsEmails">0</div>
+                                    <small class="text-muted">Emails</small>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="stats-item">
+                                    <div class="stats-number" id="modalStatsSectors">0</div>
+                                    <small class="text-muted">Secteurs</small>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="stats-item">
+                                    <div class="stats-number" id="modalStatsCities">0</div>
+                                    <small class="text-muted">Villes</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Décision -->
+                    <div class="mb-3">
+                        <label class="form-label">Décision *</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="decision" id="approve" value="APPROUVE">
+                            <label class="btn btn-outline-success" for="approve">
+                                <i class="fas fa-check me-1"></i>Approuver
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="decision" id="reject" value="REFUSE">
+                            <label class="btn btn-outline-danger" for="reject">
+                                <i class="fas fa-times me-1"></i>Rejeter
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Commentaire -->
+                    <div class="mb-3">
+                        <label for="validatorComment" class="form-label">Commentaire (optionnel)</label>
+                        <textarea class="form-control" id="validatorComment" rows="3" 
+                                  placeholder="Ajoutez un commentaire sur votre décision..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="submitValidation()">
+                        <i class="fas fa-gavel me-1"></i>Valider la décision
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <script src="js/user-header-utils.js"></script>
+    <script src="js/user-header-main.js"></script>
+    <script src="js/user-header-init.js"></script>
+    <script src="js/session-manager.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script>
+        const API = '/api/prospecting';
+        let allValidations = [];
+        let filteredValidations = [];
+
+        async function loadValidations() {
+            try {
+                // Récupérer les responsabilités du collaborateur connecté
+                const responsabilitiesRes = await fetch('/api/managers/my-responsibilities', { headers: getAuthHeader() });
+                const responsabilitiesData = await responsabilitiesRes.json();
+                
+                if (!responsabilitiesData.success) {
+                    throw new Error('Impossible de récupérer vos responsabilités');
+                }
+                
+                const { business_units, divisions } = responsabilitiesData.data;
+                
+                if (business_units.length === 0 && divisions.length === 0) {
+                    document.getElementById('validationsContainer').innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                            <h5>Aucune responsabilité</h5>
+                            <p class="text-muted">Vous n'êtes responsable d'aucune Business Unit ou Division.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Charger toutes les campagnes nécessitant validation
+                const campaignsRes = await fetch(`${API}/campaigns?status=EN_VALIDATION`, { headers: getAuthHeader() });
+                const campaignsData = await campaignsRes.json();
+                
+                if (!campaignsData.success) {
+                    throw new Error('Erreur lors du chargement des campagnes');
+                }
+                
+                // Charger les validations pour chaque campagne
+                allValidations = [];
+                
+                for (const campaign of campaignsData.data) {
+                    const validationsRes = await fetch(`${API}/campaigns/${campaign.id}/validations`, { headers: getAuthHeader() });
+                    const validationsData = await validationsRes.json();
+                    
+                    if (validationsData.success) {
+                        // Filtrer les validations qui concernent nos responsabilités
+                        const relevantValidations = validationsData.data.filter(validation => {
+                            return validation.statut_validation === 'EN_ATTENTE' && 
+                                   canValidate(validation, business_units, divisions);
+                        });
+                        
+                        // Ajouter les informations de campagne à chaque validation
+                        relevantValidations.forEach(validation => {
+                            validation.campaign = campaign;
+                        });
+                        
+                        allValidations.push(...relevantValidations);
+                    }
+                }
+                
+                // Charger les statistiques des campagnes
+                for (const validation of allValidations) {
+                    const companiesRes = await fetch(`${API}/campaigns/${validation.campaign.id}/companies`, { headers: getAuthHeader() });
+                    if (companiesRes.ok) {
+                        const companiesData = await companiesRes.json();
+                        validation.companies = companiesData.success ? companiesData.data : [];
+                    } else {
+                        validation.companies = [];
+                    }
+                }
+                
+                filteredValidations = [...allValidations];
+                renderValidations();
+                updateStatistics();
+                
+            } catch (e) {
+                console.error('Erreur chargement validations:', e);
+                document.getElementById('validationsContainer').innerHTML = `
+                    <div class="text-center py-5 text-danger">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                        <h5>Erreur de chargement</h5>
+                        <p>${e.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function canValidate(validation, businessUnits, divisions) {
+            if (validation.niveau_validation === 'BUSINESS_UNIT') {
+                return businessUnits.some(bu => bu.id === validation.campaign.business_unit_id);
+            } else if (validation.niveau_validation === 'DIVISION') {
+                return divisions.some(div => div.id === validation.campaign.division_id);
+            }
+            return false;
+        }
+
+        function renderValidations() {
+            const container = document.getElementById('validationsContainer');
+            
+            if (filteredValidations.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5>Aucune validation en attente</h5>
+                        <p class="text-muted">Toutes les validations sont à jour.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            filteredValidations.forEach(validation => {
+                const daysRemaining = getDaysRemaining(validation.expires_at);
+                const urgencyClass = daysRemaining <= 1 ? 'urgent' : daysRemaining <= 2 ? 'warning' : '';
+                const urgencyBadgeClass = daysRemaining <= 1 ? 'urgent' : daysRemaining <= 2 ? 'warning' : 'normal';
+                
+                const companies = validation.companies || [];
+                const emailCount = companies.filter(c => c.email).length;
+                const sectorsCount = [...new Set(companies.map(c => c.industry).filter(Boolean))].length;
+                const citiesCount = [...new Set(companies.map(c => c.city).filter(Boolean))].length;
+                
+                html += `
+                    <div class="validation-card ${urgencyClass}" data-validation-id="${validation.id}">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h5 class="mb-2">
+                                    <i class="fas fa-bullhorn text-primary me-2"></i>
+                                    ${validation.campaign.name}
+                                </h5>
+                                <div class="demandeur-info">
+                                    <div class="demandeur-avatar">
+                                        ${getInitials(validation.demandeur_name)}
+                                    </div>
+                                    <div>
+                                        <strong>Demandeur :</strong> ${validation.demandeur_name}<br>
+                                        <small class="text-muted">
+                                            Demandé le ${new Date(validation.date_demande).toLocaleDateString('fr-FR')}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-info">${validation.niveau_validation}</span><br>
+                                <span class="days-remaining ${urgencyBadgeClass} mt-2">
+                                    ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="campaign-stats">
+                            <div class="row text-center">
+                                <div class="col-3">
+                                    <div class="stats-item">
+                                        <div class="stats-number">${companies.length}</div>
+                                        <small class="text-muted">Entreprises</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="stats-item">
+                                        <div class="stats-number">${emailCount}</div>
+                                        <small class="text-muted">Emails</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="stats-item">
+                                        <div class="stats-number">${sectorsCount}</div>
+                                        <small class="text-muted">Secteurs</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="stats-item">
+                                        <div class="stats-number">${citiesCount}</div>
+                                        <small class="text-muted">Villes</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${validation.commentaire_demandeur ? `
+                            <div class="alert alert-light mt-2">
+                                <strong>Commentaire du demandeur :</strong><br>
+                                ${validation.commentaire_demandeur}
+                            </div>
+                        ` : ''}
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="openValidationModal('${validation.id}', '${validation.campaign.id}')">
+                                <i class="fas fa-gavel me-1"></i>Traiter la validation
+                            </button>
+                            <button class="btn btn-outline-info" onclick="viewCampaignSummary('${validation.campaign.id}')">
+                                <i class="fas fa-eye me-1"></i>Voir détails
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function updateStatistics() {
+            const pending = allValidations.filter(v => v.statut_validation === 'EN_ATTENTE').length;
+            const urgent = allValidations.filter(v => v.statut_validation === 'EN_ATTENTE' && getDaysRemaining(v.expires_at) <= 1).length;
+            
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('urgentCount').textContent = urgent;
+            
+            // Note: Pour les statistiques mensuelles, nous devrions faire des requêtes séparées
+            // Pour cette démo, nous mettons 0
+            document.getElementById('approvedCount').textContent = '0';
+            document.getElementById('rejectedCount').textContent = '0';
+        }
+
+        function getDaysRemaining(expiryDate) {
+            const now = new Date();
+            const expiry = new Date(expiryDate);
+            const diffTime = expiry - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return Math.max(0, diffDays);
+        }
+
+        function getInitials(fullName) {
+            return fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+        }
+
+        async function openValidationModal(validationId, campaignId) {
+            try {
+                const validation = allValidations.find(v => v.id === validationId);
+                if (!validation) return;
+                
+                // Remplir les informations
+                document.getElementById('validationId').value = validationId;
+                document.getElementById('campaignId').value = campaignId;
+                document.getElementById('modalCampaignName').textContent = validation.campaign.name;
+                document.getElementById('modalCampaignChannel').textContent = validation.campaign.channel;
+                document.getElementById('modalValidationLevel').textContent = validation.niveau_validation;
+                document.getElementById('modalDemandeur').textContent = validation.demandeur_name;
+                document.getElementById('modalRequestDate').textContent = new Date(validation.date_demande).toLocaleDateString('fr-FR');
+                document.getElementById('modalExpiryDate').textContent = new Date(validation.expires_at).toLocaleDateString('fr-FR');
+                
+                // Commentaire du demandeur
+                const commentDiv = document.getElementById('modalDemandeurComment');
+                if (validation.commentaire_demandeur) {
+                    commentDiv.innerHTML = `
+                        <div class="alert alert-info">
+                            <strong>Commentaire du demandeur :</strong><br>
+                            ${validation.commentaire_demandeur}
+                        </div>
+                    `;
+                } else {
+                    commentDiv.innerHTML = '';
+                }
+                
+                // Statistiques
+                const companies = validation.companies || [];
+                const emailCount = companies.filter(c => c.email).length;
+                const sectorsCount = [...new Set(companies.map(c => c.industry).filter(Boolean))].length;
+                const citiesCount = [...new Set(companies.map(c => c.city).filter(Boolean))].length;
+                
+                document.getElementById('modalStatsCompanies').textContent = companies.length;
+                document.getElementById('modalStatsEmails').textContent = emailCount;
+                document.getElementById('modalStatsSectors').textContent = sectorsCount;
+                document.getElementById('modalStatsCities').textContent = citiesCount;
+                
+                // Réinitialiser le formulaire
+                document.querySelectorAll('input[name="decision"]').forEach(input => input.checked = false);
+                document.getElementById('validatorComment').value = '';
+                
+                const modal = new bootstrap.Modal(document.getElementById('processValidationModal'));
+                modal.show();
+            } catch (e) {
+                console.error('Erreur ouverture modal:', e);
+                alert('Erreur lors de l\'ouverture du modal');
+            }
+        }
+
+        async function submitValidation() {
+            try {
+                const validationId = document.getElementById('validationId').value;
+                const campaignId = document.getElementById('campaignId').value;
+                const decision = document.querySelector('input[name="decision"]:checked')?.value;
+                const comment = document.getElementById('validatorComment').value.trim();
+                
+                if (!decision) {
+                    alert('Veuillez sélectionner une décision (Approuver ou Rejeter)');
+                    return;
+                }
+                
+                const response = await fetch(`${API}/campaigns/${campaignId}/validations/${validationId}/process`, {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({
+                        decision: decision,
+                        comment: comment
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message || 'Validation traitée avec succès');
+                    
+                    // Fermer le modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('processValidationModal'));
+                    modal.hide();
+                    
+                    // Recharger les validations
+                    await loadValidations();
+                } else {
+                    alert('Erreur: ' + (result.error || 'Traitement échoué'));
+                }
+            } catch (e) {
+                console.error('Erreur traitement validation:', e);
+                alert('Erreur lors du traitement de la validation');
+            }
+        }
+
+        function viewCampaignSummary(campaignId) {
+            window.open(`/prospecting-campaign-summary.html?id=${campaignId}`, '_blank');
+        }
+
+        function filterValidations() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const levelFilter = document.getElementById('levelFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            
+            filteredValidations = allValidations.filter(validation => {
+                let passes = true;
+                
+                if (statusFilter && validation.statut_validation !== statusFilter) {
+                    passes = false;
+                }
+                
+                if (levelFilter && validation.niveau_validation !== levelFilter) {
+                    passes = false;
+                }
+                
+                if (priorityFilter) {
+                    const daysRemaining = getDaysRemaining(validation.expires_at);
+                    switch (priorityFilter) {
+                        case 'urgent':
+                            if (daysRemaining > 1) passes = false;
+                            break;
+                        case 'warning':
+                            if (daysRemaining <= 1 || daysRemaining > 2) passes = false;
+                            break;
+                        case 'normal':
+                            if (daysRemaining <= 2) passes = false;
+                            break;
+                    }
+                }
+                
+                return passes;
+            });
+            
+            renderValidations();
+        }
+
+        function clearFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('levelFilter').value = '';
+            document.getElementById('priorityFilter').value = '';
+            filteredValidations = [...allValidations];
+            renderValidations();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadValidations();
+        });
+    </script>
+</body>
+</html>
+
+
+

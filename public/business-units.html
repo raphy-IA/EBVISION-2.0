@@ -98,6 +98,108 @@
             position: relative;
             height: 300px;
         }
+        
+        /* Styles pour la gestion des responsables */
+        .manager-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .manager-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .manager-card.has-managers {
+            border-left: 4px solid #28a745;
+        }
+        
+        .manager-card.no-managers {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .manager-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .manager-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .manager-details h6 {
+            margin-bottom: 0.25rem;
+            color: #495057;
+        }
+        
+        .manager-details p {
+            margin-bottom: 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .manager-badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .manager-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-principal {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .badge-adjoint {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .manager-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .no-managers-alert {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .filters-active {
+            background-color: #e3f2fd;
+            border: 1px solid #2196f3;
+        }
+        
+        .filters-active .card-title {
+            color: #1976d2;
+        }
 
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
@@ -179,6 +281,11 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="activities-tab" data-bs-toggle="tab" data-bs-target="#activities" type="button" role="tab" aria-controls="activities" aria-selected="false">
                                     <i class="fas fa-cogs me-2"></i>Configuration Activités Internes
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="managers-tab" data-bs-toggle="tab" data-bs-target="#managers" type="button" role="tab" aria-controls="managers" aria-selected="false">
+                                    <i class="fas fa-users-cog me-2"></i>Gestion des Responsables
                                 </button>
                             </li>
                         </ul>
@@ -293,6 +400,137 @@
                                     <!-- Liste des Business Units pour configuration -->
                                     <div id="businessUnitsConfigContainer">
                                         <!-- Les business units seront chargées dynamiquement -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Onglet Gestion des Responsables -->
+                            <div class="tab-pane fade" id="managers" role="tabpanel" aria-labelledby="managers-tab">
+                                <div id="managers-section">
+                                    <!-- Header de la gestion des responsables -->
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <div>
+                                            <h5><i class="fas fa-users-cog me-2"></i>Gestion des Responsables BU et Divisions</h5>
+                                            <p class="text-muted mb-0">Assignez les responsables principaux et adjoints pour chaque Business Unit et Division</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Statistiques -->
+                                    <div class="row mb-4">
+                                        <div class="col-md-3">
+                                            <div class="card text-center">
+                                                <div class="card-body">
+                                                    <i class="fas fa-building text-primary" style="font-size: 2rem;"></i>
+                                                    <div class="stats-number" id="totalBusinessUnitsManagers">0</div>
+                                                    <div class="stats-label">Business Units</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card text-center">
+                                                <div class="card-body">
+                                                    <i class="fas fa-sitemap text-success" style="font-size: 2rem;"></i>
+                                                    <div class="stats-number" id="totalDivisionsManagers">0</div>
+                                                    <div class="stats-label">Divisions</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card text-center">
+                                                <div class="card-body">
+                                                    <i class="fas fa-user-check text-warning" style="font-size: 2rem;"></i>
+                                                    <div class="stats-number" id="assignedManagers">0</div>
+                                                    <div class="stats-label">Responsables Assignés</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card text-center">
+                                                <div class="card-body">
+                                                    <i class="fas fa-exclamation-triangle text-danger" style="font-size: 2rem;"></i>
+                                                    <div class="stats-number" id="unassignedUnits">0</div>
+                                                    <div class="stats-label">Sans Responsable</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Filtres -->
+                                    <div class="card mb-4">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="card-title mb-0">
+                                                    <i class="fas fa-filter me-2"></i>Filtres
+                                                </h6>
+                                                <button class="btn btn-sm btn-outline-secondary" onclick="resetManagersFilters()">
+                                                    <i class="fas fa-undo me-1"></i>Réinitialiser
+                                                </button>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <label for="entityTypeFilter" class="form-label">Type d'entité</label>
+                                                    <select class="form-select" id="entityTypeFilter">
+                                                        <option value="">Toutes les entités</option>
+                                                        <option value="business-unit">Business Units</option>
+                                                        <option value="division">Divisions</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="managerStatusFilter" class="form-label">Statut des responsables</label>
+                                                    <select class="form-select" id="managerStatusFilter">
+                                                        <option value="">Tous les statuts</option>
+                                                        <option value="assigned">Avec responsable</option>
+                                                        <option value="unassigned">Sans responsable</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-check mt-4">
+                                                        <input class="form-check-input" type="checkbox" id="showOnlyUnassigned">
+                                                        <label class="form-check-label" for="showOnlyUnassigned">
+                                                            Afficher seulement les entités sans responsable
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Liste des Business Units avec responsables -->
+                                    <div class="card mb-4">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-building me-2"></i>Business Units
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="businessUnitsManagersContainer">
+                                                <div class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Chargement...</span>
+                                                    </div>
+                                                    <p class="mt-2 text-muted">Chargement des Business Units...</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Liste des Divisions avec responsables -->
+                                    <div class="card mb-4">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-sitemap me-2"></i>Divisions
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="divisionsManagersContainer">
+                                                <div class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Chargement...</span>
+                                                    </div>
+                                                    <p class="mt-2 text-muted">Chargement des Divisions...</p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -486,6 +724,100 @@
                     <button type="button" class="btn btn-danger" onclick="confirmDeleteDivision()">
                         <i class="fas fa-trash me-1"></i>
                         Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de gestion des responsables -->
+    <div class="modal fade" id="managersModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-users-cog me-2"></i>
+                        Gestion des Responsables: <span id="entity-name-display"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="managersForm">
+                        <input type="hidden" id="entityId">
+                        <input type="hidden" id="entityType">
+                        
+                        <!-- Responsable Principal -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-user-tie me-2 text-primary"></i>
+                                    Responsable Principal
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="principalManager" class="form-label">Responsable Principal *</label>
+                                    <select class="form-select" id="principalManager" required>
+                                        <option value="">Sélectionnez un responsable principal</option>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Seuls les collaborateurs de cette entité sont éligibles. Le responsable principal sera le premier contact pour les validations.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Responsable Adjoint -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-user-friends me-2 text-secondary"></i>
+                                    Responsable Adjoint
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="adjointManager" class="form-label">Responsable Adjoint</label>
+                                    <select class="form-select" id="adjointManager">
+                                        <option value="">Sélectionnez un responsable adjoint (optionnel)</option>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Seuls les collaborateurs de cette entité sont éligibles. Le responsable adjoint remplacera le principal en cas d'absence.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alerte si aucun collaborateur éligible -->
+                        <div class="alert alert-warning" id="noEligibleCollaboratorsAlert" style="display: none;">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Attention :</strong> Aucun collaborateur actif n'est assigné à cette entité. 
+                            Vous devez d'abord assigner des collaborateurs à cette Business Unit/Division avant de pouvoir désigner des responsables.
+                        </div>
+
+                        <!-- Informations sur les responsables actuels -->
+                        <div class="card mb-3" id="currentManagersInfo" style="display: none;">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-info-circle me-2 text-info"></i>
+                                    Responsables Actuels
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="currentManagersContent">
+                                    <!-- Les informations seront chargées dynamiquement -->
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveManagers()">
+                        <i class="fas fa-save me-1"></i>
+                        Enregistrer les Responsables
                     </button>
                 </div>
             </div>
@@ -1263,6 +1595,855 @@
         // Événements de filtrage pour la configuration
         document.getElementById('businessUnitFilter').addEventListener('change', displayBusinessUnitsConfig);
         document.getElementById('showConfiguredOnly').addEventListener('change', displayBusinessUnitsConfig);
+
+        // =====================================================
+        // GESTION DES RESPONSABLES
+        // =====================================================
+
+        let managersData = {
+            businessUnits: [],
+            divisions: [],
+            collaborators: []
+        };
+
+        // Charger les données des responsables
+        async function loadManagersData() {
+            try {
+                // Charger tous les collaborateurs pour avoir la liste complète
+                const collaboratorsRes = await fetch('/api/collaborateurs?limit=1000', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                const collaboratorsData = await collaboratorsRes.json();
+                managersData.collaborators = collaboratorsData.data || [];
+
+                // Charger les Business Units avec leurs responsables
+                const buRes = await fetch('/api/business-units', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                const buData = await buRes.json();
+                managersData.businessUnits = buData.data || [];
+
+                // Charger les Divisions avec leurs responsables
+                const divRes = await fetch('/api/divisions', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                const divData = await divRes.json();
+                managersData.divisions = divData.data || [];
+
+                // Charger les responsables pour chaque BU
+                for (const bu of managersData.businessUnits) {
+                    const managersRes = await fetch(`/api/managers/business-units/${bu.id}/managers`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    const managersData = await managersRes.json();
+                    bu.managers = managersData.success ? managersData.data : null;
+                }
+
+                // Charger les responsables pour chaque Division
+                for (const div of managersData.divisions) {
+                    const managersRes = await fetch(`/api/managers/divisions/${div.id}/managers`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    const managersData = await managersRes.json();
+                    div.managers = managersData.success ? managersData.data : null;
+                }
+
+                // Afficher les données
+                displayBusinessUnitsManagers();
+                displayDivisionsManagers();
+                updateManagersStatistics();
+
+            } catch (error) {
+                console.error('Erreur chargement données responsables:', error);
+                showAlert('Erreur lors du chargement des données des responsables', 'danger');
+            }
+        }
+
+        // Afficher les Business Units avec leurs responsables
+        function displayBusinessUnitsManagers() {
+            const container = document.getElementById('businessUnitsManagersContainer');
+            
+            if (managersData.businessUnits.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune Business Unit trouvée</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            managersData.businessUnits.forEach(bu => {
+                const hasManagers = bu.managers && (bu.managers.principal_id || bu.managers.adjoint_id);
+                const cardClass = hasManagers ? 'manager-card has-managers' : 'manager-card no-managers';
+                
+                html += `
+                    <div class="${cardClass}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-2">
+                                    <i class="fas fa-building text-primary me-2"></i>
+                                    ${bu.nom}
+                                </h6>
+                                <p class="text-muted mb-2">${bu.description || 'Aucune description'}</p>
+                                <p class="text-muted small mb-3">
+                                    <i class="fas fa-code me-1"></i>Code: ${bu.code}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-users me-1"></i>${getEligibleCollaboratorsCount(bu.id, 'business-unit')} collaborateur(s) éligible(s)
+                                </p>
+                                
+                                ${hasManagers ? `
+                                    <div class="manager-info">
+                                        ${bu.managers.principal_id ? `
+                                            <div class="manager-avatar">
+                                                ${getInitials(getCollaboratorName(bu.managers.principal_id))}
+                                            </div>
+                                            <div class="manager-details">
+                                                <h6>${getCollaboratorName(bu.managers.principal_id)}</h6>
+                                                <p>${getCollaboratorEmail(bu.managers.principal_id)}</p>
+                                                <div class="manager-badges">
+                                                    <span class="manager-badge badge-principal">Responsable Principal</span>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${bu.managers.adjoint_id ? `
+                                            <div class="manager-avatar">
+                                                ${getInitials(getCollaboratorName(bu.managers.adjoint_id))}
+                                            </div>
+                                            <div class="manager-details">
+                                                <h6>${getCollaboratorName(bu.managers.adjoint_id)}</h6>
+                                                <p>${getCollaboratorEmail(bu.managers.adjoint_id)}</p>
+                                                <div class="manager-badges">
+                                                    <span class="manager-badge badge-adjoint">Responsable Adjoint</span>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                ` : `
+                                    <div class="no-managers-alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Aucun responsable assigné à cette Business Unit
+                                    </div>
+                                `}
+                            </div>
+                            <div class="manager-actions">
+                                <button class="btn btn-sm btn-outline-primary" onclick="openManagersModal('${bu.id}', 'business-unit', '${bu.nom}')">
+                                    <i class="fas fa-users-cog me-1"></i>
+                                    ${hasManagers ? 'Modifier' : 'Assigner'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Afficher les Divisions avec leurs responsables
+        function displayDivisionsManagers() {
+            const container = document.getElementById('divisionsManagersContainer');
+            
+            if (managersData.divisions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-sitemap fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune Division trouvée</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            managersData.divisions.forEach(div => {
+                const hasManagers = div.managers && (div.managers.principal_id || div.managers.adjoint_id);
+                const cardClass = hasManagers ? 'manager-card has-managers' : 'manager-card no-managers';
+                const buName = getBusinessUnitName(div.business_unit_id);
+                
+                html += `
+                    <div class="${cardClass}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-2">
+                                    <i class="fas fa-sitemap text-success me-2"></i>
+                                    ${div.nom}
+                                </h6>
+                                <p class="text-muted mb-2">${div.description || 'Aucune description'}</p>
+                                <p class="text-muted small mb-3">
+                                    <i class="fas fa-code me-1"></i>Code: ${div.code}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-building me-1"></i>BU: ${buName}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-users me-1"></i>${getEligibleCollaboratorsCount(div.id, 'division')} collaborateur(s) éligible(s)
+                                </p>
+                                
+                                ${hasManagers ? `
+                                    <div class="manager-info">
+                                        ${div.managers.principal_id ? `
+                                            <div class="manager-avatar">
+                                                ${getInitials(getCollaboratorName(div.managers.principal_id))}
+                                            </div>
+                                            <div class="manager-details">
+                                                <h6>${getCollaboratorName(div.managers.principal_id)}</h6>
+                                                <p>${getCollaboratorEmail(div.managers.principal_id)}</p>
+                                                <div class="manager-badges">
+                                                    <span class="manager-badge badge-principal">Responsable Principal</span>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${div.managers.adjoint_id ? `
+                                            <div class="manager-avatar">
+                                                ${getInitials(getCollaboratorName(div.managers.adjoint_id))}
+                                            </div>
+                                            <div class="manager-details">
+                                                <h6>${getCollaboratorName(div.managers.adjoint_id)}</h6>
+                                                <p>${getCollaboratorEmail(div.managers.adjoint_id)}</p>
+                                                <div class="manager-badges">
+                                                    <span class="manager-badge badge-adjoint">Responsable Adjoint</span>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                ` : `
+                                    <div class="no-managers-alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Aucun responsable assigné à cette Division
+                                    </div>
+                                `}
+                            </div>
+                            <div class="manager-actions">
+                                <button class="btn btn-sm btn-outline-primary" onclick="openManagersModal('${div.id}', 'division', '${div.nom}')">
+                                    <i class="fas fa-users-cog me-1"></i>
+                                    ${hasManagers ? 'Modifier' : 'Assigner'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Mettre à jour les statistiques des responsables
+        function updateManagersStatistics() {
+            const totalBU = managersData.businessUnits.length;
+            const totalDiv = managersData.divisions.length;
+            
+            let assignedManagers = 0;
+            let unassignedUnits = 0;
+            
+            // Compter les BU avec responsables
+            managersData.businessUnits.forEach(bu => {
+                if (bu.managers && (bu.managers.principal_id || bu.managers.adjoint_id)) {
+                    assignedManagers++;
+                } else {
+                    unassignedUnits++;
+                }
+            });
+            
+            // Compter les Divisions avec responsables
+            managersData.divisions.forEach(div => {
+                if (div.managers && (div.managers.principal_id || div.managers.adjoint_id)) {
+                    assignedManagers++;
+                } else {
+                    unassignedUnits++;
+                }
+            });
+            
+            document.getElementById('totalBusinessUnitsManagers').textContent = totalBU;
+            document.getElementById('totalDivisionsManagers').textContent = totalDiv;
+            document.getElementById('assignedManagers').textContent = assignedManagers;
+            document.getElementById('unassignedUnits').textContent = unassignedUnits;
+        }
+
+        // Fonctions utilitaires
+        function getCollaboratorName(collaboratorId) {
+            const collaborator = managersData.collaborators.find(c => c.id === collaboratorId);
+            return collaborator ? `${collaborator.prenom} ${collaborator.nom}` : 'Collaborateur inconnu';
+        }
+
+        function getCollaboratorEmail(collaboratorId) {
+            const collaborator = managersData.collaborators.find(c => c.id === collaboratorId);
+            return collaborator ? collaborator.email : '';
+        }
+
+        function getBusinessUnitName(buId) {
+            const bu = managersData.businessUnits.find(b => b.id === buId);
+            return bu ? bu.nom : 'BU inconnue';
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase();
+        }
+
+        // Compter les collaborateurs éligibles pour une entité
+        function getEligibleCollaboratorsCount(entityId, entityType) {
+            if (entityType === 'business-unit') {
+                return managersData.collaborators.filter(collab => 
+                    collab.business_unit_id === entityId && collab.statut === 'ACTIF'
+                ).length;
+            } else if (entityType === 'division') {
+                return managersData.collaborators.filter(collab => 
+                    collab.division_id === entityId && collab.statut === 'ACTIF'
+                ).length;
+            }
+            return 0;
+        }
+
+        // Ouvrir le modal de gestion des responsables
+        async function openManagersModal(entityId, entityType, entityName) {
+            try {
+                document.getElementById('entityId').value = entityId;
+                document.getElementById('entityType').value = entityType;
+                document.getElementById('entity-name-display').textContent = entityName;
+                
+                // Peupler les listes de collaborateurs
+                populateManagerSelects();
+                
+                // Vérifier s'il y a des collaborateurs éligibles et ajuster le bouton de sauvegarde
+                const eligibleCount = getEligibleCollaboratorsCount(entityId, entityType);
+                const saveButton = document.querySelector('#managersModal .btn-primary');
+                if (eligibleCount === 0) {
+                    saveButton.disabled = true;
+                    saveButton.innerHTML = '<i class="fas fa-ban me-1"></i>Aucun collaborateur éligible';
+                } else {
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Enregistrer les Responsables';
+                }
+                
+                // Charger les responsables actuels
+                const endpoint = entityType === 'business-unit' ? 
+                    `/api/managers/business-units/${entityId}/managers` :
+                    `/api/managers/divisions/${entityId}/managers`;
+                    
+                const managersRes = await fetch(endpoint, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                const managersData = await managersRes.json();
+                
+                if (managersData.success && managersData.data) {
+                    document.getElementById('principalManager').value = managersData.data.principal_id || '';
+                    document.getElementById('adjointManager').value = managersData.data.adjoint_id || '';
+                    
+                    // Afficher les informations actuelles
+                    displayCurrentManagersInfo(managersData.data);
+                } else {
+                    document.getElementById('principalManager').value = '';
+                    document.getElementById('adjointManager').value = '';
+                    document.getElementById('currentManagersInfo').style.display = 'none';
+                }
+                
+                const modal = new bootstrap.Modal(document.getElementById('managersModal'));
+                modal.show();
+                
+            } catch (error) {
+                console.error('Erreur ouverture modal responsables:', error);
+                showAlert('Erreur lors de l\'ouverture du modal', 'danger');
+            }
+        }
+
+        // Peupler les listes de collaborateurs
+        function populateManagerSelects() {
+            const principalSelect = document.getElementById('principalManager');
+            const adjointSelect = document.getElementById('adjointManager');
+            const entityId = document.getElementById('entityId').value;
+            const entityType = document.getElementById('entityType').value;
+            
+            // Vider les listes
+            principalSelect.innerHTML = '<option value="">Sélectionnez un responsable principal</option>';
+            adjointSelect.innerHTML = '<option value="">Sélectionnez un responsable adjoint (optionnel)</option>';
+            
+            // Filtrer les collaborateurs selon le type d'entité
+            let eligibleCollaborators = [];
+            
+            if (entityType === 'business-unit') {
+                // Pour une Business Unit, prendre les collaborateurs de cette BU
+                eligibleCollaborators = managersData.collaborators.filter(collab => 
+                    collab.business_unit_id === entityId && collab.statut === 'ACTIF'
+                );
+            } else if (entityType === 'division') {
+                // Pour une Division, prendre les collaborateurs de cette division
+                eligibleCollaborators = managersData.collaborators.filter(collab => 
+                    collab.division_id === entityId && collab.statut === 'ACTIF'
+                );
+            }
+            
+            // Ajouter les collaborateurs éligibles
+            eligibleCollaborators.forEach(collab => {
+                const option1 = document.createElement('option');
+                option1.value = collab.id;
+                option1.textContent = `${collab.prenom} ${collab.nom} (${collab.email})`;
+                principalSelect.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = collab.id;
+                option2.textContent = `${collab.prenom} ${collab.nom} (${collab.email})`;
+                adjointSelect.appendChild(option2);
+            });
+            
+            // Afficher un message si aucun collaborateur éligible
+            if (eligibleCollaborators.length === 0) {
+                const noOption1 = document.createElement('option');
+                noOption1.value = "";
+                noOption1.textContent = "Aucun collaborateur éligible trouvé";
+                noOption1.disabled = true;
+                principalSelect.appendChild(noOption1);
+                
+                const noOption2 = document.createElement('option');
+                noOption2.value = "";
+                noOption2.textContent = "Aucun collaborateur éligible trouvé";
+                noOption2.disabled = true;
+                adjointSelect.appendChild(noOption2);
+                
+                // Afficher l'alerte
+                document.getElementById('noEligibleCollaboratorsAlert').style.display = 'block';
+            } else {
+                // Masquer l'alerte
+                document.getElementById('noEligibleCollaboratorsAlert').style.display = 'none';
+            }
+        }
+
+        // Afficher les informations des responsables actuels
+        function displayCurrentManagersInfo(managers) {
+            const container = document.getElementById('currentManagersContent');
+            const infoDiv = document.getElementById('currentManagersInfo');
+            
+            if (managers.principal_id || managers.adjoint_id) {
+                let html = '<div class="row">';
+                
+                if (managers.principal_id) {
+                    html += `
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="manager-avatar me-3">
+                                    ${getInitials(getCollaboratorName(managers.principal_id))}
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">${getCollaboratorName(managers.principal_id)}</h6>
+                                    <p class="text-muted mb-0 small">${getCollaboratorEmail(managers.principal_id)}</p>
+                                    <span class="manager-badge badge-principal">Responsable Principal</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (managers.adjoint_id) {
+                    html += `
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="manager-avatar me-3">
+                                    ${getInitials(getCollaboratorName(managers.adjoint_id))}
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">${getCollaboratorName(managers.adjoint_id)}</h6>
+                                    <p class="text-muted mb-0 small">${getCollaboratorEmail(managers.adjoint_id)}</p>
+                                    <span class="manager-badge badge-adjoint">Responsable Adjoint</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+                container.innerHTML = html;
+                infoDiv.style.display = 'block';
+            } else {
+                infoDiv.style.display = 'none';
+            }
+        }
+
+        // Sauvegarder les responsables
+        async function saveManagers() {
+            try {
+                const entityId = document.getElementById('entityId').value;
+                const entityType = document.getElementById('entityType').value;
+                const principalId = document.getElementById('principalManager').value || null;
+                const adjointId = document.getElementById('adjointManager').value || null;
+                
+                // Vérifier s'il y a des collaborateurs éligibles
+                const eligibleCount = getEligibleCollaboratorsCount(entityId, entityType);
+                if (eligibleCount === 0) {
+                    showAlert('Aucun collaborateur éligible pour cette entité. Impossible de sauvegarder.', 'warning');
+                    return;
+                }
+                
+                // Validation
+                if (!principalId) {
+                    showAlert('Veuillez sélectionner un responsable principal', 'warning');
+                    return;
+                }
+                
+                if (principalId && adjointId && principalId === adjointId) {
+                    showAlert('Le responsable principal et l\'adjoint doivent être des personnes différentes', 'warning');
+                    return;
+                }
+                
+                const endpoint = entityType === 'business-unit' ? 
+                    `/api/managers/business-units/${entityId}/managers` :
+                    `/api/managers/divisions/${entityId}/managers`;
+                
+                const response = await fetch(endpoint, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({
+                        principal_id: principalId,
+                        adjoint_id: adjointId
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Responsables assignés avec succès !', 'success');
+                    
+                    // Fermer le modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('managersModal'));
+                    modal.hide();
+                    
+                    // Recharger les données
+                    await loadManagersData();
+                    
+                } else {
+                    showAlert('Erreur: ' + (result.error || 'Erreur lors de l\'assignation'), 'danger');
+                }
+                
+            } catch (error) {
+                console.error('Erreur sauvegarde responsables:', error);
+                showAlert('Erreur lors de la sauvegarde des responsables', 'danger');
+            }
+        }
+
+        // Événements pour les filtres des responsables
+        document.getElementById('entityTypeFilter').addEventListener('change', filterManagers);
+        document.getElementById('managerStatusFilter').addEventListener('change', filterManagers);
+        document.getElementById('showOnlyUnassigned').addEventListener('change', filterManagers);
+
+        // Fonction de filtrage des responsables
+        function filterManagers() {
+            const entityTypeFilter = document.getElementById('entityTypeFilter').value;
+            const managerStatusFilter = document.getElementById('managerStatusFilter').value;
+            const showOnlyUnassigned = document.getElementById('showOnlyUnassigned').checked;
+            
+            // Indicateur visuel des filtres actifs
+            const filtersCard = document.querySelector('#managers .card');
+            const hasActiveFilters = entityTypeFilter || managerStatusFilter || showOnlyUnassigned;
+            
+            if (hasActiveFilters) {
+                filtersCard.classList.add('filters-active');
+            } else {
+                filtersCard.classList.remove('filters-active');
+            }
+            
+            // Filtrer les Business Units
+            let filteredBusinessUnits = managersData.businessUnits;
+            
+            // Filtre par statut des responsables
+            if (managerStatusFilter === 'assigned') {
+                filteredBusinessUnits = filteredBusinessUnits.filter(bu => 
+                    bu.managers && (bu.managers.principal_id || bu.managers.adjoint_id)
+                );
+            } else if (managerStatusFilter === 'unassigned') {
+                filteredBusinessUnits = filteredBusinessUnits.filter(bu => 
+                    !bu.managers || (!bu.managers.principal_id && !bu.managers.adjoint_id)
+                );
+            }
+            
+            // Filtre pour afficher seulement les non assignées
+            if (showOnlyUnassigned) {
+                filteredBusinessUnits = filteredBusinessUnits.filter(bu => 
+                    !bu.managers || (!bu.managers.principal_id && !bu.managers.adjoint_id)
+                );
+            }
+            
+            // Filtrer les Divisions
+            let filteredDivisions = managersData.divisions;
+            
+            // Filtre par statut des responsables
+            if (managerStatusFilter === 'assigned') {
+                filteredDivisions = filteredDivisions.filter(div => 
+                    div.managers && (div.managers.principal_id || div.managers.adjoint_id)
+                );
+            } else if (managerStatusFilter === 'unassigned') {
+                filteredDivisions = filteredDivisions.filter(div => 
+                    !div.managers || (!div.managers.principal_id && !div.managers.adjoint_id)
+                );
+            }
+            
+            // Filtre pour afficher seulement les non assignées
+            if (showOnlyUnassigned) {
+                filteredDivisions = filteredDivisions.filter(div => 
+                    !div.managers || (!div.managers.principal_id && !div.managers.adjoint_id)
+                );
+            }
+            
+            // Afficher selon le filtre de type d'entité
+            if (entityTypeFilter === 'business-unit') {
+                displayFilteredBusinessUnitsManagers(filteredBusinessUnits);
+                document.getElementById('divisionsManagersContainer').innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-filter fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">Filtre actif : Business Units uniquement</p>
+                    </div>
+                `;
+            } else if (entityTypeFilter === 'division') {
+                displayFilteredDivisionsManagers(filteredDivisions);
+                document.getElementById('businessUnitsManagersContainer').innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-filter fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">Filtre actif : Divisions uniquement</p>
+                    </div>
+                `;
+            } else {
+                // Afficher les deux types
+                displayFilteredBusinessUnitsManagers(filteredBusinessUnits);
+                displayFilteredDivisionsManagers(filteredDivisions);
+            }
+            
+            // Mettre à jour les statistiques filtrées
+            updateFilteredStatistics(filteredBusinessUnits, filteredDivisions);
+        }
+
+        // Afficher les Business Units filtrées
+        function displayFilteredBusinessUnitsManagers(businessUnits) {
+            const container = document.getElementById('businessUnitsManagersContainer');
+            
+            if (businessUnits.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-filter fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune Business Unit ne correspond aux critères de filtrage</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            businessUnits.forEach(bu => {
+                const hasManagers = bu.managers && (bu.managers.principal_id || bu.managers.adjoint_id);
+                const cardClass = hasManagers ? 'manager-card has-managers' : 'manager-card no-managers';
+                
+                html += `
+                    <div class="${cardClass}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-2">
+                                    <i class="fas fa-building text-primary me-2"></i>
+                                    ${bu.nom}
+                                </h6>
+                                <p class="text-muted mb-2">${bu.description || 'Aucune description'}</p>
+                                <p class="text-muted small mb-3">
+                                    <i class="fas fa-code me-1"></i>Code: ${bu.code}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-users me-1"></i>${getEligibleCollaboratorsCount(bu.id, 'business-unit')} collaborateur(s) éligible(s)
+                                </p>
+                                
+                                ${hasManagers ? `
+                                    <div class="manager-info">
+                                        ${bu.managers.principal_id ? `
+                                            <div class="manager-avatar">
+                                                ${getInitials(getCollaboratorName(bu.managers.principal_id))}
+                                            </div>
+                                            <div class="manager-details">
+                                                <h6>${getCollaboratorName(bu.managers.principal_id)}</h6>
+                                                <p>${getCollaboratorEmail(bu.managers.principal_id)}</p>
+                                                <div class="manager-badges">
+                                                    <span class="manager-badge badge-principal">Responsable Principal</span>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${bu.managers.adjoint_id ? `
+                                            <div class="manager-avatar">
+                                                ${getInitials(getCollaboratorName(bu.managers.adjoint_id))}
+                                            </div>
+                                            <div class="manager-details">
+                                                <h6>${getCollaboratorName(bu.managers.adjoint_id)}</h6>
+                                                <p>${getCollaboratorEmail(bu.managers.adjoint_id)}</p>
+                                                <div class="manager-badges">
+                                                    <span class="manager-badge badge-adjoint">Responsable Adjoint</span>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                ` : `
+                                    <div class="no-managers-alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Aucun responsable assigné à cette Business Unit
+                                    </div>
+                                `}
+                            </div>
+                            <div class="manager-actions">
+                                <button class="btn btn-sm btn-outline-primary" onclick="openManagersModal('${bu.id}', 'business-unit', '${bu.nom}')">
+                                    <i class="fas fa-users-cog me-1"></i>
+                                    ${hasManagers ? 'Modifier' : 'Assigner'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Afficher les Divisions filtrées
+        function displayFilteredDivisionsManagers(divisions) {
+            const container = document.getElementById('divisionsManagersContainer');
+            
+            if (divisions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-filter fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune Division ne correspond aux critères de filtrage</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            divisions.forEach(div => {
+                const hasManagers = div.managers && (div.managers.principal_id || div.managers.adjoint_id);
+                const cardClass = hasManagers ? 'manager-card has-managers' : 'manager-card no-managers';
+                const buName = getBusinessUnitName(div.business_unit_id);
+                
+                html += `
+                    <div class="${cardClass}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-2">
+                                    <i class="fas fa-sitemap text-success me-2"></i>
+                                    ${div.nom}
+                                </h6>
+                                <p class="text-muted mb-2">${div.description || 'Aucune description'}</p>
+                                <p class="text-muted small mb-3">
+                                    <i class="fas fa-code me-1"></i>Code: ${div.code}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-building me-1"></i>BU: ${buName}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-users me-1"></i>${getEligibleCollaboratorsCount(div.id, 'division')} collaborateur(s) éligible(s)
+                                </p>
+                                
+                                ${hasManagers ? `
+                                    <div class="manager-info">
+                                        ${div.managers.principal_id ? `
+                                            <div class="manager-avatar">
+                                                ${getInitials(getCollaboratorName(div.managers.principal_id))}
+                                            </div>
+                                            <div class="manager-details">
+                                                <h6>${getCollaboratorName(div.managers.principal_id)}</h6>
+                                                <p>${getCollaboratorEmail(div.managers.principal_id)}</p>
+                                                <div class="manager-badges">
+                                                    <span class="manager-badge badge-principal">Responsable Principal</span>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${div.managers.adjoint_id ? `
+                                            <div class="manager-avatar">
+                                                ${getInitials(getCollaboratorName(div.managers.adjoint_id))}
+                                            </div>
+                                            <div class="manager-details">
+                                                <h6>${getCollaboratorName(div.managers.adjoint_id)}</h6>
+                                                <p>${getCollaboratorEmail(div.managers.adjoint_id)}</p>
+                                                <div class="manager-badges">
+                                                    <span class="manager-badge badge-adjoint">Responsable Adjoint</span>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                ` : `
+                                    <div class="no-managers-alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Aucun responsable assigné à cette Division
+                                    </div>
+                                `}
+                            </div>
+                            <div class="manager-actions">
+                                <button class="btn btn-sm btn-outline-primary" onclick="openManagersModal('${div.id}', 'division', '${div.nom}')">
+                                    <i class="fas fa-users-cog me-1"></i>
+                                    ${hasManagers ? 'Modifier' : 'Assigner'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Réinitialiser les filtres
+        function resetManagersFilters() {
+            document.getElementById('entityTypeFilter').value = '';
+            document.getElementById('managerStatusFilter').value = '';
+            document.getElementById('showOnlyUnassigned').checked = false;
+            
+            // Retirer l'indicateur visuel des filtres
+            const filtersCard = document.querySelector('#managers .card');
+            filtersCard.classList.remove('filters-active');
+            
+            // Afficher toutes les données
+            displayBusinessUnitsManagers();
+            displayDivisionsManagers();
+            updateManagersStatistics();
+        }
+
+        // Mettre à jour les statistiques filtrées
+        function updateFilteredStatistics(filteredBusinessUnits, filteredDivisions) {
+            const totalBU = filteredBusinessUnits.length;
+            const totalDiv = filteredDivisions.length;
+            
+            let assignedManagers = 0;
+            let unassignedUnits = 0;
+            
+            // Compter les BU avec responsables
+            filteredBusinessUnits.forEach(bu => {
+                if (bu.managers && (bu.managers.principal_id || bu.managers.adjoint_id)) {
+                    assignedManagers++;
+                } else {
+                    unassignedUnits++;
+                }
+            });
+            
+            // Compter les Divisions avec responsables
+            filteredDivisions.forEach(div => {
+                if (div.managers && (div.managers.principal_id || div.managers.adjoint_id)) {
+                    assignedManagers++;
+                } else {
+                    unassignedUnits++;
+                }
+            });
+            
+            document.getElementById('totalBusinessUnitsManagers').textContent = totalBU;
+            document.getElementById('totalDivisionsManagers').textContent = totalDiv;
+            document.getElementById('assignedManagers').textContent = assignedManagers;
+            document.getElementById('unassignedUnits').textContent = unassignedUnits;
+        }
+
+        // Charger les données des responsables quand l'onglet est activé
+        document.getElementById('managers-tab').addEventListener('shown.bs.tab', function (e) {
+            loadManagersData();
+        });
     </script>
 
     <!-- SessionManager pour la gestion centralisée des sessions -->

@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Récapitulatif de Campagne - Prospection</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    <link rel="stylesheet" href="css/user-header.css">
+    <style>
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+        }
+        @media (max-width: 768px) {
+            .page-wrapper { flex-direction: column; }
+            .main-content-area { padding: 1rem; }
+            .sidebar-container.open { transform: translateX(0); }
+        }
+        
+        .campaign-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.12);
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        
+        .stats-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+        
+        .info-section h5 {
+            color: #495057;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .company-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid #28a745;
+            transition: all 0.3s ease;
+        }
+        
+        .company-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .action-buttons {
+            position: sticky;
+            bottom: 2rem;
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            border: 1px solid #e9ecef;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-submit:disabled {
+            background: #6c757d;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .validation-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .validation-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -23px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #6c757d;
+        }
+        
+        .timeline-item.completed::before {
+            background: #28a745;
+        }
+        
+        .timeline-item.current::before {
+            background: #ffc107;
+            animation: pulse 2s infinite;
+        }
+        
+        .timeline-item.rejected::before {
+            background: #dc3545;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .priority-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .priority-normal {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+        
+        .priority-high {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .priority-urgent {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .info-badge {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+        
+        .description-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            border-radius: 8px;
+            font-style: italic;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <div class="sidebar-container"></div>
+        <div class="main-content-area">
+            <div class="container-fluid py-3">
+                <!-- En-tête de la campagne -->
+                <div class="campaign-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="mb-2" id="campaignName">
+                                <i class="fas fa-bullhorn me-3"></i>Chargement...
+                            </h1>
+                            <p class="mb-0 opacity-75" id="campaignDescription">
+                                <i class="fas fa-clock me-2"></i>Créée le <span id="campaignCreatedDate">...</span>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="d-flex justify-content-end align-items-center">
+                                <span class="badge bg-light text-dark me-3" id="campaignStatus">...</span>
+                                <a href="prospecting-campaigns.html" class="btn btn-outline-light">
+                                    <i class="fas fa-arrow-left me-2"></i>Retour aux campagnes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alertes -->
+                <div id="alertsContainer"></div>
+
+                <!-- Statistiques principales -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stats-card text-center">
+                            <span class="stats-number" id="totalCompanies">0</span>
+                            <span class="stats-label">Entreprises</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card text-center">
+                            <span class="stats-number" id="totalSources">0</span>
+                            <span class="stats-label">Sources</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card text-center">
+                            <span class="stats-number" id="campaignChannel">-</span>
+                            <span class="stats-label">Canal</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card text-center">
+                            <span class="stats-number" id="scheduledDate">-</span>
+                            <span class="stats-label">Date planifiée</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8">
+                        <!-- Informations de la campagne -->
+                        <div class="info-section">
+                            <h5><i class="fas fa-info-circle me-2"></i>Détails de la campagne</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Nom :</strong> <span id="campaignNameDetail">...</span></p>
+                                    <p><strong>Canal :</strong> <span id="campaignChannelDetail">...</span></p>
+                                    <p><strong>Statut :</strong> <span id="campaignStatusDetail">...</span></p>
+                                    <p><strong>Priorité :</strong> <span id="campaignPriority">...</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Modèle :</strong> <span id="campaignTemplate">...</span></p>
+                                    <p><strong>Business Unit :</strong> <span id="campaignBU">...</span></p>
+                                    <p><strong>Division :</strong> <span id="campaignDivision">...</span></p>
+                                    <p><strong>Responsable :</strong> <span id="campaignResponsible">...</span></p>
+                                </div>
+                            </div>
+                            <div class="row mt-3" id="campaignDescriptionRow" style="display: none;">
+                                <div class="col-12">
+                                    <p><strong>Description :</strong></p>
+                                    <div class="bg-light p-3 rounded" id="campaignDescriptionText">...</div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <p><strong>Date planifiée :</strong> <span id="campaignScheduledDate">...</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Créée par :</strong> <span id="campaignCreator">...</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Liste des entreprises -->
+                        <div class="info-section">
+                            <h5><i class="fas fa-building me-2"></i>Entreprises ciblées</h5>
+                            <div id="companiesList">
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Chargement...</span>
+                            </div>
+                                    <p class="mt-2 text-muted">Chargement des entreprises...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                        <!-- Timeline de validation -->
+                        <div class="info-section">
+                            <h5><i class="fas fa-check-circle me-2"></i>Processus de validation</h5>
+                                <div class="validation-timeline" id="validationTimeline">
+                                <div class="timeline-item current">
+                                    <h6><i class="fas fa-clock me-2"></i>En attente de soumission</h6>
+                                    <p class="text-muted mb-0">La campagne doit être soumise pour validation</p>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    <div class="col-lg-4">
+                        <!-- Actions -->
+                        <div class="action-buttons">
+                            <h6 class="mb-3"><i class="fas fa-cogs me-2"></i>Actions</h6>
+                            
+                            <div class="d-grid gap-2 mb-3">
+                                <button class="btn btn-submit" id="submitButton" onclick="submitForValidation()">
+                                    <i class="fas fa-paper-plane me-2"></i>Soumettre pour validation
+                                </button>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="prospecting-campaigns.html" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Retour aux campagnes
+                                </a>
+                                <button class="btn btn-outline-warning" onclick="editCurrentCampaign()">
+                                    <i class="fas fa-edit me-2"></i>Modifier la campagne
+                                </button>
+                                <button class="btn btn-outline-info" onclick="exportCampaignData()">
+                                    <i class="fas fa-download me-2"></i>Exporter les données
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de soumission -->
+    <div class="modal fade" id="submitModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-paper-plane me-2"></i>Soumettre pour validation
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir soumettre cette campagne pour validation ?</p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                        <strong>Rappel :</strong> Une fois soumise, la campagne sera envoyée aux validateurs pour approbation avant envoi.
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="validationLevel" class="form-label">Niveau de validation</label>
+                        <select id="validationLevel" class="form-select">
+                            <option value="BUSINESS_UNIT">Business Unit</option>
+                            <option value="DIVISION">Division</option>
+                        </select>
+                        <small class="form-text text-muted">
+                            Choisissez le niveau hiérarchique requis pour la validation de cette campagne.
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label for="submitComment" class="form-label">Commentaire (optionnel)</label>
+                        <textarea id="submitComment" class="form-control" rows="3" 
+                                  placeholder="Ajoutez un commentaire pour les validateurs..."></textarea>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmSubmit()">
+                        <i class="fas fa-paper-plane me-2"></i>Confirmer la soumission
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        const API = new URL('/api/prospecting', window.location.origin).toString();
+        let currentCampaignId = null;
+        let currentCampaign = null;
+        let submitModal = null;
+
+        function getAuthHeader() {
+            const token = localStorage.getItem('authToken');
+            return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+        }
+
+        function showAlert(message, type = 'info') {
+            const alertsContainer = document.getElementById('alertsContainer');
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            alertsContainer.innerHTML = alertHtml;
+        }
+
+        function getStatusBadgeClass(status) {
+            switch(status) {
+                case 'DRAFT': return 'bg-warning';
+                case 'READY': return 'bg-primary';
+                case 'SENT': return 'bg-success';
+                case 'VALIDATED': return 'bg-info';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'DRAFT': return 'Brouillon';
+                case 'READY': return 'Prêt';
+                case 'SENT': return 'Envoyé';
+                case 'VALIDATED': return 'Validé';
+                default: return status;
+            }
+        }
+
+        function getPriorityText(priority) {
+            switch(priority) {
+                case 'NORMAL': return 'Normale';
+                case 'HIGH': return 'Élevée';
+                case 'URGENT': return 'Urgente';
+                default: return priority;
+            }
+        }
+
+        function getPriorityClass(priority) {
+            switch(priority) {
+                case 'HIGH': return 'priority-high';
+                case 'URGENT': return 'priority-urgent';
+                default: return 'priority-normal';
+            }
+        }
+
+        function getChannelText(channel) {
+            switch(channel) {
+                case 'EMAIL': return 'Email';
+                case 'PHYSIQUE': return 'Courrier physique';
+                default: return channel;
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            return new Date(dateString).toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return '-';
+            return new Date(dateString).toLocaleString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        async function loadCampaignData() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                currentCampaignId = urlParams.get('id');
+                
+                if (!currentCampaignId) {
+                    showAlert('ID de campagne manquant dans l\'URL', 'danger');
+                return;
+            }
+            
+                // Charger les détails de la campagne
+                const campaignRes = await fetch(`${API}/campaigns/${currentCampaignId}`, { 
+                    headers: getAuthHeader() 
+                });
+                
+                if (!campaignRes.ok) {
+                    throw new Error('Erreur lors du chargement de la campagne');
+                }
+                
+                const campaignData = await campaignRes.json();
+                const campaign = campaignData.data;
+                
+                // Sauvegarder la campagne
+                currentCampaign = campaign;
+                
+                // Mettre à jour l'interface avec les données de base
+                updateCampaignInterface(campaign);
+                
+                // Charger les entreprises
+                await loadCampaignCompanies();
+                
+                // Charger les validations
+                await loadCampaignValidations();
+                
+            } catch (error) {
+                console.error('Erreur chargement campagne:', error);
+                showAlert('Erreur lors du chargement des données de la campagne', 'danger');
+            }
+        }
+
+        function updateCampaignInterface(campaign) {
+            // En-tête
+            document.getElementById('campaignName').textContent = campaign.name;
+            document.getElementById('campaignCreatedDate').textContent = formatDateTime(campaign.created_at);
+            document.getElementById('campaignStatus').textContent = getStatusText(campaign.status);
+            document.getElementById('campaignStatus').className = `badge ${getStatusBadgeClass(campaign.status)}`;
+            
+            // Statistiques
+            document.getElementById('totalCompanies').textContent = campaign.companies_count || 0;
+            document.getElementById('campaignChannel').textContent = getChannelText(campaign.channel);
+            document.getElementById('scheduledDate').textContent = formatDate(campaign.scheduled_date);
+            
+            // Détails
+            document.getElementById('campaignNameDetail').textContent = campaign.name;
+            document.getElementById('campaignChannelDetail').textContent = getChannelText(campaign.channel);
+            document.getElementById('campaignStatusDetail').textContent = getStatusText(campaign.status);
+            document.getElementById('campaignTemplate').textContent = campaign.template_name || 'Aucun modèle';
+            document.getElementById('campaignScheduledDate').textContent = formatDate(campaign.scheduled_date);
+            document.getElementById('campaignCreator').textContent = campaign.creator_name || 'Utilisateur système';
+            
+            // Nouvelles informations
+            document.getElementById('campaignPriority').innerHTML = `<span class="priority-badge ${getPriorityClass(campaign.priority)}">${getPriorityText(campaign.priority)}</span>`;
+            document.getElementById('campaignBU').textContent = campaign.business_unit_name || 'Non définie';
+            document.getElementById('campaignDivision').textContent = campaign.division_name || 'Non définie';
+            document.getElementById('campaignResponsible').textContent = campaign.responsible_name || 'Non défini';
+            
+            // Gestion de la description
+            const descriptionRow = document.getElementById('campaignDescriptionRow');
+            const descriptionText = document.getElementById('campaignDescriptionText');
+            if (campaign.description && campaign.description.trim()) {
+                descriptionText.textContent = campaign.description;
+                descriptionRow.style.display = 'block';
+            } else {
+                descriptionRow.style.display = 'none';
+            }
+            
+            // Gérer l'état du bouton de soumission
+            const submitButton = document.getElementById('submitButton');
+            
+            // Utiliser le nombre d'entreprises depuis les données de la campagne
+            const companiesCount = campaign.companies_count || 0;
+            
+            console.log('Campaign status:', campaign.status);
+            console.log('Companies count from campaign data:', companiesCount);
+            
+            if (campaign.status === 'DRAFT' && companiesCount > 0) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Soumettre pour validation';
+                console.log('✅ Bouton soumission activé');
+            } else {
+                submitButton.disabled = true;
+                if (campaign.status === 'READY' || campaign.status === 'APPROVED' || campaign.status === 'REJECTED') {
+                    submitButton.innerHTML = '<i class="fas fa-check me-2"></i>Déjà soumise';
+                } else if (companiesCount === 0) {
+                    submitButton.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Aucune entreprise';
+                }
+                console.log('❌ Bouton soumission désactivé - Status:', campaign.status, 'Companies:', companiesCount);
+            }
+        }
+
+        async function loadCampaignCompanies() {
+            try {
+                const res = await fetch(`${API}/campaigns/${currentCampaignId}/companies?limit=1000`, { 
+                    headers: getAuthHeader() 
+                });
+                
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Erreur ${res.status}: ${res.statusText}`);
+                }
+                
+                const data = await res.json();
+                const companies = data.data || [];
+                
+                console.log('Entreprises chargées:', companies.length);
+                
+                renderCompaniesList(companies);
+                updateStatistics(companies);
+                
+                // Mettre à jour l'interface avec le nombre correct d'entreprises
+                if (currentCampaign) {
+                    // Mettre à jour le nombre d'entreprises dans les données de la campagne
+                    currentCampaign.companies_count = companies.length;
+                    console.log('Mise à jour de l\'interface avec', companies.length, 'entreprises');
+                    updateCampaignInterface(currentCampaign);
+                }
+                
+            } catch (error) {
+                console.error('Erreur chargement entreprises:', error);
+                document.getElementById('companiesList').innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Information :</strong> ${error.message}
+                        <br><small class="text-muted">Cette campagne n'a peut-être pas encore d'entreprises associées.</small>
+                        </div>
+                    `;
+                
+                // Mettre à jour l'interface même en cas d'erreur pour désactiver le bouton
+                if (currentCampaign) {
+                    currentCampaign.companies_count = 0;
+                    updateCampaignInterface(currentCampaign);
+                }
+            }
+        }
+            
+        function renderCompaniesList(companies) {
+            const container = document.getElementById('companiesList');
+            
+            if (companies.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune entreprise affectée à cette campagne</p>
+                        <a href="prospecting-campaigns.html" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>Affecter des entreprises
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Ajouter un en-tête avec le nombre total
+            let html = `
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">
+                        <i class="fas fa-building me-2"></i>
+                        ${companies.length} entreprise${companies.length > 1 ? 's' : ''} ciblée${companies.length > 1 ? 's' : ''}
+                    </h6>
+                    <span class="info-badge">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Cliquez sur une entreprise pour plus de détails
+                    </span>
+                </div>
+            `;
+            
+            companies.forEach((company, index) => {
+                const statusClass = company.status === 'SENT' ? 'border-success' : 
+                                   company.status === 'RESPONDED' ? 'border-info' : 'border-warning';
+                const statusText = company.status === 'SENT' ? 'Envoyé' : 
+                                  company.status === 'RESPONDED' ? 'Répondu' : 'En attente';
+                
+                html += `
+                    <div class="company-item ${statusClass}" style="cursor: pointer;" onclick="showCompanyDetails('${company.id}', '${company.name}')">
+                        <div class="row align-items-center">
+                            <div class="col-md-5">
+                                <h6 class="mb-1 text-primary">${company.name}</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-industry me-1"></i>${company.industry || 'N/A'}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-map-marker-alt me-1"></i>${company.city || 'N/A'}
+                                </small>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="small">
+                                    ${company.email ? `<div><i class="fas fa-envelope me-1"></i>${company.email}</div>` : ''}
+                                    ${company.phone ? `<div><i class="fas fa-phone me-1"></i>${company.phone}</div>` : ''}
+                                    ${company.website ? `<div><i class="fas fa-globe me-1"></i>${company.website}</div>` : ''}
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <div class="d-flex flex-column align-items-end gap-1">
+                                    <span class="badge bg-light text-dark">${company.size_label || 'N/A'}</span>
+                                    <span class="badge ${company.status === 'SENT' ? 'bg-success' : company.status === 'RESPONDED' ? 'bg-info' : 'bg-warning'}">${statusText}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function updateStatistics(companies) {
+            // Compter les sources uniques
+            const sources = new Set(companies.map(c => c.source_id));
+            document.getElementById('totalSources').textContent = sources.size;
+            
+            // Mettre à jour le nombre total d'entreprises
+            document.getElementById('totalCompanies').textContent = companies.length;
+            
+            // Compter les statuts
+            const statusCounts = companies.reduce((acc, company) => {
+                acc[company.status] = (acc[company.status] || 0) + 1;
+                return acc;
+            }, {});
+            
+            // Mettre à jour les statistiques si on veut les afficher
+            console.log('Statuts des entreprises:', statusCounts);
+        }
+
+        function showCompanyDetails(companyId, companyName) {
+            // Pour l'instant, afficher une alerte simple
+            // Plus tard, on pourrait ouvrir un modal avec plus de détails
+            showAlert(`Détails de l'entreprise "${companyName}" - Fonctionnalité en cours de développement`, 'info');
+        }
+
+        async function loadCampaignValidations() {
+            try {
+                const res = await fetch(`${API}/campaigns/${currentCampaignId}/validations`, { 
+                    headers: getAuthHeader() 
+                });
+                
+                if (!res.ok) {
+                    throw new Error('Erreur lors du chargement des validations');
+                }
+                
+                const data = await res.json();
+                const validations = data.data || [];
+                
+                renderValidationTimeline(validations);
+                
+            } catch (error) {
+                console.error('Erreur chargement validations:', error);
+            }
+        }
+
+        function renderValidationTimeline(validations) {
+            const container = document.getElementById('validationTimeline');
+            
+            if (validations.length === 0) {
+                container.innerHTML = `
+                    <div class="timeline-item current">
+                        <h6><i class="fas fa-clock me-2"></i>En attente de soumission</h6>
+                        <p class="text-muted mb-0">La campagne doit être soumise pour validation</p>
+                        <div class="mt-2">
+                            <small class="text-info">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Une fois soumise, la campagne sera envoyée aux validateurs pour approbation
+                            </small>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Historique des validations (${validations.length})
+                    </h6>
+                </div>
+            `;
+            
+            validations.forEach((validation, index) => {
+                const statusClass = validation.status === 'APPROUVE' ? 'completed' : 
+                                   validation.status === 'REFUSE' ? 'rejected' : 'current';
+                const statusIcon = validation.status === 'APPROUVE' ? 'check-circle' : 
+                                  validation.status === 'REFUSE' ? 'times-circle' : 'clock';
+                const statusText = validation.status === 'APPROUVE' ? 'Approuvée' : 
+                                  validation.status === 'REFUSE' ? 'Refusée' : 'En attente';
+                
+                html += `
+                    <div class="timeline-item ${statusClass}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6>
+                                    <i class="fas fa-${statusIcon} me-2"></i>
+                                    ${statusText}
+                                    ${validation.validateur_nom ? `par ${validation.validateur_nom}` : ''}
+                                </h6>
+                                <p class="text-muted mb-1">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    ${formatDateTime(validation.created_at)}
+                                </p>
+                                ${validation.comment ? `
+                                    <div class="mt-2 p-2 bg-light rounded">
+                                        <small class="text-muted">
+                                            <i class="fas fa-comment me-1"></i>
+                                            <strong>Commentaire :</strong>
+                                        </small>
+                                        <p class="mb-0 mt-1">"${validation.comment}"</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="ms-3">
+                                <span class="badge ${validation.status === 'APPROUVE' ? 'bg-success' : 
+                                                   validation.status === 'REFUSE' ? 'bg-danger' : 'bg-warning'}">
+                                    ${validation.status}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        async function submitForValidation() {
+            if (!currentCampaignId) {
+                showAlert('Impossible de soumettre la campagne : ID manquant', 'danger');
+                return;
+            }
+            
+            // Afficher l'utilisateur connecté pour debug
+            try {
+                const userResponse = await fetch('/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const userData = await userResponse.json();
+                if (userData.success) {
+                    console.log('🔍 Utilisateur connecté:', {
+                        id: userData.data.user.id,
+                        nom: userData.data.user.nom,
+                        prenom: userData.data.user.prenom,
+                        email: userData.data.user.email,
+                        collaborateur_id: userData.data.user.collaborateur_id
+                    });
+                    console.log('🔍 Campagne créée par:', currentCampaign?.created_by);
+                    console.log('🔍 Comparaison:', {
+                        user_id: userData.data.user.id,
+                        campaign_created_by: currentCampaign?.created_by,
+                        is_creator: userData.data.user.id === currentCampaign?.created_by
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur récupération utilisateur:', error);
+            }
+            
+            // Demander confirmation
+            const confirmed = confirm('Êtes-vous sûr de vouloir soumettre cette campagne pour validation ?\n\nCette action ne peut pas être annulée.');
+            if (!confirmed) {
+                return;
+            }
+            
+            try {
+                // Désactiver le bouton
+                const submitBtn = document.getElementById('submitButton');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></i>Soumission en cours...';
+                
+                // Appeler l'API de soumission
+                const response = await fetch(`/api/prospecting/campaigns/${currentCampaignId}/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Campagne soumise avec succès pour validation !', 'success');
+                    
+                    // Recharger les données de la campagne
+                    setTimeout(() => {
+                        loadCampaignData();
+                    }, 1000);
+                } else {
+                    throw new Error(result.error || 'Erreur lors de la soumission');
+                }
+                
+            } catch (error) {
+                console.error('Erreur soumission:', error);
+                showAlert('Erreur lors de la soumission : ' + error.message, 'danger');
+            } finally {
+                // Réactiver le bouton
+                const submitBtn = document.getElementById('submitButton');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Soumettre pour validation';
+            }
+        }
+
+        function exportCampaignData() {
+            try {
+                // Créer un objet avec les données de la campagne
+                const campaignData = {
+                    nom: document.getElementById('campaignNameDetail').textContent,
+                    canal: document.getElementById('campaignChannelDetail').textContent,
+                    statut: document.getElementById('campaignStatusDetail').textContent,
+                    priorite: document.getElementById('campaignPriority').textContent,
+                    modele: document.getElementById('campaignTemplate').textContent,
+                    businessUnit: document.getElementById('campaignBU').textContent,
+                    division: document.getElementById('campaignDivision').textContent,
+                    responsable: document.getElementById('campaignResponsible').textContent,
+                    datePlanifiee: document.getElementById('campaignScheduledDate').textContent,
+                    creePar: document.getElementById('campaignCreator').textContent,
+                    nombreEntreprises: document.getElementById('totalCompanies').textContent,
+                    nombreSources: document.getElementById('totalSources').textContent,
+                    dateExport: new Date().toLocaleString('fr-FR')
+                };
+                
+                // Convertir en JSON
+                const dataStr = JSON.stringify(campaignData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                
+                // Créer un lien de téléchargement
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `campagne_${campaignData.nom.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                
+                showAlert('Données de la campagne exportées avec succès !', 'success');
+            } catch (error) {
+                console.error('Erreur export:', error);
+                showAlert('Erreur lors de l\'export des données', 'danger');
+            }
+        }
+
+        function editCurrentCampaign() {
+            if (currentCampaignId) {
+                // Rediriger vers la page des campagnes avec l'ID pour édition
+                window.location.href = `prospecting-campaigns.html?edit=${currentCampaignId}`;
+            } else {
+                showAlert('Impossible de modifier la campagne : ID manquant', 'danger');
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCampaignData();
+        });
+    </script>
+    <script src="js/session-manager.js"></script>
+</body>
+</html>
+
+
+
+
+

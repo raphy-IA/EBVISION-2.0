@@ -68,7 +68,7 @@ app.use(helmet({
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
             scriptSrcAttr: ["'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "https:"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "data:"],
         },
     },
 }));
@@ -170,6 +170,10 @@ app.use('/api/time-sheet-approvals', timeSheetApprovalsRoutes);
 app.use('/api/analytics', dashboardAnalyticsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/prospecting', prospectingRoutes);
+
+// Import et utilisation des routes managers
+const managersRoutes = require('./src/routes/managers');
+app.use('/api/managers', managersRoutes);
 
 // Route par défaut
 app.get('/', (req, res) => {

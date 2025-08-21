@@ -83,8 +83,9 @@ const businessUnitValidation = {
                 'string.max': 'Le nom ne peut pas dépasser 100 caractères',
                 'any.required': 'Le nom est requis'
             }),
-        code: Joi.string().min(2).max(10).required()
+        code: Joi.string().pattern(/^[A-Za-z0-9_-]+$/).min(2).max(10).required()
             .messages({
+                'string.pattern.base': 'Le code ne peut contenir que lettres, chiffres, tiret (-) et underscore (_)',
                 'string.min': 'Le code doit contenir au moins 2 caractères',
                 'string.max': 'Le code ne peut pas dépasser 10 caractères',
                 'any.required': 'Le code est requis'
@@ -105,8 +106,9 @@ const businessUnitValidation = {
                 'string.min': 'Le nom doit contenir au moins 2 caractères',
                 'string.max': 'Le nom ne peut pas dépasser 100 caractères'
             }),
-        code: Joi.string().min(2).max(10)
+        code: Joi.string().pattern(/^[A-Za-z0-9_-]+$/).min(2).max(10)
             .messages({
+                'string.pattern.base': 'Le code ne peut contenir que lettres, chiffres, tiret (-) et underscore (_)',
                 'string.min': 'Le code doit contenir au moins 2 caractères',
                 'string.max': 'Le code ne peut pas dépasser 10 caractères'
             }),

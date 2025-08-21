@@ -21,6 +21,7 @@ router.get('/', authenticateToken, async (req, res) => {
             grade: req.query.grade,
             statut: req.query.statut,
             division_id: req.query.division_id,
+            business_unit_id: req.query.business_unit_id,
             search: req.query.search
         };
 
