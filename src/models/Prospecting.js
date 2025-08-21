@@ -146,7 +146,7 @@ class ProspectingTemplate {
     static async findAll() {
         const res = await pool.query(`
             SELECT pt.*, 
-                   bu.nom as business_unit_name,
+                   bu.nom as business_unit_name, 
                    d.nom as division_name
             FROM prospecting_templates pt
             LEFT JOIN business_units bu ON pt.business_unit_id = bu.id
@@ -157,15 +157,7 @@ class ProspectingTemplate {
     }
 
     static async findById(id) {
-        const res = await pool.query(`
-            SELECT pt.*, 
-                   bu.nom as business_unit_name,
-                   d.nom as division_name
-            FROM prospecting_templates pt
-            LEFT JOIN business_units bu ON pt.business_unit_id = bu.id
-            LEFT JOIN divisions d ON pt.division_id = d.id
-            WHERE pt.id = $1
-        `, [id]);
+        const res = await pool.query(`SELECT * FROM prospecting_templates WHERE id = $1`, [id]);
         return res.rows[0] || null;
     }
 
@@ -183,40 +175,13 @@ class ProspectingTemplate {
         const res = await pool.query(`UPDATE prospecting_templates SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`, vals);
         return res.rows[0] || null;
     }
-
-    static async delete(id) {
-        try {
-            // Vérifier si le modèle existe
-            const template = await this.findById(id);
-            if (!template) {
-                return { success: false, error: 'Modèle non trouvé' };
-            }
-
-            // Vérifier si le modèle est utilisé dans des campagnes
-            const usedInCampaigns = await pool.query(
-                'SELECT COUNT(*)::int as count FROM prospecting_campaigns WHERE template_id = $1',
-                [id]
-            );
-
-            if (usedInCampaigns.rows[0].count > 0) {
-                return { success: false, error: 'Ce modèle ne peut pas être supprimé car il est utilisé dans des campagnes' };
-            }
-
-            // Supprimer le modèle
-            await pool.query('DELETE FROM prospecting_templates WHERE id = $1', [id]);
-            return { success: true };
-        } catch (error) {
-            console.error('Erreur suppression modèle:', error);
-            return { success: false, error: 'Erreur lors de la suppression' };
-        }
-    }
 }
 
 class ProspectingCampaign {
     static async create(data) {
         const res = await pool.query(
-            `INSERT INTO prospecting_campaigns(name, channel, template_id, business_unit_id, division_id, status, scheduled_date, created_by, responsible_id, priority, description)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
+            `INSERT INTO prospecting_campaigns(name, channel, template_id, business_unit_id, division_id, status, scheduled_date, created_by, responsible_id)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
             [
                 data.name,
                 data.channel,
@@ -226,9 +191,7 @@ class ProspectingCampaign {
                 data.status || 'DRAFT',
                 data.scheduled_date || null,
                 data.created_by || null,
-                data.responsible_id || null,
-                data.priority || 'NORMAL',
-                data.description || null
+                data.responsible_id || null
             ]
         );
         return res.rows[0];
@@ -251,84 +214,31 @@ class ProspectingCampaign {
         return { inserted: companyIds.length };
     }
 
-    static async removeCompany(campaignId, companyId) {
-        try {
-            console.log('🔥 [MODEL] removeCompany appelé avec:', { campaignId, companyId });
-            
-            // Vérifier d'abord si la campagne existe
-            const campaignExists = await pool.query(
-                'SELECT id FROM prospecting_campaigns WHERE id = $1',
-                [campaignId]
-            );
-            
-            if (campaignExists.rows.length === 0) {
-                return { success: false, error: 'Campagne non trouvée' };
-            }
-            
-            // Vérifier si l'entreprise est associée à la campagne
-            const associationExists = await pool.query(
-                'SELECT * FROM prospecting_campaign_companies WHERE campaign_id = $1 AND company_id = $2',
-                [campaignId, companyId]
-            );
-            
-            if (associationExists.rows.length === 0) {
-                return { success: false, error: 'Entreprise non associée à cette campagne' };
-            }
-            
-            // Supprimer l'association
-            await pool.query(
-                'DELETE FROM prospecting_campaign_companies WHERE campaign_id = $1 AND company_id = $2',
-                [campaignId, companyId]
-            );
-            
-            console.log('🔥 [MODEL] Entreprise supprimée avec succès');
-            return { success: true };
-            
-        } catch (error) {
-            console.error('🔥 [MODEL] Erreur dans removeCompany:', error);
-            return { success: false, error: 'Erreur lors de la suppression' };
-        }
-    }
-
-    static async findAll({ limit = 20, offset = 0 }) {
+    static async findAll(params = {}) {
+        const { limit = 20, offset = 0 } = params;
         const count = await pool.query(`SELECT COUNT(*)::int AS total FROM prospecting_campaigns`);
         const data = await pool.query(
             `SELECT pc.*, 
-                    COALESCE(cnt.total,0)::int AS companies_count
+                    COALESCE(cnt.total,0)::int AS companies_count,
+                    pt.type_courrier as template_type,
+                    pt.name as template_name,
+                    bu.nom as business_unit_name,
+                    resp.nom as responsible_nom,
+                    resp.prenom as responsible_prenom
              FROM prospecting_campaigns pc
              LEFT JOIN (
                SELECT campaign_id, COUNT(*) AS total 
                FROM prospecting_campaign_companies 
                GROUP BY campaign_id
              ) cnt ON cnt.campaign_id = pc.id
+             LEFT JOIN prospecting_templates pt ON pc.template_id = pt.id
+             LEFT JOIN business_units bu ON pt.business_unit_id = bu.id
+             LEFT JOIN collaborateurs resp ON pc.responsible_id = resp.id
              ORDER BY pc.created_at DESC
              LIMIT $1 OFFSET $2`,
             [limit, offset]
         );
         return { campaigns: data.rows, pagination: { total: count.rows[0].total, limit, offset } };
-    }
-
-    static async findAll() {
-        const res = await pool.query(`
-            SELECT pc.*,
-                   pt.name as template_name,
-                   bu.nom as business_unit_name,
-                   d.nom as division_name,
-                   c.prenom || ' ' || c.nom as responsible_name,
-                   COALESCE(cnt.total,0)::int AS companies_count
-            FROM prospecting_campaigns pc
-            LEFT JOIN prospecting_templates pt ON pc.template_id = pt.id
-            LEFT JOIN business_units bu ON pc.business_unit_id = bu.id
-            LEFT JOIN divisions d ON pc.division_id = d.id
-            LEFT JOIN collaborateurs c ON pc.responsible_id = c.id
-            LEFT JOIN (
-                SELECT campaign_id, COUNT(*) AS total 
-                FROM prospecting_campaign_companies 
-                GROUP BY campaign_id
-            ) cnt ON cnt.campaign_id = pc.id
-            ORDER BY pc.created_at DESC
-        `);
-        return res.rows;
     }
 
     static async findById(id) {
@@ -348,58 +258,24 @@ class ProspectingCampaign {
     }
 
     static async getCompanies(id, { limit = 50, offset = 0 }) {
-        try {
-            console.log('🔥 [MODEL] getCompanies appelé avec:', { id, limit, offset });
-            
-            // Vérifier d'abord si la campagne existe
-            const campaignExists = await pool.query(
-                'SELECT id FROM prospecting_campaigns WHERE id = $1',
-                [id]
-            );
-            
-            console.log('🔥 [MODEL] Campagne existe:', campaignExists.rows.length > 0);
-            
-            if (campaignExists.rows.length === 0) {
-                throw new Error('Campagne non trouvée');
-            }
-            
-            // Compter les entreprises associées
-            const count = await pool.query(
-                `SELECT COUNT(*)::int AS total FROM prospecting_campaign_companies WHERE campaign_id = $1`,
-                [id]
-            );
-            
-            console.log('🔥 [MODEL] Nombre d\'entreprises associées:', count.rows[0].total);
-            
-            // Si aucune entreprise associée, retourner un résultat vide
-            if (count.rows[0].total === 0) {
-                console.log('🔥 [MODEL] Aucune entreprise associée, retour vide');
-                return { companies: [], pagination: { total: 0, limit, offset } };
-            }
-            
-            // Récupérer les entreprises avec leurs détails
-            const data = await pool.query(
-                `SELECT c.*, pcc.status, pcc.sent_at, pcc.response_at, pcc.notes
-                 FROM prospecting_campaign_companies pcc
-                 JOIN companies c ON c.id = pcc.company_id
-                 WHERE pcc.campaign_id = $1
-                 ORDER BY c.name
-                 LIMIT $2 OFFSET $3`,
-                [id, limit, offset]
-            );
-            
-            console.log('🔥 [MODEL] Entreprises récupérées:', data.rows.length);
-            console.log('🔥 [MODEL] Première entreprise:', data.rows[0] || 'Aucune');
-            
-            return { companies: data.rows, pagination: { total: count.rows[0].total, limit, offset } };
-        } catch (error) {
-            console.error('🔥 [MODEL] Erreur dans getCompanies:', error);
-            throw error;
-        }
+        const count = await pool.query(
+            `SELECT COUNT(*)::int AS total FROM prospecting_campaign_companies WHERE campaign_id = $1`,
+            [id]
+        );
+        const data = await pool.query(
+            `SELECT c.*, pcc.status, pcc.sent_at, pcc.response_at
+             FROM prospecting_campaign_companies pcc
+             JOIN companies c ON c.id = pcc.company_id
+             WHERE pcc.campaign_id = $1
+             ORDER BY c.name
+             LIMIT $2 OFFSET $3`,
+            [id, limit, offset]
+        );
+        return { companies: data.rows, pagination: { total: count.rows[0].total, limit, offset } };
     }
 
     static async update(id, data) {
-        const allowed = ['name','channel','template_id','business_unit_id','division_id','status','scheduled_date','responsible_id','priority','description'];
+        const allowed = ['name','channel','template_id','business_unit_id','division_id','status','scheduled_date','responsible_id'];
         const sets = [];
         const vals = [];
         let idx = 1;
@@ -417,12 +293,10 @@ class ProspectingCampaign {
         const res = await pool.query(`
             SELECT pc.*, pt.name as template_name, pt.subject as template_subject,
                    bu.nom as business_unit_name, d.nom as division_name,
-                   c.nom as creator_name, c.prenom as creator_prenom,
-                   resp.nom as responsible_nom, resp.prenom as responsible_prenom
+                   c.nom as creator_name, c.prenom as creator_prenom
             FROM prospecting_campaigns pc 
             LEFT JOIN prospecting_templates pt ON pc.template_id = pt.id
             LEFT JOIN collaborateurs c ON pc.created_by = c.id
-            LEFT JOIN collaborateurs resp ON pc.responsible_id = resp.id
             LEFT JOIN business_units bu ON pt.business_unit_id = bu.id
             LEFT JOIN divisions d ON pt.division_id = d.id
             WHERE pc.id = $1
@@ -434,298 +308,8 @@ class ProspectingCampaign {
         if (campaign.creator_name) {
             campaign.creator_name = `${campaign.creator_prenom} ${campaign.creator_name}`;
         }
-        if (campaign.responsible_nom) {
-            campaign.responsible_name = `${campaign.responsible_prenom} ${campaign.responsible_nom}`;
-        }
         
         return campaign;
-    }
-
-    static async delete(id) {
-        try {
-            // Vérifier que la campagne existe
-            const campaign = await this.findById(id);
-            if (!campaign) {
-                return { success: false, error: 'Campagne non trouvée' };
-            }
-
-            // Vérifier si la campagne a des entreprises associées
-            const companiesCount = await pool.query(
-                'SELECT COUNT(*)::int as count FROM prospecting_campaign_companies WHERE campaign_id = $1',
-                [id]
-            );
-
-            if (companiesCount.rows[0].count > 0) {
-                return { success: false, error: 'Cette campagne ne peut pas être supprimée car elle contient des entreprises associées' };
-            }
-
-            // Vérifier si la campagne a des validations
-            const validationsCount = await pool.query(
-                'SELECT COUNT(*)::int as count FROM prospecting_campaign_validations WHERE campaign_id = $1',
-                [id]
-            );
-
-            if (validationsCount.rows[0].count > 0) {
-                return { success: false, error: 'Cette campagne ne peut pas être supprimée car elle a des validations associées' };
-            }
-
-            // Supprimer la campagne
-            await pool.query('DELETE FROM prospecting_campaigns WHERE id = $1', [id]);
-                    return { success: true };
-    } catch (error) {
-        console.error('Erreur suppression campagne:', error);
-        return { success: false, error: 'Erreur lors de la suppression' };
-    }
-}
-
-    // =====================================================
-    // MÉTHODES DE VALIDATION
-    // =====================================================
-
-    /**
-     * Récupérer les campagnes à valider pour un utilisateur
-     */
-    static async getValidationsForUser(userId) {
-        try {
-            const query = `
-                SELECT DISTINCT pc.*, pt.name as template_name, pt.subject as template_subject,
-                       bu.nom as business_unit_name, d.nom as division_name,
-                       c.nom as creator_name, c.prenom as creator_prenom,
-                       resp.nom as responsible_nom, resp.prenom as responsible_prenom,
-                       pcv.statut_validation as validation_status, pcv.commentaire_validateur as validation_note,
-                       pcv.date_validation as validated_at, pcv.validateur_id as validated_by,
-                       (SELECT COUNT(*) FROM prospecting_campaign_companies WHERE campaign_id = pc.id) as companies_count
-                FROM prospecting_campaigns pc 
-                LEFT JOIN prospecting_templates pt ON pc.template_id = pt.id
-                LEFT JOIN collaborateurs c ON pc.created_by = c.id
-                LEFT JOIN collaborateurs resp ON pc.responsible_id = resp.id
-                LEFT JOIN business_units bu ON pt.business_unit_id = bu.id
-                LEFT JOIN divisions d ON pt.division_id = d.id
-                LEFT JOIN prospecting_campaign_validations pcv ON pc.id = pcv.campaign_id
-                WHERE pc.status = 'READY' 
-                AND (
-                    (bu.responsable_principal_id = $1 OR bu.responsable_adjoint_id = $1)
-                    OR (d.responsable_principal_id = $1 OR d.responsable_adjoint_id = $1)
-                )
-                ORDER BY pc.created_at DESC
-            `;
-            
-            const result = await pool.query(query, [userId]);
-            return result.rows;
-        } catch (error) {
-            console.error('Erreur récupération validations:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Soumettre une campagne pour validation
-     */
-    static async submitForValidation(campaignId) {
-        try {
-            // Vérifier que la campagne existe et a des entreprises
-            const campaign = await this.findByIdWithDetails(campaignId);
-            if (!campaign) {
-                return { success: false, error: 'Campagne non trouvée' };
-            }
-
-            // Compter les entreprises associées
-            const companiesCount = await pool.query(
-                'SELECT COUNT(*)::int as count FROM prospecting_campaign_companies WHERE campaign_id = $1',
-                [campaignId]
-            );
-
-            if (companiesCount.rows[0].count === 0) {
-                return { success: false, error: 'La campagne doit contenir au moins une entreprise pour être soumise' };
-            }
-
-            // Mettre à jour le statut de la campagne
-            await pool.query(
-                'UPDATE prospecting_campaigns SET status = $1, submitted_at = NOW() WHERE id = $2',
-                ['READY', campaignId]
-            );
-
-            // Créer les entrées de validation pour les responsables
-            const template = await pool.query(
-                'SELECT pt.business_unit_id, pt.division_id FROM prospecting_templates pt ' +
-                'JOIN prospecting_campaigns pc ON pc.template_id = pt.id WHERE pc.id = $1',
-                [campaignId]
-            );
-
-            if (template.rows.length > 0) {
-                const { business_unit_id, division_id } = template.rows[0];
-                
-                // Ajouter validation pour la Business Unit
-                if (business_unit_id) {
-                    const buManagers = await pool.query(
-                        'SELECT responsable_principal_id, responsable_adjoint_id FROM business_units WHERE id = $1',
-                        [business_unit_id]
-                    );
-                    
-                    if (buManagers.rows.length > 0) {
-                        const { responsable_principal_id, responsable_adjoint_id } = buManagers.rows[0];
-                        
-                        if (responsable_principal_id) {
-                            await pool.query(
-                                'INSERT INTO prospecting_campaign_validations (campaign_id, demandeur_id, validateur_id, niveau_validation, statut_validation, date_demande) VALUES ($1, $2, $3, $4, $5, NOW()) ON CONFLICT DO NOTHING',
-                                [campaignId, campaign.created_by, responsable_principal_id, 'BU_PRINCIPAL', 'EN_ATTENTE']
-                            );
-                        }
-                        
-                        if (responsable_adjoint_id) {
-                            await pool.query(
-                                'INSERT INTO prospecting_campaign_validations (campaign_id, demandeur_id, validateur_id, niveau_validation, statut_validation, date_demande) VALUES ($1, $2, $3, $4, $5, NOW()) ON CONFLICT DO NOTHING',
-                                [campaignId, campaign.created_by, responsable_adjoint_id, 'BU_ADJOINT', 'EN_ATTENTE']
-                            );
-                        }
-                    }
-                }
-                
-                // Ajouter validation pour la Division
-                if (division_id) {
-                    const divManagers = await pool.query(
-                        'SELECT responsable_principal_id, responsable_adjoint_id FROM divisions WHERE id = $1',
-                        [division_id]
-                    );
-                    
-                    if (divManagers.rows.length > 0) {
-                        const { responsable_principal_id, responsable_adjoint_id } = divManagers.rows[0];
-                        
-                        if (responsable_principal_id) {
-                            await pool.query(
-                                'INSERT INTO prospecting_campaign_validations (campaign_id, demandeur_id, validateur_id, niveau_validation, statut_validation, date_demande) VALUES ($1, $2, $3, $4, $5, NOW()) ON CONFLICT DO NOTHING',
-                                [campaignId, campaign.created_by, responsable_principal_id, 'DIVISION_PRINCIPAL', 'EN_ATTENTE']
-                            );
-                        }
-                        
-                        if (responsable_adjoint_id) {
-                            await pool.query(
-                                'INSERT INTO prospecting_campaign_validations (campaign_id, demandeur_id, validateur_id, niveau_validation, statut_validation, date_demande) VALUES ($1, $2, $3, $4, $5, NOW()) ON CONFLICT DO NOTHING',
-                                [campaignId, campaign.created_by, responsable_adjoint_id, 'DIVISION_ADJOINT', 'EN_ATTENTE']
-                            );
-                        }
-                    }
-                }
-            }
-
-            return { success: true, data: campaign };
-        } catch (error) {
-            console.error('Erreur soumission validation:', error);
-            return { success: false, error: 'Erreur lors de la soumission' };
-        }
-    }
-
-    /**
-     * Valider ou rejeter une campagne
-     */
-    static async validateCampaign(campaignId, validatorId, action, note, companyValidations = []) {
-        try {
-            // Vérifier que le validateur a le droit de valider cette campagne
-            const validation = await pool.query(
-                'SELECT * FROM prospecting_campaign_validations WHERE campaign_id = $1 AND validateur_id = $2 AND statut_validation = $3',
-                [campaignId, validatorId, 'EN_ATTENTE']
-            );
-
-            if (validation.rows.length === 0) {
-                return { success: false, error: 'Vous n\'êtes pas autorisé à valider cette campagne' };
-            }
-
-            // Mettre à jour la validation
-            const newStatus = action === 'APPROVED' ? 'APPROUVEE' : 'REJETEE';
-            await pool.query(
-                'UPDATE prospecting_campaign_validations SET statut_validation = $1, commentaire_validateur = $2, date_validation = NOW() WHERE campaign_id = $3 AND validateur_id = $4',
-                [newStatus, note, campaignId, validatorId]
-            );
-
-            // Si c'est un rejet, mettre à jour le statut de la campagne
-            if (action === 'REJECTED') {
-                await pool.query(
-                    'UPDATE prospecting_campaigns SET status = $1 WHERE id = $2',
-                    ['DRAFT', campaignId]
-                );
-            }
-
-            // Traiter les validations d'entreprises si fournies
-            if (companyValidations && companyValidations.length > 0) {
-                for (const companyValidation of companyValidations) {
-                    await pool.query(
-                        'UPDATE prospecting_campaign_companies SET validation_status = $1, validation_note = $2, validated_at = NOW() WHERE campaign_id = $3 AND company_id = $4',
-                        [companyValidation.status, companyValidation.note, campaignId, companyValidation.company_id]
-                    );
-                }
-            }
-
-            // Vérifier si toutes les validations sont terminées
-            const pendingValidations = await pool.query(
-                'SELECT COUNT(*)::int as count FROM prospecting_campaign_validations WHERE campaign_id = $1 AND statut_validation = $2',
-                [campaignId, 'EN_ATTENTE']
-            );
-
-            if (pendingValidations.rows[0].count === 0) {
-                // Toutes les validations sont terminées
-                const rejectedValidations = await pool.query(
-                    'SELECT COUNT(*)::int as count FROM prospecting_campaign_validations WHERE campaign_id = $1 AND statut_validation = $2',
-                    [campaignId, 'REJETEE']
-                );
-
-                if (rejectedValidations.rows[0].count === 0) {
-                    // Toutes les validations sont approuvées
-                    await pool.query(
-                        'UPDATE prospecting_campaigns SET status = $1 WHERE id = $2',
-                        ['APPROVED', campaignId]
-                    );
-                }
-            }
-
-            return { success: true, data: { campaign_id: campaignId, action, note } };
-        } catch (error) {
-            console.error('Erreur validation campagne:', error);
-            return { success: false, error: 'Erreur lors de la validation' };
-        }
-    }
-
-    /**
-     * Récupérer les détails d'une campagne pour validation
-     */
-    static async getValidationDetails(campaignId, validatorId) {
-        try {
-            // Vérifier que le validateur a le droit de voir cette campagne
-            const validation = await pool.query(
-                'SELECT * FROM prospecting_campaign_validations WHERE campaign_id = $1 AND validateur_id = $2',
-                [campaignId, validatorId]
-            );
-
-            if (validation.rows.length === 0) {
-                return { success: false, error: 'Vous n\'êtes pas autorisé à voir cette campagne' };
-            }
-
-            // Récupérer les détails de la campagne
-            const campaign = await this.findByIdWithDetails(campaignId);
-            if (!campaign) {
-                return { success: false, error: 'Campagne non trouvée' };
-            }
-
-            // Récupérer les entreprises de la campagne
-            const companies = await pool.query(`
-                SELECT c.*, pcc.validation_status, pcc.validation_note, pcc.validated_at
-                FROM companies c
-                JOIN prospecting_campaign_companies pcc ON c.id = pcc.company_id
-                WHERE pcc.campaign_id = $1
-                ORDER BY c.nom
-            `, [campaignId]);
-
-            return {
-                success: true,
-                data: {
-                    campaign,
-                    companies: companies.rows,
-                    validation: validation.rows[0]
-                }
-            };
-        } catch (error) {
-            console.error('Erreur récupération détails validation:', error);
-            return { success: false, error: 'Erreur lors de la récupération des détails' };
-        }
     }
 
     static async getValidations(campaignId) {

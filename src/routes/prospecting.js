@@ -470,8 +470,8 @@ router.delete('/campaigns/:id/companies/:companyId', authenticateToken, async (r
 
 router.get('/campaigns', authenticateToken, async (req, res) => {
     try {
-        const campaigns = await ProspectingCampaign.findAll();
-        res.json({ success: true, data: campaigns });
+        const result = await ProspectingCampaign.findAll();
+        res.json({ success: true, data: result.campaigns });
     } catch (e) {
         console.error('Erreur récupération campagnes:', e);
         res.status(500).json({ success: false, error: 'Erreur lors de la récupération des campagnes' });
