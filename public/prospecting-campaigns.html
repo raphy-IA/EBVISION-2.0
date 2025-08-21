@@ -7,6 +7,25 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-sidebar.css">
     <link rel="stylesheet" href="css/user-header.css">
+    <style>
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+        .form-text {
+            font-size: 0.875em;
+            color: #6c757d;
+        }
+        .card.bg-light {
+            border: 1px solid #dee2e6;
+        }
+        .text-primary {
+            color: #0d6efd !important;
+        }
+        .fw-bold {
+            font-weight: 600 !important;
+        }
+    </style>
     <script src="js/user-header-utils.js"></script>
     <script src="js/user-header-main.js"></script>
     <script src="js/user-header-init.js"></script>
@@ -50,36 +69,112 @@
     </div>
 
     <div class="modal fade" id="campaignModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Nouvelle campagne</h5>
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>Nouvelle campagne
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-2">
-                        <label class="form-label">Nom</label>
-                        <input id="campName" class="form-control" placeholder="Nom de la campagne">
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Canal</label>
-                        <select id="campChannel" class="form-select">
-                            <option value="EMAIL">Emails</option>
-                            <option value="PHYSIQUE">Courrier physique</option>
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Modèle (optionnel)</label>
-                        <select id="campTemplate" class="form-select"></select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Date planifiée (optionnel)</label>
-                        <input id="campDate" type="date" class="form-control">
-                    </div>
+                    <form id="campaignForm">
+                        <!-- Informations de base -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="campName" class="form-label required-field">Nom de la campagne *</label>
+                                <input id="campName" class="form-control" placeholder="Ex: Campagne Q1 2024 - Présentation générale" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="campResponsible" class="form-label required-field">Responsable de la campagne *</label>
+                                <select id="campResponsible" class="form-select" required>
+                                    <option value="">Sélectionnez un responsable</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Sélection du modèle -->
+                        <div class="mb-3">
+                            <label for="campTemplate" class="form-label required-field">Modèle de prospection *</label>
+                            <select id="campTemplate" class="form-select" required onchange="updateAutoConfig()">
+                                <option value="">Sélectionnez un modèle</option>
+                            </select>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Le modèle détermine automatiquement le canal, la Business Unit et la division
+                            </div>
+                        </div>
+
+                        <!-- Configuration automatique -->
+                        <div class="mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-cogs me-2"></i>Configuration automatique
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-broadcast-tower me-2 text-primary"></i>
+                                                <div>
+                                                    <small class="text-muted">Canal</small>
+                                                    <div id="autoChannel" class="fw-bold">-</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-sitemap me-2 text-primary"></i>
+                                                <div>
+                                                    <small class="text-muted">Business Unit</small>
+                                                    <div id="autoBU" class="fw-bold">-</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-layer-group me-2 text-primary"></i>
+                                                <div>
+                                                    <small class="text-muted">Division</small>
+                                                    <div id="autoDivision" class="fw-bold">-</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Planification -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="campDate" class="form-label">Date de lancement planifiée</label>
+                                <input id="campDate" type="date" class="form-control">
+                                <div class="form-text">Laissez vide pour lancer immédiatement</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="campPriority" class="form-label">Priorité</label>
+                                <select id="campPriority" class="form-select">
+                                    <option value="NORMAL">Normale</option>
+                                    <option value="HIGH">Élevée</option>
+                                    <option value="URGENT">Urgente</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="campDescription" class="form-label">Description de la campagne</label>
+                            <textarea id="campDescription" class="form-control" rows="3" 
+                                      placeholder="Décrivez l'objectif et le contexte de cette campagne..."></textarea>
+                        </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button class="btn btn-primary" onclick="createCampaign()">Enregistrer</button>
+                    <button class="btn btn-primary" onclick="createCampaign()">
+                        <i class="fas fa-save me-2"></i>Créer la campagne
+                    </button>
                 </div>
             </div>
         </div>
@@ -261,20 +356,22 @@
 
         async function loadCampaigns() {
             try {
-            const res = await fetch(`${API}/campaigns`, { headers: getAuthHeader() });
+            const res = await fetch(`/api/prospecting/campaigns`, { headers: getAuthHeader() });
             const data = await res.json();
             const tbody = document.getElementById('campaignsTable');
-            tbody.innerHTML = '';
+            if (tbody) tbody.innerHTML = '';
                 
                 if (!data.data || data.data.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="8" class="text-center py-4">
-                                <i class="fas fa-bullhorn fa-2x text-muted mb-3"></i>
-                                <p class="text-muted">Aucune campagne créée pour le moment</p>
-                            </td>
-                        </tr>
-                    `;
+                    if (tbody) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <i class="fas fa-bullhorn fa-2x text-muted mb-3"></i>
+                                    <p class="text-muted">Aucune campagne créée pour le moment</p>
+                                </td>
+                            </tr>
+                        `;
+                    }
                     return;
                 }
                 
@@ -310,20 +407,23 @@
                         </div>
                     </td>
                 `;
-                tbody.appendChild(tr);
+                if (tbody) tbody.appendChild(tr);
             });
             } catch (error) {
                 console.error('Erreur chargement campagnes:', error);
-                document.getElementById('campaignsTable').innerHTML = `
-                    <tr>
-                        <td colspan="8" class="text-center py-4">
-                            <div class="alert alert-danger">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                Erreur lors du chargement des campagnes
-                            </div>
-                        </td>
-                    </tr>
-                `;
+                const campaignsTable = document.getElementById('campaignsTable');
+                if (campaignsTable) {
+                    campaignsTable.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Erreur lors du chargement des campagnes
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
             }
         }
 
@@ -347,17 +447,32 @@
             }
         }
 
+        // Variable globale pour stocker les modèles
+        let templates = [];
+
         async function loadTemplates() {
-            const res = await fetch(`${API}/templates`, { headers: getAuthHeader() });
-            const data = await res.json();
-            const sel = document.getElementById('campTemplate');
-            sel.innerHTML = '<option value="">(Aucun)</option>';
-            (data.data || []).forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t.id;
-                opt.textContent = `${t.name} (${t.channel} / ${t.type_courrier})`;
-                sel.appendChild(opt);
-            });
+            try {
+                const res = await fetch(`/api/prospecting/templates`, { headers: getAuthHeader() });
+                const data = await res.json();
+                
+                // Stocker les modèles globalement
+                templates = data.data || [];
+                
+                const sel = document.getElementById('campTemplate');
+                if (sel) {
+                    sel.innerHTML = '<option value="">Sélectionnez un modèle</option>';
+                    
+                    templates.forEach(t => {
+                        const opt = document.createElement('option');
+                        opt.value = t.id;
+                        const channelText = t.channel === 'EMAIL' ? 'Email' : 'Courrier physique';
+                        opt.textContent = `${t.name} (${channelText})`;
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur chargement modèles:', error);
+            }
         }
 
         function openCreateModal() {
@@ -366,23 +481,107 @@
             campaignModal.show();
         }
 
+        function resetCreateModal() {
+            // Réinitialiser le formulaire
+            const campName = document.getElementById('campName');
+            const campResponsible = document.getElementById('campResponsible');
+            const campTemplate = document.getElementById('campTemplate');
+            const campDate = document.getElementById('campDate');
+            const campPriority = document.getElementById('campPriority');
+            const campDescription = document.getElementById('campDescription');
+            
+            if (campName) campName.value = '';
+            if (campResponsible) campResponsible.value = '';
+            if (campTemplate) campTemplate.value = '';
+            if (campDate) campDate.value = '';
+            if (campPriority) campPriority.value = 'NORMAL';
+            if (campDescription) campDescription.value = '';
+            
+            // Réinitialiser l'affichage automatique
+            const autoChannel = document.getElementById('autoChannel');
+            const autoBU = document.getElementById('autoBU');
+            const autoDivision = document.getElementById('autoDivision');
+            
+            if (autoChannel) autoChannel.textContent = '-';
+            if (autoBU) autoBU.textContent = '-';
+            if (autoDivision) autoDivision.textContent = '-';
+            
+            // Remettre le titre et le bouton en mode création
+            const modalTitle = document.querySelector('#campaignModal .modal-title');
+            const saveBtn = document.querySelector('#campaignModal .btn-primary');
+            
+            if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>Nouvelle campagne';
+            if (saveBtn) {
+                saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Créer la campagne';
+                saveBtn.onclick = createCampaign;
+            }
+        }
+
         async function createCampaign() {
+            // Validation des champs obligatoires
             const name = document.getElementById('campName').value.trim();
-            const channel = document.getElementById('campChannel').value;
-            const template_id = document.getElementById('campTemplate').value || null;
+            const template_id = document.getElementById('campTemplate').value;
+            const responsible_id = document.getElementById('campResponsible').value;
             const scheduled_date = document.getElementById('campDate').value || null;
-            if (!name) { alert('Nom requis'); return; }
-            const res = await fetch(`${API}/campaigns`, {
-                method: 'POST',
-                headers: getAuthHeader(),
-                body: JSON.stringify({ name, channel, template_id, scheduled_date })
-            });
-            if (res.ok) {
-                campaignModal.hide();
-                await loadCampaigns();
-            } else {
-                const d = await res.json().catch(() => ({}));
-                alert('Erreur: ' + (d.message || d.error || res.status));
+            const priority = document.getElementById('campPriority').value;
+            const description = document.getElementById('campDescription').value.trim();
+
+            // Validations
+            if (!name) {
+                alert('Le nom de la campagne est obligatoire');
+                return;
+            }
+            if (!template_id) {
+                alert('Veuillez sélectionner un modèle de prospection');
+                return;
+            }
+            if (!responsible_id) {
+                alert('Veuillez sélectionner un responsable de la campagne');
+                return;
+            }
+
+            try {
+                // Récupérer les informations du modèle sélectionné
+                const templateRes = await fetch(`/api/prospecting/templates/${template_id}`, { headers: getAuthHeader() });
+                const templateData = await templateRes.json();
+                
+                if (!templateRes.ok || !templateData.data) {
+                    alert('Erreur lors de la récupération du modèle');
+                    return;
+                }
+
+                const template = templateData.data;
+                
+                const campaignData = {
+                    name,
+                    template_id,
+                    responsible_id,
+                    scheduled_date,
+                    priority,
+                    description,
+                    // Récupérer automatiquement depuis le modèle
+                    channel: template.channel,
+                    business_unit_id: template.business_unit_id,
+                    division_id: template.division_id
+                };
+
+                const res = await fetch(`/api/prospecting/campaigns`, {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify(campaignData)
+                });
+
+                if (res.ok) {
+                    alert('Campagne créée avec succès !');
+                    campaignModal.hide();
+                    await loadCampaigns();
+                } else {
+                    const error = await res.json().catch(() => ({}));
+                    alert('Erreur: ' + (error.message || error.error || res.status));
+                }
+            } catch (error) {
+                console.error('Erreur création campagne:', error);
+                alert('Erreur lors de la création de la campagne');
             }
         }
 
@@ -395,7 +594,7 @@
         // Fonction pour éditer une campagne
         async function editCampaign(campaignId) {
             try {
-                const res = await fetch(`${API}/campaigns/${campaignId}`, { headers: getAuthHeader() });
+                const res = await fetch(`/api/prospecting/campaigns/${campaignId}`, { headers: getAuthHeader() });
                 const data = await res.json();
                 
                 if (res.ok && data.data) {
@@ -403,16 +602,21 @@
                     
                     // Remplir le formulaire avec les données existantes
                     document.getElementById('campName').value = campaign.name;
-                    document.getElementById('campChannel').value = campaign.channel;
+                    document.getElementById('campResponsible').value = campaign.responsible_id || '';
                     document.getElementById('campTemplate').value = campaign.template_id || '';
                     document.getElementById('campDate').value = campaign.scheduled_date || '';
+                    document.getElementById('campPriority').value = campaign.priority || 'NORMAL';
+                    document.getElementById('campDescription').value = campaign.description || '';
+                    
+                    // Mettre à jour l'affichage automatique
+                    updateAutoConfig();
                     
                     // Changer le titre du modal
-                    document.querySelector('#campaignModal .modal-title').textContent = 'Modifier la campagne';
+                    document.querySelector('#campaignModal .modal-title').innerHTML = '<i class="fas fa-edit me-2"></i>Modifier la campagne';
                     
                     // Changer le bouton
                     const saveBtn = document.querySelector('#campaignModal .btn-primary');
-                    saveBtn.textContent = 'Mettre à jour';
+                    saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Mettre à jour';
                     saveBtn.onclick = () => updateCampaign(campaignId);
                     
                     // Afficher le modal
@@ -429,27 +633,66 @@
 
         // Fonction pour mettre à jour une campagne
         async function updateCampaign(campaignId) {
+            // Validation des champs obligatoires
             const name = document.getElementById('campName').value.trim();
-            const channel = document.getElementById('campChannel').value;
-            const template_id = document.getElementById('campTemplate').value || null;
+            const template_id = document.getElementById('campTemplate').value;
+            const responsible_id = document.getElementById('campResponsible').value;
             const scheduled_date = document.getElementById('campDate').value || null;
-            
-            if (!name) { alert('Nom requis'); return; }
-            
+            const priority = document.getElementById('campPriority').value;
+            const description = document.getElementById('campDescription').value.trim();
+
+            // Validations
+            if (!name) {
+                alert('Le nom de la campagne est obligatoire');
+                return;
+            }
+            if (!template_id) {
+                alert('Veuillez sélectionner un modèle de prospection');
+                return;
+            }
+            if (!responsible_id) {
+                alert('Veuillez sélectionner un responsable de la campagne');
+                return;
+            }
+
             try {
-                const res = await fetch(`${API}/campaigns/${campaignId}`, {
+                // Récupérer les informations du modèle sélectionné
+                const templateRes = await fetch(`/api/prospecting/templates/${template_id}`, { headers: getAuthHeader() });
+                const templateData = await templateRes.json();
+                
+                if (!templateRes.ok || !templateData.data) {
+                    alert('Erreur lors de la récupération du modèle');
+                    return;
+                }
+
+                const template = templateData.data;
+                
+                const campaignData = {
+                    name,
+                    template_id,
+                    responsible_id,
+                    scheduled_date,
+                    priority,
+                    description,
+                    // Récupérer automatiquement depuis le modèle
+                    channel: template.channel,
+                    business_unit_id: template.business_unit_id,
+                    division_id: template.division_id
+                };
+
+                const res = await fetch(`/api/prospecting/campaigns/${campaignId}`, {
                     method: 'PUT',
                     headers: getAuthHeader(),
-                    body: JSON.stringify({ name, channel, template_id, scheduled_date })
+                    body: JSON.stringify(campaignData)
                 });
                 
                 if (res.ok) {
                     campaignModal.hide();
-            await loadCampaigns();
+                    await loadCampaigns();
                     alert('Campagne mise à jour avec succès !');
                 } else {
-                    const d = await res.json().catch(() => ({}));
-                    alert('Erreur: ' + (d.message || d.error || res.status));
+                    const error = await res.json().catch(() => ({}));
+                    alert('Erreur: ' + (error.message || error.error || res.status));
                 }
             } catch (error) {
                 console.error('Erreur:', error);
@@ -464,7 +707,7 @@
             }
             
             try {
-                const res = await fetch(`${API}/campaigns/${campaignId}`, {
+                const res = await fetch(`/api/prospecting/campaigns/${campaignId}`, {
                     method: 'DELETE',
                     headers: getAuthHeader()
                 });
@@ -482,19 +725,7 @@
             }
         }
 
-        // Fonction pour réinitialiser le modal de création
-        function resetCreateModal() {
-            document.getElementById('campName').value = '';
-            document.getElementById('campChannel').value = 'EMAIL';
-            document.getElementById('campTemplate').value = '';
-            document.getElementById('campDate').value = '';
-            
-            // Remettre le titre et le bouton par défaut
-            document.querySelector('#campaignModal .modal-title').textContent = 'Nouvelle campagne';
-            const saveBtn = document.querySelector('#campaignModal .btn-primary');
-            saveBtn.textContent = 'Enregistrer';
-            saveBtn.onclick = createCampaign;
-        }
+
 
         // ===== FONCTIONS DU MODAL D'AFFECTATION =====
         
@@ -1076,6 +1307,68 @@
         let addedCompanies = new Set();
         let removedCompanies = new Set();
 
+        // Chargement des collaborateurs (responsables)
+        async function loadCollaborateurs() {
+            try {
+                const res = await fetch(`/api/collaborateurs`, { headers: getAuthHeader() });
+                const data = await res.json();
+                const collaborateurs = data.data || [];
+                
+                const responsibleSel = document.getElementById('campResponsible');
+                if (responsibleSel) {
+                    responsibleSel.innerHTML = '<option value="">Sélectionnez un responsable</option>';
+                    
+                    collaborateurs.forEach(collab => {
+                        const opt = document.createElement('option');
+                        opt.value = collab.id;
+                        opt.textContent = `${collab.prenom} ${collab.nom}`;
+                        responsibleSel.appendChild(opt);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur chargement collaborateurs:', error);
+            }
+        }
+
+        // Mise à jour de l'affichage automatique lors de la sélection d'un modèle
+        function updateAutoConfig() {
+            const templateSel = document.getElementById('campTemplate');
+            const selectedTemplateId = templateSel.value;
+            
+            console.log('🔍 [DEBUG] updateAutoConfig - Template ID sélectionné:', selectedTemplateId);
+            console.log('🔍 [DEBUG] updateAutoConfig - Templates disponibles:', templates);
+            
+            if (selectedTemplateId) {
+                // Trouver le modèle sélectionné dans la liste des modèles
+                const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
+                console.log('🔍 [DEBUG] updateAutoConfig - Modèle trouvé:', selectedTemplate);
+                
+                if (selectedTemplate) {
+                    const autoChannel = document.getElementById('autoChannel');
+                    const autoBU = document.getElementById('autoBU');
+                    const autoDivision = document.getElementById('autoDivision');
+                    
+                    if (autoChannel) autoChannel.textContent = selectedTemplate.channel === 'EMAIL' ? 'Email' : 'Courrier physique';
+                    if (autoBU) autoBU.textContent = selectedTemplate.business_unit_name || '-';
+                    if (autoDivision) autoDivision.textContent = selectedTemplate.division_name || '-';
+                    
+                    console.log('🔍 [DEBUG] updateAutoConfig - Valeurs mises à jour:', {
+                        channel: selectedTemplate.channel === 'EMAIL' ? 'Email' : 'Courrier physique',
+                        business_unit: selectedTemplate.business_unit_name || '-',
+                        division: selectedTemplate.division_name || '-'
+                    });
+                }
+            } else {
+                const autoChannel = document.getElementById('autoChannel');
+                const autoBU = document.getElementById('autoBU');
+                const autoDivision = document.getElementById('autoDivision');
+                
+                if (autoChannel) autoChannel.textContent = '-';
+                if (autoBU) autoBU.textContent = '-';
+                if (autoDivision) autoDivision.textContent = '-';
+            }
+        }
+
         // Sauvegarder les affectations
         async function saveAssignments() {
             try {
@@ -1127,6 +1420,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await loadCampaigns();
             await loadTemplates();
+            await loadCollaborateurs();
         });
     </script>
     <script src="js/session-manager.js"></script>
