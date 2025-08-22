@@ -91,18 +91,65 @@
             margin-bottom: 1rem;
         }
         
-        .demandeur-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            margin-right: 0.75rem;
-        }
+                 .demandeur-avatar {
+             width: 40px;
+             height: 40px;
+             border-radius: 50%;
+             background: linear-gradient(45deg, #667eea, #764ba2);
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             color: white;
+             font-weight: bold;
+             margin-right: 0.75rem;
+         }
+         
+         /* Styles pour le modal de validation */
+         .modal-xl {
+             max-width: 95%;
+         }
+         
+         .company-note {
+             font-size: 0.9rem;
+             border: 1px solid #dee2e6;
+             border-radius: 4px;
+             transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+         }
+         
+         .company-note:focus {
+             border-color: #80bdff;
+             outline: 0;
+             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+         }
+         
+         .table th {
+             font-size: 0.9rem;
+             font-weight: 600;
+             vertical-align: middle;
+         }
+         
+         .table td {
+             vertical-align: middle;
+             padding: 0.75rem 0.5rem;
+         }
+         
+         .table td small {
+             color: #6c757d;
+             line-height: 1.2;
+         }
+         
+         .company-avatar {
+             width: 32px;
+             height: 32px;
+             border-radius: 50%;
+             background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+             color: white;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-weight: bold;
+             font-size: 12px;
+         }
     </style>
 </head>
 <body>
@@ -158,6 +205,22 @@
 
                 <!-- Filtres -->
                 <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-filter me-2"></i>
+                                Filtres
+                            </h5>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary" id="pendingBtn" onclick="toggleView('pending')">
+                                    <i class="fas fa-clock me-1"></i>En attente
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="allBtn" onclick="toggleView('all')">
+                                    <i class="fas fa-list me-1"></i>Toutes les validations
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="card-body">
                         <div class="row align-items-end">
                             <div class="col-md-3">
@@ -213,9 +276,9 @@
         </div>
     </div>
 
-    <!-- Modal de traitement de validation -->
-    <div class="modal fade" id="processValidationModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+         <!-- Modal de traitement de validation -->
+     <div class="modal fade" id="processValidationModal" tabindex="-1">
+         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
@@ -250,58 +313,40 @@
                         </div>
                     </div>
                     
-                    <!-- Statistiques de la campagne -->
-                    <div class="campaign-stats">
-                        <div class="row text-center">
-                            <div class="col-3">
-                                <div class="stats-item">
-                                    <div class="stats-number" id="modalStatsCompanies">0</div>
-                                    <small class="text-muted">Entreprises</small>
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="stats-item">
-                                    <div class="stats-number" id="modalStatsEmails">0</div>
-                                    <small class="text-muted">Emails</small>
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="stats-item">
-                                    <div class="stats-number" id="modalStatsSectors">0</div>
-                                    <small class="text-muted">Secteurs</small>
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="stats-item">
-                                    <div class="stats-number" id="modalStatsCities">0</div>
-                                    <small class="text-muted">Villes</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                         <!-- Liste des entreprises à valider -->
+                     <div class="card mb-3">
+                         <div class="card-header">
+                             <h6 class="mb-0">Entreprises à valider</h6>
+                         </div>
+                         <div class="card-body">
+                             <div id="companiesValidationList" class="table-responsive">
+                                 <!-- Les entreprises seront chargées ici -->
+                             </div>
+                         </div>
+                     </div>
                     
-                    <!-- Décision -->
-                    <div class="mb-3">
-                        <label class="form-label">Décision *</label>
-                        <div class="btn-group w-100" role="group">
-                            <input type="radio" class="btn-check" name="decision" id="approve" value="APPROUVE">
-                            <label class="btn btn-outline-success" for="approve">
-                                <i class="fas fa-check me-1"></i>Approuver
-                            </label>
-                            
-                            <input type="radio" class="btn-check" name="decision" id="reject" value="REFUSE">
-                            <label class="btn btn-outline-danger" for="reject">
-                                <i class="fas fa-times me-1"></i>Rejeter
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <!-- Commentaire -->
-                    <div class="mb-3">
-                        <label for="validatorComment" class="form-label">Commentaire (optionnel)</label>
-                        <textarea class="form-control" id="validatorComment" rows="3" 
-                                  placeholder="Ajoutez un commentaire sur votre décision..."></textarea>
-                    </div>
+                                         <!-- Décision globale -->
+                     <div class="mb-3">
+                         <label class="form-label">Décision globale *</label>
+                         <div class="btn-group w-100" role="group">
+                             <input type="radio" class="btn-check" name="decision" id="approve" value="APPROUVE">
+                             <label class="btn btn-outline-success" for="approve">
+                                 <i class="fas fa-check me-1"></i>Approuver la campagne
+                             </label>
+                             
+                             <input type="radio" class="btn-check" name="decision" id="reject" value="REFUSE">
+                             <label class="btn btn-outline-danger" for="reject">
+                                 <i class="fas fa-times me-1"></i>Rejeter la campagne
+                             </label>
+                         </div>
+                     </div>
+                     
+                     <!-- Commentaire global -->
+                     <div class="mb-3">
+                         <label for="validatorComment" class="form-label">Commentaire global (optionnel)</label>
+                         <textarea class="form-control" id="validatorComment" rows="3" 
+                                   placeholder="Ajoutez un commentaire global sur votre décision..."></textarea>
+                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -314,8 +359,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/auth.js" defer></script>
-    <script src="/js/sidebar.js" defer></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/sidebar.js"></script>
     <script src="js/user-header-utils.js"></script>
     <script src="js/user-header-main.js"></script>
     <script src="js/user-header-init.js"></script>
@@ -326,93 +371,81 @@
         const API = '/api/prospecting';
         let allValidations = [];
         let filteredValidations = [];
+        let currentView = 'pending'; // 'pending' ou 'all'
+        
+        // Fonction getAuthHeader si elle n'est pas définie dans auth.js
+        function getAuthHeader() {
+            const token = localStorage.getItem('authToken');
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
 
         async function loadValidations() {
             try {
-                // Récupérer les responsabilités du collaborateur connecté
-                const responsabilitiesRes = await fetch('/api/managers/my-responsibilities', { headers: getAuthHeader() });
-                const responsabilitiesData = await responsabilitiesRes.json();
+                // Utiliser la nouvelle API simplifiée
+                const url = currentView === 'all' ? `${API}/validations?all=true` : `${API}/validations`;
+                const response = await fetch(url, { headers: getAuthHeader() });
                 
-                if (!responsabilitiesData.success) {
-                    throw new Error('Impossible de récupérer vos responsabilités');
-                }
-                
-                const { business_units, divisions } = responsabilitiesData.data;
-                
-                if (business_units.length === 0 && divisions.length === 0) {
+                if (response.status === 401) {
+                    // L'utilisateur n'est pas un manager
                     document.getElementById('validationsContainer').innerHTML = `
                         <div class="text-center py-5">
-                            <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
-                            <h5>Aucune responsabilité</h5>
-                            <p class="text-muted">Vous n'êtes responsable d'aucune Business Unit ou Division.</p>
+                            <i class="fas fa-user-shield fa-3x text-muted mb-3"></i>
+                            <h5>Accès restreint</h5>
+                            <p class="text-muted">Cette page est réservée aux responsables de Business Units et Divisions.</p>
+                            <p class="text-muted">Contactez votre administrateur si vous pensez avoir besoin d'accès.</p>
                         </div>
                     `;
                     return;
                 }
                 
-                // Charger toutes les campagnes nécessitant validation
-                const campaignsRes = await fetch(`${API}/campaigns?status=EN_VALIDATION`, { headers: getAuthHeader() });
-                const campaignsData = await campaignsRes.json();
+                const result = await response.json();
                 
-                if (!campaignsData.success) {
-                    throw new Error('Erreur lors du chargement des campagnes');
+                if (result.success) {
+                    allValidations = result.data || [];
+                    filteredValidations = [...allValidations];
+                    renderValidations();
+                    updateStats();
+                } else {
+                    console.error('Erreur chargement validations:', result.error);
+                    document.getElementById('validationsContainer').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Erreur lors du chargement des validations: ${result.error}
+                        </div>
+                    `;
                 }
-                
-                // Charger les validations pour chaque campagne
-                allValidations = [];
-                
-                for (const campaign of campaignsData.data) {
-                    const validationsRes = await fetch(`${API}/campaigns/${campaign.id}/validations`, { headers: getAuthHeader() });
-                    const validationsData = await validationsRes.json();
-                    
-                    if (validationsData.success) {
-                        // Filtrer les validations qui concernent nos responsabilités
-                        const relevantValidations = validationsData.data.filter(validation => {
-                            return validation.statut_validation === 'EN_ATTENTE' && 
-                                   canValidate(validation, business_units, divisions);
-                        });
-                        
-                        // Ajouter les informations de campagne à chaque validation
-                        relevantValidations.forEach(validation => {
-                            validation.campaign = campaign;
-                        });
-                        
-                        allValidations.push(...relevantValidations);
-                    }
-                }
-                
-                // Charger les statistiques des campagnes
-                for (const validation of allValidations) {
-                    const companiesRes = await fetch(`${API}/campaigns/${validation.campaign.id}/companies`, { headers: getAuthHeader() });
-                    if (companiesRes.ok) {
-                        const companiesData = await companiesRes.json();
-                        validation.companies = companiesData.success ? companiesData.data : [];
-                    } else {
-                        validation.companies = [];
-                    }
-                }
-                
-                filteredValidations = [...allValidations];
-                renderValidations();
-                updateStatistics();
-                
             } catch (e) {
                 console.error('Erreur chargement validations:', e);
                 document.getElementById('validationsContainer').innerHTML = `
-                    <div class="text-center py-5 text-danger">
-                        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
-                        <h5>Erreur de chargement</h5>
-                        <p>${e.message}</p>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Erreur lors du chargement des validations: ${e.message}
                     </div>
                 `;
             }
         }
 
-        function canValidate(validation, businessUnits, divisions) {
+        function canValidate(validation, businessUnits, divisions, campaign) {
+            console.log('🔍 canValidate - validation:', validation);
+            console.log('🔍 canValidate - businessUnits:', businessUnits);
+            console.log('🔍 canValidate - divisions:', divisions);
+            console.log('🔍 canValidate - campaign:', campaign);
+            
             if (validation.niveau_validation === 'BUSINESS_UNIT') {
-                return businessUnits.some(bu => bu.id === validation.campaign.business_unit_id);
+                console.log('🔍 Vérification BU - campaign.business_unit_id:', campaign?.business_unit_id);
+                return businessUnits.some(bu => {
+                    console.log('🔍 Comparaison BU:', bu.id, '===', campaign?.business_unit_id);
+                    return bu.id === campaign?.business_unit_id;
+                });
             } else if (validation.niveau_validation === 'DIVISION') {
-                return divisions.some(div => div.id === validation.campaign.division_id);
+                console.log('🔍 Vérification Division - campaign.division_id:', campaign?.division_id);
+                return divisions.some(div => {
+                    console.log('🔍 Comparaison Division:', div.id, '===', campaign?.division_id);
+                    return div.id === campaign?.division_id;
+                });
             }
             return false;
         }
@@ -438,10 +471,22 @@
                 const urgencyClass = daysRemaining <= 1 ? 'urgent' : daysRemaining <= 2 ? 'warning' : '';
                 const urgencyBadgeClass = daysRemaining <= 1 ? 'urgent' : daysRemaining <= 2 ? 'warning' : 'normal';
                 
-                const companies = validation.companies || [];
-                const emailCount = companies.filter(c => c.email).length;
-                const sectorsCount = [...new Set(companies.map(c => c.industry).filter(Boolean))].length;
-                const citiesCount = [...new Set(companies.map(c => c.city).filter(Boolean))].length;
+                // Déterminer le statut de validation
+                let statusBadge = '';
+                if (validation.statut_validation === 'EN_ATTENTE') {
+                    statusBadge = '<span class="badge bg-warning">En attente</span>';
+                } else if (validation.statut_validation === 'APPROUVE') {
+                    statusBadge = '<span class="badge bg-success">Approuvée</span>';
+                } else if (validation.statut_validation === 'REFUSE') {
+                    statusBadge = '<span class="badge bg-danger">Rejetée</span>';
+                }
+                
+                // Pour l'instant, on affiche des statistiques de base
+                // TODO: Charger les entreprises si nécessaire
+                const companiesCount = 0; // À remplacer par le vrai nombre
+                const emailCount = 0;
+                const sectorsCount = 0;
+                const citiesCount = 0;
                 
                 html += `
                     <div class="validation-card ${urgencyClass}" data-validation-id="${validation.id}">
@@ -449,25 +494,34 @@
                             <div class="flex-grow-1">
                                 <h5 class="mb-2">
                                     <i class="fas fa-bullhorn text-primary me-2"></i>
-                                    ${validation.campaign.name}
+                                    ${validation.campaign_name}
                                 </h5>
                                 <div class="demandeur-info">
                                     <div class="demandeur-avatar">
-                                        ${getInitials(validation.demandeur_name)}
+                                        ${getInitials(`${validation.demandeur_prenom} ${validation.demandeur_nom}`)}
                                     </div>
                                     <div>
-                                        <strong>Demandeur :</strong> ${validation.demandeur_name}<br>
+                                        <strong>Demandeur :</strong> ${validation.demandeur_prenom} ${validation.demandeur_nom}<br>
                                         <small class="text-muted">
-                                            Demandé le ${new Date(validation.date_demande).toLocaleDateString('fr-FR')}
+                                            Demandé le ${new Date(validation.created_at).toLocaleDateString('fr-FR')}
                                         </small>
                                     </div>
                                 </div>
                             </div>
                             <div class="text-end">
                                 <span class="badge bg-info">${validation.niveau_validation}</span><br>
-                                <span class="days-remaining ${urgencyBadgeClass} mt-2">
-                                    ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}
-                                </span>
+                                ${statusBadge}<br>
+                                ${validation.statut_validation === 'EN_ATTENTE' ? `
+                                    <span class="days-remaining ${urgencyBadgeClass} mt-2">
+                                        ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}
+                                    </span>
+                                ` : ''}
+                                ${validation.statut_validation !== 'EN_ATTENTE' ? `
+                                    <small class="text-muted mt-2">
+                                        ${validation.validateur_nom ? `Validé par ${validation.validateur_prenom} ${validation.validateur_nom}` : ''}
+                                        ${validation.date_validation ? `<br>le ${new Date(validation.date_validation).toLocaleDateString('fr-FR')}` : ''}
+                                    </small>
+                                ` : ''}
                             </div>
                         </div>
                         
@@ -475,7 +529,7 @@
                             <div class="row text-center">
                                 <div class="col-3">
                                     <div class="stats-item">
-                                        <div class="stats-number">${companies.length}</div>
+                                        <div class="stats-number">${companiesCount}</div>
                                         <small class="text-muted">Entreprises</small>
                                     </div>
                                 </div>
@@ -506,14 +560,27 @@
                                 ${validation.commentaire_demandeur}
                             </div>
                         ` : ''}
+                        ${validation.statut_validation !== 'EN_ATTENTE' && validation.commentaire_validateur ? `
+                            <div class="alert alert-${validation.statut_validation === 'APPROUVE' ? 'success' : 'danger'} mt-2">
+                                <strong>Commentaire du validateur :</strong><br>
+                                ${validation.commentaire_validateur}
+                            </div>
+                        ` : ''}
                         
                         <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="openValidationModal('${validation.id}', '${validation.campaign.id}')">
-                                <i class="fas fa-gavel me-1"></i>Traiter la validation
-                            </button>
-                            <button class="btn btn-outline-info" onclick="viewCampaignSummary('${validation.campaign.id}')">
+                            ${validation.statut_validation === 'EN_ATTENTE' ? `
+                                <button class="btn btn-primary" onclick="openValidationModal('${validation.id}', '${validation.campaign_id}')">
+                                    <i class="fas fa-gavel me-1"></i>Traiter la validation
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-outline-info" onclick="viewCampaignSummary('${validation.campaign_id}')">
                                 <i class="fas fa-eye me-1"></i>Voir détails
                             </button>
+                            ${validation.statut_validation === 'APPROUVE' ? `
+                                <button class="btn btn-success" onclick="viewCampaignExecution('${validation.campaign_id}')">
+                                    <i class="fas fa-play me-1"></i>Exécuter
+                                </button>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -522,17 +589,16 @@
             container.innerHTML = html;
         }
 
-        function updateStatistics() {
+        function updateStats() {
             const pending = allValidations.filter(v => v.statut_validation === 'EN_ATTENTE').length;
             const urgent = allValidations.filter(v => v.statut_validation === 'EN_ATTENTE' && getDaysRemaining(v.expires_at) <= 1).length;
+            const approved = allValidations.filter(v => v.statut_validation === 'APPROUVE').length;
+            const rejected = allValidations.filter(v => v.statut_validation === 'REFUSE').length;
             
             document.getElementById('pendingCount').textContent = pending;
             document.getElementById('urgentCount').textContent = urgent;
-            
-            // Note: Pour les statistiques mensuelles, nous devrions faire des requêtes séparées
-            // Pour cette démo, nous mettons 0
-            document.getElementById('approvedCount').textContent = '0';
-            document.getElementById('rejectedCount').textContent = '0';
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('rejectedCount').textContent = rejected;
         }
 
         function getDaysRemaining(expiryDate) {
@@ -547,100 +613,338 @@
             return fullName.split(' ').map(n => n[0]).join('').toUpperCase();
         }
 
-        async function openValidationModal(validationId, campaignId) {
-            try {
-                const validation = allValidations.find(v => v.id === validationId);
-                if (!validation) return;
-                
-                // Remplir les informations
-                document.getElementById('validationId').value = validationId;
-                document.getElementById('campaignId').value = campaignId;
-                document.getElementById('modalCampaignName').textContent = validation.campaign.name;
-                document.getElementById('modalCampaignChannel').textContent = validation.campaign.channel;
-                document.getElementById('modalValidationLevel').textContent = validation.niveau_validation;
-                document.getElementById('modalDemandeur').textContent = validation.demandeur_name;
-                document.getElementById('modalRequestDate').textContent = new Date(validation.date_demande).toLocaleDateString('fr-FR');
-                document.getElementById('modalExpiryDate').textContent = new Date(validation.expires_at).toLocaleDateString('fr-FR');
-                
-                // Commentaire du demandeur
-                const commentDiv = document.getElementById('modalDemandeurComment');
-                if (validation.commentaire_demandeur) {
-                    commentDiv.innerHTML = `
-                        <div class="alert alert-info">
-                            <strong>Commentaire du demandeur :</strong><br>
-                            ${validation.commentaire_demandeur}
-                        </div>
-                    `;
-                } else {
-                    commentDiv.innerHTML = '';
-                }
-                
-                // Statistiques
-                const companies = validation.companies || [];
-                const emailCount = companies.filter(c => c.email).length;
-                const sectorsCount = [...new Set(companies.map(c => c.industry).filter(Boolean))].length;
-                const citiesCount = [...new Set(companies.map(c => c.city).filter(Boolean))].length;
-                
-                document.getElementById('modalStatsCompanies').textContent = companies.length;
-                document.getElementById('modalStatsEmails').textContent = emailCount;
-                document.getElementById('modalStatsSectors').textContent = sectorsCount;
-                document.getElementById('modalStatsCities').textContent = citiesCount;
-                
-                // Réinitialiser le formulaire
-                document.querySelectorAll('input[name="decision"]').forEach(input => input.checked = false);
-                document.getElementById('validatorComment').value = '';
-                
-                const modal = new bootstrap.Modal(document.getElementById('processValidationModal'));
-                modal.show();
-            } catch (e) {
-                console.error('Erreur ouverture modal:', e);
-                alert('Erreur lors de l\'ouverture du modal');
-            }
+                 async function loadCompaniesForValidation(campaignId) {
+             try {
+                 const companiesRes = await fetch(`${API}/campaigns/${campaignId}/companies`, { headers: getAuthHeader() });
+                 const companiesData = await companiesRes.json();
+                 
+                 if (!companiesData.success) {
+                     throw new Error('Erreur lors du chargement des entreprises');
+                 }
+                 
+                 const companies = companiesData.data || [];
+                 const container = document.getElementById('companiesValidationList');
+                 
+                 if (companies.length === 0) {
+                     container.innerHTML = `
+                         <div class="alert alert-info">
+                             <i class="fas fa-info-circle me-2"></i>
+                             Aucune entreprise trouvée pour cette campagne.
+                         </div>
+                     `;
+                     return;
+                 }
+                 
+                                   let html = `
+                      <table class="table table-striped table-hover">
+                          <thead class="table-dark">
+                              <tr>
+                                  <th style="width: 20%;">Entreprise</th>
+                                  <th style="width: 12%;">Secteur</th>
+                                  <th style="width: 10%;">Ville</th>
+                                  <th style="width: 15%;">Email</th>
+                                  <th style="width: 12%;">Téléphone</th>
+                                  <th style="width: 15%;">Validation</th>
+                                  <th style="width: 16%;">Note</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                  `;
+                  
+                  companies.forEach((company, index) => {
+                      html += `
+                          <tr>
+                              <td>
+                                  <strong>${company.name || 'N/A'}</strong>
+                                  ${company.website ? `<br><small class="text-muted"><a href="${company.website}" target="_blank">${company.website}</a></small>` : ''}
+                              </td>
+                              <td><small>${company.industry || 'N/A'}</small></td>
+                              <td><small>${company.city || 'N/A'}</small></td>
+                              <td><small>${company.email || 'N/A'}</small></td>
+                              <td><small>${company.phone || 'N/A'}</small></td>
+                              <td>
+                                  <div class="btn-group btn-group-sm" role="group">
+                                      <input type="radio" class="btn-check" name="company_validation_${index}" id="ok_${index}" value="OK" checked>
+                                      <label class="btn btn-outline-success" for="ok_${index}">
+                                          <i class="fas fa-check"></i> OK
+                                      </label>
+                                      
+                                      <input type="radio" class="btn-check" name="company_validation_${index}" id="not_ok_${index}" value="NOT_OK">
+                                      <label class="btn btn-outline-danger" for="not_ok_${index}">
+                                          <i class="fas fa-times"></i> Non OK
+                                      </label>
+                                  </div>
+                              </td>
+                              <td>
+                                  <textarea class="form-control company-note" 
+                                            rows="3" 
+                                            placeholder="Note optionnelle..."
+                                            data-company-id="${company.id}"
+                                            data-company-index="${index}"
+                                            style="min-width: 200px; resize: vertical;"></textarea>
+                              </td>
+                          </tr>
+                      `;
+                  });
+                 
+                 html += `
+                         </tbody>
+                     </table>
+                 `;
+                 
+                 container.innerHTML = html;
+                 
+             } catch (e) {
+                 console.error('Erreur chargement entreprises:', e);
+                 document.getElementById('companiesValidationList').innerHTML = `
+                     <div class="alert alert-danger">
+                         <i class="fas fa-exclamation-triangle me-2"></i>
+                         Erreur lors du chargement des entreprises: ${e.message}
+                     </div>
+                 `;
+             }
+         }
+
+         async function openValidationModal(validationId, campaignId) {
+             try {
+                 const validation = allValidations.find(v => v.id === validationId);
+                 if (!validation) return;
+                 
+                 // Remplir les informations
+                 document.getElementById('validationId').value = validationId;
+                 document.getElementById('campaignId').value = campaignId;
+                 document.getElementById('modalCampaignName').textContent = validation.campaign_name;
+                 document.getElementById('modalCampaignChannel').textContent = validation.campaign_channel;
+                 document.getElementById('modalValidationLevel').textContent = validation.niveau_validation;
+                 document.getElementById('modalDemandeur').textContent = `${validation.demandeur_prenom} ${validation.demandeur_nom}`;
+                 document.getElementById('modalRequestDate').textContent = new Date(validation.created_at).toLocaleDateString('fr-FR');
+                 document.getElementById('modalExpiryDate').textContent = new Date(validation.expires_at).toLocaleDateString('fr-FR');
+                 
+                 // Commentaire du demandeur
+                 const commentDiv = document.getElementById('modalDemandeurComment');
+                 if (validation.commentaire_demandeur) {
+                     commentDiv.innerHTML = `
+                         <div class="alert alert-info">
+                             <strong>Commentaire du demandeur :</strong><br>
+                             ${validation.commentaire_demandeur}
+                         </div>
+                     `;
+                 } else {
+                     commentDiv.innerHTML = '';
+                 }
+                 
+                 // Charger et afficher les entreprises
+                 await loadCompaniesForValidation(campaignId);
+                 
+                 // Réinitialiser le formulaire
+                 document.querySelectorAll('input[name="decision"]').forEach(input => input.checked = false);
+                 document.getElementById('validatorComment').value = '';
+                 
+                 const modal = new bootstrap.Modal(document.getElementById('processValidationModal'));
+                 modal.show();
+             } catch (e) {
+                 console.error('Erreur ouverture modal:', e);
+                 alert('Erreur lors de l\'ouverture du modal');
+             }
+         }
+
+                 async function submitValidation() {
+             try {
+                 const validationId = document.getElementById('validationId').value;
+                 const campaignId = document.getElementById('campaignId').value;
+                 const decision = document.querySelector('input[name="decision"]:checked')?.value;
+                 const comment = document.getElementById('validatorComment').value.trim();
+                 
+                 if (!decision) {
+                     alert('Veuillez sélectionner une décision globale (Approuver ou Rejeter)');
+                     return;
+                 }
+                 
+                 // Collecter les validations individuelles des entreprises
+                 const companyValidations = [];
+                 const companyNotes = document.querySelectorAll('.company-note');
+                 
+                 companyNotes.forEach((noteElement, index) => {
+                     const companyId = noteElement.getAttribute('data-company-id');
+                     const companyIndex = noteElement.getAttribute('data-company-index');
+                     const note = noteElement.value.trim();
+                     
+                     // Récupérer la validation sélectionnée pour cette entreprise
+                     const selectedValidation = document.querySelector(`input[name="company_validation_${companyIndex}"]:checked`)?.value;
+                     
+                     if (companyId && selectedValidation) {
+                         companyValidations.push({
+                             company_id: companyId,
+                             validation: selectedValidation,
+                             note: note
+                         });
+                     }
+                 });
+                 
+                 console.log('Validations des entreprises:', companyValidations);
+                 
+                 const response = await fetch(`${API}/campaigns/${campaignId}/validations/${validationId}/process`, {
+                     method: 'POST',
+                     headers: getAuthHeader(),
+                     body: JSON.stringify({
+                         decision: decision,
+                         comment: comment,
+                         company_validations: companyValidations
+                     })
+                 });
+                 
+                 const result = await response.json();
+                 
+                 if (result.success) {
+                     alert(result.message || 'Validation traitée avec succès');
+                     
+                     // Fermer le modal
+                     const modal = bootstrap.Modal.getInstance(document.getElementById('processValidationModal'));
+                     modal.hide();
+                     
+                     // Recharger les validations
+                     await loadValidations();
+                 } else {
+                     alert('Erreur: ' + (result.error || 'Traitement échoué'));
+                 }
+             } catch (e) {
+                 console.error('Erreur traitement validation:', e);
+                 alert('Erreur lors du traitement de la validation');
+             }
+         }
+
+        function viewCampaignSummary(campaignId) {
+            window.open(`/prospecting-campaign-summary.html?id=${campaignId}`, '_blank');
         }
 
-        async function submitValidation() {
+        async function loadCompaniesForValidation(campaignId) {
             try {
-                const validationId = document.getElementById('validationId').value;
-                const campaignId = document.getElementById('campaignId').value;
-                const decision = document.querySelector('input[name="decision"]:checked')?.value;
-                const comment = document.getElementById('validatorComment').value.trim();
+                console.log('🔍 Chargement des entreprises pour la campagne:', campaignId);
                 
-                if (!decision) {
-                    alert('Veuillez sélectionner une décision (Approuver ou Rejeter)');
-                    return;
-                }
-                
-                const response = await fetch(`${API}/campaigns/${campaignId}/validations/${validationId}/process`, {
-                    method: 'POST',
-                    headers: getAuthHeader(),
-                    body: JSON.stringify({
-                        decision: decision,
-                        comment: comment
-                    })
+                const response = await fetch(`${API}/campaigns/${campaignId}/companies`, {
+                    headers: getAuthHeader()
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert(result.message || 'Validation traitée avec succès');
+                    const companies = result.companies || [];
+                    console.log('📊 Entreprises chargées:', companies.length);
                     
-                    // Fermer le modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('processValidationModal'));
-                    modal.hide();
-                    
-                    // Recharger les validations
-                    await loadValidations();
+                    renderCompaniesForValidation(companies);
                 } else {
-                    alert('Erreur: ' + (result.error || 'Traitement échoué'));
+                    console.error('Erreur chargement entreprises:', result.error);
+                    document.getElementById('companiesValidationList').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Erreur lors du chargement des entreprises: ${result.error}
+                        </div>
+                    `;
                 }
             } catch (e) {
-                console.error('Erreur traitement validation:', e);
-                alert('Erreur lors du traitement de la validation');
+                console.error('Erreur chargement entreprises:', e);
+                document.getElementById('companiesValidationList').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Erreur lors du chargement des entreprises: ${e.message}
+                    </div>
+                `;
             }
         }
 
-        function viewCampaignSummary(campaignId) {
-            window.open(`/prospecting-campaign-summary.html?id=${campaignId}`, '_blank');
+        function renderCompaniesForValidation(companies) {
+            const container = document.getElementById('companiesValidationList');
+            
+            if (companies.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-building fa-2x text-muted"></i>
+                        <p class="text-muted mt-2">Aucune entreprise trouvée dans cette campagne</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Entreprise</th>
+                                <th>Secteur</th>
+                                <th>Ville</th>
+                                <th>Validation</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            companies.forEach((company, index) => {
+                const validationStatus = company.validation_status || 'PENDING';
+                const statusClass = validationStatus === 'APPROVED' ? 'success' : 
+                                   validationStatus === 'REJECTED' ? 'danger' : 'warning';
+                const statusText = validationStatus === 'APPROVED' ? 'Approuvée' : 
+                                  validationStatus === 'REJECTED' ? 'Rejetée' : 'En attente';
+                
+                html += `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="company-avatar me-2">
+                                    ${getInitials(company.name)}
+                                </div>
+                                <div>
+                                    <strong>${company.name}</strong><br>
+                                    <small class="text-muted">${company.email || 'Pas d\'email'}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${company.industry || 'Non défini'}</td>
+                        <td>${company.city || 'Non définie'}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <input type="radio" class="btn-check" name="company_validation_${index}" 
+                                       id="ok_${index}" value="OK" ${validationStatus === 'APPROVED' ? 'checked' : ''}>
+                                <label class="btn btn-outline-success" for="ok_${index}">
+                                    <i class="fas fa-check"></i> OK
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="company_validation_${index}" 
+                                       id="nok_${index}" value="NON_OK" ${validationStatus === 'REJECTED' ? 'checked' : ''}>
+                                <label class="btn btn-outline-danger" for="nok_${index}">
+                                    <i class="fas fa-times"></i> Non OK
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <textarea class="form-control form-control-sm company-note" 
+                                      rows="2" placeholder="Note optionnelle..."
+                                      data-company-id="${company.id}" 
+                                      data-company-index="${index}">${company.notes || ''}</textarea>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Sélectionnez OK pour approuver l'entreprise, Non OK pour la rejeter. 
+                        Vous pouvez ajouter des notes explicatives pour chaque entreprise.
+                    </small>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function viewCampaignExecution(campaignId) {
+            window.open(`/campaign-execution.html?id=${campaignId}`, '_blank');
         }
 
         function filterValidations() {
@@ -686,6 +990,26 @@
             document.getElementById('priorityFilter').value = '';
             filteredValidations = [...allValidations];
             renderValidations();
+        }
+
+        function toggleView(view) {
+            currentView = view;
+            
+            // Mettre à jour l'apparence des boutons
+            if (view === 'pending') {
+                document.getElementById('pendingBtn').classList.remove('btn-outline-secondary');
+                document.getElementById('pendingBtn').classList.add('btn-outline-primary');
+                document.getElementById('allBtn').classList.remove('btn-outline-primary');
+                document.getElementById('allBtn').classList.add('btn-outline-secondary');
+            } else {
+                document.getElementById('allBtn').classList.remove('btn-outline-secondary');
+                document.getElementById('allBtn').classList.add('btn-outline-primary');
+                document.getElementById('pendingBtn').classList.remove('btn-outline-primary');
+                document.getElementById('pendingBtn').classList.add('btn-outline-secondary');
+            }
+            
+            // Recharger les validations avec la nouvelle vue
+            loadValidations();
         }
 
         document.addEventListener('DOMContentLoaded', () => {

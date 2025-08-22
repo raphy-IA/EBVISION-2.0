@@ -238,6 +238,9 @@
                         <div class="col-md-4 text-end">
                             <div class="d-flex justify-content-end align-items-center">
                                 <span class="badge bg-light text-dark me-3" id="campaignStatus">...</span>
+                                <button class="btn btn-success me-2" id="submitCampaignBtn" onclick="submitForValidation()" style="display: none;">
+                                    <i class="fas fa-paper-plane me-1"></i>Soumettre pour validation
+                                </button>
                                 <a href="prospecting-campaigns.html" class="btn btn-outline-light">
                                     <i class="fas fa-arrow-left me-2"></i>Retour aux campagnes
                                 </a>
@@ -525,11 +528,11 @@
                 // Sauvegarder la campagne
                 currentCampaign = campaign;
                 
-                // Mettre à jour l'interface avec les données de base
-                updateCampaignInterface(campaign);
-                
-                // Charger les entreprises
+                // Charger les entreprises d'abord
                 await loadCampaignCompanies();
+                
+                // Mettre à jour l'interface avec les données (après avoir chargé les entreprises)
+                updateCampaignInterface(campaign);
                 
                 // Charger les validations
                 await loadCampaignValidations();
@@ -578,19 +581,22 @@
             
             // Gérer l'état du bouton de soumission
             const submitButton = document.getElementById('submitButton');
+            const submitCampaignBtn = document.getElementById('submitCampaignBtn');
             
-            // Utiliser le nombre d'entreprises depuis les données de la campagne
-            const companiesCount = campaign.companies_count || 0;
+            // Récupérer le nombre d'entreprises depuis l'élément affiché
+            const companiesCountElement = document.getElementById('totalCompanies');
+            const companiesCount = companiesCountElement ? parseInt(companiesCountElement.textContent) || 0 : 0;
             
             console.log('Campaign status:', campaign.status);
-            console.log('Companies count from campaign data:', companiesCount);
+            console.log('Companies count from DOM:', companiesCount);
             
             if (campaign.status === 'DRAFT' && companiesCount > 0) {
                 submitButton.disabled = false;
-                submitButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Soumettre pour validation';
+                submitCampaignBtn.style.display = 'inline-block';
                 console.log('✅ Bouton soumission activé');
             } else {
                 submitButton.disabled = true;
+                submitCampaignBtn.style.display = 'none';
                 if (campaign.status === 'READY' || campaign.status === 'APPROVED' || campaign.status === 'REJECTED') {
                     submitButton.innerHTML = '<i class="fas fa-check me-2"></i>Déjà soumise';
                 } else if (companiesCount === 0) {
@@ -619,10 +625,8 @@
                 renderCompaniesList(companies);
                 updateStatistics(companies);
                 
-                // Mettre à jour l'interface avec le nombre correct d'entreprises
+                // Mettre à jour l'interface immédiatement après avoir mis à jour les statistiques
                 if (currentCampaign) {
-                    // Mettre à jour le nombre d'entreprises dans les données de la campagne
-                    currentCampaign.companies_count = companies.length;
                     console.log('Mise à jour de l\'interface avec', companies.length, 'entreprises');
                     updateCampaignInterface(currentCampaign);
                 }
@@ -636,12 +640,6 @@
                         <br><small class="text-muted">Cette campagne n'a peut-être pas encore d'entreprises associées.</small>
                         </div>
                     `;
-                
-                // Mettre à jour l'interface même en cas d'erreur pour désactiver le bouton
-                if (currentCampaign) {
-                    currentCampaign.companies_count = 0;
-                    updateCampaignInterface(currentCampaign);
-                }
             }
         }
             
@@ -836,34 +834,6 @@
                 return;
             }
             
-            // Afficher l'utilisateur connecté pour debug
-            try {
-                const userResponse = await fetch('/api/auth/me', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const userData = await userResponse.json();
-                if (userData.success) {
-                    console.log('🔍 Utilisateur connecté:', {
-                        id: userData.data.user.id,
-                        nom: userData.data.user.nom,
-                        prenom: userData.data.user.prenom,
-                        email: userData.data.user.email,
-                        collaborateur_id: userData.data.user.collaborateur_id
-                    });
-                    console.log('🔍 Campagne créée par:', currentCampaign?.created_by);
-                    console.log('🔍 Comparaison:', {
-                        user_id: userData.data.user.id,
-                        campaign_created_by: currentCampaign?.created_by,
-                        is_creator: userData.data.user.id === currentCampaign?.created_by
-                    });
-                }
-            } catch (error) {
-                console.error('Erreur récupération utilisateur:', error);
-            }
-            
             // Demander confirmation
             const confirmed = confirm('Êtes-vous sûr de vouloir soumettre cette campagne pour validation ?\n\nCette action ne peut pas être annulée.');
             if (!confirmed) {
@@ -872,7 +842,7 @@
             
             try {
                 // Désactiver le bouton
-                const submitBtn = document.getElementById('submitButton');
+                const submitBtn = document.getElementById('submitCampaignBtn');
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></i>Soumission en cours...';
                 
@@ -903,9 +873,9 @@
                 showAlert('Erreur lors de la soumission : ' + error.message, 'danger');
             } finally {
                 // Réactiver le bouton
-                const submitBtn = document.getElementById('submitButton');
+                const submitBtn = document.getElementById('submitCampaignBtn');
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Soumettre pour validation';
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Soumettre pour validation';
             }
         }
 

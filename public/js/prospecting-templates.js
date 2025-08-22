@@ -4,6 +4,126 @@ const API_BU = new URL('/api/business-units', window.location.origin).toString()
 const API_DIV = new URL('/api/divisions', window.location.origin).toString();
 let currentChannel = null;
 
+// Fonction pour générer automatiquement le nom du modèle
+async function updateTemplateName() {
+    const buSelect = document.getElementById('tplBU');
+    const typeSelect = document.getElementById('tplType');
+    const serviceNameInput = document.getElementById('serviceName');
+    const nameInput = document.getElementById('tplName');
+    const serviceNameField = document.getElementById('serviceNameField');
+    
+    // Vérifier si tous les éléments nécessaires sont présents
+    if (!buSelect || !typeSelect || !nameInput) {
+        console.log('Éléments manquants pour la génération du nom:', { buSelect: !!buSelect, typeSelect: !!typeSelect, nameInput: !!nameInput });
+        return;
+    }
+    
+    const selectedBU = buSelect.value;
+    const selectedType = typeSelect.value;
+    const selectedChannel = currentChannel;
+    
+    // Masquer/afficher le champ nom du service selon le type
+    if (selectedType === 'SERVICE_SPECIFIQUE') {
+        serviceNameField.style.display = 'block';
+    } else {
+        serviceNameField.style.display = 'none';
+        if (serviceNameInput) serviceNameInput.value = '';
+    }
+    
+    // Si pas de BU ou de canal sélectionné, vider le nom
+    if (!selectedBU || !selectedChannel) {
+        nameInput.value = '';
+        return;
+    }
+    
+    // Récupérer le nom de la BU
+    const buOption = buSelect.options[buSelect.selectedIndex];
+    const buName = buOption ? buOption.text : '';
+    
+    // Déterminer le type de canal
+    let canalType = '';
+    if (selectedChannel === 'EMAIL') {
+        canalType = 'Email';
+    } else if (selectedChannel === 'PHYSIQUE') {
+        canalType = 'Courrier';
+    }
+    
+    // Déterminer le type de contenu
+    let contentType = '';
+    switch (selectedType) {
+        case 'PRESENTATION_GENERALE':
+            contentType = 'GeneralServices';
+            break;
+        case 'SERVICE_SPECIFIQUE':
+            const serviceName = serviceNameInput ? serviceNameInput.value.trim() : '';
+            if (!serviceName) {
+                nameInput.value = '';
+                return;
+            }
+            // Nettoyer le nom du service (enlever espaces, caractères spéciaux)
+            contentType = serviceName.replace(/[^a-zA-Z0-9]/g, '');
+            break;
+        case 'SUIVI_CLIENT':
+            contentType = 'Suivi';
+            break;
+        case 'RELANCE':
+            contentType = 'Relance';
+            break;
+        default:
+            contentType = 'GeneralServices';
+    }
+    
+    // Construire le nom de base
+    const baseName = `${buName}-${canalType}-${contentType}`;
+    
+    // Chercher le prochain numéro d'ordre
+    const orderNumber = await findNextOrderNumber(baseName);
+    
+    // Générer le nom final
+    const finalName = `${baseName}-${orderNumber.toString().padStart(2, '0')}`;
+    nameInput.value = finalName;
+}
+
+// Fonction pour trouver le prochain numéro d'ordre
+async function findNextOrderNumber(baseName) {
+    try {
+        const response = await fetch(`${API}/templates`, {
+            headers: getAuthHeader()
+        });
+        
+        if (!response.ok) {
+            console.error('Erreur lors de la récupération des modèles');
+            return 1;
+        }
+        
+        const data = await response.json();
+        const templates = data.data || data || [];
+        
+        // Filtrer les modèles qui commencent par le même nom de base
+        const matchingTemplates = templates.filter(template => 
+            template.name && template.name.startsWith(baseName)
+        );
+        
+        if (matchingTemplates.length === 0) {
+            return 1;
+        }
+        
+        // Extraire les numéros d'ordre existants
+        const orderNumbers = matchingTemplates.map(template => {
+            const match = template.name.match(/-(\d{2})$/);
+            return match ? parseInt(match[1]) : 0;
+        });
+        
+        // Trouver le prochain numéro disponible
+        const maxOrder = Math.max(...orderNumbers);
+        return maxOrder + 1;
+        
+    } catch (error) {
+        console.error('Erreur lors de la recherche du numéro d\'ordre:', error);
+        return 1;
+    }
+}
+
 // Fonctions utilitaires
 function getAuthHeader() {
     const token = localStorage.getItem('authToken');
@@ -58,26 +178,56 @@ function hideCreateForm() {
             } else if (channel === 'PHYSIQUE') {
                 document.getElementById('physicalConfig').classList.add('active');
             }
+            
+            // Mettre à jour le nom du modèle
+            updateTemplateName();
         }
 
 // Réinitialisation du formulaire
         function resetForm() {
-            document.getElementById('tplName').value = '';
-            document.getElementById('tplType').value = 'PRESENTATION_GENERALE';
-            document.getElementById('tplSubject').value = '';
-            document.getElementById('tplBody').value = '';
-            document.getElementById('tplBU').value = '';
-            document.getElementById('tplDivision').innerHTML = '<option value="">Sélectionnez une Division (optionnel)</option>';
-            document.getElementById('tplDivision').disabled = true;
+            const tplName = document.getElementById('tplName');
+            const tplType = document.getElementById('tplType');
+            const tplSubject = document.getElementById('tplSubject');
+            const tplBodyEmail = document.getElementById('tplBodyEmail');
+            const tplBodyPhysical = document.getElementById('tplBodyPhysical');
+            const tplBU = document.getElementById('tplBU');
+            const tplDivision = document.getElementById('tplDivision');
+            
+            if (tplName) tplName.value = '';
+            if (tplType) tplType.value = 'PRESENTATION_GENERALE';
+            if (tplSubject) tplSubject.value = '';
+            if (tplBodyEmail) tplBodyEmail.value = '';
+            if (tplBodyPhysical) tplBodyPhysical.value = '';
+            if (tplBU) tplBU.value = '';
+            if (tplDivision) {
+                tplDivision.innerHTML = '<option value="">Sélectionnez une Division (optionnel)</option>';
+                tplDivision.disabled = true;
+            }
+            
+            // Réinitialiser le champ nom du service
+            const serviceNameInput = document.getElementById('serviceName');
+            const serviceNameField = document.getElementById('serviceNameField');
+            if (serviceNameInput) {
+                serviceNameInput.value = '';
+            }
+            if (serviceNameField) {
+                serviceNameField.style.display = 'none';
+            }
             
             // Réinitialiser la sélection du canal
             currentChannel = null;
-            document.querySelectorAll('.channel-option').forEach(option => {
-                option.classList.remove('active');
-            });
-            document.querySelectorAll('.template-config').forEach(config => {
-                config.classList.remove('active');
-            });
+            const channelOptions = document.querySelectorAll('.channel-option');
+            if (channelOptions) {
+                channelOptions.forEach(option => {
+                    option.classList.remove('active');
+                });
+            }
+            const templateConfigs = document.querySelectorAll('.template-config');
+            if (templateConfigs) {
+                templateConfigs.forEach(config => {
+                    config.classList.remove('active');
+                });
+            }
 
             // Masquer l'indicateur de canal
             const indicator = document.getElementById('channelIndicator');
@@ -88,10 +238,15 @@ function hideCreateForm() {
             // Remettre le formulaire en mode création
             const createForm = document.getElementById('createForm');
             if (createForm) {
-                createForm.querySelector('h3').innerHTML = '<i class="fas fa-plus-circle me-2"></i>Créer un nouveau modèle';
+                const h3Element = createForm.querySelector('h3');
+                if (h3Element) {
+                    h3Element.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Créer un nouveau modèle';
+                }
                 const saveButton = createForm.querySelector('.btn-light');
-                saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Enregistrer le modèle';
-                saveButton.onclick = createTemplate;
+                if (saveButton) {
+                    saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Enregistrer le modèle';
+                    saveButton.onclick = createTemplate;
+                }
             }
         }
 
@@ -101,7 +256,15 @@ async function createTemplate() {
     const name = document.getElementById('tplName').value.trim();
     const type_courrier = document.getElementById('tplType').value;
     const subject = document.getElementById('tplSubject').value.trim();
-    const body_template = document.getElementById('tplBody').value.trim();
+    
+    // Récupérer le contenu selon le canal sélectionné
+    let body_template = '';
+    if (currentChannel === 'EMAIL') {
+        body_template = document.getElementById('tplBodyEmail').value.trim();
+    } else if (currentChannel === 'PHYSIQUE') {
+        body_template = document.getElementById('tplBodyPhysical').value.trim();
+    }
+    
     const business_unit_id = document.getElementById('tplBU').value;
     const division_id = document.getElementById('tplDivision').value || null;
 
@@ -152,7 +315,7 @@ async function createTemplate() {
         }
     } catch (error) {
         console.error('Erreur création modèle:', error);
-        alert('Erreur lors de la création du modèle');
+        alert('Erreur lors de la création du modèle: ' + error.message);
     }
 }
 
@@ -275,16 +438,31 @@ async function loadDivisionsForBU(buId) {
                 const template = data.data;
 
                 // Pré-remplir le formulaire
-                document.getElementById('tplName').value = template.name || '';
-                document.getElementById('tplType').value = template.type_courrier || 'PRESENTATION_GENERALE';
-                document.getElementById('tplSubject').value = template.subject || '';
-                document.getElementById('tplBody').value = template.body_template || '';
-                document.getElementById('tplBU').value = template.business_unit_id || '';
+                const tplName = document.getElementById('tplName');
+                const tplType = document.getElementById('tplType');
+                const tplSubject = document.getElementById('tplSubject');
+                const tplBodyEmail = document.getElementById('tplBodyEmail');
+                const tplBodyPhysical = document.getElementById('tplBodyPhysical');
+                const tplBU = document.getElementById('tplBU');
+                const tplDivision = document.getElementById('tplDivision');
+                
+                if (tplName) tplName.value = template.name || '';
+                if (tplType) tplType.value = template.type_courrier || 'PRESENTATION_GENERALE';
+                if (tplSubject) tplSubject.value = template.subject || '';
+                
+                // Pré-remplir le contenu selon le canal
+                if (template.channel === 'EMAIL') {
+                    if (tplBodyEmail) tplBodyEmail.value = template.body_template || '';
+                } else if (template.channel === 'PHYSIQUE') {
+                    if (tplBodyPhysical) tplBodyPhysical.value = template.body_template || '';
+                }
+                
+                if (tplBU) tplBU.value = template.business_unit_id || '';
                 
                 // Charger les divisions si une BU est sélectionnée
                 if (template.business_unit_id) {
                     await loadDivisionsForBU(template.business_unit_id);
-                    document.getElementById('tplDivision').value = template.division_id || '';
+                    if (tplDivision) tplDivision.value = template.division_id || '';
                 }
 
                 // Sélectionner le canal
@@ -292,9 +470,18 @@ async function loadDivisionsForBU(buId) {
 
                 // Modifier le formulaire pour l'édition
                 const createForm = document.getElementById('createForm');
-                createForm.querySelector('h3').innerHTML = '<i class="fas fa-edit me-2"></i>Modifier le modèle';
-                createForm.querySelector('.btn-light').innerHTML = '<i class="fas fa-save me-2"></i>Mettre à jour le modèle';
-                createForm.querySelector('.btn-light').onclick = () => updateTemplate(id);
+                if (createForm) {
+                    const h3Element = createForm.querySelector('h3');
+                    if (h3Element) {
+                        h3Element.innerHTML = '<i class="fas fa-edit me-2"></i>Modifier le modèle';
+                    }
+                    
+                    const saveButton = createForm.querySelector('.btn-light');
+                    if (saveButton) {
+                        saveButton.innerHTML = '<i class="fas fa-save me-2"></i>Mettre à jour le modèle';
+                        saveButton.onclick = () => updateTemplate(id);
+                    }
+                }
 
                 // Afficher le formulaire
                 showCreateForm();
@@ -310,7 +497,15 @@ async function loadDivisionsForBU(buId) {
             const name = document.getElementById('tplName').value.trim();
             const type_courrier = document.getElementById('tplType').value;
             const subject = document.getElementById('tplSubject').value.trim();
-            const body_template = document.getElementById('tplBody').value.trim();
+            
+            // Récupérer le contenu selon le canal sélectionné
+            let body_template = '';
+            if (currentChannel === 'EMAIL') {
+                body_template = document.getElementById('tplBodyEmail').value.trim();
+            } else if (currentChannel === 'PHYSIQUE') {
+                body_template = document.getElementById('tplBodyPhysical').value.trim();
+            }
+            
             const business_unit_id = document.getElementById('tplBU').value;
             const division_id = document.getElementById('tplDivision').value || null;
 
@@ -390,11 +585,19 @@ async function loadDivisionsForBU(buId) {
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadTemplates();
-    await loadBUs();
-    
-    // Event listeners
-    document.getElementById('tplBU').addEventListener('change', (e) => {
-        loadDivisionsForBU(e.target.value);
-    });
+    try {
+        await loadTemplates();
+        await loadBUs();
+        
+        // Event listeners
+        const tplBU = document.getElementById('tplBU');
+        if (tplBU) {
+            tplBU.addEventListener('change', (e) => {
+                loadDivisionsForBU(e.target.value);
+                updateTemplateName(); // Mettre à jour le nom quand la BU change
+            });
+        }
+    } catch (error) {
+        console.error('Erreur lors de l\'initialisation:', error);
+    }
 });

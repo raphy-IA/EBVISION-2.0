@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { CompanySource, Company, ProspectingTemplate, ProspectingCampaign } = require('../models/Prospecting');
 const { authenticateToken } = require('../middleware/auth');
+const { pool } = require('../utils/database');
 
 // Storage for uploads per-source
 const uploadRoot = path.join(process.cwd(), 'public', 'uploads', 'company-sources');
@@ -579,10 +580,40 @@ router.get('/campaigns/:id/validations', authenticateToken, async (req, res) => 
     }
 });
 
+// Récupérer les détails d'une validation (avec validations par entreprise)
+router.get('/campaigns/:id/validations/:validationId/details', authenticateToken, async (req, res) => {
+    try {
+        const { id: campaignId, validationId } = req.params;
+        
+        // Récupérer la validation
+        const validation = await ProspectingCampaign.getValidationById(validationId);
+        if (!validation) {
+            return res.status(404).json({
+                success: false,
+                error: 'Validation non trouvée'
+            });
+        }
+        
+        // Récupérer les validations par entreprise
+        const companyValidations = await ProspectingCampaign.getCompanyValidations(validationId);
+        
+        res.json({
+            success: true,
+            data: {
+                validation,
+                company_validations: companyValidations
+            }
+        });
+    } catch (e) {
+        console.error('Erreur récupération détails validation:', e);
+        res.status(500).json({ success: false, error: 'Erreur lors de la récupération des détails de validation' });
+    }
+});
+
 // Traiter une validation (approuver/rejeter)
 router.post('/campaigns/:id/validations/:validationId/process', authenticateToken, async (req, res) => {
     try {
-        const { decision, comment } = req.body;
+        const { decision, comment, company_validations } = req.body;
         
         if (!decision || !['APPROUVE', 'REFUSE'].includes(decision)) {
             return res.status(400).json({
@@ -595,7 +626,8 @@ router.post('/campaigns/:id/validations/:validationId/process', authenticateToke
             req.params.validationId,
             req.user.id,
             decision,
-            comment
+            comment,
+            company_validations
         );
         
         if (result.success) {
@@ -624,9 +656,10 @@ router.post('/campaigns/:id/validations/:validationId/process', authenticateToke
 router.get('/validations', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
+        const includeAllStatuses = req.query.all === 'true';
         
-        // Récupérer les campagnes à valider pour ce responsable
-        const validations = await ProspectingCampaign.getValidationsForUser(userId);
+        // Récupérer les campagnes pour ce responsable
+        const validations = await ProspectingCampaign.getValidationsForUser(userId, includeAllStatuses);
         
         res.json({
             success: true,
@@ -637,6 +670,171 @@ router.get('/validations', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Erreur lors de la récupération des validations'
+        });
+    }
+});
+
+/**
+ * GET /api/prospecting/reports
+ * Générer un rapport des campagnes de prospection
+ */
+router.get('/reports', authenticateToken, async (req, res) => {
+    try {
+        const {
+            business_unit_id,
+            division_id,
+            status,
+            start_date,
+            end_date
+        } = req.query;
+
+        // Construire les conditions de filtrage
+        let whereConditions = ['1=1'];
+        let params = [];
+        let paramIndex = 1;
+
+        if (business_unit_id) {
+            whereConditions.push(`pt.business_unit_id = $${paramIndex++}`);
+            params.push(business_unit_id);
+        }
+
+        if (division_id) {
+            whereConditions.push(`pt.division_id = $${paramIndex++}`);
+            params.push(division_id);
+        }
+
+        if (status) {
+            whereConditions.push(`pc.validation_statut = $${paramIndex++}`);
+            params.push(status);
+        }
+
+        if (start_date && end_date) {
+            whereConditions.push(`pc.created_at BETWEEN $${paramIndex++} AND $${paramIndex++}`);
+            params.push(start_date, end_date);
+        }
+
+        const whereClause = whereConditions.join(' AND ');
+
+        // Utiliser la vue pour les rapports de campagnes
+        const campaignsQuery = `
+            SELECT 
+                pcs.*,
+                pc.id,
+                pc.name,
+                pc.description,
+                pc.validation_statut,
+                pc.created_at,
+                pc.scheduled_date,
+                pc.created_by
+            FROM prospecting_campaign_summary pcs
+            JOIN prospecting_campaigns pc ON pcs.campaign_id = pc.id
+            WHERE 1=1
+            ${businessUnitFilter}
+            ${divisionFilter}
+            ${statusFilter}
+            ${dateFilter}
+            ORDER BY pc.created_at DESC
+        `;
+
+        const campaignsResult = await pool.query(campaignsQuery, params);
+        const campaigns = campaignsResult.rows;
+        
+        console.log('📊 Campagnes trouvées:', campaigns.length);
+
+        // Calculer les statistiques en utilisant la vue
+        const statsQuery = `
+            SELECT 
+                COUNT(*) as total_campaigns,
+                COUNT(CASE WHEN pcs.campaign_validation_status = 'EN_VALIDATION' THEN 1 END) as pending_campaigns,
+                COUNT(CASE WHEN pcs.campaign_validation_status = 'VALIDE' THEN 1 END) as approved_campaigns,
+                COUNT(CASE WHEN pcs.campaign_validation_status = 'REJETE' THEN 1 END) as rejected_campaigns,
+                COUNT(CASE WHEN pcs.campaign_validation_status = 'EN_COURS' THEN 1 END) as in_progress_campaigns,
+                COUNT(CASE WHEN pcs.campaign_validation_status = 'TERMINEE' THEN 1 END) as completed_campaigns,
+                COALESCE(SUM(pcs.total_companies), 0)::int as total_companies,
+                COALESCE(SUM(pcs.deposed_count), 0)::int as total_deposed,
+                COALESCE(SUM(pcs.sent_count), 0)::int as total_sent,
+                COALESCE(SUM(pcs.converted_count), 0)::int as total_converted,
+                COALESCE(SUM(pcs.pending_execution_count), 0)::int as total_pending_execution,
+                COALESCE(AVG(
+                    CASE 
+                        WHEN pcs.total_companies > 0 THEN 
+                            ROUND(((pcs.deposed_count + pcs.sent_count)::float / pcs.total_companies * 100), 2)
+                        ELSE 0 
+                    END
+                ), 0)::numeric(5,2) as avg_execution_rate,
+                COALESCE(AVG(
+                    CASE 
+                        WHEN pcs.total_companies > 0 THEN 
+                            ROUND((pcs.converted_count::float / pcs.total_companies * 100), 2)
+                        ELSE 0 
+                    END
+                ), 0)::numeric(5,2) as avg_conversion_rate
+            FROM prospecting_campaign_summary pcs
+            JOIN prospecting_campaigns pc ON pcs.campaign_id = pc.id
+            WHERE 1=1
+            ${businessUnitFilter}
+            ${divisionFilter}
+            ${statusFilter}
+            ${dateFilter}
+        `;
+
+        const statsResult = await pool.query(statsQuery, params);
+        const stats = statsResult.rows[0];
+        
+        console.log('📊 Statistiques brutes:', stats);
+
+        // Calculer le taux de réussite
+        const totalProcessed = parseInt(stats.approved_campaigns) + parseInt(stats.rejected_campaigns);
+        const completionRate = totalProcessed > 0 ? Math.round((parseInt(stats.approved_campaigns) / totalProcessed) * 100) : 0;
+
+        const statistics = {
+            // Métriques de campagnes
+            totalCampaigns: parseInt(stats.total_campaigns) || 0,
+            pendingCampaigns: parseInt(stats.pending_campaigns) || 0,
+            approvedCampaigns: parseInt(stats.approved_campaigns) || 0,
+            rejectedCampaigns: parseInt(stats.rejected_campaigns) || 0,
+            inProgressCampaigns: parseInt(stats.in_progress_campaigns) || 0,
+            completedCampaigns: parseInt(stats.completed_campaigns) || 0,
+            completionRate: completionRate,
+            
+            // Métriques d'exécution des campagnes
+            totalCompanies: parseInt(stats.total_companies) || 0,
+            totalDeposed: parseInt(stats.total_deposed) || 0,
+            totalSent: parseInt(stats.total_sent) || 0,
+            totalConverted: parseInt(stats.total_converted) || 0,
+            totalNotConverted: parseInt(stats.total_not_converted) || 0,
+            totalPendingExecution: parseInt(stats.total_pending_execution) || 0,
+            
+            // Taux de performance
+            avgExecutionRate: parseFloat(stats.avg_execution_rate) || 0,
+            avgConversionRate: parseFloat(stats.avg_conversion_rate) || 0,
+            
+            // Calculs dérivés
+            executionRate: stats.total_companies > 0 ? Math.round((parseInt(stats.total_deposed) + parseInt(stats.total_sent)) / parseInt(stats.total_companies) * 100) : 0,
+            conversionRate: stats.total_companies > 0 ? Math.round(parseInt(stats.total_converted) / parseInt(stats.total_companies) * 100) : 0,
+            deposedRate: stats.total_companies > 0 ? Math.round(parseInt(stats.total_deposed) / parseInt(stats.total_companies) * 100) : 0,
+            sentRate: stats.total_companies > 0 ? Math.round(parseInt(stats.total_sent) / parseInt(stats.total_companies) * 100) : 0
+        };
+        
+        console.log('📊 Statistiques finales:', statistics);
+
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        
+        res.json({
+            success: true,
+            data: {
+                campaigns: campaigns,
+                statistics: statistics
+            }
+        });
+
+    } catch (error) {
+        console.error('Erreur génération rapport:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la génération du rapport'
         });
     }
 });
@@ -667,7 +865,7 @@ router.post('/campaigns/:id/submit', authenticateToken, async (req, res) => {
         }
         
         // Soumettre la campagne pour validation
-        const result = await ProspectingCampaign.submitForValidation(campaignId);
+        const result = await ProspectingCampaign.submitForValidation(campaignId, userId);
         
         if (result.success) {
             res.json({
@@ -686,6 +884,78 @@ router.post('/campaigns/:id/submit', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Erreur lors de la soumission de la campagne'
+        });
+    }
+});
+
+/**
+ * PUT /api/prospecting/campaigns/:campaignId/companies/:companyId/execution
+ * Mettre à jour le statut d'exécution d'une entreprise dans une campagne
+ */
+router.put('/campaigns/:campaignId/companies/:companyId/execution', authenticateToken, async (req, res) => {
+    try {
+        const { campaignId, companyId } = req.params;
+        const { executionStatus, notes } = req.body;
+        const userId = req.user.id;
+        
+        if (!executionStatus || !['pending_execution', 'deposed', 'sent', 'failed'].includes(executionStatus)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Statut d\'exécution invalide'
+            });
+        }
+        
+        const result = await ProspectingCampaign.updateCompanyExecutionStatus(campaignId, companyId, executionStatus, notes);
+        
+        if (result.success) {
+            res.json({
+                success: true,
+                message: 'Statut d\'exécution mis à jour avec succès'
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                error: result.error
+            });
+        }
+    } catch (error) {
+        console.error('Erreur mise à jour exécution:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la mise à jour du statut d\'exécution'
+        });
+    }
+});
+
+/**
+ * POST /api/prospecting/campaigns/:campaignId/companies/:companyId/convert
+ * Convertir une entreprise en opportunité
+ */
+router.post('/campaigns/:campaignId/companies/:companyId/convert', authenticateToken, async (req, res) => {
+    try {
+        const { campaignId, companyId } = req.params;
+        const opportunityData = req.body;
+        const userId = req.user.id;
+        
+        const result = await ProspectingCampaign.convertToOpportunity(campaignId, companyId, opportunityData);
+        
+        if (result.success) {
+            res.json({
+                success: true,
+                message: 'Entreprise convertie en opportunité avec succès',
+                opportunityId: result.opportunityId
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                error: result.error
+            });
+        }
+    } catch (error) {
+        console.error('Erreur conversion opportunité:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la conversion en opportunité'
         });
     }
 });

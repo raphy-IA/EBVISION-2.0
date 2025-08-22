@@ -170,6 +170,7 @@ router.get('/eligible', authenticateToken, async (req, res) => {
 router.get('/my-responsibilities', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
+        console.log('🔍 [DEBUG] Recherche responsabilités pour utilisateur:', userId);
         
         // Récupérer l'ID du collaborateur
         const { pool } = require('../utils/database');
@@ -178,7 +179,10 @@ router.get('/my-responsibilities', authenticateToken, async (req, res) => {
             [userId]
         );
         
+        console.log('🔍 [DEBUG] Résultat recherche collaborateur:', collaborateur.rows);
+        
         if (collaborateur.rows.length === 0) {
+            console.log('❌ [DEBUG] Collaborateur non trouvé pour user_id:', userId);
             return res.status(404).json({
                 success: false,
                 error: 'Collaborateur non trouvé'
@@ -186,12 +190,16 @@ router.get('/my-responsibilities', authenticateToken, async (req, res) => {
         }
         
         const collaborateurId = collaborateur.rows[0].id;
+        console.log('✅ [DEBUG] Collaborateur trouvé:', collaborateurId);
         
         // Récupérer les BU et Divisions gérées
         const [businessUnits, divisions] = await Promise.all([
             Manager.getBusinessUnitsWhereManagedBy(collaborateurId),
             Manager.getDivisionsWhereManagedBy(collaborateurId)
         ]);
+        
+        console.log('📋 [DEBUG] BU gérées:', businessUnits);
+        console.log('📋 [DEBUG] Divisions gérées:', divisions);
         
         res.json({
             success: true,
@@ -254,6 +262,82 @@ router.post('/check-permissions', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Erreur serveur lors de la vérification des permissions'
+        });
+    }
+});
+
+/**
+ * POST /api/managers/assign-raphael (TEMPORAIRE)
+ * Assigner Raphaël Ngos comme responsable de la Direction Générale
+ */
+router.post('/assign-raphael', authenticateToken, async (req, res) => {
+    try {
+        // Vérifier que l'utilisateur est admin
+        if (req.user.role !== 'ADMIN') {
+            return res.status(403).json({
+                success: false,
+                error: 'Accès réservé aux administrateurs'
+            });
+        }
+        
+        const { pool } = require('../utils/database');
+        
+        // Trouver Raphaël Ngos
+        const collaborateurResult = await pool.query(
+            'SELECT id FROM collaborateurs WHERE nom = $1 AND prenom = $2',
+            ['Ngos', 'Raphaël']
+        );
+        
+        if (collaborateurResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Collaborateur Raphaël Ngos non trouvé'
+            });
+        }
+        
+        const collaborateurId = collaborateurResult.rows[0].id;
+        
+        // Trouver la Direction Générale
+        const buResult = await pool.query(
+            'SELECT id FROM business_units WHERE nom = $1',
+            ['Direction Générale']
+        );
+        
+        if (buResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Business Unit "Direction Générale" non trouvée'
+            });
+        }
+        
+        const buId = buResult.rows[0].id;
+        
+        // Assigner comme responsable principal
+        await pool.query(
+            'UPDATE business_units SET responsable_principal_id = $1 WHERE id = $2',
+            [collaborateurId, buId]
+        );
+        
+        // Vérifier l'assignation
+        const verificationResult = await pool.query(
+            `SELECT bu.nom as bu_name, c.nom, c.prenom 
+             FROM business_units bu 
+             LEFT JOIN collaborateurs c ON bu.responsable_principal_id = c.id 
+             WHERE bu.id = $1`,
+            [buId]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Raphaël Ngos a été assigné comme responsable principal de la Direction Générale',
+            data: verificationResult.rows[0]
+        });
+        
+    } catch (error) {
+        console.error('Erreur assignation manager:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur serveur lors de l\'assignation'
         });
     }
 });

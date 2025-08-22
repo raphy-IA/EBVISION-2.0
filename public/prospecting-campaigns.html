@@ -201,14 +201,14 @@
                             <div class="col-md-6">
                                 <label for="campName" class="form-label required-field">Nom de la campagne *</label>
                                 <input id="campName" class="form-control" placeholder="Ex: Campagne Q1 2024 - Présentation générale" required>
-                            </div>
+                    </div>
                             <div class="col-md-6">
                                 <label for="campResponsible" class="form-label required-field">Responsable de la campagne *</label>
                                 <select id="campResponsible" class="form-select" required>
                                     <option value="">Sélectionnez un responsable</option>
-                                </select>
-                            </div>
-                        </div>
+                        </select>
+                    </div>
+                    </div>
 
                         <!-- Sélection du modèle -->
                         <div class="mb-3">
@@ -266,9 +266,9 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="campDate" class="form-label">Date de lancement planifiée</label>
-                                <input id="campDate" type="date" class="form-control">
+                        <input id="campDate" type="date" class="form-control">
                                 <div class="form-text">Laissez vide pour lancer immédiatement</div>
-                            </div>
+                    </div>
                             <div class="col-md-6">
                                 <label for="campPriority" class="form-label">Priorité</label>
                                 <select id="campPriority" class="form-select">
@@ -494,7 +494,9 @@
                 
             (data.data || []).forEach(c => {
                 const tr = document.createElement('tr');
-                    const statusClass = getStatusClass(c.status);
+                    // Utiliser validation_statut au lieu de status
+                    const validationStatus = c.validation_statut;
+                    const statusClass = getValidationStatusBadgeClass(validationStatus);
                     const channelClass = c.channel === 'EMAIL' ? 'info' : 'secondary';
                     const createdDate = c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '-';
                     const scheduledDate = c.scheduled_date ? new Date(c.scheduled_date).toLocaleDateString('fr-FR') : '-';
@@ -513,7 +515,7 @@
                 tr.innerHTML = `
                         <td><strong>${c.name}</strong></td>
                         <td><span class="badge bg-${channelClass}">${c.channel}</span></td>
-                        <td><span class="badge bg-${statusClass}">${getStatusText(c.status)}</span></td>
+                        <td><span class="badge ${statusClass}">${getValidationStatusText(validationStatus)}</span></td>
                         <td><span class="badge bg-primary">${templateType}</span></td>
                         <td><small class="text-muted">${businessUnit}</small></td>
                         <td><small class="text-muted">${responsible}</small></td>
@@ -522,18 +524,35 @@
                         <td><small class="text-muted">${createdDate}</small></td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" onclick="assignCompanies('${c.id}')" title="Affecter des entreprises">
-                                    <i class="fas fa-users"></i> Affecter
-                                </button>
+                                ${validationStatus === 'EN_VALIDATION' ? 
+                                    `<button class="btn btn-outline-secondary" disabled title="Affectation non autorisée - Campagne en validation">
+                                        <i class="fas fa-users"></i> Affecter
+                                    </button>` :
+                                    validationStatus === 'VALIDE' ?
+                                    `<button class="btn btn-outline-success" onclick="executeCampaign('${c.id}')" title="Exécuter la campagne">
+                                        <i class="fas fa-play"></i> Exécuter
+                                    </button>` :
+                                    `<button class="btn btn-outline-primary" onclick="assignCompanies('${c.id}')" title="Affecter des entreprises">
+                                        <i class="fas fa-users"></i> Affecter
+                                    </button>`
+                                }
                                 <a class="btn btn-outline-info" href="prospecting-campaign-summary.html?id=${c.id}" title="Voir récapitulatif">
                                     <i class="fas fa-eye"></i> Récap
                                 </a>
-                                <button class="btn btn-outline-warning" onclick="editCampaign('${c.id}')" title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-outline-danger" onclick="deleteCampaign('${c.id}')" title="Supprimer">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                ${validationStatus === 'EN_VALIDATION' || validationStatus === 'VALIDE' ? 
+                                    `<button class="btn btn-outline-secondary" disabled title="Modification non autorisée - Campagne en validation">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary" disabled title="Suppression non autorisée - Campagne en validation">
+                                        <i class="fas fa-trash"></i>
+                                    </button>` :
+                                    `<button class="btn btn-outline-warning" onclick="editCampaign('${c.id}')" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteCampaign('${c.id}')" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>`
+                                }
                         </div>
                     </td>
                 `;
@@ -577,28 +596,48 @@
             }
         }
 
+        function getValidationStatusText(validationStatus) {
+            switch(validationStatus) {
+                case 'BROUILLON': return 'Brouillon';
+                case 'EN_VALIDATION': return 'En attente de validation';
+                case 'VALIDE': return 'Validée';
+                case 'REJETE': return 'Rejetée';
+                default: return validationStatus || 'Brouillon';
+            }
+        }
+
+        function getValidationStatusBadgeClass(validationStatus) {
+            switch(validationStatus) {
+                case 'BROUILLON': return 'bg-secondary';
+                case 'EN_VALIDATION': return 'bg-warning';
+                case 'VALIDE': return 'bg-success';
+                case 'REJETE': return 'bg-danger';
+                default: return 'bg-secondary';
+            }
+        }
+
         // Variable globale pour stocker les modèles
         let templates = [];
 
         async function loadTemplates() {
             try {
                 const res = await fetch(`/api/prospecting/templates`, { headers: getAuthHeader() });
-                const data = await res.json();
+            const data = await res.json();
                 
                 // Stocker les modèles globalement
                 templates = data.data || [];
                 
-                const sel = document.getElementById('campTemplate');
+            const sel = document.getElementById('campTemplate');
                 if (sel) {
                     sel.innerHTML = '<option value="">Sélectionnez un modèle</option>';
                     
                     templates.forEach(t => {
-                        const opt = document.createElement('option');
-                        opt.value = t.id;
+                const opt = document.createElement('option');
+                opt.value = t.id;
                         const channelText = t.channel === 'EMAIL' ? 'Email' : 'Courrier physique';
                         opt.textContent = `${t.name} (${channelText})`;
-                        sel.appendChild(opt);
-                    });
+                sel.appendChild(opt);
+            });
                 }
             } catch (error) {
                 console.error('Erreur chargement modèles:', error);
@@ -696,16 +735,16 @@
                 };
 
                 const res = await fetch(`/api/prospecting/campaigns`, {
-                    method: 'POST',
-                    headers: getAuthHeader(),
+                method: 'POST',
+                headers: getAuthHeader(),
                     body: JSON.stringify(campaignData)
-                });
+            });
 
-                if (res.ok) {
+            if (res.ok) {
                     alert('Campagne créée avec succès !');
-                    campaignModal.hide();
-                    await loadCampaigns();
-                } else {
+                campaignModal.hide();
+                await loadCampaigns();
+            } else {
                     const error = await res.json().catch(() => ({}));
                     alert('Erreur: ' + (error.message || error.error || res.status));
                 }
@@ -1178,7 +1217,7 @@
                 paginationSection.style.display = 'none';
                 return;
             }
-
+            
             paginationSection.style.display = 'flex';
             totalPagesSpan.textContent = totalPages;
 
@@ -1213,9 +1252,9 @@
                 currentPage--;
                 renderSourceCompanies(currentSourceCompanies);
             }
-        }
-
-        // Page suivante
+            }
+            
+            // Page suivante
         function nextPage() {
             const totalPages = Math.ceil(currentSourceCompanies.length / companiesPerPage);
             if (currentPage < totalPages) {
@@ -1528,7 +1567,7 @@
                     body: JSON.stringify(data)
                 });
 
-                if (res.ok) {
+            if (res.ok) {
                     const result = await res.json();
                     const message = [];
                     if (addedCompanies.size > 0) message.push(`${addedCompanies.size} entreprise(s) ajoutée(s)`);
@@ -1558,7 +1597,7 @@
             document.getElementById('current-date').textContent = currentDate;
             
             // Charger les données
-            await loadCampaigns();
+                    await loadCampaigns();
             await loadTemplates();
             await loadCollaborateurs();
         });
@@ -1585,6 +1624,10 @@
 
         function showComingSoon(feature) {
             showAlert(`La fonctionnalité "${feature}" est en cours de développement.`, 'warning');
+        }
+
+        function executeCampaign(campaignId) {
+            window.location.href = `campaign-execution.html?id=${campaignId}`;
         }
 
         function formatDate(dateString) {

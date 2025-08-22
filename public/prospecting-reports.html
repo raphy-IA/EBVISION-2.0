@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapports de Prospection - EBVISION 2.0</title>
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    <link rel="stylesheet" href="css/user-header.css">
+    <link rel="stylesheet" href="css/app-title.css">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1; /* Prend l'espace restant */
+            padding: 2rem;
+            background-color: #f5f7fa;
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+
+        .reports-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .filters-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .reports-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem 1.5rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-brouillon { background-color: #e9ecef; color: #495057; }
+        .status-en-validation { background-color: #fff3cd; color: #856404; }
+        .status-valide { background-color: #d4edda; color: #155724; }
+        .status-rejete { background-color: #f8d7da; color: #721c24; }
+        .status-en-cours { background-color: #cce5ff; color: #004085; }
+        .status-terminee { background-color: #d1ecf1; color: #0c5460; }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .campaign-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .progress-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .progress-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .progress-item .badge {
+            font-size: 0.7rem;
+            min-width: 20px;
+        }
+
+        .progress-item small {
+            font-size: 0.7rem;
+            color: #6c757d;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+            }
+
+            .progress-stats {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+    
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    <script src="js/user-header-utils.js"></script>
+    <script src="js/user-header-main.js"></script>
+    <script src="js/user-header-init.js"></script>
+</head>
+<body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- Le contenu de la sidebar sera chargé dynamiquement -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+        <!-- En-tête de la page -->
+        <div class="reports-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="mb-2">
+                        <i class="fas fa-chart-line me-3"></i>
+                        Rapports de Prospection
+                    </h1>
+                    <p class="mb-0 opacity-75">Analysez et suivez vos campagnes de prospection</p>
+                </div>
+                <div class="text-end">
+                    <div class="current-date" id="currentDate"></div>
+                    <small class="opacity-75">Dernière mise à jour</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="filters-card">
+            <h5 class="mb-3">
+                <i class="fas fa-filter me-2"></i>
+                Filtres de rapport
+            </h5>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Business Unit</label>
+                    <select class="form-select" id="businessUnitFilter">
+                        <option value="">Toutes les BU</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Division</label>
+                    <select class="form-select" id="divisionFilter">
+                        <option value="">Toutes les divisions</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Période</label>
+                    <select class="form-select" id="periodFilter">
+                        <option value="all">Toutes les périodes</option>
+                        <option value="today">Aujourd'hui</option>
+                        <option value="week">Cette semaine</option>
+                        <option value="month">Ce mois</option>
+                        <option value="quarter">Ce trimestre</option>
+                        <option value="year">Cette année</option>
+                        <option value="custom">Période personnalisée</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Statut</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Tous les statuts</option>
+                        <option value="BROUILLON">Brouillon</option>
+                        <option value="EN_VALIDATION">En validation</option>
+                        <option value="VALIDE">Validée</option>
+                        <option value="REJETE">Rejetée</option>
+                        <option value="EN_COURS">En cours</option>
+                        <option value="TERMINEE">Terminée</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Période personnalisée (cachée par défaut) -->
+            <div class="row" id="customPeriodRow" style="display: none;">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Date de début</label>
+                    <input type="date" class="form-control" id="startDate">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Date de fin</label>
+                    <input type="date" class="form-control" id="endDate">
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <button class="btn btn-primary" onclick="generateReport()">
+                    <i class="fas fa-search me-2"></i>
+                    Générer le rapport
+                </button>
+                <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                    <i class="fas fa-times me-2"></i>
+                    Effacer les filtres
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutons d'export -->
+        <div class="export-buttons" id="exportButtons" style="display: none;">
+            <button class="btn btn-success" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i>
+                Exporter en Excel
+            </button>
+            <button class="btn btn-danger" onclick="exportToPDF()">
+                <i class="fas fa-file-pdf me-2"></i>
+                Exporter en PDF
+            </button>
+            <button class="btn btn-info" onclick="exportToCSV()">
+                <i class="fas fa-file-csv me-2"></i>
+                Exporter en CSV
+            </button>
+        </div>
+
+        <!-- Tableau des résultats -->
+        <div class="reports-table" id="reportsTable" style="display: none;">
+            <div class="table-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    Détails des campagnes
+                </h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Campagne</th>
+                            <th>Statut</th>
+                            <th>BU/Division</th>
+                            <th>Type de dépôt</th>
+                            <th>Total Entreprises</th>
+                            <th>Exécution</th>
+                            <th>Responsable</th>
+                            <th>Date création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTableBody">
+                        <!-- Les données seront chargées ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/global-auth.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/user-modals.js"></script>
+    <script src="js/session-manager.js"></script>
+
+    <script>
+        // Variables globales
+        const API = '/api/prospecting';
+        let currentReportData = null;
+        let businessUnits = [];
+        let divisions = [];
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+
+        function initializePage() {
+            console.log('🚀 initializePage() appelée');
+            
+            // Afficher la date actuelle
+            const currentDate = new Date();
+            document.getElementById('currentDate').textContent = currentDate.toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            // Charger les données initiales
+            loadBusinessUnits();
+            loadDivisions();
+            setupEventListeners();
+            
+            // Générer un rapport initial après le chargement des filtres
+            setTimeout(() => {
+                console.log('⏰ Timeout écoulé, appel de generateReport()');
+                generateReport();
+            }, 1000);
+        }
+
+        function setupEventListeners() {
+            console.log('🔧 Configuration des événements...');
+            
+            // Filtre de période personnalisée
+            const periodFilter = document.getElementById('periodFilter');
+            if (periodFilter) {
+                periodFilter.addEventListener('change', function() {
+                    const customRow = document.getElementById('customPeriodRow');
+                    if (this.value === 'custom') {
+                        customRow.style.display = 'block';
+                    } else {
+                        customRow.style.display = 'none';
+                    }
+                    generateReport();
+                });
+            }
+
+            // Filtres qui déclenchent la génération du rapport
+            const businessUnitFilter = document.getElementById('businessUnitFilter');
+            if (businessUnitFilter) {
+                businessUnitFilter.addEventListener('change', generateReport);
+            }
+
+            const divisionFilter = document.getElementById('divisionFilter');
+            if (divisionFilter) {
+                divisionFilter.addEventListener('change', generateReport);
+            }
+
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', generateReport);
+            }
+            
+            // Filtres de date
+            const startDate = document.getElementById('startDate');
+            if (startDate) {
+                startDate.addEventListener('change', generateReport);
+            }
+
+            const endDate = document.getElementById('endDate');
+            if (endDate) {
+                endDate.addEventListener('change', generateReport);
+            }
+            
+            // Bouton de génération manuelle
+            const generateReportBtn = document.getElementById('generateReportBtn');
+            if (generateReportBtn) {
+                generateReportBtn.addEventListener('click', generateReport);
+            }
+            
+            // Bouton de réinitialisation des filtres
+            const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+            if (clearFiltersBtn) {
+                clearFiltersBtn.addEventListener('click', function() {
+                    clearFilters();
+                    generateReport();
+                });
+            }
+            
+            console.log('✅ Événements configurés');
+        }
+
+        function getAuthHeader() {
+            const token = localStorage.getItem('authToken');
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        function showAlert(message, type = 'info') {
+            // Fonction d'alerte simple
+            alert(message);
+        }
+
+        // Fonctions de chargement des données
+        async function loadBusinessUnits() {
+            try {
+                const response = await fetch('/api/business-units', {
+                    headers: getAuthHeader()
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    businessUnits = data.data || [];
+                    
+                    const select = document.getElementById('businessUnitFilter');
+                    businessUnits.forEach(bu => {
+                        const option = document.createElement('option');
+                        option.value = bu.id;
+                        option.textContent = bu.nom;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur chargement BU:', error);
+            }
+        }
+
+        async function loadDivisions() {
+            try {
+                const response = await fetch('/api/divisions', {
+                    headers: getAuthHeader()
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    divisions = data.data || [];
+                    
+                    const select = document.getElementById('divisionFilter');
+                    divisions.forEach(div => {
+                        const option = document.createElement('option');
+                        option.value = div.id;
+                        option.textContent = div.nom;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur chargement divisions:', error);
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('businessUnitFilter').value = '';
+            document.getElementById('divisionFilter').value = '';
+            document.getElementById('periodFilter').value = 'all';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('customPeriodRow').style.display = 'none';
+        }
+
+        function getDateRange() {
+            const period = document.getElementById('periodFilter').value;
+            const now = new Date();
+            let startDate, endDate;
+
+            switch (period) {
+                case 'today':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+                    break;
+                case 'week':
+                    const dayOfWeek = now.getDay();
+                    const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                    startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), diff + 6, 23, 59, 59);
+                    break;
+                case 'month':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                    break;
+                case 'quarter':
+                    const quarter = Math.floor(now.getMonth() / 3);
+                    startDate = new Date(now.getFullYear(), quarter * 3, 1);
+                    endDate = new Date(now.getFullYear(), (quarter + 1) * 3, 0, 23, 59, 59);
+                    break;
+                case 'year':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+                    break;
+                case 'custom':
+                    startDate = new Date(document.getElementById('startDate').value);
+                    endDate = new Date(document.getElementById('endDate').value);
+                    endDate.setHours(23, 59, 59);
+                    break;
+                default:
+                    return null;
+            }
+
+            return { startDate, endDate };
+        }
+
+        // Fonction principale de génération de rapport
+        async function generateReport() {
+            console.log('🚀 generateReport() appelée');
+            try {
+                // Afficher le spinner de chargement
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="loading-spinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Génération du rapport...</span>
+                        </div>
+                    </div>
+                `;
+
+                // Récupérer les filtres
+                const filters = {
+                    businessUnitId: document.getElementById('businessUnitFilter').value,
+                    divisionId: document.getElementById('divisionFilter').value,
+                    status: document.getElementById('statusFilter').value,
+                    dateRange: getDateRange()
+                };
+
+                console.log('🔍 Filtres appliqués:', filters);
+
+                // Construire l'URL avec les paramètres
+                const params = new URLSearchParams();
+                if (filters.businessUnitId) params.append('business_unit_id', filters.businessUnitId);
+                if (filters.divisionId) params.append('division_id', filters.divisionId);
+                if (filters.status) params.append('status', filters.status);
+                if (filters.dateRange) {
+                    params.append('start_date', filters.dateRange.startDate.toISOString());
+                    params.append('end_date', filters.dateRange.endDate.toISOString());
+                }
+
+                console.log('🔍 Paramètres URL:', params.toString());
+
+                // Appeler l'API
+                const response = await fetch(`${API}/reports?${params.toString()}`, {
+                    headers: getAuthHeader()
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Erreur API:', response.status, errorText);
+                    throw new Error(`Erreur ${response.status}: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('📊 Données reçues de l\'API:', data);
+                
+                if (data.success && data.data) {
+                    currentReportData = data.data;
+
+                    // Afficher les statistiques
+                    renderStatistics(data.data.statistics);
+                    
+                    // Afficher le tableau
+                    renderTable(data.data.campaigns);
+                } else {
+                    throw new Error('Format de données invalide');
+                }
+                
+                // Afficher les boutons d'export
+                document.getElementById('exportButtons').style.display = 'flex';
+
+            } catch (error) {
+                console.error('Erreur génération rapport:', error);
+                
+                // Afficher un message d'erreur plus informatif
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Aucune campagne trouvée avec les filtres actuels. 
+                        <br>Essayez de modifier les filtres ou de créer une nouvelle campagne.
+                    </div>
+                `;
+                
+                // Afficher un tableau vide
+                renderTable([]);
+            }
+        }
+
+        function renderStatistics(stats) {
+            const statsGrid = document.getElementById('statsGrid');
+            
+            // Vérifier si les statistiques existent
+            if (!stats) {
+                stats = {
+                    totalCampaigns: 0,
+                    totalCompanies: 0,
+                    pendingCampaigns: 0,
+                    approvedCampaigns: 0,
+                    rejectedCampaigns: 0,
+                    completionRate: 0
+                };
+            }
+            
+            statsGrid.innerHTML = `
+                <!-- Métriques de campagnes -->
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <div class="stat-number">${stats.totalCampaigns || 0}</div>
+                    <div class="stat-label">Total Campagnes</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--success-color), #20c997);">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="stat-number">${stats.totalCompanies || 0}</div>
+                    <div class="stat-label">Total Entreprises</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--warning-color), #fd7e14);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-number">${stats.pendingCampaigns || 0}</div>
+                    <div class="stat-label">En Attente</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--info-color), #6f42c1);">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-number">${stats.approvedCampaigns || 0}</div>
+                    <div class="stat-label">Approuvées</div>
+                </div>
+                
+                <!-- Métriques d'exécution -->
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                        <i class="fas fa-mail-bulk"></i>
+                    </div>
+                    <div class="stat-number">${stats.totalDeposed || 0}</div>
+                    <div class="stat-label">Courriers Déposés</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #17a2b8, #6f42c1);">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="stat-number">${stats.totalSent || 0}</div>
+                    <div class="stat-label">Emails Envoyés</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #ffc107, #fd7e14);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-number">${stats.totalPendingExecution || 0}</div>
+                    <div class="stat-label">En Attente</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #dc3545, #e83e8c);">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-number">${stats.totalConverted || 0}</div>
+                    <div class="stat-label">Converties en Opp.</div>
+                </div>
+                
+                <!-- Taux de performance -->
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #6c757d, #495057);">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-number">${stats.executionRate || 0}%</div>
+                    <div class="stat-label">Taux d'Exécution</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-number">${stats.conversionRate || 0}%</div>
+                    <div class="stat-label">Taux de Conversion</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #17a2b8, #6f42c1);">
+                        <i class="fas fa-mail-bulk"></i>
+                    </div>
+                    <div class="stat-number">${stats.deposedRate || 0}%</div>
+                    <div class="stat-label">Taux Déposé</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #fd7e14, #e83e8c);">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="stat-number">${stats.completionRate || 0}%</div>
+                    <div class="stat-label">Taux de Réussite</div>
+                </div>
+            `;
+        }
+
+        function renderTable(campaigns) {
+            const tableBody = document.getElementById('reportsTableBody');
+            
+            if (!campaigns || campaigns.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="text-center py-4">
+                            <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">Aucune campagne trouvée avec les filtres sélectionnés</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tableBody.innerHTML = campaigns.map(campaign => `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="campaign-icon me-2">
+                                    <i class="fas fa-bullhorn"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">${campaign.name || campaign.campaign_name || campaign.nom}</div>
+                                    <small class="text-muted">${campaign.description || ''}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-${getStatusClass(campaign.validation_statut || campaign.statut)}">
+                                ${getStatusText(campaign.validation_statut || campaign.statut)}
+                            </span>
+                        </td>
+                        <td>
+                            <div>${campaign.business_unit_name || 'N/A'}</div>
+                            <small class="text-muted">${campaign.division_name || ''}</small>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas ${getTemplateTypeIcon(campaign.template_type || campaign.type_courrier)} me-1"></i>
+                                <span>${campaign.template_name || 'N/A'}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-center">
+                                <div class="fw-bold">${campaign.companies_count || 0}</div>
+                                <small class="text-muted">Total</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="progress-stats">
+                                <div class="progress-item">
+                                    <span class="badge bg-success">${campaign.deposed_count || 0}</span>
+                                    <small>Déposés</small>
+                                </div>
+                                <div class="progress-item">
+                                    <span class="badge bg-info">${campaign.sent_count || 0}</span>
+                                    <small>Envoyés</small>
+                                </div>
+                                <div class="progress-item">
+                                    <span class="badge bg-warning">${campaign.pending_execution_count || 0}</span>
+                                    <small>En attente</small>
+                                </div>
+                                <div class="progress-item">
+                                    <span class="badge bg-danger">${campaign.converted_count || 0}</span>
+                                    <small>Converties</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-center">
+                                <div class="fw-bold">${campaign.responsible_name || 'N/A'}</div>
+                                <small class="text-muted">${campaign.responsible_prenom || ''}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <small>${formatDate(campaign.created_at)}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" onclick="viewCampaignDetails('${campaign.id}')" title="Voir détails">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-info" onclick="viewCampaignSummary('${campaign.id}')" title="Résumé">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                                <button class="btn btn-outline-success" onclick="exportCampaign('${campaign.id}')" title="Exporter">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            
+            document.getElementById('reportsTable').style.display = 'block';
+        }
+
+        // Fonctions utilitaires
+        function getTemplateTypeIcon(type) {
+            const icons = {
+                'EMAIL': 'fa-envelope',
+                'SMS': 'fa-sms',
+                'CALL': 'fa-phone',
+                'LETTER': 'fa-envelope-open-text',
+                'PHYSICAL': 'fa-mail-bulk'
+            };
+            return icons[type] || 'fa-file-alt';
+        }
+
+        function getChannelText(channel) {
+            const channels = {
+                'EMAIL': 'Email',
+                'SMS': 'SMS',
+                'CALL': 'Appel',
+                'LETTER': 'Courrier'
+            };
+            return channels[channel] || channel;
+        }
+
+        function getStatusClass(status) {
+            const statusMap = {
+                'BROUILLON': 'brouillon',
+                'EN_VALIDATION': 'en-validation',
+                'VALIDE': 'valide',
+                'REJETE': 'rejete',
+                'EN_COURS': 'en-cours',
+                'TERMINEE': 'terminee'
+            };
+            return statusMap[status] || 'brouillon';
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'BROUILLON': 'Brouillon',
+                'EN_VALIDATION': 'En validation',
+                'VALIDE': 'Validée',
+                'REJETE': 'Rejetée',
+                'EN_COURS': 'En cours',
+                'TERMINEE': 'Terminée'
+            };
+            return statusMap[status] || status;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleDateString('fr-FR');
+        }
+
+        function viewCampaignDetails(campaignId) {
+            window.open(`/prospecting-campaigns.html?id=${campaignId}`, '_blank');
+        }
+
+        function viewCampaignSummary(campaignId) {
+            window.open(`/prospecting-campaign-summary.html?id=${campaignId}`, '_blank');
+        }
+
+        // Fonctions d'export
+        function exportToExcel() {
+            if (!currentReportData) {
+                showAlert('Aucune donnée à exporter. Générez d\'abord un rapport.', 'warning');
+                return;
+            }
+            
+            // Créer un fichier Excel simple (CSV avec extension .xlsx)
+            const csvContent = generateCSVContent();
+            downloadFile(csvContent, 'rapport_prospection.xlsx', 'text/csv');
+        }
+
+        function exportToPDF() {
+            if (!currentReportData) {
+                showAlert('Aucune donnée à exporter. Générez d\'abord un rapport.', 'warning');
+                return;
+            }
+            
+            // Pour l'instant, on génère un PDF simple
+            showAlert('Fonctionnalité PDF en cours de développement', 'info');
+        }
+
+        function exportToCSV() {
+            if (!currentReportData) {
+                showAlert('Aucune donnée à exporter. Générez d\'abord un rapport.', 'warning');
+                return;
+            }
+            
+            const csvContent = generateCSVContent();
+            downloadFile(csvContent, 'rapport_prospection.csv', 'text/csv');
+        }
+
+        function generateCSVContent() {
+            if (!currentReportData || !currentReportData.campaigns) return '';
+            
+            const headers = [
+                'Campagne',
+                'Business Unit',
+                'Division',
+                'Canal',
+                'Entreprises',
+                'Statut',
+                'Date création',
+                'Responsable'
+            ];
+            
+            const rows = currentReportData.campaigns.map(campaign => [
+                campaign.name,
+                campaign.business_unit_name || 'N/A',
+                campaign.division_name || 'N/A',
+                getChannelText(campaign.channel),
+                campaign.companies_count || 0,
+                getStatusText(campaign.validation_statut),
+                formatDate(campaign.created_at),
+                `${campaign.responsible_name || 'N/A'} ${campaign.responsible_prenom || ''}`
+            ]);
+            
+            return [headers, ...rows]
+                .map(row => row.map(cell => `"${cell}"`).join(','))
+                .join('\n');
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>

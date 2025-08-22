@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EBVISION 2.0 - Exécution de Campagne</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    <link rel="stylesheet" href="css/user-header.css">
+    <!-- CSS pour le titre de l'application -->
+    <link rel="stylesheet" href="css/app-title.css">
+    
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+                
+    <!-- Scripts de zone utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/user-modals.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+        
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .execution-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            min-width: 120px;
+        }
+        
+        .execution-status.pending {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+        }
+        
+        .execution-status.deposed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .execution-status.sent {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .execution-status.failed {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .company-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .campaign-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .convert-opportunity-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .convert-opportunity-btn:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            color: white;
+        }
+        
+        .convert-opportunity-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <script src="js/global-auth.js"></script>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    <script src="js/user-header-utils.js"></script>
+    <script src="js/user-header-main.js"></script>
+    <script src="js/user-header-init.js"></script>
+    <script src="js/session-manager.js"></script>
+</head>
+<body>
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <div class="sidebar-container"></div>
+        <div class="main-content-area">
+            <div class="container-fluid">
+                <!-- En-tête de la campagne -->
+                <div class="campaign-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-2">
+                                <i class="fas fa-play-circle me-2"></i>
+                                Exécution de Campagne
+                            </h2>
+                            <h4 id="campaignName" class="mb-3">Chargement...</h4>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <small class="text-light">Type de campagne:</small>
+                                    <div id="campaignType" class="fw-bold">-</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-light">Responsable:</small>
+                                    <div id="campaignResponsible" class="fw-bold">-</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-light">Date de création:</small>
+                                    <div id="campaignDate" class="fw-bold">-</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="execution-status" id="campaignStatus">
+                                Chargement...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistiques d'exécution -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCompanies">0</div>
+                        <div class="stat-label">Total Entreprises</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="pendingExecution">0</div>
+                        <div class="stat-label">En Attente</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="deposedCount">0</div>
+                        <div class="stat-label">Déposés</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="sentCount">0</div>
+                        <div class="stat-label">Envoyés</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="convertedCount">0</div>
+                        <div class="stat-label">Converties</div>
+                    </div>
+                </div>
+
+                <!-- Liste des entreprises à exécuter -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-building me-2"></i>
+                            Entreprises à Exécuter
+                        </h5>
+                        <small class="text-muted">Marquez les courriers comme déposés ou envoyés selon le type de campagne</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Entreprise</th>
+                                        <th>Industrie</th>
+                                        <th>Ville</th>
+                                        <th>Statut d'Exécution</th>
+                                        <th>Actions</th>
+                                        <th>Notes</th>
+                                        <th>Conversion</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="companiesTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Chargement...</span>
+                                            </div>
+                                            <p class="mt-2">Chargement des entreprises...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-between mt-4">
+                    <button class="btn btn-secondary" onclick="goBack()">
+                        <i class="fas fa-arrow-left me-2"></i>Retour
+                    </button>
+                    <button class="btn btn-success" onclick="saveAllExecutions()">
+                        <i class="fas fa-save me-2"></i>Sauvegarder les Exécutions
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de conversion en opportunité -->
+    <div class="modal fade" id="convertOpportunityModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        Convertir en Opportunité
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Vous êtes sur le point de convertir cette entreprise en opportunité. 
+                        Cela créera une nouvelle opportunité liée à cette campagne de prospection.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Entreprise</label>
+                        <input type="text" class="form-control" id="convertCompanyName" readonly>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Nom de l'opportunité *</label>
+                            <input type="text" class="form-control" id="opportunityName" placeholder="Ex: Opportunité - [Nom entreprise]">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Valeur estimée</label>
+                            <input type="number" class="form-control" id="opportunityValue" placeholder="Montant en FCFA">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="opportunityDescription" rows="3" 
+                                  placeholder="Décrivez l'opportunité..."></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Probabilité (%)</label>
+                            <select class="form-select" id="opportunityProbability">
+                                <option value="10">10% - Très faible</option>
+                                <option value="25">25% - Faible</option>
+                                <option value="50" selected>50% - Moyenne</option>
+                                <option value="75">75% - Élevée</option>
+                                <option value="90">90% - Très élevée</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date de fermeture estimée</label>
+                            <input type="date" class="form-control" id="opportunityCloseDate">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-success" onclick="confirmConversion()">
+                        <i class="fas fa-check me-2"></i>Convertir en Opportunité
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/sidebar.js"></script>
+    <script src="js/user-header-utils.js"></script>
+    <script src="js/user-header-main.js"></script>
+    <script src="js/user-header-init.js"></script>
+    <script src="js/session-manager.js"></script>
+    
+    <script>
+        const API = '/api/prospecting';
+        let campaignId = null;
+        let campaignData = null;
+        let companiesData = [];
+        let currentConvertingCompany = null;
+        
+        // Fonction getAuthHeader si elle n'est pas définie dans auth.js
+        function getAuthHeader() {
+            const token = localStorage.getItem('authToken');
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        // Initialisation de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Récupérer l'ID de la campagne depuis l'URL
+            const urlParams = new URLSearchParams(window.location.search);
+            campaignId = urlParams.get('id');
+            
+            if (!campaignId) {
+                showError('ID de campagne manquant dans l\'URL');
+                return;
+            }
+            
+            loadCampaignData();
+        });
+
+        async function loadCampaignData() {
+            try {
+                console.log('🔍 Chargement des données de la campagne:', campaignId);
+                
+                const response = await fetch(`${API}/campaigns/${campaignId}`, {
+                    headers: getAuthHeader()
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    campaignData = result.data;
+                    displayCampaignInfo();
+                    loadCompanies();
+                } else {
+                    showError('Erreur lors du chargement de la campagne: ' + result.error);
+                }
+            } catch (e) {
+                console.error('Erreur chargement campagne:', e);
+                showError('Erreur lors du chargement de la campagne');
+            }
+        }
+
+        function displayCampaignInfo() {
+            document.getElementById('campaignName').textContent = campaignData.name;
+            document.getElementById('campaignType').textContent = getCampaignTypeText(campaignData.template_type);
+            document.getElementById('campaignResponsible').textContent = campaignData.responsible_name || 'Non assigné';
+            document.getElementById('campaignDate').textContent = new Date(campaignData.created_at).toLocaleDateString('fr-FR');
+            
+            // Statut de la campagne
+            const statusElement = document.getElementById('campaignStatus');
+            statusElement.textContent = getStatusText(campaignData.validation_statut);
+            statusElement.className = `execution-status ${getStatusClass(campaignData.validation_statut)}`;
+        }
+
+        async function loadCompanies() {
+            try {
+                console.log('🔍 Chargement des entreprises de la campagne');
+                
+                const response = await fetch(`${API}/campaigns/${campaignId}/companies`, {
+                    headers: getAuthHeader()
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    companiesData = result.companies || [];
+                    console.log('📊 Entreprises chargées:', companiesData.length);
+                    
+                    // Filtrer seulement les entreprises approuvées
+                    companiesData = companiesData.filter(company => company.validation_status === 'APPROVED');
+                    
+                    displayCompanies();
+                    updateStats();
+                } else {
+                    showError('Erreur lors du chargement des entreprises: ' + result.error);
+                }
+            } catch (e) {
+                console.error('Erreur chargement entreprises:', e);
+                showError('Erreur lors du chargement des entreprises');
+            }
+        }
+
+        function displayCompanies() {
+            const tbody = document.getElementById('companiesTableBody');
+            
+            if (companiesData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-inbox fa-2x text-muted"></i>
+                            <p class="text-muted mt-2">Aucune entreprise approuvée à exécuter</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            companiesData.forEach((company, index) => {
+                const executionStatus = company.execution_status || 'pending_execution';
+                const canConvert = executionStatus === 'deposed' || executionStatus === 'sent';
+                
+                html += `
+                    <tr data-company-id="${company.id}">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="company-avatar me-3">
+                                    ${getInitials(company.name)}
+                                </div>
+                                <div>
+                                    <strong>${company.name}</strong><br>
+                                    <small class="text-muted">${company.email || 'Pas d\'email'}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${company.industry || 'Non défini'}</td>
+                        <td>${company.city || 'Non définie'}</td>
+                        <td>
+                            <div class="execution-status ${getExecutionStatusClass(executionStatus)}">
+                                ${getExecutionStatusText(executionStatus)}
+                            </div>
+                            ${company.execution_date ? `
+                                <small class="text-muted d-block mt-1">
+                                    ${new Date(company.execution_date).toLocaleDateString('fr-FR')}
+                                </small>
+                            ` : ''}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1 flex-wrap">
+                                <button class="btn btn-outline-primary btn-sm" 
+                                        onclick="markAsDeposed('${company.id}')"
+                                        ${executionStatus === 'deposed' ? 'disabled' : ''}>
+                                    <i class="fas fa-hand-holding"></i> Déposé
+                                </button>
+                                <button class="btn btn-outline-success btn-sm" 
+                                        onclick="markAsSent('${company.id}')"
+                                        ${executionStatus === 'sent' ? 'disabled' : ''}>
+                                    <i class="fas fa-paper-plane"></i> Envoyé
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" 
+                                        onclick="markAsFailed('${company.id}')"
+                                        ${executionStatus === 'failed' ? 'disabled' : ''}>
+                                    <i class="fas fa-times"></i> Échec
+                                </button>
+                            </div>
+                        </td>
+                        <td>
+                            <textarea class="form-control form-control-sm" 
+                                      rows="2" placeholder="Notes d'exécution..."
+                                      onchange="updateExecutionNotes('${company.id}', this.value)">${company.execution_notes || ''}</textarea>
+                        </td>
+                        <td>
+                            <button class="convert-opportunity-btn" 
+                                    onclick="convertToOpportunity('${company.id}')"
+                                    ${!canConvert || company.converted_to_opportunity ? 'disabled' : ''}>
+                                <i class="fas fa-exchange-alt me-1"></i>
+                                ${company.converted_to_opportunity ? 'Convertie' : 'Convertir'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function updateStats() {
+            const total = companiesData.length;
+            const pending = companiesData.filter(c => c.execution_status === 'pending_execution' || !c.execution_status).length;
+            const deposed = companiesData.filter(c => c.execution_status === 'deposed').length;
+            const sent = companiesData.filter(c => c.execution_status === 'sent').length;
+            const converted = companiesData.filter(c => c.converted_to_opportunity).length;
+            
+            document.getElementById('totalCompanies').textContent = total;
+            document.getElementById('pendingExecution').textContent = pending;
+            document.getElementById('deposedCount').textContent = deposed;
+            document.getElementById('sentCount').textContent = sent;
+            document.getElementById('convertedCount').textContent = converted;
+        }
+
+        async function markAsDeposed(companyId) {
+            await updateExecutionStatus(companyId, 'deposed');
+        }
+
+        async function markAsSent(companyId) {
+            await updateExecutionStatus(companyId, 'sent');
+        }
+
+        async function markAsFailed(companyId) {
+            await updateExecutionStatus(companyId, 'failed');
+        }
+
+        async function updateExecutionStatus(companyId, status) {
+            try {
+                console.log(`🔄 Mise à jour statut exécution: ${companyId} -> ${status}`);
+                
+                const notes = document.querySelector(`tr[data-company-id="${companyId}"] textarea`).value;
+                
+                const response = await fetch(`${API}/campaigns/${campaignId}/companies/${companyId}/execution`, {
+                    method: 'PUT',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({
+                        executionStatus: status,
+                        notes: notes
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Mettre à jour les données locales
+                    const company = companiesData.find(c => c.id === companyId);
+                    if (company) {
+                        company.execution_status = status;
+                        company.execution_date = new Date().toISOString();
+                        company.execution_notes = notes;
+                    }
+                    
+                    // Recharger l'affichage
+                    displayCompanies();
+                    updateStats();
+                    
+                    showSuccess(`Statut mis à jour: ${getExecutionStatusText(status)}`);
+                } else {
+                    showError('Erreur lors de la mise à jour: ' + result.error);
+                }
+            } catch (e) {
+                console.error('Erreur mise à jour statut:', e);
+                showError('Erreur lors de la mise à jour du statut');
+            }
+        }
+
+        function updateExecutionNotes(companyId, notes) {
+            const company = companiesData.find(c => c.id === companyId);
+            if (company) {
+                company.execution_notes = notes;
+            }
+        }
+
+        function convertToOpportunity(companyId) {
+            const company = companiesData.find(c => c.id === companyId);
+            if (!company) return;
+            
+            currentConvertingCompany = company;
+            
+            // Remplir le modal
+            document.getElementById('convertCompanyName').value = company.name;
+            document.getElementById('opportunityName').value = `Opportunité - ${company.name}`;
+            document.getElementById('opportunityDescription').value = `Opportunité créée à partir de la campagne de prospection "${campaignData.name}"`;
+            
+            // Date de fermeture par défaut (3 mois)
+            const closeDate = new Date();
+            closeDate.setMonth(closeDate.getMonth() + 3);
+            document.getElementById('opportunityCloseDate').value = closeDate.toISOString().split('T')[0];
+            
+            // Afficher le modal
+            const modal = new bootstrap.Modal(document.getElementById('convertOpportunityModal'));
+            modal.show();
+        }
+
+        async function confirmConversion() {
+            try {
+                const opportunityData = {
+                    name: document.getElementById('opportunityName').value,
+                    value: document.getElementById('opportunityValue').value,
+                    description: document.getElementById('opportunityDescription').value,
+                    probability: document.getElementById('opportunityProbability').value,
+                    closeDate: document.getElementById('opportunityCloseDate').value
+                };
+                
+                if (!opportunityData.name) {
+                    showError('Le nom de l\'opportunité est obligatoire');
+                    return;
+                }
+                
+                console.log('🔄 Conversion en opportunité:', currentConvertingCompany.id);
+                
+                const response = await fetch(`${API}/campaigns/${campaignId}/companies/${currentConvertingCompany.id}/convert`, {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify(opportunityData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Mettre à jour les données locales
+                    const company = companiesData.find(c => c.id === currentConvertingCompany.id);
+                    if (company) {
+                        company.converted_to_opportunity = true;
+                        company.opportunity_id = result.opportunityId;
+                    }
+                    
+                    // Fermer le modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('convertOpportunityModal'));
+                    modal.hide();
+                    
+                    // Recharger l'affichage
+                    displayCompanies();
+                    updateStats();
+                    
+                    showSuccess('Entreprise convertie en opportunité avec succès !');
+                } else {
+                    showError('Erreur lors de la conversion: ' + result.error);
+                }
+            } catch (e) {
+                console.error('Erreur conversion:', e);
+                showError('Erreur lors de la conversion en opportunité');
+            }
+        }
+
+        async function saveAllExecutions() {
+            showSuccess('Toutes les exécutions ont été sauvegardées !');
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        // Fonctions utilitaires
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        }
+
+        function getCampaignTypeText(type) {
+            const types = {
+                'PHYSIQUE': 'Courrier Physique',
+                'EMAIL': 'Email'
+            };
+            return types[type] || type || 'Non défini';
+        }
+
+        function getStatusText(status) {
+            const statuses = {
+                'BROUILLON': 'Brouillon',
+                'EN_VALIDATION': 'En Validation',
+                'VALIDE': 'Validée',
+                'REJETE': 'Rejetée'
+            };
+            return statuses[status] || status;
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'BROUILLON': 'pending',
+                'EN_VALIDATION': 'warning',
+                'VALIDE': 'success',
+                'REJETE': 'danger'
+            };
+            return classes[status] || 'pending';
+        }
+
+        function getExecutionStatusText(status) {
+            const statuses = {
+                'pending_execution': 'En Attente',
+                'deposed': 'Déposé',
+                'sent': 'Envoyé',
+                'failed': 'Échec'
+            };
+            return statuses[status] || 'En Attente';
+        }
+
+        function getExecutionStatusClass(status) {
+            const classes = {
+                'pending_execution': 'pending',
+                'deposed': 'deposed',
+                'sent': 'sent',
+                'failed': 'failed'
+            };
+            return classes[status] || 'pending';
+        }
+
+        function showSuccess(message) {
+            // Créer une alerte de succès temporaire
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alert.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            
+            // Supprimer automatiquement après 3 secondes
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 3000);
+        }
+
+        function showError(message) {
+            // Créer une alerte d'erreur temporaire
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alert.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            
+            // Supprimer automatiquement après 5 secondes
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

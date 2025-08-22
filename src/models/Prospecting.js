@@ -175,6 +175,44 @@ class ProspectingTemplate {
         const res = await pool.query(`UPDATE prospecting_templates SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`, vals);
         return res.rows[0] || null;
     }
+
+    static async delete(id) {
+        try {
+            // Vérifier d'abord si le modèle existe
+            const template = await this.findById(id);
+            if (!template) {
+                return { success: false, error: 'Modèle non trouvé' };
+            }
+
+            // Vérifier si le modèle est utilisé dans des campagnes
+            const campaignsResult = await pool.query(
+                `SELECT COUNT(*) as count FROM prospecting_campaigns WHERE template_id = $1`,
+                [id]
+            );
+            
+            if (campaignsResult.rows[0].count > 0) {
+                return { 
+                    success: false, 
+                    error: 'Impossible de supprimer ce modèle car il est utilisé dans des campagnes' 
+                };
+            }
+
+            // Supprimer le modèle
+            const result = await pool.query(
+                `DELETE FROM prospecting_templates WHERE id = $1`,
+                [id]
+            );
+
+            if (result.rowCount > 0) {
+                return { success: true, message: 'Modèle supprimé avec succès' };
+            } else {
+                return { success: false, error: 'Erreur lors de la suppression' };
+            }
+        } catch (error) {
+            console.error('Erreur lors de la suppression du modèle:', error);
+            return { success: false, error: 'Erreur lors de la suppression du modèle' };
+        }
+    }
 }
 
 class ProspectingCampaign {
@@ -212,6 +250,25 @@ class ProspectingCampaign {
             values
         );
         return { inserted: companyIds.length };
+    }
+
+    static async removeCompany(campaignId, companyId) {
+        try {
+            const result = await pool.query(
+                `DELETE FROM prospecting_campaign_companies 
+                 WHERE campaign_id = $1 AND company_id = $2`,
+                [campaignId, companyId]
+            );
+            
+            if (result.rowCount > 0) {
+                return { success: true, removed: 1 };
+            } else {
+                return { success: false, error: 'Entreprise non trouvée dans cette campagne' };
+            }
+        } catch (e) {
+            console.error('Erreur suppression entreprise de campagne:', e);
+            return { success: false, error: 'Erreur lors de la suppression' };
+        }
     }
 
     static async findAll(params = {}) {
@@ -263,7 +320,16 @@ class ProspectingCampaign {
             [id]
         );
         const data = await pool.query(
-            `SELECT c.*, pcc.status, pcc.sent_at, pcc.response_at
+            `SELECT c.*, 
+                    pcc.status, 
+                    pcc.sent_at, 
+                    pcc.response_at,
+                    pcc.validation_status,
+                    pcc.execution_status,
+                    pcc.converted_to_opportunity,
+                    pcc.opportunity_id,
+                    pcc.execution_date,
+                    pcc.execution_notes
              FROM prospecting_campaign_companies pcc
              JOIN companies c ON c.id = pcc.company_id
              WHERE pcc.campaign_id = $1
@@ -293,10 +359,12 @@ class ProspectingCampaign {
         const res = await pool.query(`
             SELECT pc.*, pt.name as template_name, pt.subject as template_subject,
                    bu.nom as business_unit_name, d.nom as division_name,
-                   c.nom as creator_name, c.prenom as creator_prenom
+                   c.nom as creator_name, c.prenom as creator_prenom,
+                   resp.nom as responsible_name, resp.prenom as responsible_prenom
             FROM prospecting_campaigns pc 
             LEFT JOIN prospecting_templates pt ON pc.template_id = pt.id
             LEFT JOIN collaborateurs c ON pc.created_by = c.id
+            LEFT JOIN collaborateurs resp ON pc.responsible_id = resp.id
             LEFT JOIN business_units bu ON pt.business_unit_id = bu.id
             LEFT JOIN divisions d ON pt.division_id = d.id
             WHERE pc.id = $1
@@ -307,6 +375,9 @@ class ProspectingCampaign {
         const campaign = res.rows[0];
         if (campaign.creator_name) {
             campaign.creator_name = `${campaign.creator_prenom} ${campaign.creator_name}`;
+        }
+        if (campaign.responsible_name) {
+            campaign.responsible_name = `${campaign.responsible_prenom} ${campaign.responsible_name}`;
         }
         
         return campaign;
@@ -331,7 +402,7 @@ class ProspectingCampaign {
         }));
     }
 
-    static async submitForValidation(campaignId, demandeurId, validationLevel, comment) {
+    static async submitForValidation(campaignId, demandeurId, validationLevel = 'BUSINESS_UNIT', comment = '') {
         try {
             // Vérifier que la campagne existe et est en BROUILLON
             const campaign = await pool.query(`
@@ -347,27 +418,55 @@ class ProspectingCampaign {
             
             const campaignData = campaign.rows[0];
             
-            if (campaignData.validation_statut !== 'BROUILLON' && campaignData.validation_statut !== null) {
-                return { success: false, error: 'La campagne a déjà été soumise pour validation' };
+            if (campaignData.validation_statut === 'EN_VALIDATION') {
+                return { success: false, error: 'La campagne est déjà en cours de validation' };
+            }
+            
+            if (campaignData.validation_statut === 'VALIDE') {
+                return { success: false, error: 'La campagne a déjà été validée' };
             }
 
-            // Obtenir l'ID du collaborateur
-            const collaborateur = await pool.query(
-                'SELECT * FROM collaborateurs WHERE user_id = $1',
+            // Obtenir l'ID du collaborateur via la table users
+            console.log('🔍 [DEBUG] Recherche utilisateur:', demandeurId);
+            const user = await pool.query(
+                'SELECT collaborateur_id FROM users WHERE id = $1',
                 [demandeurId]
             );
             
+            console.log('🔍 [DEBUG] Résultat recherche utilisateur:', user.rows);
+            
+            if (user.rows.length === 0 || !user.rows[0].collaborateur_id) {
+                console.log('❌ [DEBUG] Utilisateur non trouvé ou pas de collaborateur_id');
+                return { success: false, error: 'Collaborateur non trouvé' };
+            }
+            
+            console.log('🔍 [DEBUG] Recherche collaborateur:', user.rows[0].collaborateur_id);
+            const collaborateur = await pool.query(
+                'SELECT * FROM collaborateurs WHERE id = $1',
+                [user.rows[0].collaborateur_id]
+            );
+            
+            console.log('🔍 [DEBUG] Résultat recherche collaborateur:', collaborateur.rows);
+            
             if (collaborateur.rows.length === 0) {
+                console.log('❌ [DEBUG] Collaborateur non trouvé dans la table collaborateurs');
                 return { success: false, error: 'Collaborateur non trouvé' };
             }
             
             const collabId = collaborateur.rows[0].id;
 
+            // Debug: Afficher les informations de la campagne
+            console.log('🔍 [DEBUG] Campagne data:', {
+                business_unit_id: campaignData.business_unit_id,
+                division_id: campaignData.division_id,
+                validationLevel: validationLevel
+            });
+
             // Vérifier qu'un responsable est défini pour le niveau demandé
             const Manager = require('./Manager');
             const validator = await Manager.getValidatorForCampaign(
-                campaignData.business_unit_id || campaignData.business_unit_id,
-                campaignData.division_id || campaignData.division_id,
+                campaignData.business_unit_id,
+                campaignData.division_id,
                 validationLevel
             );
             
@@ -377,6 +476,14 @@ class ProspectingCampaign {
                     success: false, 
                     error: `Aucun responsable défini pour la ${levelText}. Veuillez contacter l'administrateur.` 
                 };
+            }
+
+            // Si la campagne était rejetée, supprimer l'ancienne validation
+            if (campaignData.validation_statut === 'REJETE') {
+                await pool.query(`
+                    DELETE FROM prospecting_campaign_validations 
+                    WHERE campaign_id = $1
+                `, [campaignId]);
             }
 
             // Créer la demande de validation
@@ -404,7 +511,7 @@ class ProspectingCampaign {
         }
     }
 
-    static async processValidation(validationId, validateurId, decision, comment) {
+    static async processValidation(validationId, validateurId, decision, comment, companyValidations = []) {
         try {
             // Vérifier que la validation existe et est en attente
             const validation = await pool.query(`
@@ -437,6 +544,42 @@ class ProspectingCampaign {
                     commentaire_validateur = $3, date_validation = CURRENT_TIMESTAMP
                 WHERE id = $4 RETURNING *
             `, [collabId, decision, comment, validationId]);
+
+            // Sauvegarder les validations par entreprise et mettre à jour les statuts
+            if (companyValidations && companyValidations.length > 0) {
+                console.log('💾 Sauvegarde des validations par entreprise:', companyValidations);
+                
+                // Supprimer les anciennes validations par entreprise pour cette validation
+                await pool.query(`
+                    DELETE FROM prospecting_campaign_validation_companies 
+                    WHERE validation_id = $1
+                `, [validationId]);
+                
+                // Insérer les nouvelles validations par entreprise et mettre à jour les statuts
+                for (const companyValidation of companyValidations) {
+                    // Sauvegarder la validation dans la table de validation
+                    await pool.query(`
+                        INSERT INTO prospecting_campaign_validation_companies 
+                        (validation_id, company_id, validation, note)
+                        VALUES ($1, $2, $3, $4)
+                    `, [
+                        validationId,
+                        companyValidation.company_id,
+                        companyValidation.validation,
+                        companyValidation.note || null
+                    ]);
+                    
+                    // Mettre à jour le statut de validation de l'entreprise dans la campagne
+                    const validationStatus = companyValidation.validation === 'OK' ? 'APPROVED' : 'REJECTED';
+                    await pool.query(`
+                        UPDATE prospecting_campaign_companies 
+                        SET validation_status = $1
+                        WHERE campaign_id = $2 AND company_id = $3
+                    `, [validationStatus, validation.rows[0].campaign_id, companyValidation.company_id]);
+                }
+                
+                console.log('✅ Validations par entreprise sauvegardées et statuts mis à jour');
+            }
 
             // Mettre à jour le statut de la campagne
             const campaignStatus = decision === 'APPROUVE' ? 'VALIDE' : 'REJETE';
@@ -482,6 +625,196 @@ class ProspectingCampaign {
         } catch (e) {
             console.error('Erreur annulation validation:', e);
             return { success: false, error: 'Erreur lors de l\'annulation' };
+        }
+    }
+
+    static async getValidationById(validationId) {
+        try {
+            const res = await pool.query(`
+                SELECT pcv.*, 
+                       c.nom as validateur_nom,
+                       c.prenom as validateur_prenom,
+                       pc.name as campaign_name
+                FROM prospecting_campaign_validations pcv
+                LEFT JOIN collaborateurs c ON pcv.validateur_id = c.id
+                LEFT JOIN prospecting_campaigns pc ON pcv.campaign_id = pc.id
+                WHERE pcv.id = $1
+            `, [validationId]);
+            
+            return res.rows[0] || null;
+        } catch (e) {
+            console.error('Erreur récupération validation:', e);
+            return null;
+        }
+    }
+
+    // Méthodes pour l'exécution des campagnes
+    static async updateCompanyExecutionStatus(campaignId, companyId, executionStatus, notes = null) {
+        try {
+            // Vérifier que la campagne est validée
+            const campaign = await pool.query(`
+                SELECT validation_statut FROM prospecting_campaigns WHERE id = $1
+            `, [campaignId]);
+            
+            if (campaign.rows.length === 0) {
+                return { success: false, error: 'Campagne non trouvée' };
+            }
+            
+            if (campaign.rows[0].validation_statut !== 'VALIDE') {
+                return { success: false, error: 'La campagne doit être validée pour pouvoir exécuter' };
+            }
+            
+            // Vérifier que l'entreprise est approuvée dans cette campagne
+            const companyStatus = await pool.query(`
+                SELECT validation_status FROM prospecting_campaign_companies 
+                WHERE campaign_id = $1 AND company_id = $2
+            `, [campaignId, companyId]);
+            
+            if (companyStatus.rows.length === 0) {
+                return { success: false, error: 'Entreprise non trouvée dans cette campagne' };
+            }
+            
+            if (companyStatus.rows[0].validation_status !== 'APPROVED') {
+                return { success: false, error: 'L\'entreprise doit être approuvée pour pouvoir être exécutée' };
+            }
+            
+            // Mettre à jour le statut d'exécution
+            const executionDate = executionStatus === 'deposed' || executionStatus === 'sent' ? 'CURRENT_TIMESTAMP' : null;
+            
+            await pool.query(`
+                UPDATE prospecting_campaign_companies 
+                SET execution_status = $1, 
+                    execution_date = ${executionDate},
+                    execution_notes = $2
+                WHERE campaign_id = $3 AND company_id = $4
+            `, [executionStatus, notes, campaignId, companyId]);
+            
+            return { success: true };
+        } catch (e) {
+            console.error('Erreur mise à jour statut exécution:', e);
+            return { success: false, error: 'Erreur lors de la mise à jour' };
+        }
+    }
+
+    static async convertToOpportunity(campaignId, companyId, opportunityData) {
+        try {
+            // Vérifier que l'entreprise a été exécutée
+            const companyExecution = await pool.query(`
+                SELECT execution_status, converted_to_opportunity 
+                FROM prospecting_campaign_companies 
+                WHERE campaign_id = $1 AND company_id = $2
+            `, [campaignId, companyId]);
+            
+            if (companyExecution.rows.length === 0) {
+                return { success: false, error: 'Entreprise non trouvée dans cette campagne' };
+            }
+            
+            if (companyExecution.rows[0].converted_to_opportunity) {
+                return { success: false, error: 'Cette entreprise a déjà été convertie en opportunité' };
+            }
+            
+            if (!['deposed', 'sent'].includes(companyExecution.rows[0].execution_status)) {
+                return { success: false, error: 'L\'entreprise doit être exécutée (déposée ou envoyée) pour être convertie' };
+            }
+            
+            // Créer l'opportunité (ici vous devrez adapter selon votre modèle d'opportunités)
+            // Pour l'instant, on simule la création
+            const opportunityId = 'temp-opportunity-id'; // À remplacer par la vraie création
+            
+            // Marquer comme convertie
+            await pool.query(`
+                UPDATE prospecting_campaign_companies 
+                SET converted_to_opportunity = TRUE, opportunity_id = $1
+                WHERE campaign_id = $2 AND company_id = $3
+            `, [opportunityId, campaignId, companyId]);
+            
+            return { success: true, opportunityId };
+        } catch (e) {
+            console.error('Erreur conversion opportunité:', e);
+            return { success: false, error: 'Erreur lors de la conversion' };
+        }
+    }
+
+    static async getValidationsForUser(userId, includeAllStatuses = false) {
+        try {
+            // Récupérer le collaborateur de l'utilisateur
+            const collaborateur = await pool.query(
+                'SELECT * FROM collaborateurs WHERE user_id = $1',
+                [userId]
+            );
+            
+            if (collaborateur.rows.length === 0) {
+                return [];
+            }
+            
+            const collabId = collaborateur.rows[0].id;
+            
+            // Récupérer les validations pour ce responsable
+            let query = `
+                SELECT pcv.*,
+                       pc.name as campaign_name,
+                       pc.channel as campaign_channel,
+                       pc.created_at as campaign_created_at,
+                       pc.date_soumission,
+                       pc.date_validation,
+                       pc.validation_statut as campaign_status,
+                       d.nom as demandeur_nom,
+                       d.prenom as demandeur_prenom,
+                       d.email as demandeur_email,
+                       v.nom as validateur_nom,
+                       v.prenom as validateur_prenom,
+                       v.email as validateur_email,
+                       bu.nom as business_unit_nom,
+                       div.nom as division_nom
+                FROM prospecting_campaign_validations pcv
+                JOIN prospecting_campaigns pc ON pcv.campaign_id = pc.id
+                JOIN collaborateurs d ON pcv.demandeur_id = d.id
+                LEFT JOIN collaborateurs v ON pcv.validateur_id = v.id
+                LEFT JOIN business_units bu ON d.business_unit_id = bu.id
+                LEFT JOIN divisions div ON d.division_id = div.id
+                WHERE 1=1
+            `;
+            
+            const params = [];
+            let paramIndex = 1;
+            
+            // Filtrer par statut si nécessaire
+            if (!includeAllStatuses) {
+                query += ` AND pcv.statut_validation = 'EN_ATTENTE'`;
+            }
+            
+            // Filtrer par responsabilités du validateur
+            query += ` AND (d.business_unit_id = $${paramIndex} OR d.division_id = $${paramIndex + 1})`;
+            params.push(collaborateur.rows[0].business_unit_id, collaborateur.rows[0].division_id);
+            
+            query += ` ORDER BY pcv.created_at DESC`;
+            
+            const validations = await pool.query(query, params);
+            
+            return validations.rows;
+        } catch (e) {
+            console.error('Erreur récupération validations:', e);
+            return [];
+        }
+    }
+
+    static async getCompanyValidations(validationId) {
+        try {
+            const res = await pool.query(`
+                SELECT pcvc.*, 
+                       c.name as company_name,
+                       c.industry as company_industry,
+                       c.city as company_city
+                FROM prospecting_campaign_validation_companies pcvc
+                LEFT JOIN companies c ON pcvc.company_id = c.id
+                WHERE pcvc.validation_id = $1
+                ORDER BY c.name
+            `, [validationId]);
+            
+            return res.rows;
+        } catch (e) {
+            console.error('Erreur récupération validations entreprises:', e);
+            return [];
         }
     }
 }

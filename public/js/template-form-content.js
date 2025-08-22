@@ -41,17 +41,28 @@ function generateCreateFormContent() {
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="tplName" class="form-label required-field">Nom du modèle</label>
-                        <input id="tplName" class="form-control" placeholder="Ex: Présentation générale - Email">
+                        <input id="tplName" class="form-control" placeholder="Généré automatiquement" readonly>
+                        <div class="form-text">Le nom est généré automatiquement selon le format : BU-TypeCanal-TypeContenu-NumeroOrdre</div>
                     </div>
                     <div class="col-md-6">
                         <label for="tplType" class="form-label">Type de contenu</label>
-                        <select id="tplType" class="form-select">
+                        <select id="tplType" class="form-select" onchange="updateTemplateName()">
                             <option value="PRESENTATION_GENERALE">Présentation générale</option>
                             <option value="SERVICE_SPECIFIQUE">Service spécifique</option>
                             <option value="SUIVI_CLIENT">Suivi client</option>
                             <option value="RELANCE">Relance</option>
                         </select>
                     </div>
+                </div>
+                
+                <!-- Champ pour le nom du service (visible seulement pour Service spécifique) -->
+                <div id="serviceNameField" class="row g-3" style="display: none;">
+                    <div class="col-md-6">
+                        <label for="serviceName" class="form-label">Nom du service</label>
+                        <input id="serviceName" class="form-control" placeholder="Ex: Audit financier, Conseil RH..." onchange="updateTemplateName()">
+                        <div class="form-text">Ce nom sera utilisé dans la génération du nom du modèle</div>
+                    </div>
+                </div>
                 </div>
             </div>
 
@@ -85,8 +96,8 @@ function generateCreateFormContent() {
                         <input id="tplSubject" class="form-control" placeholder="Ex: Découvrez nos services - {{company_name}}">
                     </div>
                     <div class="mb-3">
-                        <label for="tplBody" class="form-label required-field">Corps du message</label>
-                        <textarea id="tplBody" class="form-control" rows="8" 
+                        <label for="tplBodyEmail" class="form-label required-field">Corps du message</label>
+                        <textarea id="tplBodyEmail" class="form-control" rows="8" 
                                   placeholder="Rédigez votre message ici..."></textarea>
                     </div>
                 </div>
@@ -96,8 +107,8 @@ function generateCreateFormContent() {
                 <h5><i class="fas fa-mail-bulk me-2"></i>Configuration Courrier Physique</h5>
                 <div class="physical-config">
                     <div class="mb-3">
-                        <label for="tplBody" class="form-label required-field">Contenu du courrier</label>
-                        <textarea id="tplBody" class="form-control" rows="8" 
+                        <label for="tplBodyPhysical" class="form-label required-field">Contenu du courrier</label>
+                        <textarea id="tplBodyPhysical" class="form-control" rows="8" 
                                   placeholder="Rédigez le contenu de votre courrier ici..."></textarea>
                     </div>
                 </div>
