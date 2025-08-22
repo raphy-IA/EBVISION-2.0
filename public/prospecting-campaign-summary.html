@@ -510,9 +510,11 @@
                 
                 if (!currentCampaignId) {
                     showAlert('ID de campagne manquant dans l\'URL', 'danger');
-                return;
-            }
-            
+                    return;
+                }
+                
+                console.log('🔍 Chargement de la campagne:', currentCampaignId);
+                
                 // Charger les détails de la campagne
                 const campaignRes = await fetch(`${API}/campaigns/${currentCampaignId}`, { 
                     headers: getAuthHeader() 
@@ -525,14 +527,16 @@
                 const campaignData = await campaignRes.json();
                 const campaign = campaignData.data;
                 
+                console.log('📋 Campagne chargée:', campaign);
+                
                 // Sauvegarder la campagne
                 currentCampaign = campaign;
                 
-                // Charger les entreprises d'abord
-                await loadCampaignCompanies();
-                
-                // Mettre à jour l'interface avec les données (après avoir chargé les entreprises)
+                // Mettre à jour l'interface avec les données de base
                 updateCampaignInterface(campaign);
+                
+                // Charger les entreprises
+                await loadCampaignCompanies();
                 
                 // Charger les validations
                 await loadCampaignValidations();
@@ -561,7 +565,16 @@
             document.getElementById('campaignStatusDetail').textContent = getStatusText(campaign.status);
             document.getElementById('campaignTemplate').textContent = campaign.template_name || 'Aucun modèle';
             document.getElementById('campaignScheduledDate').textContent = formatDate(campaign.scheduled_date);
-            document.getElementById('campaignCreator').textContent = campaign.creator_name || 'Utilisateur système';
+            // Afficher le créateur de la campagne
+            const creatorName = campaign.creator_name || campaign.created_by_name || 'Utilisateur système';
+            document.getElementById('campaignCreator').textContent = creatorName;
+            
+            console.log('👤 Créateur de la campagne:', {
+                creator_name: campaign.creator_name,
+                created_by_name: campaign.created_by_name,
+                created_by: campaign.created_by,
+                final_display: creatorName
+            });
             
             // Nouvelles informations
             document.getElementById('campaignPriority').innerHTML = `<span class="priority-badge ${getPriorityClass(campaign.priority)}">${getPriorityText(campaign.priority)}</span>`;
@@ -583,27 +596,12 @@
             const submitButton = document.getElementById('submitButton');
             const submitCampaignBtn = document.getElementById('submitCampaignBtn');
             
-            // Récupérer le nombre d'entreprises depuis l'élément affiché
-            const companiesCountElement = document.getElementById('totalCompanies');
-            const companiesCount = companiesCountElement ? parseInt(companiesCountElement.textContent) || 0 : 0;
+            // Le bouton sera mis à jour après le chargement des entreprises
+            // Pour l'instant, on le désactive
+            submitButton.disabled = true;
+            submitCampaignBtn.style.display = 'none';
             
-            console.log('Campaign status:', campaign.status);
-            console.log('Companies count from DOM:', companiesCount);
-            
-            if (campaign.status === 'DRAFT' && companiesCount > 0) {
-                submitButton.disabled = false;
-                submitCampaignBtn.style.display = 'inline-block';
-                console.log('✅ Bouton soumission activé');
-            } else {
-                submitButton.disabled = true;
-                submitCampaignBtn.style.display = 'none';
-                if (campaign.status === 'READY' || campaign.status === 'APPROVED' || campaign.status === 'REJECTED') {
-                    submitButton.innerHTML = '<i class="fas fa-check me-2"></i>Déjà soumise';
-                } else if (companiesCount === 0) {
-                    submitButton.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Aucune entreprise';
-                }
-                console.log('❌ Bouton soumission désactivé - Status:', campaign.status, 'Companies:', companiesCount);
-            }
+            console.log('🔄 Bouton soumission - Status initial:', campaign.status);
         }
 
         async function loadCampaignCompanies() {
@@ -625,11 +623,8 @@
                 renderCompaniesList(companies);
                 updateStatistics(companies);
                 
-                // Mettre à jour l'interface immédiatement après avoir mis à jour les statistiques
-                if (currentCampaign) {
-                    console.log('Mise à jour de l\'interface avec', companies.length, 'entreprises');
-                    updateCampaignInterface(currentCampaign);
-                }
+                // Mettre à jour le bouton de soumission après avoir chargé les entreprises
+                updateSubmitButton(companies.length);
                 
             } catch (error) {
                 console.error('Erreur chargement entreprises:', error);
@@ -727,6 +722,32 @@
             
             // Mettre à jour les statistiques si on veut les afficher
             console.log('Statuts des entreprises:', statusCounts);
+        }
+        
+        function updateSubmitButton(companiesCount) {
+            const submitButton = document.getElementById('submitButton');
+            const submitCampaignBtn = document.getElementById('submitCampaignBtn');
+            
+            console.log('🔄 Mise à jour bouton soumission - Status:', currentCampaign?.status, 'Companies:', companiesCount);
+            
+            if (currentCampaign?.status === 'DRAFT' && companiesCount > 0) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Soumettre pour validation';
+                submitCampaignBtn.style.display = 'inline-block';
+                console.log('✅ Bouton soumission activé');
+            } else {
+                submitButton.disabled = true;
+                submitCampaignBtn.style.display = 'none';
+                
+                if (currentCampaign?.status === 'PENDING_VALIDATION' || currentCampaign?.status === 'VALIDATED' || currentCampaign?.status === 'REJECTED') {
+                    submitButton.innerHTML = '<i class="fas fa-check me-2"></i>Déjà soumise';
+                } else if (companiesCount === 0) {
+                    submitButton.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Aucune entreprise';
+                } else {
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Soumettre pour validation';
+                }
+                console.log('❌ Bouton soumission désactivé - Status:', currentCampaign?.status, 'Companies:', companiesCount);
+            }
         }
 
         function showCompanyDetails(companyId, companyName) {

@@ -363,7 +363,8 @@ class ProspectingCampaign {
                    resp.nom as responsible_name, resp.prenom as responsible_prenom
             FROM prospecting_campaigns pc 
             LEFT JOIN prospecting_templates pt ON pc.template_id = pt.id
-            LEFT JOIN collaborateurs c ON pc.created_by = c.id
+            LEFT JOIN users u ON pc.created_by = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
             LEFT JOIN collaborateurs resp ON pc.responsible_id = resp.id
             LEFT JOIN business_units bu ON pt.business_unit_id = bu.id
             LEFT JOIN divisions d ON pt.division_id = d.id
