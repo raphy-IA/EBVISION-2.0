@@ -739,7 +739,7 @@
                 submitButton.disabled = true;
                 submitCampaignBtn.style.display = 'none';
                 
-                if (currentCampaign?.status === 'PENDING_VALIDATION' || currentCampaign?.status === 'VALIDATED' || currentCampaign?.status === 'REJECTED') {
+                if (currentCampaign?.status === 'PENDING_VALIDATION' || currentCampaign?.status === 'VALIDATED' || currentCampaign?.status === 'REJECTED' || currentCampaign?.validation_statut === 'EN_VALIDATION') {
                     submitButton.innerHTML = '<i class="fas fa-check me-2"></i>Déjà soumise';
                 } else if (companiesCount === 0) {
                     submitButton.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Aucune entreprise';

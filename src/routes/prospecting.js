@@ -848,8 +848,8 @@ router.post('/campaigns/:id/submit', authenticateToken, async (req, res) => {
         const campaignId = req.params.id;
         const userId = req.user.id;
         
-        // Vérifier que l'utilisateur est le responsable de la campagne
-        const campaign = await ProspectingCampaign.findById(campaignId);
+        // Vérifier que l'utilisateur est le créateur de la campagne
+        const campaign = await ProspectingCampaign.findByIdWithDetails(campaignId);
         if (!campaign) {
             return res.status(404).json({
                 success: false,
@@ -857,7 +857,14 @@ router.post('/campaigns/:id/submit', authenticateToken, async (req, res) => {
             });
         }
         
+        // Vérifier que l'utilisateur est le créateur de la campagne
+        // Note: created_by contient l'ID de l'utilisateur (user.id), pas du collaborateur
         if (campaign.created_by !== userId) {
+            console.log('🔍 [DEBUG] Vérification autorisation:', {
+                campaign_created_by: campaign.created_by,
+                current_user_id: userId,
+                match: campaign.created_by === userId
+            });
             return res.status(403).json({
                 success: false,
                 error: 'Vous n\'êtes pas autorisé à soumettre cette campagne'

@@ -497,7 +497,7 @@ class ProspectingCampaign {
             // Mettre à jour le statut de la campagne
             await pool.query(`
                 UPDATE prospecting_campaigns 
-                SET validation_statut = 'EN_VALIDATION', date_soumission = CURRENT_TIMESTAMP
+                SET status = 'PENDING_VALIDATION', validation_statut = 'EN_VALIDATION', date_soumission = CURRENT_TIMESTAMP
                 WHERE id = $1
             `, [campaignId]);
 
@@ -583,12 +583,13 @@ class ProspectingCampaign {
             }
 
             // Mettre à jour le statut de la campagne
-            const campaignStatus = decision === 'APPROUVE' ? 'VALIDE' : 'REJETE';
+            const campaignStatus = decision === 'APPROUVE' ? 'VALIDATED' : 'REJECTED';
+            const validationStatus = decision === 'APPROUVE' ? 'VALIDE' : 'REJETE';
             await pool.query(`
                 UPDATE prospecting_campaigns 
-                SET validation_statut = $1, date_validation = CURRENT_TIMESTAMP
-                WHERE id = $2
-            `, [campaignStatus, validation.rows[0].campaign_id]);
+                SET status = $1, validation_statut = $2, date_validation = CURRENT_TIMESTAMP
+                WHERE id = $3
+            `, [campaignStatus, validationStatus, validation.rows[0].campaign_id]);
 
             return { success: true, validation: updatedValidation.rows[0] };
         } catch (e) {
