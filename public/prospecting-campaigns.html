@@ -200,7 +200,8 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="campName" class="form-label required-field">Nom de la campagne *</label>
-                                <input id="campName" class="form-control" placeholder="Ex: Campagne Q1 2024 - Présentation générale" required>
+                                <input id="campName" class="form-control" placeholder="Généré automatiquement" readonly>
+                                <div class="form-text">Le nom est généré automatiquement selon le format : NomModèle-YY-MM-QNumeroSemaine-NumeroOrdre</div>
                     </div>
                             <div class="col-md-6">
                                 <label for="campResponsible" class="form-label required-field">Responsable de la campagne *</label>
@@ -644,6 +645,151 @@
             }
         }
 
+        // Fonction pour générer automatiquement le nom de la campagne
+        async function updateCampaignName() {
+            const templateSelect = document.getElementById('campTemplate');
+            const dateInput = document.getElementById('campDate');
+            const nameInput = document.getElementById('campName');
+            
+            if (!templateSelect || !nameInput) return;
+            
+            const selectedTemplateId = templateSelect.value;
+            const selectedDate = dateInput.value;
+            
+            if (!selectedTemplateId) {
+                nameInput.value = '';
+                return;
+            }
+            
+            try {
+                // Récupérer le nom du modèle
+                const templateRes = await fetch(`/api/prospecting/templates/${selectedTemplateId}`, { headers: getAuthHeader() });
+                const templateData = await templateRes.json();
+                
+                if (!templateRes.ok || !templateData.data) {
+                    console.error('Erreur lors de la récupération du modèle');
+                    return;
+                }
+                
+                const templateName = templateData.data.name;
+                
+                // Utiliser la date sélectionnée ou la date actuelle
+                const launchDate = selectedDate ? new Date(selectedDate) : new Date();
+                
+                // Extraire YY et MM
+                const year = launchDate.getFullYear().toString().slice(-2); // YY
+                const month = (launchDate.getMonth() + 1).toString().padStart(2, '0'); // MM
+                
+                // Calculer le numéro de semaine dans le mois
+                const firstDayOfMonth = new Date(launchDate.getFullYear(), launchDate.getMonth(), 1);
+                const dayOfWeek = firstDayOfMonth.getDay();
+                const weekNumber = Math.ceil((launchDate.getDate() + dayOfWeek) / 7);
+                
+                // Construire le nom de base
+                const baseName = `${templateName}-${year}-${month}-Q${weekNumber}`;
+                
+                // Trouver le prochain numéro d'ordre
+                const orderNumber = await findNextCampaignOrderNumber(baseName);
+                
+                // Générer le nom final
+                const finalName = `${baseName}-${orderNumber.toString().padStart(2, '0')}`;
+                
+                nameInput.value = finalName;
+                
+            } catch (error) {
+                console.error('Erreur lors de la génération du nom:', error);
+            }
+        }
+        
+        // Fonction pour trouver le prochain numéro d'ordre
+        async function findNextCampaignOrderNumber(baseName) {
+            try {
+                const response = await fetch('/api/prospecting/campaigns', { headers: getAuthHeader() });
+                const data = await response.json();
+                const campaigns = data.data || data || [];
+                
+                // Filtrer les campagnes qui commencent par le même nom de base
+                const matchingCampaigns = campaigns.filter(campaign => 
+                    campaign.name && campaign.name.startsWith(baseName)
+                );
+                
+                if (matchingCampaigns.length === 0) {
+                    return 1; // Premier numéro
+                }
+                
+                // Extraire les numéros d'ordre existants
+                const orderNumbers = matchingCampaigns.map(campaign => {
+                    const match = campaign.name.match(/-(\d{2})$/);
+                    return match ? parseInt(match[1]) : 0;
+                });
+                
+                // Trouver le prochain numéro disponible
+                const maxOrder = Math.max(...orderNumbers, 0);
+                return maxOrder + 1;
+                
+            } catch (error) {
+                console.error('Erreur lors de la recherche du numéro d\'ordre:', error);
+                return 1; // Retourner 1 en cas d'erreur
+            }
+        }
+        
+        // Fonction pour filtrer les responsables par Business Unit
+        async function filterResponsiblesByBU(businessUnitId) {
+            const responsibleSelect = document.getElementById('campResponsible');
+            if (!responsibleSelect) return;
+            
+            // Vider la liste actuelle
+            responsibleSelect.innerHTML = '<option value="">Sélectionnez un responsable</option>';
+            
+            if (!businessUnitId) {
+                console.log('🔍 [DEBUG] Aucune BU sélectionnée, pas de filtrage des responsables');
+                return;
+            }
+            
+            try {
+                console.log('🔍 [DEBUG] Filtrage des responsables pour BU:', businessUnitId);
+                
+                // Récupérer tous les collaborateurs
+                const response = await fetch('/api/collaborateurs', { headers: getAuthHeader() });
+                const data = await response.json();
+                const collaborateurs = data.data || data || [];
+                
+                // Filtrer par Business Unit
+                const filteredCollaborateurs = collaborateurs.filter(collab => 
+                    collab.business_unit_id === businessUnitId
+                );
+                
+                console.log('🔍 [DEBUG] Collaborateurs filtrés:', filteredCollaborateurs.length);
+                
+                // Ajouter les options filtrées
+                filteredCollaborateurs.forEach(collab => {
+                    const option = document.createElement('option');
+                    option.value = collab.id;
+                    option.textContent = `${collab.nom} ${collab.prenom}`;
+                    responsibleSelect.appendChild(option);
+                });
+                
+                if (filteredCollaborateurs.length === 0) {
+                    const noOption = document.createElement('option');
+                    noOption.value = '';
+                    noOption.textContent = 'Aucun responsable disponible pour cette BU';
+                    noOption.disabled = true;
+                    responsibleSelect.appendChild(noOption);
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du filtrage des responsables:', error);
+            }
+        }
+        
+        // Fonction pour réinitialiser la liste des responsables
+        function resetResponsiblesList() {
+            const responsibleSelect = document.getElementById('campResponsible');
+            if (responsibleSelect) {
+                responsibleSelect.innerHTML = '<option value="">Sélectionnez un responsable</option>';
+            }
+        }
+
         function openCreateModal() {
             resetCreateModal();
             if (!campaignModal) campaignModal = new bootstrap.Modal(document.getElementById('campaignModal'));
@@ -684,6 +830,9 @@
                 saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Créer la campagne';
                 saveBtn.onclick = createCampaign;
             }
+            
+            // Réinitialiser la liste des responsables
+            resetResponsiblesList();
         }
 
         async function createCampaign() {
@@ -721,6 +870,18 @@
 
                 const template = templateData.data;
                 
+                // Récupérer les informations de l'utilisateur connecté
+                const userRes = await fetch('/api/auth/me', { headers: getAuthHeader() });
+                const userData = await userRes.json();
+                
+                if (!userRes.ok || !userData.data) {
+                    alert('Erreur lors de la récupération des informations utilisateur');
+                    return;
+                }
+                
+                const currentUser = userData.data;
+                const currentDate = new Date().toISOString();
+                
                 const campaignData = {
                     name,
                     template_id,
@@ -731,20 +892,23 @@
                     // Récupérer automatiquement depuis le modèle
                     channel: template.channel,
                     business_unit_id: template.business_unit_id,
-                    division_id: template.division_id
+                    division_id: template.division_id,
+                    // Ajouter automatiquement le créateur et la date de création
+                    created_by: currentUser.id,
+                    created_at: currentDate
                 };
 
                 const res = await fetch(`/api/prospecting/campaigns`, {
-                method: 'POST',
-                headers: getAuthHeader(),
+                    method: 'POST',
+                    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
                     body: JSON.stringify(campaignData)
-            });
+                });
 
-            if (res.ok) {
+                if (res.ok) {
                     alert('Campagne créée avec succès !');
-                campaignModal.hide();
-                await loadCampaigns();
-            } else {
+                    campaignModal.hide();
+                    await loadCampaigns();
+                } else {
                     const error = await res.json().catch(() => ({}));
                     alert('Erreur: ' + (error.message || error.error || res.status));
                 }
@@ -1500,7 +1664,7 @@
         }
 
         // Mise à jour de l'affichage automatique lors de la sélection d'un modèle
-        function updateAutoConfig() {
+        async function updateAutoConfig() {
             const templateSel = document.getElementById('campTemplate');
             const selectedTemplateId = templateSel.value;
             
@@ -1526,7 +1690,13 @@
                         business_unit: selectedTemplate.business_unit_name || '-',
                         division: selectedTemplate.division_name || '-'
                     });
+                    
+                    // Filtrer les responsables par Business Unit
+                    await filterResponsiblesByBU(selectedTemplate.business_unit_id);
                 }
+                
+                // Mettre à jour le nom de la campagne automatiquement
+                await updateCampaignName();
             } else {
                 const autoChannel = document.getElementById('autoChannel');
                 const autoBU = document.getElementById('autoBU');
@@ -1535,6 +1705,13 @@
                 if (autoChannel) autoChannel.textContent = '-';
                 if (autoBU) autoBU.textContent = '-';
                 if (autoDivision) autoDivision.textContent = '-';
+                
+                // Vider le nom de la campagne
+                const nameInput = document.getElementById('campName');
+                if (nameInput) nameInput.value = '';
+                
+                // Réinitialiser la liste des responsables
+                resetResponsiblesList();
             }
         }
 
@@ -1597,9 +1774,17 @@
             document.getElementById('current-date').textContent = currentDate;
             
             // Charger les données
-                    await loadCampaigns();
+            await loadCampaigns();
             await loadTemplates();
             await loadCollaborateurs();
+            
+            // Ajouter l'event listener pour la date de lancement
+            const dateInput = document.getElementById('campDate');
+            if (dateInput) {
+                dateInput.addEventListener('change', async () => {
+                    await updateCampaignName();
+                });
+            }
         });
 
         // Fonctions utilitaires (comme dans dashboard.html)
