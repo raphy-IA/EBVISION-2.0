@@ -593,6 +593,61 @@ router.get('/campaigns/:id/companies', authenticateToken, async (req, res) => {
     }
 });
 
+/**
+ * GET /api/prospecting/campaigns/:campaignId/companies/:companyId
+ * Récupérer les détails d'une entreprise spécifique dans une campagne
+ */
+router.get('/campaigns/:campaignId/companies/:companyId', authenticateToken, async (req, res) => {
+    try {
+        const { campaignId, companyId } = req.params;
+
+        const query = `
+            SELECT 
+                c.id as company_id,
+                c.name,
+                c.industry,
+                c.city,
+                c.email,
+                c.phone,
+                c.website,
+                c.address,
+                c.created_at,
+                c.updated_at,
+                pcc.validation_status,
+                pcc.execution_status,
+                pcc.execution_date,
+                pcc.execution_notes,
+                pcc.execution_file,
+                pcc.converted_to_opportunity,
+                pcc.opportunity_id
+            FROM companies c
+            JOIN prospecting_campaign_companies pcc ON c.id = pcc.company_id
+            WHERE pcc.campaign_id = $1 AND pcc.company_id = $2
+        `;
+
+        const result = await pool.query(query, [campaignId, companyId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Entreprise non trouvée dans cette campagne'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Erreur récupération détails entreprise:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération des détails de l\'entreprise'
+        });
+    }
+});
+
 router.put('/campaigns/:id', authenticateToken, async (req, res) => {
     try {
         const { name, template_id, responsible_id, scheduled_date, priority, description } = req.body;
@@ -762,58 +817,69 @@ router.get('/reports', authenticateToken, async (req, res) => {
             end_date
         } = req.query;
 
-        // Construire les conditions de filtrage
-        let whereConditions = ['1=1'];
-        let params = [];
-        let paramIndex = 1;
+        console.log('🔍 Paramètres reçus:', { business_unit_id, division_id, status, start_date, end_date });
+
+        // Construire les conditions de filtrage pour les campagnes
+        let campaignWhereConditions = ['1=1'];
+        let campaignParams = [];
+        let campaignParamIndex = 1;
 
         if (business_unit_id) {
-            whereConditions.push(`pt.business_unit_id = $${paramIndex++}`);
-            params.push(business_unit_id);
+            campaignWhereConditions.push(`pcs.business_unit_name = (SELECT nom FROM business_units WHERE id = $${campaignParamIndex++})`);
+            campaignParams.push(business_unit_id);
         }
 
         if (division_id) {
-            whereConditions.push(`pt.division_id = $${paramIndex++}`);
-            params.push(division_id);
+            campaignWhereConditions.push(`pcs.division_name = (SELECT nom FROM divisions WHERE id = $${campaignParamIndex++})`);
+            campaignParams.push(division_id);
         }
 
         if (status) {
-            whereConditions.push(`pc.validation_statut = $${paramIndex++}`);
-            params.push(status);
+            campaignWhereConditions.push(`pcs.campaign_validation_status = $${campaignParamIndex++}`);
+            campaignParams.push(status);
         }
 
         if (start_date && end_date) {
-            whereConditions.push(`pc.created_at BETWEEN $${paramIndex++} AND $${paramIndex++}`);
-            params.push(start_date, end_date);
+            campaignWhereConditions.push(`pcs.created_at BETWEEN $${campaignParamIndex++} AND $${campaignParamIndex++}`);
+            campaignParams.push(start_date, end_date);
         }
 
-        const whereClause = whereConditions.join(' AND ');
+        const campaignWhereClause = campaignWhereConditions.join(' AND ');
+        console.log('🔍 Clause WHERE:', campaignWhereClause);
+        console.log('🔍 Paramètres:', campaignParams);
 
         // Utiliser la vue pour les rapports de campagnes
         const campaignsQuery = `
             SELECT 
-                pcs.*,
-                pc.id,
-                pc.name,
-                pc.description,
-                pc.validation_statut,
-                pc.created_at,
-                pc.scheduled_date,
-                pc.created_by
+                pcs.campaign_id as id,
+                pcs.campaign_name as name,
+                pcs.campaign_validation_status as validation_statut,
+                pcs.template_type,
+                pcs.business_unit_name,
+                pcs.division_name,
+                pcs.responsible_name,
+                pcs.responsible_prenom,
+                pcs.total_companies as companies_count,
+                pcs.approved_companies,
+                pcs.rejected_companies,
+                pcs.deposed_count,
+                pcs.sent_count,
+                pcs.pending_execution_count,
+                pcs.converted_count,
+                pcs.created_at,
+                pcs.scheduled_date
             FROM prospecting_campaign_summary pcs
-            JOIN prospecting_campaigns pc ON pcs.campaign_id = pc.id
-            WHERE 1=1
-            ${businessUnitFilter}
-            ${divisionFilter}
-            ${statusFilter}
-            ${dateFilter}
-            ORDER BY pc.created_at DESC
+            WHERE ${campaignWhereClause}
+            ORDER BY pcs.created_at DESC
         `;
 
-        const campaignsResult = await pool.query(campaignsQuery, params);
+        console.log('🔍 Requête campagnes:', campaignsQuery);
+
+        const campaignsResult = await pool.query(campaignsQuery, campaignParams);
         const campaigns = campaignsResult.rows;
         
         console.log('📊 Campagnes trouvées:', campaigns.length);
+        console.log('📊 Exemple de campagne:', campaigns[0]);
 
         // Calculer les statistiques en utilisant la vue
         const statsQuery = `
@@ -832,27 +898,24 @@ router.get('/reports', authenticateToken, async (req, res) => {
                 COALESCE(AVG(
                     CASE 
                         WHEN pcs.total_companies > 0 THEN 
-                            ROUND(((pcs.deposed_count + pcs.sent_count)::float / pcs.total_companies * 100), 2)
+                            ((pcs.deposed_count + pcs.sent_count)::float / pcs.total_companies * 100)
                         ELSE 0 
                     END
                 ), 0)::numeric(5,2) as avg_execution_rate,
                 COALESCE(AVG(
                     CASE 
                         WHEN pcs.total_companies > 0 THEN 
-                            ROUND((pcs.converted_count::float / pcs.total_companies * 100), 2)
+                            (pcs.converted_count::float / pcs.total_companies * 100)
                         ELSE 0 
                     END
                 ), 0)::numeric(5,2) as avg_conversion_rate
             FROM prospecting_campaign_summary pcs
-            JOIN prospecting_campaigns pc ON pcs.campaign_id = pc.id
-            WHERE 1=1
-            ${businessUnitFilter}
-            ${divisionFilter}
-            ${statusFilter}
-            ${dateFilter}
+            WHERE ${campaignWhereClause}
         `;
 
-        const statsResult = await pool.query(statsQuery, params);
+        console.log('🔍 Requête statistiques:', statsQuery);
+
+        const statsResult = await pool.query(statsQuery, campaignParams);
         const stats = statsResult.rows[0];
         
         console.log('📊 Statistiques brutes:', stats);
@@ -908,7 +971,8 @@ router.get('/reports', authenticateToken, async (req, res) => {
         console.error('Erreur génération rapport:', error);
         res.status(500).json({
             success: false,
-            error: 'Erreur lors de la génération du rapport'
+            error: `Erreur lors de la génération du rapport: ${error.message}`,
+            details: error.stack
         });
     }
 });

@@ -10,14 +10,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <!-- CSS de la sidebar moderne -->
-    <link rel="stylesheet" href="css/modern-sidebar.css">
-    <link rel="stylesheet" href="css/user-header.css">
+    <link rel="stylesheet" href="css/modern-sidebar.css?v=2.0">
+    
     
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
                 
                 <!-- Scripts de zone utilisateur -->
-                <script src="js/user-header.js"></script>
+                <!-- <script src="js/user-header.js"></script> -->
                 <script src="js/user-modals.js"></script>
     
     <style>
@@ -81,11 +81,52 @@
                 padding-top: 5rem;
             }
         }
+        
+        /* Styles pour les notifications dans la sidebar */
+        .sidebar-notifications {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+        }
+        
+        .notification-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        
+        .notification-item i {
+            font-size: 1.1rem;
+        }
+        
+        .notification-count,
+        .task-count {
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .task-count {
+            background: #f39c12;
+        }
+
+        /* Styles pour la zone de profil - maintenant dans modern-sidebar.css */
     </style>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    <script src="js/user-header-utils.js"></script>
-    <script src="js/user-header-main.js"></script>
-    <script src="js/user-header-init.js"></script>
+    <script src="js/user-header.js"></script>
+    <!-- Script pour le menu de profil -->
+    <script src="js/profile-menu.js"></script>
 </head>
 <body>
     <!-- Bouton toggle pour mobile -->
@@ -102,6 +143,49 @@
                 EBVISION 2.0
             </h3>
             <p>Gestion Intelligente des Ressources</p>
+        </div>
+
+        <!-- Zone de profil utilisateur -->
+        <div class="sidebar-user-profile">
+            <div class="user-profile-compact" id="userProfileToggle">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                    <!-- Bulle de notification -->
+                    <div class="notification-bubble" id="notificationBubble" style="display: none;">
+                        <i class="fas fa-exclamation"></i>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <div class="user-name" id="userName">Chargement...</div>
+                    <div class="user-role" id="userRole">Chargement...</div>
+                </div>
+                <div class="profile-toggle">
+                    <i class="fas fa-chevron-right" id="profileToggleIcon"></i>
+                </div>
+            </div>
+            
+            <!-- Menu déroulant du profil -->
+            <div class="user-profile-menu" id="userProfileMenu" style="display: none;">
+                <div class="menu-item" id="profileMenuItem">
+                    <i class="fas fa-user"></i>
+                    <span>Mon profil</span>
+                </div>
+                <div class="menu-item" id="notificationsMenuItem">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                    <span class="menu-badge" id="menuNotificationCount">0</span>
+                </div>
+                <div class="menu-item" id="tasksMenuItem">
+                    <i class="fas fa-tasks"></i>
+                    <span>Tâches</span>
+                    <span class="menu-badge" id="menuTaskCount">0</span>
+                </div>
+                <div class="menu-separator"></div>
+                <div class="menu-item" id="logoutMenuItem">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </div>
+            </div>
         </div>
 
         <!-- Navigation principale -->
@@ -172,6 +256,10 @@
                     <i class="fas fa-users"></i>
                     Rapports RH
                 </a>
+                <a href="prospecting-reports.html" class="sidebar-nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    Rapports de prospection
+                </a>
             </div>
 
             <!-- Section Gestion des Temps -->
@@ -236,14 +324,10 @@
                     <i class="fas fa-bullhorn"></i>
                     Campagnes de prospection
                 </a>
-                            <a href="prospecting-validations.html" class="sidebar-nav-link">
-                <i class="fas fa-clipboard-check"></i>
-                Validation des campagnes
-            </a>
-            <a href="prospecting-reports.html" class="sidebar-nav-link">
-                <i class="fas fa-chart-line"></i>
-                Rapports de prospection
-            </a>
+                <a href="prospecting-validations.html" class="sidebar-nav-link">
+                    <i class="fas fa-clipboard-check"></i>
+                    Validation des campagnes
+                </a>
             </div>
 
             <!-- Section Gestion RH -->
@@ -353,10 +437,9 @@
 
         <!-- Footer de la sidebar -->
         <div class="sidebar-footer">
-            <div class="sidebar-user-info">
-                <i class="fas fa-user-circle"></i>
-                <span>Admin User</span>
-                <small style="display: block; opacity: 0.7; margin-top: 2px;">Administrateur</small>
+            <div class="footer-content">
+                <p>&copy; 2024 EBVISION 2.0</p>
+                <small>Gestion Intelligente des Ressources</small>
             </div>
         </div></div>
 
@@ -365,23 +448,8 @@
     <script src="js/modern-sidebar.js"></script>
     
     <script>
-        // Exemple d'utilisation des fonctions de la sidebar
-        document.addEventListener('DOMContentLoaded', function() {
-            // Ajouter des notifications dynamiques
-            setTimeout(() => {
-                if (window.SidebarManager) {
-                    window.SidebarManager.addNotificationBadge('a[href="opportunities.html"]', 3);
-                    window.SidebarManager.addNotificationBadge('a[href="validation.html"]', 1);
-                }
-            }, 1000);
-            
-            // Mettre à jour les informations utilisateur
-            setTimeout(() => {
-                if (window.SidebarManager) {
-                    window.SidebarManager.updateUserInfo('Jean Dupont', 'Directeur Général');
-                }
-            }, 2000);
-        });
+        // Script simplifié - la logique est maintenant dans profile-menu.js
+        console.log('📋 Template sidebar chargé');
     </script>
 </body>
 </html> 

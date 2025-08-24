@@ -9,8 +9,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    <link rel="stylesheet" href="css/user-header.css">
+    
     <link rel="stylesheet" href="css/app-title.css">
+    <link rel="stylesheet" href="css/prospecting-reports.css">
     
     <style>
         :root {
@@ -208,12 +209,120 @@
                 gap: 0.5rem;
             }
         }
+        
+        /* Lignes déroulantes */
+        .expandable-row {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .expandable-row:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .expand-button {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .expand-button.expanded {
+            transform: rotate(90deg);
+        }
+        
+        .details-row {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .details-row .table {
+            margin-bottom: 0;
+        }
+        
+        .details-row .table th {
+            border-top: none;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .details-row .table td {
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+        
+        .company-status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        
+        .execution-status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .execution-deposed { background: #d1ecf1; color: #0c5460; }
+        .execution-sent { background: #d4edda; color: #155724; }
+        .execution-failed { background: #f8d7da; color: #721c24; }
+        .execution-pending { background: #fff3cd; color: #856404; }
+        
+        .proof-file-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .proof-file-link:hover {
+            text-decoration: underline;
+        }
+        
+        .notes-cell {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .notes-cell.expanded {
+            white-space: normal;
+            overflow: visible;
+        }
+        
+        .company-row {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .company-row:hover {
+            background-color: #e9ecef;
+        }
+        
+        .company-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #6c757d, #495057);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+        }
     </style>
     
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    <script src="js/user-header-utils.js"></script>
-    <script src="js/user-header-main.js"></script>
-    <script src="js/user-header-init.js"></script>
+    
+    
+    
 </head>
 <body>
     <!-- Bouton toggle sidebar mobile -->
@@ -270,8 +379,11 @@
                     <select class="form-select" id="periodFilter">
                         <option value="all">Toutes les périodes</option>
                         <option value="today">Aujourd'hui</option>
+                        <option value="yesterday">Hier</option>
                         <option value="week">Cette semaine</option>
+                        <option value="last_week">Semaine précédente</option>
                         <option value="month">Ce mois</option>
+                        <option value="last_month">Mois précédent</option>
                         <option value="quarter">Ce trimestre</option>
                         <option value="year">Cette année</option>
                         <option value="custom">Période personnalisée</option>
@@ -315,6 +427,15 @@
             </div>
         </div>
 
+        <!-- Section des filtres actifs -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div id="activeFiltersContainer">
+                    <!-- Les filtres actifs seront affichés ici -->
+                </div>
+            </div>
+        </div>
+
         <!-- Statistiques -->
         <div class="stats-grid" id="statsGrid">
             <div class="loading-spinner">
@@ -352,6 +473,7 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
+                            <th style="width: 40px;"></th>
                             <th>Campagne</th>
                             <th>Statut</th>
                             <th>BU/Division</th>
@@ -374,6 +496,9 @@
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/global-auth.js"></script>
+    <!-- Script pour la gestion utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/sidebar.js"></script>
     <script src="js/user-modals.js"></script>
@@ -410,7 +535,7 @@
             
             // Générer un rapport initial après le chargement des filtres
             setTimeout(() => {
-                console.log('⏰ Timeout écoulé, appel de generateReport()');
+                console.log('🔄 Génération du rapport initial...');
                 generateReport();
             }, 1000);
         }
@@ -486,13 +611,87 @@
         }
 
         function showAlert(message, type = 'info') {
-            // Fonction d'alerte simple
-            alert(message);
+            // Créer une alerte Bootstrap moderne
+            const alertContainer = document.createElement('div');
+            alertContainer.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertContainer.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertContainer.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alertContainer);
+            
+            // Auto-suppression après 5 secondes
+            setTimeout(() => {
+                if (alertContainer.parentNode) {
+                    alertContainer.remove();
+                }
+            }, 5000);
+        }
+
+        function showActiveFilters(filters) {
+            const activeFilters = [];
+            
+            if (filters.businessUnitId) {
+                const buSelect = document.getElementById('businessUnitFilter');
+                const selectedOption = buSelect.options[buSelect.selectedIndex];
+                activeFilters.push(`BU: ${selectedOption.text}`);
+            }
+            
+            if (filters.divisionId) {
+                const divSelect = document.getElementById('divisionFilter');
+                const selectedOption = divSelect.options[divSelect.selectedIndex];
+                activeFilters.push(`Division: ${selectedOption.text}`);
+            }
+            
+            if (filters.status) {
+                const statusSelect = document.getElementById('statusFilter');
+                const selectedOption = statusSelect.options[statusSelect.selectedIndex];
+                activeFilters.push(`Statut: ${selectedOption.text}`);
+            }
+            
+            if (filters.dateRange) {
+                const periodSelect = document.getElementById('periodFilter');
+                const selectedOption = periodSelect.options[periodSelect.selectedIndex];
+                activeFilters.push(`Période: ${selectedOption.text}`);
+            }
+            
+            if (activeFilters.length > 0) {
+                const filtersContainer = document.getElementById('activeFiltersContainer');
+                if (filtersContainer) {
+                    filtersContainer.innerHTML = `
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <i class="fas fa-filter me-2"></i>
+                                    <strong>Filtres actifs:</strong> ${activeFilters.join(' | ')}
+                                </div>
+                                <div>
+                                    <button class="btn btn-outline-secondary btn-sm me-2" onclick="clearFilters()">
+                                        <i class="fas fa-times me-1"></i>
+                                        Effacer
+                                    </button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else {
+                // Effacer le conteneur des filtres actifs
+                const filtersContainer = document.getElementById('activeFiltersContainer');
+                if (filtersContainer) {
+                    filtersContainer.innerHTML = '';
+                }
+            }
         }
 
         // Fonctions de chargement des données
         async function loadBusinessUnits() {
             try {
+                console.log('🔧 Chargement des Business Units...');
                 const response = await fetch('/api/business-units', {
                     headers: getAuthHeader()
                 });
@@ -502,20 +701,23 @@
                     businessUnits = data.data || [];
                     
                     const select = document.getElementById('businessUnitFilter');
+                    select.innerHTML = '<option value="">Toutes les Business Units</option>';
                     businessUnits.forEach(bu => {
                         const option = document.createElement('option');
                         option.value = bu.id;
                         option.textContent = bu.nom;
                         select.appendChild(option);
                     });
+                    console.log(`✅ ${businessUnits.length} Business Units chargées`);
                 }
             } catch (error) {
-                console.error('Erreur chargement BU:', error);
+                console.error('❌ Erreur chargement BU:', error);
             }
         }
 
         async function loadDivisions() {
             try {
+                console.log('🔧 Chargement des divisions...');
                 const response = await fetch('/api/divisions', {
                     headers: getAuthHeader()
                 });
@@ -525,19 +727,22 @@
                     divisions = data.data || [];
                     
                     const select = document.getElementById('divisionFilter');
+                    select.innerHTML = '<option value="">Toutes les divisions</option>';
                     divisions.forEach(div => {
                         const option = document.createElement('option');
                         option.value = div.id;
                         option.textContent = div.nom;
                         select.appendChild(option);
                     });
+                    console.log(`✅ ${divisions.length} divisions chargées`);
                 }
             } catch (error) {
-                console.error('Erreur chargement divisions:', error);
+                console.error('❌ Erreur chargement divisions:', error);
             }
         }
 
         function clearFilters() {
+            console.log('🧹 Effacement des filtres...');
             document.getElementById('businessUnitFilter').value = '';
             document.getElementById('divisionFilter').value = '';
             document.getElementById('periodFilter').value = 'all';
@@ -545,6 +750,11 @@
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
             document.getElementById('customPeriodRow').style.display = 'none';
+            
+            // Recharger les données avec les filtres effacés
+            setTimeout(() => {
+                generateReport();
+            }, 100);
         }
 
         function getDateRange() {
@@ -557,15 +767,29 @@
                     startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                     endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
                     break;
+                case 'yesterday':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
+                    break;
                 case 'week':
                     const dayOfWeek = now.getDay();
                     const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
                     startDate = new Date(now.getFullYear(), now.getMonth(), diff);
                     endDate = new Date(now.getFullYear(), now.getMonth(), diff + 6, 23, 59, 59);
                     break;
+                case 'last_week':
+                    const lastWeekDayOfWeek = now.getDay();
+                    const lastWeekDiff = now.getDate() - lastWeekDayOfWeek + (lastWeekDayOfWeek === 0 ? -6 : 1) - 7;
+                    startDate = new Date(now.getFullYear(), now.getMonth(), lastWeekDiff);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), lastWeekDiff + 6, 23, 59, 59);
+                    break;
                 case 'month':
                     startDate = new Date(now.getFullYear(), now.getMonth(), 1);
                     endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                    break;
+                case 'last_month':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
                     break;
                 case 'quarter':
                     const quarter = Math.floor(now.getMonth() / 3);
@@ -594,10 +818,12 @@
             try {
                 // Afficher le spinner de chargement
                 document.getElementById('statsGrid').innerHTML = `
-                    <div class="loading-spinner">
-                        <div class="spinner-border text-primary" role="status">
+                    <div class="loading-spinner text-center py-5">
+                        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
                             <span class="visually-hidden">Génération du rapport...</span>
                         </div>
+                        <h5 class="text-muted">Génération du rapport en cours...</h5>
+                        <p class="text-muted">Veuillez patienter pendant que nous récupérons vos données</p>
                     </div>
                 `;
 
@@ -645,6 +871,9 @@
                     
                     // Afficher le tableau
                     renderTable(data.data.campaigns);
+                    
+                    // Afficher un résumé des filtres actifs
+                    showActiveFilters(filters);
                 } else {
                     throw new Error('Format de données invalide');
                 }
@@ -657,15 +886,23 @@
                 
                 // Afficher un message d'erreur plus informatif
                 document.getElementById('statsGrid').innerHTML = `
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Aucune campagne trouvée avec les filtres actuels. 
-                        <br>Essayez de modifier les filtres ou de créer une nouvelle campagne.
+                    <div class="alert alert-danger">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-3" style="font-size: 2rem; color: #dc3545;"></i>
+                            <div>
+                                <h5 class="alert-heading mb-2">Erreur lors de la génération du rapport</h5>
+                                <p class="mb-2">${error.message}</p>
+                                <small class="text-muted">Vérifiez vos filtres ou contactez l'administrateur.</small>
+                            </div>
+                        </div>
                     </div>
                 `;
                 
                 // Afficher un tableau vide
                 renderTable([]);
+                
+                // Masquer les boutons d'export
+                document.getElementById('exportButtons').style.display = 'none';
             }
         }
 
@@ -680,108 +917,170 @@
                     pendingCampaigns: 0,
                     approvedCampaigns: 0,
                     rejectedCampaigns: 0,
-                    completionRate: 0
+                    completionRate: 0,
+                    totalDeposed: 0,
+                    totalSent: 0,
+                    totalConverted: 0,
+                    avgExecutionRate: 0,
+                    avgConversionRate: 0
                 };
             }
             
+            // Vérifier si toutes les statistiques sont à 0
+            const allZero = Object.values(stats).every(value => !value || value === 0);
+            if (allZero) {
+                statsGrid.innerHTML = `
+                    <div class="alert alert-info">
+                        <div class="text-center py-4">
+                            <i class="fas fa-info-circle mb-3" style="font-size: 3rem; color: #17a2b8;"></i>
+                            <h5 class="alert-heading mb-3">Aucune donnée trouvée</h5>
+                            <p class="mb-3">Aucune campagne de prospection ne correspond aux critères sélectionnés.</p>
+                            <button class="btn btn-outline-info" onclick="clearFilters()">
+                                <i class="fas fa-filter me-2"></i>
+                                Effacer les filtres
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
             statsGrid.innerHTML = `
-                <!-- Métriques de campagnes -->
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
-                        <i class="fas fa-bullhorn"></i>
+                <!-- SECTION 1: VUE D'ENSEMBLE DES CAMPAGNES -->
+                <div class="stats-section">
+                    <h6 class="section-title">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Vue d'ensemble des campagnes
+                    </h6>
+                    <div class="stats-row">
+                        <div class="stat-card primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${stats.totalCampaigns || 0}</div>
+                                <div class="stat-label">Total Campagnes</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card warning">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${stats.pendingCampaigns || 0}</div>
+                                <div class="stat-label">En Validation</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card success">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${stats.approvedCampaigns || 0}</div>
+                                <div class="stat-label">Approuvées</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card danger">
+                            <div class="stat-icon">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${stats.rejectedCampaigns || 0}</div>
+                                <div class="stat-label">Rejetées</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-number">${stats.totalCampaigns || 0}</div>
-                    <div class="stat-label">Total Campagnes</div>
                 </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--success-color), #20c997);">
-                        <i class="fas fa-building"></i>
+
+                <!-- SECTION 2: MÉTRIQUES DES ENTREPRISES -->
+                <div class="stats-section">
+                    <h6 class="section-title">
+                        <i class="fas fa-building me-2"></i>
+                        Métriques des entreprises
+                    </h6>
+                    <div class="stats-row">
+                        <div class="stat-card info">
+                            <div class="stat-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${stats.totalCompanies || 0}</div>
+                                <div class="stat-label">Total Entreprises</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-hand-holding"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${stats.totalDeposed || 0}</div>
+                                <div class="stat-label">Courriers Déposés</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card success">
+                            <div class="stat-icon">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${stats.totalSent || 0}</div>
+                                <div class="stat-label">Emails Envoyés</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card warning">
+                            <div class="stat-icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${stats.totalConverted || 0}</div>
+                                <div class="stat-label">Converties en Opportunités</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-number">${stats.totalCompanies || 0}</div>
-                    <div class="stat-label">Total Entreprises</div>
                 </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--warning-color), #fd7e14);">
-                        <i class="fas fa-clock"></i>
+
+                <!-- SECTION 3: PERFORMANCE ET TAUX -->
+                <div class="stats-section">
+                    <h6 class="section-title">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Performance et taux
+                    </h6>
+                    <div class="stats-row">
+                        <div class="stat-card purple">
+                            <div class="stat-icon">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${stats.completionRate || 0}%</div>
+                                <div class="stat-label">Taux de Complétion</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card blue">
+                            <div class="stat-icon">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${stats.avgExecutionRate || 0}%</div>
+                                <div class="stat-label">Taux d'Exécution Moyen</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card green">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${stats.avgConversionRate || 0}%</div>
+                                <div class="stat-label">Taux de Conversion Moyen</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-number">${stats.pendingCampaigns || 0}</div>
-                    <div class="stat-label">En Attente</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--info-color), #6f42c1);">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-number">${stats.approvedCampaigns || 0}</div>
-                    <div class="stat-label">Approuvées</div>
-                </div>
-                
-                <!-- Métriques d'exécution -->
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #28a745, #20c997);">
-                        <i class="fas fa-mail-bulk"></i>
-                    </div>
-                    <div class="stat-number">${stats.totalDeposed || 0}</div>
-                    <div class="stat-label">Courriers Déposés</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #17a2b8, #6f42c1);">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="stat-number">${stats.totalSent || 0}</div>
-                    <div class="stat-label">Emails Envoyés</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #ffc107, #fd7e14);">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-number">${stats.totalPendingExecution || 0}</div>
-                    <div class="stat-label">En Attente</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #dc3545, #e83e8c);">
-                        <i class="fas fa-trophy"></i>
-                    </div>
-                    <div class="stat-number">${stats.totalConverted || 0}</div>
-                    <div class="stat-label">Converties en Opp.</div>
-                </div>
-                
-                <!-- Taux de performance -->
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #6c757d, #495057);">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="stat-number">${stats.executionRate || 0}%</div>
-                    <div class="stat-label">Taux d'Exécution</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #28a745, #20c997);">
-                        <i class="fas fa-percentage"></i>
-                    </div>
-                    <div class="stat-number">${stats.conversionRate || 0}%</div>
-                    <div class="stat-label">Taux de Conversion</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #17a2b8, #6f42c1);">
-                        <i class="fas fa-mail-bulk"></i>
-                    </div>
-                    <div class="stat-number">${stats.deposedRate || 0}%</div>
-                    <div class="stat-label">Taux Déposé</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #fd7e14, #e83e8c);">
-                        <i class="fas fa-chart-pie"></i>
-                    </div>
-                    <div class="stat-number">${stats.completionRate || 0}%</div>
-                    <div class="stat-label">Taux de Réussite</div>
                 </div>
             `;
         }
@@ -792,15 +1091,27 @@
             if (!campaigns || campaigns.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="10" class="text-center py-4">
-                            <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
-                            <p class="text-muted">Aucune campagne trouvée avec les filtres sélectionnés</p>
+                        <td colspan="11" class="text-center py-5">
+                            <div class="empty-state">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <h6 class="text-muted mb-2">Aucune campagne trouvée</h6>
+                                <p class="text-muted mb-3">Aucune campagne de prospection ne correspond aux critères sélectionnés.</p>
+                                <button class="btn btn-outline-primary btn-sm" onclick="clearFilters()">
+                                    <i class="fas fa-filter me-2"></i>
+                                    Effacer les filtres
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
             } else {
                 tableBody.innerHTML = campaigns.map(campaign => `
-                    <tr>
+                    <tr class="expandable-row" onclick="toggleCampaignDetails('${campaign.id}')">
+                        <td>
+                            <button class="expand-button" id="expand-${campaign.id}">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="campaign-icon me-2">
@@ -864,15 +1175,33 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" onclick="viewCampaignDetails('${campaign.id}')" title="Voir détails">
+                                <button class="btn btn-outline-primary" onclick="event.stopPropagation(); viewCampaignDetails('${campaign.id}')" title="Voir détails">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                <button class="btn btn-outline-info" onclick="viewCampaignSummary('${campaign.id}')" title="Résumé">
+                                <button class="btn btn-outline-info" onclick="event.stopPropagation(); viewCampaignSummary('${campaign.id}')" title="Résumé">
                                     <i class="fas fa-file-alt"></i>
                                 </button>
-                                <button class="btn btn-outline-success" onclick="exportCampaign('${campaign.id}')" title="Exporter">
+                                <button class="btn btn-outline-success" onclick="event.stopPropagation(); exportCampaign('${campaign.id}')" title="Exporter">
                                     <i class="fas fa-download"></i>
                                 </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="details-row" id="details-${campaign.id}" style="display: none;">
+                        <td colspan="11">
+                            <div class="p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-building me-2"></i>
+                                        Entreprises de la campagne
+                                    </h6>
+                                    <div class="spinner-border spinner-border-sm" role="status" id="loading-${campaign.id}">
+                                        <span class="visually-hidden">Chargement...</span>
+                                    </div>
+                                </div>
+                                <div id="companies-${campaign.id}">
+                                    <!-- Les entreprises seront chargées ici -->
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -1013,6 +1342,336 @@
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
+        }
+
+        // Fonctions pour les lignes déroulantes
+        async function toggleCampaignDetails(campaignId) {
+            const detailsRow = document.getElementById(`details-${campaignId}`);
+            const expandButton = document.getElementById(`expand-${campaignId}`);
+            const loadingSpinner = document.getElementById(`loading-${campaignId}`);
+            const companiesContainer = document.getElementById(`companies-${campaignId}`);
+            
+            if (detailsRow.style.display === 'none') {
+                // Ouvrir les détails
+                detailsRow.style.display = 'table-row';
+                expandButton.classList.add('expanded');
+                
+                // Charger les entreprises si pas encore fait
+                if (!companiesContainer.hasAttribute('data-loaded')) {
+                    await loadCampaignCompanies(campaignId);
+                }
+            } else {
+                // Fermer les détails
+                detailsRow.style.display = 'none';
+                expandButton.classList.remove('expanded');
+            }
+        }
+
+        async function loadCampaignCompanies(campaignId) {
+            const loadingSpinner = document.getElementById(`loading-${campaignId}`);
+            const companiesContainer = document.getElementById(`companies-${campaignId}`);
+            
+            try {
+                loadingSpinner.style.display = 'block';
+                
+                const response = await fetch(`${API}/campaigns/${campaignId}/companies?limit=1000`, {
+                    headers: getAuthHeader()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    renderCampaignCompanies(campaignId, result.data || []);
+                    companiesContainer.setAttribute('data-loaded', 'true');
+                } else {
+                    throw new Error(result.error || 'Erreur lors du chargement des entreprises');
+                }
+                
+            } catch (error) {
+                console.error('Erreur chargement entreprises:', error);
+                companiesContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Erreur lors du chargement des entreprises: ${error.message}
+                    </div>
+                `;
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        function renderCampaignCompanies(campaignId, companies) {
+            const companiesContainer = document.getElementById(`companies-${campaignId}`);
+            
+            if (!companies || companies.length === 0) {
+                companiesContainer.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="fas fa-building fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">Aucune entreprise trouvée dans cette campagne</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const tableHTML = `
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Entreprise</th>
+                                <th>Statut Validation</th>
+                                <th>Statut Exécution</th>
+                                <th>Notes</th>
+                                <th>Fichier de preuve</th>
+                                <th>Date exécution</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${companies.map(company => `
+                                <tr class="company-row" onclick="showCompanyDetails('${campaignId}', '${company.id}')">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="company-icon me-2">
+                                                <i class="fas fa-building"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">${company.name}</div>
+                                                <small class="text-muted">
+                                                    ${company.industry || 'Secteur non défini'}
+                                                    ${company.city ? ` • ${company.city}` : ''}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="company-status-badge status-${getCompanyValidationStatusClass(company.validation_status)}">
+                                            ${getCompanyValidationStatusText(company.validation_status)}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        ${company.validation_status === 'REJECTED' ? 
+                                            '<span class="text-muted">Non applicable</span>' :
+                                            `<span class="execution-status-badge execution-${getExecutionStatusClass(company.execution_status)}">
+                                                ${getExecutionStatusText(company.execution_status)}
+                                            </span>`
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="notes-cell" title="${company.execution_notes || 'Aucune note'}">
+                                            ${company.execution_notes ? 
+                                                (company.execution_notes.length > 50 ? 
+                                                    company.execution_notes.substring(0, 50) + '...' : 
+                                                    company.execution_notes) : 
+                                                'Aucune note'}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        ${company.validation_status === 'REJECTED' ? 
+                                            '<span class="text-muted">Non applicable</span>' :
+                                            (company.execution_file ? 
+                                                `<a href="/uploads/executions/${company.execution_file}" target="_blank" class="proof-file-link">
+                                                    <i class="fas fa-file-alt me-1"></i>Voir
+                                                </a>` : 
+                                                '<span class="text-muted">Aucun fichier</span>'
+                                            )
+                                        }
+                                    </td>
+                                    <td>
+                                        <small>${company.validation_status === 'REJECTED' ? 
+                                            'Non applicable' : 
+                                            (company.execution_date ? formatDate(company.execution_date) : 'Non exécutée')
+                                        }</small>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); showCompanyDetails('${campaignId}', '${company.id}')" title="Voir détails">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            companiesContainer.innerHTML = tableHTML;
+        }
+
+        function getCompanyValidationStatusClass(status) {
+            const statusMap = {
+                'APPROVED': 'approved',
+                'REJECTED': 'rejected',
+                'PENDING': 'pending'
+            };
+            return statusMap[status] || 'pending';
+        }
+
+        function getCompanyValidationStatusText(status) {
+            const statusMap = {
+                'APPROVED': 'Approuvée',
+                'REJECTED': 'Rejetée',
+                'PENDING': 'En attente'
+            };
+            return statusMap[status] || status;
+        }
+
+        function getExecutionStatusClass(status) {
+            const statusMap = {
+                'deposed': 'deposed',
+                'sent': 'sent',
+                'failed': 'failed',
+                'pending_execution': 'pending'
+            };
+            return statusMap[status] || 'pending';
+        }
+
+        function getExecutionStatusText(status) {
+            const statusMap = {
+                'deposed': 'Déposé',
+                'sent': 'Envoyé',
+                'failed': 'Échec',
+                'pending_execution': 'En attente'
+            };
+            return statusMap[status] || status;
+        }
+
+        async function showCompanyDetails(campaignId, companyId) {
+            try {
+                // Charger les détails de l'entreprise
+                const response = await fetch(`${API}/campaigns/${campaignId}/companies/${companyId}`, {
+                    headers: getAuthHeader()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayCompanyDetailsModal(result.data);
+                } else {
+                    throw new Error(result.error || 'Erreur lors du chargement des détails');
+                }
+                
+            } catch (error) {
+                console.error('Erreur chargement détails entreprise:', error);
+                showAlert('Erreur lors du chargement des détails de l\'entreprise: ' + error.message, 'danger');
+            }
+        }
+
+        function displayCompanyDetailsModal(company) {
+            const modalHTML = `
+                <div class="modal fade" id="companyDetailsModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-building me-2"></i>
+                                    Détails de l'entreprise
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Informations générales</h6>
+                                        <table class="table table-sm">
+                                            <tr><td><strong>Nom:</strong></td><td>${company.name}</td></tr>
+                                            <tr><td><strong>Secteur:</strong></td><td>${company.industry || 'Non défini'}</td></tr>
+                                            <tr><td><strong>Ville:</strong></td><td>${company.city || 'Non définie'}</td></tr>
+                                            <tr><td><strong>Email:</strong></td><td>${company.email || 'Non défini'}</td></tr>
+                                            <tr><td><strong>Téléphone:</strong></td><td>${company.phone || 'Non défini'}</td></tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Statut dans la campagne</h6>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <td><strong>Validation:</strong></td>
+                                                <td>
+                                                    <span class="company-status-badge status-${getCompanyValidationStatusClass(company.validation_status)}">
+                                                        ${getCompanyValidationStatusText(company.validation_status)}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Exécution:</strong></td>
+                                                <td>
+                                                    <span class="execution-status-badge execution-${getExecutionStatusClass(company.execution_status)}">
+                                                        ${getExecutionStatusText(company.execution_status)}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr><td><strong>Date exécution:</strong></td><td>${company.execution_date ? formatDate(company.execution_date) : 'Non exécutée'}</td></tr>
+                                            <tr><td><strong>Convertie:</strong></td><td>${company.converted_to_opportunity ? 'Oui' : 'Non'}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <h6>Notes d'exécution</h6>
+                                        <div class="border rounded p-3 bg-light">
+                                            ${company.execution_notes || 'Aucune note d\'exécution'}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                ${company.execution_file ? `
+                                    <div class="row mt-3">
+                                        <div class="col-12">
+                                            <h6>Fichier de preuve</h6>
+                                            <a href="/uploads/executions/${company.execution_file}" target="_blank" class="btn btn-outline-primary">
+                                                <i class="fas fa-file-alt me-2"></i>
+                                                Voir le fichier de preuve
+                                            </a>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <h6>Historique des actions</h6>
+                                        <div class="border rounded p-3 bg-light">
+                                            <small class="text-muted">
+                                                • Ajoutée à la campagne le ${formatDate(company.created_at)}<br>
+                                                ${company.validation_status === 'APPROVED' ? `• Validée le ${formatDate(company.execution_date || company.created_at)}<br>` : ''}
+                                                ${company.validation_status === 'REJECTED' ? `• Rejetée le ${formatDate(company.execution_date || company.created_at)}<br>` : ''}
+                                                ${company.execution_status === 'deposed' ? `• Courrier déposé le ${formatDate(company.execution_date)}<br>` : ''}
+                                                ${company.execution_status === 'sent' ? `• Email envoyé le ${formatDate(company.execution_date)}<br>` : ''}
+                                                ${company.execution_status === 'failed' ? `• Échec d'exécution le ${formatDate(company.execution_date)}<br>` : ''}
+                                                ${company.converted_to_opportunity ? `• Convertie en opportunité le ${formatDate(company.execution_date || company.created_at)}<br>` : ''}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Supprimer l'ancien modal s'il existe
+            const oldModal = document.getElementById('companyDetailsModal');
+            if (oldModal) {
+                oldModal.remove();
+            }
+            
+            // Ajouter le nouveau modal
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // Afficher le modal
+            const modal = new bootstrap.Modal(document.getElementById('companyDetailsModal'));
+            modal.show();
         }
     </script>
 </body>

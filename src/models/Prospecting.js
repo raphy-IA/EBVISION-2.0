@@ -329,7 +329,8 @@ class ProspectingCampaign {
                     pcc.converted_to_opportunity,
                     pcc.opportunity_id,
                     pcc.execution_date,
-                    pcc.execution_notes
+                    pcc.execution_notes,
+                    pcc.execution_file
              FROM prospecting_campaign_companies pcc
              JOIN companies c ON c.id = pcc.company_id
              WHERE pcc.campaign_id = $1

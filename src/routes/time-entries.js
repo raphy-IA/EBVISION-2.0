@@ -424,4 +424,68 @@ router.get('/personal-chart-data/:userId', authenticateToken, async (req, res) =
     }
 });
 
+// GET /api/time-entries/statistics - Statistiques globales des time entries
+router.get('/statistics', authenticateToken, async (req, res) => {
+    try {
+        const pool = require('../utils/database');
+        
+        // Statistiques globales
+        const statsQuery = `
+            SELECT 
+                COUNT(*) as total_entries,
+                COUNT(CASE WHEN ts.statut = 'VALIDE' THEN 1 END) as validated_entries,
+                COUNT(CASE WHEN ts.statut = 'EN_ATTENTE' THEN 1 END) as pending_entries,
+                COUNT(CASE WHEN ts.statut = 'REJETE' THEN 1 END) as rejected_entries,
+                COALESCE(SUM(te.heures), 0) as total_hours
+            FROM time_entries te
+            LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
+        `;
+        
+        const statsResult = await pool.query(statsQuery);
+        const stats = statsResult.rows[0];
+        
+        // Statistiques par mois (12 derniers mois)
+        const monthlyQuery = `
+            SELECT 
+                DATE_TRUNC('month', te.date_saisie) as month,
+                COUNT(*) as entries_count,
+                COALESCE(SUM(te.heures), 0) as total_hours
+            FROM time_entries te
+            WHERE te.date_saisie >= NOW() - INTERVAL '12 months'
+            GROUP BY DATE_TRUNC('month', te.date_saisie)
+            ORDER BY month DESC
+        `;
+        
+        const monthlyResult = await pool.query(monthlyQuery);
+        
+        const data = {
+            global: {
+                total_entries: parseInt(stats.total_entries) || 0,
+                validated_entries: parseInt(stats.validated_entries) || 0,
+                pending_entries: parseInt(stats.pending_entries) || 0,
+                rejected_entries: parseInt(stats.rejected_entries) || 0,
+                total_hours: parseFloat(stats.total_hours) || 0
+            },
+            monthly: monthlyResult.rows.map(row => ({
+                month: row.month,
+                entries_count: parseInt(row.entries_count),
+                total_hours: parseFloat(row.total_hours)
+            }))
+        };
+        
+        res.json({
+            success: true,
+            data: data
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de la récupération des statistiques:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur lors de la récupération des statistiques',
+            error: error.message 
+        });
+    }
+});
+
 module.exports = router; 

@@ -547,3 +547,233 @@ body {
     -ms-transform: none !important;
     -o-transform: none !important;
 }
+
+/* ===== ZONE DE PROFIL UTILISATEUR ===== */
+.sidebar-user-profile {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 1rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.user-profile-compact {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.user-profile-compact:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.user-avatar {
+    margin-right: 1rem;
+    position: relative;
+}
+
+.user-avatar i {
+    font-size: 2.5rem;
+    color: #fff;
+    opacity: 0.9;
+}
+
+/* Bulle de notification sur l'avatar */
+.notification-bubble {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.user-role {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.profile-toggle {
+    margin-left: 1rem;
+}
+
+.profile-toggle i {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.user-profile-compact:hover .profile-toggle i {
+    color: #fff;
+    transform: translateX(2px);
+}
+
+/* Menu déroulant du profil */
+.user-profile-menu {
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 0;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.menu-item i {
+    margin-right: 0.75rem;
+    width: 16px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.menu-item span {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.menu-badge {
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-left: 0.5rem;
+}
+
+.menu-item:nth-child(3) .menu-badge {
+    background: #f39c12;
+}
+
+.menu-separator {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0.5rem 1.5rem;
+}
+
+/* Animation de rotation pour la flèche */
+.user-profile-compact.expanded .profile-toggle i {
+    transform: rotate(90deg);
+}
+
+/* Footer simplifié */
+.sidebar-footer {
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.footer-content p {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.footer-content small {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+}
+
+/* Responsive pour la zone de profil */
+@media (max-width: 768px) {
+    .sidebar-user-profile {
+        margin: 0.5rem;
+        padding: 1rem;
+    }
+    
+    .user-avatar i {
+        font-size: 2.5rem;
+    }
+    
+    .user-name {
+        font-size: 1rem;
+    }
+    
+    .user-role {
+        font-size: 0.8rem;
+    }
+    
+    .action-item {
+        padding: 0.5rem;
+    }
+    
+    .action-item i {
+        font-size: 1rem;
+    }
+    
+    .action-count {
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+    }
+    
+    .action-label {
+        font-size: 0.7rem;
+    }
+}

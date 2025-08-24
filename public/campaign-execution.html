@@ -11,14 +11,17 @@
     
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    <link rel="stylesheet" href="css/user-header.css">
+    
     <link rel="stylesheet" href="css/app-title.css">
     
          <!-- Scripts pour la top bar EBVISION 2.0 -->
      <script src="js/global-auth.js"></script>
-     <script src="js/user-header-utils.js"></script>
-     <script src="js/user-header-main.js"></script>
-     <script src="js/user-header-init.js"></script>
+    <!-- Script pour la gestion utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+     
+     
+     
     
     <style>
         :root {
@@ -714,6 +717,10 @@
                     // Filtrer seulement les entreprises approuvées
                     companiesData = companiesData.filter(company => company.validation_status === 'APPROVED');
                     console.log('📊 Entreprises après filtrage (APPROVED):', companiesData.length);
+                    
+                    if (companiesData.length === 0) {
+                        showAlert('Aucune entreprise approuvée trouvée dans cette campagne. Seules les entreprises validées peuvent être exécutées.', 'warning');
+                    }
                     
                     renderCompanies();
                     updateStats();
