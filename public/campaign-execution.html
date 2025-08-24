@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EBVISION 2.0 - Exécution de Campagne</title>
+    <title>EBVISION 2.0 - Exécution de Campagne - V4</title>
     
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,15 +12,13 @@
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
     <link rel="stylesheet" href="css/user-header.css">
-    <!-- CSS pour le titre de l'application -->
     <link rel="stylesheet" href="css/app-title.css">
     
-    <!-- Script d'authentification -->
-    <script src="js/auth.js"></script>
-                
-    <!-- Scripts de zone utilisateur -->
-    <script src="js/user-header.js"></script>
-    <script src="js/user-modals.js"></script>
+         <!-- Scripts pour la top bar EBVISION 2.0 -->
+     <script src="js/global-auth.js"></script>
+     <script src="js/user-header-utils.js"></script>
+     <script src="js/user-header-main.js"></script>
+     <script src="js/user-header-init.js"></script>
     
     <style>
         :root {
@@ -30,85 +28,85 @@
             --warning-color: #f39c12;
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
+            --card-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --border-radius: 12px;
         }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
-            overflow-x: hidden;
+            color: #2c3e50;
         }
         
         .page-wrapper {
             display: flex;
             min-height: 100vh;
         }
-
+        
         .main-content-area {
             flex-grow: 1;
             padding: 2rem;
-            background-color: var(--light-bg);
         }
         
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .execution-status {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-align: center;
-            min-width: 120px;
-        }
-        
-        .execution-status.pending {
-            background-color: #f8f9fa;
-            color: #6c757d;
-            border: 1px solid #dee2e6;
-        }
-        
-        .execution-status.deposed {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .execution-status.sent {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .execution-status.failed {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .company-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        
+        /* Header de la campagne */
         .campaign-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            border-radius: var(--border-radius);
             padding: 2rem;
-            border-radius: 15px;
             margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
         }
         
+        .campaign-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .campaign-subtitle {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-draft { background: #e9ecef; color: #6c757d; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-validated { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        
+        /* Cards principales */
+        .info-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+            border: none;
+        }
+        
+        .info-card h5 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .info-card h5 i {
+            color: var(--secondary-color);
+        }
+        
+        /* Statistiques */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -118,161 +116,381 @@
         
         .stat-card {
             background: white;
+            border-radius: var(--border-radius);
             padding: 1.5rem;
-            border-radius: 10px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow);
+            border-left: 4px solid var(--secondary-color);
+            transition: transform 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
         }
         
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
-            color: var(--primary-color);
+            color: var(--secondary-color);
+            display: block;
         }
         
         .stat-label {
             color: #6c757d;
             font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             margin-top: 0.5rem;
         }
         
-        .convert-opportunity-btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
+        /* Table des entreprises */
+        .company-table {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+        
+        .company-table .table {
+            margin-bottom: 0;
+        }
+        
+        .company-table th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
             font-weight: 600;
+            color: var(--primary-color);
         }
         
-        .convert-opportunity-btn:hover {
-            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+        .company-item {
+            transition: background-color 0.2s ease;
+        }
+        
+        .company-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .company-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
         }
         
-        .convert-opportunity-btn:disabled {
-            background: #6c757d;
+        /* Boutons de statut */
+        .btn-status {
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+        }
+        
+        .btn-status.active {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .btn-status:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
         }
+        
+        /* Notes */
+        .notes-display {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            min-height: 60px;
+            max-height: 120px;
+            overflow-y: auto;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .notes-display:hover {
+            background-color: #e9ecef;
+            border-color: var(--secondary-color);
+        }
+        
+        .notes-display:empty::before {
+            content: "Cliquez pour ajouter des notes...";
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        /* Fichiers */
+        .file-upload-container {
+            margin-top: 0.5rem;
+        }
+        
+        .file-preview {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .file-preview a {
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+        
+        .file-preview a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Boutons d'action */
+        .action-buttons {
+            position: sticky;
+            bottom: 2rem;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            margin-top: 2rem;
+        }
+        
+        .btn-modern {
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content-area {
+                padding: 1rem;
+            }
+            
+            .campaign-header {
+                padding: 1.5rem;
+            }
+            
+            .campaign-title {
+                font-size: 1.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-responsive {
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: var(--secondary-color);
+        }
+        
+        /* Alertes */
+        .alert-modern {
+            border-radius: var(--border-radius);
+            border: none;
+            box-shadow: var(--card-shadow);
+        }
+        
+        /* Modal */
+        .modal-xl {
+            max-width: 90%;
+        }
+        
+                 .file-input-wrapper {
+             position: relative;
+             display: inline-block;
+         }
+         
+         .file-input-wrapper input[type=file] {
+             position: absolute;
+             left: -9999px;
+             opacity: 0;
+             width: 0;
+             height: 0;
+         }
     </style>
-
-    <script src="js/global-auth.js"></script>
-    <!-- Scripts pour la top bar EBVISION 2.0 -->
-    <script src="js/user-header-utils.js"></script>
-    <script src="js/user-header-main.js"></script>
-    <script src="js/user-header-init.js"></script>
-    <script src="js/session-manager.js"></script>
 </head>
 <body>
+    <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
         <i class="fas fa-bars"></i>
     </button>
+    
     <div class="page-wrapper">
-        <div class="sidebar-container"></div>
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
         <div class="main-content-area">
-            <div class="container-fluid">
-                <!-- En-tête de la campagne -->
-                <div class="campaign-header">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h2 class="mb-2">
-                                <i class="fas fa-play-circle me-2"></i>
-                                Exécution de Campagne
-                            </h2>
-                            <h4 id="campaignName" class="mb-3">Chargement...</h4>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <small class="text-light">Type de campagne:</small>
-                                    <div id="campaignType" class="fw-bold">-</div>
-                                </div>
-                                <div class="col-md-4">
-                                    <small class="text-light">Responsable:</small>
-                                    <div id="campaignResponsible" class="fw-bold">-</div>
-                                </div>
-                                <div class="col-md-4">
-                                    <small class="text-light">Date de création:</small>
-                                    <div id="campaignDate" class="fw-bold">-</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <div class="execution-status" id="campaignStatus">
-                                Chargement...
-                            </div>
+            <!-- Header de la campagne -->
+            <div class="campaign-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="campaign-title" id="campaignName">
+                            <i class="fas fa-play-circle me-2"></i>Chargement...
+                        </h1>
+                        <p class="campaign-subtitle" id="campaignDescription">
+                            <i class="fas fa-clock me-2"></i>Exécution de la campagne
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <span class="status-badge" id="campaignStatus">...</span>
+                        <div class="mt-3">
+                            <a href="prospecting-campaigns.html" class="btn btn-outline-light btn-modern">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
+                            </a>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Statistiques d'exécution -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalCompanies">0</div>
-                        <div class="stat-label">Total Entreprises</div>
+            <!-- Alertes -->
+            <div id="alertsContainer"></div>
+
+            <!-- Statistiques principales -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalCompanies">0</span>
+                    <span class="stat-label">Total Entreprises</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="pendingExecution">0</span>
+                    <span class="stat-label">En Attente</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="deposedCount">0</span>
+                    <span class="stat-label">Déposés</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="sentCount">0</span>
+                    <span class="stat-label">Envoyés</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="convertedCount">0</span>
+                    <span class="stat-label">Converties</span>
+                </div>
+            </div>
+
+            <!-- Table des entreprises -->
+            <div class="company-table">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-building me-2"></i>
+                        Entreprises à Exécuter
+                    </h5>
+                    <small class="text-muted">Marquez les courriers comme déposés ou envoyés selon le type de campagne</small>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Entreprise</th>
+                                <th>Industrie</th>
+                                <th>Ville</th>
+                                <th>Statut d'Exécution</th>
+                                <th>Actions</th>
+                                <th>Notes</th>
+                                <th>Preuve</th>
+                                <th>Conversion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="companiesTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="loading">
+                                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                                        <p class="mt-2">Chargement des entreprises...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="action-buttons">
+                <div class="row">
+                    <div class="col-md-6">
+                        <button class="btn btn-secondary btn-modern me-2" onclick="goBack()">
+                            <i class="fas fa-arrow-left me-2"></i>Retour
+                        </button>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="pendingExecution">0</div>
-                        <div class="stat-label">En Attente</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="deposedCount">0</div>
-                        <div class="stat-label">Déposés</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="sentCount">0</div>
-                        <div class="stat-label">Envoyés</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="convertedCount">0</div>
-                        <div class="stat-label">Converties</div>
+                    <div class="col-md-6 text-end">
+                        <button class="btn btn-success btn-modern" onclick="saveAllExecutions()">
+                            <i class="fas fa-save me-2"></i>Sauvegarder les Exécutions
+                        </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Liste des entreprises à exécuter -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-building me-2"></i>
-                            Entreprises à Exécuter
-                        </h5>
-                        <small class="text-muted">Marquez les courriers comme déposés ou envoyés selon le type de campagne</small>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Entreprise</th>
-                                        <th>Industrie</th>
-                                        <th>Ville</th>
-                                        <th>Statut d'Exécution</th>
-                                        <th>Actions</th>
-                                        <th>Notes</th>
-                                        <th>Conversion</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="companiesTableBody">
-                                    <tr>
-                                        <td colspan="7" class="text-center py-4">
-                                            <div class="spinner-border text-primary" role="status">
-                                                <span class="visually-hidden">Chargement...</span>
-                                            </div>
-                                            <p class="mt-2">Chargement des entreprises...</p>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+    <!-- Modal pour les notes et preuves -->
+    <div class="modal fade" id="executionDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>
+                        Détails d'Exécution - <span id="modalCompanyName"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-sticky-note me-2"></i>Notes d'exécution</h6>
+                            <textarea class="form-control" id="modalExecutionNotes" rows="6" 
+                                      placeholder="Décrivez les détails de l'exécution..."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-paperclip me-2"></i>Preuve d'exécution</h6>
+                                                         <div class="mb-3">
+                                 <label class="form-label">Fichier de preuve (décharge, capture d'écran, etc.)</label>
+                                 <div class="file-input-wrapper">
+                                     <input type="file" id="modalExecutionFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" 
+                                            onchange="handleFileUpload(this)">
+                                     <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('modalExecutionFile').click()">
+                                         <i class="fas fa-upload me-2"></i>Choisir un fichier
+                                     </button>
+                                 </div>
+                                 <small class="text-muted">Formats acceptés: PDF, JPG, PNG, DOC, DOCX (max 5MB)</small>
+                             </div>
+                            <div id="modalFilePreview"></div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Boutons d'action -->
-                <div class="d-flex justify-content-between mt-4">
-                    <button class="btn btn-secondary" onclick="goBack()">
-                        <i class="fas fa-arrow-left me-2"></i>Retour
-                    </button>
-                    <button class="btn btn-success" onclick="saveAllExecutions()">
-                        <i class="fas fa-save me-2"></i>Sauvegarder les Exécutions
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-success" onclick="saveExecutionDetails()">
+                        <i class="fas fa-save me-2"></i>Sauvegarder
                     </button>
                 </div>
             </div>
@@ -346,49 +564,109 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/auth.js"></script>
-    <script src="/js/sidebar.js"></script>
-    <script src="js/user-header-utils.js"></script>
-    <script src="js/user-header-main.js"></script>
-    <script src="js/user-header-init.js"></script>
-    <script src="js/session-manager.js"></script>
+         <!-- Bootstrap JavaScript -->
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+     
+     <script src="js/auth.js"></script>
+     <script src="js/session-manager.js"></script>
+     <script src="js/sidebar.js" defer></script>
     
     <script>
-        const API = '/api/prospecting';
-        let campaignId = null;
+        // Variables globales
+        let currentCampaignId = null;
         let campaignData = null;
         let companiesData = [];
         let currentConvertingCompany = null;
-        
-        // Fonction getAuthHeader si elle n'est pas définie dans auth.js
+        let currentEditingCompany = null;
+        let currentFile = null;
+        const API = '/api/prospecting';
+
+        // Fonctions utilitaires de base
         function getAuthHeader() {
-            const token = localStorage.getItem('authToken');
             return {
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                 'Content-Type': 'application/json'
             };
         }
 
-        // Initialisation de la page
-        document.addEventListener('DOMContentLoaded', () => {
-            // Récupérer l'ID de la campagne depuis l'URL
-            const urlParams = new URLSearchParams(window.location.search);
-            campaignId = urlParams.get('id');
+        function showAlert(message, type = 'info') {
+            const alertsContainer = document.getElementById('alertsContainer');
+            const alertId = 'alert-' + Date.now();
             
-            if (!campaignId) {
-                showError('ID de campagne manquant dans l\'URL');
-                return;
+            alertsContainer.innerHTML = `
+                <div id="${alertId}" class="alert alert-${type} alert-modern alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                const alert = document.getElementById(alertId);
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        async function saveAllExecutions() {
+            showAlert('Toutes les exécutions ont été sauvegardées !', 'success');
+        }
+
+        // Fonctions utilitaires
+        function getInitials(name) {
+            return name.split(' ').map(word => word.charAt(0)).join('').toUpperCase().substring(0, 2);
+        }
+
+        function updateStatusBadge(status) {
+            const badge = document.getElementById('campaignStatus');
+            let className = 'status-draft';
+            let text = 'Brouillon';
+            
+            switch(status) {
+                case 'DRAFT':
+                    className = 'status-draft';
+                    text = 'Brouillon';
+                    break;
+                case 'PENDING_VALIDATION':
+                case 'EN_VALIDATION':
+                    className = 'status-pending';
+                    text = 'En validation';
+                    break;
+                case 'VALIDATED':
+                case 'VALIDE':
+                    className = 'status-validated';
+                    text = 'Validée';
+                    break;
+                case 'REJECTED':
+                case 'REJETE':
+                    className = 'status-rejected';
+                    text = 'Rejetée';
+                    break;
             }
             
-            loadCampaignData();
-        });
+            badge.className = `status-badge ${className}`;
+            badge.textContent = text;
+        }
 
+        // Fonctions de chargement des données
         async function loadCampaignData() {
             try {
-                console.log('🔍 Chargement des données de la campagne:', campaignId);
+                const urlParams = new URLSearchParams(window.location.search);
+                currentCampaignId = urlParams.get('id');
                 
-                const response = await fetch(`${API}/campaigns/${campaignId}`, {
+                if (!currentCampaignId) {
+                    showAlert('ID de campagne manquant', 'danger');
+                    return;
+                }
+
+                console.log('🔍 Chargement de la campagne:', currentCampaignId);
+                
+                const response = await fetch(`${API}/campaigns/${currentCampaignId}`, {
                     headers: getAuthHeader()
                 });
                 
@@ -396,64 +674,66 @@
                 
                 if (result.success) {
                     campaignData = result.data;
-                    displayCampaignInfo();
-                    loadCompanies();
+                    console.log('📋 Campagne chargée:', campaignData);
+                    
+                    // Mettre à jour les informations de base
+                    document.getElementById('campaignName').textContent = campaignData.name;
+                    document.getElementById('campaignDescription').innerHTML = `
+                        <i class="fas fa-clock me-2"></i>Exécution de la campagne créée le ${new Date(campaignData.created_at).toLocaleDateString('fr-FR')}
+                    `;
+                    
+                    // Statut
+                    updateStatusBadge(campaignData.validation_statut || campaignData.status);
+                    
+                    // Charger les entreprises
+                    await loadCompanies();
+                    
                 } else {
-                    showError('Erreur lors du chargement de la campagne: ' + result.error);
+                    showAlert('Erreur lors du chargement de la campagne: ' + result.error, 'danger');
                 }
-            } catch (e) {
-                console.error('Erreur chargement campagne:', e);
-                showError('Erreur lors du chargement de la campagne');
+            } catch (error) {
+                console.error('Erreur chargement campagne:', error);
+                showAlert('Erreur lors du chargement de la campagne', 'danger');
             }
-        }
-
-        function displayCampaignInfo() {
-            document.getElementById('campaignName').textContent = campaignData.name;
-            document.getElementById('campaignType').textContent = getCampaignTypeText(campaignData.template_type);
-            document.getElementById('campaignResponsible').textContent = campaignData.responsible_name || 'Non assigné';
-            document.getElementById('campaignDate').textContent = new Date(campaignData.created_at).toLocaleDateString('fr-FR');
-            
-            // Statut de la campagne
-            const statusElement = document.getElementById('campaignStatus');
-            statusElement.textContent = getStatusText(campaignData.validation_statut);
-            statusElement.className = `execution-status ${getStatusClass(campaignData.validation_statut)}`;
         }
 
         async function loadCompanies() {
             try {
                 console.log('🔍 Chargement des entreprises de la campagne');
                 
-                const response = await fetch(`${API}/campaigns/${campaignId}/companies`, {
+                const response = await fetch(`${API}/campaigns/${currentCampaignId}/companies?limit=1000`, {
                     headers: getAuthHeader()
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    companiesData = result.companies || [];
+                    companiesData = result.data || [];
                     console.log('📊 Entreprises chargées:', companiesData.length);
                     
                     // Filtrer seulement les entreprises approuvées
                     companiesData = companiesData.filter(company => company.validation_status === 'APPROVED');
+                    console.log('📊 Entreprises après filtrage (APPROVED):', companiesData.length);
                     
-                    displayCompanies();
+                    renderCompanies();
                     updateStats();
                 } else {
-                    showError('Erreur lors du chargement des entreprises: ' + result.error);
+                    showAlert('Erreur lors du chargement des entreprises: ' + result.error, 'danger');
                 }
-            } catch (e) {
-                console.error('Erreur chargement entreprises:', e);
-                showError('Erreur lors du chargement des entreprises');
+            } catch (error) {
+                console.error('Erreur chargement entreprises:', error);
+                showAlert('Erreur lors du chargement des entreprises', 'danger');
             }
         }
 
-        function displayCompanies() {
-            const tbody = document.getElementById('companiesTableBody');
+        // Fonctions d'affichage et de gestion des entreprises
+        function renderCompanies() {
+            const container = document.getElementById('companiesTableBody');
             
             if (companiesData.length === 0) {
-                tbody.innerHTML = `
+                container.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center py-4">
+                        <td colspan="8" class="text-center py-4">
                             <i class="fas fa-inbox fa-2x text-muted"></i>
                             <p class="text-muted mt-2">Aucune entreprise approuvée à exécuter</p>
                         </td>
@@ -495,30 +775,41 @@
                         </td>
                         <td>
                             <div class="d-flex gap-1 flex-wrap">
-                                <button class="btn btn-outline-primary btn-sm" 
-                                        onclick="markAsDeposed('${company.id}')"
+                                <button class="btn btn-outline-primary btn-sm btn-status ${executionStatus === 'deposed' ? 'active' : ''}" 
+                                        onclick="setExecutionStatus('${company.id}', 'deposed')"
                                         ${executionStatus === 'deposed' ? 'disabled' : ''}>
                                     <i class="fas fa-hand-holding"></i> Déposé
                                 </button>
-                                <button class="btn btn-outline-success btn-sm" 
-                                        onclick="markAsSent('${company.id}')"
+                                <button class="btn btn-outline-success btn-sm btn-status ${executionStatus === 'sent' ? 'active' : ''}" 
+                                        onclick="setExecutionStatus('${company.id}', 'sent')"
                                         ${executionStatus === 'sent' ? 'disabled' : ''}>
                                     <i class="fas fa-paper-plane"></i> Envoyé
                                 </button>
-                                <button class="btn btn-outline-danger btn-sm" 
-                                        onclick="markAsFailed('${company.id}')"
+                                <button class="btn btn-outline-danger btn-sm btn-status ${executionStatus === 'failed' ? 'active' : ''}" 
+                                        onclick="setExecutionStatus('${company.id}', 'failed')"
                                         ${executionStatus === 'failed' ? 'disabled' : ''}>
                                     <i class="fas fa-times"></i> Échec
                                 </button>
                             </div>
                         </td>
                         <td>
-                            <textarea class="form-control form-control-sm" 
-                                      rows="2" placeholder="Notes d'exécution..."
-                                      onchange="updateExecutionNotes('${company.id}', this.value)">${company.execution_notes || ''}</textarea>
+                            <div class="notes-display" onclick="openExecutionDetails('${company.id}')">
+                                ${company.execution_notes || ''}
+                            </div>
                         </td>
                         <td>
-                            <button class="convert-opportunity-btn" 
+                            ${company.execution_file ? `
+                                <div class="file-preview">
+                                    <a href="/uploads/executions/${company.execution_file}" target="_blank">
+                                        <i class="fas fa-file me-1"></i>Voir la preuve
+                                    </a>
+                                </div>
+                            ` : `
+                                <small class="text-muted">Aucune preuve</small>
+                            `}
+                        </td>
+                        <td>
+                            <button class="btn btn-outline-info btn-sm" 
                                     onclick="convertToOpportunity('${company.id}')"
                                     ${!canConvert || company.converted_to_opportunity ? 'disabled' : ''}>
                                 <i class="fas fa-exchange-alt me-1"></i>
@@ -529,7 +820,7 @@
                 `;
             });
             
-            tbody.innerHTML = html;
+            container.innerHTML = html;
         }
 
         function updateStats() {
@@ -546,65 +837,155 @@
             document.getElementById('convertedCount').textContent = converted;
         }
 
-        async function markAsDeposed(companyId) {
-            await updateExecutionStatus(companyId, 'deposed');
+        function getExecutionStatusText(status) {
+            const statuses = {
+                'pending_execution': 'En Attente',
+                'deposed': 'Déposé',
+                'sent': 'Envoyé',
+                'failed': 'Échec'
+            };
+            return statuses[status] || 'En Attente';
         }
 
-        async function markAsSent(companyId) {
-            await updateExecutionStatus(companyId, 'sent');
+        function getExecutionStatusClass(status) {
+            const classes = {
+                'pending_execution': 'pending',
+                'deposed': 'deposed',
+                'sent': 'sent',
+                'failed': 'failed'
+            };
+            return classes[status] || 'pending';
         }
 
-        async function markAsFailed(companyId) {
-            await updateExecutionStatus(companyId, 'failed');
-        }
-
-        async function updateExecutionStatus(companyId, status) {
+        // Fonctions de gestion des détails d'exécution
+        async function setExecutionStatus(companyId, status) {
             try {
                 console.log(`🔄 Mise à jour statut exécution: ${companyId} -> ${status}`);
                 
-                const notes = document.querySelector(`tr[data-company-id="${companyId}"] textarea`).value;
+                // Ouvrir le modal pour les détails
+                openExecutionDetails(companyId, status);
                 
-                const response = await fetch(`${API}/campaigns/${campaignId}/companies/${companyId}/execution`, {
+            } catch (e) {
+                console.error('Erreur mise à jour statut:', e);
+                showAlert('Erreur lors de la mise à jour du statut', 'danger');
+            }
+        }
+
+        function openExecutionDetails(companyId, newStatus = null) {
+            const company = companiesData.find(c => c.id === companyId);
+            if (!company) return;
+            
+            currentEditingCompany = company;
+            
+            // Si un nouveau statut est fourni, le définir
+            if (newStatus) {
+                company.execution_status = newStatus;
+            }
+            
+            // Remplir le modal
+            document.getElementById('modalCompanyName').textContent = company.name;
+            document.getElementById('modalExecutionNotes').value = company.execution_notes || '';
+            
+            // Réinitialiser le fichier
+            currentFile = null;
+            document.getElementById('modalExecutionFile').value = '';
+            document.getElementById('modalFilePreview').innerHTML = '';
+            
+            // Afficher le modal
+            const modal = new bootstrap.Modal(document.getElementById('executionDetailsModal'));
+            modal.show();
+        }
+
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // Vérifier la taille (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('Le fichier est trop volumineux. Taille maximum: 5MB', 'danger');
+                input.value = '';
+                return;
+            }
+            
+            // Vérifier le type
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            if (!allowedTypes.includes(file.type)) {
+                showAlert('Type de fichier non autorisé. Formats acceptés: PDF, JPG, PNG, DOC, DOCX', 'danger');
+                input.value = '';
+                return;
+            }
+            
+            currentFile = file;
+            
+            // Afficher la prévisualisation
+            const preview = document.getElementById('modalFilePreview');
+            preview.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-file me-2"></i>
+                    <strong>${file.name}</strong> (${(file.size / 1024 / 1024).toFixed(2)} MB)
+                </div>
+            `;
+        }
+
+        async function saveExecutionDetails() {
+            try {
+                const notes = document.getElementById('modalExecutionNotes').value;
+                const company = currentEditingCompany;
+                
+                if (!company) {
+                    showAlert('Aucune entreprise sélectionnée', 'danger');
+                    return;
+                }
+                
+                // Créer FormData pour l'upload de fichier
+                const formData = new FormData();
+                formData.append('executionStatus', company.execution_status || 'pending_execution');
+                formData.append('notes', notes);
+                
+                if (currentFile) {
+                    formData.append('executionFile', currentFile);
+                }
+                
+                console.log('💾 Sauvegarde des détails d\'exécution:', company.id);
+                
+                const response = await fetch(`${API}/campaigns/${currentCampaignId}/companies/${company.id}/execution`, {
                     method: 'PUT',
-                    headers: getAuthHeader(),
-                    body: JSON.stringify({
-                        executionStatus: status,
-                        notes: notes
-                    })
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        // Pas de Content-Type pour FormData
+                    },
+                    body: formData
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
                     // Mettre à jour les données locales
-                    const company = companiesData.find(c => c.id === companyId);
-                    if (company) {
-                        company.execution_status = status;
-                        company.execution_date = new Date().toISOString();
-                        company.execution_notes = notes;
+                    company.execution_notes = notes;
+                    company.execution_date = new Date().toISOString();
+                    if (result.execution_file) {
+                        company.execution_file = result.execution_file;
                     }
                     
+                    // Fermer le modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('executionDetailsModal'));
+                    modal.hide();
+                    
                     // Recharger l'affichage
-                    displayCompanies();
+                    renderCompanies();
                     updateStats();
                     
-                    showSuccess(`Statut mis à jour: ${getExecutionStatusText(status)}`);
+                    showAlert('Détails d\'exécution sauvegardés avec succès !', 'success');
                 } else {
-                    showError('Erreur lors de la mise à jour: ' + result.error);
+                    showAlert('Erreur lors de la sauvegarde: ' + result.error, 'danger');
                 }
             } catch (e) {
-                console.error('Erreur mise à jour statut:', e);
-                showError('Erreur lors de la mise à jour du statut');
+                console.error('Erreur sauvegarde détails:', e);
+                showAlert('Erreur lors de la sauvegarde des détails', 'danger');
             }
         }
 
-        function updateExecutionNotes(companyId, notes) {
-            const company = companiesData.find(c => c.id === companyId);
-            if (company) {
-                company.execution_notes = notes;
-            }
-        }
-
+        // Fonctions de conversion en opportunité
         function convertToOpportunity(companyId) {
             const company = companiesData.find(c => c.id === companyId);
             if (!company) return;
@@ -637,13 +1018,13 @@
                 };
                 
                 if (!opportunityData.name) {
-                    showError('Le nom de l\'opportunité est obligatoire');
+                    showAlert('Le nom de l\'opportunité est obligatoire', 'danger');
                     return;
                 }
                 
                 console.log('🔄 Conversion en opportunité:', currentConvertingCompany.id);
                 
-                const response = await fetch(`${API}/campaigns/${campaignId}/companies/${currentConvertingCompany.id}/convert`, {
+                const response = await fetch(`${API}/campaigns/${currentCampaignId}/companies/${currentConvertingCompany.id}/convert`, {
                     method: 'POST',
                     headers: getAuthHeader(),
                     body: JSON.stringify(opportunityData)
@@ -664,117 +1045,24 @@
                     modal.hide();
                     
                     // Recharger l'affichage
-                    displayCompanies();
+                    renderCompanies();
                     updateStats();
                     
-                    showSuccess('Entreprise convertie en opportunité avec succès !');
+                    showAlert('Entreprise convertie en opportunité avec succès !', 'success');
                 } else {
-                    showError('Erreur lors de la conversion: ' + result.error);
+                    showAlert('Erreur lors de la conversion: ' + result.error, 'danger');
                 }
             } catch (e) {
                 console.error('Erreur conversion:', e);
-                showError('Erreur lors de la conversion en opportunité');
+                showAlert('Erreur lors de la conversion en opportunité', 'danger');
             }
         }
 
-        async function saveAllExecutions() {
-            showSuccess('Toutes les exécutions ont été sauvegardées !');
-        }
-
-        function goBack() {
-            window.history.back();
-        }
-
-        // Fonctions utilitaires
-        function getInitials(name) {
-            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-        }
-
-        function getCampaignTypeText(type) {
-            const types = {
-                'PHYSIQUE': 'Courrier Physique',
-                'EMAIL': 'Email'
-            };
-            return types[type] || type || 'Non défini';
-        }
-
-        function getStatusText(status) {
-            const statuses = {
-                'BROUILLON': 'Brouillon',
-                'EN_VALIDATION': 'En Validation',
-                'VALIDE': 'Validée',
-                'REJETE': 'Rejetée'
-            };
-            return statuses[status] || status;
-        }
-
-        function getStatusClass(status) {
-            const classes = {
-                'BROUILLON': 'pending',
-                'EN_VALIDATION': 'warning',
-                'VALIDE': 'success',
-                'REJETE': 'danger'
-            };
-            return classes[status] || 'pending';
-        }
-
-        function getExecutionStatusText(status) {
-            const statuses = {
-                'pending_execution': 'En Attente',
-                'deposed': 'Déposé',
-                'sent': 'Envoyé',
-                'failed': 'Échec'
-            };
-            return statuses[status] || 'En Attente';
-        }
-
-        function getExecutionStatusClass(status) {
-            const classes = {
-                'pending_execution': 'pending',
-                'deposed': 'deposed',
-                'sent': 'sent',
-                'failed': 'failed'
-            };
-            return classes[status] || 'pending';
-        }
-
-        function showSuccess(message) {
-            // Créer une alerte de succès temporaire
-            const alert = document.createElement('div');
-            alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
-            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-            alert.innerHTML = `
-                <i class="fas fa-check-circle me-2"></i>${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            document.body.appendChild(alert);
-            
-            // Supprimer automatiquement après 3 secondes
-            setTimeout(() => {
-                if (alert.parentNode) {
-                    alert.parentNode.removeChild(alert);
-                }
-            }, 3000);
-        }
-
-        function showError(message) {
-            // Créer une alerte d'erreur temporaire
-            const alert = document.createElement('div');
-            alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
-            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-            alert.innerHTML = `
-                <i class="fas fa-exclamation-triangle me-2"></i>${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            document.body.appendChild(alert);
-            
-            // Supprimer automatiquement après 5 secondes
-            setTimeout(() => {
-                if (alert.parentNode) {
-                    alert.parentNode.removeChild(alert);
-                }
-            }, 5000);
-        }
+                 // Initialisation
+         document.addEventListener('DOMContentLoaded', () => {
+             console.log('🚀 Page d\'exécution de campagne initialisée');
+             loadCampaignData();
+         });
     </script>
 </body>
 </html>

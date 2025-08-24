@@ -204,3 +204,4 @@ La fonctionnalité est **réussie** si :
 **🔗 URL de Test :** `http://localhost:3000/prospecting-campaigns.html`
 
 **📋 Prochaine Étape :** Test complet du cycle de vie des campagnes (création, modification, affectation d'entreprises, validation, exécution)
+

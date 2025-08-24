@@ -110,9 +110,13 @@ class User {
             params.push(role);
         }
 
+        // Gestion du filtrage par statut
         if (statut) {
             conditions.push(`u.statut = $${params.length + 1}`);
             params.push(statut);
+        } else {
+            // Par défaut, ne pas exclure les utilisateurs INACTIF si aucun filtre de statut n'est spécifié
+            // Cela permet de voir tous les utilisateurs quand on ne filtre pas par statut
         }
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -121,8 +125,7 @@ class User {
         const countSql = `
             SELECT COUNT(*) as total
             FROM users u
-            WHERE u.statut != 'INACTIF'
-            ${whereClause ? 'AND ' + whereClause.replace('WHERE ', '') : ''}
+            ${whereClause}
         `;
 
         const countResult = await query(countSql, params);
@@ -135,8 +138,7 @@ class User {
                    c.id as collaborateur_id
             FROM users u
             LEFT JOIN collaborateurs c ON u.id = c.user_id
-            WHERE u.statut != 'INACTIF'
-            ${whereClause ? 'AND ' + whereClause.replace('WHERE ', '') : ''}
+            ${whereClause}
             ORDER BY u.nom, u.prenom
             LIMIT $${params.length + 1} OFFSET $${params.length + 2}
         `;

@@ -83,3 +83,4 @@ GROUP BY pc.id, pc.name, pc.validation_statut, pt.type_courrier, bu.nom, d.nom, 
 
 -- 7. Ajouter des commentaires sur la vue
 COMMENT ON VIEW prospecting_campaign_summary IS 'Vue pour les rapports de campagnes de prospection avec métriques d''exécution et conversion';
+

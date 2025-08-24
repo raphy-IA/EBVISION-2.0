@@ -307,9 +307,78 @@ class Manager {
             throw error;
         }
     }
+
+    /**
+     * Obtenir TOUS les validateurs (principal + adjoint) pour une campagne
+     */
+    static async getAllValidatorsForCampaign(businessUnitId, divisionId, level) {
+        try {
+            const validators = [];
+            
+            if (level === 'DIVISION' && divisionId) {
+                // Récupérer les responsables de la division
+                const divisionManagers = await this.getDivisionManagers(divisionId);
+                
+                if (divisionManagers && divisionManagers.principal_id) {
+                    validators.push({
+                        id: divisionManagers.principal_id,
+                        nom: divisionManagers.principal_nom,
+                        prenom: divisionManagers.principal_prenom,
+                        email: divisionManagers.principal_email,
+                        type: 'DIVISION_PRINCIPAL',
+                        role: 'Responsable Principal'
+                    });
+                }
+                
+                if (divisionManagers && divisionManagers.adjoint_id) {
+                    validators.push({
+                        id: divisionManagers.adjoint_id,
+                        nom: divisionManagers.adjoint_nom,
+                        prenom: divisionManagers.adjoint_prenom,
+                        email: divisionManagers.adjoint_email,
+                        type: 'DIVISION_ADJOINT',
+                        role: 'Responsable Adjoint'
+                    });
+                }
+            }
+            
+            if (level === 'BUSINESS_UNIT' && businessUnitId) {
+                // Récupérer les responsables de la BU
+                const buManagers = await this.getBusinessUnitManagers(businessUnitId);
+                
+                if (buManagers && buManagers.principal_id) {
+                    validators.push({
+                        id: buManagers.principal_id,
+                        nom: buManagers.principal_nom,
+                        prenom: buManagers.principal_prenom,
+                        email: buManagers.principal_email,
+                        type: 'BU_PRINCIPAL',
+                        role: 'Responsable Principal'
+                    });
+                }
+                
+                if (buManagers && buManagers.adjoint_id) {
+                    validators.push({
+                        id: buManagers.adjoint_id,
+                        nom: buManagers.adjoint_nom,
+                        prenom: buManagers.adjoint_prenom,
+                        email: buManagers.adjoint_email,
+                        type: 'BU_ADJOINT',
+                        role: 'Responsable Adjoint'
+                    });
+                }
+            }
+            
+            return validators;
+        } catch (error) {
+            console.error('Erreur lors de la recherche des validateurs:', error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Manager;
+
 
 
 

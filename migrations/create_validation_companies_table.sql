@@ -36,3 +36,4 @@ CREATE TRIGGER trigger_update_validation_companies_updated_at
 COMMENT ON TABLE prospecting_campaign_validation_companies IS 'Table pour stocker les validations individuelles par entreprise dans une campagne de prospection';
 COMMENT ON COLUMN prospecting_campaign_validation_companies.validation IS 'OK = Approuvée, NOT_OK = Rejetée';
 COMMENT ON COLUMN prospecting_campaign_validation_companies.note IS 'Note optionnelle du validateur pour cette entreprise spécifique';
+

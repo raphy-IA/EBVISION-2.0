@@ -11,11 +11,17 @@ router.get('/', authenticateToken, requirePermission('users:read'), async (req, 
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const search = req.query.search || '';
+        const role = req.query.role || '';
+        const statut = req.query.status || req.query.statut || ''; // Support both 'status' and 'statut'
+
+        console.log('🔍 [API] GET /users - Paramètres:', { page, limit, search, role, statut });
 
         const result = await User.findAll({
             page,
             limit,
-            search
+            search,
+            role,
+            statut
         });
 
         // Ajouter l'information de liaison avec les collaborateurs
@@ -27,6 +33,8 @@ router.get('/', authenticateToken, requirePermission('users:read'), async (req, 
                 collaborateur_id: user.collaborateur_id || null
             };
         });
+
+        console.log(`📊 [API] ${usersWithCollaborateurInfo.length} utilisateurs retournés sur ${result.pagination.total} total`);
 
         res.json({
             success: true,

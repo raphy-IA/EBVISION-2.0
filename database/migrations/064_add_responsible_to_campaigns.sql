@@ -10,3 +10,4 @@ CREATE INDEX IF NOT EXISTS idx_prospecting_campaigns_responsible ON prospecting_
 
 -- Commentaire
 COMMENT ON COLUMN prospecting_campaigns.responsible_id IS 'Responsable de la campagne de prospection';
+

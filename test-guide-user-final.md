@@ -83,3 +83,4 @@ Le système fonctionne correctement si :
 **🔗 URL :** `http://localhost:3000/prospecting-templates.html`
 
 **📋 Prochaine étape :** Test du processus complet de création de campagnes
+

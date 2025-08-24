@@ -25,6 +25,80 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Configuration multer pour les fichiers d'exécution
+const executionUpload = multer({
+    storage: multer.diskStorage({
+        destination: (req, file, cb) => {
+            const uploadDir = path.join(__dirname, '../../public/uploads/executions');
+            fs.mkdirSync(uploadDir, { recursive: true });
+            cb(null, uploadDir);
+        },
+        filename: (req, file, cb) => {
+            const timestamp = Date.now();
+            const extension = path.extname(file.originalname);
+            const fileName = `execution_${req.params.campaignId}_${req.params.companyId}_${timestamp}${extension}`;
+            cb(null, fileName);
+        }
+    }),
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB max
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Type de fichier non autorisé. Formats acceptés: PDF, JPG, PNG, DOC, DOCX'), false);
+        }
+    }
+});
+
+// Fonction utilitaire pour vérifier les autorisations sur une campagne
+async function checkCampaignAuthorization(campaignId, userId) {
+    const campaign = await ProspectingCampaign.findByIdWithDetails(campaignId);
+    if (!campaign) {
+        return { authorized: false, error: 'Campagne non trouvée' };
+    }
+    
+    // Vérifier si l'utilisateur est le créateur de la campagne
+    const isCreator = campaign.created_by === userId;
+    
+    // Vérifier si l'utilisateur est responsable de la BU/Division
+    let isManager = false;
+    if (campaign.business_unit_id) {
+        const Manager = require('../models/Manager');
+        const buManagers = await Manager.getBusinessUnitManagers(campaign.business_unit_id);
+        if (buManagers) {
+            // Obtenir l'ID du collaborateur de l'utilisateur actuel
+            const user = await pool.query('SELECT collaborateur_id FROM users WHERE id = $1', [userId]);
+            if (user.rows.length > 0 && user.rows[0].collaborateur_id) {
+                const collabId = user.rows[0].collaborateur_id;
+                isManager = (buManagers.principal_id === collabId || buManagers.adjoint_id === collabId);
+            }
+        }
+    }
+    
+    if (campaign.division_id) {
+        const Manager = require('../models/Manager');
+        const divManagers = await Manager.getDivisionManagers(campaign.division_id);
+        if (divManagers) {
+            // Obtenir l'ID du collaborateur de l'utilisateur actuel
+            const user = await pool.query('SELECT collaborateur_id FROM users WHERE id = $1', [userId]);
+            if (user.rows.length > 0 && user.rows[0].collaborateur_id) {
+                const collabId = user.rows[0].collaborateur_id;
+                isManager = isManager || (divManagers.principal_id === collabId || divManagers.adjoint_id === collabId);
+            }
+        }
+    }
+    
+    return { 
+        authorized: isCreator || isManager, 
+        isCreator, 
+        isManager,
+        campaign 
+    };
+}
+
 // Sources
 router.get('/sources', authenticateToken, async (req, res) => {
     const list = await CompanySource.findAll();
@@ -857,17 +931,18 @@ router.post('/campaigns/:id/submit', authenticateToken, async (req, res) => {
             });
         }
         
-        // Vérifier que l'utilisateur est le créateur de la campagne
-        // Note: created_by contient l'ID de l'utilisateur (user.id), pas du collaborateur
-        if (campaign.created_by !== userId) {
+        // Vérifier les autorisations
+        const auth = await checkCampaignAuthorization(campaignId, userId);
+        if (!auth.authorized) {
             console.log('🔍 [DEBUG] Vérification autorisation:', {
-                campaign_created_by: campaign.created_by,
+                campaign_created_by: auth.campaign?.created_by,
                 current_user_id: userId,
-                match: campaign.created_by === userId
+                is_creator: auth.isCreator,
+                is_manager: auth.isManager
             });
             return res.status(403).json({
                 success: false,
-                error: 'Vous n\'êtes pas autorisé à soumettre cette campagne'
+                error: auth.error || 'Vous n\'êtes pas autorisé à soumettre cette campagne'
             });
         }
         
@@ -899,11 +974,20 @@ router.post('/campaigns/:id/submit', authenticateToken, async (req, res) => {
  * PUT /api/prospecting/campaigns/:campaignId/companies/:companyId/execution
  * Mettre à jour le statut d'exécution d'une entreprise dans une campagne
  */
-router.put('/campaigns/:campaignId/companies/:companyId/execution', authenticateToken, async (req, res) => {
+router.put('/campaigns/:campaignId/companies/:companyId/execution', authenticateToken, executionUpload.single('executionFile'), async (req, res) => {
     try {
         const { campaignId, companyId } = req.params;
-        const { executionStatus, notes } = req.body;
+        const executionStatus = req.body.executionStatus;
+        const notes = req.body.notes;
         const userId = req.user.id;
+        
+        console.log('🔍 [DEBUG] Données reçues:', {
+            executionStatus,
+            notes,
+            userId,
+            body: req.body,
+            file: req.file
+        });
         
         if (!executionStatus || !['pending_execution', 'deposed', 'sent', 'failed'].includes(executionStatus)) {
             return res.status(400).json({
@@ -912,12 +996,35 @@ router.put('/campaigns/:campaignId/companies/:companyId/execution', authenticate
             });
         }
         
-        const result = await ProspectingCampaign.updateCompanyExecutionStatus(campaignId, companyId, executionStatus, notes);
+        // Vérifier les autorisations
+        const auth = await checkCampaignAuthorization(campaignId, userId);
+        if (!auth.authorized) {
+            console.log('🔍 [DEBUG] Vérification autorisation exécution:', {
+                campaign_created_by: auth.campaign?.created_by,
+                current_user_id: userId,
+                is_creator: auth.isCreator,
+                is_manager: auth.isManager
+            });
+            return res.status(403).json({
+                success: false,
+                error: auth.error || 'Vous n\'êtes pas autorisé à exécuter cette campagne'
+            });
+        }
+        
+        // Gérer l'upload de fichier si présent
+        let executionFile = null;
+        if (req.file) {
+            executionFile = req.file.filename;
+            console.log(`📁 Fichier sauvegardé: ${executionFile}`);
+        }
+        
+        const result = await ProspectingCampaign.updateCompanyExecutionStatus(campaignId, companyId, executionStatus, notes, executionFile);
         
         if (result.success) {
             res.json({
                 success: true,
-                message: 'Statut d\'exécution mis à jour avec succès'
+                message: 'Statut d\'exécution mis à jour avec succès',
+                execution_file: result.execution_file
             });
         } else {
             res.status(400).json({
@@ -963,6 +1070,30 @@ router.post('/campaigns/:campaignId/companies/:companyId/convert', authenticateT
         res.status(500).json({
             success: false,
             error: 'Erreur lors de la conversion en opportunité'
+        });
+    }
+});
+
+/**
+ * GET /api/prospecting/campaigns/:id/validators
+ * Récupérer les validateurs assignés à une campagne
+ */
+router.get('/campaigns/:id/validators', authenticateToken, async (req, res) => {
+    try {
+        const campaignId = req.params.id;
+        const userId = req.user.id;
+        
+        const validators = await ProspectingCampaign.getCampaignValidators(campaignId);
+        
+        res.json({
+            success: true,
+            data: validators
+        });
+    } catch (error) {
+        console.error('Erreur récupération validateurs:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération des validateurs'
         });
     }
 });

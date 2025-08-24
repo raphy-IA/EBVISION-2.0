@@ -80,3 +80,4 @@ COMMENT ON COLUMN prospecting_campaigns.validation_statut IS 'Statut de validati
 
 
 
+

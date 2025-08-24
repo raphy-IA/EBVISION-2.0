@@ -165,3 +165,4 @@ L'étape 6 est considérée comme **réussie** si :
 **🔗 URL de Test :** `http://localhost:3000/campaign-execution.html?id=3e16634e-e449-4df9-a65d-b4ac00cf8588`
 
 **📋 Prochaine Étape :** Étape 7 - Intégration avec le système d'opportunités existant
+

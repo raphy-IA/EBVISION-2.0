@@ -146,3 +146,4 @@ function initializeCampaignPageContent() {
     mainContent.innerHTML = generateCampaignFormContent() + generateCampaignsListContent();
 }
 
+

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validations de Campagnes - Prospection</title>
+    <title>Validations de Campagnes - Prospection - V7</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-sidebar.css">
     <link rel="stylesheet" href="css/user-header.css">
@@ -402,9 +402,13 @@
                 }
                 
                 const result = await response.json();
+                console.log('📡 loadValidations - Réponse API:', result);
                 
                 if (result.success) {
                     allValidations = result.data || [];
+                    console.log('📊 loadValidations - allValidations chargées:', allValidations);
+                    console.log('📊 loadValidations - nombre de validations:', allValidations.length);
+                    
                     filteredValidations = [...allValidations];
                     renderValidations();
                     updateStats();
@@ -481,12 +485,11 @@
                     statusBadge = '<span class="badge bg-danger">Rejetée</span>';
                 }
                 
-                // Pour l'instant, on affiche des statistiques de base
-                // TODO: Charger les entreprises si nécessaire
-                const companiesCount = 0; // À remplacer par le vrai nombre
-                const emailCount = 0;
-                const sectorsCount = 0;
-                const citiesCount = 0;
+                // Calculer les statistiques de la campagne
+                const companiesCount = validation.companies_count || 0;
+                const emailCount = validation.emails_count || 0;
+                const sectorsCount = validation.sectors_count || 0;
+                const citiesCount = validation.cities_count || 0;
                 
                 html += `
                     <div class="validation-card ${urgencyClass}" data-validation-id="${validation.id}">
@@ -590,10 +593,15 @@
         }
 
         function updateStats() {
+            console.log('📊 updateStats - allValidations:', allValidations);
+            console.log('📊 updateStats - nombre total de validations:', allValidations.length);
+            
             const pending = allValidations.filter(v => v.statut_validation === 'EN_ATTENTE').length;
             const urgent = allValidations.filter(v => v.statut_validation === 'EN_ATTENTE' && getDaysRemaining(v.expires_at) <= 1).length;
             const approved = allValidations.filter(v => v.statut_validation === 'APPROUVE').length;
             const rejected = allValidations.filter(v => v.statut_validation === 'REFUSE').length;
+            
+            console.log('📊 Statistiques calculées:', { pending, urgent, approved, rejected });
             
             document.getElementById('pendingCount').textContent = pending;
             document.getElementById('urgentCount').textContent = urgent;
@@ -615,17 +623,27 @@
 
                  async function loadCompaniesForValidation(campaignId) {
              try {
+                 console.log('🔍 Chargement des entreprises pour la campagne:', campaignId);
+                 
                  const companiesRes = await fetch(`${API}/campaigns/${campaignId}/companies`, { headers: getAuthHeader() });
+                 console.log('📡 Réponse API brute:', companiesRes);
+                 
                  const companiesData = await companiesRes.json();
+                 console.log('📊 Données JSON reçues:', companiesData);
                  
                  if (!companiesData.success) {
+                     console.error('❌ Erreur API:', companiesData);
                      throw new Error('Erreur lors du chargement des entreprises');
                  }
                  
                  const companies = companiesData.data || [];
+                 console.log('📊 Entreprises extraites:', companies);
+                 console.log('📊 Nombre d\'entreprises:', companies.length);
+                 
                  const container = document.getElementById('companiesValidationList');
                  
                  if (companies.length === 0) {
+                     console.log('⚠️ Aucune entreprise trouvée');
                      container.innerHTML = `
                          <div class="alert alert-info">
                              <i class="fas fa-info-circle me-2"></i>
@@ -736,6 +754,16 @@
                  // Charger et afficher les entreprises
                  await loadCompaniesForValidation(campaignId);
                  
+                 // Cocher automatiquement tous les boutons "OK" par défaut
+                 setTimeout(() => {
+                     const companyValidationInputs = document.querySelectorAll('input[type="radio"][value="OK"]');
+                     companyValidationInputs.forEach(input => {
+                         if (!input.checked) {
+                             input.checked = true;
+                         }
+                     });
+                 }, 100);
+                 
                  // Réinitialiser le formulaire
                  document.querySelectorAll('input[name="decision"]').forEach(input => input.checked = false);
                  document.getElementById('validatorComment').value = '';
@@ -826,10 +854,12 @@
                 });
                 
                 const result = await response.json();
+                console.log('📡 Réponse API brute:', result);
                 
                 if (result.success) {
-                    const companies = result.companies || [];
-                    console.log('📊 Entreprises chargées:', companies.length);
+                    const companies = result.data || [];
+                    console.log('📊 Entreprises extraites:', companies);
+                    console.log('📊 Nombre d\'entreprises:', companies.length);
                     
                     renderCompaniesForValidation(companies);
                 } else {
@@ -881,11 +911,11 @@
             `;
             
             companies.forEach((company, index) => {
+                // Par défaut, toutes les entreprises sont positionnées à "OK"
+                // Sauf si elles ont déjà été explicitement rejetées
                 const validationStatus = company.validation_status || 'PENDING';
-                const statusClass = validationStatus === 'APPROVED' ? 'success' : 
-                                   validationStatus === 'REJECTED' ? 'danger' : 'warning';
-                const statusText = validationStatus === 'APPROVED' ? 'Approuvée' : 
-                                  validationStatus === 'REJECTED' ? 'Rejetée' : 'En attente';
+                const isRejected = validationStatus === 'REJECTED';
+                const isApproved = !isRejected; // Par défaut, tout le reste est approuvé
                 
                 html += `
                     <tr>
@@ -905,13 +935,13 @@
                         <td>
                             <div class="btn-group btn-group-sm" role="group">
                                 <input type="radio" class="btn-check" name="company_validation_${index}" 
-                                       id="ok_${index}" value="OK" ${validationStatus === 'APPROVED' ? 'checked' : ''}>
+                                       id="ok_${index}" value="OK" ${isApproved ? 'checked' : ''}>
                                 <label class="btn btn-outline-success" for="ok_${index}">
                                     <i class="fas fa-check"></i> OK
                                 </label>
                                 
                                 <input type="radio" class="btn-check" name="company_validation_${index}" 
-                                       id="nok_${index}" value="NON_OK" ${validationStatus === 'REJECTED' ? 'checked' : ''}>
+                                       id="nok_${index}" value="NOT_OK" ${isRejected ? 'checked' : ''}>
                                 <label class="btn btn-outline-danger" for="nok_${index}">
                                     <i class="fas fa-times"></i> Non OK
                                 </label>
