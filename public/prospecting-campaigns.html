@@ -1136,8 +1136,14 @@
                 
                 const select = document.getElementById('sourceSelect');
                 
-                // Garder l'option par défaut
+                // Garder l'option par défaut et ajouter "Toutes les sources"
                 select.innerHTML = '<option value="">Sélectionnez une source...</option>';
+                
+                // Ajouter l'option "Toutes les sources"
+                const allSourcesOption = document.createElement('option');
+                allSourcesOption.value = 'all';
+                allSourcesOption.textContent = '📋 Toutes les sources';
+                select.appendChild(allSourcesOption);
                 
                 if (data.data && data.data.length > 0) {
                     console.log('🔍 [DEBUG] Sources trouvées:', data.data.length);
@@ -1155,7 +1161,7 @@
             }
         }
 
-        // Charger les entreprises d'une source
+        // Charger les entreprises d'une source ou de toutes les sources
         async function loadSourceCompanies() {
             const sourceId = document.getElementById('sourceSelect').value;
             console.log('🔍 [DEBUG] Chargement entreprises pour source:', sourceId);
@@ -1167,14 +1173,35 @@
             }
 
             try {
-                console.log('🔍 [DEBUG] Appel API:', `${API}/sources/${sourceId}/companies`);
-                const res = await fetch(`${API}/sources/${sourceId}/companies`, { headers: getAuthHeader() });
+                let apiUrl;
+                if (sourceId === 'all') {
+                    // Charger toutes les entreprises de toutes les sources
+                    console.log('🔍 [DEBUG] Chargement de toutes les entreprises');
+                    apiUrl = `${API}/companies`;
+                } else {
+                    // Charger les entreprises d'une source spécifique
+                    console.log('🔍 [DEBUG] Appel API:', `${API}/sources/${sourceId}/companies`);
+                    apiUrl = `${API}/sources/${sourceId}/companies`;
+                }
+                
+                const res = await fetch(apiUrl, { headers: getAuthHeader() });
                 console.log('🔍 [DEBUG] Réponse entreprises:', res.status, res.statusText);
                 
                 const data = await res.json();
                 console.log('🔍 [DEBUG] Données entreprises:', data);
+                console.log('🔍 [DEBUG] Structure data:', Object.keys(data));
+                console.log('🔍 [DEBUG] data.data type:', typeof data.data);
+                console.log('🔍 [DEBUG] data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
                 
-                allSourceCompanies = data.data || [];
+                // Adapter selon l'API utilisée
+                if (sourceId === 'all') {
+                    allSourceCompanies = data.data || [];
+                    console.log('🔍 [DEBUG] Mode "all" - entreprises trouvées:', allSourceCompanies.length);
+                } else {
+                    allSourceCompanies = data.data || [];
+                    console.log('🔍 [DEBUG] Mode source spécifique - entreprises trouvées:', allSourceCompanies.length);
+                }
+                
                 currentSourceCompanies = allSourceCompanies;
                 console.log('🔍 [DEBUG] Nombre d\'entreprises trouvées:', allSourceCompanies.length);
                 
@@ -1232,14 +1259,26 @@
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1 fw-bold">${company.name}</h6>
+                                        ${document.getElementById('sourceSelect').value === 'all' && company.source_name ? `
+                                        <div class="row text-muted small mb-1">
+                                            <div class="col-12">
+                                                <i class="fas fa-database me-1"></i>
+                                                <strong>Source:</strong> <span class="badge bg-info">${company.source_name}</span>
+                                            </div>
+                                        </div>
+                                        ` : ''}
                                         <div class="row text-muted small">
-                                            <div class="col-md-6">
+                                            <div class="col-md-4">
                                                 <i class="fas fa-industry me-1"></i>
                                                 <strong>Secteur:</strong> ${company.industry || 'Non renseigné'}
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="col-md-4">
                                                 <i class="fas fa-map-marker-alt me-1"></i>
                                                 <strong>Ville:</strong> ${company.city || 'Non renseigné'}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <i class="fas fa-tag me-1"></i>
+                                                <strong>Sigle:</strong> ${company.sigle ? `<span class="badge bg-primary">${company.sigle}</span>` : 'Non renseigné'}
                                             </div>
                                         </div>
                                         <div class="row text-muted small mt-1">
@@ -1836,6 +1875,7 @@
     </script>
     <script src="js/session-manager.js"></script>
     <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
 </body>
 </html>
 

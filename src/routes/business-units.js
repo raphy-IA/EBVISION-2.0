@@ -177,6 +177,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
+        const { force = false } = req.query; // Paramètre pour forcer la suppression
         
         // Vérifier si la business unit existe
         const existingBusinessUnit = await BusinessUnit.findById(id);
@@ -187,22 +188,52 @@ router.delete('/:id', authenticateToken, async (req, res) => {
             });
         }
 
-        // Vérifier si la business unit peut être supprimée
-        const canDelete = await BusinessUnit.canDelete(id);
-        if (!canDelete) {
+        // Vérifier les dépendances
+        const dependencies = await BusinessUnit.checkDependencies(id);
+        
+        if (!dependencies.canDelete && !force) {
+            // Construire le message d'erreur détaillé
+            const deps = dependencies.dependencies;
+            const reasons = [];
+            
+            if (deps.active_divisions > 0) reasons.push(`${deps.active_divisions} division(s) active(s)`);
+            if (deps.active_collaborateurs > 0) reasons.push(`${deps.active_collaborateurs} collaborateur(s) actif(s)`);
+            if (deps.opportunities > 0) reasons.push(`${deps.opportunities} opportunité(s)`);
+            if (deps.prospecting_campaigns > 0) reasons.push(`${deps.prospecting_campaigns} campagne(s) de prospection`);
+            if (deps.time_entries > 0) reasons.push(`${deps.time_entries} saisie(s) de temps`);
+            
             return res.status(400).json({
                 success: false,
-                message: 'Impossible de supprimer cette business unit car elle contient des divisions actives'
+                message: `Impossible de supprimer cette business unit car elle contient des données liées`,
+                details: {
+                    reasons: reasons,
+                    dependencies: deps,
+                    suggestion: 'Utilisez la désactivation au lieu de la suppression'
+                }
             });
         }
 
-        const deletedBusinessUnit = await BusinessUnit.delete(id);
+        let result;
+        if (dependencies.canDelete) {
+            // Suppression définitive
+            result = await BusinessUnit.delete(id);
+            res.json({
+                success: true,
+                message: 'Business unit supprimée définitivement avec succès',
+                data: result,
+                action: 'deleted'
+            });
+        } else {
+            // Désactivation (force = true)
+            result = await BusinessUnit.deactivate(id);
+            res.json({
+                success: true,
+                message: 'Business unit désactivée avec succès (des données liées existent)',
+                data: result,
+                action: 'deactivated'
+            });
+        }
         
-        res.json({
-            success: true,
-            message: 'Business unit supprimée avec succès',
-            data: deletedBusinessUnit
-        });
     } catch (error) {
         console.error('Erreur lors de la suppression de la business unit:', error);
         res.status(500).json({

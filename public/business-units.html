@@ -197,6 +197,21 @@
             border: 1px solid #2196f3;
         }
         
+        /* Styles pour les badges de statut */
+        .badge.bg-success {
+            background-color: #28a745 !important;
+            color: white !important;
+        }
+        
+        .badge.bg-secondary {
+            background-color: #6c757d !important;
+            color: white !important;
+        }
+        
+        .badge i {
+            font-size: 0.8em;
+        }
+        
         .filters-active .card-title {
             color: #1976d2;
         }
@@ -245,6 +260,8 @@
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
 </head>
 <body>
     <!-- Bouton toggle sidebar mobile -->
@@ -311,6 +328,7 @@
                                                     <th>Nom</th>
                                                     <th>Description</th>
                                                     <th>Divisions</th>
+                                                    <th>Statut</th>
                                                     <th>Actions</th>
                                                 </tr>
                                             </thead>
@@ -594,12 +612,20 @@
                 </div>
                 <div class="modal-body">
                     <p>Êtes-vous sûr de vouloir supprimer cette Business Unit ?</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note :</strong> Si la Business Unit contient des données liées (collaborateurs, activités, etc.), elle sera désactivée au lieu d'être supprimée définitivement.
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <button type="button" class="btn btn-warning" onclick="confirmDelete(false)">
+                        <i class="fas fa-ban me-1"></i>
+                        Désactiver
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete(true)">
                         <i class="fas fa-trash me-1"></i>
-                        Supprimer
+                        Supprimer définitivement
                     </button>
                 </div>
             </div>
@@ -721,12 +747,20 @@
                 </div>
                 <div class="modal-body">
                     <p>Êtes-vous sûr de vouloir supprimer cette Division ?</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note :</strong> Si la Division contient des données liées (collaborateurs, activités, etc.), elle sera désactivée au lieu d'être supprimée définitivement.
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-danger" onclick="confirmDeleteDivision()">
+                    <button type="button" class="btn btn-warning" onclick="confirmDeleteDivision(false)">
+                        <i class="fas fa-ban me-1"></i>
+                        Désactiver
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteDivision(true)">
                         <i class="fas fa-trash me-1"></i>
-                        Supprimer
+                        Supprimer définitivement
                     </button>
                 </div>
             </div>
@@ -862,16 +896,22 @@
         async function loadBusinessUnits() {
             showLoading(true);
             try {
-                const response = await authenticatedFetch(`${API_BASE_URL}/business-units`);
+                console.log('🔄 Chargement des Business Units...');
+                // Charger toutes les Business Units en une seule fois
+                const response = await authenticatedFetch(`${API_BASE_URL}/business-units?limit=100`);
                 const data = await response.json();
+                console.log('📊 Réponse API:', data);
+                
                 if (data.success) {
+                    console.log(`✅ ${data.data.length} Business Units chargées`);
                     businessUnits = data.data; // Stocker dans la variable globale
                     displayBusinessUnits(data.data);
                 } else {
+                    console.error('❌ Erreur API:', data.message);
                     showAlert('Erreur lors du chargement des business units', 'danger');
                 }
             } catch (error) {
-                console.error('Erreur fetch:', error);
+                console.error('❌ Erreur fetch:', error);
                 showAlert('Erreur de connexion', 'danger');
             } finally {
                 showLoading(false);
@@ -879,12 +919,19 @@
         }
 
         function displayBusinessUnits(bus) {
+            console.log('🎨 Affichage des Business Units:', bus);
             const tbody = document.getElementById('bu-table');
+            if (!tbody) {
+                console.error('❌ Élément bu-table non trouvé');
+                return;
+            }
+            
             tbody.innerHTML = '';
             if (bus.length === 0) {
+                console.log('📭 Aucune Business Unit à afficher');
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-muted py-4">
                             <i class="fas fa-building fa-2x mb-3"></i>
                             <p>Aucune Business Unit trouvée</p>
                         </td>
@@ -893,7 +940,9 @@
                 return;
             }
 
-            bus.forEach(bu => {
+            console.log(`📋 Affichage de ${bus.length} Business Units`);
+            bus.forEach((bu, index) => {
+                console.log(`   ${index + 1}. ${bu.nom} (${bu.code}) - Divisions: ${bu.divisions_count}`);
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${bu.code}</td>
@@ -901,6 +950,12 @@
                     <td>${bu.description || '-'}</td>
                     <td>
                         <span class="badge bg-info">${bu.divisions_count || 0}</span>
+                    </td>
+                    <td>
+                        <span class="badge ${bu.statut === 'ACTIF' ? 'bg-success' : 'bg-secondary'}">
+                            <i class="fas ${bu.statut === 'ACTIF' ? 'fa-check-circle' : 'fa-times-circle'} me-1"></i>
+                            ${bu.statut === 'ACTIF' ? 'Actif' : 'Inactif'}
+                        </span>
                     </td>
                     <td>
                         <div class="btn-group btn-group-sm">
@@ -918,6 +973,7 @@
                 `;
                 tbody.appendChild(row);
             });
+            console.log('✅ Affichage terminé');
         }
 
         function openCreateModal() {
@@ -994,20 +1050,33 @@
             new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
         }
 
-        async function confirmDelete() {
+        async function confirmDelete(force = false) {
             if (!buToDelete) return;
 
             try {
-                const response = await authenticatedFetch(`${API_BASE_URL}/business-units/${buToDelete}`, {
+                const url = force ? 
+                    `${API_BASE_URL}/business-units/${buToDelete}?force=true` : 
+                    `${API_BASE_URL}/business-units/${buToDelete}`;
+                
+                const response = await authenticatedFetch(url, {
                     method: 'DELETE'
                 });
                 const data = await response.json();
+                
                 if (data.success) {
-                    showAlert('Business Unit supprimée avec succès', 'success');
+                    const action = data.action === 'deleted' ? 'supprimée définitivement' : 'désactivée';
+                    showAlert(`Business Unit ${action} avec succès`, 'success');
                     bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
                     loadBusinessUnits();
                 } else {
-                    showAlert('Erreur lors de la suppression', 'danger');
+                    // Gérer les erreurs détaillées
+                    if (data.details) {
+                        const reasons = data.details.reasons.join(', ');
+                        const message = `${data.message}\n\nRaisons: ${reasons}\n\nSuggestion: ${data.details.suggestion}`;
+                        showAlert(message, 'warning');
+                    } else {
+                        showAlert(data.message || 'Erreur lors de la suppression', 'danger');
+                    }
                 }
             } catch (error) {
                 console.error('Erreur lors de la suppression:', error);
@@ -1138,9 +1207,17 @@
         function showAlert(message, type) {
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            
+            // Convertir les retours à la ligne en <br>
+            const formattedMessage = message.replace(/\n/g, '<br>');
+            
             alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="d-flex align-items-start">
+                    <div class="flex-grow-1">
+                        ${formattedMessage}
+                    </div>
+                    <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
+                </div>
             `;
             
             const container = document.querySelector('.main-content-area');
@@ -1150,11 +1227,13 @@
                 document.body.appendChild(alertDiv);
             }
             
+            // Auto-dismiss after 8 seconds for warning/error messages
+            const timeout = type === 'warning' || type === 'danger' ? 8000 : 5000;
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
                 }
-            }, 5000);
+            }, timeout);
         }
 
         function openCreateDivisionModal() {
@@ -1234,21 +1313,34 @@
             new bootstrap.Modal(document.getElementById('deleteDivisionConfirmModal')).show();
         }
 
-        async function confirmDeleteDivision() {
+        async function confirmDeleteDivision(force = false) {
             if (!divisionToDelete) return;
 
             try {
-                const response = await authenticatedFetch(`${API_BASE_URL}/divisions/${divisionToDelete}`, {
+                const url = force ? 
+                    `${API_BASE_URL}/divisions/${divisionToDelete}?force=true` : 
+                    `${API_BASE_URL}/divisions/${divisionToDelete}`;
+                
+                const response = await authenticatedFetch(url, {
                     method: 'DELETE'
                 });
                 const data = await response.json();
+                
                 if (data.success) {
-                    showAlert('Division supprimée avec succès', 'success');
+                    const action = data.action === 'deleted' ? 'supprimée définitivement' : 'désactivée';
+                    showAlert(`Division ${action} avec succès`, 'success');
                     bootstrap.Modal.getInstance(document.getElementById('deleteDivisionConfirmModal')).hide();
                     // Recharger les divisions de la BU courante sans ré-ouvrir le modal
                     await reloadDivisionsForCurrentBu();
                 } else {
-                    showAlert('Erreur lors de la suppression', 'danger');
+                    // Gérer les erreurs détaillées
+                    if (data.details) {
+                        const reasons = data.details.reasons.join(', ');
+                        const message = `${data.message}\n\nRaisons: ${reasons}\n\nSuggestion: ${data.details.suggestion}`;
+                        showAlert(message, 'warning');
+                    } else {
+                        showAlert(data.message || 'Erreur lors de la suppression', 'danger');
+                    }
                 }
             } catch (error) {
                 console.error('Erreur lors de la suppression:', error);

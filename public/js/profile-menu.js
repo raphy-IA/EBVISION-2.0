@@ -12,7 +12,8 @@ class ProfileMenuManager {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.waitForSidebar());
         } else {
-            this.waitForSidebar();
+            // Attendre un peu plus pour s'assurer que tous les scripts sont chargés
+            setTimeout(() => this.waitForSidebar(), 500);
         }
     }
 
@@ -121,14 +122,33 @@ class ProfileMenuManager {
 
     handleNotificationsClick() {
         console.log('🔔 Ouverture des notifications');
-        // TODO: Implémenter l'ouverture du modal des notifications
-        alert('Fonctionnalité des notifications à implémenter');
+        // Utiliser le système de notifications existant
+        if (typeof window.openNotificationsModal === 'function') {
+            window.openNotificationsModal();
+        } else {
+            console.error('❌ Fonction openNotificationsModal non trouvée');
+            alert('Système de notifications non disponible');
+        }
     }
 
     handleTasksClick() {
         console.log('📋 Ouverture des tâches');
-        // TODO: Implémenter l'ouverture du modal des tâches
-        alert('Fonctionnalité des tâches à implémenter');
+        // Utiliser le système de tâches existant
+        if (typeof window.openTasksModal === 'function') {
+            window.openTasksModal();
+        } else {
+            console.error('❌ Fonction openTasksModal non trouvée');
+            // Attendre un peu et réessayer
+            setTimeout(() => {
+                if (typeof window.openTasksModal === 'function') {
+                    console.log('✅ Fonction openTasksModal trouvée après délai');
+                    window.openTasksModal();
+                } else {
+                    console.error('❌ Fonction openTasksModal toujours non trouvée');
+                    alert('Système de tâches non disponible');
+                }
+            }, 1000);
+        }
     }
 
     handleLogoutClick() {
@@ -183,21 +203,70 @@ class ProfileMenuManager {
         const menuNotificationCount = document.getElementById('menuNotificationCount');
         const menuTaskCount = document.getElementById('menuTaskCount');
         
-        // Simuler des notifications (à remplacer par de vraies données)
-        const notificationCount = 3;
-        const taskCount = 8;
-        
-        // Mettre à jour les badges du menu
-        if (menuNotificationCount) menuNotificationCount.textContent = notificationCount;
-        if (menuTaskCount) menuTaskCount.textContent = taskCount;
-        
-        // Afficher la bulle si il y a des notifications ou tâches
-        if (notificationBubble) {
-            if (notificationCount > 0 || taskCount > 0) {
-                notificationBubble.style.display = 'flex';
-            } else {
-                notificationBubble.style.display = 'none';
+        // Charger les vraies données de notifications et tâches
+        Promise.all([
+            this.loadNotificationStats(),
+            this.loadTaskStats()
+        ]).then(([notificationStats, taskStats]) => {
+            const notificationCount = notificationStats.unread_count || 0;
+            const taskCount = taskStats.total_tasks || 0;
+            
+            // Mettre à jour les badges du menu
+            if (menuNotificationCount) menuNotificationCount.textContent = notificationCount;
+            if (menuTaskCount) menuTaskCount.textContent = taskCount;
+            
+            // Afficher la bulle si il y a des notifications ou tâches
+            if (notificationBubble) {
+                if (notificationCount > 0 || taskCount > 0) {
+                    notificationBubble.style.display = 'flex';
+                } else {
+                    notificationBubble.style.display = 'none';
+                }
             }
+        }).catch(error => {
+            console.error('❌ Erreur lors du chargement des statistiques:', error);
+        });
+    }
+
+    async loadTaskStats() {
+        try {
+            const response = await fetch('/api/tasks/stats/stats', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                return result || { total_tasks: 0, active_tasks: 0 };
+            } else {
+                console.error('❌ Erreur API tasks stats:', response.status);
+                return { total_tasks: 0, active_tasks: 0 };
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement des stats tâches:', error);
+            return { total_tasks: 0, active_tasks: 0 };
+        }
+    }
+
+    async loadNotificationStats() {
+        try {
+            const response = await fetch('/api/notifications/stats', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                return result.data || { unread_count: 0, total_count: 0 };
+            } else {
+                console.error('❌ Erreur API notifications stats:', response.status);
+                return { unread_count: 0, total_count: 0 };
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement des stats notifications:', error);
+            return { unread_count: 0, total_count: 0 };
         }
     }
 }

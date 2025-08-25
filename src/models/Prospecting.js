@@ -8,37 +8,101 @@ class CompanySource {
         );
         return res.rows[0];
     }
+    
     static async findAll() {
-        const res = await pool.query(`SELECT * FROM company_sources ORDER BY name`);
+        const res = await pool.query(`
+            SELECT cs.*, 
+                   COALESCE(companies_count.count, 0) as companies_count
+            FROM company_sources cs
+            LEFT JOIN (
+                SELECT source_id, COUNT(*) as count 
+                FROM companies 
+                GROUP BY source_id
+            ) companies_count ON cs.id = companies_count.source_id
+            ORDER BY cs.name
+        `);
         return res.rows;
+    }
+    
+    static async findById(id) {
+        const res = await pool.query(`SELECT * FROM company_sources WHERE id = $1`, [id]);
+        return res.rows[0] || null;
+    }
+    
+    static async update(id, { name, description }) {
+        const res = await pool.query(
+            `UPDATE company_sources SET name = $1, description = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *`,
+            [name, description, id]
+        );
+        return res.rows[0] || null;
+    }
+    
+    static async delete(id) {
+        const res = await pool.query(`DELETE FROM company_sources WHERE id = $1 RETURNING *`, [id]);
+        return res.rows[0] || null;
     }
 }
 
 class Company {
     static async bulkInsertFromRows(sourceId, rows) {
         let inserted = 0;
+        let skipped = 0;
+        let errors = 0;
+        
+        console.log(`🔥 [IMPORT] Début import pour source ${sourceId}: ${rows.length} entreprises`);
+        
         for (const r of rows) {
-            await pool.query(
-                `INSERT INTO companies(source_id, name, industry, email, phone, website, country, city, address, siret, size_label)
-                 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-                 ON CONFLICT DO NOTHING`,
-                [
-                    sourceId,
-                    r.name,
-                    r.industry || null,
-                    r.email || null,
-                    r.phone || null,
-                    r.website || null,
-                    r.country || null,
-                    r.city || null,
-                    r.address || null,
-                    r.siret || null,
-                    r.size_label || null
-                ]
-            );
-            inserted++;
+            try {
+                if (!r.name || r.name.trim() === '') {
+                    console.log(`⚠️ [IMPORT] Ligne ignorée: nom vide`);
+                    skipped++;
+                    continue;
+                }
+                
+                const result = await pool.query(
+                    `INSERT INTO companies(source_id, name, industry, email, phone, website, country, city, address, siret, size_label, sigle)
+                     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+                     ON CONFLICT (source_id, name) DO NOTHING
+                     RETURNING id`,
+                    [
+                        sourceId,
+                        r.name.trim(),
+                        r.industry || null,
+                        r.email || null,
+                        r.phone || null,
+                        r.website || null,
+                        r.country || null,
+                        r.city || null,
+                        r.address || null,
+                        r.siret || null,
+                        r.size_label || null,
+                        r.sigle || null
+                    ]
+                );
+                
+                if (result.rows.length > 0) {
+                    inserted++;
+                    if (inserted % 100 === 0) {
+                        console.log(`🔥 [IMPORT] Progression: ${inserted}/${rows.length} entreprises insérées`);
+                    }
+                } else {
+                    skipped++;
+                }
+            } catch (error) {
+                console.error(`❌ [IMPORT] Erreur insertion ${r.name}:`, error.message);
+                errors++;
+            }
         }
-        return { inserted };
+        
+        console.log(`🔥 [IMPORT] Résultat final: ${inserted} insérées, ${skipped} ignorées (doublons), ${errors} erreurs`);
+        
+        return { 
+            inserted, 
+            skipped, 
+            errors, 
+            total: rows.length,
+            message: `Import terminé: ${inserted} entreprises ajoutées, ${skipped} doublons ignorés, ${errors} erreurs`
+        };
     }
     static async findBySource(sourceId) {
         const res = await pool.query(`SELECT * FROM companies WHERE source_id = $1 ORDER BY name`, [sourceId]);
@@ -50,7 +114,7 @@ class Company {
         const params = [];
         let idx = 1;
         if (q) {
-            conditions.push(`(name ILIKE $${idx} OR email ILIKE $${idx} OR website ILIKE $${idx})`);
+            conditions.push(`(name ILIKE $${idx} OR email ILIKE $${idx} OR website ILIKE $${idx} OR sigle ILIKE $${idx})`);
             params.push(`%${q}%`);
             idx++;
         }
@@ -74,9 +138,17 @@ class Company {
         const sortColumn = validSortColumns.includes(sort_by) ? sort_by : 'name';
         const sortDirection = sort_order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
         
-        const count = await pool.query(`SELECT COUNT(*)::int AS total FROM companies ${where}`, params);
+        const count = await pool.query(`SELECT COUNT(*)::int AS total FROM companies c ${where}`, params);
         const data = await pool.query(
-            `SELECT * FROM companies ${where} ORDER BY ${sortColumn} ${sortDirection} LIMIT $${idx} OFFSET $${idx + 1}`,
+            `SELECT c.*, 
+                    COALESCE(pcc.campaigns_count, 0) as campaigns_count
+             FROM companies c
+             LEFT JOIN (
+                 SELECT company_id, COUNT(*) as campaigns_count 
+                 FROM prospecting_campaign_companies 
+                 GROUP BY company_id
+             ) pcc ON c.id = pcc.company_id
+             ${where} ORDER BY ${sortColumn} ${sortDirection} LIMIT $${idx} OFFSET $${idx + 1}`,
             [...params, limit, offset]
         );
         return { companies: data.rows, pagination: { total: count.rows[0].total, limit, offset } };
@@ -88,7 +160,7 @@ class Company {
     }
 
     static async update(id, data) {
-        const allowed = ['name','industry','email','phone','website','country','city','address','siret','size_label'];
+        const allowed = ['name','industry','email','phone','website','country','city','address','siret','size_label','sigle'];
         const sets = [];
         const vals = [];
         let idx = 1;
@@ -103,15 +175,74 @@ class Company {
     }
 
     static async delete(id) {
+        // Vérifier les dépendances avant la suppression
+        const deps = await this.checkDependencies(id);
+        if (deps.hasDependencies) {
+            return {
+                success: false,
+                hasDependencies: true,
+                dependencies: deps,
+                message: `Cette entreprise ne peut pas être supprimée car elle est impliquée dans ${deps.campaigns_count} campagne(s) et ${deps.validations_count} validation(s)`
+            };
+        }
+        
         const res = await pool.query(`DELETE FROM companies WHERE id = $1 RETURNING *`, [id]);
         return res.rows[0] || null;
     }
 
     static async bulkDelete(ids) {
         if (!Array.isArray(ids) || ids.length === 0) return { deleted: 0 };
+        
+        // Vérifier les dépendances pour chaque entreprise
+        const dependencies = [];
+        for (const companyId of ids) {
+            const deps = await this.checkDependencies(companyId);
+            if (deps.hasDependencies) {
+                dependencies.push({
+                    company_id: companyId,
+                    ...deps
+                });
+            }
+        }
+        
+        // Si des entreprises ont des dépendances, retourner les détails
+        if (dependencies.length > 0) {
+            return {
+                deleted: 0,
+                hasDependencies: true,
+                dependencies: dependencies,
+                message: `${dependencies.length} entreprise(s) ne peuvent pas être supprimées car elles sont impliquées dans des campagnes`
+            };
+        }
+        
+        // Supprimer les entreprises sans dépendances
         const placeholders = ids.map((_, i) => `$${i + 1}`).join(',');
         const res = await pool.query(`DELETE FROM companies WHERE id IN (${placeholders}) RETURNING id`, ids);
         return { deleted: res.rows.length };
+    }
+    
+    static async checkDependencies(companyId) {
+        // Vérifier si l'entreprise est impliquée dans des campagnes
+        const campaignsResult = await pool.query(
+            `SELECT COUNT(*) as count FROM prospecting_campaign_companies WHERE company_id = $1`,
+            [companyId]
+        );
+        
+        const campaignsCount = parseInt(campaignsResult.rows[0].count);
+        
+        // Vérifier si l'entreprise est impliquée dans des validations
+        const validationsResult = await pool.query(
+            `SELECT COUNT(*) as count FROM prospecting_campaign_validation_companies WHERE company_id = $1`,
+            [companyId]
+        );
+        
+        const validationsCount = parseInt(validationsResult.rows[0].count);
+        
+        return {
+            hasDependencies: campaignsCount > 0 || validationsCount > 0,
+            campaigns_count: campaignsCount,
+            validations_count: validationsCount
+        };
     }
 
     static async getDistinctValues() {
@@ -123,6 +254,23 @@ class Company {
             cities: cities.rows.map(r => r.city),
             sizes: sizes.rows.map(r => r.size_label)
         };
+    }
+
+    static async findAllWithSources() {
+        const res = await pool.query(`
+            SELECT c.*, 
+                   cs.name as source_name,
+                   COALESCE(pcc.campaigns_count, 0) as campaigns_count
+            FROM companies c
+            LEFT JOIN company_sources cs ON c.source_id = cs.id
+            LEFT JOIN (
+                SELECT company_id, COUNT(*) as campaigns_count 
+                FROM prospecting_campaign_companies 
+                GROUP BY company_id
+            ) pcc ON c.id = pcc.company_id
+            ORDER BY c.name
+        `);
+        return res.rows;
     }
 }
 

@@ -287,16 +287,116 @@ class BusinessUnit {
         return result.rows[0];
     }
 
-    // Vérifier si une business unit peut être supprimée
-    static async canDelete(businessUnitId) {
+    // Vérifier les dépendances d'une business unit
+    static async checkDependencies(businessUnitId) {
         const sql = `
-            SELECT COUNT(*) as division_count
-            FROM divisions
-            WHERE business_unit_id = $1 AND statut = 'ACTIF'
+            SELECT 
+                (SELECT COUNT(*) FROM divisions WHERE business_unit_id = $1 AND statut = 'ACTIF') as active_divisions,
+                (SELECT COUNT(*) FROM collaborateurs WHERE business_unit_id = $1 AND statut = 'ACTIF') as active_collaborateurs,
+                (SELECT COUNT(*) FROM opportunities WHERE business_unit_id = $1) as opportunities,
+                (SELECT COUNT(*) FROM prospecting_campaigns WHERE business_unit_id = $1) as prospecting_campaigns,
+                (SELECT COUNT(*) FROM time_entries te 
+                 JOIN time_sheets ts ON te.time_sheet_id = ts.id 
+                 JOIN users u ON ts.user_id = u.id 
+                 JOIN collaborateurs c ON u.collaborateur_id = c.id 
+                 WHERE c.business_unit_id = $1) as time_entries
         `;
 
         const result = await pool.query(sql, [businessUnitId]);
-        return parseInt(result.rows[0].division_count) === 0;
+        const deps = result.rows[0];
+        
+        return {
+            canDelete: deps.active_divisions == 0 && deps.active_collaborateurs == 0 && 
+                      deps.opportunities == 0 && deps.prospecting_campaigns == 0 && 
+                      deps.time_entries == 0,
+            dependencies: {
+                active_divisions: parseInt(deps.active_divisions),
+                active_collaborateurs: parseInt(deps.active_collaborateurs),
+                opportunities: parseInt(deps.opportunities),
+                prospecting_campaigns: parseInt(deps.prospecting_campaigns),
+                time_entries: parseInt(deps.time_entries)
+            }
+        };
+    }
+
+    // Désactiver une business unit (soft delete)
+    static async deactivate(businessUnitId) {
+        const client = await pool.connect();
+        
+        try {
+            await client.query('BEGIN');
+
+            // 1. Désactiver toutes les divisions de cette business unit
+            const deactivateDivisionsSql = `
+                UPDATE divisions 
+                SET statut = 'INACTIF', updated_at = CURRENT_TIMESTAMP
+                WHERE business_unit_id = $1
+            `;
+            await client.query(deactivateDivisionsSql, [businessUnitId]);
+
+            // 2. Désactiver la business unit
+            const deactivateBusinessUnitSql = `
+                UPDATE business_units 
+                SET statut = 'INACTIF', updated_at = CURRENT_TIMESTAMP
+                WHERE id = $1
+                RETURNING id, nom, code, statut
+            `;
+            const result = await client.query(deactivateBusinessUnitSql, [businessUnitId]);
+            
+            if (result.rows.length === 0) {
+                throw new Error('Business unit non trouvée');
+            }
+
+            await client.query('COMMIT');
+            console.log(`✅ Business unit "${result.rows[0].nom}" désactivée avec toutes ses divisions`);
+            return result.rows[0];
+
+        } catch (error) {
+            await client.query('ROLLBACK');
+            console.error('❌ Erreur lors de la désactivation de la business unit:', error.message);
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    // Supprimer définitivement une business unit (hard delete)
+    static async delete(businessUnitId) {
+        const client = await pool.connect();
+        
+        try {
+            await client.query('BEGIN');
+
+            // 1. Supprimer toutes les divisions de cette business unit
+            const deleteDivisionsSql = `
+                DELETE FROM divisions 
+                WHERE business_unit_id = $1
+            `;
+            await client.query(deleteDivisionsSql, [businessUnitId]);
+
+            // 2. Supprimer la business unit
+            const deleteBusinessUnitSql = `
+                DELETE FROM business_units 
+                WHERE id = $1
+                RETURNING id, nom, code
+            `;
+            const result = await client.query(deleteBusinessUnitSql, [businessUnitId]);
+            
+            if (result.rows.length === 0) {
+                throw new Error('Business unit non trouvée');
+            }
+
+            await client.query('COMMIT');
+            console.log(`✅ Business unit "${result.rows[0].nom}" supprimée définitivement avec toutes ses divisions`);
+            return result.rows[0];
+
+        } catch (error) {
+            await client.query('ROLLBACK');
+            console.error('❌ Erreur lors de la suppression de la business unit:', error.message);
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 }
 

@@ -162,11 +162,10 @@ class Division {
         return result.rows[0] || null;
     }
 
-    // Supprimer une division (soft delete)
+    // Supprimer une division (hard delete)
     static async delete(id) {
         const sql = `
-            UPDATE divisions 
-            SET statut = 'INACTIF', updated_at = CURRENT_TIMESTAMP
+            DELETE FROM divisions 
             WHERE id = $1
             RETURNING id, nom, code, statut
         `;
@@ -257,16 +256,44 @@ class Division {
         return result.rows[0];
     }
 
-    // Vérifier si une division peut être supprimée
-    static async canDelete(divisionId) {
+    // Vérifier les dépendances d'une division
+    static async checkDependencies(divisionId) {
         const sql = `
-            SELECT COUNT(*) as user_count
-            FROM users
-            WHERE division_id = $1 AND statut = 'ACTIF'
+            SELECT 
+                (SELECT COUNT(*) FROM collaborateurs WHERE division_id = $1 AND statut = 'ACTIF') as active_collaborateurs,
+                (SELECT COUNT(*) FROM prospecting_campaigns WHERE division_id = $1) as prospecting_campaigns,
+                (SELECT COUNT(*) FROM time_entries te 
+                 JOIN time_sheets ts ON te.time_sheet_id = ts.id 
+                 JOIN users u ON ts.user_id = u.id 
+                 JOIN collaborateurs c ON u.collaborateur_id = c.id 
+                 WHERE c.division_id = $1) as time_entries
         `;
 
         const result = await pool.query(sql, [divisionId]);
-        return parseInt(result.rows[0].user_count) === 0;
+        const deps = result.rows[0];
+        
+        return {
+            canDelete: deps.active_collaborateurs == 0 && deps.prospecting_campaigns == 0 && 
+                      deps.time_entries == 0,
+            dependencies: {
+                active_collaborateurs: parseInt(deps.active_collaborateurs),
+                prospecting_campaigns: parseInt(deps.prospecting_campaigns),
+                time_entries: parseInt(deps.time_entries)
+            }
+        };
+    }
+
+    // Désactiver une division (soft delete)
+    static async deactivate(divisionId) {
+        const sql = `
+            UPDATE divisions 
+            SET statut = 'INACTIF', updated_at = CURRENT_TIMESTAMP
+            WHERE id = $1
+            RETURNING id, nom, code, statut
+        `;
+
+        const result = await pool.query(sql, [divisionId]);
+        return result.rows[0] || null;
     }
 
     // Transférer les utilisateurs d'une division vers une autre

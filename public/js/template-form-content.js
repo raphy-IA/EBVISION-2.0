@@ -42,7 +42,7 @@ function generateCreateFormContent() {
                     <div class="col-md-6">
                         <label for="tplName" class="form-label required-field">Nom du modèle</label>
                         <input id="tplName" class="form-control" placeholder="Généré automatiquement" readonly>
-                        <div class="form-text">Le nom est généré automatiquement selon le format : BU-TypeCanal-TypeContenu-NumeroOrdre</div>
+                        <div class="form-text">Le nom est généré automatiquement selon le format : BU-Division-TypeCanal-TypeContenu-NumeroOrdre (Division optionnelle)</div>
                     </div>
                     <div class="col-md-6">
                         <label for="tplType" class="form-label">Type de contenu</label>

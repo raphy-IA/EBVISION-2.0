@@ -131,6 +131,99 @@ router.post('/sources', authenticateToken, async (req, res) => {
     }
 });
 
+// Modifier une source
+router.put('/sources/:id', authenticateToken, async (req, res) => {
+    try {
+        const { name, description } = req.body;
+        if (!name || name.trim() === '') {
+            return res.status(400).json({ success: false, error: 'Nom requis' });
+        }
+        
+        const updated = await CompanySource.update(req.params.id, { 
+            name: name.trim(), 
+            description: description || null 
+        });
+        
+        if (!updated) {
+            return res.status(404).json({ success: false, error: 'Source non trouvée' });
+        }
+        
+        res.json({ success: true, data: updated });
+    } catch (e) {
+        console.error('Erreur modification source:', e);
+        if (e.code === '23505') {
+            return res.status(409).json({ success: false, error: 'Une source avec ce nom existe déjà' });
+        }
+        res.status(500).json({ success: false, error: 'Erreur lors de la modification' });
+    }
+});
+
+// Supprimer une source
+router.delete('/sources/:id', authenticateToken, async (req, res) => {
+    try {
+        // Vérifier s'il y a des entreprises associées
+        const companiesCount = await pool.query(
+            'SELECT COUNT(*) as count FROM companies WHERE source_id = $1',
+            [req.params.id]
+        );
+        
+        if (parseInt(companiesCount.rows[0].count) > 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Impossible de supprimer cette source car elle contient des entreprises',
+                companiesCount: parseInt(companiesCount.rows[0].count)
+            });
+        }
+        
+        const deleted = await CompanySource.delete(req.params.id);
+        if (!deleted) {
+            return res.status(404).json({ success: false, error: 'Source non trouvée' });
+        }
+        
+        res.json({ success: true, message: 'Source supprimée avec succès' });
+    } catch (e) {
+        console.error('Erreur suppression source:', e);
+        res.status(500).json({ success: false, error: 'Erreur lors de la suppression' });
+    }
+});
+
+// Supprimer toutes les entreprises d'une source (non associées aux campagnes)
+router.delete('/sources/:id/companies', authenticateToken, async (req, res) => {
+    try {
+        // Compter les entreprises avant suppression
+        const beforeCount = await pool.query(
+            'SELECT COUNT(*) as count FROM companies WHERE source_id = $1',
+            [req.params.id]
+        );
+        
+        // Supprimer seulement les entreprises non associées aux campagnes
+        const result = await pool.query(`
+            DELETE FROM companies 
+            WHERE source_id = $1 
+            AND id NOT IN (
+                SELECT DISTINCT company_id 
+                FROM prospecting_campaign_companies
+            )
+        `, [req.params.id]);
+        
+        const deletedCount = result.rowCount;
+        const remainingCount = parseInt(beforeCount.rows[0].count) - deletedCount;
+        
+        res.json({
+            success: true,
+            message: `${deletedCount} entreprises supprimées`,
+            data: {
+                deleted: deletedCount,
+                remaining: remainingCount,
+                total: parseInt(beforeCount.rows[0].count)
+            }
+        });
+    } catch (e) {
+        console.error('Erreur suppression entreprises source:', e);
+        res.status(500).json({ success: false, error: 'Erreur lors de la suppression' });
+    }
+});
+
 // Upload fichier d'une source (CSV/Excel support minimal CSV ici)
 router.post('/sources/:sourceId/import', authenticateToken, upload.single('file'), async (req, res) => {
     try {
@@ -198,7 +291,16 @@ router.post('/sources/:sourceId/import', authenticateToken, upload.single('file'
 
         const result = await Company.bulkInsertFromRows(req.params.sourceId, rows);
         console.log('🔥 [CSV] Résultat insertion:', result);
-        res.json({ success: true, message: 'Import réalisé', data: { inserted: result.inserted } });
+        res.json({ 
+            success: true, 
+            message: result.message, 
+            data: { 
+                inserted: result.inserted,
+                skipped: result.skipped,
+                errors: result.errors,
+                total: result.total
+            } 
+        });
     } catch (e) {
         console.error('🔥 [CSV] Import entreprises échoué:', e);
         res.status(500).json({ success: false, error: 'Import échoué', details: e.message });
@@ -208,6 +310,23 @@ router.post('/sources/:sourceId/import', authenticateToken, upload.single('file'
 router.get('/sources/:sourceId/companies', authenticateToken, async (req, res) => {
     const list = await Company.findBySource(req.params.sourceId);
     res.json({ success: true, data: list });
+});
+
+// Obtenir toutes les entreprises avec leurs sources (DOIT ÊTRE AVANT /companies/search)
+router.get('/companies', authenticateToken, async (req, res) => {
+    try {
+        const companies = await Company.findAllWithSources();
+        res.json({ success: true, data: companies });
+    } catch (e) {
+        console.error('Erreur récupération toutes entreprises:', e);
+        res.status(500).json({ success: false, error: 'Erreur lors de la récupération' });
+    }
+});
+
+// Obtenir les valeurs distinctes pour les filtres
+router.get('/companies/filters', authenticateToken, async (req, res) => {
+    const filters = await Company.getDistinctValues();
+    res.json({ success: true, data: filters });
 });
 
 router.get('/companies/search', authenticateToken, async (req, res) => {
@@ -220,12 +339,6 @@ router.get('/companies/search', authenticateToken, async (req, res) => {
         sort_order
     });
     res.json({ success: true, data: result.companies, pagination: result.pagination });
-});
-
-// Obtenir les valeurs distinctes pour les filtres
-router.get('/companies/filters', authenticateToken, async (req, res) => {
-    const filters = await Company.getDistinctValues();
-    res.json({ success: true, data: filters });
 });
 
 // CRUD entreprises individuelles
@@ -250,6 +363,15 @@ router.delete('/companies/:id', authenticateToken, async (req, res) => {
     try {
         const deleted = await Company.delete(req.params.id);
         if (!deleted) return res.status(404).json({ success: false, error: 'Entreprise non trouvée' });
+        
+        if (deleted.hasDependencies) {
+            return res.status(400).json({
+                success: false,
+                message: deleted.message,
+                dependencies: deleted.dependencies
+            });
+        }
+        
         res.json({ success: true, message: 'Entreprise supprimée' });
     } catch (e) {
         console.error('Erreur suppression entreprise:', e);
@@ -265,6 +387,16 @@ router.delete('/companies', authenticateToken, async (req, res) => {
             return res.status(400).json({ success: false, error: 'IDs requis sous forme de tableau' });
         }
         const result = await Company.bulkDelete(ids);
+        
+        if (result.hasDependencies) {
+            return res.status(400).json({
+                success: false,
+                message: result.message,
+                dependencies: result.dependencies,
+                deleted: result.deleted
+            });
+        }
+        
         res.json({ success: true, message: `${result.deleted} entreprise(s) supprimée(s)` });
     } catch (e) {
         console.error('Erreur suppression en lot:', e);

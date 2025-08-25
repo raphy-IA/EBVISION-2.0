@@ -182,6 +182,8 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
+        const { force = false } = req.query; // Paramètre pour forcer la suppression
+        
         const division = await Division.findById(id);
 
         if (!division) {
@@ -191,12 +193,49 @@ router.delete('/:id', async (req, res) => {
             });
         }
 
-        await Division.delete(id);
+        // Vérifier les dépendances
+        const dependencies = await Division.checkDependencies(id);
+        
+        if (!dependencies.canDelete && !force) {
+            // Construire le message d'erreur détaillé
+            const deps = dependencies.dependencies;
+            const reasons = [];
+            
+            if (deps.active_collaborateurs > 0) reasons.push(`${deps.active_collaborateurs} collaborateur(s) actif(s)`);
+            if (deps.prospecting_campaigns > 0) reasons.push(`${deps.prospecting_campaigns} campagne(s) de prospection`);
+            if (deps.time_entries > 0) reasons.push(`${deps.time_entries} saisie(s) de temps`);
+            
+            return res.status(400).json({
+                success: false,
+                message: `Impossible de supprimer cette division car elle contient des données liées`,
+                details: {
+                    reasons: reasons,
+                    dependencies: deps,
+                    suggestion: 'Utilisez la désactivation au lieu de la suppression'
+                }
+            });
+        }
 
-        res.json({
-            success: true,
-            message: 'Division supprimée avec succès'
-        });
+        let result;
+        if (dependencies.canDelete) {
+            // Suppression définitive
+            result = await Division.delete(id);
+            res.json({
+                success: true,
+                message: 'Division supprimée définitivement avec succès',
+                data: result,
+                action: 'deleted'
+            });
+        } else {
+            // Désactivation (force = true)
+            result = await Division.deactivate(id);
+            res.json({
+                success: true,
+                message: 'Division désactivée avec succès (des données liées existent)',
+                data: result,
+                action: 'deactivated'
+            });
+        }
 
     } catch (error) {
         console.error('Erreur lors de la suppression de la division:', error);

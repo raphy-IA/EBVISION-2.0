@@ -29,6 +29,8 @@
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
 </head>
 <body>
     <button class="sidebar-toggle d-md-none">
@@ -62,7 +64,19 @@
                 </div>
 
                 <div class="card">
-                    <div class="card-header">Liste des sources</div>
+                    <div class="card-header">
+                        Liste des sources
+                        <div class="float-end">
+                            <small class="text-muted">
+                                <i class="fas fa-building"></i> Nombre d'entreprises | 
+                                <i class="fas fa-upload"></i> Importer | 
+                                <i class="fas fa-eye"></i> Voir | 
+                                <i class="fas fa-edit"></i> Modifier | 
+                                <i class="fas fa-trash"></i> Supprimer source | 
+                                <i class="fas fa-trash-alt"></i> Supprimer entreprises
+                            </small>
+                        </div>
+                    </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
@@ -70,6 +84,7 @@
                                     <tr>
                                         <th>Nom</th>
                                         <th>Description</th>
+                                        <th>Entreprises</th>
                                         <th>Importer</th>
                                         <th>Actions</th>
                                     </tr>
@@ -136,6 +151,7 @@
                                                 <input type="checkbox" id="selectAllCompanies" onchange="toggleSelectAll()">
                                             </th>
                                             <th style="min-width: 200px;">Nom</th>
+                                            <th style="min-width: 80px;">Sigle</th>
                                             <th style="min-width: 150px;">Secteur</th>
                                             <th style="min-width: 120px;">Email</th>
                                             <th style="min-width: 100px;">Téléphone</th>
@@ -184,6 +200,7 @@
                                 <div class="card-body">
                                     <table class="table table-sm table-borderless">
                                         <tr><td><strong>Nom :</strong></td><td id="detail-name"></td></tr>
+                                        <tr><td><strong>Sigle :</strong></td><td id="detail-sigle"></td></tr>
                                         <tr><td><strong>Secteur :</strong></td><td id="detail-industry"></td></tr>
                                         <tr><td><strong>Taille :</strong></td><td id="detail-size"></td></tr>
                                         <tr><td><strong>SIRET :</strong></td><td id="detail-siret"></td></tr>
@@ -280,11 +297,18 @@
             const data = await res.json();
             const tbody = document.getElementById('sourcesTable');
             tbody.innerHTML = '';
+            
             (data.data || []).forEach(src => {
+                const companiesCount = src.companies_count || 0;
                 const tr = document.createElement('tr');
+                tr.setAttribute('data-source-id', src.id);
                 tr.innerHTML = `
                     <td>${src.name}</td>
                     <td>${src.description || ''}</td>
+                    <td>
+                        <span class="badge bg-info">${companiesCount}</span>
+                        ${companiesCount > 0 ? `<small class="text-muted ms-1">entreprise(s)</small>` : ''}
+                    </td>
                     <td>
                         <input type="file" class="form-control form-control-sm" id="file_${src.id}" accept=".csv">
                     </td>
@@ -292,6 +316,9 @@
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-outline-primary" onclick="importCompanies('${src.id}', '${encodeURIComponent(src.name)}')"><i class="fas fa-upload"></i> Importer</button>
                             <button class="btn btn-outline-secondary" onclick="viewCompanies('${src.id}', '${encodeURIComponent(src.name)}')"><i class="fas fa-eye"></i> Voir</button>
+                            <button class="btn btn-outline-warning" onclick="editSource('${src.id}', '${encodeURIComponent(src.name)}', '${encodeURIComponent(src.description || '')}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-outline-danger" onclick="deleteSource('${src.id}', '${encodeURIComponent(src.name)}')"><i class="fas fa-trash"></i></button>
+                            <button class="btn btn-outline-danger" onclick="deleteAllCompaniesFromSource('${src.id}', '${encodeURIComponent(src.name)}')" title="Supprimer toutes les entreprises non associées aux campagnes"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </td>
                 `;
@@ -383,7 +410,16 @@
             });
             const d = await res.json().catch(() => ({}));
             if (res.ok) {
-                alert(`Import OK: ${d.data?.inserted || 0} entreprises`);
+                const message = `Import terminé:\n` +
+                    `✅ ${d.data?.inserted || 0} entreprises ajoutées\n` +
+                    `⚠️ ${d.data?.skipped || 0} doublons ignorés\n` +
+                    `❌ ${d.data?.errors || 0} erreurs\n` +
+                    `📊 Total traité: ${d.data?.total || 0}`;
+                alert(message);
+                
+                // Rafraîchir le compteur d'entreprises de la source
+                await refreshSourceCompaniesCount(sourceId);
+                
                 await viewCompanies(sourceId, sourceNameEnc);
             } else {
                 alert('Import échoué: ' + (d.message || d.error || res.status));
@@ -483,7 +519,7 @@
                 
                 console.log('[DEBUG] Recherche avec params:', params.toString());
                 const res = await fetch(`${API}/companies/search?${params}`, { headers: getAuthHeader() });
-            const data = await res.json();
+                const data = await res.json();
                 
                 console.log('[DEBUG] Résultat recherche:', data);
                 
@@ -508,7 +544,11 @@
                         <input type="checkbox" value="${c.id}" ${isSelected ? 'checked' : ''} 
                                onchange="toggleCompanySelection('${c.id}')">
                     </td>
-                    <td><strong>${c.name}</strong></td>
+                    <td>
+                        <strong>${c.name}</strong>
+                        ${c.campaigns_count > 0 ? `<br><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> ${c.campaigns_count} campagne(s)</small>` : ''}
+                    </td>
+                    <td>${c.sigle ? `<span class="badge bg-primary">${c.sigle}</span>` : '<span class="text-muted">N/A</span>'}</td>
                     <td><span class="badge bg-secondary">${c.industry || 'N/A'}</span></td>
                     <td>${c.email ? `<a href="mailto:${c.email}">${c.email}</a>` : '<span class="text-muted">N/A</span>'}</td>
                     <td>${c.phone ? `<a href="tel:${c.phone}">${c.phone}</a>` : '<span class="text-muted">N/A</span>'}</td>
@@ -525,7 +565,7 @@
                             <button class="btn btn-outline-primary" onclick="editCompany('${c.id}')" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-outline-danger" onclick="deleteCompany('${c.id}')" title="Supprimer">
+                            <button class="btn btn-outline-danger" onclick="deleteCompany('${c.id}')" title="Supprimer" ${c.campaigns_count > 0 ? 'disabled' : ''}>
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -634,15 +674,30 @@
                     body: JSON.stringify({ ids: Array.from(selectedCompanyIds) })
                 });
                 
+                const data = await res.json();
+                
                 if (res.ok) {
-                    const data = await res.json();
                     alert(data.message);
                     selectedCompanyIds.clear();
                     updateSelectionUI();
                     await searchAndFilterCompanies();
+                    
+                    // Rafraîchir le compteur d'entreprises de la source
+                    if (currentSourceId) {
+                        await refreshSourceCompaniesCount(currentSourceId);
+                    }
                 } else {
-                    const error = await res.json().catch(() => ({}));
-                    alert('Erreur: ' + (error.message || error.error || res.status));
+                    // Gérer les erreurs de dépendances
+                    if (data.dependencies) {
+                        let message = data.message + '\n\nDétails:\n';
+                        data.dependencies.forEach(dep => {
+                            message += `- Entreprise ID ${dep.company_id}: ${dep.campaigns_count} campagne(s), ${dep.validations_count} validation(s)\n`;
+                        });
+                        message += '\nCes entreprises ne peuvent pas être supprimées car elles sont impliquées dans des campagnes de prospection.';
+                        alert(message);
+                    } else {
+                        alert('Erreur: ' + (data.message || data.error || res.status));
+                    }
                 }
             } catch (e) {
                 console.error('Erreur suppression:', e);
@@ -659,14 +714,30 @@
                     headers: getAuthHeader()
                 });
                 
+                const data = await res.json();
+                
                 if (res.ok) {
                     selectedCompanyIds.delete(companyId);
                     updateSelectionUI();
                     await searchAndFilterCompanies();
+                    
+                    // Rafraîchir le compteur d'entreprises de la source
+                    if (currentSourceId) {
+                        await refreshSourceCompaniesCount(currentSourceId);
+                    }
+                    
                     alert('Entreprise supprimée');
                 } else {
-                    const error = await res.json().catch(() => ({}));
-                    alert('Erreur: ' + (error.message || error.error || res.status));
+                    // Gérer les erreurs de dépendances
+                    if (data.dependencies) {
+                        let message = data.message + '\n\nDétails:\n';
+                        message += `- Campagnes: ${data.dependencies.campaigns_count}\n`;
+                        message += `- Validations: ${data.dependencies.validations_count}\n`;
+                        message += '\nCette entreprise ne peut pas être supprimée car elle est impliquée dans des campagnes de prospection.';
+                        alert(message);
+                    } else {
+                        alert('Erreur: ' + (data.message || data.error || res.status));
+                    }
                 }
             } catch (e) {
                 console.error('Erreur suppression:', e);
@@ -687,6 +758,7 @@
                     
                     // Remplir les détails dans le modal
                     document.getElementById('detail-name').textContent = company.name || 'N/A';
+                    document.getElementById('detail-sigle').innerHTML = company.sigle ? `<span class="badge bg-primary">${company.sigle}</span>` : 'N/A';
                     document.getElementById('detail-industry').innerHTML = company.industry ? `<span class="badge bg-secondary">${company.industry}</span>` : 'N/A';
                     document.getElementById('detail-size').innerHTML = company.size_label ? `<span class="badge bg-info">${company.size_label}</span>` : 'N/A';
                     document.getElementById('detail-siret').textContent = company.siret || 'N/A';
@@ -734,6 +806,132 @@
             // Pour l'instant, simple prompt - à améliorer avec un modal d'édition
             alert('Fonction de modification à implémenter. ID: ' + companyId);
             // TODO: Créer un modal d'édition avec formulaire
+        }
+
+        // Fonction pour modifier une source
+        async function editSource(sourceId, sourceNameEnc, sourceDescriptionEnc) {
+            const sourceName = decodeURIComponent(sourceNameEnc);
+            const sourceDescription = decodeURIComponent(sourceDescriptionEnc);
+            
+            const newName = prompt('Nouveau nom de la source:', sourceName);
+            if (!newName || newName.trim() === '') return;
+            
+            const newDescription = prompt('Nouvelle description (optionnel):', sourceDescription);
+            
+            try {
+                const res = await fetch(`${API}/sources/${sourceId}`, {
+                    method: 'PUT',
+                    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        name: newName.trim(), 
+                        description: newDescription || null 
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    alert('Source modifiée avec succès !');
+                    await loadSources();
+                } else {
+                    alert('Erreur: ' + (data.message || data.error || res.status));
+                }
+            } catch (e) {
+                console.error('Erreur modification source:', e);
+                alert('Erreur lors de la modification');
+            }
+        }
+
+        // Fonction pour supprimer une source
+        async function deleteSource(sourceId, sourceNameEnc) {
+            const sourceName = decodeURIComponent(sourceNameEnc);
+            
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer la source "${sourceName}" ?\n\nCette action ne peut être annulée.`)) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API}/sources/${sourceId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeader()
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    alert('Source supprimée avec succès !');
+                    await loadSources();
+                } else {
+                    if (data.companiesCount) {
+                        alert(`Impossible de supprimer cette source car elle contient ${data.companiesCount} entreprise(s).\n\nSupprimez d'abord toutes les entreprises de cette source.`);
+                    } else {
+                        alert('Erreur: ' + (data.message || data.error || res.status));
+                    }
+                }
+            } catch (e) {
+                console.error('Erreur suppression source:', e);
+                alert('Erreur lors de la suppression');
+            }
+        }
+
+        // Fonction pour supprimer toutes les entreprises d'une source
+        async function deleteAllCompaniesFromSource(sourceId, sourceNameEnc) {
+            const sourceName = decodeURIComponent(sourceNameEnc);
+            
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer TOUTES les entreprises de la source "${sourceName}" ?\n\n⚠️ ATTENTION: Seules les entreprises non associées aux campagnes seront supprimées.\n\nCette action ne peut être annulée.`)) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API}/sources/${sourceId}/companies`, {
+                    method: 'DELETE',
+                    headers: getAuthHeader()
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    const message = `Suppression terminée:\n` +
+                        `✅ ${data.data.deleted} entreprises supprimées\n` +
+                        `⚠️ ${data.data.remaining} entreprises conservées (associées aux campagnes)\n` +
+                        `📊 Total initial: ${data.data.total}`;
+                    alert(message);
+                    
+                    // Recharger les sources et les entreprises si on est sur cette source
+                    await loadSources();
+                    if (currentSourceId === sourceId) {
+                        await searchAndFilterCompanies();
+                    }
+                } else {
+                    alert('Erreur: ' + (data.message || data.error || res.status));
+                }
+            } catch (e) {
+                console.error('Erreur suppression entreprises source:', e);
+                alert('Erreur lors de la suppression');
+            }
+        }
+
+        // Fonction pour rafraîchir le compteur d'entreprises d'une source
+        async function refreshSourceCompaniesCount(sourceId) {
+            try {
+                const res = await fetch(`${API}/sources`, { headers: getAuthHeader() });
+                const data = await res.json();
+                const source = (data.data || []).find(s => s.id === sourceId);
+                
+                if (source) {
+                    const companiesCount = source.companies_count || 0;
+                    const badgeElement = document.querySelector(`tr[data-source-id="${sourceId}"] .badge.bg-info`);
+                    if (badgeElement) {
+                        badgeElement.textContent = companiesCount;
+                        const textElement = badgeElement.nextElementSibling;
+                        if (textElement && textElement.classList.contains('text-muted')) {
+                            textElement.textContent = companiesCount > 0 ? ' entreprise(s)' : '';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur rafraîchissement compteur:', error);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {

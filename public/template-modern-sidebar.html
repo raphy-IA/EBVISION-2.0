@@ -127,6 +127,10 @@
     <script src="js/user-header.js"></script>
     <!-- Script pour le menu de profil -->
     <script src="js/profile-menu.js"></script>
+    <!-- Script pour les notifications -->
+    <script src="js/notifications.js"></script>
+    <!-- Script pour les tâches -->
+    <script src="js/tasks.js"></script>
 </head>
 <body>
     <!-- Bouton toggle pour mobile -->
@@ -447,6 +451,63 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/modern-sidebar.js"></script>
     
+    <!-- Notifications Modal -->
+    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationsModalLabel">
+                        <i class="fas fa-bell me-2"></i>Toutes les Notifications
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="notificationsContainerFull" class="list-group">
+                        <!-- Liste complète des notifications sera chargée ici -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Fermer
+                    </button>
+                    <button type="button" class="btn btn-info" onclick="markAllAsRead()">
+                        <i class="fas fa-check-double me-1"></i>Marquer tout comme lu
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="clearReadNotifications()">
+                        <i class="fas fa-trash me-1"></i>Supprimer les lues
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks Modal -->
+    <div class="modal fade" id="tasksModal" tabindex="-1" aria-labelledby="tasksModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tasksModalLabel">
+                        <i class="fas fa-tasks me-2"></i>Toutes les Tâches
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="tasksContainerFull" class="list-group">
+                        <!-- Liste complète des tâches sera chargée ici -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Fermer
+                    </button>
+                    <a href="/task-templates.html" target="_blank" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Gérer les tâches
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Script simplifié - la logique est maintenant dans profile-menu.js
         console.log('📋 Template sidebar chargé');

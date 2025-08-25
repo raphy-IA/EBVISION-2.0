@@ -94,6 +94,21 @@
             height: 200px;
         }
         
+        /* Styles pour les badges de statut */
+        .badge.bg-success {
+            background-color: #28a745 !important;
+            color: white !important;
+        }
+        
+        .badge.bg-secondary {
+            background-color: #6c757d !important;
+            color: white !important;
+        }
+        
+        .badge i {
+            font-size: 0.8em;
+        }
+        
         .chart-container {
             position: relative;
             height: 300px;
@@ -143,6 +158,8 @@
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
 </head>
 <body>
     <!-- Bouton toggle sidebar mobile -->
@@ -190,6 +207,7 @@
                                             <th>Nom</th>
                                             <th>Description</th>
                                             <th>Business Unit</th>
+                                            <th>Statut</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -261,12 +279,20 @@
                 </div>
                 <div class="modal-body">
                     <p>Êtes-vous sûr de vouloir supprimer cette Division ?</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note :</strong> Si la Division contient des données liées (collaborateurs, campagnes, etc.), elle sera désactivée au lieu d'être supprimée définitivement.
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <button type="button" class="btn btn-warning" onclick="confirmDelete(false)">
+                        <i class="fas fa-ban me-1"></i>
+                        Désactiver
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete(true)">
                         <i class="fas fa-trash me-1"></i>
-                        Supprimer
+                        Supprimer définitivement
                     </button>
                 </div>
             </div>
@@ -305,15 +331,21 @@
         async function loadDivisions() {
             showLoading(true);
             try {
-                const response = await authenticatedFetch(`${API_BASE_URL}/divisions`, { cache: 'no-cache' });
+                console.log('🔄 Chargement des Divisions...');
+                // Charger toutes les divisions en une seule fois
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions?limit=100`, { cache: 'no-cache' });
                 const data = await response.json();
+                console.log('📊 Réponse API divisions:', data);
+                
                 if (data.success) {
+                    console.log(`✅ ${data.data.length} Divisions chargées`);
                     displayDivisions(data.data);
                 } else {
+                    console.error('❌ Erreur API:', data.message);
                     showAlert('Erreur lors du chargement des divisions', 'danger');
                 }
             } catch (error) {
-                console.error('Erreur fetch:', error);
+                console.error('❌ Erreur fetch:', error);
                 showAlert('Erreur de connexion', 'danger');
             } finally {
                 showLoading(false);
@@ -321,12 +353,15 @@
         }
 
         function displayDivisions(divisions) {
+            console.log('🎨 Affichage des Divisions:', divisions);
             const tbody = document.getElementById('divisions-table');
             tbody.innerHTML = '';
+            
             if (divisions.length === 0) {
+                console.log('📭 Aucune Division à afficher');
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-muted py-4">
                             <i class="fas fa-sitemap fa-2x mb-3"></i>
                             <p>Aucune Division trouvée</p>
                         </td>
@@ -335,13 +370,21 @@
                 return;
             }
 
-            divisions.forEach(division => {
+            console.log(`📋 Affichage de ${divisions.length} Divisions`);
+            divisions.forEach((division, index) => {
+                console.log(`   ${index + 1}. ${division.nom} (${division.code}) - BU: ${division.business_unit_nom || 'N/A'}`);
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${division.code}</td>
                     <td>${division.nom}</td>
                     <td>${division.description || '-'}</td>
                     <td>${division.business_unit_nom || 'N/A'}</td>
+                    <td>
+                        <span class="badge ${division.statut === 'ACTIF' ? 'bg-success' : 'bg-secondary'}">
+                            <i class="fas ${division.statut === 'ACTIF' ? 'fa-check-circle' : 'fa-times-circle'} me-1"></i>
+                            ${division.statut === 'ACTIF' ? 'Actif' : 'Inactif'}
+                        </span>
+                    </td>
                     <td>
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-outline-warning" onclick="editDivision('${division.id}')" title="Modifier">
@@ -355,6 +398,7 @@
                 `;
                 tbody.appendChild(row);
             });
+            console.log('✅ Affichage terminé');
         }
 
         function openCreateModal() {
@@ -452,24 +496,39 @@
             new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
         }
 
-        async function confirmDelete() {
+        async function confirmDelete(force = false) {
             if (!divisionToDelete) return;
 
             try {
-                const response = await authenticatedFetch(`${API_BASE_URL}/divisions/${divisionToDelete}`, {
+                const url = force ? 
+                    `${API_BASE_URL}/divisions/${divisionToDelete}?force=true` : 
+                    `${API_BASE_URL}/divisions/${divisionToDelete}`;
+                
+                const response = await authenticatedFetch(url, {
                     method: 'DELETE'
                 });
                 const data = await response.json();
+                
                 if (data.success) {
-                    showAlert('Division supprimée avec succès', 'success');
+                    const action = data.action === 'deleted' ? 'supprimée définitivement' : 'désactivée';
+                    showAlert(`Division ${action} avec succès`, 'success');
                     bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
                     loadDivisions();
                 } else {
-                    showAlert('Erreur lors de la suppression', 'danger');
+                    // Gérer les erreurs détaillées
+                    if (data.details) {
+                        const reasons = data.details.reasons.join(', ');
+                        const message = `${data.message}\n\nRaisons: ${reasons}\n\nSuggestion: ${data.details.suggestion}`;
+                        showAlert(message, 'warning');
+                    } else {
+                        showAlert(data.message || 'Erreur lors de la suppression', 'danger');
+                    }
                 }
             } catch (error) {
                 console.error('Erreur lors de la suppression:', error);
                 showAlert('Erreur lors de la suppression', 'danger');
+            } finally {
+                divisionToDelete = null;
             }
         }
 
@@ -481,9 +540,17 @@
         function showAlert(message, type) {
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            
+            // Convertir les retours à la ligne en <br>
+            const formattedMessage = message.replace(/\n/g, '<br>');
+            
             alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="d-flex align-items-start">
+                    <div class="flex-grow-1">
+                        ${formattedMessage}
+                    </div>
+                    <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
+                </div>
             `;
             
             const container = document.querySelector('.main-content-area');
@@ -493,11 +560,13 @@
                 document.body.appendChild(alertDiv);
             }
             
+            // Auto-dismiss after 8 seconds for warning/error messages
+            const timeout = type === 'warning' || type === 'danger' ? 8000 : 5000;
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
                 }
-            }, 5000);
+            }, timeout);
         }
     </script>
 

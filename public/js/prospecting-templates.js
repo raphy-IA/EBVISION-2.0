@@ -7,6 +7,7 @@ let currentChannel = null;
 // Fonction pour générer automatiquement le nom du modèle
 async function updateTemplateName() {
     const buSelect = document.getElementById('tplBU');
+    const divisionSelect = document.getElementById('tplDivision');
     const typeSelect = document.getElementById('tplType');
     const serviceNameInput = document.getElementById('serviceName');
     const nameInput = document.getElementById('tplName');
@@ -19,6 +20,7 @@ async function updateTemplateName() {
     }
     
     const selectedBU = buSelect.value;
+    const selectedDivision = divisionSelect ? divisionSelect.value : '';
     const selectedType = typeSelect.value;
     const selectedChannel = currentChannel;
     
@@ -39,6 +41,13 @@ async function updateTemplateName() {
     // Récupérer le nom de la BU
     const buOption = buSelect.options[buSelect.selectedIndex];
     const buName = buOption ? buOption.text : '';
+    
+    // Récupérer le nom de la division si sélectionnée
+    let divisionName = '';
+    if (selectedDivision && divisionSelect) {
+        const divisionOption = divisionSelect.options[divisionSelect.selectedIndex];
+        divisionName = divisionOption ? divisionOption.text : '';
+    }
     
     // Déterminer le type de canal
     let canalType = '';
@@ -73,8 +82,15 @@ async function updateTemplateName() {
             contentType = 'GeneralServices';
     }
     
-    // Construire le nom de base
-    const baseName = `${buName}-${canalType}-${contentType}`;
+    // Construire le nom de base avec ou sans division
+    let baseName;
+    if (divisionName) {
+        // Format: BU-Division-Canal-Contenu
+        baseName = `${buName}-${divisionName}-${canalType}-${contentType}`;
+    } else {
+        // Format: BU-Canal-Contenu (format original)
+        baseName = `${buName}-${canalType}-${contentType}`;
+    }
     
     // Chercher le prochain numéro d'ordre
     const orderNumber = await findNextOrderNumber(baseName);
@@ -595,6 +611,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             tplBU.addEventListener('change', (e) => {
                 loadDivisionsForBU(e.target.value);
                 updateTemplateName(); // Mettre à jour le nom quand la BU change
+            });
+        }
+        
+        // Event listener pour la division
+        const tplDivision = document.getElementById('tplDivision');
+        if (tplDivision) {
+            tplDivision.addEventListener('change', () => {
+                updateTemplateName(); // Mettre à jour le nom quand la division change
             });
         }
     } catch (error) {
