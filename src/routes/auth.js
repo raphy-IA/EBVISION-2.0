@@ -114,12 +114,36 @@ router.post('/change-password', authenticateToken, async (req, res) => {
         const { currentPassword, newPassword } = value;
         const userId = req.user.id;
 
+        // Validation supplémentaire
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mot de passe actuel et nouveau mot de passe requis'
+            });
+        }
+
         // Récupérer l'utilisateur
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({
                 success: false,
                 message: 'Utilisateur non trouvé'
+            });
+        }
+
+        // Debug: afficher les informations de l'utilisateur (sans le mot de passe)
+        console.log('🔍 Utilisateur pour changement de mot de passe:', {
+            id: user.id,
+            login: user.login,
+            hasPasswordHash: !!user.password_hash,
+            passwordHashLength: user.password_hash ? user.password_hash.length : 0
+        });
+
+        // Vérifier si l'utilisateur a un mot de passe hashé
+        if (!user.password_hash) {
+            return res.status(400).json({
+                success: false,
+                message: 'Aucun mot de passe défini pour cet utilisateur. Veuillez contacter l\'administrateur.'
             });
         }
 
@@ -218,7 +242,8 @@ router.get('/me', authenticateToken, async (req, res) => {
                     division_nom: user.division_nom || null,
                     grade_nom: user.grade_nom || null,
                     poste_nom: user.poste_nom || null,
-                    collaborateur_email: user.collaborateur_email || null
+                    collaborateur_email: user.collaborateur_email || null,
+                    collaborateur_photo_url: collaborateurInfo ? collaborateurInfo.photo_url : null
                 }
             }
         });

@@ -104,6 +104,21 @@
             justify-content: center;
             font-weight: bold;
             font-size: 0.9rem;
+            object-fit: cover;
+        }
+        
+        .collaborateur-avatar.large {
+            width: 80px;
+            height: 80px;
+            font-size: 1.5rem;
+        }
+        
+        /* Style pour la photo dans le modal de détails */
+        #view-photo-container .collaborateur-avatar.large {
+            width: 120px;
+            height: 120px;
+            font-size: 2rem;
+            margin-bottom: 1rem;
         }
         
         .loading {
@@ -521,10 +536,24 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="notes-input" class="form-label">Notes</label>
-                            <textarea class="form-control" id="notes-input" rows="3" 
-                                      placeholder="Notes additionnelles..."></textarea>
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="notes-input" class="form-label">Notes</label>
+                                <textarea class="form-control" id="notes-input" rows="3" 
+                                          placeholder="Notes additionnelles..."></textarea>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Photo de profil</label>
+                                <div class="text-center">
+                                    <div id="new-photo-container" class="mb-2">
+                                        <!-- La photo sera affichée ici -->
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm btn-upload-photo" id="new-upload-photo-btn">
+                                        <i class="fas fa-camera me-1"></i>
+                                        Ajouter une photo
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
@@ -587,9 +616,23 @@
                                 <input type="date" class="form-control" id="edit-date-embauche-input" required>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="edit-notes-input" class="form-label">Notes</label>
-                            <textarea class="form-control" id="edit-notes-input" rows="3" placeholder="Notes additionnelles..."></textarea>
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="edit-notes-input" class="form-label">Notes</label>
+                                <textarea class="form-control" id="edit-notes-input" rows="3" placeholder="Notes additionnelles..."></textarea>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Photo de profil</label>
+                                <div class="text-center">
+                                    <div id="edit-photo-container" class="mb-2">
+                                        <!-- La photo sera affichée ici -->
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm btn-upload-photo" id="edit-upload-photo-btn">
+                                        <i class="fas fa-camera me-1"></i>
+                                        Changer la photo
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
@@ -980,6 +1023,15 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Section Photo de Profil -->
+                    <div class="row mb-4">
+                        <div class="col-12 text-center">
+                            <div id="view-photo-container" class="d-inline-block">
+                                <!-- La photo sera affichée ici -->
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="row">
                         <div class="col-md-6">
                             <h6 class="text-primary mb-3">Informations Personnelles</h6>
@@ -1180,13 +1232,17 @@
             filteredCollaborateurs.forEach((collaborateur, index) => {
                 console.log('👤 Affichage collaborateur:', collaborateur.nom, collaborateur.prenom);
                 const row = document.createElement('tr');
+                row.setAttribute('data-collaborateur-id', collaborateur.id);
                 const initials = getInitials(collaborateur.nom, collaborateur.prenom);
                 
                 row.innerHTML = `
                     <td>
-                        <div class="collaborateur-avatar">
-                            ${initials}
-                        </div>
+                        ${window.photoUploadManager ? 
+                            window.photoUploadManager.createPhotoElement(collaborateur, 'normal').outerHTML :
+                            `<div class="collaborateur-avatar">
+                                ${initials}
+                            </div>`
+                        }
                     </td>
                     <td>${collaborateur.nom}</td>
                     <td>${collaborateur.prenom}</td>
@@ -1584,6 +1640,17 @@
                     // Créer automatiquement les historiques RH supplémentaires si nécessaire
                     await createRHHistory(newCollaborateurId);
                     
+                    // Upload de la photo si elle a été sélectionnée
+                    if (window.tempPhotoForNewCollaborateur) {
+                        try {
+                            await uploadPhotoForNewCollaborateur(newCollaborateurId, window.tempPhotoForNewCollaborateur);
+                            delete window.tempPhotoForNewCollaborateur;
+                        } catch (photoError) {
+                            console.error('Erreur upload photo:', photoError);
+                            // Ne pas bloquer la création si l'upload de photo échoue
+                        }
+                    }
+                    
                     showAlert('Collaborateur créé avec succès et historiques RH initialisés', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('newCollaborateurModal')).hide();
                     loadCollaborateurs();
@@ -1593,6 +1660,36 @@
             } catch (error) {
                 console.error('Erreur lors de la soumission:', error);
                 showAlert('Erreur lors de la soumission', 'danger');
+            }
+        }
+
+        async function uploadPhotoForNewCollaborateur(collaborateurId, photoFile) {
+            try {
+                const formData = new FormData();
+                formData.append('photo', photoFile);
+
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/collaborateurs/${collaborateurId}/upload-photo`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        console.log('✅ Photo uploadée avec succès pour le nouveau collaborateur');
+                    } else {
+                        console.error('❌ Erreur upload photo:', result.error);
+                    }
+                } else {
+                    console.error('❌ Erreur upload photo:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Erreur upload photo:', error);
+                throw error;
             }
         }
 
@@ -2349,6 +2446,16 @@
                     document.getElementById('edit-date-embauche-input').value = collaborateur.date_embauche ? collaborateur.date_embauche.split('T')[0] : '';
                     document.getElementById('edit-notes-input').value = collaborateur.notes || '';
                     
+                    // Afficher la photo dans le modal
+                    const photoContainer = document.getElementById('edit-photo-container');
+                    const uploadBtn = document.getElementById('edit-upload-photo-btn');
+                    
+                    if (window.photoUploadManager) {
+                        photoContainer.innerHTML = '';
+                        photoContainer.appendChild(window.photoUploadManager.createPhotoElement(collaborateur, 'large'));
+                        uploadBtn.dataset.collaborateurId = collaborateur.id;
+                    }
+                    
                     new bootstrap.Modal(document.getElementById('editCollaborateurModal')).show();
                 } else {
                     showAlert('Erreur lors du chargement du collaborateur', 'danger');
@@ -2673,6 +2780,13 @@
             if (!collaborateur) {
                 showAlert('Collaborateur non trouvé', 'danger');
                 return;
+            }
+            
+            // Afficher la photo de profil
+            const photoContainer = document.getElementById('view-photo-container');
+            if (photoContainer && window.photoUploadManager) {
+                photoContainer.innerHTML = '';
+                photoContainer.appendChild(window.photoUploadManager.createPhotoElement(collaborateur, 'large'));
             }
             
             // Remplir le modal avec les données
@@ -3079,5 +3193,7 @@
             </div>
         </div>
     </div>
+    <!-- Script pour la gestion des photos -->
+    <script src="js/photo-upload.js"></script>
     </body>
 </html>

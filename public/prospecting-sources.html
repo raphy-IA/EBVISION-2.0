@@ -97,6 +97,9 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5><i class="fas fa-building me-2"></i>Entreprises de la source: <span id="currentSourceName"></span></h5>
                                 <div>
+                                    <button class="btn btn-sm btn-success me-2" onclick="showCreateCompanyModal()">
+                                        <i class="fas fa-plus me-1"></i>Créer une entreprise
+                                    </button>
                                     <button class="btn btn-sm btn-danger" id="btnDeleteSelected" onclick="deleteSelectedCompanies()" style="display:none;">
                                         <i class="fas fa-trash me-1"></i>Supprimer sélection (<span id="selectedCount">0</span>)
                                     </button>
@@ -412,7 +415,7 @@
             if (res.ok) {
                 const message = `Import terminé:\n` +
                     `✅ ${d.data?.inserted || 0} entreprises ajoutées\n` +
-                    `⚠️ ${d.data?.skipped || 0} doublons ignorés\n` +
+                    `🔄 ${d.data?.updated || 0} entreprises mises à jour\n` +
                     `❌ ${d.data?.errors || 0} erreurs\n` +
                     `📊 Total traité: ${d.data?.total || 0}`;
                 alert(message);
@@ -934,11 +937,199 @@
             }
         }
 
+        // Fonction pour afficher le modal de création d'entreprise
+        function showCreateCompanyModal() {
+            if (!currentSourceId) {
+                alert('Veuillez d\'abord sélectionner une source d\'entreprises.');
+                return;
+            }
+            
+            // Réinitialiser le formulaire
+            document.getElementById('createCompanyForm').reset();
+            document.getElementById('companyCountry').value = 'Cameroun';
+            
+            // Afficher le modal
+            const modal = new bootstrap.Modal(document.getElementById('createCompanyModal'));
+            modal.show();
+        }
+
+        // Fonction pour créer une entreprise
+        async function createCompany() {
+            // Récupérer les données du formulaire
+            const formData = {
+                name: document.getElementById('companyName').value.trim(),
+                sigle: document.getElementById('companySigle').value.trim() || null,
+                industry: document.getElementById('companyIndustry').value.trim() || null,
+                size_label: document.getElementById('companySize').value || null,
+                email: document.getElementById('companyEmail').value.trim() || null,
+                phone: document.getElementById('companyPhone').value.trim() || null,
+                website: document.getElementById('companyWebsite').value.trim() || null,
+                siret: document.getElementById('companySiret').value.trim() || null,
+                country: document.getElementById('companyCountry').value.trim() || null,
+                city: document.getElementById('companyCity').value.trim() || null,
+                address: document.getElementById('companyAddress').value.trim() || null
+            };
+
+            // Validation
+            if (!formData.name) {
+                alert('Le nom de l\'entreprise est obligatoire.');
+                return;
+            }
+
+            try {
+                // Afficher un indicateur de chargement
+                const createBtn = document.querySelector('#createCompanyModal .btn-primary');
+                const originalText = createBtn.innerHTML;
+                createBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Création...';
+                createBtn.disabled = true;
+
+                // Appel API pour créer l'entreprise
+                const res = await fetch(`${API}/companies`, {
+                    method: 'POST',
+                    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...formData,
+                        source_id: currentSourceId
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // Fermer le modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createCompanyModal'));
+                    modal.hide();
+
+                    // Afficher le message de succès
+                    alert(`Entreprise "${formData.name}" créée avec succès !`);
+
+                    // Recharger les données
+                    await loadSources();
+                    if (currentSourceId) {
+                        await searchAndFilterCompanies();
+                    }
+                } else {
+                    alert('Erreur: ' + (data.message || data.error || res.status));
+                }
+            } catch (error) {
+                console.error('Erreur création entreprise:', error);
+                alert('Erreur lors de la création de l\'entreprise');
+            } finally {
+                // Restaurer le bouton
+                const createBtn = document.querySelector('#createCompanyModal .btn-primary');
+                createBtn.innerHTML = '<i class="fas fa-save me-1"></i>Créer l\'entreprise';
+                createBtn.disabled = false;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadSources();
         });
     </script>
     <script src="js/session-manager.js"></script>
+
+    <!-- Modal de création d'entreprise -->
+    <div class="modal fade" id="createCompanyModal" tabindex="-1" aria-labelledby="createCompanyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createCompanyModalLabel">
+                        <i class="fas fa-plus me-2"></i>Créer une nouvelle entreprise
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createCompanyForm">
+                        <div class="row g-3">
+                            <!-- Informations principales -->
+                            <div class="col-md-12">
+                                <h6 class="text-primary mb-3"><i class="fas fa-building me-2"></i>Informations principales</h6>
+                            </div>
+                            
+                            <div class="col-md-8">
+                                <label for="companyName" class="form-label">Nom de l'entreprise *</label>
+                                <input type="text" class="form-control" id="companyName" required>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="companySigle" class="form-label">Sigle</label>
+                                <input type="text" class="form-control" id="companySigle" placeholder="Ex: UBA, CDC">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="companyIndustry" class="form-label">Secteur d'activité</label>
+                                <input type="text" class="form-control" id="companyIndustry" placeholder="Ex: Banque, Commerce">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="companySize" class="form-label">Taille</label>
+                                <select class="form-select" id="companySize">
+                                    <option value="">Sélectionner...</option>
+                                    <option value="TPE">TPE (Très Petite Entreprise)</option>
+                                    <option value="PME">PME (Petite et Moyenne Entreprise)</option>
+                                    <option value="GE">GE (Grande Entreprise)</option>
+                                    <option value="ETI">ETI (Entreprise de Taille Intermédiaire)</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Contact -->
+                            <div class="col-md-12">
+                                <h6 class="text-primary mb-3"><i class="fas fa-address-book me-2"></i>Contact</h6>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="companyEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="companyEmail" placeholder="contact@entreprise.com">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="companyPhone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="companyPhone" placeholder="+237 XXX XXX XXX">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="companyWebsite" class="form-label">Site web</label>
+                                <input type="url" class="form-control" id="companyWebsite" placeholder="https://www.entreprise.com">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="companySiret" class="form-label">SIRET/NIU</label>
+                                <input type="text" class="form-control" id="companySiret" placeholder="Numéro d'identification">
+                            </div>
+                            
+                            <!-- Localisation -->
+                            <div class="col-md-12">
+                                <h6 class="text-primary mb-3"><i class="fas fa-map-marker-alt me-2"></i>Localisation</h6>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="companyCountry" class="form-label">Pays</label>
+                                <input type="text" class="form-control" id="companyCountry" value="Cameroun">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="companyCity" class="form-label">Ville</label>
+                                <input type="text" class="form-control" id="companyCity" placeholder="Ex: Douala, Yaoundé">
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <label for="companyAddress" class="form-label">Adresse</label>
+                                <textarea class="form-control" id="companyAddress" rows="2" placeholder="Adresse complète de l'entreprise"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Annuler
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="createCompany()">
+                        <i class="fas fa-save me-1"></i>Créer l'entreprise
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 

@@ -1,26 +1,20 @@
-// Gestionnaire du menu de profil utilisateur
+// Gestionnaire du menu de profil utilisateur - APPROCHE SIMPLE
 class ProfileMenuManager {
     constructor() {
-        this.isInitialized = false;
+        if (ProfileMenuManager.instance) {
+            return ProfileMenuManager.instance;
+        }
+        ProfileMenuManager.instance = this;
+        
         this.init();
     }
 
     init() {
         console.log('🔧 Initialisation du ProfileMenuManager');
-        
-        // Attendre que le DOM soit chargé ET que la sidebar soit chargée
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.waitForSidebar());
-        } else {
-            // Attendre un peu plus pour s'assurer que tous les scripts sont chargés
-            setTimeout(() => this.waitForSidebar(), 500);
-        }
+        this.waitForSidebar();
     }
 
     waitForSidebar() {
-        console.log('⏳ Attente du chargement de la sidebar...');
-        
-        // Vérifier si les éléments de la sidebar sont présents
         const checkSidebar = () => {
             const userProfileToggle = document.getElementById('userProfileToggle');
             const userProfileMenu = document.getElementById('userProfileMenu');
@@ -29,300 +23,523 @@ class ProfileMenuManager {
                 console.log('✅ Sidebar chargée, configuration des événements');
                 this.setupEventListeners();
             } else {
-                console.log('⏳ Sidebar pas encore chargée, nouvelle tentative dans 500ms...');
                 setTimeout(checkSidebar, 500);
             }
         };
         
-        // Première vérification après un délai
         setTimeout(checkSidebar, 1000);
     }
 
     setupEventListeners() {
-        console.log('🔧 Configuration des gestionnaires d\'événements du profil');
-        
-        // Gestionnaire pour le toggle du profil
+        // Toggle du profil
         const userProfileToggle = document.getElementById('userProfileToggle');
         const userProfileMenu = document.getElementById('userProfileMenu');
-        const profileToggleIcon = document.getElementById('profileToggleIcon');
-        
-        console.log('📋 Éléments trouvés:', {
-            userProfileToggle: !!userProfileToggle,
-            userProfileMenu: !!userProfileMenu,
-            profileToggleIcon: !!profileToggleIcon
-        });
         
         if (userProfileToggle && userProfileMenu) {
-            userProfileToggle.addEventListener('click', (e) => this.handleToggleClick(e));
-            console.log('✅ Gestionnaire d\'événement attaché au toggle');
-        } else {
-            console.error('❌ Éléments manquants pour le toggle du profil');
+            userProfileToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isExpanded = userProfileMenu.style.display === 'block';
+                if (isExpanded) {
+                    userProfileMenu.style.display = 'none';
+                    userProfileToggle.classList.remove('expanded');
+                } else {
+                    userProfileMenu.style.display = 'block';
+                    userProfileToggle.classList.add('expanded');
+                }
+            });
         }
 
-        // Gestionnaire pour "Mon profil"
+        // Bouton "Mon profil"
         const profileMenuItem = document.getElementById('profileMenuItem');
         if (profileMenuItem) {
-            profileMenuItem.addEventListener('click', () => this.handleProfileClick());
+            profileMenuItem.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('👤 Clic sur "Mon profil"');
+                this.openProfileModal();
+            });
         }
 
-        // Gestionnaire pour les notifications
+        // Notifications
         const notificationsMenuItem = document.getElementById('notificationsMenuItem');
         if (notificationsMenuItem) {
-            notificationsMenuItem.addEventListener('click', () => this.handleNotificationsClick());
+            notificationsMenuItem.addEventListener('click', () => {
+                console.log('🔔 Clic sur "Notifications"');
+                if (typeof window.openNotificationsModal === 'function') {
+                    console.log('✅ Fonction openNotificationsModal trouvée');
+                    window.openNotificationsModal();
+                } else {
+                    console.error('❌ Fonction openNotificationsModal non trouvée');
+                    // Fallback: essayer d'ouvrir le modal directement
+                    const modal = document.getElementById('notificationsModal');
+                    if (modal) {
+                        console.log('🔄 Tentative d\'ouverture directe du modal');
+                        const bootstrapModal = new bootstrap.Modal(modal);
+                        bootstrapModal.show();
+                        // Charger les notifications
+                        if (typeof loadNotifications === 'function') {
+                            loadNotifications(50, 0);
+                        }
+                    } else {
+                        console.error('❌ Modal notificationsModal non trouvé');
+                        alert('Erreur: Impossible d\'ouvrir les notifications');
+                    }
+                }
+            });
         }
 
-        // Gestionnaire pour les tâches
+        // Tâches
         const tasksMenuItem = document.getElementById('tasksMenuItem');
         if (tasksMenuItem) {
-            tasksMenuItem.addEventListener('click', () => this.handleTasksClick());
+            tasksMenuItem.addEventListener('click', () => {
+                if (typeof window.openTasksModal === 'function') {
+                    window.openTasksModal();
+                }
+            });
         }
 
-        // Gestionnaire pour la déconnexion
+        // Déconnexion
         const logoutMenuItem = document.getElementById('logoutMenuItem');
         if (logoutMenuItem) {
-            logoutMenuItem.addEventListener('click', () => this.handleLogoutClick());
+            logoutMenuItem.addEventListener('click', () => {
+                if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                }
+            });
         }
 
-        this.isInitialized = true;
-        console.log('✅ ProfileMenuManager initialisé avec succès');
+        console.log('✅ ProfileMenuManager initialisé');
     }
 
-    handleToggleClick(e) {
-        e.preventDefault();
-        e.stopPropagation();
+    // MÉTHODE SIMPLE POUR OUVRIR LE MODAL - comme les notifications
+    openProfileModal() {
+        console.log('📋 Ouverture du modal de profil');
         
-        console.log('🖱️ Clic sur le toggle du profil');
-        const userProfileToggle = document.getElementById('userProfileToggle');
-        const userProfileMenu = document.getElementById('userProfileMenu');
-        
-        if (!userProfileToggle || !userProfileMenu) {
-            console.error('❌ Éléments manquants pour le toggle');
+        // Vérifier Bootstrap
+        if (typeof bootstrap === 'undefined') {
+            alert('Erreur: Bootstrap non chargé');
             return;
         }
         
-        const isExpanded = userProfileMenu.style.display === 'block';
+        // Vérifier le modal
+        const modalElement = document.getElementById('profileModal');
+        if (!modalElement) {
+            alert('Erreur: Modal de profil non trouvé');
+            return;
+        }
         
-        if (isExpanded) {
-            // Fermer le menu
-            console.log('📂 Fermeture du menu');
-            userProfileMenu.style.display = 'none';
-            userProfileToggle.classList.remove('expanded');
-        } else {
-            // Ouvrir le menu
-            console.log('📂 Ouverture du menu');
-            userProfileMenu.style.display = 'block';
-            userProfileToggle.classList.add('expanded');
-        }
-    }
-
-    handleProfileClick() {
-        console.log('👤 Ouverture du profil utilisateur');
-        window.location.href = '/profile.html';
-    }
-
-    handleNotificationsClick() {
-        console.log('🔔 Ouverture des notifications');
-        // Utiliser le système de notifications existant
-        if (typeof window.openNotificationsModal === 'function') {
-            window.openNotificationsModal();
-        } else {
-            console.error('❌ Fonction openNotificationsModal non trouvée');
-            alert('Système de notifications non disponible');
-        }
-    }
-
-    handleTasksClick() {
-        console.log('📋 Ouverture des tâches');
-        // Utiliser le système de tâches existant
-        if (typeof window.openTasksModal === 'function') {
-            window.openTasksModal();
-        } else {
-            console.error('❌ Fonction openTasksModal non trouvée');
-            // Attendre un peu et réessayer
+        try {
+            // Afficher chargement
+            this.showLoading();
+            
+            // Charger données
+            this.loadProfileData();
+            
+            // Ouvrir modal comme les notifications
+            const profileModal = new bootstrap.Modal(modalElement);
+            profileModal.show();
+            
+            // Attacher les événements du modal APRÈS l'ouverture
             setTimeout(() => {
-                if (typeof window.openTasksModal === 'function') {
-                    console.log('✅ Fonction openTasksModal trouvée après délai');
-                    window.openTasksModal();
-                } else {
-                    console.error('❌ Fonction openTasksModal toujours non trouvée');
-                    alert('Système de tâches non disponible');
-                }
-            }, 1000);
-        }
-    }
-
-    handleLogoutClick() {
-        console.log('🚪 Déconnexion');
-        if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('user');
-            window.location.href = '/';
-        }
-    }
-
-    // Méthodes publiques pour les tests
-    testMenu() {
-        console.log('🧪 Test manuel du menu profil');
-        const toggle = document.getElementById('userProfileToggle');
-        const menu = document.getElementById('userProfileMenu');
-        
-        if (toggle && menu) {
-            console.log('✅ Éléments trouvés, test du clic...');
-            toggle.click();
-            return true;
-        } else {
-            console.error('❌ Éléments manquants');
-            return false;
-        }
-    }
-
-    openMenu() {
-        const toggle = document.getElementById('userProfileToggle');
-        const menu = document.getElementById('userProfileMenu');
-        
-        if (toggle && menu) {
-            menu.style.display = 'block';
-            toggle.classList.add('expanded');
-            console.log('✅ Menu forcé ouvert');
-        }
-    }
-
-    closeMenu() {
-        const toggle = document.getElementById('userProfileToggle');
-        const menu = document.getElementById('userProfileMenu');
-        
-        if (toggle && menu) {
-            menu.style.display = 'none';
-            toggle.classList.remove('expanded');
-            console.log('✅ Menu forcé fermé');
-        }
-    }
-
-    updateNotificationBubble() {
-        const notificationBubble = document.getElementById('notificationBubble');
-        const menuNotificationCount = document.getElementById('menuNotificationCount');
-        const menuTaskCount = document.getElementById('menuTaskCount');
-        
-        // Charger les vraies données de notifications et tâches
-        Promise.all([
-            this.loadNotificationStats(),
-            this.loadTaskStats()
-        ]).then(([notificationStats, taskStats]) => {
-            const notificationCount = notificationStats.unread_count || 0;
-            const taskCount = taskStats.total_tasks || 0;
+                this.attachProfileModalEvents();
+            }, 100);
             
-            // Mettre à jour les badges du menu
-            if (menuNotificationCount) menuNotificationCount.textContent = notificationCount;
-            if (menuTaskCount) menuTaskCount.textContent = taskCount;
+            // Ajouter un écouteur pour nettoyer le backdrop lors de la fermeture
+            modalElement.addEventListener('hidden.bs.modal', () => {
+                this.cleanupBackdrop();
+            });
             
-            // Afficher la bulle si il y a des notifications ou tâches
-            if (notificationBubble) {
-                if (notificationCount > 0 || taskCount > 0) {
-                    notificationBubble.style.display = 'flex';
-                } else {
-                    notificationBubble.style.display = 'none';
-                }
+            console.log('✅ Modal ouvert avec succès');
+        } catch (error) {
+            console.error('❌ Erreur:', error);
+            alert('Erreur lors de l\'ouverture du modal');
+        }
+    }
+
+    // Méthode pour nettoyer le backdrop
+    cleanupBackdrop() {
+        // Supprimer le backdrop manuellement
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+
+        // Réactiver le scroll de la page
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        
+        console.log('🧹 Backdrop nettoyé');
+    }
+
+    showLoading() {
+        const loading = document.getElementById('profileLoadingState');
+        const error = document.getElementById('profileErrorState');
+        const content = document.getElementById('profileContent');
+        
+        if (loading) loading.style.display = 'block';
+        if (error) error.style.display = 'none';
+        if (content) content.style.display = 'none';
+    }
+
+    showError(message) {
+        const loading = document.getElementById('profileLoadingState');
+        const error = document.getElementById('profileErrorState');
+        const content = document.getElementById('profileContent');
+        const errorMsg = document.getElementById('profileErrorMessage');
+        
+        if (loading) loading.style.display = 'none';
+        if (error) error.style.display = 'block';
+        if (content) content.style.display = 'none';
+        if (errorMsg) errorMsg.textContent = message;
+    }
+
+    showContent() {
+        const loading = document.getElementById('profileLoadingState');
+        const error = document.getElementById('profileErrorState');
+        const content = document.getElementById('profileContent');
+        
+        if (loading) loading.style.display = 'none';
+        if (error) error.style.display = 'none';
+        if (content) content.style.display = 'block';
+    }
+
+    async loadProfileData() {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) throw new Error('Token manquant');
+
+            const response = await fetch('/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) throw new Error('Erreur API');
+
+            const result = await response.json();
+            console.log('✅ Données utilisateur:', result);
+
+            // Extraire les données utilisateur
+            const userData = result.data ? result.data.user : result;
+            console.log('📊 Données utilisateur extraites:', userData);
+
+            // Afficher les informations de base
+            this.displayProfileData(userData);
+
+            // Si l'utilisateur a un collaborateur_id, charger les informations collaborateur
+            if (userData.collaborateur_id) {
+                await this.loadCollaboratorData(userData.collaborateur_id);
             }
-        }).catch(error => {
-            console.error('❌ Erreur lors du chargement des statistiques:', error);
+
+            this.showContent();
+
+        } catch (error) {
+            console.error('❌ Erreur:', error);
+            this.showError(error.message);
+        }
+    }
+
+    displayProfileData(userData) {
+        // Debug: afficher la valeur exacte du statut
+        console.log('🔍 Valeur du statut:', userData.statut, 'Type:', typeof userData.statut);
+        
+        // Informations de base
+        const elements = {
+            profileName: `${userData.prenom} ${userData.nom}`,
+            profileRole: this.getRoleName(userData.role),
+            userNom: userData.nom || '-',
+            userPrenom: userData.prenom || '-',
+            userEmail: userData.email || '-',
+            userLogin: userData.login || '-',
+            userStatut: userData.statut === 'actif' || userData.statut === 'ACTIF' ? 'Actif' : 'Inactif',
+            userLastLogin: userData.last_login ? new Date(userData.last_login).toLocaleString('fr-FR') : '-',
+            userCreatedAt: userData.created_at ? new Date(userData.created_at).toLocaleDateString('fr-FR') : '-'
+        };
+
+        // Remplir les éléments
+        Object.keys(elements).forEach(id => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = elements[id];
+        });
+
+        // Badge rôle
+        const roleBadge = document.getElementById('userRoleBadge');
+        if (roleBadge) {
+            roleBadge.textContent = this.getRoleName(userData.role);
+            roleBadge.className = this.getRoleClass(userData.role);
+        }
+
+        // Statut
+        const status = document.getElementById('profileStatus');
+        if (status) {
+            const isActive = userData.statut === 'actif' || userData.statut === 'ACTIF';
+            status.textContent = isActive ? 'Actif' : 'Inactif';
+            status.className = isActive ? 'badge bg-success' : 'badge bg-danger';
+        }
+
+        // Photo
+        this.displayPhoto(userData);
+    }
+
+    displayPhoto(userData) {
+        const container = document.getElementById('profilePhotoContainer');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        if (userData.collaborateur_photo_url) {
+            const img = document.createElement('img');
+            img.src = `/${userData.collaborateur_photo_url}`;
+            img.alt = `${userData.prenom} ${userData.nom}`;
+            img.className = 'collaborateur-avatar large';
+            img.onerror = () => {
+                container.innerHTML = `<div class="collaborateur-avatar large">${this.getInitials(userData.nom, userData.prenom)}</div>`;
+            };
+            container.appendChild(img);
+        } else {
+            container.innerHTML = `<div class="collaborateur-avatar large">${this.getInitials(userData.nom, userData.prenom)}</div>`;
+        }
+    }
+
+    getInitials(nom, prenom) {
+        const nomInitial = nom ? nom.charAt(0).toUpperCase() : '';
+        const prenomInitial = prenom ? prenom.charAt(0).toUpperCase() : '';
+        return nomInitial + prenomInitial;
+    }
+
+    getRoleName(role) {
+        const roles = {
+            'admin': 'Administrateur',
+            'manager': 'Manager',
+            'user': 'Utilisateur'
+        };
+        return roles[role] || role;
+    }
+
+    getRoleClass(role) {
+        const classes = {
+            'admin': 'badge bg-danger',
+            'manager': 'badge bg-warning',
+            'user': 'badge bg-primary'
+        };
+        return classes[role] || 'badge bg-primary';
+    }
+
+    async loadCollaboratorData(collaborateurId) {
+        try {
+            console.log('👤 Chargement des données collaborateur pour ID:', collaborateurId);
+            
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/collaborateurs/${collaborateurId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const collaborateurData = await response.json();
+                console.log('✅ Données collaborateur chargées:', collaborateurData);
+                
+                // Debug: afficher la structure complète des données
+                console.log('🔍 Structure des données collaborateur:', {
+                    data: collaborateurData.data,
+                    business_unit_nom: collaborateurData.data?.business_unit_nom,
+                    division_nom: collaborateurData.data?.division_nom,
+                    grade_nom: collaborateurData.data?.grade_nom,
+                    poste_nom: collaborateurData.data?.poste_nom
+                });
+                
+                this.displayCollaboratorData(collaborateurData);
+            } else {
+                console.warn('⚠️ Impossible de charger les données collaborateur');
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement des données collaborateur:', error);
+        }
+    }
+
+    displayCollaboratorData(collaborateurData) {
+        // Afficher la section collaborateur
+        const collaboratorInfo = document.getElementById('collaboratorInfo');
+        if (collaboratorInfo) {
+            collaboratorInfo.style.display = 'block';
+        }
+
+        // Extraire les données du bon niveau
+        const data = collaborateurData.data || collaborateurData;
+        
+        // Remplir les informations collaborateur
+        const elements = {
+            collaborateurBusinessUnit: data.business_unit_nom || '-',
+            collaborateurDivision: data.division_nom || '-',
+            collaborateurGrade: data.grade_nom || '-',
+            collaborateurPoste: data.poste_nom || '-'
+        };
+
+        // Debug: afficher les valeurs extraites
+        console.log('🔍 Valeurs extraites pour l\'affichage:', elements);
+
+        // Remplir les éléments
+        Object.keys(elements).forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = elements[id];
+                console.log(`✅ Élément ${id} mis à jour avec: "${elements[id]}"`);
+            } else {
+                console.warn(`⚠️ Élément ${id} non trouvé dans le DOM`);
+            }
         });
     }
 
-    async loadTaskStats() {
-        try {
-            const response = await fetch('/api/tasks/stats/stats', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                }
-            });
-            
-            if (response.ok) {
-                const result = await response.json();
-                return result || { total_tasks: 0, active_tasks: 0 };
-            } else {
-                console.error('❌ Erreur API tasks stats:', response.status);
-                return { total_tasks: 0, active_tasks: 0 };
-            }
-        } catch (error) {
-            console.error('❌ Erreur lors du chargement des stats tâches:', error);
-            return { total_tasks: 0, active_tasks: 0 };
+    attachProfileModalEvents() {
+        // Gestionnaire pour le bouton "Modifier le Profil"
+        const editProfileBtn = document.getElementById('editProfileBtn');
+        if (editProfileBtn) {
+            editProfileBtn.onclick = () => {
+                console.log('✏️ Ouverture de la modification du profil');
+                // Pour l'instant, afficher un message informatif
+                alert('Fonctionnalité de modification du profil sera implémentée prochainement.\n\nPour l\'instant, vous pouvez voir toutes vos informations dans ce modal et changer votre mot de passe.');
+            };
+        } else {
+            console.warn('⚠️ Bouton "Modifier le Profil" non trouvé');
+        }
+
+        // Gestionnaire pour le bouton "Changer le Mot de Passe"
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        if (changePasswordBtn) {
+            changePasswordBtn.onclick = () => {
+                console.log('🔑 Ouverture du changement de mot de passe');
+                this.openChangePasswordModal();
+            };
+        } else {
+            console.warn('⚠️ Bouton "Changer le Mot de Passe" non trouvé');
         }
     }
 
-    async loadNotificationStats() {
+    openChangePasswordModal() {
+        // Fermer le modal de profil
+        const profileModal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
+        if (profileModal) {
+            profileModal.hide();
+        }
+
+        // Nettoyer le backdrop du modal de profil
+        setTimeout(() => {
+            this.cleanupBackdrop();
+        }, 150);
+
+        // Ouvrir le modal de changement de mot de passe
+        const changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+        changePasswordModal.show();
+
+        // Attacher les événements du modal de changement de mot de passe
+        this.attachChangePasswordEvents();
+    }
+
+    attachChangePasswordEvents() {
+        const submitBtn = document.getElementById('submitPasswordChange');
+        const form = document.getElementById('changePasswordForm');
+
+        if (submitBtn) {
+            submitBtn.onclick = () => this.handlePasswordChange();
+        }
+
+        if (form) {
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                this.handlePasswordChange();
+            };
+        }
+    }
+
+    async handlePasswordChange() {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        // Debug: afficher les valeurs
+        console.log('🔍 Valeurs des champs:', {
+            currentPassword: currentPassword ? '***' : 'undefined',
+            newPassword: newPassword ? '***' : 'undefined',
+            confirmPassword: confirmPassword ? '***' : 'undefined'
+        });
+
+        // Validation
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            alert('Veuillez remplir tous les champs');
+            return;
+        }
+
+        if (newPassword.length < 8) {
+            alert('Le nouveau mot de passe doit contenir au moins 8 caractères');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            alert('Les mots de passe ne correspondent pas');
+            return;
+        }
+
         try {
-            const response = await fetch('/api/notifications/stats', {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('/api/auth/change-password', {
+                method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                }
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    currentPassword,
+                    newPassword
+                })
             });
-            
+
+            const result = await response.json();
+
             if (response.ok) {
-                const result = await response.json();
-                return result.data || { unread_count: 0, total_count: 0 };
+                alert('Mot de passe changé avec succès !');
+                
+                // Fermer le modal
+                const changePasswordModal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+                if (changePasswordModal) {
+                    changePasswordModal.hide();
+                }
+
+                // Nettoyer le backdrop
+                this.cleanupBackdrop();
+
+                // Vider le formulaire
+                document.getElementById('changePasswordForm').reset();
             } else {
-                console.error('❌ Erreur API notifications stats:', response.status);
-                return { unread_count: 0, total_count: 0 };
+                alert(result.message || 'Erreur lors du changement de mot de passe');
             }
         } catch (error) {
-            console.error('❌ Erreur lors du chargement des stats notifications:', error);
-            return { unread_count: 0, total_count: 0 };
+            console.error('❌ Erreur:', error);
+            alert('Erreur lors du changement de mot de passe');
         }
     }
 }
 
-// Initialiser le gestionnaire
+// Initialisation
 let profileMenuManager = null;
 
-// Fonction d'initialisation
 function initProfileMenu() {
     if (!profileMenuManager) {
-        console.log('🚀 Création du ProfileMenuManager');
         profileMenuManager = new ProfileMenuManager();
-        
-        // Mettre à jour les badges après un délai plus long
-        setTimeout(() => {
-            if (profileMenuManager && profileMenuManager.isInitialized) {
-                profileMenuManager.updateNotificationBubble();
-            }
-        }, 3000);
     }
 }
 
-// Fonctions globales pour les tests
-window.testProfileMenu = function() {
+// Fonction globale
+window.openProfileModal = function() {
     if (profileMenuManager) {
-        return profileMenuManager.testMenu();
-    } else {
-        console.error('❌ ProfileMenuManager non initialisé');
-        return false;
+        profileMenuManager.openProfileModal();
     }
 };
 
-window.openProfileMenu = function() {
-    if (profileMenuManager) {
-        profileMenuManager.openMenu();
-    } else {
-        console.error('❌ ProfileMenuManager non initialisé');
-    }
-};
-
-window.closeProfileMenu = function() {
-    if (profileMenuManager) {
-        profileMenuManager.closeMenu();
-    } else {
-        console.error('❌ ProfileMenuManager non initialisé');
-    }
-};
-
-// Fonction pour forcer la réinitialisation (utile pour les tests)
-window.reinitProfileMenu = function() {
-    console.log('🔄 Réinitialisation forcée du ProfileMenuManager');
-    profileMenuManager = null;
-    initProfileMenu();
-};
-
-// Initialiser automatiquement
+// Auto-init
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initProfileMenu);
 } else {

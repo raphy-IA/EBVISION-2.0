@@ -249,43 +249,105 @@
     <script src="/js/sidebar.js" defer></script>
     <script>
         const API_BASE_URL = '/api';
-        // Fonction utilitaire pour les appels API authentifiés
-        async function authenticatedFetch(url, options = {}) {
-            const token = localStorage.getItem('authToken');
-            const defaultHeaders = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            };
-            
-            return fetch(url, {
-                ...options,
-                headers: {
-                    ...defaultHeaders,
-                    ...options.headers
-                }
-            });
-        }
-
         let reportChartInstance;
 
         document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAuth()) return;
             loadFiltersData();
             // Initial load of a default report
             generateReport();
         });
 
+        // Fonction pour obtenir les en-têtes d'authentification
+        function getAuthHeader() {
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        // Fonction pour vérifier l'authentification
+        function checkAuth() {
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Fonction pour afficher une alerte
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.main-content-area');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Fonction pour afficher/masquer le loading
+        function showLoading(show = true) {
+            const loadingDiv = document.getElementById('report-loading');
+            const contentDiv = document.getElementById('report-content');
+            if (loadingDiv) {
+                loadingDiv.style.display = show ? 'flex' : 'none';
+            }
+            if (contentDiv) {
+                contentDiv.style.display = show ? 'none' : 'block';
+            }
+        }
+
+        // Charger les données de filtre
         async function loadFiltersData() {
+            if (!checkAuth()) return;
+            
             try {
                 const [collaboratorsRes, clientsRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/collaborateurs`),
-                    fetch(`${API_BASE_URL}/clients`)
+                    fetch(`${API_BASE_URL}/collaborateurs`, {
+                        headers: getAuthHeader()
+                    }),
+                    fetch(`${API_BASE_URL}/clients`, {
+                        headers: getAuthHeader()
+                    })
                 ]);
+
+                if (!collaboratorsRes.ok || !clientsRes.ok) {
+                    throw new Error('Erreur lors du chargement des données de filtre');
+                }
 
                 const collaboratorsData = await collaboratorsRes.json();
                 const clientsData = await clientsRes.json();
 
-                populateSelect('collaboratorSelect', collaboratorsData.data, 'id', 'nom', 'prenom');
-                populateSelect('clientSelect', clientsData.data, 'id', 'raison_sociale');
+                // Vérifier que les données sont des tableaux
+                if (collaboratorsData.success && Array.isArray(collaboratorsData.data)) {
+                    populateSelect('collaboratorSelect', collaboratorsData.data, 'id', 'nom', 'prenom');
+                } else if (collaboratorsData.success && collaboratorsData.data && Array.isArray(collaboratorsData.data.collaborateurs)) {
+                    populateSelect('collaboratorSelect', collaboratorsData.data.collaborateurs, 'id', 'nom', 'prenom');
+                } else {
+                    console.warn('Données collaborateurs invalides:', collaboratorsData);
+                    populateSelect('collaboratorSelect', [], 'id', 'nom', 'prenom');
+                }
+
+                if (clientsData.success && Array.isArray(clientsData.data)) {
+                    populateSelect('clientSelect', clientsData.data, 'id', 'raison_sociale');
+                } else if (clientsData.success && clientsData.data && Array.isArray(clientsData.data.clients)) {
+                    populateSelect('clientSelect', clientsData.data.clients, 'id', 'raison_sociale');
+                } else {
+                    console.warn('Données clients invalides:', clientsData);
+                    populateSelect('clientSelect', [], 'id', 'raison_sociale');
+                }
 
             } catch (error) {
                 console.error('Erreur lors du chargement des données de filtre:', error);
@@ -295,18 +357,28 @@
 
         function populateSelect(selectId, items, valueKey, textKey1, textKey2 = null) {
             const select = document.getElementById(selectId);
+            if (!select) {
+                console.error(`Sélecteur ${selectId} non trouvé`);
+                return;
+            }
+            
             select.innerHTML = selectId === 'collaboratorSelect' ? '<option value="">Tous les collaborateurs</option>' : '<option value="">Tous les clients</option>';
-            if (items) {
+            
+            if (items && Array.isArray(items)) {
                 items.forEach(item => {
                     const option = document.createElement('option');
                     option.value = item[valueKey];
                     option.textContent = textKey2 ? `${item[textKey1]} ${item[textKey2]}` : item[textKey1];
                     select.appendChild(option);
                 });
+            } else {
+                console.warn(`Données invalides pour ${selectId}:`, items);
             }
         }
 
         async function generateReport() {
+            if (!checkAuth()) return;
+            
             showLoading(true);
             const reportType = document.getElementById('reportType').value;
             const startDate = document.getElementById('startDate').value;
@@ -321,7 +393,19 @@
             if (clientId) apiUrl += `clientId=${clientId}&`;
 
             try {
-                const response = await fetch(apiUrl);
+                const response = await fetch(apiUrl, {
+                    headers: getAuthHeader()
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        showAlert('Session expirée. Veuillez vous reconnecter.', 'warning');
+                        setTimeout(() => window.location.href = '/login.html', 2000);
+                        return;
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
 
                 if (data.success) {
@@ -458,33 +542,6 @@
 
         function refreshData() {
             generateReport();
-        }
-
-        function showLoading(show) {
-            document.getElementById('report-loading').style.display = show ? 'flex' : 'none';
-            document.getElementById('report-content').style.display = show ? 'none' : 'block';
-        }
-
-        function showAlert(message, type) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            const container = document.querySelector('.main-content-area');
-            if (container) {
-                container.insertBefore(alertDiv, container.firstChild);
-            } else {
-                document.body.appendChild(alertDiv);
-            }
-            
-            setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.remove();
-                }
-            }, 5000);
         }
     </script>
 

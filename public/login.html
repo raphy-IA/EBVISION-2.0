@@ -354,6 +354,21 @@
     <script>
         // Configuration
         const API_BASE_URL = '/api';
+        
+        // Fonction pour basculer la visibilité du mot de passe
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const passwordIcon = document.getElementById('passwordIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.className = 'fas fa-eye';
+            }
+        }
+        
         // Fonction utilitaire pour les appels API authentifiés
         async function authenticatedFetch(url, options = {}) {
             const token = localStorage.getItem('authToken');
@@ -491,19 +506,7 @@
             }
         }
 
-        // Basculer la visibilité du mot de passe
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const passwordIcon = document.getElementById('passwordIcon');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                passwordIcon.className = 'fas fa-eye-slash';
-            } else {
-                passwordInput.type = 'password';
-                passwordIcon.className = 'fas fa-eye';
-            }
-        }
+
 
         // Afficher le modal de mot de passe oublié
         function showForgotPassword() {

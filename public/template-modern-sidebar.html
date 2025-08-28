@@ -18,7 +18,7 @@
                 
                 <!-- Scripts de zone utilisateur -->
                 <!-- <script src="js/user-header.js"></script> -->
-                <script src="js/user-modals.js"></script>
+                <!-- <script src="js/user-modals.js"></script> -->
     
     <style>
         :root {
@@ -131,6 +131,10 @@
     <script src="js/notifications.js"></script>
     <!-- Script pour les tâches -->
     <script src="js/tasks.js"></script>
+    <!-- Script pour la gestion d'état global -->
+    <script src="js/global-state-manager.js"></script>
+    <!-- Script pour le moniteur de performance -->
+    <script src="js/performance-monitor.js"></script>
 </head>
 <body>
     <!-- Bouton toggle pour mobile -->
@@ -153,7 +157,9 @@
         <div class="sidebar-user-profile">
             <div class="user-profile-compact" id="userProfileToggle">
                 <div class="user-avatar">
-                    <i class="fas fa-user-circle"></i>
+                    <div id="sidebar-user-photo" class="sidebar-user-photo">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
                     <!-- Bulle de notification -->
                     <div class="notification-bubble" id="notificationBubble" style="display: none;">
                         <i class="fas fa-exclamation"></i>
@@ -170,7 +176,7 @@
             
             <!-- Menu déroulant du profil -->
             <div class="user-profile-menu" id="userProfileMenu" style="display: none;">
-                <div class="menu-item" id="profileMenuItem">
+                <div class="menu-item" id="profileMenuItem" onclick="openProfileModal(); return false;">
                     <i class="fas fa-user"></i>
                     <span>Mon profil</span>
                 </div>
@@ -432,10 +438,7 @@
                     <i class="fas fa-users"></i>
                     Utilisateurs
                 </a>
-                <a href="profile.html" class="sidebar-nav-link">
-                    <i class="fas fa-user"></i>
-                    Profil utilisateur
-                </a>
+
             </div>
         </nav>
 
@@ -503,6 +506,205 @@
                     <a href="/task-templates.html" target="_blank" class="btn btn-primary">
                         <i class="fas fa-plus me-1"></i>Gérer les tâches
                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Profil Utilisateur -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="profileModalLabel">
+                        <i class="fas fa-user-circle me-2"></i>
+                        Mon Profil
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Loading State -->
+                    <div id="profileLoadingState" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Chargement du profil...</p>
+                    </div>
+
+                    <!-- Error State -->
+                    <div id="profileErrorState" class="alert alert-danger" style="display: none;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span id="profileErrorMessage">Une erreur est survenue lors du chargement du profil.</span>
+                    </div>
+
+                    <!-- Profile Content -->
+                    <div id="profileContent" style="display: none;">
+                        <!-- Profile Header -->
+                        <div class="row mb-4">
+                            <div class="col-12 text-center">
+                                <div id="profilePhotoContainer" class="d-inline-block mb-3">
+                                    <!-- Photo de profil sera affichée ici -->
+                                </div>
+                                <h4 id="profileName" class="mb-1">-</h4>
+                                <p id="profileRole" class="text-muted mb-2">-</p>
+                                <span id="profileStatus" class="badge bg-success">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Profile Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-user-circle text-primary me-2"></i>
+                                            Informations Personnelles
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-2">
+                                            <div class="col-4 text-muted small">Nom:</div>
+                                            <div class="col-8" id="userNom">-</div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-4 text-muted small">Prénom:</div>
+                                            <div class="col-8" id="userPrenom">-</div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-4 text-muted small">Email:</div>
+                                            <div class="col-8" id="userEmail">-</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4 text-muted small">Login:</div>
+                                            <div class="col-8" id="userLogin">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-shield-alt text-primary me-2"></i>
+                                            Informations du Compte
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-2">
+                                            <div class="col-4 text-muted small">Rôle:</div>
+                                            <div class="col-8">
+                                                <span id="userRoleBadge" class="badge bg-primary">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-4 text-muted small">Statut:</div>
+                                            <div class="col-8" id="userStatut">-</div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-4 text-muted small">Dernière connexion:</div>
+                                            <div class="col-8" id="userLastLogin">-</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4 text-muted small">Membre depuis:</div>
+                                            <div class="col-8" id="userCreatedAt">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collaborator Information (if applicable) -->
+                        <div id="collaboratorInfo" style="display: none;">
+                            <div class="card border-0 shadow-sm mb-3">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-briefcase text-primary me-2"></i>
+                                        Informations Collaborateur
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="row mb-2">
+                                                <div class="col-4 text-muted small">Business Unit:</div>
+                                                <div class="col-8" id="collaborateurBusinessUnit">-</div>
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-4 text-muted small">Division:</div>
+                                                <div class="col-8" id="collaborateurDivision">-</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row mb-2">
+                                                <div class="col-4 text-muted small">Grade:</div>
+                                                <div class="col-8" id="collaborateurGrade">-</div>
+                                            </div>
+                                            <div class="row mb-2">
+                                                <div class="col-4 text-muted small">Poste:</div>
+                                                <div class="col-8" id="collaborateurPoste">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>
+                        Fermer
+                    </button>
+                    <button type="button" class="btn btn-primary" id="editProfileBtn">
+                        <i class="fas fa-edit me-1"></i>
+                        Modifier le Profil
+                    </button>
+                    <button type="button" class="btn btn-warning" id="changePasswordBtn">
+                        <i class="fas fa-key me-1"></i>
+                        Changer le Mot de Passe
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Changement de Mot de Passe -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="changePasswordModalLabel">
+                        <i class="fas fa-key me-2"></i>
+                        Changer le Mot de Passe
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Mot de passe actuel</label>
+                            <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Nouveau mot de passe</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                            <div class="form-text">Le mot de passe doit contenir au moins 8 caractères</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirmer le nouveau mot de passe</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>
+                        Annuler
+                    </button>
+                    <button type="button" class="btn btn-warning" id="submitPasswordChange">
+                        <i class="fas fa-save me-1"></i>
+                        Changer le Mot de Passe
+                    </button>
                 </div>
             </div>
         </div>

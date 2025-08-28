@@ -355,7 +355,8 @@ class NotificationService {
                     COUNT(*) as total_notifications,
                     COUNT(CASE WHEN read_at IS NULL THEN 1 END) as unread_notifications,
                     COUNT(CASE WHEN priority = 'HIGH' AND read_at IS NULL THEN 1 END) as high_priority_unread,
-                    COUNT(CASE WHEN type = 'STAGE_OVERDUE' AND read_at IS NULL THEN 1 END) as overdue_notifications
+                    COUNT(CASE WHEN type = 'STAGE_OVERDUE' AND read_at IS NULL THEN 1 END) as overdue_notifications,
+                    COUNT(CASE WHEN type LIKE 'CAMPAIGN_%' AND read_at IS NULL THEN 1 END) as campaign_notifications
                 FROM notifications 
                 WHERE user_id = $1
             `;
@@ -365,6 +366,472 @@ class NotificationService {
         } catch (error) {
             console.error('Erreur lors de la récupération des statistiques de notifications:', error);
             throw error;
+        }
+    }
+
+    // ========================================
+    // NOTIFICATIONS POUR CAMPAGNES DE PROSPECTION
+    // ========================================
+
+    /**
+     * Notification de création de campagne
+     */
+    static async sendCampaignCreatedNotification(campaignId, createdByUserId) {
+        try {
+            const query = `
+                SELECT 
+                    pc.id as campaign_id,
+                    pc.name as campaign_name,
+                    pc.channel,
+                    pc.created_at,
+                    u.id as user_id,
+                    u.nom as user_name,
+                    u.email as user_email,
+                    resp.nom as responsible_name,
+                    resp.prenom as responsible_prenom,
+                    bu.nom as business_unit_name,
+                    COUNT(pcc.company_id) as companies_count
+                FROM prospecting_campaigns pc
+                LEFT JOIN users u ON pc.created_by = u.id
+                LEFT JOIN collaborateurs resp ON pc.responsible_id = resp.id
+                LEFT JOIN business_units bu ON pc.business_unit_id = bu.id
+                LEFT JOIN prospecting_campaign_companies pcc ON pc.id = pcc.campaign_id
+                WHERE pc.id = $1
+                GROUP BY pc.id, pc.name, pc.channel, pc.created_at, u.id, u.nom, u.email, resp.nom, resp.prenom, bu.nom
+            `;
+
+            const result = await pool.query(query, [campaignId]);
+            const data = result.rows[0];
+
+            if (!data) {
+                throw new Error('Données de campagne non trouvées');
+            }
+
+            // Notification pour le créateur
+            await this.createNotification({
+                type: 'CAMPAIGN_CREATED',
+                title: 'Nouvelle campagne créée',
+                message: `Campagne "${data.campaign_name}" créée avec succès. ${data.companies_count} entreprises à traiter.`,
+                user_id: data.user_id,
+                priority: 'NORMAL',
+                metadata: {
+                    campaign_id: data.campaign_id,
+                    campaign_name: data.campaign_name,
+                    channel: data.channel,
+                    companies_count: data.companies_count,
+                    business_unit: data.business_unit_name
+                }
+            });
+
+            // Notification pour le responsable (si différent du créateur)
+            if (data.responsible_name && data.user_id !== createdByUserId) {
+                const responsibleUser = await pool.query(
+                    'SELECT u.id, u.email FROM users u JOIN collaborateurs c ON u.collaborateur_id = c.id WHERE c.id = $1',
+                    [data.responsible_id]
+                );
+
+                if (responsibleUser.rows[0]) {
+                    await this.createNotification({
+                        type: 'CAMPAIGN_ASSIGNED',
+                        title: 'Nouvelle campagne assignée',
+                        message: `Vous avez été assigné à la campagne "${data.campaign_name}" avec ${data.companies_count} entreprises à traiter.`,
+                        user_id: responsibleUser.rows[0].id,
+                        priority: 'NORMAL',
+                        metadata: {
+                            campaign_id: data.campaign_id,
+                            campaign_name: data.campaign_name,
+                            channel: data.channel,
+                            companies_count: data.companies_count,
+                            business_unit: data.business_unit_name
+                        }
+                    });
+                }
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Erreur lors de l\'envoi de la notification de création de campagne:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Notification de soumission pour validation
+     */
+    static async sendCampaignSubmittedForValidationNotification(campaignId) {
+        try {
+            const query = `
+                SELECT 
+                    pc.id as campaign_id,
+                    pc.name as campaign_name,
+                    pc.channel,
+                    pc.created_at,
+                    u.id as creator_id,
+                    u.nom as creator_name,
+                    u.email as creator_email,
+                    bu.nom as business_unit_name,
+                    COUNT(pcc.company_id) as companies_count,
+                    array_agg(DISTINCT pcv.validateur_id) as validators
+                FROM prospecting_campaigns pc
+                LEFT JOIN users u ON pc.created_by = u.id
+                LEFT JOIN business_units bu ON pc.business_unit_id = bu.id
+                LEFT JOIN prospecting_campaign_companies pcc ON pc.id = pcc.campaign_id
+                LEFT JOIN prospecting_campaign_validations pcv ON pc.id = pcv.campaign_id
+                WHERE pc.id = $1
+                GROUP BY pc.id, pc.name, pc.channel, pc.created_at, u.id, u.nom, u.email, bu.nom
+            `;
+
+            const result = await pool.query(query, [campaignId]);
+            const data = result.rows[0];
+
+            if (!data) {
+                throw new Error('Données de campagne non trouvées');
+            }
+
+            // Notification pour le créateur
+            await this.createNotification({
+                type: 'CAMPAIGN_SUBMITTED',
+                title: 'Campagne soumise pour validation',
+                message: `Campagne "${data.campaign_name}" soumise pour validation. ${data.companies_count} entreprises en attente de validation.`,
+                user_id: data.creator_id,
+                priority: 'NORMAL',
+                metadata: {
+                    campaign_id: data.campaign_id,
+                    campaign_name: data.campaign_name,
+                    companies_count: data.companies_count,
+                    business_unit: data.business_unit_name
+                }
+            });
+
+            // Notifications pour tous les validateurs
+            if (data.validators && data.validators.length > 0) {
+                for (const validatorId of data.validators) {
+                    if (validatorId) {
+                        const validatorUser = await pool.query(
+                            'SELECT u.id, u.email FROM users u JOIN collaborateurs c ON u.collaborateur_id = c.id WHERE c.id = $1',
+                            [validatorId]
+                        );
+
+                        if (validatorUser.rows[0]) {
+                            await this.createNotification({
+                                type: 'CAMPAIGN_VALIDATION_REQUIRED',
+                                title: 'Validation de campagne requise',
+                                message: `Campagne "${data.campaign_name}" en attente de validation. ${data.companies_count} entreprises à valider.`,
+                                user_id: validatorUser.rows[0].id,
+                                priority: 'HIGH',
+                                metadata: {
+                                    campaign_id: data.campaign_id,
+                                    campaign_name: data.campaign_name,
+                                    companies_count: data.companies_count,
+                                    business_unit: data.business_unit_name
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Erreur lors de l\'envoi de la notification de soumission:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Notification de décision de validation
+     */
+    static async sendCampaignValidationDecisionNotification(campaignId, decision, validatorId, comment = '') {
+        try {
+            const query = `
+                SELECT 
+                    pc.id as campaign_id,
+                    pc.name as campaign_name,
+                    pc.channel,
+                    u.id as creator_id,
+                    u.nom as creator_name,
+                    u.email as creator_email,
+                    resp.nom as responsible_name,
+                    resp.prenom as responsible_prenom,
+                    bu.nom as business_unit_name,
+                    COUNT(pcc.company_id) as companies_count
+                FROM prospecting_campaigns pc
+                LEFT JOIN users u ON pc.created_by = u.id
+                LEFT JOIN collaborateurs resp ON pc.responsible_id = resp.id
+                LEFT JOIN business_units bu ON pc.business_unit_id = bu.id
+                LEFT JOIN prospecting_campaign_companies pcc ON pc.id = pcc.campaign_id
+                WHERE pc.id = $1
+                GROUP BY pc.id, pc.name, pc.channel, u.id, u.nom, u.email, resp.nom, resp.prenom, bu.nom
+            `;
+
+            const result = await pool.query(query, [campaignId]);
+            const data = result.rows[0];
+
+            if (!data) {
+                throw new Error('Données de campagne non trouvées');
+            }
+
+            const decisionText = decision === 'APPROUVE' ? 'APPROUVÉE' : 'REJETÉE';
+            const priority = decision === 'APPROUVE' ? 'NORMAL' : 'HIGH';
+
+            // Notification pour le créateur
+            await this.createNotification({
+                type: 'CAMPAIGN_VALIDATION_DECISION',
+                title: `Campagne ${decisionText.toLowerCase()}`,
+                message: `Campagne "${data.campaign_name}" ${decisionText.toLowerCase()}. ${comment ? `Commentaire: ${comment}` : ''}`,
+                user_id: data.creator_id,
+                priority: priority,
+                metadata: {
+                    campaign_id: data.campaign_id,
+                    campaign_name: data.campaign_name,
+                    decision: decision,
+                    comment: comment,
+                    business_unit: data.business_unit_name
+                }
+            });
+
+            // Notification pour le responsable (si différent du créateur)
+            if (data.responsible_name) {
+                const responsibleUser = await pool.query(
+                    'SELECT u.id, u.email FROM users u JOIN collaborateurs c ON u.collaborateur_id = c.id WHERE c.id = $1',
+                    [data.responsible_id]
+                );
+
+                if (responsibleUser.rows[0] && responsibleUser.rows[0].id !== data.creator_id) {
+                    await this.createNotification({
+                        type: 'CAMPAIGN_VALIDATION_DECISION',
+                        title: `Campagne ${decisionText.toLowerCase()}`,
+                        message: `Campagne "${data.campaign_name}" ${decisionText.toLowerCase()}. ${comment ? `Commentaire: ${comment}` : ''}`,
+                        user_id: responsibleUser.rows[0].id,
+                        priority: priority,
+                        metadata: {
+                            campaign_id: data.campaign_id,
+                            campaign_name: data.campaign_name,
+                            decision: decision,
+                            comment: comment,
+                            business_unit: data.business_unit_name
+                        }
+                    });
+                }
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Erreur lors de l\'envoi de la notification de décision:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Notification de lancement de campagne
+     */
+    static async sendCampaignStartedNotification(campaignId) {
+        try {
+            const query = `
+                SELECT 
+                    pc.id as campaign_id,
+                    pc.name as campaign_name,
+                    pc.channel,
+                    u.id as user_id,
+                    u.nom as user_name,
+                    u.email as user_email,
+                    bu.nom as business_unit_name,
+                    COUNT(pcc.company_id) as companies_count
+                FROM prospecting_campaigns pc
+                LEFT JOIN users u ON pc.responsible_id = u.collaborateur_id
+                LEFT JOIN business_units bu ON pc.business_unit_id = bu.id
+                LEFT JOIN prospecting_campaign_companies pcc ON pc.id = pcc.campaign_id
+                WHERE pc.id = $1
+                GROUP BY pc.id, pc.name, pc.channel, u.id, u.nom, u.email, bu.nom
+            `;
+
+            const result = await pool.query(query, [campaignId]);
+            const data = result.rows[0];
+
+            if (!data) {
+                throw new Error('Données de campagne non trouvées');
+            }
+
+            await this.createNotification({
+                type: 'CAMPAIGN_STARTED',
+                title: 'Campagne lancée',
+                message: `Campagne "${data.campaign_name}" lancée avec succès. ${data.companies_count} entreprises à contacter.`,
+                user_id: data.user_id,
+                priority: 'NORMAL',
+                metadata: {
+                    campaign_id: data.campaign_id,
+                    campaign_name: data.campaign_name,
+                    channel: data.channel,
+                    companies_count: data.companies_count,
+                    business_unit: data.business_unit_name
+                }
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Erreur lors de l\'envoi de la notification de lancement:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Notification de progression de campagne
+     */
+    static async sendCampaignProgressNotification(campaignId, progressPercentage) {
+        try {
+            const query = `
+                SELECT 
+                    pc.id as campaign_id,
+                    pc.name as campaign_name,
+                    pc.channel,
+                    u.id as user_id,
+                    u.nom as user_name,
+                    u.email as user_email,
+                    bu.nom as business_unit_name,
+                    COUNT(pcc.company_id) as total_companies,
+                    COUNT(CASE WHEN pcc.execution_status IN ('sent', 'deposed') THEN 1 END) as completed_companies
+                FROM prospecting_campaigns pc
+                LEFT JOIN users u ON pc.responsible_id = u.collaborateur_id
+                LEFT JOIN business_units bu ON pc.business_unit_id = bu.id
+                LEFT JOIN prospecting_campaign_companies pcc ON pc.id = pcc.campaign_id
+                WHERE pc.id = $1
+                GROUP BY pc.id, pc.name, pc.channel, u.id, u.nom, u.email, bu.nom
+            `;
+
+            const result = await pool.query(query, [campaignId]);
+            const data = result.rows[0];
+
+            if (!data) {
+                throw new Error('Données de campagne non trouvées');
+            }
+
+            await this.createNotification({
+                type: 'CAMPAIGN_PROGRESS',
+                title: 'Progression de campagne',
+                message: `Campagne "${data.campaign_name}" : ${progressPercentage}% complété (${data.completed_companies}/${data.total_companies} entreprises traitées).`,
+                user_id: data.user_id,
+                priority: 'LOW',
+                metadata: {
+                    campaign_id: data.campaign_id,
+                    campaign_name: data.campaign_name,
+                    progress_percentage: progressPercentage,
+                    completed_companies: data.completed_companies,
+                    total_companies: data.total_companies,
+                    business_unit: data.business_unit_name
+                }
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Erreur lors de l\'envoi de la notification de progression:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Notification de conversion en opportunité
+     */
+    static async sendCampaignConversionNotification(campaignId, companyId, opportunityId) {
+        try {
+            const query = `
+                SELECT 
+                    pc.id as campaign_id,
+                    pc.name as campaign_name,
+                    c.nom as company_name,
+                    o.nom as opportunity_name,
+                    u.id as user_id,
+                    u.nom as user_name,
+                    u.email as user_email,
+                    bu.nom as business_unit_name
+                FROM prospecting_campaigns pc
+                LEFT JOIN prospecting_campaign_companies pcc ON pc.id = pcc.campaign_id
+                LEFT JOIN companies c ON pcc.company_id = c.id
+                LEFT JOIN opportunities o ON pcc.opportunity_id = o.id
+                LEFT JOIN users u ON pc.responsible_id = u.collaborateur_id
+                LEFT JOIN business_units bu ON pc.business_unit_id = bu.id
+                WHERE pc.id = $1 AND c.id = $2 AND o.id = $3
+            `;
+
+            const result = await pool.query(query, [campaignId, companyId, opportunityId]);
+            const data = result.rows[0];
+
+            if (!data) {
+                throw new Error('Données de conversion non trouvées');
+            }
+
+            // Notification pour le responsable de la campagne
+            await this.createNotification({
+                type: 'CAMPAIGN_CONVERSION',
+                title: 'Conversion réussie !',
+                message: `Entreprise "${data.company_name}" de la campagne "${data.campaign_name}" convertie en opportunité "${data.opportunity_name}".`,
+                user_id: data.user_id,
+                priority: 'HIGH',
+                metadata: {
+                    campaign_id: data.campaign_id,
+                    campaign_name: data.campaign_name,
+                    company_name: data.company_name,
+                    opportunity_id: opportunityId,
+                    opportunity_name: data.opportunity_name,
+                    business_unit: data.business_unit_name
+                }
+            });
+
+            // Notification pour le créateur de la campagne (si différent du responsable)
+            const creatorUser = await pool.query(
+                'SELECT u.id FROM users u WHERE u.id = (SELECT created_by FROM prospecting_campaigns WHERE id = $1)',
+                [campaignId]
+            );
+
+            if (creatorUser.rows[0] && creatorUser.rows[0].id !== data.user_id) {
+                await this.createNotification({
+                    type: 'CAMPAIGN_CONVERSION',
+                    title: 'Conversion réussie !',
+                    message: `Entreprise "${data.company_name}" de la campagne "${data.campaign_name}" convertie en opportunité "${data.opportunity_name}".`,
+                    user_id: creatorUser.rows[0].id,
+                    priority: 'HIGH',
+                    metadata: {
+                        campaign_id: data.campaign_id,
+                        campaign_name: data.campaign_name,
+                        company_name: data.company_name,
+                        opportunity_id: opportunityId,
+                        opportunity_name: data.opportunity_name,
+                        business_unit: data.business_unit_name
+                    }
+                });
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Erreur lors de l\'envoi de la notification de conversion:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Notification d'opportunité créée depuis la prospection (pour les responsables)
+     */
+    static async sendOpportunityCreatedFromProspectionNotification(userId, opportunityData) {
+        try {
+            await this.createNotification({
+                type: 'OPPORTUNITY_CREATED_FROM_PROSPECTION',
+                title: 'Nouvelle opportunité créée depuis la prospection',
+                message: `Une opportunité a été créée à partir d'une campagne de prospection. Entreprise: ${opportunityData.company_name}`,
+                user_id: userId,
+                priority: 'MEDIUM',
+                metadata: {
+                    opportunity_id: opportunityData.opportunity_id,
+                    campaign_id: opportunityData.campaign_id,
+                    company_name: opportunityData.company_name,
+                    business_unit: opportunityData.business_unit,
+                    division: opportunityData.division
+                }
+            });
+            
+            console.log('✅ Notification d\'opportunité créée envoyée à l\'utilisateur:', userId);
+            return true;
+        } catch (error) {
+            console.error('❌ Erreur lors de l\'envoi de la notification d\'opportunité créée:', error);
+            return false;
         }
     }
 }

@@ -269,7 +269,8 @@ router.post('/sources/:sourceId/import', authenticateToken, upload.single('file'
                 city: obj.ville || obj.city || obj.localite || null,
                 address: obj.adresse || obj.address || obj.rue || obj.lieux_dit || obj.quartier || null,
                 siret: obj.niu || obj.siret || obj.siren || obj.rcs || null,
-                size_label: obj.regime || obj.forme_juridique || obj.size || obj.effectif || obj.taille || obj.employees || null
+                size_label: obj.regime || obj.forme_juridique || obj.size || obj.effectif || obj.taille || obj.employees || null,
+                sigle: obj.sigle || obj.acronyme || obj.abbreviation || obj.code || null
             };
             
             if (index < 3) { // Log les 3 premières lignes pour debug
@@ -376,6 +377,89 @@ router.delete('/companies/:id', authenticateToken, async (req, res) => {
     } catch (e) {
         console.error('Erreur suppression entreprise:', e);
         res.status(500).json({ success: false, error: 'Erreur lors de la suppression' });
+    }
+});
+
+// Créer une nouvelle entreprise
+router.post('/companies', authenticateToken, async (req, res) => {
+    try {
+        const { 
+            name, sigle, industry, size_label, email, phone, website, 
+            siret, country, city, address, source_id 
+        } = req.body;
+
+        // Validation des champs obligatoires
+        if (!name || !name.trim()) {
+            return res.status(400).json({ success: false, error: 'Le nom de l\'entreprise est obligatoire' });
+        }
+
+        if (!source_id) {
+            return res.status(400).json({ success: false, error: 'L\'ID de la source est obligatoire' });
+        }
+
+        // Vérifier que la source existe
+        const sourceExists = await pool.query('SELECT id FROM company_sources WHERE id = $1', [source_id]);
+        if (sourceExists.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Source non trouvée' });
+        }
+
+        // Vérifier si une entreprise avec le même nom existe déjà dans cette source
+        const existingCompany = await pool.query(
+            'SELECT id FROM companies WHERE source_id = $1 AND name = $2',
+            [source_id, name.trim()]
+        );
+
+        if (existingCompany.rows.length > 0) {
+            return res.status(409).json({ 
+                success: false, 
+                error: 'Une entreprise avec ce nom existe déjà dans cette source' 
+            });
+        }
+
+        // Créer l'entreprise
+        const companyData = {
+            source_id,
+            name: name.trim(),
+            sigle: sigle && sigle.trim() ? sigle.trim() : null,
+            industry: industry && industry.trim() ? industry.trim() : null,
+            size_label: size_label || null,
+            email: email && email.trim() ? email.trim() : null,
+            phone: phone && phone.trim() ? phone.trim() : null,
+            website: website && website.trim() ? website.trim() : null,
+            siret: siret && siret.trim() ? siret.trim() : null,
+            country: country && country.trim() ? country.trim() : null,
+            city: city && city.trim() ? city.trim() : null,
+            address: address && address.trim() ? address.trim() : null
+        };
+
+        const result = await pool.query(`
+            INSERT INTO companies (
+                source_id, name, sigle, industry, size_label, email, phone, 
+                website, siret, country, city, address, created_at, updated_at
+            ) VALUES (
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 
+                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            ) RETURNING *
+        `, [
+            companyData.source_id, companyData.name, companyData.sigle, 
+            companyData.industry, companyData.size_label, companyData.email, 
+            companyData.phone, companyData.website, companyData.siret, 
+            companyData.country, companyData.city, companyData.address
+        ]);
+
+        const newCompany = result.rows[0];
+
+        console.log(`✅ [CREATE] Entreprise créée: ${newCompany.name} (ID: ${newCompany.id}) dans la source ${source_id}`);
+
+        res.status(201).json({ 
+            success: true, 
+            message: 'Entreprise créée avec succès',
+            data: newCompany
+        });
+
+    } catch (e) {
+        console.error('Erreur création entreprise:', e);
+        res.status(500).json({ success: false, error: 'Erreur lors de la création de l\'entreprise' });
     }
 });
 

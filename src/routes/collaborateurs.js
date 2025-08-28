@@ -8,6 +8,9 @@ const DepartCollaborateur = require('../models/DepartCollaborateur');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const User = require('../models/User');
 const { pool } = require('../utils/database');
+const { upload, processImage, deleteExistingPhoto } = require('../middleware/upload');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * GET /api/collaborateurs
@@ -497,6 +500,197 @@ router.delete('/:id', async (req, res) => {
         res.status(400).json({
             success: false,
             error: 'Erreur lors de la suppression du collaborateur',
+            details: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/collaborateurs/:id/upload-photo
+ * Uploader une photo pour un collaborateur
+ */
+router.post('/:id/upload-photo', authenticateToken, deleteExistingPhoto, upload, processImage, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'Aucune photo fournie'
+            });
+        }
+        
+        // Vérifier que le collaborateur existe
+        const collaborateur = await Collaborateur.findById(id);
+        if (!collaborateur) {
+            return res.status(404).json({
+                success: false,
+                error: 'Collaborateur non trouvé'
+            });
+        }
+        
+        // Mettre à jour le collaborateur avec le chemin de la photo
+        const photoUrl = req.file.path;
+        const updateQuery = `
+            UPDATE collaborateurs 
+            SET photo_url = $1, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = $2 
+            RETURNING *
+        `;
+        
+        const result = await pool.query(updateQuery, [photoUrl, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Collaborateur non trouvé'
+            });
+        }
+        
+        const updatedCollaborateur = new Collaborateur(result.rows[0]);
+        
+        res.json({
+            success: true,
+            message: 'Photo uploadée avec succès',
+            data: {
+                collaborateur: updatedCollaborateur,
+                photo_url: photoUrl,
+                avatar_url: req.file.avatarPath
+            }
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de l\'upload de la photo:', error);
+        
+        // Supprimer le fichier en cas d'erreur
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+        if (req.file && req.file.avatarPath && fs.existsSync(req.file.avatarPath)) {
+            fs.unlinkSync(req.file.avatarPath);
+        }
+        
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de l\'upload de la photo',
+            details: error.message
+        });
+    }
+});
+
+/**
+ * DELETE /api/collaborateurs/:id/photo
+ * Supprimer la photo d'un collaborateur
+ */
+router.delete('/:id/photo', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Vérifier que le collaborateur existe et récupérer sa photo
+        const result = await pool.query(
+            'SELECT photo_url FROM collaborateurs WHERE id = $1',
+            [id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Collaborateur non trouvé'
+            });
+        }
+        
+        const collaborateur = result.rows[0];
+        
+        // Supprimer les fichiers de photo s'ils existent
+        if (collaborateur.photo_url) {
+            const filesToDelete = [
+                collaborateur.photo_url,
+                collaborateur.photo_url.replace('thumb_', 'avatar_'),
+                collaborateur.photo_url.replace('avatar_', 'thumb_')
+            ];
+            
+            filesToDelete.forEach(filePath => {
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                    console.log('🗑️ Fichier supprimé:', filePath);
+                }
+            });
+        }
+        
+        // Mettre à jour la base de données
+        await pool.query(
+            'UPDATE collaborateurs SET photo_url = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+            [id]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Photo supprimée avec succès'
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de la suppression de la photo:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la suppression de la photo',
+            details: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/collaborateurs/:id/photo
+ * Récupérer la photo d'un collaborateur
+ */
+router.get('/:id/photo', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { size = 'thumb' } = req.query; // thumb ou avatar
+        
+        // Récupérer le chemin de la photo
+        const result = await pool.query(
+            'SELECT photo_url FROM collaborateurs WHERE id = $1',
+            [id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Collaborateur non trouvé'
+            });
+        }
+        
+        const collaborateur = result.rows[0];
+        
+        if (!collaborateur.photo_url) {
+            return res.status(404).json({
+                success: false,
+                error: 'Aucune photo trouvée pour ce collaborateur'
+            });
+        }
+        
+        // Déterminer le chemin du fichier selon la taille demandée
+        let filePath = collaborateur.photo_url;
+        if (size === 'avatar' && collaborateur.photo_url.includes('thumb_')) {
+            filePath = collaborateur.photo_url.replace('thumb_', 'avatar_');
+        }
+        
+        // Vérifier que le fichier existe
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({
+                success: false,
+                error: 'Fichier photo non trouvé'
+            });
+        }
+        
+        // Envoyer le fichier
+        res.sendFile(path.resolve(filePath));
+        
+    } catch (error) {
+        console.error('Erreur lors de la récupération de la photo:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération de la photo',
             details: error.message
         });
     }

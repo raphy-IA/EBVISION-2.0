@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
 const { pool } = require('../utils/database');
+const { authenticateToken } = require('../middleware/auth');
 
 // Middleware d'authentification (à implémenter plus tard)
 // const auth = require('../middleware/auth');
@@ -38,17 +39,17 @@ async function resolveSecteurId(secteurNom) {
     }
 }
 
-// Fonction pour résoudre l'ID d'un sous-secteur par son nom et secteur
+// Fonction pour résoudre l'ID d'un sous-secteur par son nom et secteur parent
 async function resolveSousSecteurId(sousSecteurNom, secteurNom) {
     if (!sousSecteurNom || !secteurNom) return null;
     
     try {
-        const result = await pool.query(`
-            SELECT ssa.id 
-            FROM sous_secteurs_activite ssa
-            JOIN secteurs_activite sa ON ssa.secteur_id = sa.id
-            WHERE ssa.nom = $1 AND sa.nom = $2
-        `, [sousSecteurNom, secteurNom]);
+        const result = await pool.query(
+            `SELECT ss.id FROM sous_secteurs_activite ss
+             JOIN secteurs_activite s ON ss.secteur_activite_id = s.id
+             WHERE ss.nom = $1 AND s.nom = $2`,
+            [sousSecteurNom, secteurNom]
+        );
         return result.rows.length > 0 ? result.rows[0].id : null;
     } catch (error) {
         console.error('Erreur lors de la résolution du sous-secteur:', error);
@@ -57,7 +58,7 @@ async function resolveSousSecteurId(sousSecteurNom, secteurNom) {
 }
 
 // GET /api/clients/form-data - Récupérer les données pour les formulaires
-router.get('/form-data', async (req, res) => {
+router.get('/form-data', authenticateToken, async (req, res) => {
     try {
         // Récupérer les données depuis les nouvelles tables
         const [paysResult, secteursResult, sourcesResult, statutsResult] = await Promise.all([
@@ -153,7 +154,7 @@ router.get('/form-data', async (req, res) => {
 });
 
 // GET /api/clients - Récupérer tous les clients avec pagination et filtres
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const {
             page = 1,

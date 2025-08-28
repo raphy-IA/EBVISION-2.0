@@ -562,7 +562,10 @@
             // Filtres qui déclenchent la génération du rapport
             const businessUnitFilter = document.getElementById('businessUnitFilter');
             if (businessUnitFilter) {
-                businessUnitFilter.addEventListener('change', generateReport);
+                businessUnitFilter.addEventListener('change', function() {
+                    loadDivisionsForBusinessUnit();
+                    generateReport();
+                });
             }
 
             const divisionFilter = document.getElementById('divisionFilter');
@@ -694,7 +697,7 @@
         async function loadBusinessUnits() {
             try {
                 console.log('🔧 Chargement des Business Units...');
-                const response = await fetch('/api/business-units', {
+                const response = await fetch('/api/business-units?limit=100', {
                     headers: getAuthHeader()
                 });
                 
@@ -702,15 +705,28 @@
                     const data = await response.json();
                     businessUnits = data.data || [];
                     
+                    // Filtrer seulement les BU actives
+                    const activeBusinessUnits = businessUnits.filter(bu => bu.statut === 'ACTIF');
+                    
                     const select = document.getElementById('businessUnitFilter');
                     select.innerHTML = '<option value="">Toutes les Business Units</option>';
-                    businessUnits.forEach(bu => {
+                    
+                    if (activeBusinessUnits.length > 0) {
+                        activeBusinessUnits.forEach(bu => {
+                            const option = document.createElement('option');
+                            option.value = bu.id;
+                            option.textContent = bu.nom;
+                            select.appendChild(option);
+                        });
+                        console.log(`✅ ${activeBusinessUnits.length} Business Units actives chargées`);
+                    } else {
                         const option = document.createElement('option');
-                        option.value = bu.id;
-                        option.textContent = bu.nom;
+                        option.value = "";
+                        option.textContent = "Aucune Business Unit active disponible";
+                        option.disabled = true;
                         select.appendChild(option);
-                    });
-                    console.log(`✅ ${businessUnits.length} Business Units chargées`);
+                        console.log('⚠️ Aucune Business Unit active disponible');
+                    }
                 }
             } catch (error) {
                 console.error('❌ Erreur chargement BU:', error);
@@ -720,7 +736,7 @@
         async function loadDivisions() {
             try {
                 console.log('🔧 Chargement des divisions...');
-                const response = await fetch('/api/divisions', {
+                const response = await fetch('/api/divisions?limit=100', {
                     headers: getAuthHeader()
                 });
                 
@@ -728,18 +744,80 @@
                     const data = await response.json();
                     divisions = data.data || [];
                     
+                    // Filtrer seulement les divisions actives
+                    const activeDivisions = divisions.filter(div => div.statut === 'ACTIF');
+                    
                     const select = document.getElementById('divisionFilter');
                     select.innerHTML = '<option value="">Toutes les divisions</option>';
-                    divisions.forEach(div => {
+                    
+                    if (activeDivisions.length > 0) {
+                        activeDivisions.forEach(div => {
+                            const option = document.createElement('option');
+                            option.value = div.id;
+                            option.textContent = div.nom;
+                            select.appendChild(option);
+                        });
+                        console.log(`✅ ${activeDivisions.length} divisions actives chargées`);
+                    } else {
                         const option = document.createElement('option');
-                        option.value = div.id;
-                        option.textContent = div.nom;
+                        option.value = "";
+                        option.textContent = "Aucune division active disponible";
+                        option.disabled = true;
                         select.appendChild(option);
-                    });
-                    console.log(`✅ ${divisions.length} divisions chargées`);
+                        console.log('⚠️ Aucune division active disponible');
+                    }
                 }
             } catch (error) {
                 console.error('❌ Erreur chargement divisions:', error);
+            }
+        }
+
+        // Fonction pour charger les divisions d'une business unit
+        async function loadDivisionsForBusinessUnit() {
+            const businessUnitId = document.getElementById('businessUnitFilter').value;
+            const divisionSelect = document.getElementById('divisionFilter');
+            
+            // Réinitialiser le sélecteur de division
+            divisionSelect.innerHTML = '<option value="">Toutes les divisions</option>';
+            
+            if (!businessUnitId) {
+                // Si aucune BU sélectionnée, charger toutes les divisions actives
+                await loadDivisions();
+                return;
+            }
+            
+            try {
+                console.log('🔧 Chargement des divisions pour BU:', businessUnitId);
+                const response = await fetch(`/api/divisions?business_unit_id=${businessUnitId}&limit=100`, {
+                    headers: getAuthHeader()
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const buDivisions = data.data || [];
+                    
+                    // Filtrer seulement les divisions actives
+                    const activeDivisions = buDivisions.filter(div => div.statut === 'ACTIF');
+                    
+                    if (activeDivisions.length > 0) {
+                        activeDivisions.forEach(div => {
+                            const option = document.createElement('option');
+                            option.value = div.id;
+                            option.textContent = div.nom;
+                            divisionSelect.appendChild(option);
+                        });
+                        console.log(`✅ ${activeDivisions.length} divisions actives chargées pour cette BU`);
+                    } else {
+                        const option = document.createElement('option');
+                        option.value = "";
+                        option.textContent = "Aucune division active pour cette BU";
+                        option.disabled = true;
+                        divisionSelect.appendChild(option);
+                        console.log('⚠️ Aucune division active pour cette BU');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement divisions pour BU:', error);
             }
         }
 

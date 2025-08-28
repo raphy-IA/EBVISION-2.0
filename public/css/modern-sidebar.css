@@ -588,6 +588,56 @@ body {
     opacity: 0.9;
 }
 
+/* Style pour la photo de profil dans la sidebar */
+.sidebar-user-photo {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-user-photo img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: none;
+}
+
+/* Style pour la photo de profil dans le modal */
+#profilePhotoContainer .collaborateur-avatar.large {
+    width: 120px;
+    height: 120px;
+    font-size: 2.5rem;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: bold;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+#profilePhotoContainer .collaborateur-avatar.large img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: none;
+}
+
 /* Bulle de notification sur l'avatar */
 .notification-bubble {
     position: absolute;
@@ -703,7 +753,9 @@ body {
     justify-content: center;
     font-size: 0.7rem;
     font-weight: bold;
-    margin-left: 0.5rem;
+    margin-left: auto;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
 }
 
 .menu-item:nth-child(3) .menu-badge {
@@ -776,4 +828,35 @@ body {
     .action-label {
         font-size: 0.7rem;
     }
+}
+
+/* Styles pour les notifications */
+.notification-item {
+    padding: 12px;
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+    background-color: #e3f2fd;
+    border-left: 3px solid #2196f3;
+}
+
+.notification-item.unread:hover {
+    background-color: #bbdefb;
+}
+
+.notification-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+    margin-top: 2px;
+}
+
+.notification-icon i {
+    width: 16px;
 }

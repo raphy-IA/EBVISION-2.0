@@ -1389,7 +1389,7 @@
                                 <p><strong>Client:</strong> ${opportunity.client_nom || 'Non specifie'}</p>
                                 <p><strong>Responsable:</strong> ${responsable}</p>
                                 <p><strong>Business Unit:</strong> ${opportunity.business_unit_nom || 'Non specifie'}</p>
-                                <p><strong>Type:</strong> ${opportunity.type_opportunite || 'Non specifie'}</p>
+                                <p><strong>Type:</strong> ${opportunity.opportunity_type_nom || opportunity.type_opportunite || 'Non specifie'}</p>
                             </div>
                             <div class="col-md-6">
                                 <p><strong>Montant estime:</strong> ${montant}</p>
@@ -1628,9 +1628,11 @@
                 dateField.value = opportunity.date_fermeture_prevue ? opportunity.date_fermeture_prevue.split('T')[0] : '';
                 statutField.value = opportunity.statut || 'EN_COURS';
                 
-                // Gérer le type d'opportunité (peut être un UUID ou un nom)
-                if (opportunity.type_opportunite) {
-                    // Vérifier si c'est un UUID
+                // Gérer le type d'opportunité (utiliser le nouveau champ opportunity_type_id)
+                if (opportunity.opportunity_type_id) {
+                    typeField.value = opportunity.opportunity_type_id;
+                } else if (opportunity.type_opportunite) {
+                    // Fallback vers l'ancien champ si le nouveau n'existe pas
                     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(opportunity.type_opportunite);
                     if (isUuid) {
                         typeField.value = opportunity.type_opportunite;
@@ -1663,7 +1665,8 @@
                 console.log('- Probabilite:', opportunity.probabilite, '->', probabiliteField.value);
                 console.log('- Date fermeture:', opportunity.date_fermeture_prevue, '->', dateField.value);
                 console.log('- Statut:', opportunity.statut, '->', statutField.value);
-                console.log('- Type:', opportunity.type_opportunite, '->', typeField.value);
+                console.log('- Type (ancien):', opportunity.type_opportunite, '->', typeField.value);
+                console.log('- Type (nouveau):', opportunity.opportunity_type_id, '->', typeField.value);
                 console.log('- Source:', opportunity.source, '->', sourceField.value);
                 console.log('- Description:', opportunity.description, '->', descriptionField.value);
                 

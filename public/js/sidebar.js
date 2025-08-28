@@ -1,48 +1,157 @@
+// Cache global pour la sidebar
+let sidebarCache = {
+    html: null,
+    timestamp: 0,
+    expiry: 10 * 60 * 1000 // 10 minutes
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const sidebarContainer = document.querySelector('.sidebar-container');
     const sidebarPath = '/template-modern-sidebar.html'; // Chemin vers le template de la sidebar
 
     if (sidebarContainer) {
-        fetch(sidebarPath)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Erreur de chargement de la sidebar: ${response.statusText}`);
-                }
-                return response.text();
-            })
-            .then(html => {
-                // Utiliser DOMParser pour créer un document à partir du HTML de la sidebar
-                const parser = new DOMParser();
-                const sidebarDoc = parser.parseFromString(html, 'text/html');
-                const sidebarContent = sidebarDoc.querySelector('.sidebar-container');
-
-                if (sidebarContent) {
-                    // Injecter le contenu de la sidebar
-                    sidebarContainer.innerHTML = sidebarContent.innerHTML;
-                    
-                    // Activer le lien correspondant à la page actuelle
-                    setActiveLink();
-                    
-                    // Gérer le toggle sur mobile
-                    setupSidebarToggle();
-                    
-                    // Gérer l'expansion/réduction des sections
-                    setupSectionToggle();
-                    
-                    // Ajouter les indicateurs visuels pour l'expansion
-                    addExpandIndicators();
-                } else {
-                    console.error("Le contenu de la sidebar (.sidebar-container) n'a pas été trouvé dans le template.");
-                    sidebarContainer.innerHTML = '<p class="text-danger p-3">Erreur: Impossible de charger le menu.</p>';
-                }
-            })
-            .catch(error => {
-                console.error('Erreur lors du chargement de la sidebar:', error);
-                if (sidebarContainer) {
-                    sidebarContainer.innerHTML = '<p class="text-danger p-3">Le menu de navigation est indisponible.</p>';
-                }
-            });
+        loadSidebar(sidebarContainer, sidebarPath);
     }
+
+    async function loadSidebar(container, path) {
+        try {
+            // Vérifier le cache en premier
+            const cachedSidebar = getCachedSidebar();
+            if (cachedSidebar) {
+                console.log('📋 Utilisation de la sidebar en cache');
+                injectSidebarContent(container, cachedSidebar);
+                return;
+            }
+
+            console.log('🔄 Chargement de la sidebar depuis le serveur');
+            const response = await fetch(path);
+            
+            if (!response.ok) {
+                throw new Error(`Erreur de chargement de la sidebar: ${response.statusText}`);
+            }
+            
+            const html = await response.text();
+            
+            // Mettre en cache la sidebar
+            cacheSidebar(html);
+            
+            // Injecter le contenu
+            injectSidebarContent(container, html);
+            
+        } catch (error) {
+            console.error('Erreur lors du chargement de la sidebar:', error);
+            if (container) {
+                container.innerHTML = '<p class="text-danger p-3">Le menu de navigation est indisponible.</p>';
+            }
+        }
+    }
+
+    function injectSidebarContent(container, html) {
+        // Utiliser DOMParser pour créer un document à partir du HTML de la sidebar
+        const parser = new DOMParser();
+        const sidebarDoc = parser.parseFromString(html, 'text/html');
+        const sidebarContent = sidebarDoc.querySelector('.sidebar-container');
+
+        if (sidebarContent) {
+            // Injecter le contenu de la sidebar
+            container.innerHTML = sidebarContent.innerHTML;
+            
+            // Injecter les modals en dehors de la sidebar
+            injectModals(sidebarDoc);
+            
+            // Activer le lien correspondant à la page actuelle
+            setActiveLink();
+            
+            // Gérer le toggle sur mobile
+            setupSidebarToggle();
+            
+            // Gérer l'expansion/réduction des sections
+            setupSectionToggle();
+            
+            // Ajouter les indicateurs visuels pour l'expansion
+            addExpandIndicators();
+            
+            console.log('✅ Sidebar chargée et configurée avec succès');
+        } else {
+            console.error("Le contenu de la sidebar (.sidebar-container) n'a pas été trouvé dans le template.");
+            container.innerHTML = '<p class="text-danger p-3">Erreur: Impossible de charger le menu.</p>';
+        }
+    }
+
+    function injectModals(sidebarDoc) {
+        // Récupérer tous les modals du template
+        const modals = sidebarDoc.querySelectorAll('.modal');
+        
+        modals.forEach(modal => {
+            const modalId = modal.id;
+            
+            // Vérifier si le modal existe déjà dans le DOM
+            if (!document.getElementById(modalId)) {
+                // Injecter le modal dans le body
+                document.body.appendChild(modal.cloneNode(true));
+                console.log(`✅ Modal ${modalId} injecté`);
+            } else {
+                console.log(`⚠️ Modal ${modalId} existe déjà`);
+            }
+        });
+    }
+
+    // Cache de la sidebar
+    function cacheSidebar(html) {
+        sidebarCache = {
+            html: html,
+            timestamp: Date.now()
+        };
+        
+        // Sauvegarder dans localStorage aussi
+        try {
+            localStorage.setItem('sidebarCache', JSON.stringify({
+                html: html,
+                timestamp: Date.now()
+            }));
+        } catch (error) {
+            console.warn('Impossible de sauvegarder la sidebar dans localStorage:', error);
+        }
+    }
+
+    function getCachedSidebar() {
+        const now = Date.now();
+        
+        // Vérifier le cache mémoire
+        if (sidebarCache.html && (now - sidebarCache.timestamp) < sidebarCache.expiry) {
+            return sidebarCache.html;
+        }
+        
+        // Vérifier le localStorage
+        try {
+            const cached = localStorage.getItem('sidebarCache');
+            if (cached) {
+                const { html, timestamp } = JSON.parse(cached);
+                if ((now - timestamp) < sidebarCache.expiry) {
+                    // Mettre à jour le cache mémoire
+                    sidebarCache = {
+                        html: html,
+                        timestamp: timestamp
+                    };
+                    return html;
+                }
+            }
+        } catch (error) {
+            console.warn('Erreur lors de la lecture du cache sidebar:', error);
+        }
+        
+        return null;
+    }
+
+    // Fonction pour invalider le cache de la sidebar
+    window.invalidateSidebarCache = function() {
+        sidebarCache = {
+            html: null,
+            timestamp: 0
+        };
+        localStorage.removeItem('sidebarCache');
+        console.log('🗑️ Cache de la sidebar invalidé');
+    };
 
     function setActiveLink() {
         // Récupérer le chemin de la page actuelle (ex: "/dashboard.html")
@@ -98,50 +207,54 @@ document.addEventListener('DOMContentLoaded', function() {
                     s.classList.remove('expanded');
                 });
                 
-                // Basculer l'état de la section actuelle
+                // Ouvrir la section cliquée si elle n'était pas déjà ouverte
                 if (!isExpanded) {
                     section.classList.add('expanded');
                 }
             });
-            
-            // Ajouter le curseur pointer pour indiquer que c'est cliquable
-            title.style.cursor = 'pointer';
         });
     }
 
     function addExpandIndicators() {
-        // Ajouter des indicateurs visuels pour l'expansion
+        // Ajouter des indicateurs visuels pour les sections expansibles
         const sectionTitles = document.querySelectorAll('.sidebar-section-title');
         
         sectionTitles.forEach(title => {
-            // Ajouter une icône de flèche après le titre
-            const arrow = document.createElement('i');
-            arrow.className = 'fas fa-chevron-down expand-arrow';
-            arrow.style.marginLeft = 'auto';
-            arrow.style.transition = 'transform 0.3s ease';
-            
-            title.appendChild(arrow);
-            
-            // Mettre à jour l'icône quand la section est étendue
             const section = title.closest('.sidebar-section');
-            if (section.classList.contains('expanded')) {
-                arrow.style.transform = 'rotate(180deg)';
+            const hasChildren = section.querySelector('.sidebar-nav-link');
+            
+            if (hasChildren) {
+                // Ajouter une icône de flèche si elle n'existe pas déjà
+                if (!title.querySelector('.expand-indicator')) {
+                    const indicator = document.createElement('i');
+                    indicator.className = 'fas fa-chevron-right expand-indicator';
+                    indicator.style.transition = 'transform 0.3s ease';
+                    title.appendChild(indicator);
+                }
             }
-            
-            // Écouter les changements de classe pour mettre à jour l'icône
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                        if (section.classList.contains('expanded')) {
-                            arrow.style.transform = 'rotate(180deg)';
-                        } else {
-                            arrow.style.transform = 'rotate(0deg)';
-                        }
+        });
+        
+        // Mettre à jour les indicateurs quand les sections changent
+        const observer = new MutationObserver(() => {
+            document.querySelectorAll('.sidebar-section').forEach(section => {
+                const title = section.querySelector('.sidebar-section-title');
+                const indicator = title?.querySelector('.expand-indicator');
+                
+                if (indicator) {
+                    if (section.classList.contains('expanded')) {
+                        indicator.style.transform = 'rotate(90deg)';
+                    } else {
+                        indicator.style.transform = 'rotate(0deg)';
                     }
-                });
+                }
             });
-            
-            observer.observe(section, { attributes: true });
+        });
+        
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class']
         });
     }
 

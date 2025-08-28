@@ -21,37 +21,28 @@ router.get('/stages', authenticateToken, async (req, res) => {
     query += ` ORDER BY ost.stage_order ASC`;
     
     const templates = await pool.query(query, params);
-    const templateIds = templates.rows.map(t => t.id);
-    let reqActions = { rows: [] }, reqDocs = { rows: [] };
     
-    if (templateIds.length > 0) {
-      reqActions = await pool.query(
-        `SELECT stage_template_id, action_type, is_mandatory, validation_order
-         FROM stage_required_actions WHERE stage_template_id = ANY($1::uuid[])`, [templateIds]
-      );
-      reqDocs = await pool.query(
-        `SELECT stage_template_id, document_type, is_mandatory
-         FROM stage_required_documents WHERE stage_template_id = ANY($1::uuid[])`, [templateIds]
-      );
-    }
-    
-    // Grouper par template
-    const actionsByT = new Map();
-    const docsByT = new Map();
-    reqActions.rows.forEach(r => {
-      if (!actionsByT.has(r.stage_template_id)) actionsByT.set(r.stage_template_id, []);
-      actionsByT.get(r.stage_template_id).push(r);
+    const data = templates.rows.map(t => {
+      // Convertir les champs JSONB en format attendu par le frontend
+      const requiredActions = (t.required_actions || []).map((action, index) => ({
+        stage_template_id: t.id,
+        action_type: action,
+        is_mandatory: true,
+        validation_order: index + 1
+      }));
+      
+      const requiredDocuments = (t.required_documents || []).map(doc => ({
+        stage_template_id: t.id,
+        document_type: doc,
+        is_mandatory: true
+      }));
+      
+      return {
+        template: t,
+        requiredActions: requiredActions,
+        requiredDocuments: requiredDocuments
+      };
     });
-    reqDocs.rows.forEach(r => {
-      if (!docsByT.has(r.stage_template_id)) docsByT.set(r.stage_template_id, []);
-      docsByT.get(r.stage_template_id).push(r);
-    });
-    
-    const data = templates.rows.map(t => ({
-      template: t,
-      requiredActions: actionsByT.get(t.id) || [],
-      requiredDocuments: docsByT.get(t.id) || []
-    }));
     
     res.json({ success: true, data });
   } catch (e) {
@@ -345,6 +336,166 @@ router.delete('/stages/documents/:id', authenticateToken, async (req, res) => {
   } catch (e) {
     console.error('Erreur suppression document:', e);
     res.status(500).json({ success: false, error: 'Erreur suppression document' });
+  }
+});
+
+// POST /api/workflow/validate-stage/:opportunityId - Valider l'étape actuelle d'une opportunité
+router.post('/validate-stage/:opportunityId', authenticateToken, async (req, res) => {
+  try {
+    const { opportunityId } = req.params;
+    
+    // Récupérer l'étape actuelle de l'opportunité
+    const currentStageQuery = `
+      SELECT os.*
+      FROM opportunity_stages os
+      WHERE os.opportunity_id = $1 AND os.status = 'IN_PROGRESS'
+      ORDER BY os.stage_order ASC
+      LIMIT 1
+    `;
+    
+    const currentStageResult = await pool.query(currentStageQuery, [opportunityId]);
+    
+    if (currentStageResult.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Aucune étape en cours trouvée pour cette opportunité' 
+      });
+    }
+    
+    const currentStage = currentStageResult.rows[0];
+    
+    // Valider les exigences de l'étape
+    const isValid = await OpportunityWorkflowService.validateStageRequirements(opportunityId, currentStage);
+    
+    if (!isValid) {
+      // Récupérer les détails des exigences depuis le template d'étape
+      const stageTemplateQuery = `
+        SELECT required_actions, required_documents
+        FROM opportunity_stage_templates
+        WHERE id = $1
+      `;
+      
+      const stageTemplateResult = await pool.query(stageTemplateQuery, [currentStage.stage_template_id]);
+      
+      if (stageTemplateResult.rows.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Template d\'étape non trouvé'
+        });
+      }
+      
+      const stageTemplate = stageTemplateResult.rows[0];
+      const requiredActions = stageTemplate.required_actions || [];
+      const requiredDocs = stageTemplate.required_documents || [];
+      
+      // Vérifier ce qui a été fait
+      const doneActionsQuery = `
+        SELECT DISTINCT action_type
+        FROM opportunity_actions
+        WHERE opportunity_id = $1 AND (stage_id = $2 OR $2 IS NULL) AND is_validating = true
+      `;
+      const doneDocsQuery = `
+        SELECT DISTINCT document_type
+        FROM opportunity_documents
+        WHERE opportunity_id = $1 AND (stage_id = $2 OR $2 IS NULL) AND validation_status = 'validated'
+      `;
+      
+      const [doneActions, doneDocs] = await Promise.all([
+        pool.query(doneActionsQuery, [opportunityId, currentStage.id]),
+        pool.query(doneDocsQuery, [opportunityId, currentStage.id])
+      ]);
+      
+      const doneActionsSet = new Set(doneActions.rows.map(r => r.action_type));
+      const doneDocsSet = new Set(doneDocs.rows.map(r => r.document_type));
+      
+      const missingActions = requiredActions.filter(a => !doneActionsSet.has(a));
+      const missingDocs = requiredDocs.filter(d => !doneDocsSet.has(d));
+      
+      let errorMessage = `Impossible de valider l'étape "${currentStage.stage_name}". `;
+      
+      if (missingActions.length > 0) {
+        errorMessage += `Actions manquantes: ${missingActions.join(', ')}. `;
+      }
+      
+      if (missingDocs.length > 0) {
+        errorMessage += `Documents manquants: ${missingDocs.join(', ')}. `;
+      }
+      
+      return res.json({
+        success: true,
+        data: {
+          reason: 'requirements_not_met',
+          message: errorMessage,
+          details: {
+            stage: currentStage.stage_name,
+            missingActions,
+            missingDocs,
+            requiredActions,
+            requiredDocs
+          }
+        }
+      });
+    }
+    
+    // Si tout est valide, marquer l'étape comme terminée
+    const updateQuery = `
+      UPDATE opportunity_stages 
+      SET status = 'COMPLETED', completed_at = CURRENT_TIMESTAMP, validated_by = $1, validated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+    `;
+    
+    await pool.query(updateQuery, [req.user.id, currentStage.id]);
+    
+    // Passer à l'étape suivante si elle existe
+    const nextStageQuery = `
+      SELECT os.*
+      FROM opportunity_stages os
+      WHERE os.opportunity_id = $1 AND os.status = 'PENDING'
+      ORDER BY os.stage_order ASC
+      LIMIT 1
+    `;
+    
+    const nextStageResult = await pool.query(nextStageQuery, [opportunityId]);
+    
+    if (nextStageResult.rows.length > 0) {
+      const nextStage = nextStageResult.rows[0];
+      const startNextStageQuery = `
+        UPDATE opportunity_stages 
+        SET status = 'IN_PROGRESS', start_date = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `;
+      
+      await pool.query(startNextStageQuery, [nextStage.id]);
+      
+      res.json({
+        success: true,
+        data: {
+          reason: 'transitioned',
+          message: `Étape "${currentStage.stage_name}" validée. Passage à l'étape "${nextStage.stage_name}".`,
+          completedStage: currentStage,
+          nextStage: nextStage
+        }
+      });
+    } else {
+      res.json({
+        success: true,
+        data: {
+          reason: 'completed',
+          message: `Étape "${currentStage.stage_name}" validée. Toutes les étapes sont terminées.`,
+          completedStage: currentStage,
+          nextStage: null
+        }
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ Erreur validation étape:', error);
+    console.error('❌ Stack trace:', error.stack);
+    res.status(500).json({ 
+      success: false, 
+      error: `Erreur lors de la validation de l'étape: ${error.message}`,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

@@ -129,6 +129,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Servir les fichiers statiques
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Servir les fichiers uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Enregistrement des routes
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);

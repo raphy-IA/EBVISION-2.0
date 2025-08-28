@@ -43,6 +43,12 @@ function setupEventListeners() {
         historyFilter.addEventListener('change', filterHistory);
     }
     
+    // Filtre par utilisateur (admin)
+    const userFilter = document.getElementById('userFilter');
+    if (userFilter) {
+        userFilter.addEventListener('change', filterHistory);
+    }
+    
     // Gestion des types de notifications
     document.querySelectorAll('.notification-type').forEach(type => {
         const checkbox = type.querySelector('.form-check-input');
@@ -50,6 +56,27 @@ function setupEventListeners() {
             updateNotificationTypeStatus(type, this.checked);
         });
     });
+    
+    // Gestion du champ mot de passe SMTP
+    const passwordField = document.getElementById('smtpPassword');
+    if (passwordField) {
+        // Réinitialiser le style quand l'utilisateur commence à taper
+        passwordField.addEventListener('input', function() {
+            if (this.getAttribute('data-saved') === 'true') {
+                this.removeAttribute('data-saved');
+                this.style.color = '';
+            }
+        });
+        
+        // Ajouter un indicateur visuel pour le mot de passe sauvegardé
+        passwordField.addEventListener('focus', function() {
+            if (this.value === '••••••••' && this.getAttribute('data-saved') === 'true') {
+                this.value = '';
+                this.removeAttribute('data-saved');
+                this.style.color = '';
+            }
+        });
+    }
 }
 
 // Chargement des paramètres
@@ -83,6 +110,14 @@ function applySettings() {
         document.getElementById('smtpFrom').value = currentSettings.email.smtpFrom || '';
         document.getElementById('enableSSL').checked = currentSettings.email.enableSSL !== false;
         document.getElementById('enableDebug').checked = currentSettings.email.enableDebug || false;
+        
+        // Gérer l'affichage du mot de passe sauvegardé
+        const passwordField = document.getElementById('smtpPassword');
+        if (passwordField && currentSettings.email.smtpPassword) {
+            passwordField.value = '••••••••';
+            passwordField.setAttribute('data-saved', 'true');
+            passwordField.style.color = '#28a745';
+        }
     }
     
     // Paramètres des alertes
@@ -117,9 +152,6 @@ async function saveGeneralSettings() {
         
         const response = await authenticatedFetch('/api/notification-settings/general', {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify(settings)
         });
         
@@ -138,29 +170,43 @@ async function saveGeneralSettings() {
 // Sauvegarde des paramètres email
 async function saveEmailSettings() {
     try {
+        const passwordField = document.getElementById('smtpPassword');
+        const passwordValue = passwordField.value;
+        
+        // Ne pas envoyer le mot de passe s'il n'a pas été modifié (affiche encore les astérisques)
+        const smtpPassword = (passwordValue === '••••••••' && passwordField.getAttribute('data-saved') === 'true') 
+            ? undefined 
+            : passwordValue;
+        
         const settings = {
             smtpHost: document.getElementById('smtpHost').value,
             smtpPort: parseInt(document.getElementById('smtpPort').value),
             smtpUser: document.getElementById('smtpUser').value,
-            smtpPassword: document.getElementById('smtpPassword').value,
             smtpFrom: document.getElementById('smtpFrom').value,
             enableSSL: document.getElementById('enableSSL').checked,
             enableDebug: document.getElementById('enableDebug').checked
         };
         
+        // Ajouter le mot de passe seulement s'il a été modifié
+        if (smtpPassword !== undefined) {
+            settings.smtpPassword = smtpPassword;
+        }
+        
         const response = await authenticatedFetch('/api/notification-settings/email', {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify(settings)
         });
         
         if (response.success) {
             showAlert('Configuration email sauvegardée avec succès', 'success');
             currentSettings.email = settings;
-            // Vider le champ mot de passe après sauvegarde
-            document.getElementById('smtpPassword').value = '';
+            // Masquer le mot de passe avec des astérisques pour indiquer qu'il est sauvegardé
+            const passwordField = document.getElementById('smtpPassword');
+            if (passwordField.value) {
+                passwordField.value = '••••••••';
+                passwordField.setAttribute('data-saved', 'true');
+                passwordField.style.color = '#28a745';
+            }
         } else {
             showAlert('Erreur lors de la sauvegarde de la configuration email', 'danger');
         }
@@ -186,9 +232,6 @@ async function saveNotificationSettings() {
         
         const response = await authenticatedFetch('/api/notification-settings/notification-types', {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify(settings)
         });
         
@@ -216,9 +259,6 @@ async function saveAlertSettings() {
         
         const response = await authenticatedFetch('/api/notification-settings/alerts', {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify(settings)
         });
         
@@ -255,9 +295,6 @@ async function testEmailConfiguration() {
         
         const response = await authenticatedFetch('/api/notification-settings/test-email', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 emailSettings: emailSettings,
                 testEmail: testEmail
@@ -316,10 +353,61 @@ async function loadNotificationHistory() {
         const response = await authenticatedFetch('/api/notification-settings/history');
         if (response.success) {
             notificationHistory = response.data;
+            const isAdmin = response.isAdmin;
+            
+            // Mettre à jour l'interface selon le rôle
+            updateAdminInterface(isAdmin);
+            
             displayNotificationHistory();
+            
+            // Si admin, charger la liste des utilisateurs pour le filtre
+            if (isAdmin) {
+                await loadUsersForFilter();
+            }
         }
     } catch (error) {
         console.error('Erreur lors du chargement de l\'historique:', error);
+    }
+}
+
+// Mettre à jour l'interface selon le rôle
+function updateAdminInterface(isAdmin) {
+    const userFilterContainer = document.getElementById('userFilterContainer');
+    const adminControls = document.getElementById('adminControls');
+    
+    if (isAdmin) {
+        if (userFilterContainer) userFilterContainer.style.display = 'block';
+        if (adminControls) adminControls.style.display = 'block';
+        
+        // Ajouter un badge admin
+        const historyHeader = document.querySelector('#history .config-header h3');
+        if (historyHeader) {
+            historyHeader.innerHTML += ' <span class="badge bg-danger ms-2">Administration</span>';
+        }
+    } else {
+        if (userFilterContainer) userFilterContainer.style.display = 'none';
+        if (adminControls) adminControls.style.display = 'none';
+    }
+}
+
+// Charger la liste des utilisateurs pour le filtre (admin seulement)
+async function loadUsersForFilter() {
+    try {
+        const response = await authenticatedFetch('/api/users');
+        if (response.success) {
+            const userSelect = document.getElementById('userFilter');
+            if (userSelect) {
+                userSelect.innerHTML = '<option value="">Tous les utilisateurs</option>';
+                response.data.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = `${user.nom} ${user.prenom} (${user.login})`;
+                    userSelect.appendChild(option);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement des utilisateurs:', error);
     }
 }
 
@@ -338,26 +426,49 @@ function displayNotificationHistory(filteredHistory = null) {
         return;
     }
     
-    const historyHTML = history.map(item => `
-        <div class="alert-item ${getPriorityClass(item.priority)}">
-            <div class="d-flex justify-content-between align-items-start">
-                <div class="flex-grow-1">
-                    <h6 class="mb-1">${item.title}</h6>
-                    <p class="mb-1">${item.message}</p>
-                    <small class="text-muted">
-                        <i class="bi bi-clock me-1"></i>${formatDateTime(item.created_at)}
-                        <i class="bi bi-tag ms-2 me-1"></i>${item.type}
-                    </small>
-                </div>
-                <div class="ms-2">
-                    ${item.read_at ? 
-                        '<span class="badge bg-secondary">Lu</span>' : 
-                        '<span class="badge bg-primary">Non lu</span>'
-                    }
+    const historyHTML = history.map(item => {
+        // Déterminer si on affiche les infos utilisateur (admin)
+        const showUserInfo = item.user_nom && item.user_prenom;
+        
+        return `
+            <div class="alert-item ${getPriorityClass(item.priority)}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-1">
+                            <h6 class="mb-0 me-2">${item.title}</h6>
+                            ${showUserInfo ? 
+                                `<span class="badge bg-info">${item.user_nom} ${item.user_prenom}</span>` : 
+                                ''
+                            }
+                        </div>
+                        <p class="mb-1">${item.message}</p>
+                        <small class="text-muted">
+                            <i class="bi bi-clock me-1"></i>${formatDateTime(item.created_at)}
+                            <i class="bi bi-tag ms-2 me-1"></i>${item.type}
+                            ${item.opportunity_name ? 
+                                `<i class="bi bi-briefcase ms-2 me-1"></i>${item.opportunity_name}` : 
+                                ''
+                            }
+                            ${item.campaign_name ? 
+                                `<i class="bi bi-megaphone ms-2 me-1"></i>${item.campaign_name}` : 
+                                ''
+                            }
+                        </small>
+                    </div>
+                    <div class="ms-2 d-flex flex-column align-items-end">
+                        ${item.read_at ? 
+                            '<span class="badge bg-secondary mb-1">Lu</span>' : 
+                            '<span class="badge bg-primary mb-1">Non lu</span>'
+                        }
+                        ${showUserInfo ? 
+                            `<small class="text-muted">${item.user_login}</small>` : 
+                            ''
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
     
     historyContainer.innerHTML = historyHTML;
 }
@@ -366,6 +477,7 @@ function displayNotificationHistory(filteredHistory = null) {
 function filterHistory() {
     const searchTerm = document.getElementById('historySearch').value.toLowerCase();
     const filterType = document.getElementById('historyFilter').value;
+    const userFilter = document.getElementById('userFilter')?.value;
     
     let filtered = notificationHistory;
     
@@ -374,12 +486,20 @@ function filterHistory() {
         filtered = filtered.filter(item => item.type === filterType);
     }
     
+    // Filtre par utilisateur (admin seulement)
+    if (userFilter) {
+        filtered = filtered.filter(item => item.user_id === userFilter);
+    }
+    
     // Filtre par recherche
     if (searchTerm) {
         filtered = filtered.filter(item => 
             item.title.toLowerCase().includes(searchTerm) ||
             item.message.toLowerCase().includes(searchTerm) ||
-            item.type.toLowerCase().includes(searchTerm)
+            item.type.toLowerCase().includes(searchTerm) ||
+            (item.user_nom && item.user_nom.toLowerCase().includes(searchTerm)) ||
+            (item.user_prenom && item.user_prenom.toLowerCase().includes(searchTerm)) ||
+            (item.user_login && item.user_login.toLowerCase().includes(searchTerm))
         );
     }
     
@@ -404,6 +524,66 @@ async function clearHistory() {
         
         if (response.success) {
             showAlert('Historique vidé avec succès', 'success');
+            loadNotificationHistory();
+        } else {
+            showAlert('Erreur lors du vidage de l\'historique', 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur lors du vidage de l\'historique:', error);
+        showAlert('Erreur lors du vidage de l\'historique', 'danger');
+    }
+}
+
+// Vider l'historique d'un utilisateur spécifique (admin)
+async function clearUserHistory() {
+    const userFilter = document.getElementById('userFilter');
+    const selectedUserId = userFilter?.value;
+    
+    if (!selectedUserId) {
+        showAlert('Veuillez sélectionner un utilisateur', 'warning');
+        return;
+    }
+    
+    const selectedUserText = userFilter.options[userFilter.selectedIndex].text;
+    
+    if (!confirm(`Êtes-vous sûr de vouloir vider l'historique de ${selectedUserText} ?`)) {
+        return;
+    }
+    
+    try {
+        const response = await authenticatedFetch(`/api/notification-settings/clear-history?user_id=${selectedUserId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.success) {
+            showAlert(`Historique de ${selectedUserText} vidé avec succès`, 'success');
+            loadNotificationHistory();
+        } else {
+            showAlert('Erreur lors du vidage de l\'historique', 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur lors du vidage de l\'historique:', error);
+        showAlert('Erreur lors du vidage de l\'historique', 'danger');
+    }
+}
+
+// Vider tout l'historique (admin)
+async function clearAllHistory() {
+    if (!confirm('⚠️ ATTENTION : Êtes-vous ABSOLUMENT sûr de vouloir vider TOUT l\'historique de TOUS les utilisateurs ?\n\nCette action est irréversible !')) {
+        return;
+    }
+    
+    if (!confirm('⚠️ DERNIÈRE CONFIRMATION : Vider tout l\'historique de notifications ?')) {
+        return;
+    }
+    
+    try {
+        const response = await authenticatedFetch('/api/notification-settings/clear-history?confirm_all=true', {
+            method: 'DELETE'
+        });
+        
+        if (response.success) {
+            showAlert('Tout l\'historique a été vidé avec succès', 'success');
             loadNotificationHistory();
         } else {
             showAlert('Erreur lors du vidage de l\'historique', 'danger');
@@ -460,6 +640,8 @@ function resetEmailSettings() {
         document.getElementById('smtpPort').value = '587';
         document.getElementById('smtpUser').value = '';
         document.getElementById('smtpPassword').value = '';
+        document.getElementById('smtpPassword').removeAttribute('data-saved');
+        document.getElementById('smtpPassword').style.color = '';
         document.getElementById('smtpFrom').value = '';
         document.getElementById('enableSSL').checked = true;
         document.getElementById('enableDebug').checked = false;

@@ -32,6 +32,7 @@ class Collaborateur {
         this.poste_code = data.poste_code;
         this.taux_horaire = data.taux_horaire || 0;
         this.user_id = data.user_id;
+        this.photo_url = data.photo_url;
     }
 
     validate() {
@@ -53,7 +54,7 @@ class Collaborateur {
 
     static async create(data) {
         // Ne permettre que les champs de base lors de la création
-        const allowedFields = ['nom', 'prenom', 'initiales', 'email', 'telephone', 'business_unit_id', 'division_id', 'type_collaborateur_id', 'poste_actuel_id', 'grade_actuel_id', 'date_embauche', 'notes'];
+        const allowedFields = ['nom', 'prenom', 'initiales', 'email', 'telephone', 'business_unit_id', 'division_id', 'type_collaborateur_id', 'poste_actuel_id', 'grade_actuel_id', 'date_embauche', 'notes', 'photo_url'];
         const filteredData = {};
         
         for (const field of allowedFields) {
@@ -76,8 +77,8 @@ class Collaborateur {
         const query = `
             INSERT INTO collaborateurs (
                 nom, prenom, initiales, email, telephone, business_unit_id, division_id,
-                type_collaborateur_id, poste_actuel_id, grade_actuel_id, date_embauche, notes
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                type_collaborateur_id, poste_actuel_id, grade_actuel_id, date_embauche, notes, photo_url
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             RETURNING *
         `;
 
@@ -93,7 +94,8 @@ class Collaborateur {
             collaborateur.poste_actuel_id,
             collaborateur.grade_actuel_id,
             collaborateur.date_embauche,
-            collaborateur.notes
+            collaborateur.notes,
+            collaborateur.photo_url
         ]);
 
         return new Collaborateur(result.rows[0]);

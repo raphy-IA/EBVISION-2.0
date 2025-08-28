@@ -65,27 +65,6 @@ router.put('/:id/read', authenticateToken, async (req, res) => {
     }
 });
 
-// Route pour supprimer une notification
-router.delete('/:id', authenticateToken, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.id;
-
-        await NotificationService.deleteNotification(id, userId);
-
-        res.json({
-            success: true,
-            message: 'Notification supprimée'
-        });
-    } catch (error) {
-        console.error('Erreur lors de la suppression de la notification:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Erreur lors de la suppression de la notification'
-        });
-    }
-});
-
 // Route pour marquer toutes les notifications comme lues
 router.put('/read-all', authenticateToken, async (req, res) => {
     try {
@@ -106,6 +85,52 @@ router.put('/read-all', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Erreur lors du marquage de toutes les notifications'
+        });
+    }
+});
+
+// Route pour supprimer toutes les notifications lues
+router.delete('/clear-read', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        const result = await pool.query(`
+            DELETE FROM notifications 
+            WHERE user_id = $1 AND read_at IS NOT NULL
+            RETURNING id
+        `, [userId]);
+
+        res.json({
+            success: true,
+            message: `${result.rowCount} notifications lues supprimées`,
+            deletedCount: result.rowCount
+        });
+    } catch (error) {
+        console.error('Erreur lors de la suppression des notifications lues:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la suppression des notifications lues'
+        });
+    }
+});
+
+// Route pour supprimer une notification
+router.delete('/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        await NotificationService.deleteNotification(id, userId);
+
+        res.json({
+            success: true,
+            message: 'Notification supprimée'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la suppression de la notification:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la suppression de la notification'
         });
     }
 });

@@ -180,6 +180,20 @@ class CronService {
         });
         
         console.log('📅 Tâche cron programmée: Vérification des opportunités inactives (10h00 quotidien)');
+
+        // Programmer la vérification des campagnes de prospection en retard (9h00 quotidien)
+        cron.schedule('0 9 * * *', async () => {
+            try {
+                await this.checkOverdueCampaigns();
+            } catch (error) {
+                console.error('❌ Erreur lors de la vérification des campagnes en retard:', error);
+            }
+        }, {
+            scheduled: true,
+            timezone: "Europe/Paris"
+        });
+        
+        console.log('📅 Tâche cron programmée: Vérification des campagnes en retard (9h00 quotidien)');
     }
     
     /**
@@ -233,6 +247,69 @@ class CronService {
             console.log(`📧 Notification d'inactivité créée pour ${opportunity.collaborateur_nom}`);
         } catch (error) {
             console.error('❌ Erreur lors de la création de la notification d\'inactivité:', error);
+        }
+    }
+
+    /**
+     * Vérifier les campagnes de prospection en retard et envoyer des notifications
+     */
+    static async checkOverdueCampaigns() {
+        try {
+            console.log('🔍 Vérification des campagnes de prospection en retard...');
+            
+            const query = `
+                SELECT 
+                    pc.id as campaign_id,
+                    pc.name as campaign_name,
+                    pc.scheduled_date,
+                    pc.created_at,
+                    u.id as user_id,
+                    u.nom as user_name,
+                    u.email as user_email,
+                    COUNT(pcc.company_id) as total_companies,
+                    COUNT(CASE WHEN pcc.execution_status IN ('sent', 'deposed') THEN 1 END) as completed_companies
+                FROM prospecting_campaigns pc
+                LEFT JOIN users u ON pc.responsible_id = u.collaborateur_id
+                LEFT JOIN prospecting_campaign_companies pcc ON pc.id = pcc.campaign_id
+                WHERE pc.status = 'VALIDATED' 
+                AND pc.scheduled_date < NOW() - INTERVAL '7 days'
+                AND pc.id NOT IN (
+                    SELECT metadata->>'campaign_id' FROM notifications 
+                    WHERE type = 'CAMPAIGN_OVERDUE' 
+                    AND created_at > NOW() - INTERVAL '3 days'
+                )
+                GROUP BY pc.id, pc.name, pc.scheduled_date, pc.created_at, u.id, u.nom, u.email
+            `;
+            
+            const result = await pool.query(query);
+            
+            for (const campaign of result.rows) {
+                const progressPercentage = campaign.total_companies > 0 
+                    ? Math.round((campaign.completed_companies / campaign.total_companies) * 100) 
+                    : 0;
+                
+                await NotificationService.createNotification({
+                    type: 'CAMPAIGN_OVERDUE',
+                    title: 'Campagne en retard',
+                    message: `La campagne "${campaign.campaign_name}" est en retard de plus de 7 jours. Progression: ${progressPercentage}% (${campaign.completed_companies}/${campaign.total_companies} entreprises traitées).`,
+                    user_id: campaign.user_id,
+                    priority: 'HIGH',
+                    metadata: {
+                        campaign_id: campaign.campaign_id,
+                        campaign_name: campaign.campaign_name,
+                        scheduled_date: campaign.scheduled_date,
+                        progress_percentage: progressPercentage,
+                        completed_companies: campaign.completed_companies,
+                        total_companies: campaign.total_companies
+                    }
+                });
+                
+                console.log(`📢 Notification de campagne en retard envoyée pour ${campaign.campaign_name}`);
+            }
+            
+            console.log(`✅ ${result.rows.length} notifications de campagnes en retard envoyées`);
+        } catch (error) {
+            console.error('❌ Erreur lors de la vérification des campagnes en retard:', error);
         }
     }
     

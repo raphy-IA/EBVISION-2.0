@@ -158,7 +158,8 @@ function updateKPIs(data) {
     const margeElement = document.getElementById('marge-brute');
     const margeTrendElement = document.getElementById('marge-trend');
     if (margeElement && data.marge_brute !== undefined) {
-        margeElement.textContent = `${data.marge_brute.toFixed(1)}%`;
+        const margeValue = parseFloat(data.marge_brute) || 0;
+        margeElement.textContent = `${margeValue.toFixed(1)}%`;
         
         const tendance = data.tendance_marge || 0;
         updateTrend(margeTrendElement, tendance);
@@ -168,7 +169,8 @@ function updateKPIs(data) {
     const conversionElement = document.getElementById('taux-conversion');
     const conversionTrendElement = document.getElementById('conversion-trend');
     if (conversionElement && data.taux_conversion !== undefined) {
-        conversionElement.textContent = `${data.taux_conversion.toFixed(1)}%`;
+        const conversionValue = parseFloat(data.taux_conversion) || 0;
+        conversionElement.textContent = `${conversionValue.toFixed(1)}%`;
         
         const tendance = data.tendance_conversion || 0;
         updateTrend(conversionTrendElement, tendance);
@@ -178,7 +180,8 @@ function updateKPIs(data) {
     const satisfactionElement = document.getElementById('satisfaction-client');
     const satisfactionTrendElement = document.getElementById('satisfaction-trend');
     if (satisfactionElement && data.satisfaction_client !== undefined) {
-        satisfactionElement.textContent = `${data.satisfaction_client.toFixed(1)}%`;
+        const satisfactionValue = parseFloat(data.satisfaction_client) || 0;
+        satisfactionElement.textContent = `${satisfactionValue.toFixed(1)}%`;
         
         const tendance = data.tendance_satisfaction || 0;
         updateTrend(satisfactionTrendElement, tendance);
@@ -189,12 +192,14 @@ function updateKPIs(data) {
 function updateTrend(element, tendance) {
     if (!element) return;
     
-    if (tendance > 0) {
+    const tendanceValue = parseFloat(tendance) || 0;
+    
+    if (tendanceValue > 0) {
         element.className = 'kpi-trend positive';
-        element.innerHTML = `<i class="fas fa-arrow-up"></i> +${tendance.toFixed(1)}%`;
-    } else if (tendance < 0) {
+        element.innerHTML = `<i class="fas fa-arrow-up"></i> +${tendanceValue.toFixed(1)}%`;
+    } else if (tendanceValue < 0) {
         element.className = 'kpi-trend negative';
-        element.innerHTML = `<i class="fas fa-arrow-down"></i> ${tendance.toFixed(1)}%`;
+        element.innerHTML = `<i class="fas fa-arrow-down"></i> ${tendanceValue.toFixed(1)}%`;
     } else {
         element.className = 'kpi-trend info';
         element.innerHTML = `<i class="fas fa-minus"></i> Stable`;
@@ -496,26 +501,30 @@ function updateStrategicObjectives(data) {
     
     // Productivité
     if (data.productivite) {
-        const progress = (data.productivite.actuelle / data.productivite.cible) * 100;
+        const actuelle = parseFloat(data.productivite.actuelle) || 0;
+        const cible = parseFloat(data.productivite.cible) || 1; // Éviter division par zéro
+        const progress = cible > 0 ? (actuelle / cible) * 100 : 0;
         const progressElement = document.getElementById('productivite-progress');
         const actuelElement = document.getElementById('productivite-actuel');
         const cibleElement = document.getElementById('productivite-cible');
         
         if (progressElement) progressElement.style.width = `${Math.min(progress, 100)}%`;
-        if (actuelElement) actuelElement.textContent = data.productivite.actuelle || 0;
-        if (cibleElement) cibleElement.textContent = data.productivite.cible || 0;
+        if (actuelElement) actuelElement.textContent = actuelle;
+        if (cibleElement) cibleElement.textContent = cible;
     }
     
     // Rétention
     if (data.retention) {
-        const progress = (data.retention.actuelle / data.retention.cible) * 100;
+        const actuelle = parseFloat(data.retention.actuelle) || 0;
+        const cible = parseFloat(data.retention.cible) || 1; // Éviter division par zéro
+        const progress = cible > 0 ? (actuelle / cible) * 100 : 0;
         const progressElement = document.getElementById('retention-progress');
         const actuelElement = document.getElementById('retention-actuel');
         const cibleElement = document.getElementById('retention-cible');
         
         if (progressElement) progressElement.style.width = `${Math.min(progress, 100)}%`;
-        if (actuelElement) actuelElement.textContent = data.retention.actuelle || 0;
-        if (cibleElement) cibleElement.textContent = data.retention.cible || 0;
+        if (actuelElement) actuelElement.textContent = actuelle;
+        if (cibleElement) cibleElement.textContent = cible;
     }
 }
 
@@ -532,10 +541,11 @@ function updateDirectorInfo() {
 
 // Fonctions utilitaires
 function formatCurrency(amount) {
+    const numericAmount = parseFloat(amount) || 0;
     return new Intl.NumberFormat('fr-FR', {
         style: 'currency',
         currency: 'EUR'
-    }).format(amount);
+    }).format(numericAmount);
 }
 
 function getAlertIcon(type) {

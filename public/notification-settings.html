@@ -629,25 +629,37 @@
                     </div>
                     <div class="config-body">
                         <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                                     <input type="text" class="form-control" id="historySearch" placeholder="Rechercher dans l'historique...">
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="d-flex gap-2">
-                                    <select class="form-select" id="historyFilter">
-                                        <option value="">Tous les types</option>
-                                        <option value="STAGE_OVERDUE">Étapes en retard</option>
-                                        <option value="OPPORTUNITY_WON">Opportunités gagnées</option>
-                                        <option value="OPPORTUNITY_LOST">Opportunités perdues</option>
-                                        <option value="TIMESHEET_OVERDUE">Feuilles de temps en retard</option>
-                                    </select>
-                                    <button class="btn btn-outline-primary" onclick="refreshHistory()">
-                                        <i class="bi bi-arrow-clockwise"></i>
-                                    </button>
-                                </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="historyFilter">
+                                    <option value="">Tous les types</option>
+                                    <option value="STAGE_OVERDUE">Étapes en retard</option>
+                                    <option value="OPPORTUNITY_WON">Opportunités gagnées</option>
+                                    <option value="OPPORTUNITY_LOST">Opportunités perdues</option>
+                                    <option value="TIMESHEET_OVERDUE">Feuilles de temps en retard</option>
+                                    <option value="CAMPAIGN_CREATED">Campagne créée</option>
+                                    <option value="CAMPAIGN_SUBMITTED">Campagne soumise</option>
+                                    <option value="CAMPAIGN_VALIDATION_DECISION">Validation campagne</option>
+                                    <option value="CAMPAIGN_STARTED">Campagne démarrée</option>
+                                    <option value="CAMPAIGN_PROGRESS">Progression campagne</option>
+                                    <option value="CAMPAIGN_CONVERSION">Conversion campagne</option>
+                                    <option value="CAMPAIGN_OVERDUE">Campagne en retard</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3" id="userFilterContainer" style="display: none;">
+                                <select class="form-select" id="userFilter">
+                                    <option value="">Tous les utilisateurs</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-primary" onclick="refreshHistory()">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
                             </div>
                         </div>
                         
@@ -662,6 +674,16 @@
                             <button class="btn btn-outline-secondary ms-2" onclick="exportHistory()">
                                 <i class="bi bi-download me-2"></i>Exporter l'historique
                             </button>
+                            <div id="adminControls" style="display: none;" class="mt-2">
+                                <hr>
+                                <h6 class="text-danger"><i class="bi bi-shield-exclamation me-2"></i>Actions d'administration</h6>
+                                <button class="btn btn-danger btn-sm" onclick="clearAllHistory()">
+                                    <i class="bi bi-trash me-2"></i>Vider TOUT l'historique (tous utilisateurs)
+                                </button>
+                                <button class="btn btn-warning btn-sm ms-2" onclick="clearUserHistory()">
+                                    <i class="bi bi-person-x me-2"></i>Vider l'historique de l'utilisateur sélectionné
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

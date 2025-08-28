@@ -1,4 +1,5 @@
 const { pool } = require('../utils/database');
+const NotificationService = require('../services/notificationService');
 
 class CompanySource {
     static async create({ name, description }) {
@@ -46,7 +47,7 @@ class CompanySource {
 class Company {
     static async bulkInsertFromRows(sourceId, rows) {
         let inserted = 0;
-        let skipped = 0;
+        let updated = 0;
         let errors = 0;
         
         console.log(`🔥 [IMPORT] Début import pour source ${sourceId}: ${rows.length} entreprises`);
@@ -59,10 +60,27 @@ class Company {
                     continue;
                 }
                 
+                // Vérifier d'abord si l'entreprise existe
+                const existingCompany = await pool.query(
+                    `SELECT id, sigle, email, industry FROM companies WHERE source_id = $1 AND name = $2`,
+                    [sourceId, r.name.trim()]
+                );
+                
                 const result = await pool.query(
                     `INSERT INTO companies(source_id, name, industry, email, phone, website, country, city, address, siret, size_label, sigle)
                      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-                     ON CONFLICT (source_id, name) DO NOTHING
+                     ON CONFLICT (source_id, name) DO UPDATE SET
+                        industry = COALESCE(EXCLUDED.industry, companies.industry),
+                        email = COALESCE(EXCLUDED.email, companies.email),
+                        phone = COALESCE(EXCLUDED.phone, companies.phone),
+                        website = COALESCE(EXCLUDED.website, companies.website),
+                        country = COALESCE(EXCLUDED.country, companies.country),
+                        city = COALESCE(EXCLUDED.city, companies.city),
+                        address = COALESCE(EXCLUDED.address, companies.address),
+                        siret = COALESCE(EXCLUDED.siret, companies.siret),
+                        size_label = COALESCE(EXCLUDED.size_label, companies.size_label),
+                        sigle = COALESCE(EXCLUDED.sigle, companies.sigle),
+                        updated_at = CURRENT_TIMESTAMP
                      RETURNING id`,
                     [
                         sourceId,
@@ -81,12 +99,25 @@ class Company {
                 );
                 
                 if (result.rows.length > 0) {
-                    inserted++;
-                    if (inserted % 100 === 0) {
-                        console.log(`🔥 [IMPORT] Progression: ${inserted}/${rows.length} entreprises insérées`);
+                    if (existingCompany.rows.length > 0) {
+                        // L'entreprise existait déjà, c'est une mise à jour
+                        updated++;
+                        if (updated % 100 === 0) {
+                            console.log(`🔄 [IMPORT] Progression: ${updated}/${rows.length} entreprises mises à jour`);
+                        }
+                        
+                        // Log des changements pour debug
+                        const oldData = existingCompany.rows[0];
+                        if (r.sigle && !oldData.sigle) {
+                            console.log(`🔄 [IMPORT] Ajout sigle pour ${r.name}: ${r.sigle}`);
+                        }
+                    } else {
+                        // Nouvelle entreprise
+                        inserted++;
+                        if (inserted % 100 === 0) {
+                            console.log(`🔥 [IMPORT] Progression: ${inserted}/${rows.length} entreprises insérées`);
+                        }
                     }
-                } else {
-                    skipped++;
                 }
             } catch (error) {
                 console.error(`❌ [IMPORT] Erreur insertion ${r.name}:`, error.message);
@@ -94,14 +125,14 @@ class Company {
             }
         }
         
-        console.log(`🔥 [IMPORT] Résultat final: ${inserted} insérées, ${skipped} ignorées (doublons), ${errors} erreurs`);
+        console.log(`🔥 [IMPORT] Résultat final: ${inserted} insérées, ${updated} mises à jour, ${errors} erreurs`);
         
         return { 
             inserted, 
-            skipped, 
+            updated, 
             errors, 
             total: rows.length,
-            message: `Import terminé: ${inserted} entreprises ajoutées, ${skipped} doublons ignorés, ${errors} erreurs`
+            message: `Import terminé: ${inserted} entreprises ajoutées, ${updated} entreprises mises à jour, ${errors} erreurs`
         };
     }
     static async findBySource(sourceId) {
@@ -380,7 +411,20 @@ class ProspectingCampaign {
                 data.responsible_id || null
             ]
         );
-        return res.rows[0];
+        
+        const campaign = res.rows[0];
+        
+        // Envoyer une notification de création de campagne
+        if (campaign && data.created_by) {
+            try {
+                await NotificationService.sendCampaignCreatedNotification(campaign.id, data.created_by);
+                console.log(`📢 Notification de création envoyée pour la campagne ${campaign.name}`);
+            } catch (error) {
+                console.error('Erreur lors de l\'envoi de la notification de création:', error);
+            }
+        }
+        
+        return campaign;
     }
     static async addCompanies(campaignId, companyIds) {
         const values = [];
@@ -656,6 +700,14 @@ class ProspectingCampaign {
                 WHERE id = $1
             `, [campaignId]);
 
+            // Envoyer une notification de soumission pour validation
+            try {
+                await NotificationService.sendCampaignSubmittedForValidationNotification(campaignId);
+                console.log(`📢 Notification de soumission envoyée pour la campagne ${campaignId}`);
+            } catch (error) {
+                console.error('Erreur lors de l\'envoi de la notification de soumission:', error);
+            }
+
             return { 
                 success: true, 
                 data: validations 
@@ -747,6 +799,19 @@ class ProspectingCampaign {
                     WHERE id = $1
                 `, [validation.rows[0].campaign_id]);
                 console.log('❌ Campagne rejetée par', validateurId);
+            }
+
+            // Envoyer une notification de décision de validation
+            try {
+                await NotificationService.sendCampaignValidationDecisionNotification(
+                    validation.rows[0].campaign_id, 
+                    decision, 
+                    validateurId, 
+                    comment
+                );
+                console.log(`📢 Notification de décision envoyée pour la campagne ${validation.rows[0].campaign_id}`);
+            } catch (error) {
+                console.error('Erreur lors de l\'envoi de la notification de décision:', error);
             }
             
             // Mettre à jour les statuts des entreprises immédiatement
@@ -926,6 +991,13 @@ class ProspectingCampaign {
                 WHERE campaign_id = $3 AND company_id = $4
             `, updateParams);
             
+            // Vérifier la progression de la campagne et envoyer une notification si nécessaire
+            try {
+                await this.checkAndSendProgressNotification(campaignId);
+            } catch (error) {
+                console.error('Erreur lors de la vérification de progression:', error);
+            }
+
             return { 
                 success: true, 
                 execution_file: executionFile || null 
@@ -940,26 +1012,137 @@ class ProspectingCampaign {
         try {
             // Vérifier que l'entreprise a été exécutée
             const companyExecution = await pool.query(`
-                SELECT execution_status, converted_to_opportunity 
-                FROM prospecting_campaign_companies 
-                WHERE campaign_id = $1 AND company_id = $2
+                SELECT pcc.execution_status, pcc.converted_to_opportunity,
+                       c.id as company_id, c.name as company_name, c.email as company_email,
+                       pc.business_unit_id, pc.responsible_id
+                FROM prospecting_campaign_companies pcc
+                JOIN companies c ON pcc.company_id = c.id
+                JOIN prospecting_campaigns pc ON pcc.campaign_id = pc.id
+                WHERE pcc.campaign_id = $1 AND pcc.company_id = $2
             `, [campaignId, companyId]);
             
             if (companyExecution.rows.length === 0) {
                 return { success: false, error: 'Entreprise non trouvée dans cette campagne' };
             }
             
-            if (companyExecution.rows[0].converted_to_opportunity) {
+            const company = companyExecution.rows[0];
+            
+            if (company.converted_to_opportunity) {
                 return { success: false, error: 'Cette entreprise a déjà été convertie en opportunité' };
             }
             
-            if (!['deposed', 'sent'].includes(companyExecution.rows[0].execution_status)) {
+            if (!['deposed', 'sent'].includes(company.execution_status)) {
                 return { success: false, error: 'L\'entreprise doit être exécutée (déposée ou envoyée) pour être convertie' };
             }
             
-            // Créer l'opportunité (ici vous devrez adapter selon votre modèle d'opportunités)
-            // Pour l'instant, on simule la création
-            const opportunityId = 'temp-opportunity-id'; // À remplacer par la vraie création
+            // Utiliser le client ID fourni ou créer un nouveau client
+            let clientId = null;
+            
+            if (opportunityData.clientId) {
+                // Vérifier que le client existe
+                const clientExists = await pool.query(`
+                    SELECT id FROM clients WHERE id = $1
+                `, [opportunityData.clientId]);
+                
+                if (clientExists.rows.length > 0) {
+                    clientId = opportunityData.clientId;
+                } else {
+                    return { success: false, error: 'Client sélectionné non trouvé' };
+                }
+            } else {
+                // Fallback: Vérifier si l'entreprise existe déjà comme client
+                const existingClient = await pool.query(`
+                    SELECT id FROM clients WHERE nom = $1 OR email = $2
+                `, [company.company_name, company.company_email]);
+                
+                if (existingClient.rows.length > 0) {
+                    clientId = existingClient.rows[0].id;
+                } else {
+                    // Créer un nouveau client à partir de l'entreprise
+                    const newClient = await pool.query(`
+                        INSERT INTO clients (nom, email, statut, source_prospection, created_at)
+                        VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+                        RETURNING id
+                    `, [company.company_name, company.company_email, 'PROSPECT', 'PROSPECTION']);
+                    
+                    clientId = newClient.rows[0].id;
+                }
+            }
+            
+            // Utiliser le type d'opportunité fourni ou récupérer un type par défaut
+            let opportunityTypeId = null;
+            
+            if (opportunityData.opportunityTypeId) {
+                // Vérifier que le type fourni existe
+                const typeCheck = await pool.query(`
+                    SELECT id FROM opportunity_types WHERE id = $1 AND is_active = true
+                `, [opportunityData.opportunityTypeId]);
+                
+                if (typeCheck.rows.length > 0) {
+                    opportunityTypeId = opportunityData.opportunityTypeId;
+                } else {
+                    return { success: false, error: 'Type d\'opportunité sélectionné non trouvé ou inactif' };
+                }
+            } else {
+                // Fallback: Récupérer un type d'opportunité par défaut
+                const defaultType = await pool.query(`
+                    SELECT id FROM opportunity_types WHERE name = 'PROSPECTION' OR name = 'GENERAL' OR name = 'Audit' LIMIT 1
+                `);
+                
+                if (defaultType.rows.length > 0) {
+                    opportunityTypeId = defaultType.rows[0].id;
+                } else {
+                    // Créer un type d'opportunité par défaut si aucun n'existe
+                    const newType = await pool.query(`
+                        INSERT INTO opportunity_types (name, description, is_active)
+                        VALUES ('PROSPECTION', 'Opportunités créées à partir de campagnes de prospection', true)
+                        RETURNING id
+                    `);
+                    opportunityTypeId = newType.rows[0].id;
+                }
+            }
+            
+            // Créer l'opportunité
+            const opportunity = await pool.query(`
+                INSERT INTO opportunities (
+                    nom, description, client_id, collaborateur_id, business_unit_id,
+                    opportunity_type_id, statut, source, probabilite, montant_estime, devise,
+                    date_fermeture_prevue, notes, created_by
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                RETURNING id
+            `, [
+                opportunityData.name,
+                opportunityData.description,
+                clientId,
+                company.responsible_id,
+                company.business_unit_id,
+                opportunityTypeId,
+                'NOUVELLE',
+                'PROSPECTION',
+                parseInt(opportunityData.probability) || 50,
+                parseFloat(opportunityData.value) || 0,
+                'FCFA',
+                opportunityData.closeDate,
+                `Opportunité créée à partir de la campagne de prospection. Entreprise: ${company.company_name}`,
+                null // created_by sera défini par le trigger si nécessaire
+            ]);
+            
+            const opportunityId = opportunity.rows[0].id;
+            
+            // Créer automatiquement les étapes pour cette opportunité
+            try {
+                const OpportunityType = require('./OpportunityType');
+                const opportunityType = await OpportunityType.findById(opportunityTypeId);
+                if (opportunityType) {
+                    await opportunityType.createStagesForOpportunity(opportunityId);
+                    console.log(`✅ Étapes créées pour l'opportunité ${opportunityId}`);
+                } else {
+                    console.warn(`⚠️ Type d'opportunité ${opportunityTypeId} non trouvé, étapes non créées`);
+                }
+            } catch (stageError) {
+                console.error('❌ Erreur lors de la création des étapes:', stageError);
+                // Ne pas faire échouer la conversion pour cela
+            }
             
             // Marquer comme convertie
             await pool.query(`
@@ -968,10 +1151,99 @@ class ProspectingCampaign {
                 WHERE campaign_id = $2 AND company_id = $3
             `, [opportunityId, campaignId, companyId]);
             
-            return { success: true, opportunityId };
+            // Envoyer des notifications de conversion étendues
+            try {
+                const NotificationService = require('../services/notificationService');
+                
+                // 1. Notification au responsable de la campagne
+                await NotificationService.sendCampaignConversionNotification(campaignId, companyId, opportunityId);
+                
+                // 2. Récupérer les informations de division et business unit
+                const campaignInfo = await pool.query(`
+                    SELECT pc.business_unit_id, pc.division_id,
+                           bu.nom as business_unit_nom,
+                           d.nom as division_nom
+                    FROM prospecting_campaigns pc
+                    LEFT JOIN business_units bu ON pc.business_unit_id = bu.id
+                    LEFT JOIN divisions d ON pc.division_id = d.id
+                    WHERE pc.id = $1
+                `, [campaignId]);
+                
+                if (campaignInfo.rows.length > 0) {
+                    const campaign = campaignInfo.rows[0];
+                    
+                    // 3. Notification aux responsables de division
+                    if (campaign.division_id) {
+                        const divisionResponsibles = await pool.query(`
+                            SELECT DISTINCT u.id, u.nom, u.prenom, u.email
+                            FROM users u
+                            JOIN collaborateurs c ON u.collaborateur_id = c.id
+                            WHERE c.division_id = $1 
+                            AND u.role IN ('MANAGER', 'ADMIN', 'IT_ADMIN')
+                            AND u.statut = 'ACTIF'
+                        `, [campaign.division_id]);
+                        
+                        for (const user of divisionResponsibles.rows) {
+                            await NotificationService.sendOpportunityCreatedFromProspectionNotification(user.id, {
+                                opportunity_id: opportunityId,
+                                campaign_id: campaignId,
+                                company_name: company.company_name,
+                                business_unit: campaign.business_unit_nom,
+                                division: campaign.division_nom
+                            });
+                        }
+                    }
+                    
+                    // 4. Notification aux responsables de business unit
+                    if (campaign.business_unit_id) {
+                        const businessUnitResponsibles = await pool.query(`
+                            SELECT DISTINCT u.id, u.nom, u.prenom, u.email
+                            FROM users u
+                            JOIN collaborateurs c ON u.collaborateur_id = c.id
+                            WHERE c.business_unit_id = $1 
+                            AND u.role IN ('MANAGER', 'ADMIN', 'IT_ADMIN')
+                            AND u.statut = 'ACTIF'
+                        `, [campaign.business_unit_id]);
+                        
+                        for (const user of businessUnitResponsibles.rows) {
+                            await NotificationService.sendOpportunityCreatedFromProspectionNotification(user.id, {
+                                opportunity_id: opportunityId,
+                                campaign_id: campaignId,
+                                company_name: company.company_name,
+                                business_unit: campaign.business_unit_nom
+                            });
+                        }
+                    }
+                }
+                
+                console.log('✅ Notifications de conversion envoyées avec succès');
+            } catch (notificationError) {
+                console.warn('⚠️ Erreur lors de l\'envoi des notifications de conversion:', notificationError);
+            }
+            
+            return { 
+                success: true, 
+                opportunityId,
+                opportunityData: {
+                    id: opportunityId,
+                    nom: opportunityData.name,
+                    description: opportunityData.description,
+                    client_id: clientId,
+                    collaborateur_id: company.responsible_id,
+                    business_unit_id: company.business_unit_id,
+                    opportunity_type_id: opportunityTypeId,
+                    statut: 'NOUVELLE',
+                    source: 'PROSPECTION',
+                    probabilite: parseInt(opportunityData.probability) || 50,
+                    montant_estime: parseFloat(opportunityData.value) || 0,
+                    devise: 'FCFA',
+                    date_fermeture_prevue: opportunityData.closeDate,
+                    notes: `Opportunité créée à partir de la campagne de prospection. Entreprise: ${company.company_name}`
+                }
+            };
         } catch (e) {
             console.error('Erreur conversion opportunité:', e);
-            return { success: false, error: 'Erreur lors de la conversion' };
+            return { success: false, error: 'Erreur lors de la conversion: ' + e.message };
         }
     }
 
@@ -1104,6 +1376,55 @@ class ProspectingCampaign {
         } catch (e) {
             console.error('Erreur récupération validateurs campagne:', e);
             return [];
+        }
+    }
+
+    /**
+     * Vérifier la progression de la campagne et envoyer une notification si nécessaire
+     */
+    static async checkAndSendProgressNotification(campaignId) {
+        try {
+            // Calculer la progression actuelle
+            const progressResult = await pool.query(`
+                SELECT 
+                    COUNT(*) as total_companies,
+                    COUNT(CASE WHEN execution_status IN ('sent', 'deposed') THEN 1 END) as completed_companies
+                FROM prospecting_campaign_companies 
+                WHERE campaign_id = $1
+            `, [campaignId]);
+
+            const { total_companies, completed_companies } = progressResult.rows[0];
+            const progressPercentage = total_companies > 0 ? Math.round((completed_companies / total_companies) * 100) : 0;
+
+            // Seuils de progression pour les notifications (25%, 50%, 75%, 100%)
+            const progressThresholds = [25, 50, 75, 100];
+            
+            // Vérifier si on a atteint un nouveau seuil
+            const lastProgressResult = await pool.query(`
+                SELECT metadata->>'progress_percentage' as last_progress
+                FROM notifications 
+                WHERE type = 'CAMPAIGN_PROGRESS' 
+                AND metadata->>'campaign_id' = $1
+                ORDER BY created_at DESC 
+                LIMIT 1
+            `, [campaignId]);
+
+            let lastProgress = 0;
+            if (lastProgressResult.rows.length > 0 && lastProgressResult.rows[0].last_progress) {
+                lastProgress = parseInt(lastProgressResult.rows[0].last_progress);
+            }
+
+            // Envoyer une notification si on a atteint un nouveau seuil
+            for (const threshold of progressThresholds) {
+                if (progressPercentage >= threshold && lastProgress < threshold) {
+                    await NotificationService.sendCampaignProgressNotification(campaignId, threshold);
+                    console.log(`📢 Notification de progression ${threshold}% envoyée pour la campagne ${campaignId}`);
+                    break; // Envoyer seulement une notification par mise à jour
+                }
+            }
+
+        } catch (error) {
+            console.error('Erreur lors de la vérification de progression:', error);
         }
     }
 }

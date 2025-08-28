@@ -402,7 +402,19 @@
         // Chargement des données de formulaire
         async function loadFormData() {
             try {
-                const response = await fetch('/api/clients/form-data');
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                if (!token) {
+                    console.error('Token d\'authentification manquant');
+                    return;
+                }
+
+                const response = await fetch('/api/clients/form-data', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
                 if (response.ok) {
                     const responseData = await response.json();
                     if (responseData.success) {
@@ -421,6 +433,9 @@
                     } else {
                         console.error('Erreur API form-data:', responseData.message);
                     }
+                } else if (response.status === 401) {
+                    console.error('Session expirée. Redirection vers la page de connexion.');
+                    window.location.href = '/login.html';
                 } else {
                     console.error('Erreur lors du chargement des données de formulaire');
                 }
@@ -506,7 +521,19 @@
         // Chargement des clients
         async function loadClients() {
             try {
-                const response = await fetch('/api/clients');
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                if (!token) {
+                    console.error('Token d\'authentification manquant');
+                    return;
+                }
+
+                const response = await fetch('/api/clients', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
                 if (response.ok) {
                     const responseData = await response.json();
                     if (responseData.success) {
@@ -515,6 +542,9 @@
                     } else {
                         console.error('Erreur API:', responseData.message);
                     }
+                } else if (response.status === 401) {
+                    console.error('Session expirée. Redirection vers la page de connexion.');
+                    window.location.href = '/login.html';
                 } else {
                     console.error('Erreur lors du chargement des clients');
                 }
@@ -632,12 +662,19 @@
             };
 
             try {
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                if (!token) {
+                    console.error('Token d\'authentification manquant');
+                    return;
+                }
+
                 const url = currentClientId ? `/api/clients/${currentClientId}` : '/api/clients';
                 const method = currentClientId ? 'PUT' : 'POST';
 
                 const response = await fetch(url, {
                     method: method,
                     headers: {
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(formData)
@@ -647,6 +684,9 @@
                     bootstrap.Modal.getInstance(document.getElementById('addClientModal')).hide();
                     loadClients();
                     resetClientForm();
+                } else if (response.status === 401) {
+                    console.error('Session expirée. Redirection vers la page de connexion.');
+                    window.location.href = '/login.html';
                 } else {
                     console.error('Erreur lors de la sauvegarde');
                 }
@@ -687,12 +727,25 @@
         async function deleteClient(clientId) {
             if (confirm('Êtes-vous sûr de vouloir supprimer ce client ?')) {
                 try {
+                    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                    if (!token) {
+                        console.error('Token d\'authentification manquant');
+                        return;
+                    }
+
                     const response = await fetch(`/api/clients/${clientId}`, {
-                        method: 'DELETE'
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
                     });
 
                     if (response.ok) {
                         loadClients();
+                    } else if (response.status === 401) {
+                        console.error('Session expirée. Redirection vers la page de connexion.');
+                        window.location.href = '/login.html';
                     } else {
                         console.error('Erreur lors de la suppression');
                     }

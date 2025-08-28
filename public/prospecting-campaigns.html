@@ -1376,6 +1376,7 @@
             filteredCompanies = allSourceCompanies.filter(company => {
                 const matchesSearch = !searchTerm || 
                     company.name.toLowerCase().includes(searchTerm) ||
+                    (company.sigle && company.sigle.toLowerCase().includes(searchTerm)) ||
                     (company.industry && company.industry.toLowerCase().includes(searchTerm)) ||
                     (company.city && company.city.toLowerCase().includes(searchTerm));
 

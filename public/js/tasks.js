@@ -7,6 +7,12 @@ class TasksManager {
 
     // Charger les tâches depuis l'API
     async loadTasks() {
+        // Vérifier l'authentification avant de charger
+        if (!isTasksAuthenticated()) {
+            console.log('🔑 Utilisateur non authentifié, chargement des tâches ignoré');
+            return [];
+        }
+        
         try {
             const response = await fetch('/api/tasks', {
                 headers: {
@@ -31,6 +37,12 @@ class TasksManager {
 
     // Charger les statistiques des tâches
     async loadTaskStats() {
+        // Vérifier l'authentification avant de charger
+        if (!isTasksAuthenticated()) {
+            console.log('🔑 Utilisateur non authentifié, chargement des statistiques des tâches ignoré');
+            return { total_tasks: 0, active_tasks: 0 };
+        }
+        
         try {
             const response = await fetch('/api/tasks/stats/stats', {
                 headers: {
@@ -203,14 +215,36 @@ window.deleteTask = function(taskId) {
     }
 };
 
+// Fonction pour vérifier si l'utilisateur est authentifié
+function isTasksAuthenticated() {
+    const token = localStorage.getItem('authToken');
+    return token && token !== 'null' && token !== 'undefined' && token.trim() !== '';
+}
+
 // Initialiser automatiquement
 console.log('🚀 Initialisation automatique du TasksManager');
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initTasksManager);
+    document.addEventListener('DOMContentLoaded', () => {
+        if (isTasksAuthenticated()) {
+            initTasksManager();
+        } else {
+            console.log('🔑 Utilisateur non authentifié, initialisation du TasksManager ignorée');
+        }
+    });
 } else {
     // Initialiser immédiatement si le DOM est déjà chargé
-    initTasksManager();
+    if (isTasksAuthenticated()) {
+        initTasksManager();
+    } else {
+        console.log('🔑 Utilisateur non authentifié, initialisation du TasksManager ignorée');
+    }
 }
 
 // Initialiser aussi après un court délai pour s'assurer que tout est prêt
-setTimeout(initTasksManager, 100);
+setTimeout(() => {
+    if (isTasksAuthenticated()) {
+        initTasksManager();
+    } else {
+        console.log('🔑 Utilisateur non authentifié, initialisation différée du TasksManager ignorée');
+    }
+}, 100);

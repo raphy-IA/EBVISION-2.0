@@ -136,9 +136,11 @@ router.put('/email', authenticateToken, async (req, res) => {
         
         const emailSettings = req.body;
         
-        // Mettre à jour les variables d'environnement
+        // Mettre à jour les variables d'environnement seulement si le mot de passe est fourni
         process.env.EMAIL_USER = emailSettings.smtpUser;
-        process.env.EMAIL_PASSWORD = emailSettings.smtpPassword;
+        if (emailSettings.smtpPassword) {
+            process.env.EMAIL_PASSWORD = emailSettings.smtpPassword;
+        }
         process.env.EMAIL_FROM = emailSettings.smtpFrom;
         
         // Réinitialiser le service email avec les nouveaux paramètres
@@ -283,6 +285,120 @@ router.post('/test-email', authenticateToken, async (req, res) => {
     }
 });
 
+// Envoyer un email de test avec les paramètres sauvegardés
+router.post('/send-test-email', authenticateToken, async (req, res) => {
+    try {
+        const { testEmail } = req.body;
+        
+        if (!testEmail) {
+            return res.status(400).json({
+                success: false,
+                error: 'Adresse email de test requise'
+            });
+        }
+        
+        // Récupérer les paramètres email sauvegardés
+        const result = await pool.query(`
+            SELECT email FROM ${NOTIFICATION_SETTINGS_TABLE} 
+            WHERE user_id = $1
+        `, [req.user.id]);
+        
+        if (result.rows.length === 0 || !result.rows[0].email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Aucune configuration email trouvée. Veuillez d\'abord configurer les paramètres email.'
+            });
+        }
+        
+        const emailSettings = JSON.parse(result.rows[0].email);
+        
+        // Créer un transporteur avec les paramètres sauvegardés
+        const testTransporter = require('nodemailer').createTransporter({
+            host: emailSettings.smtpHost,
+            port: emailSettings.smtpPort,
+            secure: emailSettings.enableSSL,
+            auth: {
+                user: emailSettings.smtpUser,
+                pass: emailSettings.smtpPassword
+            },
+            debug: emailSettings.enableDebug
+        });
+        
+        // Envoyer un email de test avec les paramètres sauvegardés
+        const mailOptions = {
+            from: emailSettings.smtpFrom,
+            to: testEmail,
+            subject: 'Test de configuration - TRS Notifications (Paramètres sauvegardés)',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background-color: #007bff; color: white; padding: 20px; text-align: center;">
+                        <h1>📧 Test Email - Configuration Sauvegardée</h1>
+                    </div>
+                    <div style="padding: 20px; background-color: #f8f9fa;">
+                        <p>Bonjour,</p>
+                        <p>Ceci est un email de test envoyé avec les paramètres de configuration sauvegardés dans TRS.</p>
+                        
+                        <div style="background-color: #e3f2fd; border: 1px solid #bbdefb; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                            <h3>Configuration utilisée :</h3>
+                            <ul>
+                                <li><strong>Serveur SMTP:</strong> ${emailSettings.smtpHost}</li>
+                                <li><strong>Port:</strong> ${emailSettings.smtpPort}</li>
+                                <li><strong>SSL/TLS:</strong> ${emailSettings.enableSSL ? 'Activé' : 'Désactivé'}</li>
+                                <li><strong>Utilisateur:</strong> ${emailSettings.smtpUser}</li>
+                                <li><strong>Expéditeur:</strong> ${emailSettings.smtpFrom}</li>
+                                <li><strong>Mode debug:</strong> ${emailSettings.enableDebug ? 'Activé' : 'Désactivé'}</li>
+                            </ul>
+                        </div>
+                        
+                        <p><strong>Date et heure du test :</strong> ${new Date().toLocaleString('fr-FR')}</p>
+                        
+                        <p>Si vous recevez cet email, cela confirme que :</p>
+                        <ul>
+                            <li>✅ La configuration SMTP est correcte</li>
+                            <li>✅ Les paramètres sont bien sauvegardés</li>
+                            <li>✅ Les notifications par email fonctionneront</li>
+                        </ul>
+                        
+                        <div style="background-color: #d4edda; border: 1px solid #c3e6cb; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                            <h3>🎉 Test réussi !</h3>
+                            <p>Votre configuration email est opérationnelle et prête à envoyer des notifications automatiques.</p>
+                        </div>
+                        
+                        <p>Cordialement,<br>L'équipe TRS</p>
+                    </div>
+                </div>
+            `
+        };
+        
+        await testTransporter.sendMail(mailOptions);
+        
+        console.log(`📧 Email de test envoyé à ${testEmail} avec les paramètres sauvegardés`);
+        
+        res.json({
+            success: true,
+            message: 'Email de test envoyé avec succès avec les paramètres sauvegardés',
+            data: {
+                sentTo: testEmail,
+                sentAt: new Date().toISOString(),
+                configuration: {
+                    smtpHost: emailSettings.smtpHost,
+                    smtpPort: emailSettings.smtpPort,
+                    smtpUser: emailSettings.smtpUser,
+                    smtpFrom: emailSettings.smtpFrom,
+                    enableSSL: emailSettings.enableSSL,
+                    enableDebug: emailSettings.enableDebug
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Erreur lors de l\'envoi de l\'email de test:', error);
+        res.status(500).json({
+            success: false,
+            error: `Erreur lors de l'envoi de l'email de test: ${error.message}`
+        });
+    }
+});
+
 // Tester les tâches cron
 router.post('/test-cron', authenticateToken, async (req, res) => {
     try {
@@ -322,22 +438,99 @@ router.post('/test-cron', authenticateToken, async (req, res) => {
 // Récupérer l'historique des notifications
 router.get('/history', authenticateToken, async (req, res) => {
     try {
-        const result = await pool.query(`
+        const { user_id, type, limit = 100, offset = 0 } = req.query;
+        
+        // Vérifier si l'utilisateur est administrateur
+        const userResult = await pool.query(`
+            SELECT role FROM users WHERE id = $1
+        `, [req.user.id]);
+        
+        const isAdmin = userResult.rows[0]?.role === 'ADMIN' || userResult.rows[0]?.role === 'IT_ADMIN';
+        
+        let query = `
             SELECT 
                 n.*,
+                u.nom as user_nom,
+                u.prenom as user_prenom,
+                u.login as user_login,
                 o.nom as opportunity_name,
-                os.stage_name as stage_name
+                os.stage_name as stage_name,
+                pc.nom as campaign_name
             FROM notifications n
+            LEFT JOIN users u ON n.user_id = u.id
             LEFT JOIN opportunities o ON n.opportunity_id = o.id
             LEFT JOIN opportunity_stages os ON n.stage_id = os.id
-            WHERE n.user_id = $1
-            ORDER BY n.created_at DESC
-            LIMIT 100
-        `, [req.user.id]);
+            LEFT JOIN prospecting_campaigns pc ON n.campaign_id = pc.id
+        `;
+        
+        const queryParams = [];
+        let whereConditions = [];
+        
+        // Si pas admin, filtrer par utilisateur connecté
+        if (!isAdmin) {
+            whereConditions.push(`n.user_id = $${queryParams.length + 1}`);
+            queryParams.push(req.user.id);
+        }
+        
+        // Filtre par utilisateur spécifique (admin seulement)
+        if (isAdmin && user_id) {
+            whereConditions.push(`n.user_id = $${queryParams.length + 1}`);
+            queryParams.push(user_id);
+        }
+        
+        // Filtre par type de notification
+        if (type) {
+            whereConditions.push(`n.type = $${queryParams.length + 1}`);
+            queryParams.push(type);
+        }
+        
+        if (whereConditions.length > 0) {
+            query += ` WHERE ${whereConditions.join(' AND ')}`;
+        }
+        
+        query += ` ORDER BY n.created_at DESC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
+        queryParams.push(parseInt(limit), parseInt(offset));
+        
+        const result = await pool.query(query, queryParams);
+        
+        // Récupérer le total pour la pagination (admin seulement)
+        let totalCount = null;
+        if (isAdmin) {
+            let countQuery = `
+                SELECT COUNT(*) as total
+                FROM notifications n
+            `;
+            
+            const countParams = [];
+            const countConditions = [];
+            
+            if (user_id) {
+                countConditions.push(`n.user_id = $${countParams.length + 1}`);
+                countParams.push(user_id);
+            }
+            
+            if (type) {
+                countConditions.push(`n.type = $${countParams.length + 1}`);
+                countParams.push(type);
+            }
+            
+            if (countConditions.length > 0) {
+                countQuery += ` WHERE ${countConditions.join(' AND ')}`;
+            }
+            
+            const countResult = await pool.query(countQuery, countParams);
+            totalCount = parseInt(countResult.rows[0].total);
+        }
         
         res.json({
             success: true,
-            data: result.rows
+            data: result.rows,
+            pagination: isAdmin ? {
+                total: totalCount,
+                limit: parseInt(limit),
+                offset: parseInt(offset)
+            } : null,
+            isAdmin: isAdmin
         });
     } catch (error) {
         console.error('Erreur lors de la récupération de l\'historique:', error);
@@ -351,14 +544,53 @@ router.get('/history', authenticateToken, async (req, res) => {
 // Vider l'historique des notifications
 router.delete('/clear-history', authenticateToken, async (req, res) => {
     try {
-        await pool.query(`
-            DELETE FROM notifications 
-            WHERE user_id = $1
+        const { user_id } = req.query;
+        
+        // Vérifier si l'utilisateur est administrateur
+        const userResult = await pool.query(`
+            SELECT role FROM users WHERE id = $1
         `, [req.user.id]);
+        
+        const isAdmin = userResult.rows[0]?.role === 'ADMIN' || userResult.rows[0]?.role === 'IT_ADMIN';
+        
+        let query = `DELETE FROM notifications`;
+        const queryParams = [];
+        let whereConditions = [];
+        
+        // Si pas admin, supprimer seulement ses propres notifications
+        if (!isAdmin) {
+            whereConditions.push(`user_id = $${queryParams.length + 1}`);
+            queryParams.push(req.user.id);
+        }
+        
+        // Si admin et user_id spécifié, supprimer les notifications de cet utilisateur
+        if (isAdmin && user_id) {
+            whereConditions.push(`user_id = $${queryParams.length + 1}`);
+            queryParams.push(user_id);
+        }
+        
+        // Si admin sans user_id, supprimer toutes les notifications (avec confirmation)
+        if (isAdmin && !user_id) {
+            // Pour la sécurité, demander une confirmation spéciale
+            const { confirm_all } = req.query;
+            if (!confirm_all) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Confirmation requise pour supprimer toutes les notifications. Ajoutez ?confirm_all=true'
+                });
+            }
+        }
+        
+        if (whereConditions.length > 0) {
+            query += ` WHERE ${whereConditions.join(' AND ')}`;
+        }
+        
+        const result = await pool.query(query, queryParams);
         
         res.json({
             success: true,
-            message: 'Historique vidé avec succès'
+            message: `${result.rowCount} notification(s) supprimée(s) avec succès`,
+            deletedCount: result.rowCount
         });
     } catch (error) {
         console.error('Erreur lors du vidage de l\'historique:', error);

@@ -1,9 +1,92 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../utils/database');
+const { authenticateToken } = require('../middleware/auth');
+
+// GET /api/reports/timeEntries - Rapport des entrées de temps
+router.get('/timeEntries', authenticateToken, async (req, res) => {
+    try {
+        const { startDate, endDate, collaboratorId, clientId } = req.query;
+        
+        let whereConditions = [];
+        let params = [];
+        let paramIndex = 1;
+
+        if (startDate && endDate) {
+            whereConditions.push(`te.date_saisie BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
+            params.push(startDate, endDate);
+            paramIndex += 2;
+        }
+
+        if (collaboratorId) {
+            whereConditions.push(`te.user_id = $${paramIndex}`);
+            params.push(collaboratorId);
+            paramIndex++;
+        }
+
+        if (clientId) {
+            whereConditions.push(`m.client_id = $${paramIndex}`);
+            params.push(clientId);
+            paramIndex++;
+        }
+
+        const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+        // Requête pour les entrées de temps avec détails
+        const timeEntriesQuery = `
+            SELECT 
+                te.id,
+                te.date_saisie,
+                te.heures,
+                te.type_heures,
+                te.status,
+                c.nom as collaborateur_nom,
+                c.prenom as collaborateur_prenom,
+                m.titre as mission_titre,
+                cl.raison_sociale as client_nom,
+                ts.statut as time_sheet_status
+            FROM time_entries te
+            LEFT JOIN collaborateurs c ON te.user_id = c.id
+            LEFT JOIN missions m ON te.mission_id = m.id
+            LEFT JOIN clients cl ON m.client_id = cl.id
+            LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
+            ${whereClause}
+            ORDER BY te.date_saisie DESC
+            LIMIT 100
+        `;
+
+        const result = await pool.query(timeEntriesQuery, params);
+
+        // Préparer les données pour le rapport
+        const reportData = result.rows.map(row => ({
+            id: row.id,
+            date: row.date_saisie,
+            heures: parseFloat(row.heures) || 0,
+            type_heures: row.type_heures,
+            description: `${row.type_heures} - ${row.mission_titre || 'Activité interne'}`,
+            collaborateur: `${row.collaborateur_prenom} ${row.collaborateur_nom}`,
+            mission: row.mission_titre || '-',
+            client: row.client_nom || '-',
+            statut: row.time_sheet_status || row.status || 'N/A'
+        }));
+
+        res.json({
+            success: true,
+            data: reportData
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération du rapport timeEntries:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur interne du serveur',
+            details: error.message
+        });
+    }
+});
 
 // GET /api/reports/summary - Résumé des rapports
-router.get('/summary', async (req, res) => {
+router.get('/summary', authenticateToken, async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
         
