@@ -238,13 +238,6 @@
                                         <label for="role-filter" class="form-label">Rôle</label>
                                         <select class="form-select" id="role-filter">
                                             <option value="">Tous les rôles</option>
-                                            <option value="ADMIN">Administrateur</option>
-                                            <option value="MANAGER">Manager</option>
-                                            <option value="USER">Utilisateur</option>
-                                            <option value="ASSISTANT">Assistant</option>
-                                            <option value="SENIOR">Senior</option>
-                                            <option value="DIRECTOR">Directeur</option>
-                                            <option value="PARTNER">Partenaire</option>
                                         </select>
                                     </div>
                                     <div class="col-md-2">
@@ -375,13 +368,6 @@
                             <label for="userRole" class="form-label">Rôle *</label>
                             <select class="form-select" id="userRole" required>
                                 <option value="">Sélectionner un rôle</option>
-                                <option value="ADMIN">Administrateur</option>
-                                <option value="MANAGER">Manager</option>
-                                <option value="USER">Utilisateur</option>
-                                <option value="ASSISTANT">Assistant</option>
-                                <option value="SENIOR">Senior</option>
-                                <option value="DIRECTOR">Directeur</option>
-                                <option value="PARTNER">Partenaire</option>
                             </select>
                         </div>
                     </form>
@@ -450,13 +436,6 @@
                             <label for="editUserRole" class="form-label">Rôle *</label>
                             <select class="form-select" id="editUserRole" required>
                                 <option value="">Sélectionner un rôle</option>
-                                <option value="ADMIN">Administrateur</option>
-                                <option value="MANAGER">Manager</option>
-                                <option value="USER">Utilisateur</option>
-                                <option value="ASSISTANT">Assistant</option>
-                                <option value="SENIOR">Senior</option>
-                                <option value="DIRECTOR">Directeur</option>
-                                <option value="PARTNER">Partenaire</option>
                             </select>
                         </div>
                     </form>
@@ -658,6 +637,8 @@
         let userToDeactivate = null;
 
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM chargé, appel de loadRoles()...');
+            loadRoles();
             loadUsers();
             loadStatistics();
             setupEventListeners();
@@ -674,6 +655,82 @@
             document.getElementById('status-filter').addEventListener('change', filterUsers);
             document.getElementById('type-filter').addEventListener('change', filterUsers);
             document.getElementById('show-deleted').addEventListener('change', loadUsers);
+        }
+
+        async function loadRoles() {
+            try {
+                console.log('🔄 Chargement des rôles...');
+                const token = localStorage.getItem('authToken');
+                console.log('🔑 Token présent:', !!token);
+                
+                const response = await authenticatedFetch(`${API_BASE_URL}/users/roles`, {
+                    method: 'GET',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                console.log('📡 Réponse API:', response.status, response.statusText);
+                
+                const roles = await response.json();
+                console.log('📋 Rôles récupérés:', roles);
+                
+                // Mettre à jour le filtre de rôles
+                const roleFilter = document.getElementById('role-filter');
+                roleFilter.innerHTML = '<option value="">Tous les rôles</option>';
+                roles.forEach(role => {
+                    const displayText = role.description ? `${role.name} - ${role.description}` : role.name;
+                    roleFilter.innerHTML += `<option value="${role.name}">${displayText}</option>`;
+                });
+                
+                // Mettre à jour le sélecteur de rôle dans le modal d'ajout
+                const userRole = document.getElementById('userRole');
+                userRole.innerHTML = '<option value="">Sélectionner un rôle</option>';
+                roles.forEach(role => {
+                    const displayText = role.description ? `${role.name} - ${role.description}` : role.name;
+                    userRole.innerHTML += `<option value="${role.name}">${displayText}</option>`;
+                });
+                
+                // Mettre à jour le sélecteur de rôle dans le modal de modification
+                const editUserRole = document.getElementById('editUserRole');
+                editUserRole.innerHTML = '<option value="">Sélectionner un rôle</option>';
+                roles.forEach(role => {
+                    const displayText = role.description ? `${role.name} - ${role.description}` : role.name;
+                    editUserRole.innerHTML += `<option value="${role.name}">${displayText}</option>`;
+                });
+                
+                console.log(`✅ ${roles.length} rôles chargés avec succès`);
+                
+                    } catch (error) {
+            console.error('❌ Erreur lors du chargement des rôles:', error);
+            showAlert('Erreur lors du chargement des rôles. Veuillez recharger la page.', 'danger');
+        }
+        }
+
+        function updateRoleSelectors(roles) {
+            // Mettre à jour le filtre de rôles
+            const roleFilter = document.getElementById('role-filter');
+            roleFilter.innerHTML = '<option value="">Tous les rôles</option>';
+            roles.forEach(role => {
+                const displayText = role.description ? `${role.name} - ${role.description}` : role.name;
+                roleFilter.innerHTML += `<option value="${role.name}">${displayText}</option>`;
+            });
+            
+            // Mettre à jour le sélecteur de rôle dans le modal d'ajout
+            const userRole = document.getElementById('userRole');
+            userRole.innerHTML = '<option value="">Sélectionner un rôle</option>';
+            roles.forEach(role => {
+                const displayText = role.description ? `${role.name} - ${role.description}` : role.name;
+                userRole.innerHTML += `<option value="${role.name}">${displayText}</option>`;
+            });
+            
+            // Mettre à jour le sélecteur de rôle dans le modal de modification
+            const editUserRole = document.getElementById('editUserRole');
+            editUserRole.innerHTML = '<option value="">Sélectionner un rôle</option>';
+            roles.forEach(role => {
+                const displayText = role.description ? `${role.name} - ${role.description}` : role.name;
+                editUserRole.innerHTML += `<option value="${role.name}">${displayText}</option>`;
+            });
         }
 
         async function loadStatistics() {
@@ -1087,24 +1144,32 @@
                     },
                     body: JSON.stringify(formData)
                 });
+                if (!response.ok) {
+                    const data = await response.json();
+                    let errorMessage = 'Erreur lors de la mise à jour';
+                    
+                    // Améliorer les messages d'erreur spécifiques
+                    if (data.errors && Array.isArray(data.errors)) {
+                        errorMessage = 'Erreurs de validation :\n' + data.errors.map(err => `• ${err}`).join('\n');
+                    } else if (data.message && data.message.includes('mot de passe')) {
+                        errorMessage = 'Le mot de passe ne respecte pas les règles de sécurité. Vérifiez qu\'il contient au moins 8 caractères, une minuscule, une majuscule, un chiffre et un caractère spécial (@$!%*?&).';
+                    } else if (data.message && data.message.includes('email')) {
+                        errorMessage = 'L\'email fourni est invalide ou existe déjà dans le système.';
+                    } else if (data.message) {
+                        errorMessage = data.message;
+                    }
+                    
+                    showAlert(errorMessage, 'danger');
+                    return;
+                }
+                
                 const data = await response.json();
                 if (data.success) {
                     showAlert('✅ Utilisateur mis à jour avec succès ! Les modifications ont été appliquées.', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
                     loadUsers();
                 } else {
-                    let errorMessage = data.message || 'Erreur inconnue';
-                    
-                    // Améliorer les messages d'erreur spécifiques
-                    if (data.errors && data.errors.length > 0) {
-                        errorMessage = 'Erreurs de validation :\n' + data.errors.join('\n');
-                    } else if (data.message && data.message.includes('mot de passe')) {
-                        errorMessage = 'Le mot de passe ne respecte pas les règles de sécurité. Vérifiez qu\'il contient au moins 8 caractères, une minuscule, une majuscule, un chiffre et un caractère spécial.';
-                    } else if (data.message && data.message.includes('email')) {
-                        errorMessage = 'L\'email fourni est invalide ou existe déjà dans le système.';
-                    }
-                    
-                    showAlert(errorMessage, 'danger');
+                    showAlert(data.message || 'Erreur inconnue', 'danger');
                 }
             } catch (error) {
                 console.error('Erreur lors de la mise à jour:', error);

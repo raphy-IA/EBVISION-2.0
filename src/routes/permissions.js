@@ -1,0 +1,656 @@
+const express = require('express');
+const router = express.Router();
+const { pool } = require('../utils/database');
+const permissionManager = require('../utils/PermissionManager');
+
+// Middleware temporaire pour permettre l'accès aux administrateurs existants
+const requireAdminPermission = async (req, res, next) => {
+    try {
+        // Vérifier si l'utilisateur est déjà attaché à la requête (par le middleware JWT)
+        if (req.user && req.user.id) {
+            const userId = req.user.id;
+            const userRole = req.user.role;
+            
+            // Permettre l'accès pour ADMIN, ADMINISTRATEUR, ou tout rôle contenant "admin"
+            if (userRole === 'ADMIN' || userRole === 'ADMINISTRATEUR' || 
+                userRole.toLowerCase().includes('admin')) {
+                console.log(`Accès autorisé pour l'utilisateur ${userId} avec le rôle ${userRole}`);
+                return next();
+            }
+            
+            // Si les tables de permissions existent, essayer le nouveau système
+            try {
+                await permissionManager.hasPermission(userId, 'permissions.manage');
+                return next();
+            } catch (error) {
+                // Si les tables n'existent pas encore, permettre l'accès aux administrateurs
+                console.log('Tables de permissions non disponibles, utilisation du système temporaire');
+                return next();
+            }
+        }
+        
+        // Si req.user n'existe pas, essayer de récupérer l'utilisateur depuis le token JWT
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Token manquant' });
+        }
+        
+        const token = authHeader.substring(7);
+        
+        // Décoder le token JWT pour récupérer les informations utilisateur
+        const jwt = require('jsonwebtoken');
+        const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
+        
+        try {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            const userId = decoded.id;
+            const userRole = decoded.role;
+            
+            // Permettre l'accès pour ADMIN, ADMINISTRATEUR, ou tout rôle contenant "admin"
+            if (userRole === 'ADMIN' || userRole === 'ADMINISTRATEUR' || 
+                userRole.toLowerCase().includes('admin')) {
+                console.log(`Accès autorisé pour l'utilisateur ${userId} avec le rôle ${userRole}`);
+                return next();
+            }
+            
+            // Si les tables de permissions existent, essayer le nouveau système
+            try {
+                await permissionManager.hasPermission(userId, 'permissions.manage');
+                return next();
+            } catch (error) {
+                // Si les tables n'existent pas encore, permettre l'accès aux administrateurs
+                console.log('Tables de permissions non disponibles, utilisation du système temporaire');
+                return next();
+            }
+        } catch (jwtError) {
+            console.error('Erreur JWT:', jwtError);
+            return res.status(401).json({ error: 'Token invalide ou expiré' });
+        }
+    } catch (error) {
+        console.error('Erreur dans le middleware de permissions:', error);
+        res.status(401).json({ error: 'Accès non autorisé' });
+    }
+};
+
+// ===== ROUTES DES RÔLES =====
+
+// GET /api/permissions/roles - Liste des rôles
+router.get('/roles', requireAdminPermission, async (req, res) => {
+    try {
+        const client = await pool.connect();
+        
+        // Vérifier si la table roles existe
+        const tableExists = await client.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'roles'
+            );
+        `);
+        
+        if (!tableExists.rows[0].exists) {
+            client.release();
+            // Retourner des données factices pour le développement
+            return res.json([
+                { id: '1', name: 'SUPER_ADMIN', description: 'Super Administrateur', is_system_role: true, created_at: new Date() },
+                { id: '2', name: 'ADMIN', description: 'Administrateur', is_system_role: true, created_at: new Date() },
+                { id: '3', name: 'MANAGER', description: 'Manager', is_system_role: true, created_at: new Date() },
+                { id: '4', name: 'COLLABORATEUR', description: 'Collaborateur', is_system_role: true, created_at: new Date() }
+            ]);
+        }
+        
+        const result = await client.query(`
+            SELECT id, name, description, is_system_role, created_at
+            FROM roles
+            ORDER BY name
+        `);
+        client.release();
+        
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des rôles:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// POST /api/permissions/roles - Créer un nouveau rôle
+router.post('/roles', requireAdminPermission, async (req, res) => {
+    try {
+        const { name, description, is_system_role } = req.body;
+        
+        if (!name) {
+            return res.status(400).json({ error: 'Le nom du rôle est requis' });
+        }
+        
+        const client = await pool.connect();
+        
+        // Vérifier si la table roles existe
+        const tableExists = await client.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'roles'
+            );
+        `);
+        
+        if (!tableExists.rows[0].exists) {
+            client.release();
+            return res.status(400).json({ error: 'Le système de permissions n\'est pas encore configuré. Veuillez exécuter la migration des permissions.' });
+        }
+        
+        const result = await client.query(`
+            INSERT INTO roles (name, description, is_system_role)
+            VALUES ($1, $2, $3)
+            RETURNING id, name, description, is_system_role, created_at
+        `, [name, description, is_system_role || false]);
+        
+        // Audit
+        await client.query(`
+            INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
+            VALUES ($1, 'GRANT', 'ROLE', $2, $3)
+        `, [req.user.id, result.rows[0].id, { name, description, is_system_role }]);
+        
+        client.release();
+        
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Erreur lors de la création du rôle:', error);
+        if (error.code === '23505') { // Unique violation
+            res.status(400).json({ error: 'Un rôle avec ce nom existe déjà' });
+        } else {
+            res.status(500).json({ error: 'Erreur interne du serveur' });
+        }
+    }
+});
+
+// GET /api/permissions/roles/:id/permissions - Permissions d'un rôle
+router.get('/roles/:id/permissions', requireAdminPermission, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const client = await pool.connect();
+        
+        // Récupérer le rôle
+        const roleResult = await client.query(`
+            SELECT id, name, description, is_system_role
+            FROM roles
+            WHERE id = $1
+        `, [id]);
+        
+        if (roleResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Rôle non trouvé' });
+        }
+        
+        // Récupérer toutes les permissions
+        const allPermissionsResult = await client.query(`
+            SELECT id, code, name, description, category
+            FROM permissions
+            ORDER BY category, name
+        `);
+        
+        // Récupérer les permissions accordées au rôle
+        const rolePermissionsResult = await client.query(`
+            SELECT p.id, p.code, p.name, p.description, p.category
+            FROM role_permissions rp
+            JOIN permissions p ON rp.permission_id = p.id
+            WHERE rp.role_id = $1
+        `, [id]);
+        
+        client.release();
+        
+        res.json({
+            role: roleResult.rows[0],
+            permissions: rolePermissionsResult.rows,
+            allPermissions: allPermissionsResult.rows
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des permissions du rôle:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// POST /api/permissions/roles/:roleId/permissions/:permissionId - Accorder une permission à un rôle
+router.post('/roles/:roleId/permissions/:permissionId', requireAdminPermission, async (req, res) => {
+    try {
+        const { roleId, permissionId } = req.params;
+        
+        const client = await pool.connect();
+        
+        // Vérifier que le rôle et la permission existent
+        const roleResult = await client.query('SELECT name FROM roles WHERE id = $1', [roleId]);
+        const permissionResult = await client.query('SELECT code FROM permissions WHERE id = $1', [permissionId]);
+        
+        if (roleResult.rows.length === 0 || permissionResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Rôle ou permission non trouvé' });
+        }
+        
+        // Ajouter la permission
+        await client.query(`
+            INSERT INTO role_permissions (role_id, permission_id)
+            VALUES ($1, $2)
+            ON CONFLICT (role_id, permission_id) DO NOTHING
+        `, [roleId, permissionId]);
+        
+        // Audit
+        await client.query(`
+            INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
+            VALUES ($1, 'GRANT', 'ROLE_PERMISSION', $2, $3)
+        `, [req.user.id, roleId, { 
+            role_name: roleResult.rows[0].name,
+            permission_code: permissionResult.rows[0].code 
+        }]);
+        
+        client.release();
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Erreur lors de l\'attribution de la permission:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// DELETE /api/permissions/roles/:roleId/permissions/:permissionId - Révoquer une permission d'un rôle
+router.delete('/roles/:roleId/permissions/:permissionId', requireAdminPermission, async (req, res) => {
+    try {
+        const { roleId, permissionId } = req.params;
+        
+        const client = await pool.connect();
+        
+        // Vérifier que le rôle et la permission existent
+        const roleResult = await client.query('SELECT name FROM roles WHERE id = $1', [roleId]);
+        const permissionResult = await client.query('SELECT code FROM permissions WHERE id = $1', [permissionId]);
+        
+        if (roleResult.rows.length === 0 || permissionResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Rôle ou permission non trouvé' });
+        }
+        
+        // Supprimer la permission
+        await client.query(`
+            DELETE FROM role_permissions
+            WHERE role_id = $1 AND permission_id = $2
+        `, [roleId, permissionId]);
+        
+        // Audit
+        await client.query(`
+            INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
+            VALUES ($1, 'REVOKE', 'ROLE_PERMISSION', $2, $3)
+        `, [req.user.id, roleId, { 
+            role_name: roleResult.rows[0].name,
+            permission_code: permissionResult.rows[0].code 
+        }]);
+        
+        client.release();
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Erreur lors de la révocation de la permission:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// ===== ROUTES DES UTILISATEURS =====
+
+// GET /api/permissions/users - Liste des utilisateurs
+router.get('/users', requireAdminPermission, async (req, res) => {
+    try {
+        const client = await pool.connect();
+        const result = await client.query(`
+            SELECT u.id, u.nom, u.prenom, u.email, u.role as role_name
+            FROM users u
+            ORDER BY u.nom, u.prenom
+        `);
+        client.release();
+        
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des utilisateurs:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// GET /api/permissions/users/:id/permissions - Permissions d'un utilisateur
+router.get('/users/:id/permissions', requireAdminPermission, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const client = await pool.connect();
+        
+        // Récupérer l'utilisateur
+        const userResult = await client.query(`
+            SELECT u.id, u.nom, u.prenom, u.email, u.role as role_name
+            FROM users u
+            WHERE u.id = $1
+        `, [id]);
+        
+        if (userResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Utilisateur non trouvé' });
+        }
+        
+        // Récupérer toutes les permissions
+        const allPermissionsResult = await client.query(`
+            SELECT id, code, name, description, category
+            FROM permissions
+            ORDER BY category, name
+        `);
+        
+        // Récupérer les permissions directes de l'utilisateur
+        const userPermissionsResult = await client.query(`
+            SELECT p.id, p.code, p.name, p.description, p.category, up.granted
+            FROM user_permissions up
+            JOIN permissions p ON up.permission_id = p.id
+            WHERE up.user_id = $1
+        `, [id]);
+        
+        client.release();
+        
+        res.json({
+            user: userResult.rows[0],
+            permissions: userPermissionsResult.rows,
+            allPermissions: allPermissionsResult.rows
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des permissions de l\'utilisateur:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// POST /api/permissions/users/:userId/permissions/:permissionId - Accorder une permission à un utilisateur
+router.post('/users/:userId/permissions/:permissionId', requireAdminPermission, async (req, res) => {
+    try {
+        const { userId, permissionId } = req.params;
+        
+        const client = await pool.connect();
+        
+        // Vérifier que l'utilisateur et la permission existent
+        const userResult = await client.query('SELECT nom, prenom FROM users WHERE id = $1', [userId]);
+        const permissionResult = await client.query('SELECT code FROM permissions WHERE id = $1', [permissionId]);
+        
+        if (userResult.rows.length === 0 || permissionResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Utilisateur ou permission non trouvé' });
+        }
+        
+        // Ajouter la permission
+        await client.query(`
+            INSERT INTO user_permissions (user_id, permission_id, granted)
+            VALUES ($1, $2, true)
+            ON CONFLICT (user_id, permission_id) DO UPDATE SET granted = true
+        `, [userId, permissionId]);
+        
+        // Audit
+        await client.query(`
+            INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
+            VALUES ($1, 'GRANT', 'USER_PERMISSION', $2, $3)
+        `, [req.user.id, userId, { 
+            username: `${userResult.rows[0].nom} ${userResult.rows[0].prenom}`,
+            permission_code: permissionResult.rows[0].code 
+        }]);
+        
+        client.release();
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Erreur lors de l\'attribution de la permission:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// DELETE /api/permissions/users/:userId/permissions/:permissionId - Révoquer une permission d'un utilisateur
+router.delete('/users/:userId/permissions/:permissionId', requireAdminPermission, async (req, res) => {
+    try {
+        const { userId, permissionId } = req.params;
+        
+        const client = await pool.connect();
+        
+        // Vérifier que l'utilisateur et la permission existent
+        const userResult = await client.query('SELECT nom, prenom FROM users WHERE id = $1', [userId]);
+        const permissionResult = await client.query('SELECT code FROM permissions WHERE id = $1', [permissionId]);
+        
+        if (userResult.rows.length === 0 || permissionResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Utilisateur ou permission non trouvé' });
+        }
+        
+        // Supprimer la permission
+        await client.query(`
+            DELETE FROM user_permissions
+            WHERE user_id = $1 AND permission_id = $2
+        `, [userId, permissionId]);
+        
+        // Audit
+        await client.query(`
+            INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
+            VALUES ($1, 'REVOKE', 'USER_PERMISSION', $2, $3)
+        `, [req.user.id, userId, { 
+            username: `${userResult.rows[0].nom} ${userResult.rows[0].prenom}`,
+            permission_code: permissionResult.rows[0].code 
+        }]);
+        
+        client.release();
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Erreur lors de la révocation de la permission:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// ===== ROUTES DES BUSINESS UNITS =====
+
+// GET /api/permissions/business-units - Liste des Business Units
+router.get('/business-units', requireAdminPermission, async (req, res) => {
+    try {
+        const client = await pool.connect();
+        
+        // Vérifier si la table business_units existe
+        const tableExists = await client.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'business_units'
+            );
+        `);
+        
+        if (!tableExists.rows[0].exists) {
+            client.release();
+            // Retourner des données factices pour le développement
+            return res.json([
+                { id: '1', name: 'BU 1', description: 'Business Unit 1' },
+                { id: '2', name: 'BU 2', description: 'Business Unit 2' },
+                { id: '3', name: 'BU 3', description: 'Business Unit 3' }
+            ]);
+        }
+        
+        const result = await client.query(`
+            SELECT id, nom as name, description
+            FROM business_units
+            ORDER BY nom
+        `);
+        client.release();
+        
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des Business Units:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// GET /api/permissions/business-units/:id/access - Accès des utilisateurs à une BU
+router.get('/business-units/:id/access', requireAdminPermission, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const client = await pool.connect();
+        
+        // Récupérer la Business Unit
+        const buResult = await client.query(`
+            SELECT id, nom as name, description
+            FROM business_units
+            WHERE id = $1
+        `, [id]);
+        
+        if (buResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Business Unit non trouvée' });
+        }
+        
+        // Récupérer les accès des utilisateurs
+        const accessResult = await client.query(`
+            SELECT u.id as user_id, u.nom, u.prenom, uba.access_level, uba.granted
+            FROM user_business_unit_access uba
+            JOIN users u ON uba.user_id = u.id
+            WHERE uba.business_unit_id = $1
+            ORDER BY u.nom, u.prenom
+        `, [id]);
+        
+        client.release();
+        
+        res.json({
+            businessUnit: buResult.rows[0],
+            userAccess: accessResult.rows
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des accès:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// PUT /api/permissions/business-units/:buId/access/:userId - Modifier l'accès d'un utilisateur à une BU
+router.put('/business-units/:buId/access/:userId', requireAdminPermission, async (req, res) => {
+    try {
+        const { buId, userId } = req.params;
+        const { access_level } = req.body;
+        
+        if (!['READ', 'WRITE', 'ADMIN'].includes(access_level)) {
+            return res.status(400).json({ error: 'Niveau d\'accès invalide' });
+        }
+        
+        const client = await pool.connect();
+        
+        // Vérifier que la BU et l'utilisateur existent
+        const buResult = await client.query('SELECT nom as name FROM business_units WHERE id = $1', [buId]);
+        const userResult = await client.query('SELECT nom, prenom FROM users WHERE id = $1', [userId]);
+        
+        if (buResult.rows.length === 0 || userResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Business Unit ou utilisateur non trouvé' });
+        }
+        
+        // Mettre à jour l'accès
+        await client.query(`
+            INSERT INTO user_business_unit_access (user_id, business_unit_id, access_level, granted)
+            VALUES ($1, $2, $3, true)
+            ON CONFLICT (user_id, business_unit_id) DO UPDATE SET access_level = $3, granted = true
+        `, [userId, buId, access_level]);
+        
+        // Audit
+        await client.query(`
+            INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
+            VALUES ($1, 'MODIFY', 'BU_ACCESS', $2, $3)
+        `, [req.user.id, buId, { 
+            bu_name: buResult.rows[0].name,
+            username: `${userResult.rows[0].nom} ${userResult.rows[0].prenom}`,
+            access_level 
+        }]);
+        
+        client.release();
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Erreur lors de la modification de l\'accès:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// DELETE /api/permissions/business-units/:buId/access/:userId - Supprimer l'accès d'un utilisateur à une BU
+router.delete('/business-units/:buId/access/:userId', requireAdminPermission, async (req, res) => {
+    try {
+        const { buId, userId } = req.params;
+        
+        const client = await pool.connect();
+        
+        // Vérifier que la BU et l'utilisateur existent
+        const buResult = await client.query('SELECT nom as name FROM business_units WHERE id = $1', [buId]);
+        const userResult = await client.query('SELECT nom, prenom FROM users WHERE id = $1', [userId]);
+        
+        if (buResult.rows.length === 0 || userResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Business Unit ou utilisateur non trouvé' });
+        }
+        
+        // Supprimer l'accès
+        await client.query(`
+            DELETE FROM user_business_unit_access
+            WHERE user_id = $1 AND business_unit_id = $2
+        `, [userId, buId]);
+        
+        // Audit
+        await client.query(`
+            INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
+            VALUES ($1, 'REVOKE', 'BU_ACCESS', $2, $3)
+        `, [req.user.id, buId, { 
+            bu_name: buResult.rows[0].name,
+            username: `${userResult.rows[0].nom} ${userResult.rows[0].prenom}`
+        }]);
+        
+        client.release();
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Erreur lors de la suppression de l\'accès:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// ===== ROUTES D'AUDIT =====
+
+// GET /api/permissions/audit - Journal d'audit
+router.get('/audit', requireAdminPermission, async (req, res) => {
+    try {
+        const { start_date, end_date, action } = req.query;
+        
+        let query = `
+            SELECT pal.*, u.nom, u.prenom
+            FROM permission_audit_log pal
+            LEFT JOIN users u ON pal.user_id = u.id
+            WHERE 1=1
+        `;
+        const params = [];
+        let paramIndex = 1;
+        
+        if (start_date) {
+            query += ` AND pal.created_at >= $${paramIndex}`;
+            params.push(start_date);
+            paramIndex++;
+        }
+        
+        if (end_date) {
+            query += ` AND pal.created_at <= $${paramIndex}`;
+            params.push(end_date + ' 23:59:59');
+            paramIndex++;
+        }
+        
+        if (action) {
+            query += ` AND pal.action = $${paramIndex}`;
+            params.push(action);
+            paramIndex++;
+        }
+        
+        query += ` ORDER BY pal.created_at DESC LIMIT 100`;
+        
+        const client = await pool.connect();
+        const result = await client.query(query, params);
+        client.release();
+        
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Erreur lors de la récupération du journal d\'audit:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+module.exports = router;

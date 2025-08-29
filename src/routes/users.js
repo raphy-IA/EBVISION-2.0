@@ -2,6 +2,7 @@ const express = require('express');
 const User = require('../models/User');
 const { userValidation } = require('../utils/validators');
 const { authenticateToken, requirePermission } = require('../middleware/auth');
+const pool = require('../utils/database'); // Added for the new route
 
 const router = express.Router();
 
@@ -72,7 +73,55 @@ router.get('/statistics', authenticateToken, requirePermission('users:read'), as
     }
 });
 
-// Récupérer un utilisateur par ID (DOIT ÊTRE APRÈS /statistics)
+// GET /api/users/roles - Récupérer les rôles disponibles (DOIT ÊTRE AVANT /:id)
+router.get('/roles', authenticateToken, async (req, res) => {
+    try {
+        console.log('🔄 Récupération des rôles...');
+        
+        // Vérifier si la table roles existe (nouveau système)
+        console.log('🔍 Vérification de l\'existence de la table roles...');
+        const tableExists = await pool.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'roles'
+            );
+        `);
+        
+        console.log('📊 Table roles existe:', tableExists.rows[0].exists);
+        
+        if (tableExists.rows[0].exists) {
+            // Utiliser le nouveau système de rôles
+            console.log('📋 Récupération des rôles depuis la table roles...');
+            const result = await pool.query(`
+                SELECT id, name, description
+                FROM roles
+                ORDER BY name
+            `);
+            
+            console.log(`✅ ${result.rows.length} rôles récupérés`);
+            
+            res.json(result.rows);
+        } else {
+            // Table roles n'existe pas - erreur
+            console.log('❌ Table roles non trouvée - ERREUR');
+            res.status(500).json({ 
+                success: false,
+                message: 'Table roles non trouvée dans la base de données',
+                error: 'Table roles inexistante'
+            });
+        }
+    } catch (error) {
+        console.error('❌ Erreur lors de la récupération des rôles:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Erreur interne du serveur',
+            error: error.message 
+        });
+    }
+});
+
+// Récupérer un utilisateur par ID (DOIT ÊTRE APRÈS /roles)
 router.get('/:id', authenticateToken, requirePermission('users:read'), async (req, res) => {
     try {
         const { id } = req.params;
@@ -149,6 +198,21 @@ router.put('/:id', authenticateToken, requirePermission('users:update'), async (
 
         // Validation des données
         console.log('🔍 Données reçues pour mise à jour:', req.body);
+        
+        // Validation dynamique du rôle
+        if (req.body.role) {
+            const rolesResult = await pool.query('SELECT name FROM roles ORDER BY name');
+            const validRoles = rolesResult.rows.map(row => row.name);
+            
+            if (!validRoles.includes(req.body.role)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Rôle invalide',
+                    errors: [`Le rôle "${req.body.role}" n'est pas valide. Rôles autorisés: ${validRoles.join(', ')}`]
+                });
+            }
+        }
+        
         const { error, value } = userValidation.update.validate(req.body);
         if (error) {
             console.log('❌ Erreur de validation:', error.details);

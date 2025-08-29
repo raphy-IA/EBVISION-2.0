@@ -48,6 +48,8 @@ const dashboardAnalyticsRoutes = require('./src/routes/dashboard-analytics');
 const analyticsRoutes = require('./src/routes/analytics');
 const notificationSettingsRoutes = require('./src/routes/notification-settings');
 const prospectingRoutes = require('./src/routes/prospecting');
+const permissionsRoutes = require('./src/routes/permissions');
+const { authenticateToken } = require('./src/middleware/auth');
 
 // Import des middlewares
 const errorHandler = require('./src/middleware/errorHandler');
@@ -173,6 +175,7 @@ app.use('/api/time-sheet-approvals', timeSheetApprovalsRoutes);
 app.use('/api/analytics', dashboardAnalyticsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/prospecting', prospectingRoutes);
+app.use('/api/permissions', authenticateToken, permissionsRoutes);
 
 // Import et utilisation des routes managers
 const managersRoutes = require('./src/routes/managers');

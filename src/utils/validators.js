@@ -1,4 +1,17 @@
 const Joi = require('joi');
+const pool = require('./database');
+
+// Fonction pour récupérer les rôles depuis la base de données
+async function getValidRoles() {
+    try {
+        const result = await pool.query('SELECT name FROM roles ORDER BY name');
+        return result.rows.map(row => row.name);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des rôles pour validation:', error);
+        // Fallback vers les rôles de base
+        return ['SUPER_ADMIN', 'ADMIN_IT', 'IT', 'ADMIN', 'MANAGER', 'CONSULTANT', 'COLLABORATEUR', 'ASSOCIE', 'DIRECTEUR', 'SUPER_USER', 'SUPERVISEUR'];
+    }
+}
 
 // Schémas de validation pour les utilisateurs
 const userValidation = {
@@ -31,7 +44,7 @@ const userValidation = {
                 'string.min': 'Le login doit contenir au moins 3 caractères',
                 'string.max': 'Le login ne peut pas dépasser 50 caractères'
             }),
-        role: Joi.string().valid('ADMIN', 'MANAGER', 'USER', 'ASSISTANT', 'SENIOR', 'DIRECTOR', 'PARTNER').required()
+        role: Joi.string().valid('SUPER_ADMIN', 'ADMIN_IT', 'IT', 'ADMIN', 'MANAGER', 'CONSULTANT', 'COLLABORATEUR', 'ASSOCIE', 'DIRECTEUR', 'SUPER_USER').required()
             .messages({
                 'any.only': 'Rôle invalide',
                 'any.required': 'Le rôle est requis'
@@ -63,9 +76,9 @@ const userValidation = {
                 'string.min': 'Le login doit contenir au moins 3 caractères',
                 'string.max': 'Le login ne peut pas dépasser 50 caractères'
             }),
-        role: Joi.string().valid('ADMIN', 'MANAGER', 'USER', 'ASSISTANT', 'SENIOR', 'DIRECTOR', 'PARTNER')
+        role: Joi.string()
             .messages({
-                'any.only': 'Rôle invalide'
+                'string.base': 'Le rôle doit être une chaîne de caractères'
             }),
         statut: Joi.string().valid('ACTIF', 'INACTIF', 'CONGE')
             .messages({

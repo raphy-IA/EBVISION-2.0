@@ -6,14 +6,28 @@ let sidebarCache = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initialisation du chargement de la sidebar...');
     const sidebarContainer = document.querySelector('.sidebar-container');
     const sidebarPath = '/template-modern-sidebar.html'; // Chemin vers le template de la sidebar
 
     if (sidebarContainer) {
+        console.log('✅ Container sidebar trouvé, chargement en cours...');
         // Attendre un peu que l'authentification soit vérifiée
         setTimeout(() => {
             loadSidebar(sidebarContainer, sidebarPath);
         }, 500);
+    } else {
+        console.error('❌ Container sidebar non trouvé!');
+        // Retry après un délai
+        setTimeout(() => {
+            const retryContainer = document.querySelector('.sidebar-container');
+            if (retryContainer) {
+                console.log('✅ Container sidebar trouvé lors du retry, chargement en cours...');
+                loadSidebar(retryContainer, sidebarPath);
+            } else {
+                console.error('❌ Container sidebar toujours non trouvé après retry!');
+            }
+        }, 1000);
     }
 
     async function loadSidebar(container, path) {

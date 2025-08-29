@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration des Permissions - EB-Vision 2.0</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/modern-sidebar.css" rel="stylesheet">
+    <style>
+        /* Le conteneur principal de la page qui contient la sidebar et le contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Styles pour le contenu principal */
+        .main-content-area {
+            flex-grow: 1; /* Prend l'espace restant */
+            padding: 2rem;
+            background-color: #f8f9fa;
+        }
+        
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+        
+        .permission-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .permission-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .permission-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+        }
+        .permission-body {
+            padding: 20px;
+        }
+        .role-badge {
+            font-size: 0.8em;
+            margin: 2px;
+        }
+        .permission-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .permission-item:last-child {
+            border-bottom: none;
+        }
+        .tab-content {
+            padding: 20px 0;
+        }
+        .user-permission-row {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            padding: 15px;
+        }
+        .bu-access-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .bu-access-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+                <!-- Main Content Area -->
+        <div class="main-content-area">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-shield-alt text-primary me-2"></i>Administration des Permissions</h2>
+            </div>
+
+            <!-- Contenu -->
+            <div class="container-fluid">
+            <!-- Alertes -->
+            <div id="alerts-container"></div>
+
+            <!-- Onglets -->
+            <ul class="nav nav-tabs" id="permissionsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="roles-tab" data-bs-toggle="tab" data-bs-target="#roles" type="button" role="tab">
+                        <i class="fas fa-users me-2"></i>Rôles et Permissions
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">
+                        <i class="fas fa-user-cog me-2"></i>Permissions Utilisateurs
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="business-units-tab" data-bs-toggle="tab" data-bs-target="#business-units" type="button" role="tab">
+                        <i class="fas fa-building me-2"></i>Accès Business Units
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit" type="button" role="tab">
+                        <i class="fas fa-history me-2"></i>Audit
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Contenu des onglets -->
+            <div class="tab-content" id="permissionsTabsContent">
+                <!-- Onglet Rôles et Permissions -->
+                <div class="tab-pane fade show active" id="roles" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-users me-2"></i>Rôles
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="roles-list">
+                                        <!-- Liste des rôles -->
+                                    </div>
+                                    <button class="btn btn-primary btn-sm mt-3" onclick="showCreateRoleModal()">
+                                        <i class="fas fa-plus me-1"></i>Nouveau Rôle
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-shield-alt me-2"></i>Permissions du Rôle
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="role-permissions">
+                                        <p class="text-muted">Sélectionnez un rôle pour voir ses permissions</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onglet Permissions Utilisateurs -->
+                <div class="tab-pane fade" id="users" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-users me-2"></i>Utilisateurs
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <input type="text" class="form-control" id="user-search" placeholder="Rechercher un utilisateur...">
+                                    </div>
+                                    <div id="users-list">
+                                        <!-- Liste des utilisateurs -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-user-shield me-2"></i>Permissions de l'Utilisateur
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="user-permissions">
+                                        <p class="text-muted">Sélectionnez un utilisateur pour voir ses permissions</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onglet Accès Business Units -->
+                <div class="tab-pane fade" id="business-units" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-building me-2"></i>Business Units
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="business-units-list">
+                                        <!-- Liste des BU -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-users-cog me-2"></i>Accès des Utilisateurs
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="bu-access-list">
+                                        <p class="text-muted">Sélectionnez une Business Unit pour voir les accès</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onglet Audit -->
+                <div class="tab-pane fade" id="audit" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-history me-2"></i>Journal d'Audit des Permissions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Date de début</label>
+                                    <input type="date" class="form-control" id="audit-start-date">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Date de fin</label>
+                                    <input type="date" class="form-control" id="audit-end-date">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Action</label>
+                                    <select class="form-select" id="audit-action-filter">
+                                        <option value="">Toutes</option>
+                                        <option value="GRANT">Accorder</option>
+                                        <option value="REVOKE">Révoquer</option>
+                                        <option value="MODIFY">Modifier</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button class="btn btn-primary d-block" onclick="loadAuditLog()">
+                                        <i class="fas fa-search me-1"></i>Filtrer
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="audit-log">
+                                <!-- Journal d'audit -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Modal Création de Rôle -->
+    <div class="modal fade" id="createRoleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>Nouveau Rôle
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="create-role-form">
+                        <div class="mb-3">
+                            <label class="form-label">Nom du rôle</label>
+                            <input type="text" class="form-control" id="role-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="role-description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="role-system">
+                                <label class="form-check-label">Rôle système</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="createRole()">Créer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/permissions-admin.js"></script>
+</body>
+</html>
