@@ -189,7 +189,7 @@ class PermissionsAdmin {
                  onclick="permissionsAdmin.selectUser('${user.id}')">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <strong>${user.username}</strong>
+                        <strong>${user.nom} ${user.prenom}</strong>
                         <span class="badge bg-secondary ms-1">${user.role_name || 'Aucun rôle'}</span>
                     </div>
                     <i class="fas fa-chevron-right"></i>
@@ -202,9 +202,9 @@ class PermissionsAdmin {
     filterUsers(searchTerm) {
         const userItems = document.querySelectorAll('.user-item');
         userItems.forEach(item => {
-            const username = item.querySelector('strong').textContent.toLowerCase();
+            const userName = item.querySelector('strong').textContent.toLowerCase();
             const email = item.querySelector('small').textContent.toLowerCase();
-            const matches = username.includes(searchTerm.toLowerCase()) || 
+            const matches = userName.includes(searchTerm.toLowerCase()) || 
                            email.includes(searchTerm.toLowerCase());
             item.style.display = matches ? 'block' : 'none';
         });
@@ -239,7 +239,7 @@ class PermissionsAdmin {
 
         container.innerHTML = `
             <div class="mb-3">
-                <h6>Utilisateur: ${user.username}</h6>
+                <h6>Utilisateur: ${user.nom} ${user.prenom}</h6>
                 <p class="text-muted">Rôle: ${user.role_name || 'Aucun rôle'}</p>
             </div>
             <div class="row">
@@ -366,7 +366,7 @@ class PermissionsAdmin {
                     <tbody>
                         ${userAccess.map(access => `
                             <tr>
-                                <td>${access.username}</td>
+                                <td>${access.nom} ${access.prenom}</td>
                                 <td>
                                     <select class="form-select form-select-sm" 
                                             onchange="permissionsAdmin.updateBusinessUnitAccess('${businessUnit.id}', '${access.user_id}', this.value)">

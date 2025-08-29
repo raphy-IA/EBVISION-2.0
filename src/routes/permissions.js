@@ -311,7 +311,71 @@ router.get('/users', requireAdminPermission, async (req, res) => {
     }
 });
 
-// GET /api/permissions/users/:id/permissions - Permissions d'un utilisateur
+// GET /api/permissions/users/me/permissions - Permissions de l'utilisateur connecté
+router.get('/users/me/permissions', async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        const client = await pool.connect();
+        
+        // Récupérer l'utilisateur
+        const userResult = await client.query(`
+            SELECT u.id, u.nom, u.prenom, u.email, u.role as role_name
+            FROM users u
+            WHERE u.id = $1
+        `, [userId]);
+        
+        if (userResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Utilisateur non trouvé' });
+        }
+        
+        // Récupérer toutes les permissions
+        const allPermissionsResult = await client.query(`
+            SELECT id, code, name, description, category
+            FROM permissions
+            ORDER BY category, name
+        `);
+        
+        // Récupérer les permissions directes de l'utilisateur
+        const userPermissionsResult = await client.query(`
+            SELECT p.id, p.code, p.name, p.description, p.category, up.granted
+            FROM user_permissions up
+            JOIN permissions p ON up.permission_id = p.id
+            WHERE up.user_id = $1
+        `, [userId]);
+        
+        // Récupérer les permissions du rôle de l'utilisateur
+        const rolePermissionsResult = await client.query(`
+            SELECT p.id, p.code, p.name, p.description, p.category, true as granted
+            FROM role_permissions rp
+            JOIN permissions p ON rp.permission_id = p.id
+            JOIN roles r ON rp.role_id = r.id
+            WHERE r.name = $1
+        `, [userResult.rows[0].role_name]);
+        
+        client.release();
+        
+        // Combiner les permissions directes et les permissions du rôle
+        const allUserPermissions = [...userPermissionsResult.rows, ...rolePermissionsResult.rows];
+        
+        // Supprimer les doublons (si une permission est à la fois directe et via le rôle)
+        const uniquePermissions = allUserPermissions.filter((perm, index, self) => 
+            index === self.findIndex(p => p.id === perm.id)
+        );
+        
+        res.json({
+            user: userResult.rows[0],
+            permissions: uniquePermissions,
+            allPermissions: allPermissionsResult.rows
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des permissions de l\'utilisateur:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// GET /api/permissions/users/:id/permissions - Permissions d'un utilisateur (admin)
 router.get('/users/:id/permissions', requireAdminPermission, async (req, res) => {
     try {
         const { id } = req.params;
@@ -345,11 +409,28 @@ router.get('/users/:id/permissions', requireAdminPermission, async (req, res) =>
             WHERE up.user_id = $1
         `, [id]);
         
+        // Récupérer les permissions du rôle de l'utilisateur
+        const rolePermissionsResult = await client.query(`
+            SELECT p.id, p.code, p.name, p.description, p.category, true as granted
+            FROM role_permissions rp
+            JOIN permissions p ON rp.permission_id = p.id
+            JOIN roles r ON rp.role_id = r.id
+            WHERE r.name = $1
+        `, [userResult.rows[0].role_name]);
+        
         client.release();
+        
+        // Combiner les permissions directes et les permissions du rôle
+        const allUserPermissions = [...userPermissionsResult.rows, ...rolePermissionsResult.rows];
+        
+        // Supprimer les doublons (si une permission est à la fois directe et via le rôle)
+        const uniquePermissions = allUserPermissions.filter((perm, index, self) => 
+            index === self.findIndex(p => p.id === perm.id)
+        );
         
         res.json({
             user: userResult.rows[0],
-            permissions: userPermissionsResult.rows,
+            permissions: uniquePermissions,
             allPermissions: allPermissionsResult.rows
         });
     } catch (error) {
