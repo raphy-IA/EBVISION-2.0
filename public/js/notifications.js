@@ -197,6 +197,7 @@ function updateNotificationBadge() {
             badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
             badge.classList.remove('d-none');
             badge.style.display = 'inline-block';
+            // Forcer la stabilité du positionnement sans modifier les styles
             console.log(`✅ Badge mis à jour: ${unreadCount}`);
         } else {
             badge.classList.add('d-none');

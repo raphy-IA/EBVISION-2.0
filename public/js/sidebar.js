@@ -10,7 +10,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarPath = '/template-modern-sidebar.html'; // Chemin vers le template de la sidebar
 
     if (sidebarContainer) {
-        loadSidebar(sidebarContainer, sidebarPath);
+        // Attendre un peu que l'authentification soit vérifiée
+        setTimeout(() => {
+            loadSidebar(sidebarContainer, sidebarPath);
+        }, 500);
     }
 
     async function loadSidebar(container, path) {
@@ -70,6 +73,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Ajouter les indicateurs visuels pour l'expansion
             addExpandIndicators();
+            
+            // Forcer la mise à jour de l'affichage utilisateur après l'injection de la sidebar
+            if (window.UserHeaderManager && window.UserHeaderManager.instance) {
+                setTimeout(() => {
+                    window.UserHeaderManager.instance.forceUpdateUserDisplay();
+                }, 100);
+            }
             
             console.log('✅ Sidebar chargée et configurée avec succès');
         } else {
@@ -151,6 +161,16 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         localStorage.removeItem('sidebarCache');
         console.log('🗑️ Cache de la sidebar invalidé');
+    };
+
+    // Fonction pour forcer le rechargement de la sidebar
+    window.reloadSidebar = function() {
+        const sidebarContainer = document.querySelector('.sidebar-container');
+        if (sidebarContainer) {
+            console.log('🔄 Rechargement forcé de la sidebar');
+            invalidateSidebarCache();
+            loadSidebar(sidebarContainer, '/template-modern-sidebar.html');
+        }
     };
 
     function setActiveLink() {

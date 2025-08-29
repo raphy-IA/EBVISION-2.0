@@ -580,6 +580,12 @@ body {
 .user-avatar {
     margin-right: 1rem;
     position: relative;
+    /* Forcer la stabilité du conteneur */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    /* Empêcher les modifications de layout */
+    min-width: 2.5rem;
+    min-height: 2.5rem;
 }
 
 .user-avatar i {
@@ -655,6 +661,12 @@ body {
     font-weight: bold;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     animation: pulse 2s infinite;
+    /* Forcer la stabilité du positionnement */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    /* Empêcher les modifications de positionnement */
+    transition: none !important;
+    z-index: 10;
 }
 
 @keyframes pulse {
@@ -723,6 +735,11 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
+    /* Forcer la stabilité du layout */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    /* Empêcher les modifications de layout */
+    min-height: 44px;
 }
 
 .menu-item:hover {
@@ -740,6 +757,12 @@ body {
 .menu-item span {
     flex: 1;
     font-size: 0.9rem;
+    /* Forcer la stabilité du texte */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Empêcher les modifications de layout */
+    min-width: 0;
 }
 
 .menu-badge {
@@ -756,10 +779,85 @@ body {
     margin-left: auto;
     margin-right: 0.5rem;
     flex-shrink: 0;
+    /* Forcer la stabilité du positionnement */
+    position: relative;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    /* Empêcher les modifications de positionnement */
+    transition: none !important;
+    /* Forcer une largeur fixe pour éviter les changements de layout */
+    min-width: 18px;
+    max-width: 18px;
+    /* Centrer le contenu */
+    text-align: center;
+    line-height: 1;
 }
 
 .menu-item:nth-child(3) .menu-badge {
     background: #f39c12;
+}
+
+/* Empêcher les modifications du badge lors de l'ouverture du modal */
+.menu-item:has(.menu-badge) .menu-badge {
+    /* Forcer la stabilité absolue */
+    position: relative !important;
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    transition: none !important;
+    margin-left: auto !important;
+    margin-right: 0.5rem !important;
+    flex-shrink: 0 !important;
+}
+
+/* Règle spécifique pour le badge de notifications */
+#menuNotificationCount {
+    /* Forcer la stabilité absolue */
+    position: relative !important;
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    transition: none !important;
+    margin-left: auto !important;
+    margin-right: 0.5rem !important;
+    flex-shrink: 0 !important;
+    /* Forcer une largeur fixe */
+    min-width: 18px !important;
+    max-width: 18px !important;
+    width: 18px !important;
+    /* Centrer le contenu */
+    text-align: center !important;
+    line-height: 1 !important;
+}
+
+/* Empêcher les modifications lors de l'ouverture du modal */
+.modal-open .menu-badge,
+.modal-open #menuNotificationCount {
+    /* Forcer la stabilité absolue */
+    position: relative !important;
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    transition: none !important;
+    margin-left: auto !important;
+    margin-right: 0.5rem !important;
+    flex-shrink: 0 !important;
+    /* Forcer une largeur fixe */
+    min-width: 18px !important;
+    max-width: 18px !important;
+    width: 18px !important;
+    /* Centrer le contenu */
+    text-align: center !important;
+    line-height: 1 !important;
+}
+
+/* Empêcher les modifications du badge principal lors de l'ouverture du modal */
+.modal-open .notification-bubble {
+    /* Forcer la stabilité absolue */
+    position: absolute !important;
+    top: -5px !important;
+    right: -5px !important;
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    transition: none !important;
+    z-index: 10 !important;
 }
 
 .menu-separator {

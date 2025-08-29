@@ -100,7 +100,10 @@ class AuthManager {
             'token',
             'session',
             'auth',
-            'login'
+            'login',
+            'userDataCache',
+            'notificationsCache',
+            'sidebarCache'
         ];
         
         keysToRemove.forEach(key => {
@@ -113,7 +116,12 @@ class AuthManager {
             document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
         });
         
-        console.log('🧹 Stockage local nettoyé');
+        // Invalider les caches des managers
+        if (window.UserHeaderManager && window.UserHeaderManager.instance) {
+            window.UserHeaderManager.instance.invalidateCache();
+        }
+        
+        console.log('🧹 Stockage local nettoyé et caches invalidés');
     }
 
     // Vérifier le statut d'authentification
