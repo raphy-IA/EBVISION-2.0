@@ -22,27 +22,30 @@ router.get('/stages', authenticateToken, async (req, res) => {
     
     const templates = await pool.query(query, params);
     
-    const data = templates.rows.map(t => {
-      // Convertir les champs JSONB en format attendu par le frontend
-      const requiredActions = (t.required_actions || []).map((action, index) => ({
-        stage_template_id: t.id,
-        action_type: action,
-        is_mandatory: true,
-        validation_order: index + 1
-      }));
+    // Récupérer les actions et documents requis depuis les tables dédiées
+    const data = await Promise.all(templates.rows.map(async (t) => {
+      // Récupérer les actions requises depuis la table stage_required_actions
+      const actionsQuery = `
+        SELECT * FROM stage_required_actions 
+        WHERE stage_template_id = $1 
+        ORDER BY validation_order ASC, id ASC
+      `;
+      const actionsResult = await pool.query(actionsQuery, [t.id]);
       
-      const requiredDocuments = (t.required_documents || []).map(doc => ({
-        stage_template_id: t.id,
-        document_type: doc,
-        is_mandatory: true
-      }));
+      // Récupérer les documents requis depuis la table stage_required_documents
+      const documentsQuery = `
+        SELECT * FROM stage_required_documents 
+        WHERE stage_template_id = $1 
+        ORDER BY id ASC
+      `;
+      const documentsResult = await pool.query(documentsQuery, [t.id]);
       
       return {
         template: t,
-        requiredActions: requiredActions,
-        requiredDocuments: requiredDocuments
+        requiredActions: actionsResult.rows,
+        requiredDocuments: documentsResult.rows
       };
-    });
+    }));
     
     res.json({ success: true, data });
   } catch (e) {

@@ -210,6 +210,7 @@ async function addType() {
 // Configurer un type d'opportunité
 async function configureType(typeId) {
     currentTypeId = typeId;
+    currentStageId = null; // Réinitialiser l'étape sélectionnée
     const type = opportunityTypes.find(t => t.id === typeId);
     
     if (!type) {
@@ -218,6 +219,12 @@ async function configureType(typeId) {
     }
 
     document.getElementById('configureTypeName').textContent = type.nom || type.name;
+    
+    // Réinitialiser la section de configuration d'étape
+    document.getElementById('stage-configuration').style.display = 'none';
+    document.getElementById('selectedStageName').textContent = '';
+    document.getElementById('required-actions-list').innerHTML = '<p class="text-muted small">Aucune action requise</p>';
+    document.getElementById('required-documents-list').innerHTML = '<p class="text-muted small">Aucun document requis</p>';
     
     try {
         // Charger les étapes du type
@@ -283,7 +290,16 @@ function displayStages() {
         return;
     }
 
-    container.innerHTML = stagesData.map((stage, index) => `
+    // Ajouter un bouton pour configurer la première étape
+    const firstStageButton = stagesData.length > 0 ? `
+        <div class="text-center mb-3">
+            <button class="btn btn-outline-success btn-sm" onclick="selectStage('${stagesData[0].template.id}')" title="Configurer la première étape">
+                <i class="fas fa-play me-1"></i>Configurer la première étape
+            </button>
+        </div>
+    ` : '';
+
+    container.innerHTML = firstStageButton + stagesData.map((stage, index) => `
         <div class="stage-item card mb-2" data-stage-id="${stage.template.id}">
             <div class="card-body p-2">
                 <div class="d-flex align-items-center">
