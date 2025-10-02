@@ -6,8 +6,25 @@ class MenuPermissionsManager {
     }
 
     async init() {
+        // Vérifier si l'utilisateur est SUPER_ADMIN
+        const userRole = this.getUserRole();
+        if (userRole === 'SUPER_ADMIN') {
+            console.log('✅ SUPER_ADMIN détecté - Bypass complet du filtrage des menus');
+            return; // Ne pas appliquer de filtrage pour SUPER_ADMIN
+        }
+        
         await this.loadUserPermissions();
         this.applyMenuPermissions();
+    }
+
+    getUserRole() {
+        try {
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            return userData.role || userData.principal_role || null;
+        } catch (error) {
+            console.error('Erreur lors de la récupération du rôle:', error);
+            return null;
+        }
     }
 
     async loadUserPermissions() {
