@@ -54,3 +54,13 @@ coverage/
 # Fichiers OS
 .DS_Store
 Thumbs.db
+
+# Scripts de diagnostic/debug créés en production
+scripts/check-*-production.js
+scripts/debug-*-production.js
+scripts/test-*-production.js
+scripts/diagnose-*-production.js
+scripts/*-production-*.js
+
+# Fichiers nohup
+nohup.out
