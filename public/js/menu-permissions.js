@@ -61,8 +61,11 @@ class MenuPermissionsManager {
     applyMenuPermissions() {
         console.log('🎯 Application des permissions de menu granulaires...');
         
-        // Appliquer les permissions par section
-        this.applySectionPermissions();
+        // TEMPORAIRE : Désactivation du filtrage des sections car les permissions
+        // en base sont granulaires (menu.dashboard.xxx) et non par section (menu.dashboard)
+        // TODO: Revoir la logique de filtrage pour matcher les permissions granulaires
+        
+        // this.applySectionPermissions(); // DÉSACTIVÉ
         
         // Appliquer les permissions granulaires pour les liens individuels
         this.applyGranularLinkPermissions();
