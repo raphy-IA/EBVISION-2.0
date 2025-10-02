@@ -15,6 +15,14 @@ npm run build
 pm2 restart ebvision
 sudo systemctl restart ebvision
 
+Si non Fonctionnel utilisez :
+pkill -f "node server.js"  "tue le processus nodeJS en cours"
+nohup node server.js > logs/server.log 2>&1 & "redemarre le processus"
+
+utiliser le script
+chmod +x restart-server.sh
+./restart-server.sh
+
 # Créer un dump de votre base locale
 pg_dump -h localhost -U postgres -d eb_vision_2_0 --encoding=UTF8 --no-owner --no-privileges --clean --if-exists > "D:\10. Programmation\Projets\SavedDB\ebvision_local_export.sql"
 

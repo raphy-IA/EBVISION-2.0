@@ -608,3 +608,4 @@ Après chaque synchronisation, l'application affiche des statistiques détaillé
 **Version** : 2.2.0  
 **Type** : Nouvelle Fonctionnalité
 
+

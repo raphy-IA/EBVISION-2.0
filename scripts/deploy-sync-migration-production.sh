@@ -63,3 +63,4 @@ echo "3. Allez sur /permissions-admin.html"
 echo "4. Cliquez sur 'Synchroniser Permissions & Menus'"
 echo ""
 
+

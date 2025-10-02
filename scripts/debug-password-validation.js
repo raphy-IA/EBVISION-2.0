@@ -97,3 +97,4 @@ console.log('=================================');
 console.log('1. Utiliser un pattern plus permissif pour les caractères spéciaux');
 console.log('2. Ou utiliser des validations séparées au lieu d\'un seul pattern');
 console.log('3. Tester avec le mot de passe exact que vous utilisez');
+

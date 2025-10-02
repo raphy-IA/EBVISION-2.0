@@ -100,3 +100,4 @@ console.log('\n💡 CARACTÈRES SPÉCIAUX AUTORISÉS:');
 console.log('==================================');
 console.log('! @ # $ % ^ & * ( ) _ + - = [ ] { } | ; : , . < > ? / \\');
 console.log('(Au lieu de seulement @ $ ! % * ? &)');
+

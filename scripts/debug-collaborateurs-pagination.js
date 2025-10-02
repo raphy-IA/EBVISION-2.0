@@ -151,3 +151,4 @@ console.log('1. Vérifier que l\'élément #pagination-container existe dans le 
 console.log('2. Ajouter des logs de débogage dans updatePaginationControls()');
 console.log('3. Vérifier que les données de pagination sont correctement reçues du serveur');
 console.log('4. Tester la fonction dans la console du navigateur');
+

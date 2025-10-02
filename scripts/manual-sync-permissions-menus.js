@@ -188,3 +188,4 @@ async function syncPermissionsAndMenus() {
 // Exécuter la synchronisation
 syncPermissionsAndMenus();
 
+

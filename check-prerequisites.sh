@@ -109,3 +109,4 @@ echo "🚀 Votre application EB-Vision 2.0 est prête à être installée !"
 
 
 
+

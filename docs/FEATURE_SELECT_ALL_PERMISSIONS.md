@@ -353,3 +353,4 @@ Afficher une modale de confirmation avec la liste des permissions qui vont être
 **Date** : 2 octobre 2025  
 **Version** : 2.1
 
+

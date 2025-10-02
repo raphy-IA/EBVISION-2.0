@@ -69,3 +69,4 @@ async function testPasswordChangeFix() {
 
 // Exécuter le test
 testPasswordChangeFix().catch(console.error);
+

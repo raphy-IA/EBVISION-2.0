@@ -65,15 +65,9 @@ class MenuPermissionsManager {
         // Une section est visible si l'utilisateur a AU MOINS UNE permission commençant par le préfixe de la section
         this.applySectionPermissions();
         
-        // NOTE: applyGranularLinkPermissions() est désactivé car les permissions en base
-        // (menu.dashboard.tableau_de_bord_principal, menu.gestion_rh.collaborateurs, etc.)
-        // ne correspondent pas aux permissions recherchées par cette fonction
-        // (menu.dashboard.main, menu.collaborateurs.list, etc.)
-        // 
-        // SOLUTION TEMPORAIRE: On affiche tous les liens des sections autorisées
-        // TODO: Synchroniser les permissions de liens dans la base OU adapter la logique
-        
-        // this.applyGranularLinkPermissions(); // DÉSACTIVÉ
+        // Appliquer les permissions granulaires pour les liens individuels
+        // Utilise les attributs data-permission présents dans le HTML
+        this.applyDataPermissionBasedPermissions();
     }
 
     applySectionPermissions() {
@@ -131,264 +125,69 @@ class MenuPermissionsManager {
         });
     }
 
-    applyGranularLinkPermissions() {
-        console.log('🔗 Application des permissions granulaires pour les liens...');
+    /**
+     * Applique les permissions basées sur les attributs data-permission des liens
+     * Cette méthode utilise les vraies permissions de la base de données
+     */
+    applyDataPermissionBasedPermissions() {
+        console.log('🔗 Application des permissions basées sur data-permission...');
         
-        // Mappings des permissions granulaires vers les sélecteurs de liens
-        const linkPermissions = {
-            // Dashboard
-            'menu.dashboard.main': 'a[href="dashboard.html"]',
-            'menu.dashboard.personal': 'a[href="dashboard-personal.html"]',
-            'menu.dashboard.team': 'a[href="dashboard-team.html"]',
-            'menu.dashboard.direction': 'a[href="dashboard-direction.html"]',
-            'menu.dashboard.recovery': 'a[href="dashboard-recovery.html"]',
-            'menu.dashboard.profitability': 'a[href="dashboard-profitability.html"]',
-            'menu.dashboard.chargeability': 'a[href="dashboard-chargeability.html"]',
-            'menu.dashboard.analytics': 'a[href="analytics.html"]',
-            'menu.dashboard.optimized': 'a[href="dashboard-optimized.html"]',
+        // Parcourir tous les liens avec l'attribut data-permission
+        const linksWithPermissions = document.querySelectorAll('.sidebar-nav-link[data-permission]');
+        console.log(`📊 Nombre de liens avec permissions trouvés: ${linksWithPermissions.length}`);
+        
+        linksWithPermissions.forEach((link, index) => {
+            const permissionCode = link.getAttribute('data-permission');
+            const linkText = link.textContent.trim();
             
-            // Rapports
-            'menu.reports.general': 'a[href="reports.html"]',
-            'menu.reports.missions': 'a[href="reports-missions.html"]',
-            'menu.reports.opportunities': 'a[href="reports-opportunities.html"]',
-            'menu.reports.hr': 'a[href="reports-hr.html"]',
-            'menu.reports.prospecting': 'a[href="reports-prospecting.html"]',
+            console.log(`🔍 Lien ${index + 1}: "${linkText}" (permission: ${permissionCode})`);
             
-            // Gestion des Temps
-            'menu.time_entries.input': 'a[href="time-sheet-modern.html"]',
-            'menu.time_entries.approval': 'a[href="time-approval.html"]',
-            
-            // Gestion Mission
-            'menu.missions.list': 'a[href="missions.html"]',
-            'menu.missions.types': 'a[href="mission-types.html"]',
-            'menu.missions.tasks': 'a[href="tasks.html"]',
-            'menu.missions.invoices': 'a[href="invoices.html"]',
-            
-            // Market Pipeline
-            'menu.opportunities.clients': 'a[href="clients.html"]',
-            'menu.opportunities.list': 'a[href="opportunities.html"]',
-            'menu.opportunities.types': 'a[href="opportunity-types.html"]',
-            'menu.opportunities.campaigns': 'a[href="campaigns.html"]',
-            'menu.opportunities.validations': 'a[href="campaign-validations.html"]',
-            
-            // Gestion RH
-            'menu.collaborateurs.list': 'a[href="collaborateurs.html"]',
-            'menu.collaborateurs.grades': 'a[href="grades.html"]',
-            'menu.collaborateurs.positions': 'a[href="postes.html"]',
-            
-            // Configurations
-            'menu.settings.fiscal_years': 'a[href="fiscal-years.html"]',
-            'menu.settings.countries': 'a[href="pays.html"]',
-            
-            // Business Unit
-            'menu.business_units.list': 'a[href="business-units.html"]',
-            'menu.business_units.divisions': 'a[href="divisions.html"]',
-            'menu.business_units.managers': 'a[href="managers.html"]',
-            'menu.business_units.internal_activities': 'a[href="internal-activities.html"]',
-            'menu.business_units.sectors': 'a[href="sectors.html"]',
-            'menu.business_units.opportunity_config': 'a[href="opportunity-config.html"]',
-            'menu.business_units.sources': 'a[href="sources.html"]',
-            'menu.business_units.templates': 'a[href="templates.html"]',
-            'menu.business_units.campaigns': 'a[href="bu-campaigns.html"]',
-            'menu.business_units.campaign_validations': 'a[href="bu-campaign-validations.html"]',
-            
-            // Paramètres Administration
-            'menu.users.notifications': 'a[href="notification-settings.html"]',
-            'menu.users.list': 'a[href="users.html"]',
-            'menu.users.permissions': 'a[href="permissions-admin.html"]'
-        };
-
-        // Appliquer les permissions pour chaque lien
-        Object.entries(linkPermissions).forEach(([permissionCode, selector]) => {
+            // Vérifier si l'utilisateur a cette permission
             const hasPermission = this.hasPermission(permissionCode);
-            console.log(`🔍 Vérification permission ${permissionCode}: ${hasPermission}`);
             
             if (!hasPermission) {
-                this.hideMenuElement(selector);
-                console.log(`🚫 Lien masqué: ${selector} (permission: ${permissionCode})`);
+                link.style.display = 'none';
+                console.log(`🚫 Lien masqué: ${linkText} (permission: ${permissionCode})`);
             } else {
-                console.log(`✅ Lien visible: ${selector} (permission: ${permissionCode})`);
+                link.style.display = '';
+                console.log(`✅ Lien visible: ${linkText} (permission: ${permissionCode})`);
             }
         });
-
-        // Permissions spéciales basées sur le texte du lien
-        this.applyTextBasedPermissions();
+        
+        // Vérifier s'il reste des liens visibles dans chaque section
+        this.checkEmptySections();
     }
 
-    applyTextBasedPermissions() {
-        console.log('📝 Application des permissions basées sur le texte...');
+    /**
+     * Vérifie et masque les sections qui n'ont plus de liens visibles
+     */
+    checkEmptySections() {
+        console.log('🔍 Vérification des sections vides...');
         
-        // Mappings permission -> texte du lien
-        const textBasedPermissions = {
-            'menu.dashboard.main': 'Dashboard',
-            'menu.dashboard.personal': 'Dashboard Personnel',
-            'menu.dashboard.team': 'Dashboard Équipe',
-            'menu.dashboard.direction': 'Dashboard Direction',
-            'menu.dashboard.recovery': 'Dashboard Recouvrement',
-            'menu.dashboard.profitability': 'Dashboard Rentabilité',
-            'menu.dashboard.chargeability': 'Dashboard Chargeabilité',
-            'menu.dashboard.analytics': 'Analytics & Indicateurs',
-            'menu.dashboard.optimized': 'Dashboard Optimisé',
+        const sections = document.querySelectorAll('.sidebar-section');
+        sections.forEach((section, index) => {
+            const visibleLinks = section.querySelectorAll('.sidebar-nav-link:not([style*="display: none"])');
+            const sectionTitle = section.querySelector('.sidebar-section-title')?.textContent.trim();
             
-            'menu.reports.general': 'Rapports généraux',
-            'menu.reports.missions': 'Rapports missions',
-            'menu.reports.opportunities': 'Rapports opportunités',
-            'menu.reports.hr': 'Rapports RH',
-            'menu.reports.prospecting': 'Rapports de prospection',
-            
-            'menu.time_entries.input': 'Saisie des temps',
-            'menu.time_entries.approval': 'Validation des temps',
-            
-            'menu.missions.list': 'Missions',
-            'menu.missions.types': 'Types de mission',
-            'menu.missions.tasks': 'Tâches',
-            'menu.missions.invoices': 'Factures et paiements',
-            
-            'menu.opportunities.clients': 'Clients et prospects',
-            'menu.opportunities.list': 'Opportunités',
-            'menu.opportunities.types': 'Types d\'opportunité',
-            'menu.opportunities.campaigns': 'Campagnes de prospection',
-            'menu.opportunities.validations': 'Validation des campagnes',
-            
-            'menu.collaborateurs.list': 'Collaborateurs',
-            'menu.collaborateurs.grades': 'Grades',
-            'menu.collaborateurs.positions': 'Postes',
-            
-            'menu.settings.fiscal_years': 'Années fiscales',
-            'menu.settings.countries': 'Pays',
-            
-            'menu.business_units.list': 'Unités d\'affaires',
-            'menu.business_units.divisions': 'Divisions',
-            'menu.business_units.managers': 'Responsables BU/Division',
-            'menu.business_units.internal_activities': 'Activités internes',
-            'menu.business_units.sectors': 'Secteurs d\'activité',
-            'menu.business_units.opportunity_config': 'Configuration types d\'opportunité',
-            'menu.business_units.sources': 'Sources & Entreprises',
-            'menu.business_units.templates': 'Modèles de prospection',
-            'menu.business_units.campaigns': 'Campagnes de prospection',
-            'menu.business_units.campaign_validations': 'Validations de campagnes',
-            
-            'menu.users.notifications': 'Configuration notifications',
-            'menu.users.list': 'Utilisateurs',
-            'menu.users.permissions': 'Administration des Permissions'
-        };
-
-        // Parcourir tous les liens de la sidebar
-        const allLinks = document.querySelectorAll('.sidebar-section a');
-        console.log(`🔗 Nombre de liens trouvés: ${allLinks.length}`);
-        
-        allLinks.forEach((link, index) => {
-            const linkText = link.textContent.trim();
-            console.log(`🔍 Lien ${index + 1}: "${linkText}"`);
-            
-            // Trouver la permission correspondante
-            const permission = Object.entries(textBasedPermissions).find(([perm, text]) => 
-                linkText.includes(text)
-            );
-            
-            if (permission) {
-                const hasPerm = this.hasPermission(permission[0]);
-                console.log(`  - Permission requise: ${permission[0]} (accordée: ${hasPerm})`);
-                
-                if (!hasPerm) {
-                    link.style.display = 'none';
-                    console.log(`🚫 Lien masqué: ${linkText} (permission: ${permission[0]})`);
-                } else {
-                    console.log(`✅ Lien visible: ${linkText} (permission: ${permission[0]})`);
-                }
-            } else {
-                console.log(`⚠️ Aucune permission trouvée pour le lien: ${linkText}`);
+            if (visibleLinks.length === 0 && sectionTitle) {
+                console.log(`🚫 Section masquée car vide: ${sectionTitle}`);
+                section.style.display = 'none';
+            } else if (visibleLinks.length > 0 && sectionTitle) {
+                console.log(`✅ Section visible avec ${visibleLinks.length} lien(s): ${sectionTitle}`);
+                section.style.display = '';
             }
         });
     }
 
-    hideMenuElement(selector) {
-        try {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(element => {
-                element.style.display = 'none';
-            });
-        } catch (error) {
-            console.warn('⚠️ Sélecteur non supporté:', selector);
-        }
-    }
 
-    // Méthode pour vérifier si une section de menu doit être visible
-    isMenuSectionVisible(sectionTitle) {
-        const sectionPermissions = {
-            'DASHBOARD': 'menu.dashboard',
-            'RAPPORTS': 'menu.reports',
-            'GESTION DES TEMPS': 'menu.time_entries',
-            'GESTION MISSION': 'menu.missions',
-            'MARKET PIPELINE': 'menu.opportunities',
-            'GESTION RH': 'menu.collaborateurs',
-            'CONFIGURATIONS': 'menu.settings',
-            'BUSINESS UNIT': 'menu.business_units',
-            'PARAMÈTRES ADMINISTRATION': 'menu.users'
-        };
 
-        const permission = sectionPermissions[sectionTitle];
-        return permission ? this.hasPermission(permission) : true;
-    }
-
-    // Méthode pour vérifier si un lien spécifique doit être visible
-    isMenuLinkVisible(linkText) {
-        const linkPermissions = {
-            'Dashboard': 'menu.dashboard.main',
-            'Dashboard Personnel': 'menu.dashboard.personal',
-            'Dashboard Équipe': 'menu.dashboard.team',
-            'Dashboard Direction': 'menu.dashboard.direction',
-            'Dashboard Recouvrement': 'menu.dashboard.recovery',
-            'Dashboard Rentabilité': 'menu.dashboard.profitability',
-            'Dashboard Chargeabilité': 'menu.dashboard.chargeability',
-            'Analytics & Indicateurs': 'menu.dashboard.analytics',
-            'Dashboard Optimisé': 'menu.dashboard.optimized',
-            
-            'Rapports généraux': 'menu.reports.general',
-            'Rapports missions': 'menu.reports.missions',
-            'Rapports opportunités': 'menu.reports.opportunities',
-            'Rapports RH': 'menu.reports.hr',
-            'Rapports de prospection': 'menu.reports.prospecting',
-            
-            'Saisie des temps': 'menu.time_entries.input',
-            'Validation des temps': 'menu.time_entries.approval',
-            
-            'Missions': 'menu.missions.list',
-            'Types de mission': 'menu.missions.types',
-            'Tâches': 'menu.missions.tasks',
-            'Factures et paiements': 'menu.missions.invoices',
-            
-            'Clients et prospects': 'menu.opportunities.clients',
-            'Opportunités': 'menu.opportunities.list',
-            'Types d\'opportunité': 'menu.opportunities.types',
-            'Campagnes de prospection': 'menu.opportunities.campaigns',
-            'Validation des campagnes': 'menu.opportunities.validations',
-            
-            'Collaborateurs': 'menu.collaborateurs.list',
-            'Grades': 'menu.collaborateurs.grades',
-            'Postes': 'menu.collaborateurs.positions',
-            
-            'Années fiscales': 'menu.settings.fiscal_years',
-            'Pays': 'menu.settings.countries',
-            
-            'Unités d\'affaires': 'menu.business_units.list',
-            'Divisions': 'menu.business_units.divisions',
-            'Responsables BU/Division': 'menu.business_units.managers',
-            'Activités internes': 'menu.business_units.internal_activities',
-            'Secteurs d\'activité': 'menu.business_units.sectors',
-            'Configuration types d\'opportunité': 'menu.business_units.opportunity_config',
-            'Sources & Entreprises': 'menu.business_units.sources',
-            'Modèles de prospection': 'menu.business_units.templates',
-            'Campagnes de prospection': 'menu.business_units.campaigns',
-            'Validations de campagnes': 'menu.business_units.campaign_validations',
-            
-            'Configuration notifications': 'menu.users.notifications',
-            'Utilisateurs': 'menu.users.list',
-            'Administration des Permissions': 'menu.users.permissions'
-        };
-
-        const permission = linkPermissions[linkText];
-        return permission ? this.hasPermission(permission) : true;
+    /**
+     * Vérifie si un lien de menu spécifique doit être visible
+     * @param {string} permissionCode - Code de permission à vérifier
+     * @returns {boolean} - true si l'utilisateur a la permission
+     */
+    isMenuLinkVisible(permissionCode) {
+        return this.hasPermission(permissionCode);
     }
 
     // Méthode pour rafraîchir les permissions (utile après changement de rôle)
@@ -442,8 +241,8 @@ function hasMenuPermission(permissionCode) {
 }
 
 // Fonction pour vérifier les permissions de lien spécifique
-function hasMenuLinkPermission(linkText) {
-    return menuPermissionsManager ? menuPermissionsManager.isMenuLinkVisible(linkText) : true;
+function hasMenuLinkPermission(permissionCode) {
+    return menuPermissionsManager ? menuPermissionsManager.isMenuLinkVisible(permissionCode) : true;
 }
 
 // Fonction pour rafraîchir les permissions

@@ -68,3 +68,4 @@ console.log('- Bouton "Précédent" (désactivé sur la première page)');
 console.log('- Numéros de pages (page actuelle en surbrillance)');
 console.log('- Bouton "Suivant" (désactivé sur la dernière page)');
 console.log('- Navigation fonctionnelle entre les pages');
+

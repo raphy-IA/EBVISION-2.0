@@ -110,3 +110,4 @@ async function diagnoseUserPasswordIssue() {
 
 // Exécuter le diagnostic
 diagnoseUserPasswordIssue().catch(console.error);
+

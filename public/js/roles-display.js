@@ -136,3 +136,4 @@ window.rolesDisplay = {
     ROLE_BADGE_COLORS,
     ROLE_DISPLAY_PRIORITY
 };
+
