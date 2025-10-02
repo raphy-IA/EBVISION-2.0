@@ -223,6 +223,18 @@ router.get('/me', authenticateToken, async (req, res) => {
             console.log('⚠️ Aucun collaborateur_id pour cet utilisateur');
         }
 
+        // Récupérer tous les rôles de l'utilisateur depuis user_roles
+        const rolesResult = await pool.query(`
+            SELECT r.name
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = $1
+            ORDER BY r.name
+        `, [user.id]);
+        
+        const userRoles = rolesResult.rows.map(r => r.name);
+        console.log(`🔐 Rôles de l'utilisateur: ${userRoles.join(', ') || 'aucun'}`);
+
         res.json({
             success: true,
             message: 'Profil récupéré avec succès',
@@ -233,7 +245,8 @@ router.get('/me', authenticateToken, async (req, res) => {
                     prenom: user.prenom,
                     email: user.email,
                     login: user.login,
-                    role: user.role,
+                    role: user.role, // Rôle legacy (pour compatibilité)
+                    roles: userRoles, // Rôles multiples (nouveau système)
                     statut: user.statut,
                     collaborateur_id: user.collaborateur_id,
                     business_unit_id: user.business_unit_id || null,

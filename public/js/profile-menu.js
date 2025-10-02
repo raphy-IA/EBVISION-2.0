@@ -249,7 +249,7 @@ class ProfileMenuManager {
         // Informations de base
         const elements = {
             profileName: `${userData.prenom} ${userData.nom}`,
-            profileRole: this.getRoleName(userData.role),
+            profileRole: this.getRoleName(userData.roles || userData.role),
             userNom: userData.nom || '-',
             userPrenom: userData.prenom || '-',
             userEmail: userData.email || '-',
@@ -268,8 +268,15 @@ class ProfileMenuManager {
         // Badge rôle
         const roleBadge = document.getElementById('userRoleBadge');
         if (roleBadge) {
-            roleBadge.textContent = this.getRoleName(userData.role);
-            roleBadge.className = this.getRoleClass(userData.role);
+            const roles = userData.roles || [userData.role];
+            if (roles.length === 1) {
+                roleBadge.textContent = this.getRoleName(roles[0]);
+                roleBadge.className = this.getRoleClass(roles[0]);
+            } else {
+                roleBadge.textContent = `${roles.length} rôles`;
+                roleBadge.className = 'badge bg-info';
+                roleBadge.title = roles.map(r => this.getRoleName(r)).join(', ');
+            }
         }
 
         // Statut
@@ -311,6 +318,12 @@ class ProfileMenuManager {
     }
 
     getRoleName(role) {
+        // Si c'est un array de rôles, retourner une chaîne formatée
+        if (Array.isArray(role)) {
+            if (role.length === 0) return 'Aucun rôle';
+            if (role.length === 1) return this.getRoleName(role[0]);
+            return role.map(r => this.getRoleName(r)).join(' + ');
+        }
         const roles = {
             'admin': 'Administrateur',
             'manager': 'Manager',
