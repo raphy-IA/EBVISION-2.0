@@ -1811,5 +1811,9 @@ async function checkSuperAdminAndShowSyncButton() {
 let permissionsAdmin;
 document.addEventListener('DOMContentLoaded', () => {
     permissionsAdmin = new PermissionsAdmin();
-    checkSuperAdminAndShowSyncButton();
+    
+    // Attendre un peu que le DOM soit complètement rendu avant de chercher le bouton
+    setTimeout(() => {
+        checkSuperAdminAndShowSyncButton();
+    }, 500);
 });
