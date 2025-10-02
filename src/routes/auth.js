@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { authValidation } = require('../utils/validators');
 const { authenticateToken } = require('../middleware/auth');
+const pool = require('../utils/database');
 
 const router = express.Router();
 

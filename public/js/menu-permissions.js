@@ -61,30 +61,28 @@ class MenuPermissionsManager {
     applyMenuPermissions() {
         console.log('🎯 Application des permissions de menu granulaires...');
         
-        // TEMPORAIRE : Désactivation du filtrage des sections car les permissions
-        // en base sont granulaires (menu.dashboard.xxx) et non par section (menu.dashboard)
-        // TODO: Revoir la logique de filtrage pour matcher les permissions granulaires
-        
-        // this.applySectionPermissions(); // DÉSACTIVÉ
+        // Appliquer les permissions par section (mode granulaire)
+        // Une section est visible si l'utilisateur a AU MOINS UNE permission commençant par le préfixe de la section
+        this.applySectionPermissions();
         
         // Appliquer les permissions granulaires pour les liens individuels
         this.applyGranularLinkPermissions();
     }
 
     applySectionPermissions() {
-        console.log('🎯 Application des permissions de section...');
+        console.log('🎯 Application des permissions de section (mode granulaire)...');
         
-        // Mappings permission -> texte de la section
+        // Mappings préfixe de permission -> texte de la section
         const sectionMappings = {
             'menu.dashboard': 'DASHBOARD',
-            'menu.reports': 'RAPPORTS',
-            'menu.time_entries': 'GESTION DES TEMPS',
-            'menu.missions': 'GESTION MISSION',
-            'menu.opportunities': 'MARKET PIPELINE',
-            'menu.collaborateurs': 'GESTION RH',
-            'menu.settings': 'CONFIGURATIONS',
-            'menu.business_units': 'BUSINESS UNIT',
-            'menu.users': 'PARAMÈTRES ADMINISTRATION'
+            'menu.rapports': 'RAPPORTS',
+            'menu.gestion_des_temps': 'GESTION DES TEMPS',
+            'menu.gestion_mission': 'GESTION MISSION',
+            'menu.market_pipeline': 'MARKET PIPELINE',
+            'menu.gestion_rh': 'GESTION RH',
+            'menu.configurations': 'CONFIGURATIONS',
+            'menu.business_unit': 'BUSINESS UNIT',
+            'menu.parametres_administration': 'PARAMÈTRES ADMINISTRATION'
         };
 
         // Parcourir toutes les sections de la sidebar
@@ -97,23 +95,30 @@ class MenuPermissionsManager {
                 const sectionText = titleElement.textContent.trim();
                 console.log(`🔍 Section ${index + 1}: "${sectionText}"`);
                 
-                // Trouver la permission correspondante
-                const permission = Object.entries(sectionMappings).find(([perm, text]) => 
+                // Trouver le préfixe de permission correspondant
+                const permissionEntry = Object.entries(sectionMappings).find(([prefix, text]) => 
                     sectionText.includes(text)
                 );
                 
-                if (permission) {
-                    const hasPerm = this.hasPermission(permission[0]);
-                    console.log(`  - Permission requise: ${permission[0]} (accordée: ${hasPerm})`);
+                if (permissionEntry) {
+                    const [permissionPrefix, sectionName] = permissionEntry;
                     
-                    if (!hasPerm) {
+                    // Vérifier si l'utilisateur a AU MOINS UNE permission commençant par ce préfixe
+                    const hasAnyPermission = this.userPermissions.some(perm => 
+                        perm.code.startsWith(permissionPrefix + '.')
+                    );
+                    
+                    console.log(`  - Préfixe: ${permissionPrefix}.* (${hasAnyPermission ? '✅ accordé' : '❌ refusé'})`);
+                    
+                    if (!hasAnyPermission) {
                         section.style.display = 'none';
-                        console.log(`🚫 Section masquée: ${sectionText} (permission: ${permission[0]})`);
+                        console.log(`🚫 Section masquée: ${sectionText} (aucune permission ${permissionPrefix}.*)`);
                     } else {
-                        console.log(`✅ Section visible: ${sectionText} (permission: ${permission[0]})`);
+                        section.style.display = '';
+                        console.log(`✅ Section visible: ${sectionText} (permissions ${permissionPrefix}.* trouvées)`);
                     }
                 } else {
-                    console.log(`⚠️ Aucune permission trouvée pour la section: ${sectionText}`);
+                    console.log(`⚠️ Aucun mapping trouvé pour la section: ${sectionText}`);
                 }
             }
         });
