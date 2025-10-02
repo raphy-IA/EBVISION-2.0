@@ -65,8 +65,15 @@ class MenuPermissionsManager {
         // Une section est visible si l'utilisateur a AU MOINS UNE permission commençant par le préfixe de la section
         this.applySectionPermissions();
         
-        // Appliquer les permissions granulaires pour les liens individuels
-        this.applyGranularLinkPermissions();
+        // NOTE: applyGranularLinkPermissions() est désactivé car les permissions en base
+        // (menu.dashboard.tableau_de_bord_principal, menu.gestion_rh.collaborateurs, etc.)
+        // ne correspondent pas aux permissions recherchées par cette fonction
+        // (menu.dashboard.main, menu.collaborateurs.list, etc.)
+        // 
+        // SOLUTION TEMPORAIRE: On affiche tous les liens des sections autorisées
+        // TODO: Synchroniser les permissions de liens dans la base OU adapter la logique
+        
+        // this.applyGranularLinkPermissions(); // DÉSACTIVÉ
     }
 
     applySectionPermissions() {
