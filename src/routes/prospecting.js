@@ -761,7 +761,14 @@ router.delete('/campaigns/:id/companies/:companyId', authenticateToken, async (r
 
 router.get('/campaigns', authenticateToken, async (req, res) => {
     try {
-        const result = await ProspectingCampaign.findAll();
+        // Récupérer les Business Units auxquelles l'utilisateur a accès
+        const permissionManager = require('../utils/PermissionManager');
+        const userBusinessUnits = await permissionManager.getUserBusinessUnits(req.user.id);
+        const userBusinessUnitIds = userBusinessUnits.map(bu => bu.id);
+        
+        console.log(`🔍 Utilisateur ${req.user.id} a accès aux BU:`, userBusinessUnitIds);
+        
+        const result = await ProspectingCampaign.findAll({ userBusinessUnitIds });
         res.json({ success: true, data: result.campaigns });
     } catch (e) {
         console.error('Erreur récupération campagnes:', e);
@@ -1227,7 +1234,7 @@ router.post('/campaigns/:id/submit', authenticateToken, async (req, res) => {
         }
         
         // Soumettre la campagne pour validation
-        const result = await ProspectingCampaign.submitForValidation(campaignId, userId);
+        const result = await ProspectingCampaign.submitForValidation(campaignId, userId, 'BUSINESS_UNIT', 'Soumission automatique');
         
         if (result.success) {
             res.json({

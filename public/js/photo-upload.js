@@ -198,14 +198,22 @@ class PhotoUploadManager {
                 
                 .preview-container {
                     max-width: 300px;
+                    max-height: 300px;
                     margin: 0 auto;
+                    overflow: hidden;
+                    border-radius: 10px;
                 }
                 
                 .preview-container img {
                     max-width: 100%;
+                    max-height: 300px;
+                    width: auto;
                     height: auto;
+                    object-fit: contain;
                     border-radius: 10px;
                     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                    display: block;
+                    margin: 0 auto;
                 }
                 
                 
@@ -402,7 +410,7 @@ class PhotoUploadManager {
             reader.onload = (e) => {
                 photoContainer.innerHTML = `
                     <div class="photo-container">
-                        <img src="${e.target.result}" class="collaborateur-photo large" alt="Photo sélectionnée">
+                        <img src="${e.target.result}" class="collaborateur-avatar large" alt="Photo sélectionnée">
                         <div class="photo-actions">
                             <button class="btn btn-sm btn-outline-danger btn-remove-temp-photo" title="Supprimer la photo">
                                 <i class="fas fa-trash"></i>

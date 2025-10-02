@@ -26,7 +26,13 @@
     "check:notifications": "node scripts/run-notification-check.js",
     "notifications:full-check": "node scripts/complete-notification-system-check.js",
     "test:opportunity-config": "node scripts/test-opportunity-type-configuration.js",
-    "test:complete-opportunity": "node scripts/test-complete-opportunity-system.js"
+    "test:complete-opportunity": "node scripts/test-complete-opportunity-system.js",
+    "start:prod": "NODE_ENV=production node server.js",
+    "pm2:start": "pm2 start ecosystem.config.js --env production",
+    "pm2:stop": "pm2 stop eb-vision-2.0",
+    "pm2:restart": "pm2 restart eb-vision-2.0",
+    "pm2:logs": "pm2 logs eb-vision-2.0",
+    "pm2:monit": "pm2 monit"
   },
   "dependencies": {
     "axios": "^1.11.0",
@@ -49,7 +55,8 @@
     "nodemon": "^3.0.1",
     "pg": "^8.11.3",
     "puppeteer": "^21.11.0",
-    "sharp": "^0.34.3"
+    "sharp": "^0.34.3",
+    "pm2": "^5.3.0"
   },
   "keywords": [
     "trs",

@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# Redirection des requêtes API vers Node.js
+RewriteRule ^api/(.*)$ http://localhost:3000/api/$1 [P,L]
+
+# Redirection vers le dossier public
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/$1 [L]
+
+# Empêcher l'affichage du contenu des dossiers
+Options -Indexes

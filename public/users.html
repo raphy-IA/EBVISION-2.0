@@ -432,11 +432,29 @@
                             <label for="editUserEmail" class="form-label">Email *</label>
                             <input type="email" class="form-control" id="editUserEmail" required>
                         </div>
+                        <!-- Section Rôles Multiples -->
                         <div class="mb-3">
-                            <label for="editUserRole" class="form-label">Rôle *</label>
-                            <select class="form-select" id="editUserRole" required>
-                                <option value="">Sélectionner un rôle</option>
-                            </select>
+                            <label class="form-label">
+                                <i class="fas fa-user-shield me-2"></i>Rôles * 
+                                <small class="text-muted">(au moins un requis)</small>
+                            </label>
+                            <div class="card" style="border: 1px solid #dee2e6;">
+                                <div class="card-body p-2" style="max-height: 280px; overflow-y: auto; background-color: #f8f9fa;">
+                                    <div id="editUserRolesContainer" class="row g-1">
+                                        <!-- Les checkboxes des rôles seront chargées ici -->
+                                        <div class="col-12 text-center py-3">
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span class="visually-hidden">Chargement...</span>
+                                            </div>
+                                            <span class="ms-2 text-muted" style="font-size: 0.85rem;">Chargement...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-text" style="font-size: 0.8rem;">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Sélectionnez un ou plusieurs rôles
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -604,10 +622,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/auth.js" defer></script>
+    <script src="/js/page-permissions.js" defer></script>
     <script src="/js/sidebar.js" defer></script>
                 
                 <!-- Scripts de zone utilisateur -->
                 <script src="js/user-header.js"></script>
+    <script src="js/menu-permissions.js"></script>
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
@@ -691,13 +711,8 @@
                     userRole.innerHTML += `<option value="${role.name}">${displayText}</option>`;
                 });
                 
-                // Mettre à jour le sélecteur de rôle dans le modal de modification
-                const editUserRole = document.getElementById('editUserRole');
-                editUserRole.innerHTML = '<option value="">Sélectionner un rôle</option>';
-                roles.forEach(role => {
-                    const displayText = role.description ? `${role.name} - ${role.description}` : role.name;
-                    editUserRole.innerHTML += `<option value="${role.name}">${displayText}</option>`;
-                });
+                // Note: Les rôles dans le modal de modification sont chargés dynamiquement
+                // via loadUserRolesForEdit() avec des checkboxes multiples
                 
                 console.log(`✅ ${roles.length} rôles chargés avec succès`);
                 
@@ -1015,7 +1030,9 @@
                     document.getElementById('editUserName').value = user.nom;
                     document.getElementById('editUserEmail').value = user.email;
                     document.getElementById('editUserLogin').value = user.login || '';
-                    document.getElementById('editUserRole').value = user.role;
+                    
+                    // Charger les rôles de l'utilisateur
+                    await loadUserRolesForEdit(user.id);
                     
                     // Gérer les champs selon le type d'utilisateur
                     const nameField = document.getElementById('editUserName');
@@ -1106,11 +1123,17 @@
                 formData.login = loginValue;
             }
 
-            // Ajouter rôle seulement s'il n'est pas vide
-            const roleValue = document.getElementById('editUserRole').value;
-            if (roleValue) {
-                formData.role = roleValue;
+            // Récupérer les rôles sélectionnés
+            const selectedRoles = getSelectedRoles();
+            console.log('📋 Rôles sélectionnés:', selectedRoles);
+            
+            // Vérifier qu'au moins un rôle est sélectionné
+            if (selectedRoles.length === 0) {
+                showAlert('Veuillez sélectionner au moins un rôle', 'warning');
+                return;
             }
+            
+            formData.roles = selectedRoles;
 
             // Ajouter nom, prénom, email seulement si les champs ne sont pas désactivés et pas vides
             const nameField = document.getElementById('editUserName');
@@ -1127,7 +1150,8 @@
                 formData.email = emailField.value.trim();
             }
 
-            const newPassword = document.getElementById('editUserPassword').value;
+            // Ajouter le nouveau mot de passe seulement s'il est fourni
+            const newPassword = document.getElementById('editUserPassword').value.trim();
             if (newPassword) {
                 formData.password = newPassword;
             }
@@ -1311,6 +1335,163 @@
         function manageUserAccount(collaborateurId, userId) {
             // Ouvrir le modal de modification pour l'utilisateur lié
             editUser(userId, true);
+        }
+
+        // ===== GESTION DES RÔLES MULTIPLES =====
+        
+        /**
+         * Charger tous les rôles disponibles et les rôles de l'utilisateur
+         * @param {string} userId - ID de l'utilisateur
+         */
+        async function loadUserRolesForEdit(userId) {
+            try {
+                console.log('🔄 Chargement des rôles pour l\'utilisateur:', userId);
+                
+                const container = document.getElementById('editUserRolesContainer');
+                
+                // Charger tous les rôles disponibles
+                const allRolesResponse = await authenticatedFetch(`${API_BASE_URL}/users/roles`);
+                if (!allRolesResponse.ok) {
+                    throw new Error('Erreur lors du chargement des rôles');
+                }
+                const allRoles = await allRolesResponse.json();
+                console.log('📋 Tous les rôles:', allRoles);
+                
+                // Charger les rôles de l'utilisateur
+                const userRolesResponse = await authenticatedFetch(`${API_BASE_URL}/users/${userId}/roles`);
+                let userRoles = [];
+                if (userRolesResponse.ok) {
+                    const userRolesData = await userRolesResponse.json();
+                    userRoles = userRolesData.data || [];
+                }
+                console.log('📊 Rôles de l\'utilisateur:', userRoles);
+                
+                // Créer les checkboxes avec couleurs
+                const roleColors = {
+                    'SUPER_ADMIN': 'danger',
+                    'ADMIN': 'primary',
+                    'ADMIN_IT': 'info',
+                    'ASSOCIE': 'warning',
+                    'DIRECTEUR': 'success',
+                    'MANAGER': 'secondary',
+                    'SUPERVISEUR': 'dark',
+                    'CONSULTANT': 'light',
+                    'COLLABORATEUR': 'light',
+                    'USER': 'light'
+                };
+                
+                // Trier les rôles par ordre de priorité (hiérarchie)
+                const rolePriority = {
+                    'SUPER_ADMIN': 10,
+                    'ADMIN': 9,
+                    'ADMIN_IT': 8,
+                    'ASSOCIE': 7,
+                    'DIRECTEUR': 6,
+                    'MANAGER': 5,
+                    'SUPERVISEUR': 4,
+                    'CONSULTANT': 3,
+                    'COLLABORATEUR': 2,
+                    'USER': 1
+                };
+                
+                const sortedRoles = allRoles.sort((a, b) => {
+                    const priorityA = rolePriority[a.name] || 0;
+                    const priorityB = rolePriority[b.name] || 0;
+                    return priorityB - priorityA;
+                });
+                
+                // Générer le HTML des checkboxes (design compact)
+                const rolesHTML = sortedRoles.map(role => {
+                    const isChecked = userRoles.some(ur => ur.id === role.id);
+                    const colorClass = roleColors[role.name] || 'secondary';
+                    const textColorClass = ['light', 'warning'].includes(colorClass) ? 'text-dark' : 'text-white';
+                    
+                    return `
+                        <div class="col-12">
+                            <div class="form-check d-flex align-items-center py-1 px-2 role-check-item ${isChecked ? 'role-checked' : ''}" 
+                                 style="border-left: 3px solid transparent; transition: all 0.2s;">
+                                <input class="form-check-input me-2 mt-0" 
+                                       type="checkbox" 
+                                       id="role_${role.id}" 
+                                       name="userRoles" 
+                                       value="${role.id}"
+                                       ${isChecked ? 'checked' : ''}
+                                       style="cursor: pointer;">
+                                <label class="form-check-label d-flex align-items-center w-100" 
+                                       for="role_${role.id}" 
+                                       style="cursor: pointer; margin-bottom: 0;">
+                                    <span class="badge bg-${colorClass} ${textColorClass} me-2" style="min-width: 120px; font-size: 0.75rem;">${role.name}</span>
+                                    <small class="text-muted" style="font-size: 0.8rem; line-height: 1.2;">${role.description || 'Aucune description'}</small>
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = rolesHTML;
+                console.log('✅ Rôles chargés et affichés');
+                
+                // Ajouter les événements pour l'effet visuel au survol et à la sélection
+                const roleCheckItems = container.querySelectorAll('.role-check-item');
+                roleCheckItems.forEach(item => {
+                    const checkbox = item.querySelector('input[type="checkbox"]');
+                    
+                    // Effet au survol
+                    item.addEventListener('mouseenter', function() {
+                        if (!checkbox.checked) {
+                            this.style.backgroundColor = '#e9ecef';
+                            this.style.borderLeftColor = '#6c757d';
+                        }
+                    });
+                    
+                    item.addEventListener('mouseleave', function() {
+                        if (!checkbox.checked) {
+                            this.style.backgroundColor = 'transparent';
+                            this.style.borderLeftColor = 'transparent';
+                        }
+                    });
+                    
+                    // Effet à la sélection
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            item.classList.add('role-checked');
+                            item.style.backgroundColor = '#e7f3ff';
+                            item.style.borderLeftColor = '#0d6efd';
+                        } else {
+                            item.classList.remove('role-checked');
+                            item.style.backgroundColor = 'transparent';
+                            item.style.borderLeftColor = 'transparent';
+                        }
+                    });
+                    
+                    // Initialiser l'apparence pour les rôles déjà cochés
+                    if (checkbox.checked) {
+                        item.style.backgroundColor = '#e7f3ff';
+                        item.style.borderLeftColor = '#0d6efd';
+                    }
+                });
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des rôles:', error);
+                const container = document.getElementById('editUserRolesContainer');
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Erreur lors du chargement des rôles. Veuillez réessayer.
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        /**
+         * Récupérer les rôles sélectionnés
+         * @returns {Array<string>} IDs des rôles sélectionnés
+         */
+        function getSelectedRoles() {
+            const checkboxes = document.querySelectorAll('input[name="userRoles"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
         }
 
         function showLoading(show) {

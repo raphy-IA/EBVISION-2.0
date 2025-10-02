@@ -1,7 +1,7 @@
 // Dashboard Direction - EBVISION
 // Gestion des indicateurs stratégiques et de rentabilité
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = new URL('/api', window.location.origin).toString();
 
 // Variables globales pour les graphiques
 let financialChart, buDistributionChart;

@@ -421,6 +421,7 @@
     </div>
 
     <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
     <script src="js/session-manager.js"></script>
     
     <script>
@@ -594,10 +595,28 @@
             
             let html = '';
             companies.forEach(company => {
-                const isRejected = company.validation_status === 'REJECTED';
-                const statusClass = isRejected ? 'rejected' : '';
-                const statusIcon = isRejected ? 'fa-times-circle text-danger' : 'fa-check-circle text-success';
-                const statusText = isRejected ? 'Rejetée' : 'Approuvée';
+                const validationStatus = company.validation_status || 'PENDING';
+                const isRejected = validationStatus === 'REJECTED';
+                const isApproved = validationStatus === 'APPROVED';
+                const isPending = validationStatus === 'PENDING';
+                
+                let statusClass = '';
+                let statusIcon = '';
+                let statusText = '';
+                
+                if (isRejected) {
+                    statusClass = 'rejected';
+                    statusIcon = 'fa-times-circle text-danger';
+                    statusText = 'Rejetée';
+                } else if (isApproved) {
+                    statusClass = 'approved';
+                    statusIcon = 'fa-check-circle text-success';
+                    statusText = 'Approuvée';
+                } else {
+                    statusClass = 'pending';
+                    statusIcon = 'fa-clock text-warning';
+                    statusText = 'En attente';
+                }
                 
                 html += `
                     <div class="company-item ${statusClass}">

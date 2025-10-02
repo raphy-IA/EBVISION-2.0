@@ -473,8 +473,16 @@ class ProfileMenuManager {
             return;
         }
 
+        // Validation complète du mot de passe
         if (newPassword.length < 8) {
             alert('Le nouveau mot de passe doit contenir au moins 8 caractères');
+            return;
+        }
+
+        // Vérifier la complexité du mot de passe
+        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/;
+        if (!passwordPattern.test(newPassword)) {
+            alert('Le nouveau mot de passe doit contenir au moins :\n- Une minuscule\n- Une majuscule\n- Un chiffre\n- Un caractère spécial (!@#$%^&*()_+-=[]{}|;:,.<>?)');
             return;
         }
 
@@ -514,7 +522,12 @@ class ProfileMenuManager {
                 // Vider le formulaire
                 document.getElementById('changePasswordForm').reset();
             } else {
-                alert(result.message || 'Erreur lors du changement de mot de passe');
+                // Afficher les erreurs détaillées du backend
+                let errorMessage = result.message || 'Erreur lors du changement de mot de passe';
+                if (result.errors && result.errors.length > 0) {
+                    errorMessage += '\n\nDétails :\n' + result.errors.join('\n');
+                }
+                alert(errorMessage);
             }
         } catch (error) {
             console.error('❌ Erreur:', error);

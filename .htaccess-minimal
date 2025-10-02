@@ -1,0 +1,28 @@
+# Configuration minimale pour EB-Vision 2.0
+RewriteEngine On
+
+# Redirection vers le dossier public
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /public/$1 [L]
+
+# Empêcher l'affichage du contenu des dossiers
+Options -Indexes
+
+# Protection des fichiers sensibles
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "config.production.js">
+    Order allow,deny
+    Deny from all
+</Files>
+
+
+
+
+
+
+

@@ -71,7 +71,7 @@ router.get('/statistics', authenticateToken, async (req, res) => {
  * POST /api/collaborateurs
  * Créer un nouveau collaborateur
  */
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, requireRole(['MANAGER']), async (req, res) => {
     try {
         console.log('📥 Données reçues pour création:', req.body);
         console.log('🔍 createUserAccess dans req.body:', req.body.createUserAccess);
@@ -303,7 +303,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
  * PUT /api/collaborateurs/:id
  * Mettre à jour un collaborateur
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken, requireRole(['MANAGER']), async (req, res) => {
     try {
         const collaborateur = await Collaborateur.findById(req.params.id);
         
@@ -424,7 +424,7 @@ router.put('/:id/type', async (req, res) => {
  * POST /api/collaborateurs/:id/generate-user-account
  * Générer un compte utilisateur pour un collaborateur
  */
-router.post('/:id/generate-user-account', authenticateToken, requireRole('admin'), async (req, res) => {
+router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN', 'ADMIN_IT']), async (req, res) => {
     try {
         const { id } = req.params;
         const { login, email, nom, prenom, role, password } = req.body;
@@ -487,7 +487,7 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole('admin'
  * DELETE /api/collaborateurs/:id
  * Supprimer un collaborateur
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req, res) => {
     try {
         await Collaborateur.delete(req.params.id);
         

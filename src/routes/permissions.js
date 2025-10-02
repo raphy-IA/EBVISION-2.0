@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../utils/database');
 const permissionManager = require('../utils/PermissionManager');
+const { authenticateToken } = require('../middleware/auth');
 
 // Middleware temporaire pour permettre l'accès aux administrateurs existants
 const requireAdminPermission = async (req, res, next) => {
@@ -91,17 +92,38 @@ router.get('/roles', requireAdminPermission, async (req, res) => {
         if (!tableExists.rows[0].exists) {
             client.release();
             // Retourner des données factices pour le développement
-            return res.json([
+            const mockRoles = [
                 { id: '1', name: 'SUPER_ADMIN', description: 'Super Administrateur', is_system_role: true, created_at: new Date() },
                 { id: '2', name: 'ADMIN', description: 'Administrateur', is_system_role: true, created_at: new Date() },
                 { id: '3', name: 'MANAGER', description: 'Manager', is_system_role: true, created_at: new Date() },
                 { id: '4', name: 'COLLABORATEUR', description: 'Collaborateur', is_system_role: true, created_at: new Date() }
-            ]);
+            ];
+            
+            // Filtrer SUPER_ADMIN si l'utilisateur n'est pas SUPER_ADMIN
+            const isSuperAdmin = req.user.role === 'SUPER_ADMIN';
+            return res.json(isSuperAdmin ? mockRoles : mockRoles.filter(r => r.name !== 'SUPER_ADMIN'));
         }
+        
+        // Récupérer les rôles de l'utilisateur connecté
+        const userRolesResult = await client.query(`
+            SELECT r.name
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = $1
+        `, [req.user.id]);
+        
+        const userRoles = userRolesResult.rows.map(r => r.name);
+        const isSuperAdmin = userRoles.includes('SUPER_ADMIN') || req.user.role === 'SUPER_ADMIN';
+        
+        // Si pas SUPER_ADMIN, exclure le rôle SUPER_ADMIN de la liste
+        const whereClause = isSuperAdmin 
+            ? '' 
+            : "WHERE name != 'SUPER_ADMIN'";
         
         const result = await client.query(`
             SELECT id, name, description, is_system_role, created_at
             FROM roles
+            ${whereClause}
             ORDER BY name
         `);
         client.release();
@@ -182,10 +204,32 @@ router.get('/roles/:id/permissions', requireAdminPermission, async (req, res) =>
             return res.status(404).json({ error: 'Rôle non trouvé' });
         }
         
-        // Récupérer toutes les permissions
+        // Vérifier si l'utilisateur connecté est SUPER_ADMIN
+        const userRolesResult = await client.query(`
+            SELECT r.name
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = $1
+        `, [req.user.id]);
+        
+        const userRoles = userRolesResult.rows.map(r => r.name);
+        const isSuperAdmin = userRoles.includes('SUPER_ADMIN') || req.user.role === 'SUPER_ADMIN';
+        
+        // Filtrer les permissions sensibles si pas SUPER_ADMIN
+        let permissionsWhereClause = '';
+        if (!isSuperAdmin) {
+            // Exclure les permissions de gestion des permissions et du menu PARAMÈTRES ADMINISTRATION
+            permissionsWhereClause = `
+                WHERE p.code NOT LIKE 'permissions.%'
+                AND p.code NOT LIKE 'menu.parametres_administration%'
+            `;
+        }
+        
+        // Récupérer toutes les permissions (filtrées si nécessaire)
         const allPermissionsResult = await client.query(`
             SELECT id, code, name, description, category
-            FROM permissions
+            FROM permissions p
+            ${permissionsWhereClause}
             ORDER BY category, name
         `);
         
@@ -195,6 +239,7 @@ router.get('/roles/:id/permissions', requireAdminPermission, async (req, res) =>
             FROM role_permissions rp
             JOIN permissions p ON rp.permission_id = p.id
             WHERE rp.role_id = $1
+            ${permissionsWhereClause.replace('WHERE', 'AND').replace('p.code', 'p.code')}
         `, [id]);
         
         client.release();
@@ -226,21 +271,31 @@ router.post('/roles/:roleId/permissions/:permissionId', requireAdminPermission, 
             return res.status(404).json({ error: 'Rôle ou permission non trouvé' });
         }
         
-        // Ajouter la permission
-        await client.query(`
-            INSERT INTO role_permissions (role_id, permission_id)
-            VALUES ($1, $2)
-            ON CONFLICT (role_id, permission_id) DO NOTHING
+        // Ajouter la permission sans utiliser ON CONFLICT (la contrainte peut ne pas exister en production)
+        // Vérifier d'abord si l'association existe déjà
+        const existingAssociation = await client.query(`
+            SELECT 1 FROM role_permissions WHERE role_id = $1 AND permission_id = $2
         `, [roleId, permissionId]);
+
+        if (existingAssociation.rows.length === 0) {
+            await client.query(`
+                INSERT INTO role_permissions (role_id, permission_id)
+                VALUES ($1, $2)
+            `, [roleId, permissionId]);
+        }
         
         // Audit
         await client.query(`
             INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
-            VALUES ($1, 'GRANT', 'ROLE_PERMISSION', $2, $3)
-        `, [req.user.id, roleId, { 
-            role_name: roleResult.rows[0].name,
-            permission_code: permissionResult.rows[0].code 
-        }]);
+            VALUES ($1, 'GRANT', 'ROLE_PERMISSION', $2, $3::jsonb)
+        `, [
+            req.user.id,
+            roleId,
+            JSON.stringify({
+                role_name: roleResult.rows[0].name,
+                permission_code: permissionResult.rows[0].code
+            })
+        ]);
         
         client.release();
         
@@ -276,11 +331,15 @@ router.delete('/roles/:roleId/permissions/:permissionId', requireAdminPermission
         // Audit
         await client.query(`
             INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
-            VALUES ($1, 'REVOKE', 'ROLE_PERMISSION', $2, $3)
-        `, [req.user.id, roleId, { 
-            role_name: roleResult.rows[0].name,
-            permission_code: permissionResult.rows[0].code 
-        }]);
+            VALUES ($1, 'REVOKE', 'ROLE_PERMISSION', $2, $3::jsonb)
+        `, [
+            req.user.id,
+            roleId,
+            JSON.stringify({
+                role_name: roleResult.rows[0].name,
+                permission_code: permissionResult.rows[0].code
+            })
+        ]);
         
         client.release();
         
@@ -297,11 +356,41 @@ router.delete('/roles/:roleId/permissions/:permissionId', requireAdminPermission
 router.get('/users', requireAdminPermission, async (req, res) => {
     try {
         const client = await pool.connect();
-        const result = await client.query(`
+        
+        // Récupérer les rôles de l'utilisateur connecté
+        const userRolesResult = await client.query(`
+            SELECT r.name
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = $1
+        `, [req.user.id]);
+        
+        const userRoles = userRolesResult.rows.map(r => r.name);
+        const isSuperAdmin = userRoles.includes('SUPER_ADMIN') || req.user.role === 'SUPER_ADMIN';
+        
+        // Si pas SUPER_ADMIN, exclure les utilisateurs SUPER_ADMIN
+        let query = `
             SELECT u.id, u.nom, u.prenom, u.email, u.role as role_name
             FROM users u
+        `;
+        
+        if (!isSuperAdmin) {
+            query += `
+            WHERE u.id NOT IN (
+                SELECT DISTINCT ur.user_id
+                FROM user_roles ur
+                JOIN roles r ON ur.role_id = r.id
+                WHERE r.name = 'SUPER_ADMIN'
+            )
+            AND u.role != 'SUPER_ADMIN'
+            `;
+        }
+        
+        query += `
             ORDER BY u.nom, u.prenom
-        `);
+        `;
+        
+        const result = await client.query(query);
         client.release();
         
         res.json(result.rows);
@@ -371,6 +460,45 @@ router.get('/users/me/permissions', async (req, res) => {
         });
     } catch (error) {
         console.error('Erreur lors de la récupération des permissions de l\'utilisateur:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+// GET /api/permissions/users/:userId/business-units - Récupérer toutes les BUs d'un utilisateur
+router.get('/users/:userId/business-units', requireAdminPermission, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const client = await pool.connect();
+        
+        // Récupérer toutes les BUs auxquelles l'utilisateur a accès
+        const result = await client.query(`
+            SELECT 
+                bu.id as business_unit_id,
+                bu.nom as business_unit_nom,
+                bu.description as business_unit_description,
+                COALESCE(uba.access_level, 'ADMIN') as access_level,
+                CASE 
+                    WHEN uba.user_id IS NOT NULL THEN 'EXPLICIT'
+                    ELSE 'COLLABORATEUR'
+                END as access_type
+            FROM business_units bu
+            LEFT JOIN user_business_unit_access uba ON bu.id = uba.business_unit_id AND uba.user_id = $1
+            LEFT JOIN collaborateurs c ON c.user_id = $1 AND c.business_unit_id = bu.id
+            WHERE 
+                -- Accès explicite
+                (uba.user_id IS NOT NULL AND uba.granted = true)
+                OR 
+                -- Accès via collaborateur principal
+                (c.business_unit_id IS NOT NULL)
+            ORDER BY bu.nom
+        `, [userId]);
+        
+        client.release();
+        
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des BUs de l\'utilisateur:', error);
         res.status(500).json({ error: 'Erreur interne du serveur' });
     }
 });
@@ -455,21 +583,36 @@ router.post('/users/:userId/permissions/:permissionId', requireAdminPermission, 
             return res.status(404).json({ error: 'Utilisateur ou permission non trouvé' });
         }
         
-        // Ajouter la permission
-        await client.query(`
-            INSERT INTO user_permissions (user_id, permission_id, granted)
-            VALUES ($1, $2, true)
-            ON CONFLICT (user_id, permission_id) DO UPDATE SET granted = true
+        // Ajouter/mettre à jour la permission sans ON CONFLICT (compatibilité production)
+        const existingUserPerm = await client.query(`
+            SELECT 1 FROM user_permissions WHERE user_id = $1 AND permission_id = $2
         `, [userId, permissionId]);
+
+        if (existingUserPerm.rows.length > 0) {
+            await client.query(`
+                UPDATE user_permissions
+                SET granted = true
+                WHERE user_id = $1 AND permission_id = $2
+            `, [userId, permissionId]);
+        } else {
+            await client.query(`
+                INSERT INTO user_permissions (user_id, permission_id, granted)
+                VALUES ($1, $2, true)
+            `, [userId, permissionId]);
+        }
         
         // Audit
         await client.query(`
             INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
-            VALUES ($1, 'GRANT', 'USER_PERMISSION', $2, $3)
-        `, [req.user.id, userId, { 
-            username: `${userResult.rows[0].nom} ${userResult.rows[0].prenom}`,
-            permission_code: permissionResult.rows[0].code 
-        }]);
+            VALUES ($1, 'GRANT', 'USER_PERMISSION', $2, $3::jsonb)
+        `, [
+            req.user.id,
+            userId,
+            JSON.stringify({
+                username: `${userResult.rows[0].nom} ${userResult.rows[0].prenom}`,
+                permission_code: permissionResult.rows[0].code
+            })
+        ]);
         
         client.release();
         
@@ -579,12 +722,32 @@ router.get('/business-units/:id/access', requireAdminPermission, async (req, res
             return res.status(404).json({ error: 'Business Unit non trouvée' });
         }
         
-        // Récupérer les accès des utilisateurs
+        // Récupérer TOUS les utilisateurs qui ont accès à cette BU
+        // 1. Accès explicites via user_business_unit_access
+        // 2. Accès via collaborateur principal (collaborateur.business_unit_id)
         const accessResult = await client.query(`
-            SELECT u.id as user_id, u.nom, u.prenom, uba.access_level, uba.granted
-            FROM user_business_unit_access uba
-            JOIN users u ON uba.user_id = u.id
-            WHERE uba.business_unit_id = $1
+            SELECT 
+                u.id as user_id, 
+                u.nom, 
+                u.prenom,
+                COALESCE(uba.access_level, 'ADMIN') as access_level,
+                COALESCE(uba.granted, true) as granted,
+                CASE 
+                    WHEN uba.user_id IS NOT NULL THEN 'EXPLICIT'
+                    ELSE 'COLLABORATEUR'
+                END as access_type,
+                c.id as collaborateur_id,
+                c.nom as collaborateur_nom,
+                c.prenom as collaborateur_prenom
+            FROM users u
+            LEFT JOIN collaborateurs c ON c.user_id = u.id
+            LEFT JOIN user_business_unit_access uba ON u.id = uba.user_id AND uba.business_unit_id = $1
+            WHERE 
+                -- Accès explicite
+                (uba.user_id IS NOT NULL AND uba.granted = true)
+                OR 
+                -- Accès via collaborateur principal
+                (c.business_unit_id = $1)
             ORDER BY u.nom, u.prenom
         `, [id]);
         
@@ -621,22 +784,37 @@ router.put('/business-units/:buId/access/:userId', requireAdminPermission, async
             return res.status(404).json({ error: 'Business Unit ou utilisateur non trouvé' });
         }
         
-        // Mettre à jour l'accès
-        await client.query(`
-            INSERT INTO user_business_unit_access (user_id, business_unit_id, access_level, granted)
-            VALUES ($1, $2, $3, true)
-            ON CONFLICT (user_id, business_unit_id) DO UPDATE SET access_level = $3, granted = true
-        `, [userId, buId, access_level]);
+        // Mettre à jour l'accès sans ON CONFLICT (compatibilité production)
+        const existingAccess = await client.query(`
+            SELECT 1 FROM user_business_unit_access WHERE user_id = $1 AND business_unit_id = $2
+        `, [userId, buId]);
+
+        if (existingAccess.rows.length > 0) {
+            await client.query(`
+                UPDATE user_business_unit_access
+                SET access_level = $3, granted = true
+                WHERE user_id = $1 AND business_unit_id = $2
+            `, [userId, buId, access_level]);
+        } else {
+            await client.query(`
+                INSERT INTO user_business_unit_access (user_id, business_unit_id, access_level, granted)
+                VALUES ($1, $2, $3, true)
+            `, [userId, buId, access_level]);
+        }
         
         // Audit
         await client.query(`
             INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
-            VALUES ($1, 'MODIFY', 'BU_ACCESS', $2, $3)
-        `, [req.user.id, buId, { 
-            bu_name: buResult.rows[0].name,
-            username: `${userResult.rows[0].nom} ${userResult.rows[0].prenom}`,
-            access_level 
-        }]);
+            VALUES ($1, 'MODIFY', 'BU_ACCESS', $2, $3::jsonb)
+        `, [
+            req.user.id,
+            buId,
+            JSON.stringify({
+                bu_name: buResult.rows[0].name,
+                username: `${userResult.rows[0].nom} ${userResult.rows[0].prenom}`,
+                access_level
+            })
+        ]);
         
         client.release();
         
@@ -672,11 +850,15 @@ router.delete('/business-units/:buId/access/:userId', requireAdminPermission, as
         // Audit
         await client.query(`
             INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
-            VALUES ($1, 'REVOKE', 'BU_ACCESS', $2, $3)
-        `, [req.user.id, buId, { 
-            bu_name: buResult.rows[0].name,
-            username: `${userResult.rows[0].nom} ${userResult.rows[0].prenom}`
-        }]);
+            VALUES ($1, 'REVOKE', 'BU_ACCESS', $2, $3::jsonb)
+        `, [
+            req.user.id,
+            buId,
+            JSON.stringify({
+                bu_name: buResult.rows[0].name,
+                username: `${userResult.rows[0].nom} ${userResult.rows[0].prenom}`
+            })
+        ]);
         
         client.release();
         
@@ -730,6 +912,183 @@ router.get('/audit', requireAdminPermission, async (req, res) => {
         res.json(result.rows);
     } catch (error) {
         console.error('Erreur lors de la récupération du journal d\'audit:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
+/**
+ * GET /api/permissions/roles/:roleId/users-count
+ * Compter le nombre d'utilisateurs ayant un rôle spécifique
+ */
+router.get('/roles/:roleId/users-count', authenticateToken, async (req, res) => {
+    try {
+        const { roleId } = req.params;
+        
+        const countQuery = `
+            SELECT COUNT(*) as count
+            FROM user_roles
+            WHERE role_id = $1
+        `;
+        
+        const result = await pool.query(countQuery, [roleId]);
+        const count = parseInt(result.rows[0].count);
+        
+        res.json({
+            success: true,
+            count
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors du comptage des utilisateurs pour le rôle:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors du comptage des utilisateurs'
+        });
+    }
+});
+
+/**
+ * PUT /api/permissions/roles/:id
+ * Modifier un rôle existant
+ */
+router.put('/roles/:id', requireAdminPermission, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, is_system_role } = req.body;
+        
+        if (!name) {
+            return res.status(400).json({ error: 'Le nom du rôle est requis' });
+        }
+        
+        const client = await pool.connect();
+        
+        // Vérifier que le rôle existe
+        const roleResult = await client.query('SELECT * FROM roles WHERE id = $1', [id]);
+        
+        if (roleResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Rôle non trouvé' });
+        }
+        
+        // Vérifier si c'est un rôle système et si on essaie de modifier son statut
+        const existingRole = roleResult.rows[0];
+        if (existingRole.is_system_role && is_system_role === false) {
+            client.release();
+            return res.status(403).json({ 
+                error: 'Impossible de retirer le statut système d\'un rôle système',
+                reason: 'Les rôles système sont protégés pour assurer le bon fonctionnement de l\'application.'
+            });
+        }
+        
+        // Mettre à jour le rôle
+        const result = await client.query(`
+            UPDATE roles
+            SET name = $1, description = $2, is_system_role = $3, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $4
+            RETURNING id, name, description, is_system_role, created_at, updated_at
+        `, [name, description, is_system_role, id]);
+        
+        // Audit
+        await client.query(`
+            INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
+            VALUES ($1, 'MODIFY', 'ROLE', $2, $3::jsonb)
+        `, [
+            req.user.id,
+            id,
+            JSON.stringify({
+                old_name: existingRole.name,
+                new_name: name,
+                description
+            })
+        ]);
+        
+        client.release();
+        
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Erreur lors de la modification du rôle:', error);
+        if (error.code === '23505') { // Unique violation
+            res.status(400).json({ error: 'Un rôle avec ce nom existe déjà' });
+        } else {
+            res.status(500).json({ error: 'Erreur interne du serveur' });
+        }
+    }
+});
+
+/**
+ * DELETE /api/permissions/roles/:id
+ * Supprimer un rôle
+ */
+router.delete('/roles/:id', requireAdminPermission, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const client = await pool.connect();
+        
+        // Vérifier que le rôle existe
+        const roleResult = await client.query('SELECT * FROM roles WHERE id = $1', [id]);
+        
+        if (roleResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Rôle non trouvé' });
+        }
+        
+        const role = roleResult.rows[0];
+        
+        // Vérifier si c'est un rôle système
+        if (role.is_system_role) {
+            client.release();
+            return res.status(403).json({ 
+                error: 'Impossible de supprimer un rôle système',
+                reason: 'Les rôles système sont essentiels au fonctionnement de l\'application et ne peuvent pas être supprimés.'
+            });
+        }
+        
+        // Vérifier si des utilisateurs ont ce rôle
+        const userCountResult = await client.query(`
+            SELECT COUNT(*) as count
+            FROM user_roles
+            WHERE role_id = $1
+        `, [id]);
+        
+        const userCount = parseInt(userCountResult.rows[0].count);
+        
+        if (userCount > 0) {
+            client.release();
+            return res.status(400).json({ 
+                error: 'Impossible de supprimer ce rôle',
+                reason: `Ce rôle est actuellement attribué à ${userCount} utilisateur${userCount > 1 ? 's' : ''}. Veuillez d'abord retirer ce rôle à tous les utilisateurs avant de le supprimer.`,
+                userCount
+            });
+        }
+        
+        // Supprimer les permissions associées au rôle
+        await client.query('DELETE FROM role_permissions WHERE role_id = $1', [id]);
+        
+        // Supprimer le rôle
+        await client.query('DELETE FROM roles WHERE id = $1', [id]);
+        
+        // Audit
+        await client.query(`
+            INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
+            VALUES ($1, 'DELETE', 'ROLE', $2, $3::jsonb)
+        `, [
+            req.user.id,
+            id,
+            JSON.stringify({
+                role_name: role.name,
+                description: role.description
+            })
+        ]);
+        
+        client.release();
+        
+        res.json({ 
+            success: true,
+            message: 'Rôle supprimé avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la suppression du rôle:', error);
         res.status(500).json({ error: 'Erreur interne du serveur' });
     }
 });

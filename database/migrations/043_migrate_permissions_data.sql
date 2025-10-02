@@ -211,3 +211,12 @@ FROM users u
 JOIN collaborateurs c ON u.collaborateur_id = c.id
 WHERE c.business_unit_id IS NOT NULL
 ON CONFLICT (user_id, business_unit_id) DO NOTHING;
+
+
+
+
+
+
+
+
+

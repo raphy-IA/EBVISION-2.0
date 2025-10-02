@@ -80,6 +80,12 @@ class Opportunity {
             if (options.business_unit_id) {
                 query += ` AND o.business_unit_id = $${paramIndex++}`;
                 params.push(options.business_unit_id);
+            } else if (options.userBusinessUnitIds && options.userBusinessUnitIds.length > 0) {
+                // Filtrer par les Business Units de l'utilisateur
+                const placeholders = options.userBusinessUnitIds.map((_, index) => `$${paramIndex + index}`).join(',');
+                query += ` AND o.business_unit_id IN (${placeholders})`;
+                params.push(...options.userBusinessUnitIds);
+                paramIndex += options.userBusinessUnitIds.length;
             }
 
             if (options.opportunity_type_id) {
@@ -111,9 +117,49 @@ class Opportunity {
 
             const result = await pool.query(query, params);
             
-            // Requête pour le total
-            const countQuery = `SELECT COUNT(*) as total FROM opportunities o WHERE 1=1`;
-            const countResult = await pool.query(countQuery);
+            // Requête pour le total avec les mêmes filtres
+            let countQuery = `SELECT COUNT(*) as total FROM opportunities o WHERE 1=1`;
+            const countParams = [];
+            let countParamIndex = 1;
+
+            if (options.statut) {
+                countQuery += ` AND o.statut = $${countParamIndex++}`;
+                countParams.push(options.statut);
+            }
+
+            if (options.client_id) {
+                countQuery += ` AND o.client_id = $${countParamIndex++}`;
+                countParams.push(options.client_id);
+            }
+
+            if (options.collaborateur_id) {
+                countQuery += ` AND o.collaborateur_id = $${countParamIndex++}`;
+                countParams.push(options.collaborateur_id);
+            }
+
+            if (options.business_unit_id) {
+                countQuery += ` AND o.business_unit_id = $${countParamIndex++}`;
+                countParams.push(options.business_unit_id);
+            } else if (options.userBusinessUnitIds && options.userBusinessUnitIds.length > 0) {
+                // Filtrer par les Business Units de l'utilisateur
+                const placeholders = options.userBusinessUnitIds.map((_, index) => `$${countParamIndex + index}`).join(',');
+                countQuery += ` AND o.business_unit_id IN (${placeholders})`;
+                countParams.push(...options.userBusinessUnitIds);
+                countParamIndex += options.userBusinessUnitIds.length;
+            }
+
+            if (options.opportunity_type_id) {
+                countQuery += ` AND o.opportunity_type_id = $${countParamIndex++}`;
+                countParams.push(options.opportunity_type_id);
+            }
+
+            if (options.search) {
+                countQuery += ` AND (o.nom ILIKE $${countParamIndex} OR o.description ILIKE $${countParamIndex})`;
+                countParams.push(`%${options.search}%`);
+                countParamIndex++;
+            }
+
+            const countResult = await pool.query(countQuery, countParams);
             const total = parseInt(countResult.rows[0].total);
 
             return {

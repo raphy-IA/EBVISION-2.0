@@ -8,7 +8,7 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
  * POST /api/evolution-postes
  * Créer une nouvelle évolution de poste
  */
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, requireRole(['MANAGER']), async (req, res) => {
     try {
         const evolution = await EvolutionPoste.create(req.body);
         

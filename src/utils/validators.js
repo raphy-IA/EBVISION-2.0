@@ -66,10 +66,35 @@ const userValidation = {
             .messages({
                 'string.email': 'Format d\'email invalide'
             }),
-        password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/).optional()
+        password: Joi.string().min(8).optional()
+            .custom((value, helpers) => {
+                // Si le mot de passe est fourni, le valider
+                if (value) {
+                    // Vérifier la présence d'une minuscule
+                    if (!/[a-z]/.test(value)) {
+                        return helpers.error('custom.missingLowercase');
+                    }
+                    // Vérifier la présence d'une majuscule
+                    if (!/[A-Z]/.test(value)) {
+                        return helpers.error('custom.missingUppercase');
+                    }
+                    // Vérifier la présence d'un chiffre
+                    if (!/\d/.test(value)) {
+                        return helpers.error('custom.missingDigit');
+                    }
+                    // Vérifier la présence d'un caractère spécial
+                    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value)) {
+                        return helpers.error('custom.missingSpecial');
+                    }
+                }
+                return value;
+            })
             .messages({
                 'string.min': 'Le mot de passe doit contenir au moins 8 caractères',
-                'string.pattern.base': 'Le mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial (@$!%*?&)'
+                'custom.missingLowercase': 'Le mot de passe doit contenir au moins une minuscule',
+                'custom.missingUppercase': 'Le mot de passe doit contenir au moins une majuscule',
+                'custom.missingDigit': 'Le mot de passe doit contenir au moins un chiffre',
+                'custom.missingSpecial': 'Le mot de passe doit contenir au moins un caractère spécial'
             }),
         login: Joi.string().min(3).max(50)
             .messages({
@@ -79,6 +104,12 @@ const userValidation = {
         role: Joi.string()
             .messages({
                 'string.base': 'Le rôle doit être une chaîne de caractères'
+            }),
+        roles: Joi.array().items(Joi.string().uuid()).min(1)
+            .messages({
+                'array.base': 'Les rôles doivent être un tableau',
+                'array.min': 'Au moins un rôle doit être sélectionné',
+                'string.guid': 'Format de rôle invalide (UUID requis)'
             }),
         statut: Joi.string().valid('ACTIF', 'INACTIF', 'CONGE')
             .messages({
@@ -410,10 +441,32 @@ const authValidation = {
             .messages({
                 'any.required': 'Le mot de passe actuel est requis'
             }),
-        newPassword: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/).required()
+        newPassword: Joi.string().min(8).required()
+            .custom((value, helpers) => {
+                // Vérifier la présence d'une minuscule
+                if (!/[a-z]/.test(value)) {
+                    return helpers.error('custom.missingLowercase');
+                }
+                // Vérifier la présence d'une majuscule
+                if (!/[A-Z]/.test(value)) {
+                    return helpers.error('custom.missingUppercase');
+                }
+                // Vérifier la présence d'un chiffre
+                if (!/\d/.test(value)) {
+                    return helpers.error('custom.missingDigit');
+                }
+                // Vérifier la présence d'un caractère spécial
+                if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value)) {
+                    return helpers.error('custom.missingSpecial');
+                }
+                return value;
+            })
             .messages({
                 'string.min': 'Le nouveau mot de passe doit contenir au moins 8 caractères',
-                'string.pattern.base': 'Le nouveau mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial',
+                'custom.missingLowercase': 'Le nouveau mot de passe doit contenir au moins une minuscule',
+                'custom.missingUppercase': 'Le nouveau mot de passe doit contenir au moins une majuscule',
+                'custom.missingDigit': 'Le nouveau mot de passe doit contenir au moins un chiffre',
+                'custom.missingSpecial': 'Le nouveau mot de passe doit contenir au moins un caractère special',
                 'any.required': 'Le nouveau mot de passe est requis'
             })
     })

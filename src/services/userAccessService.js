@@ -7,18 +7,15 @@ class UserAccessService {
     // Créer un compte utilisateur pour un collaborateur
     static async createUserAccessForCollaborateur(collaborateurData) {
         try {
-            // Utiliser l'email du collaborateur
+            // Utiliser les données du formulaire ou générer des valeurs par défaut
             const email = collaborateurData.email;
-            
-            // Générer un mot de passe temporaire
-            const tempPassword = this.generateTempPassword();
+            const login = collaborateurData.login || await this.generateUniqueLogin(collaborateurData.nom, collaborateurData.prenom);
+            const role = collaborateurData.role || 'COLLABORATEUR';
+            const password = collaborateurData.password || this.generateTempPassword();
             
             // Hasher le mot de passe
             const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
-            const passwordHash = await bcrypt.hash(tempPassword, saltRounds);
-            
-            // Générer un login unique
-            const login = await this.generateUniqueLogin(collaborateurData.nom, collaborateurData.prenom);
+            const passwordHash = await bcrypt.hash(password, saltRounds);
             
             // Créer l'utilisateur
             const userData = {
@@ -27,7 +24,7 @@ class UserAccessService {
                 email: email,
                 password_hash: passwordHash,
                 login: login,
-                role: 'USER', // Rôle par défaut (peut être configuré manuellement selon le grade)
+                role: role,
                 statut: 'ACTIF'
             };
             
@@ -62,13 +59,13 @@ class UserAccessService {
                     user_id: userId,
                     email: email,
                     login: login,
-                    temp_password: tempPassword
+                    password: password
                 });
                 
                 return {
                     success: true,
                     user: result.rows[0],
-                    tempPassword: tempPassword,
+                    password: password,
                     message: 'Compte utilisateur créé avec succès'
                 };
             }

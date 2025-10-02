@@ -48,6 +48,7 @@ const dashboardAnalyticsRoutes = require('./src/routes/dashboard-analytics');
 const analyticsRoutes = require('./src/routes/analytics');
 const notificationSettingsRoutes = require('./src/routes/notification-settings');
 const prospectingRoutes = require('./src/routes/prospecting');
+const pagePermissionsRoutes = require('./src/routes/page-permissions');
 const permissionsRoutes = require('./src/routes/permissions');
 const { authenticateToken } = require('./src/middleware/auth');
 
@@ -67,10 +68,11 @@ app.use(helmet({
         directives: {
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
             scriptSrcAttr: ["'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "https:"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "data:"],
+            connectSrc: ["'self'", "http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "https:"],
         },
     },
 }));
@@ -176,6 +178,11 @@ app.use('/api/analytics', dashboardAnalyticsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/prospecting', prospectingRoutes);
 app.use('/api/permissions', authenticateToken, permissionsRoutes);
+app.use('/api/auth', pagePermissionsRoutes);
+
+// Route de synchronisation des permissions et menus
+const syncPermissionsRoutes = require('./src/routes/sync-permissions');
+app.use(syncPermissionsRoutes);
 
 // Import et utilisation des routes managers
 const managersRoutes = require('./src/routes/managers');

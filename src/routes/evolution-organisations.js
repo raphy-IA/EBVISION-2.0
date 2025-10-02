@@ -8,7 +8,7 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
  * POST /api/evolution-organisations
  * Créer une nouvelle évolution organisationnelle
  */
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, requireRole(['MANAGER']), async (req, res) => {
     try {
         const evolution = await EvolutionOrganisation.create(req.body);
         

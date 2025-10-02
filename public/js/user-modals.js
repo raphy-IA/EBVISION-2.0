@@ -465,6 +465,25 @@ async function changePassword() {
     const newPassword = document.getElementById('newPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
 
+    // Validation des champs requis
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        showAlert('Veuillez remplir tous les champs', 'danger');
+        return;
+    }
+
+    // Validation de la longueur
+    if (newPassword.length < 8) {
+        showAlert('Le nouveau mot de passe doit contenir au moins 8 caractères', 'danger');
+        return;
+    }
+
+    // Validation de la complexité
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/;
+    if (!passwordPattern.test(newPassword)) {
+        showAlert('Le nouveau mot de passe doit contenir au moins : une minuscule, une majuscule, un chiffre et un caractère spécial (!@#$%^&*()_+-=[]{}|;:,.<>?)', 'danger');
+        return;
+    }
+
     if (newPassword !== confirmPassword) {
         showAlert('Les mots de passe ne correspondent pas', 'danger');
         return;
@@ -497,7 +516,12 @@ async function changePassword() {
             // Afficher un message de succès
             showAlert('Mot de passe modifié avec succès', 'success');
         } else {
-            showAlert(data.message || 'Erreur lors du changement de mot de passe', 'danger');
+            // Afficher les erreurs détaillées du backend
+            let errorMessage = data.message || 'Erreur lors du changement de mot de passe';
+            if (data.errors && data.errors.length > 0) {
+                errorMessage += '\n\nDétails :\n' + data.errors.join('\n');
+            }
+            showAlert(errorMessage, 'danger');
         }
     } catch (error) {
         console.error('Erreur lors du changement de mot de passe:', error);

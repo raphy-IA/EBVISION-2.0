@@ -104,3 +104,12 @@ CREATE TRIGGER update_permissions_updated_at BEFORE UPDATE ON permissions FOR EA
 
 DROP TRIGGER IF EXISTS update_user_bu_access_updated_at ON user_business_unit_access;
 CREATE TRIGGER update_user_bu_access_updated_at BEFORE UPDATE ON user_business_unit_access FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+
+
+
+
+
+
+
+

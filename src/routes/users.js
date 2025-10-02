@@ -3,6 +3,13 @@ const User = require('../models/User');
 const { userValidation } = require('../utils/validators');
 const { authenticateToken, requirePermission } = require('../middleware/auth');
 const pool = require('../utils/database'); // Added for the new route
+const {
+    isSuperAdmin,
+    canModifySuperAdmin,
+    canRemoveLastSuperAdmin,
+    logSuperAdminAction
+} = require('../utils/superAdminHelper');
+const { superAdminActionLimiter } = require('../middleware/superAdminRateLimiter');
 
 const router = express.Router();
 
@@ -22,7 +29,8 @@ router.get('/', authenticateToken, requirePermission('users:read'), async (req, 
             limit,
             search,
             role,
-            statut
+            statut,
+            currentUserId: req.user.id // Passer l'ID de l'utilisateur connecté pour filtrer les SUPER_ADMIN
         });
 
         // Ajouter l'information de liaison avec les collaborateurs
@@ -192,9 +200,27 @@ router.post('/', authenticateToken, requirePermission('users:create'), async (re
 });
 
 // Mettre à jour un utilisateur
-router.put('/:id', authenticateToken, requirePermission('users:update'), async (req, res) => {
+router.put('/:id', superAdminActionLimiter, authenticateToken, requirePermission('users:update'), async (req, res) => {
     try {
         const { id } = req.params;
+
+        // 🔒 PROTECTION SUPER_ADMIN: Vérifier si l'utilisateur peut modifier la cible
+        const canModify = await canModifySuperAdmin(req.user.id, id);
+        if (!canModify.allowed) {
+            await logSuperAdminAction(
+                req.user.id,
+                'SUPER_ADMIN_UNAUTHORIZED_MODIFICATION_ATTEMPT',
+                id,
+                { reason: canModify.reason },
+                req
+            );
+            
+            return res.status(403).json({
+                success: false,
+                message: 'Accès refusé',
+                reason: canModify.reason
+            });
+        }
 
         // Validation des données
         console.log('🔍 Données reçues pour mise à jour:', req.body);
@@ -250,6 +276,36 @@ router.put('/:id', authenticateToken, requirePermission('users:update'), async (
         // Mettre à jour l'utilisateur
         const updatedUser = await User.update(id, value);
 
+        // Gérer la mise à jour des rôles multiples si fournis
+        if (req.body.roles && Array.isArray(req.body.roles)) {
+            console.log('📋 Mise à jour des rôles multiples:', req.body.roles);
+            
+            try {
+                // Supprimer tous les rôles existants
+                await pool.query('DELETE FROM user_roles WHERE user_id = $1', [id]);
+                
+                // Ajouter les nouveaux rôles
+                if (req.body.roles.length > 0) {
+                    const insertValues = req.body.roles.map((roleId, index) => 
+                        `($1, $${index + 2}, NOW())`
+                    ).join(', ');
+                    
+                    const insertQuery = `
+                        INSERT INTO user_roles (user_id, role_id, created_at)
+                        VALUES ${insertValues}
+                    `;
+                    
+                    await pool.query(insertQuery, [id, ...req.body.roles]);
+                    console.log(`✅ ${req.body.roles.length} rôle(s) assigné(s) à l'utilisateur ${id}`);
+                } else {
+                    console.log('⚠️ Aucun rôle spécifié');
+                }
+            } catch (rolesError) {
+                console.error('❌ Erreur lors de la mise à jour des rôles:', rolesError);
+                // Ne pas bloquer la mise à jour de l'utilisateur si les rôles échouent
+            }
+        }
+
         res.json({
             success: true,
             message: 'Utilisateur mis à jour avec succès',
@@ -297,7 +353,7 @@ router.patch('/:id/deactivate', authenticateToken, requirePermission('users:upda
 });
 
 // Supprimer définitivement un utilisateur (hard delete)
-router.delete('/:id', authenticateToken, requirePermission('users:delete'), async (req, res) => {
+router.delete('/:id', superAdminActionLimiter, authenticateToken, requirePermission('users:delete'), async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -307,6 +363,42 @@ router.delete('/:id', authenticateToken, requirePermission('users:delete'), asyn
             return res.status(404).json({
                 success: false,
                 message: 'Utilisateur non trouvé'
+            });
+        }
+
+        // 🔒 PROTECTION SUPER_ADMIN: Vérifier si l'utilisateur peut supprimer la cible
+        const canModify = await canModifySuperAdmin(req.user.id, id);
+        if (!canModify.allowed) {
+            await logSuperAdminAction(
+                req.user.id,
+                'SUPER_ADMIN_UNAUTHORIZED_DELETION_ATTEMPT',
+                id,
+                { reason: canModify.reason, user: `${existingUser.nom} ${existingUser.prenom}` },
+                req
+            );
+            
+            return res.status(403).json({
+                success: false,
+                message: 'Accès refusé',
+                reason: canModify.reason
+            });
+        }
+
+        // 🔒 PROTECTION: Empêcher la suppression du dernier SUPER_ADMIN
+        const canRemove = await canRemoveLastSuperAdmin(id);
+        if (!canRemove.allowed) {
+            await logSuperAdminAction(
+                req.user.id,
+                'SUPER_ADMIN_LAST_ADMIN_DELETION_ATTEMPT',
+                id,
+                { reason: canRemove.reason },
+                req
+            );
+            
+            return res.status(400).json({
+                success: false,
+                message: 'Opération interdite',
+                reason: canRemove.reason
             });
         }
 
@@ -321,6 +413,18 @@ router.delete('/:id', authenticateToken, requirePermission('users:delete'), asyn
 
         // Hard delete (suppression définitive)
         await User.hardDelete(id);
+
+        // 📝 AUDIT: Enregistrer la suppression d'un SUPER_ADMIN
+        const wasSuperAdmin = await isSuperAdmin(id);
+        if (wasSuperAdmin) {
+            await logSuperAdminAction(
+                req.user.id,
+                'SUPER_ADMIN_USER_DELETED',
+                id,
+                { user: `${existingUser.nom} ${existingUser.prenom}`, email: existingUser.email },
+                req
+            );
+        }
 
         res.json({
             success: true,
@@ -504,6 +608,275 @@ router.get('/alerts/:userId', authenticateToken, async (req, res) => {
             success: false, 
             message: 'Erreur lors de la récupération des alertes',
             error: error.message 
+        });
+    }
+});
+
+// ===== GESTION DES RÔLES MULTIPLES =====
+
+/**
+ * GET /api/users/roles
+ * Récupérer tous les rôles disponibles
+ * IMPORTANT: Cette route doit être définie AVANT /:id/roles
+ */
+router.get('/roles', authenticateToken, async (req, res) => {
+    try {
+        console.log('🔄 Récupération des rôles...');
+        
+        // Vérifier l'existence de la table roles
+        const tableExistsQuery = `
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'roles'
+            );
+        `;
+        
+        const tableExistsResult = await pool.query(tableExistsQuery);
+        const tableExists = tableExistsResult.rows[0].exists;
+        
+        console.log('📊 Table roles existe:', tableExists);
+        
+        if (!tableExists) {
+            console.log('❌ Table roles non trouvée');
+            return res.status(404).json({
+                success: false,
+                message: 'Table des rôles non trouvée'
+            });
+        }
+        
+        console.log('📋 Récupération des rôles depuis la table roles...');
+        
+        // Vérifier si l'utilisateur connecté est SUPER_ADMIN
+        const userRolesResult = await pool.query(`
+            SELECT r.name
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = $1
+        `, [req.user.id]);
+        
+        const userRoles = userRolesResult.rows.map(r => r.name);
+        const isSuperAdmin = userRoles.includes('SUPER_ADMIN') || req.user.role === 'SUPER_ADMIN';
+        
+        // Si pas SUPER_ADMIN, exclure le rôle SUPER_ADMIN
+        const whereClause = isSuperAdmin 
+            ? '' 
+            : "WHERE name != 'SUPER_ADMIN'";
+        
+        // Récupérer tous les rôles (filtrés si nécessaire)
+        const rolesQuery = `
+            SELECT id, name, description
+            FROM roles
+            ${whereClause}
+            ORDER BY name
+        `;
+        
+        const rolesResult = await pool.query(rolesQuery);
+        const roles = rolesResult.rows;
+        
+        console.log(`✅ ${roles.length} rôles récupérés`);
+        
+        res.json(roles);
+        
+    } catch (error) {
+        console.error('Erreur lors de la récupération des rôles:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des rôles',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/users/:id/roles
+ * Récupérer les rôles d'un utilisateur
+ */
+router.get('/:id/roles', authenticateToken, async (req, res) => {
+    try {
+        console.log('🔍 [GET /api/users/:id/roles] Début de la requête');
+        const userId = req.params.id;
+        console.log(`📋 User ID: ${userId}`);
+        console.log(`👤 Utilisateur authentifié: ${req.user?.nom} ${req.user?.prenom} (${req.user?.id})`);
+        
+        console.log('🔄 Appel de User.getRoles()...');
+        const roles = await User.getRoles(userId);
+        console.log(`✅ Rôles récupérés: ${roles.length}`);
+        console.log('📊 Rôles:', JSON.stringify(roles, null, 2));
+        
+        res.json({
+            success: true,
+            data: roles
+        });
+    } catch (error) {
+        console.error('❌ [GET /api/users/:id/roles] ERREUR:');
+        console.error('   Message:', error.message);
+        console.error('   Stack:', error.stack);
+        console.error('   Code:', error.code);
+        console.error('   Details:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des rôles',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/users/:id/roles
+ * Ajouter un rôle à un utilisateur
+ */
+router.post('/:id/roles', superAdminActionLimiter, authenticateToken, async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { roleId } = req.body;
+        
+        if (!roleId) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID du rôle requis'
+            });
+        }
+        
+        // Récupérer le nom du rôle
+        const roleResult = await pool.query('SELECT name FROM roles WHERE id = $1', [roleId]);
+        const roleName = roleResult.rows[0]?.name;
+        
+        // 🔒 PROTECTION: Empêcher l'attribution du rôle SUPER_ADMIN par des non-SUPER_ADMIN
+        if (roleName === 'SUPER_ADMIN') {
+            const isCurrentSuperAdmin = await isSuperAdmin(req.user.id);
+            
+            if (!isCurrentSuperAdmin) {
+                await logSuperAdminAction(
+                    req.user.id,
+                    'SUPER_ADMIN_UNAUTHORIZED_ROLE_GRANT_ATTEMPT',
+                    userId,
+                    { role: 'SUPER_ADMIN' },
+                    req
+                );
+                
+                return res.status(403).json({
+                    success: false,
+                    message: 'Accès refusé',
+                    reason: 'Seul un SUPER_ADMIN peut attribuer le rôle SUPER_ADMIN'
+                });
+            }
+            
+            // 📝 AUDIT: Enregistrer l'attribution du rôle SUPER_ADMIN
+            await logSuperAdminAction(
+                req.user.id,
+                'SUPER_ADMIN_ROLE_GRANTED',
+                userId,
+                { role: 'SUPER_ADMIN' },
+                req
+            );
+        }
+        
+        const result = await User.addRole(userId, roleId);
+        
+        if (result) {
+            res.json({
+                success: true,
+                message: 'Rôle ajouté avec succès',
+                data: result
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                message: 'Erreur lors de l\'ajout du rôle'
+            });
+        }
+    } catch (error) {
+        console.error('Erreur lors de l\'ajout du rôle:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de l\'ajout du rôle',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * DELETE /api/users/:id/roles/:roleId
+ * Retirer un rôle d'un utilisateur
+ */
+router.delete('/:id/roles/:roleId', superAdminActionLimiter, authenticateToken, async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const roleId = req.params.roleId;
+        
+        // Récupérer le nom du rôle
+        const roleResult = await pool.query('SELECT name FROM roles WHERE id = $1', [roleId]);
+        const roleName = roleResult.rows[0]?.name;
+        
+        // 🔒 PROTECTION: Empêcher la révocation du rôle SUPER_ADMIN par des non-SUPER_ADMIN
+        if (roleName === 'SUPER_ADMIN') {
+            const isCurrentSuperAdmin = await isSuperAdmin(req.user.id);
+            
+            if (!isCurrentSuperAdmin) {
+                await logSuperAdminAction(
+                    req.user.id,
+                    'SUPER_ADMIN_UNAUTHORIZED_ROLE_REVOKE_ATTEMPT',
+                    userId,
+                    { role: 'SUPER_ADMIN' },
+                    req
+                );
+                
+                return res.status(403).json({
+                    success: false,
+                    message: 'Accès refusé',
+                    reason: 'Seul un SUPER_ADMIN peut retirer le rôle SUPER_ADMIN'
+                });
+            }
+            
+            // 🔒 PROTECTION: Empêcher la révocation du dernier SUPER_ADMIN
+            const canRemove = await canRemoveLastSuperAdmin(userId);
+            if (!canRemove.allowed) {
+                await logSuperAdminAction(
+                    req.user.id,
+                    'SUPER_ADMIN_LAST_ADMIN_REVOKE_ATTEMPT',
+                    userId,
+                    { reason: canRemove.reason },
+                    req
+                );
+                
+                return res.status(400).json({
+                    success: false,
+                    message: 'Opération interdite',
+                    reason: canRemove.reason
+                });
+            }
+            
+            // 📝 AUDIT: Enregistrer la révocation du rôle SUPER_ADMIN
+            await logSuperAdminAction(
+                req.user.id,
+                'SUPER_ADMIN_ROLE_REVOKED',
+                userId,
+                { role: 'SUPER_ADMIN' },
+                req
+            );
+        }
+        
+        const result = await User.removeRole(userId, roleId);
+        
+        if (result) {
+            res.json({
+                success: true,
+                message: 'Rôle retiré avec succès',
+                data: result
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                message: 'Erreur lors de la suppression du rôle'
+            });
+        }
+    } catch (error) {
+        console.error('Erreur lors de la suppression du rôle:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la suppression du rôle',
+            error: error.message
         });
     }
 });

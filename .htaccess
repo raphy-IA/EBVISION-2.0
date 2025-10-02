@@ -1,0 +1,38 @@
+
+RewriteEngine On
+
+# Redirection de HTTP vers HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Redirection des requêtes API vers Node.js
+RewriteRule ^api/(.*)$ http://localhost:3000/api/$1 [P,L]
+
+# Redirection des fichiers statiques vers le dossier public
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/$1 [L]
+
+# Empêcher l'affichage du contenu des dossiers
+Options -Indexes
+
+# Protection des fichiers sensibles
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "config.production.js">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "package.json">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "ecosystem.config.js">
+    Order allow,deny
+    Deny from all
+</Files>

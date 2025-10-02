@@ -10,7 +10,7 @@ class InternalActivity {
             FROM internal_activities ia
             LEFT JOIN internal_activity_business_units iabu ON ia.id = iabu.internal_activity_id
             WHERE ia.is_active = true
-            GROUP BY ia.id
+            GROUP BY ia.id, ia.name, ia.description, ia.is_active, ia.created_at, ia.updated_at
             ORDER BY ia.name
         `;
         
@@ -27,24 +27,32 @@ class InternalActivity {
     static async findById(id) {
         const query = `
             SELECT 
-                ia.*,
-                json_agg(
-                    json_build_object(
-                        'id', bu.id,
-                        'name', bu.nom,
-                        'is_active', iabu.is_active
-                    )
-                ) as business_units
+                ia.*
             FROM internal_activities ia
-            LEFT JOIN internal_activity_business_units iabu ON ia.id = iabu.internal_activity_id
-            LEFT JOIN business_units bu ON iabu.business_unit_id = bu.id
             WHERE ia.id = $1
-            GROUP BY ia.id
         `;
         
         try {
             const result = await pool.query(query, [id]);
-            return result.rows[0];
+            const activity = result.rows[0];
+            
+            if (activity) {
+                // Récupérer les business units séparément
+                const buQuery = `
+                    SELECT 
+                        bu.id,
+                        bu.nom as name,
+                        iabu.is_active
+                    FROM business_units bu
+                    INNER JOIN internal_activity_business_units iabu ON bu.id = iabu.business_unit_id
+                    WHERE iabu.internal_activity_id = $1
+                    ORDER BY bu.nom
+                `;
+                const buResult = await pool.query(buQuery, [id]);
+                activity.business_units = buResult.rows;
+            }
+            
+            return activity;
         } catch (error) {
             console.error('Erreur lors de la récupération de l\'activité interne:', error);
             throw error;

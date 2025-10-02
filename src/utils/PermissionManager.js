@@ -1,245 +1,142 @@
 const { pool } = require('./database');
 
 class PermissionManager {
-    constructor() {
-        this.cache = new Map();
+    /**
+     * Récupérer les Business Units auxquelles un utilisateur a accès
+     * @param {number} userId - ID de l'utilisateur
+     * @returns {Array} Liste des Business Units avec leurs détails
+     */
+    static async getUserBusinessUnits(userId) {
+        try {
+            console.log(`🔍 [PermissionManager] Récupération des BU pour l'utilisateur ${userId}`);
+            
+            const query = `
+                SELECT DISTINCT 
+                    bu.id,
+                    bu.nom as name,
+                    bu.code,
+                    bu.description,
+                    CASE 
+                        WHEN uba.user_id IS NOT NULL THEN uba.access_level
+                        ELSE 'ADMIN'
+                    END as access_level,
+                    CASE 
+                        WHEN uba.user_id IS NOT NULL THEN 'EXPLICIT'
+                        ELSE 'COLLABORATEUR'
+                    END as access_type
+                FROM business_units bu
+                LEFT JOIN user_business_unit_access uba ON bu.id = uba.business_unit_id AND uba.user_id = $1 AND uba.granted = true
+                LEFT JOIN collaborateurs c ON c.user_id = $1
+                WHERE 
+                    -- Accès explicite via user_business_unit_access
+                    (uba.user_id IS NOT NULL AND uba.granted = true)
+                    OR 
+                    -- Accès via collaborateur principal
+                    (c.business_unit_id = bu.id)
+                ORDER BY bu.nom
+            `;
+            
+            const result = await pool.query(query, [userId]);
+            console.log(`✅ [PermissionManager] ${result.rows.length} BU trouvées pour l'utilisateur ${userId}`);
+            
+            return result.rows;
+        } catch (error) {
+            console.error('❌ [PermissionManager] Erreur lors de la récupération des BU:', error);
+            throw error;
+        }
     }
 
     /**
-     * Vérifie si un utilisateur a une permission spécifique
+     * Vérifier si un utilisateur a accès à une Business Unit spécifique
+     * @param {number} userId - ID de l'utilisateur
+     * @param {number} businessUnitId - ID de la Business Unit
+     * @returns {boolean} True si l'utilisateur a accès
      */
-    async hasPermission(userId, permissionCode) {
+    static async hasBusinessUnitAccess(userId, businessUnitId) {
         try {
-            const client = await pool.connect();
-            
-            // Vérifier les permissions directes de l'utilisateur
-            const userPermission = await client.query(`
-                SELECT up.granted 
-                FROM user_permissions up
-                JOIN permissions p ON up.permission_id = p.id
-                WHERE up.user_id = $1 AND p.code = $2
-            `, [userId, permissionCode]);
-            
-            if (userPermission.rows.length > 0) {
-                client.release();
-                return userPermission.rows[0].granted;
-            }
-            
-            // Vérifier les permissions via le rôle
-            const rolePermission = await client.query(`
-                SELECT rp.role_id
-                FROM role_permissions rp
-                JOIN permissions p ON rp.permission_id = p.id
-                JOIN users u ON u.role_id = rp.role_id
-                WHERE u.id = $1 AND p.code = $2
-            `, [userId, permissionCode]);
-            
-            client.release();
-            return rolePermission.rows.length > 0;
-            
+            const userBusinessUnits = await this.getUserBusinessUnits(userId);
+            return userBusinessUnits.some(bu => bu.id === businessUnitId);
         } catch (error) {
-            console.error('Erreur lors de la vérification des permissions:', error);
+            console.error('❌ [PermissionManager] Erreur lors de la vérification d\'accès BU:', error);
             return false;
         }
     }
 
     /**
-     * Vérifie si un utilisateur a accès à une Business Unit
+     * Récupérer les permissions d'un utilisateur
+     * @param {number} userId - ID de l'utilisateur
+     * @returns {Array} Liste des permissions
      */
-    async hasBusinessUnitAccess(userId, businessUnitId, accessLevel = 'READ') {
+    static async getUserPermissions(userId) {
         try {
-            const client = await pool.connect();
+            console.log(`🔍 [PermissionManager] Récupération des permissions pour l'utilisateur ${userId}`);
             
-            const access = await client.query(`
-                SELECT access_level, granted
-                FROM user_business_unit_access
-                WHERE user_id = $1 AND business_unit_id = $2
-            `, [userId, businessUnitId]);
+            const query = `
+                SELECT DISTINCT p.*
+                FROM permissions p
+                JOIN role_permissions rp ON p.id = rp.permission_id
+                JOIN user_roles ur ON rp.role_id = ur.role_id
+                WHERE ur.user_id = $1
+                ORDER BY p.name
+            `;
             
-            client.release();
+            const result = await pool.query(query, [userId]);
+            console.log(`✅ [PermissionManager] ${result.rows.length} permissions trouvées pour l'utilisateur ${userId}`);
             
-            if (access.rows.length === 0 || !access.rows[0].granted) {
-                return false;
-            }
-            
-            const userAccessLevel = access.rows[0].access_level;
-            
-            // Hiérarchie des niveaux d'accès
-            const levels = { 'READ': 1, 'WRITE': 2, 'ADMIN': 3 };
-            const requiredLevel = levels[accessLevel] || 1;
-            const userLevel = levels[userAccessLevel] || 0;
-            
-            return userLevel >= requiredLevel;
-            
+            return result.rows;
         } catch (error) {
-            console.error('Erreur lors de la vérification de l\'accès BU:', error);
+            console.error('❌ [PermissionManager] Erreur lors de la récupération des permissions:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Vérifier si un utilisateur a une permission spécifique
+     * @param {number} userId - ID de l'utilisateur
+     * @param {string} permissionCode - Code de la permission
+     * @returns {boolean} True si l'utilisateur a la permission
+     */
+    static async hasPermission(userId, permissionCode) {
+        try {
+            const query = `
+                SELECT COUNT(*) as count
+                FROM permissions p
+                JOIN role_permissions rp ON p.id = rp.permission_id
+                JOIN user_roles ur ON rp.role_id = ur.role_id
+                WHERE ur.user_id = $1 AND p.code = $2
+            `;
+            
+            const result = await pool.query(query, [userId, permissionCode]);
+            return parseInt(result.rows[0].count) > 0;
+        } catch (error) {
+            console.error('❌ [PermissionManager] Erreur lors de la vérification de permission:', error);
             return false;
         }
     }
 
     /**
-     * Récupère toutes les permissions d'un utilisateur
+     * Récupérer le rôle principal d'un utilisateur
+     * @param {number} userId - ID de l'utilisateur
+     * @returns {Object|null} Rôle principal ou null
      */
-    async getUserPermissions(userId) {
+    static async getUserPrimaryRole(userId) {
         try {
-            const client = await pool.connect();
+            const query = `
+                SELECT r.*
+                FROM roles r
+                JOIN user_roles ur ON r.id = ur.role_id
+                WHERE ur.user_id = $1
+                ORDER BY r.priority ASC
+                LIMIT 1
+            `;
             
-            // Permissions directes
-            const directPermissions = await client.query(`
-                SELECT p.code, p.name, p.category, up.granted
-                FROM user_permissions up
-                JOIN permissions p ON up.permission_id = p.id
-                WHERE up.user_id = $1
-            `, [userId]);
-            
-            // Permissions via le rôle
-            const rolePermissions = await client.query(`
-                SELECT DISTINCT p.code, p.name, p.category, true as granted
-                FROM role_permissions rp
-                JOIN permissions p ON rp.permission_id = p.id
-                JOIN users u ON u.role_id = rp.role_id
-                WHERE u.id = $1
-            `, [userId]);
-            
-            client.release();
-            
-            // Combiner et dédupliquer
-            const allPermissions = new Map();
-            
-            // Ajouter les permissions de rôle
-            rolePermissions.rows.forEach(perm => {
-                allPermissions.set(perm.code, {
-                    code: perm.code,
-                    name: perm.name,
-                    category: perm.category,
-                    granted: perm.granted
-                });
-            });
-            
-            // Les permissions directes écrasent celles du rôle
-            directPermissions.rows.forEach(perm => {
-                allPermissions.set(perm.code, {
-                    code: perm.code,
-                    name: perm.name,
-                    category: perm.category,
-                    granted: perm.granted
-                });
-            });
-            
-            return Array.from(allPermissions.values());
-            
+            const result = await pool.query(query, [userId]);
+            return result.rows[0] || null;
         } catch (error) {
-            console.error('Erreur lors de la récupération des permissions:', error);
-            return [];
+            console.error('❌ [PermissionManager] Erreur lors de la récupération du rôle principal:', error);
+            return null;
         }
-    }
-
-    /**
-     * Récupère les Business Units accessibles à un utilisateur
-     */
-    async getUserBusinessUnits(userId) {
-        try {
-            const client = await pool.connect();
-            
-            const businessUnits = await client.query(`
-                SELECT bu.id, bu.name, uba.access_level, uba.granted
-                FROM user_business_unit_access uba
-                JOIN business_units bu ON uba.business_unit_id = bu.id
-                WHERE uba.user_id = $1 AND uba.granted = true
-            `, [userId]);
-            
-            client.release();
-            return businessUnits.rows;
-            
-        } catch (error) {
-            console.error('Erreur lors de la récupération des BU:', error);
-            return [];
-        }
-    }
-
-    /**
-     * Vérifie si un utilisateur peut voir un élément d'une BU spécifique
-     */
-    async canAccessBusinessUnitElement(userId, businessUnitId, elementType = 'READ') {
-        // D'abord vérifier l'accès à la BU
-        const hasAccess = await this.hasBusinessUnitAccess(userId, businessUnitId, elementType);
-        if (!hasAccess) {
-            return false;
-        }
-        
-        // Ensuite vérifier les permissions spécifiques selon le type d'élément
-        const permissionMap = {
-            'opportunities': 'opportunities.view',
-            'campaigns': 'campaigns.view',
-            'missions': 'missions.view',
-            'clients': 'clients.view',
-            'reports': 'reports.view'
-        };
-        
-        const permissionCode = permissionMap[elementType];
-        if (!permissionCode) {
-            return true; // Si pas de permission spécifique, on se base sur l'accès BU
-        }
-        
-        return await this.hasPermission(userId, permissionCode);
-    }
-
-    /**
-     * Middleware pour vérifier les permissions dans les routes Express
-     */
-    requirePermission(permissionCode) {
-        return async (req, res, next) => {
-            try {
-                const userId = req.user?.id;
-                if (!userId) {
-                    return res.status(401).json({ error: 'Utilisateur non authentifié' });
-                }
-                
-                const hasPermission = await this.hasPermission(userId, permissionCode);
-                if (!hasPermission) {
-                    return res.status(403).json({ error: 'Permission insuffisante' });
-                }
-                
-                next();
-            } catch (error) {
-                console.error('Erreur dans le middleware de permissions:', error);
-                res.status(500).json({ error: 'Erreur interne du serveur' });
-            }
-        };
-    }
-
-    /**
-     * Middleware pour vérifier l'accès à une Business Unit
-     */
-    requireBusinessUnitAccess(accessLevel = 'READ') {
-        return async (req, res, next) => {
-            try {
-                const userId = req.user?.id;
-                const businessUnitId = req.params.businessUnitId || req.body.businessUnitId;
-                
-                if (!userId) {
-                    return res.status(401).json({ error: 'Utilisateur non authentifié' });
-                }
-                
-                if (!businessUnitId) {
-                    return res.status(400).json({ error: 'Business Unit ID requis' });
-                }
-                
-                const hasAccess = await this.hasBusinessUnitAccess(userId, businessUnitId, accessLevel);
-                if (!hasAccess) {
-                    return res.status(403).json({ error: 'Accès insuffisant à cette Business Unit' });
-                }
-                
-                next();
-            } catch (error) {
-                console.error('Erreur dans le middleware d\'accès BU:', error);
-                res.status(500).json({ error: 'Erreur interne du serveur' });
-            }
-        };
     }
 }
 
-// Instance singleton
-const permissionManager = new PermissionManager();
-
-module.exports = permissionManager;
+module.exports = PermissionManager;

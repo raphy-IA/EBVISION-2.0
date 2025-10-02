@@ -1,5 +1,0 @@
-[33mecee1a2[m Unification de la sidebar sur toutes les pages - utilisation du script sidebar.js principal
-[33m3cc633e[m feat: Amélioration du wizard de création de missions et correction de la page mission-types
-[33m9ad7a9d[m Amélioration de la page fiscal-years : correction de l'API stats et amélioration de la visualisation des champs non modifiables
-[33m9f0df80[m Amélioration du module des tâches pour types de mission - Ajout de sélection de tâches existantes au lieu de création - Modification du statut obligatoire/optionnel uniquement - Suppression du bouton 'Gérer toutes les tâches' - Interface simplifiée et cohérente
-[33md2034f1[m  Module Types de Mission - Correction bouton Voir et sidebar dynamique

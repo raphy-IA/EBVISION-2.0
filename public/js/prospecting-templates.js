@@ -403,16 +403,30 @@ async function loadTemplates() {
 // Chargement des Business Units
 async function loadBUs() {
     try {
-        const res = await fetch(API_BU, { headers: getAuthHeader() });
+        // Récupérer toutes les Business Units (sans limite de pagination)
+        const res = await fetch(`${API_BU}?limit=1000`, { headers: getAuthHeader() });
         const data = await res.json();
         const buSel = document.getElementById('tplBU');
         buSel.innerHTML = '<option value="">Sélectionnez une Business Unit</option>';
-        (data.data || data || []).forEach(bu => {
-            const opt = document.createElement('option');
-            opt.value = bu.id;
-            opt.textContent = bu.nom;
-            buSel.appendChild(opt);
-        });
+        
+        if (data.success && data.data) {
+            data.data.forEach(bu => {
+                const opt = document.createElement('option');
+                opt.value = bu.id;
+                opt.textContent = bu.nom;
+                buSel.appendChild(opt);
+            });
+        } else if (Array.isArray(data)) {
+            // Fallback pour l'ancien format
+            data.forEach(bu => {
+                const opt = document.createElement('option');
+                opt.value = bu.id;
+                opt.textContent = bu.nom;
+                buSel.appendChild(opt);
+            });
+        }
+        
+        console.log(`✅ ${data.data ? data.data.length : data.length} Business Units chargées`);
     } catch (error) {
         console.error('Erreur chargement BUs:', error);
     }
@@ -427,16 +441,30 @@ async function loadDivisionsForBU(buId) {
     if (!buId) return;
     
     try {
-        const res = await fetch(`${API_DIV}?business_unit_id=${encodeURIComponent(buId)}`, { 
+        // Récupérer toutes les divisions pour cette BU (sans limite de pagination)
+        const res = await fetch(`${API_DIV}?business_unit_id=${encodeURIComponent(buId)}&limit=1000`, { 
             headers: getAuthHeader() 
         });
         const data = await res.json();
-        (data.data || data || []).forEach(dv => {
-            const opt = document.createElement('option');
-            opt.value = dv.id;
-            opt.textContent = dv.nom;
-            divSel.appendChild(opt);
-        });
+        
+        if (data.success && data.data) {
+            data.data.forEach(dv => {
+                const opt = document.createElement('option');
+                opt.value = dv.id;
+                opt.textContent = dv.nom;
+                divSel.appendChild(opt);
+            });
+            console.log(`✅ ${data.data.length} Divisions chargées pour la BU ${buId}`);
+        } else if (Array.isArray(data)) {
+            // Fallback pour l'ancien format
+            data.forEach(dv => {
+                const opt = document.createElement('option');
+                opt.value = dv.id;
+                opt.textContent = dv.nom;
+                divSel.appendChild(opt);
+            });
+            console.log(`✅ ${data.length} Divisions chargées pour la BU ${buId}`);
+        }
     } catch (error) {
         console.error('Erreur chargement divisions:', error);
     }

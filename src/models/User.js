@@ -36,7 +36,7 @@ class User {
     // Récupérer un utilisateur par ID
     static async findById(id) {
         const sql = `
-            SELECT u.id, u.nom, u.prenom, u.email, u.login, u.role,
+            SELECT u.id, u.nom, u.prenom, u.email, u.login, u.role, u.password_hash,
                    u.statut, u.last_login, u.created_at, u.updated_at, u.collaborateur_id,
                    c.business_unit_id, c.division_id,
                    bu.nom as business_unit_nom, bu.code as business_unit_code,
@@ -92,7 +92,8 @@ class User {
             limit = 10,
             search = '',
             role = '',
-            statut = ''
+            statut = '',
+            currentUserId = null // ID de l'utilisateur connecté pour filtrer les SUPER_ADMIN
         } = options;
 
         const offset = (page - 1) * limit;
@@ -117,6 +118,41 @@ class User {
         } else {
             // Par défaut, ne pas exclure les utilisateurs INACTIF si aucun filtre de statut n'est spécifié
             // Cela permet de voir tous les utilisateurs quand on ne filtre pas par statut
+        }
+
+        // Vérifier si l'utilisateur connecté est SUPER_ADMIN
+        let isSuperAdmin = false;
+        if (currentUserId) {
+            try {
+                const userRolesQuery = `
+                    SELECT r.name
+                    FROM user_roles ur
+                    JOIN roles r ON ur.role_id = r.id
+                    WHERE ur.user_id = $1
+                `;
+                const userRolesResult = await query(userRolesQuery, [currentUserId]);
+                const userRoles = userRolesResult.rows.map(r => r.name);
+                
+                // Vérifier également le rôle principal (legacy)
+                const userQuery = `SELECT role FROM users WHERE id = $1`;
+                const userResult = await query(userQuery, [currentUserId]);
+                const principalRole = userResult.rows[0]?.role;
+                
+                isSuperAdmin = userRoles.includes('SUPER_ADMIN') || principalRole === 'SUPER_ADMIN';
+            } catch (error) {
+                console.error('Erreur lors de la vérification du rôle SUPER_ADMIN:', error);
+            }
+        }
+
+        // Si pas SUPER_ADMIN, exclure les utilisateurs SUPER_ADMIN
+        if (!isSuperAdmin) {
+            conditions.push(`u.id NOT IN (
+                SELECT DISTINCT ur.user_id
+                FROM user_roles ur
+                JOIN roles r ON ur.role_id = r.id
+                WHERE r.name = 'SUPER_ADMIN'
+            )`);
+            conditions.push(`u.role != 'SUPER_ADMIN'`);
         }
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -298,15 +334,33 @@ class User {
 
     // Récupérer les rôles d'un utilisateur
     static async getRoles(userId) {
+        console.log('🔍 [User.getRoles] Début de la méthode');
+        console.log(`📋 User ID: ${userId}`);
+        
         const sql = `
-            SELECT r.id, r.nom, r.description
+            SELECT r.id, r.name, r.description
             FROM user_roles ur
             JOIN roles r ON ur.role_id = r.id
             WHERE ur.user_id = $1
         `;
+        
+        console.log('🔄 Exécution de la requête SQL...');
+        console.log('📝 SQL:', sql.trim());
+        console.log('📊 Paramètres:', [userId]);
 
-        const result = await query(sql, [userId]);
-        return result.rows;
+        try {
+            const result = await query(sql, [userId]);
+            console.log(`✅ Requête réussie - ${result.rows.length} rôle(s) trouvé(s)`);
+            console.log('📋 Résultat:', JSON.stringify(result.rows, null, 2));
+            return result.rows;
+        } catch (error) {
+            console.error('❌ [User.getRoles] ERREUR SQL:');
+            console.error('   Message:', error.message);
+            console.error('   Code:', error.code);
+            console.error('   Detail:', error.detail);
+            console.error('   Position:', error.position);
+            throw error;
+        }
     }
 
     // Récupérer les permissions d'un utilisateur

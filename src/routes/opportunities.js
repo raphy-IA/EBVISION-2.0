@@ -30,6 +30,13 @@ router.get('/', authenticateToken, async (req, res) => {
 
         const offset = (page - 1) * limit;
         
+        // Récupérer les Business Units auxquelles l'utilisateur a accès
+        const permissionManager = require('../utils/PermissionManager');
+        const userBusinessUnits = await permissionManager.getUserBusinessUnits(req.user.id);
+        const userBusinessUnitIds = userBusinessUnits.map(bu => bu.id);
+        
+        console.log(`🔍 Utilisateur ${req.user.id} a accès aux BU:`, userBusinessUnitIds);
+        
         const options = {
             limit: parseInt(limit),
             offset: parseInt(offset),
@@ -40,7 +47,8 @@ router.get('/', authenticateToken, async (req, res) => {
             business_unit_id,
             opportunity_type_id,
             sortBy,
-            sortOrder
+            sortOrder,
+            userBusinessUnitIds // Ajouter les BU de l'utilisateur
         };
 
         const result = await Opportunity.findAll(options);

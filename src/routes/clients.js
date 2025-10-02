@@ -64,12 +64,12 @@ router.get('/form-data', authenticateToken, async (req, res) => {
         const [paysResult, secteursResult, sourcesResult, statutsResult] = await Promise.all([
             pool.query('SELECT nom, code_pays, code_appel, devise FROM pays WHERE actif = true ORDER BY nom'),
             pool.query(`
-                SELECT s.nom, s.code, s.couleur, s.icone, 
+                SELECT s.nom, s.code, s.couleur, s.icone, s.ordre,
                        array_agg(ss.nom ORDER BY ss.ordre) as sous_secteurs
                 FROM secteurs_activite s
                 LEFT JOIN sous_secteurs_activite ss ON s.id = ss.secteur_id AND ss.actif = true
                 WHERE s.actif = true
-                GROUP BY s.id, s.nom, s.code, s.couleur, s.icone
+                GROUP BY s.id, s.nom, s.code, s.couleur, s.icone, s.ordre
                 ORDER BY s.ordre, s.nom
             `),
             pool.query('SELECT DISTINCT source_prospection FROM clients WHERE source_prospection IS NOT NULL ORDER BY source_prospection'),

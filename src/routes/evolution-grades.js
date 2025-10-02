@@ -8,7 +8,7 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
  * POST /api/evolution-grades
  * Créer une nouvelle évolution de grade
  */
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, requireRole(['MANAGER']), async (req, res) => {
     try {
         const evolution = await EvolutionGrade.create(req.body);
         

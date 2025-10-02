@@ -431,12 +431,12 @@ class ProspectingCampaign {
         const placeholders = [];
         let idx = 1;
         for (const id of companyIds) {
-            placeholders.push(`($${idx++}, $${idx++})`);
-            values.push(campaignId, id);
+            placeholders.push(`($${idx++}, $${idx++}, $${idx++})`);
+            values.push(campaignId, id, 'PENDING');
         }
         if (values.length === 0) return { inserted: 0 };
         await pool.query(
-            `INSERT INTO prospecting_campaign_companies(campaign_id, company_id)
+            `INSERT INTO prospecting_campaign_companies(campaign_id, company_id, status)
              VALUES ${placeholders.join(', ')}
              ON CONFLICT DO NOTHING`,
             values
@@ -464,10 +464,32 @@ class ProspectingCampaign {
     }
 
     static async findAll(params = {}) {
-        const { limit = 20, offset = 0 } = params;
-        const count = await pool.query(`SELECT COUNT(*)::int AS total FROM prospecting_campaigns`);
-        const data = await pool.query(
-            `SELECT pc.*, 
+        const { limit = 20, offset = 0, userBusinessUnitIds } = params;
+        
+        let whereClause = '';
+        let countWhereClause = '';
+        let queryParams = [];
+        let paramIndex = 1;
+        
+        // Filtrer par Business Units si spécifié
+        if (userBusinessUnitIds && userBusinessUnitIds.length > 0) {
+            const placeholders = userBusinessUnitIds.map(() => `$${paramIndex++}`).join(',');
+            whereClause = `WHERE pc.business_unit_id IN (${placeholders})`;
+            countWhereClause = `WHERE pc.business_unit_id IN (${placeholders})`;
+            queryParams.push(...userBusinessUnitIds);
+        }
+        
+        // Requête de comptage
+        const countQuery = `
+            SELECT COUNT(*)::int AS total 
+            FROM prospecting_campaigns pc
+            ${countWhereClause}
+        `;
+        const count = await pool.query(countQuery, queryParams);
+        
+        // Requête principale
+        const dataQuery = `
+            SELECT pc.*, 
                     COALESCE(cnt.total,0)::int AS companies_count,
                     pt.type_courrier as template_type,
                     pt.name as template_name,
@@ -481,12 +503,14 @@ class ProspectingCampaign {
                GROUP BY campaign_id
              ) cnt ON cnt.campaign_id = pc.id
              LEFT JOIN prospecting_templates pt ON pc.template_id = pt.id
-             LEFT JOIN business_units bu ON pt.business_unit_id = bu.id
+             LEFT JOIN business_units bu ON pc.business_unit_id = bu.id
              LEFT JOIN collaborateurs resp ON pc.responsible_id = resp.id
+             ${whereClause}
              ORDER BY pc.created_at DESC
-             LIMIT $1 OFFSET $2`,
-            [limit, offset]
-        );
+             LIMIT $${paramIndex++} OFFSET $${paramIndex++}
+        `;
+        
+        const data = await pool.query(dataQuery, [...queryParams, limit, offset]);
         return { campaigns: data.rows, pagination: { total: count.rows[0].total, limit, offset } };
     }
 
@@ -623,7 +647,7 @@ class ProspectingCampaign {
             // Obtenir l'ID du collaborateur via la table users
             console.log('🔍 [DEBUG] Recherche utilisateur:', demandeurId);
             const user = await pool.query(
-                'SELECT collaborateur_id FROM users WHERE id = $1',
+                'SELECT c.id as collaborateur_id FROM users u LEFT JOIN collaborateurs c ON u.id = c.user_id WHERE u.id = $1',
                 [demandeurId]
             );
             
@@ -685,9 +709,9 @@ class ProspectingCampaign {
             for (const validator of validators) {
                 const validation = await pool.query(`
                     INSERT INTO prospecting_campaign_validations(
-                        campaign_id, demandeur_id, validateur_id, niveau_validation, commentaire_demandeur
-                    ) VALUES($1, $2, $3, $4, $5) RETURNING *
-                `, [campaignId, collabId, validator.id, validationLevel, comment]);
+                        campaign_id, demandeur_id, validateur_id, niveau_validation, statut_validation, commentaire_demandeur
+                    ) VALUES($1, $2, $3, $4, $5, $6) RETURNING *
+                `, [campaignId, collabId, validator.id, validationLevel, 'EN_ATTENTE', comment]);
                 
                 validations.push(validation.rows[0]);
                 console.log(`✅ Validation créée pour ${validator.nom} ${validator.prenom} (${validator.role})`);
@@ -1425,6 +1449,49 @@ class ProspectingCampaign {
 
         } catch (error) {
             console.error('Erreur lors de la vérification de progression:', error);
+        }
+    }
+
+    /**
+     * Supprimer une campagne de prospection
+     */
+    static async delete(campaignId) {
+        try {
+            console.log('🔥 [API] Suppression de la campagne:', campaignId);
+            
+            // Vérifier d'abord si la campagne existe
+            const campaign = await this.findById(campaignId);
+            if (!campaign) {
+                return { success: false, error: 'Campagne non trouvée' };
+            }
+
+            // Supprimer d'abord les entreprises associées
+            await pool.query(
+                'DELETE FROM prospecting_campaign_companies WHERE campaign_id = $1',
+                [campaignId]
+            );
+
+            // Supprimer les validations associées
+            await pool.query(
+                'DELETE FROM prospecting_campaign_validations WHERE campaign_id = $1',
+                [campaignId]
+            );
+
+            // Supprimer la campagne elle-même
+            const result = await pool.query(
+                'DELETE FROM prospecting_campaigns WHERE id = $1 RETURNING *',
+                [campaignId]
+            );
+
+            if (result.rows.length > 0) {
+                console.log('✅ [API] Campagne supprimée avec succès:', campaignId);
+                return { success: true, data: result.rows[0] };
+            } else {
+                return { success: false, error: 'Erreur lors de la suppression' };
+            }
+        } catch (error) {
+            console.error('🔥 [API] Erreur suppression campagne:', error);
+            return { success: false, error: 'Erreur lors de la suppression de la campagne' };
         }
     }
 }

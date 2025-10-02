@@ -1,4 +1,20 @@
 // Variables globales
+
+// Fonction debounce pour éviter les appels trop fréquents
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+
+let isLoadingNotifications = false;
 let notifications = [];
 let notificationStats = {};
 
@@ -136,17 +152,21 @@ async function loadNotifications(limit = 10, offset = 0) {
 
 // Chargement des statistiques de notifications
 async function loadNotificationStats() {
-    // Vérifier l'authentification avant de charger
-    if (!isNotificationsAuthenticated()) {
-        console.log('🔑 Utilisateur non authentifié, chargement des statistiques ignoré');
+    if (isLoadingNotifications) {
+        console.log('🔄 Notifications déjà en cours de chargement, ignoré');
         return;
     }
     
+    isLoadingNotifications = true;
+    console.log('📊 Chargement des statistiques de notifications...');
+    
     try {
-        console.log('📊 Chargement des statistiques de notifications...');
-        
         const token = localStorage.getItem('authToken');
-        console.log('🔑 Token présent:', !!token);
+        if (!token) {
+            console.log('🔑 Token présent: false');
+            return;
+        }
+        console.log('🔑 Token présent: true');
         
         const response = await fetch('/api/notifications/stats', {
             headers: {
@@ -171,6 +191,8 @@ async function loadNotificationStats() {
         }
     } catch (error) {
         console.error('❌ Erreur lors du chargement des statistiques:', error);
+    } finally {
+        isLoadingNotifications = false;
     }
 }
 
