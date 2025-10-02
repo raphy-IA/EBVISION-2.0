@@ -1722,14 +1722,39 @@ async function syncPermissionsAndMenus() {
  */
 async function checkSuperAdminAndShowSyncButton() {
     try {
-        // Vérifier d'abord si l'utilisateur est authentifié
+        console.log('🔍 Vérification du rôle SUPER_ADMIN...');
+        
+        // D'abord, vérifier le rôle depuis le cache local (plus fiable et rapide)
+        const cachedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const cachedRole = cachedUser.role || cachedUser.principal_role;
+        
+        console.log('👤 Données utilisateur en cache:', cachedUser);
+        console.log('👤 Rôle en cache:', cachedRole);
+        
+        if (cachedRole === 'SUPER_ADMIN') {
+            console.log('✅ SUPER_ADMIN détecté via cache');
+            const syncBtn = document.getElementById('syncPermissionsBtn');
+            if (syncBtn) {
+                syncBtn.style.display = 'inline-block';
+                console.log('✅ Bouton de synchronisation affiché');
+            } else {
+                console.error('❌ Bouton syncPermissionsBtn non trouvé dans le DOM');
+                // Lister tous les boutons pour debug
+                const allButtons = document.querySelectorAll('button');
+                console.log('📋 Boutons présents:', Array.from(allButtons).map(b => b.id || b.className));
+            }
+            return;
+        }
+        
+        // Fallback: vérifier via l'API si le cache ne contient pas SUPER_ADMIN
+        console.log('🔍 Vérification via API...');
+        
         const authResponse = await authenticatedFetch('/api/auth/verify');
         if (!authResponse.ok) {
             console.log('⚠️ Utilisateur non authentifié');
             return;
         }
 
-        // Récupérer les informations de l'utilisateur
         const meResponse = await authenticatedFetch('/api/auth/me');
         if (!meResponse.ok) {
             console.log('⚠️ Impossible de récupérer les informations utilisateur');
@@ -1737,35 +1762,36 @@ async function checkSuperAdminAndShowSyncButton() {
         }
 
         const userResponse = await meResponse.json();
-        console.log('👤 Réponse API:', userResponse);
-
-        // Extraire les données utilisateur (l'API retourne {success, message, data: {user: {...}}})
         const userData = userResponse.data?.user || userResponse.data || userResponse;
-        console.log('👤 Données utilisateur:', userData);
 
-        // Vérifier que l'ID existe
         if (!userData || !userData.id) {
             console.error('❌ ID utilisateur manquant:', userData);
             return;
         }
 
-        // Récupérer les rôles de l'utilisateur
+        // Essayer de récupérer les rôles via l'API
         console.log(`🔍 Récupération des rôles pour l'utilisateur ${userData.id}...`);
         const rolesResponse = await authenticatedFetch(`/api/users/${userData.id}/roles`);
         
         if (!rolesResponse.ok) {
-            console.error('❌ Erreur lors de la récupération des rôles:', rolesResponse.status);
+            console.warn('⚠️ Erreur API rôles:', rolesResponse.status, '- Utilisation du rôle en cache');
+            // Si l'API échoue, utiliser le rôle du userData
+            const apiRole = userData.role || userData.principal_role;
+            if (apiRole === 'SUPER_ADMIN') {
+                const syncBtn = document.getElementById('syncPermissionsBtn');
+                if (syncBtn) {
+                    syncBtn.style.display = 'inline-block';
+                    console.log('✅ Bouton de synchronisation affiché (via userData)');
+                }
+            }
             return;
         }
 
         const rolesData = await rolesResponse.json();
-        console.log('📋 Données des rôles:', rolesData);
-        
         const roles = rolesData.data || rolesData;
         
-        // Vérifier si l'utilisateur a le rôle SUPER_ADMIN
         const isSuperAdmin = Array.isArray(roles) && roles.some(role => role.name === 'SUPER_ADMIN');
-        console.log('🔒 Est SUPER_ADMIN?', isSuperAdmin);
+        console.log('🔒 Est SUPER_ADMIN (API)?', isSuperAdmin);
         
         if (isSuperAdmin) {
             const syncBtn = document.getElementById('syncPermissionsBtn');
