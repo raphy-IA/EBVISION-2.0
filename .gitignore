@@ -64,3 +64,6 @@ scripts/*-production-*.js
 
 # Fichiers nohup
 nohup.out
+
+# Dossier des fichiers non utilisés
+Old_files/

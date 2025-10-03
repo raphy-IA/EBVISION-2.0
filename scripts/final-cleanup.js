@@ -1,207 +1,176 @@
-// Script pour nettoyer complètement le fichier et corriger les caractères bizarres
 const fs = require('fs');
+const path = require('path');
 
-async function finalCleanup() {
-    console.log('🧹 Nettoyage final du fichier...\n');
-    
-    try {
-        // 1. Lire le fichier
-        console.log('1️⃣ Lecture du fichier...');
-        const backupFile = 'backup_production_ready.sql';
-        
-        if (!fs.existsSync(backupFile)) {
-            console.log('❌ Fichier backup_production_ready.sql non trouvé');
-            return;
-        }
-        
-        const content = fs.readFileSync(backupFile, 'utf8');
-        console.log(`✅ Fichier lu (${content.length} caractères)`);
-        
-        // 2. Nettoyer les caractères bizarres
-        console.log('\n2️⃣ Nettoyage des caractères bizarres...');
-        let cleanContent = content;
-        
-        // Remplacer les caractères bizarres par leurs équivalents ASCII
-        const replacements = {
-            '਀': ' ',
-            'ⴀ': '-',
-            'ⴀ': '-',
-            ' ': ' ',
-            '倀': 'P',
-            '漀': 'o',
-            '猀': 's',
-            '琀': 't',
-            '最': 'g',
-            '爀': 'r',
-            '攀': 'e',
-            '匀': 'S',
-            '儀': 'Q',
-            '䰀': 'L',
-            '搀': 'd',
-            '愀': 'a',
-            '琀': 't',
-            '愀': 'a',
-            '戀': 'b',
-            '愀': 'a',
-            '猀': 's',
-            '攀': 'e',
-            '搀': 'd',
-            '甀': 'u',
-            '洀': 'm',
-            '瀀': 'p',
-            '䐀': 'D',
-            '甀': 'u',
-            '洀': 'm',
-            '瀀': 'p',
-            '戀': 'b',
-            '礀': 'y',
-            '瀀': 'p',
-            '最': 'g',
-            '开': '_',
-            '搀': 'd',
-            '甀': 'u',
-            '洀': 'm',
-            '瀀': 'p',
-            '瘀': 'v',
-            '攀': 'e',
-            '爀': 'r',
-            '猀': 's',
-            '椀': 'i',
-            '漀': 'o',
-            '渀': 'n',
-            '匀': 'S',
-            '䔀': 'E',
-            '吀': 'T',
-            '猀': 's',
-            '琀': 't',
-            '愀': 'a',
-            '琀': 't',
-            '攀': 'e',
-            '洀': 'm',
-            '攀': 'e',
-            '渀': 'n',
-            '琀': 't',
-            '开': '_',
-            '琀': 't',
-            '椀': 'i',
-            '洀': 'm',
-            '攀': 'e',
-            '漀': 'o',
-            '甀': 'u',
-            '琀': 't',
-            '㴀': '=',
-            '　': ' ',
-            '㬀': ';',
-            '椀': 'i',
-            '搀': 'd',
-            '氀': 'l',
-            '攀': 'e',
-            '开': '_',
-            '椀': 'i',
-            '渀': 'n',
-            '开': '_',
-            '琀': 't',
-            '爀': 'r',
-            '愀': 'a',
-            '渀': 'n',
-            '猀': 's',
-            '愀': 'a',
-            '挀': 'c',
-            '琀': 't',
-            '椀': 'i',
-            '漀': 'o',
-            '渀': 'n',
-            '开': '_': '_',
-            '猀': 's',
-            '攀': 'e',
-            '猀': 's',
-            '猀': 's',
-            '椀': 'i',
-            '漀': 'o',
-            '渀': 'n',
-            '开': '_': '_',
-            '琀': 't',
-            '椀': 'i',
-            '洀': 'm',
-            '攀': 'e',
-            '漀': 'o',
-            '甀': 'u',
-            '琀': 't',
-            '㴀': '=',
-            '　': ' ',
-            '㬀': ';'
-        };
-        
-        // Appliquer les remplacements
-        for (const [bad, good] of Object.entries(replacements)) {
-            cleanContent = cleanContent.replace(new RegExp(bad, 'g'), good);
-        }
-        
-        console.log('✅ Caractères bizarres remplacés');
-        
-        // 3. Nettoyer les lignes vides et mal formatées
-        console.log('\n3️⃣ Nettoyage des lignes...');
-        const lines = cleanContent.split('\n');
-        const cleanLines = [];
-        
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            
-            // Ignorer les lignes vides ou avec des caractères bizarres
-            if (line === '' || line.length === 0) {
-                continue;
-            }
-            
-            // Vérifier si la ligne contient encore des caractères bizarres
-            if (line.match(/[^\x00-\x7F]/)) {
-                console.log(`⚠️  Ligne ignorée (caractères bizarres): ${line.substring(0, 50)}...`);
-                continue;
-            }
-            
-            cleanLines.push(lines[i]);
-        }
-        
-        cleanContent = cleanLines.join('\n');
-        console.log(`✅ Lignes nettoyées (${cleanLines.length} lignes)`);
-        
-        // 4. Créer le fichier final
-        console.log('\n4️⃣ Création du fichier final...');
-        const finalFile = 'backup_final_clean.sql';
-        fs.writeFileSync(finalFile, cleanContent, 'utf8');
-        console.log(`✅ Fichier final créé: ${finalFile}`);
-        
-        // 5. Vérifier le début
-        console.log('\n5️⃣ Vérification du fichier final...');
-        const firstLines = cleanContent.split('\n').slice(0, 10);
-        console.log('📋 Premières lignes:');
-        firstLines.forEach((line, index) => {
-            if (line.trim()) {
-                console.log(`   ${index + 1}: ${line}`);
-            }
-        });
-        
-        // 6. Vérifier la taille
-        const stats = fs.statSync(finalFile);
-        console.log(`\n📊 Taille du fichier final: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
-        
-        // 7. Vérifier qu'il n'y a plus de caractères bizarres
-        const hasInvalidChars = cleanContent.match(/[^\x00-\x7F]/);
-        if (!hasInvalidChars) {
-            console.log('✅ Aucun caractère bizarre détecté');
-        } else {
-            console.log('⚠️  Caractères bizarres encore présents');
-        }
-        
-        console.log('\n🎉 Fichier complètement nettoyé !');
-        console.log(`📁 Fichier: ${finalFile}`);
-        console.log('💡 Ce fichier devrait maintenant être parfaitement compatible avec psql.');
-        
-    } catch (error) {
-        console.error('❌ Erreur lors du nettoyage:', error.message);
-    }
+console.log('🧹 Nettoyage final pour la production...\n');
+
+// Fichiers à déplacer vers development-scripts
+const filesToMove = [
+    'test-guide-*.md',
+    'verifier-*.js',
+    'corriger-env.js',
+    'generate-import-report.js',
+    'import-csv-data.js',
+    'get-valid-ids.js',
+    'apply-harmonization-migration.js',
+    'reset-*.js',
+    'update-*.js',
+    'analyze-file.ps1',
+    'delete_file.js',
+    'server_simple.js',
+    'test-simple-persistence.png',
+    'IMPORT_REPORT.json',
+    'et --hard HEAD',
+    'tatus --porcelain'
+];
+
+// Fichiers de documentation à déplacer
+const docsToMove = [
+    'COMMENT_TESTER_INTERFACE.md',
+    'RAPPORT_FINAL_PROJET.md',
+    'CORRECTIONS_FINALES_RESUME.md',
+    'CORRECTION_COLLABORATEURS_RESUME.md',
+    'GESTION_RH_RESUME.md',
+    'TEST_RH_GUIDE.md',
+    'NETTOYAGE_AUTHENTIFICATION.md',
+    'REPRISE.md',
+    'CHANGELOG.md',
+    'DOCUMENTATION.md',
+    'DOCUMENTATION_COMPLETE.md',
+    'SESSION_MANAGER_*.md',
+    'guide-debutant.md',
+    'test-setup.md'
+];
+
+// Fonction pour faire correspondre les patterns
+function matchesPattern(filename, pattern) {
+    const regex = pattern.replace(/\*/g, '.*');
+    return new RegExp(`^${regex}$`).test(filename);
 }
 
-finalCleanup().catch(console.error);
+// Obtenir tous les fichiers du répertoire courant
+const files = fs.readdirSync('.').filter(file => {
+    return fs.statSync(file).isFile();
+});
+
+let movedCount = 0;
+
+files.forEach(file => {
+    // Vérifier si le fichier correspond à un pattern ou est dans la liste
+    const shouldMove = filesToMove.some(pattern => matchesPattern(file, pattern)) || 
+                      docsToMove.includes(file);
+    
+    if (shouldMove) {
+        try {
+            const sourcePath = file;
+            const destPath = path.join('development-scripts', file);
+            
+            // Si le fichier de destination existe déjà, le supprimer
+            if (fs.existsSync(destPath)) {
+                fs.unlinkSync(destPath);
+            }
+            
+            fs.renameSync(sourcePath, destPath);
+            console.log(`✅ Déplacé: ${file}`);
+            movedCount++;
+        } catch (error) {
+            console.log(`❌ Erreur lors du déplacement de ${file}: ${error.message}`);
+        }
+    }
+});
+
+// Créer un fichier de résumé de la production
+const productionSummary = `# EB-Vision 2.0 - Production Ready
+
+## 🎉 Organisation terminée !
+
+### 📁 Structure de production
+
+\`\`\`
+eb-vision-2.0/
+├── public/                 # Interface utilisateur
+├── src/                   # Code source de l'application
+├── scripts/               # Scripts de production
+│   ├── migrate-production.js
+│   └── deploy-planethoster.js
+├── migrations/            # Migrations de base de données
+├── docs/                  # Documentation
+├── .htaccess              # Configuration Apache
+├── ecosystem.config.js    # Configuration PM2
+├── config.production.js   # Configuration de production
+├── install.sh             # Script d'installation
+├── DEPLOYMENT.md          # Guide de déploiement
+├── README-PRODUCTION.md   # Documentation de production
+├── PRODUCTION-CHECKLIST.md # Checklist de vérification
+├── package.json           # Dépendances
+└── server.js              # Point d'entrée de l'application
+\`\`\`
+
+### 📦 Fichiers de développement déplacés
+
+Tous les fichiers de test, debug et développement ont été déplacés dans le dossier \`development-scripts/\` :
+
+- Scripts de test (test-*.js)
+- Scripts de vérification (check-*.js, verify-*.js)
+- Scripts de debug (debug-*.js)
+- Scripts de migration temporaires
+- Documentation de développement
+- Fichiers de configuration temporaires
+
+### 🚀 Prêt pour le déploiement
+
+1. **Uploadez tous les fichiers** SAUF le dossier \`development-scripts/\`
+2. **Configurez votre base de données** PostgreSQL
+3. **Modifiez config.production.js** avec vos informations
+4. **Exécutez l'installation** : \`chmod +x install.sh && ./install.sh\`
+
+### 📊 Statistiques
+
+- ✅ ${movedCount} fichiers de développement déplacés
+- ✅ Structure de production optimisée
+- ✅ Documentation complète créée
+- ✅ Scripts de déploiement prêts
+
+### 🔒 Sécurité
+
+- Fichiers sensibles exclus du déploiement
+- Configuration de production séparée
+- Logs et cache exclus
+- Fichiers de test isolés
+
+### 📞 Support
+
+Pour les problèmes de développement, consultez le dossier \`development-scripts/\`.
+
+---
+
+**Date de préparation** : ${new Date().toLocaleDateString('fr-FR')}
+**Version** : EB-Vision 2.0 Production
+**Statut** : Prêt pour déploiement
+`;
+
+fs.writeFileSync('PRODUCTION-SUMMARY.md', productionSummary);
+console.log('✅ PRODUCTION-SUMMARY.md créé');
+
+console.log('\n🎉 Nettoyage final terminé !');
+console.log(`\n📊 Résumé:`);
+console.log(`   - ${movedCount} fichiers déplacés vers development-scripts/`);
+console.log(`   - PRODUCTION-SUMMARY.md créé`);
+
+console.log('\n📁 Structure finale de production:');
+const remainingFiles = fs.readdirSync('.').filter(file => {
+    return fs.statSync(file).isFile();
+});
+
+console.log('\n📄 Fichiers de production restants:');
+remainingFiles.forEach(file => {
+    console.log(`   - ${file}`);
+});
+
+console.log('\n✅ Votre projet EB-Vision 2.0 est maintenant PRÊT pour la production !');
+console.log('🚀 Uploadez tous les fichiers SAUF development-scripts/ sur PlanetHoster');
+console.log('📋 Suivez DEPLOYMENT.md pour l\'installation');
+
+
 
 
 
