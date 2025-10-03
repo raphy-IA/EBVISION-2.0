@@ -98,11 +98,8 @@ const authLimiter = rateLimit({
         error: 'Trop de tentatives de connexion, veuillez réessayer plus tard.'
     },
     standardHeaders: true,
-    legacyHeaders: false,
-    // Log des tentatives suspectes
-    onLimitReached: (req, res, options) => {
-        console.warn(`🚨 Rate limit atteint pour l'authentification depuis ${req.ip}`);
-    }
+    legacyHeaders: false
+    // Note: onLimitReached deprecated dans express-rate-limit v7
 });
 
 // Appliquer le rate limiter général sur toutes les routes API sauf l'authentification
