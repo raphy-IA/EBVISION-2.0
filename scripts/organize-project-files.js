@@ -331,3 +331,4 @@ class ProjectFileOrganizer {
 // Exécuter l'organisation
 const organizer = new ProjectFileOrganizer();
 organizer.organize();
+

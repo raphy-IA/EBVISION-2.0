@@ -171,3 +171,4 @@ class SidebarLoadingChecker {
 // Exécuter la vérification
 const checker = new SidebarLoadingChecker();
 checker.check();
+

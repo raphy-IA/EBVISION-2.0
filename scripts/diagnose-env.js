@@ -204,3 +204,4 @@ function diagnoseEnv() {
 
 // Exécuter le diagnostic
 diagnoseEnv();
+

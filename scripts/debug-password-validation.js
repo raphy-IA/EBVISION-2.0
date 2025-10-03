@@ -99,3 +99,4 @@ console.log('2. Ou utiliser des validations séparées au lieu d\'un seul patter
 console.log('3. Tester avec le mot de passe exact que vous utilisez');
 
 
+

@@ -147,3 +147,4 @@ class UserModalsMover {
 // Exécuter le déplacement
 const mover = new UserModalsMover();
 mover.move();
+

@@ -353,3 +353,4 @@ if (score < 95) {
 }
 
 console.log('\n🔒 Audit de sécurité terminé !');
+

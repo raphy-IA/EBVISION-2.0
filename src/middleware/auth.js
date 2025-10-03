@@ -5,14 +5,14 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
 // Fonction pour générer un token JWT
-const generateToken = (user) => {
+const generateToken = (user, userRoles = []) => {
     return jwt.sign(
         {
             id: user.id,
             email: user.email,
             nom: user.nom,
             prenom: user.prenom,
-            role: user.role,
+            roles: userRoles, // Rôles multiples au lieu d'un seul rôle
             permissions: user.permissions || ['users:read', 'users:create', 'users:update', 'users:delete']
         },
         JWT_SECRET,
@@ -68,9 +68,9 @@ const requirePermission = (permission) => {
             });
         }
 
-        // Vérifier si l'utilisateur a des permissions ou est admin
+        // Vérifier si l'utilisateur a des permissions
         const userPermissions = req.user.permissions || [];
-        const userRole = req.user.role || req.user.grade || '';
+        const userRoles = req.user.roles || []; // Rôles multiples
         
         // Pour le développement, permettre l'accès à tous les utilisateurs connectés
         // Vérifier si l'utilisateur est connecté (a un ID)

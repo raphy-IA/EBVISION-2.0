@@ -300,3 +300,4 @@ echo "Port 443: $(netstat -tlnp 2>/dev/null | grep -q ":443 " && echo "✅ Ouver
 echo "Port 80: $(netstat -tlnp 2>/dev/null | grep -q ":80 " && echo "✅ Ouvert" || echo "❌ Fermé")"
 
 print_status "Vérification SSL terminée !"
+

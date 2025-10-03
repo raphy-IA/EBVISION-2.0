@@ -149,7 +149,17 @@ class PagePermissionsManager {
             const userData = localStorage.getItem('user');
             if (userData) {
                 const user = JSON.parse(userData);
-                return user.role;
+                // Support des rôles multiples
+                if (user.roles && Array.isArray(user.roles)) {
+                    // Si l'utilisateur a le rôle SUPER_ADMIN, le retourner en priorité
+                    if (user.roles.includes('SUPER_ADMIN')) {
+                        return 'SUPER_ADMIN';
+                    }
+                    // Sinon retourner le premier rôle
+                    return user.roles[0] || 'USER';
+                }
+                // Fallback pour l'ancien système (compatibilité)
+                return user.role || 'USER';
             }
         } catch (error) {
             console.error('❌ Erreur lors de la récupération du rôle utilisateur:', error);

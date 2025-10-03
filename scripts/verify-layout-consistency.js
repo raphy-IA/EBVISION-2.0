@@ -320,3 +320,4 @@ class LayoutConsistencyChecker {
 // Exécuter la vérification
 const checker = new LayoutConsistencyChecker();
 checker.check();
+

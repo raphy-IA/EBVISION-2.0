@@ -281,3 +281,4 @@ class SidebarAdder {
 // Exécuter l'analyse
 const adder = new SidebarAdder();
 adder.analyze();
+

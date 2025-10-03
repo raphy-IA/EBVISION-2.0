@@ -156,3 +156,4 @@ class ProfileModalsConsistencyFixer {
 // Exécuter la correction
 const fixer = new ProfileModalsConsistencyFixer();
 fixer.fix();
+

@@ -105,3 +105,4 @@ console.log(`\n⚠️  ATTENTION:`);
 console.log(`- Certains scripts de test peuvent encore contenir des credentials`);
 console.log(`- Vérifiez les fichiers dans le dossier scripts/`);
 console.log(`- Utilisez des variables d'environnement pour les credentials de test`);
+

@@ -372,3 +372,4 @@ class PageMigrator {
 // Exécuter la migration
 const migrator = new PageMigrator();
 migrator.migrate();
+

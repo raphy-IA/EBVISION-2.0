@@ -99,3 +99,4 @@ class OriginalDesignRestorer {
 // Exécuter la restauration
 const restorer = new OriginalDesignRestorer();
 restorer.restore();
+

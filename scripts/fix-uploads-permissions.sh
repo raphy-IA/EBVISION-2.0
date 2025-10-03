@@ -122,3 +122,4 @@ echo "   📁 uploads/documents: 755"
 echo "   📁 uploads/temp: 755"
 
 print_status "Permissions des uploads corrigées avec succès !"
+

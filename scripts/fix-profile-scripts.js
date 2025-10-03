@@ -166,3 +166,4 @@ class ProfileScriptsFixer {
 // Exécuter la correction
 const fixer = new ProfileScriptsFixer();
 fixer.fix();
+

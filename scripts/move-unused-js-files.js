@@ -156,3 +156,4 @@ class UnusedJSFilesMover {
 // Exécuter le déplacement
 const mover = new UnusedJSFilesMover();
 mover.move();
+

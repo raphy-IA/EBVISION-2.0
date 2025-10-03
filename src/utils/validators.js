@@ -33,7 +33,7 @@ const userValidation = {
                 'string.email': 'Format d\'email invalide',
                 'any.required': 'L\'email est requis'
             }),
-        password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/).required()
+        password: Joi.string().min(8).pattern(/^(?=.*[a-zàâäéèêëïîôöùûüÿçñ])(?=.*[A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇÑ])(?=.*\d)(?=.*[@$!%*?&])[A-Za-zàâäéèêëïîôöùûüÿçñÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇÑ\d@$!%*?&]/).required()
             .messages({
                 'string.min': 'Le mot de passe doit contenir au moins 8 caractères',
                 'string.pattern.base': 'Le mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial',
@@ -48,10 +48,10 @@ const userValidation = {
             .messages({
                 'any.only': 'Rôle invalide'
             }),
-        roles: Joi.array().items(Joi.number().integer().positive()).min(1).optional()
+        roles: Joi.array().items(Joi.string().uuid()).min(1).optional()
             .messages({
                 'array.min': 'Au moins un rôle doit être sélectionné',
-                'number.base': 'Les rôles doivent être des identifiants valides'
+                'string.guid': 'Les rôles doivent être des UUIDs valides'
             })
     }),
 
@@ -105,15 +105,14 @@ const userValidation = {
                 'string.min': 'Le login doit contenir au moins 3 caractères',
                 'string.max': 'Le login ne peut pas dépasser 50 caractères'
             }),
+        roles: Joi.array().items(Joi.string().uuid())
+            .messages({
+                'array.base': 'Les rôles doivent être un tableau',
+                'string.uuid': 'Chaque rôle doit être un UUID valide'
+            }),
         role: Joi.string()
             .messages({
                 'string.base': 'Le rôle doit être une chaîne de caractères'
-            }),
-        roles: Joi.array().items(Joi.string().uuid()).min(1)
-            .messages({
-                'array.base': 'Les rôles doivent être un tableau',
-                'array.min': 'Au moins un rôle doit être sélectionné',
-                'string.guid': 'Format de rôle invalide (UUID requis)'
             }),
         statut: Joi.string().valid('ACTIF', 'INACTIF', 'CONGE')
             .messages({

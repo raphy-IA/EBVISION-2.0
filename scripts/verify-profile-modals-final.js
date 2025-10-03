@@ -154,3 +154,4 @@ class ProfileModalsFinalVerifier {
 // Exécuter la vérification
 const verifier = new ProfileModalsFinalVerifier();
 verifier.verify();
+

@@ -266,3 +266,4 @@ class TwoFactorAuthService {
 }
 
 module.exports = TwoFactorAuthService;
+

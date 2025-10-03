@@ -71,3 +71,4 @@ else
     tail -50 "$LOG_FILE"
     exit 1
 fi
+

@@ -277,3 +277,4 @@ echo "   2. Tester toutes les fonctionnalités de votre application"
 echo "   3. Vérifier que les redirections fonctionnent correctement"
 echo ""
 print_status "Configuration HTTPS terminée avec succès !"
+

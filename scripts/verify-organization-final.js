@@ -136,3 +136,4 @@ class OrganizationFinalVerifier {
 // Exécuter la vérification
 const verifier = new OrganizationFinalVerifier();
 verifier.verify();
+

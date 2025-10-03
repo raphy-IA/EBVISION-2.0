@@ -370,3 +370,4 @@ class CSSStyleRestorer {
 // Exécuter la récupération
 const restorer = new CSSStyleRestorer();
 restorer.restore();
+

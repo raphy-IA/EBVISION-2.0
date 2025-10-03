@@ -165,3 +165,4 @@ class UnusedJSFilesIdentifier {
 // Exécuter l'identification
 const identifier = new UnusedJSFilesIdentifier();
 identifier.identify();
+

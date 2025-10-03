@@ -81,7 +81,72 @@ router.get('/statistics', authenticateToken, requirePermission('users:read'), as
     }
 });
 
-// Note: Route /roles déplacée plus bas dans le fichier pour éviter les doublons
+// ===== GESTION DES RÔLES MULTIPLES =====
+// Ces routes DOIVENT être définies AVANT /:id pour éviter les conflits
+
+/**
+ * GET /api/users/roles
+ * Récupérer tous les rôles disponibles
+ * IMPORTANT: Cette route doit être définie AVANT /:id
+ */
+router.get('/roles', authenticateToken, async (req, res) => {
+    try {
+        console.log('🔄 Récupération des rôles...');
+        
+        // Vérifier l'existence de la table roles
+        const tableExistsQuery = `
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'roles'
+            );
+        `;
+        
+        const tableExistsResult = await pool.query(tableExistsQuery);
+        const tableExists = tableExistsResult.rows[0].exists;
+        
+        console.log('📊 Table roles existe:', tableExists);
+        
+        if (!tableExists) {
+            console.log('❌ Table roles non trouvée');
+            return res.status(404).json({
+                success: false,
+                message: 'Table des rôles non trouvée'
+            });
+        }
+        
+        console.log('📋 Récupération des rôles depuis la table roles...');
+        console.log('👤 Utilisateur connecté:', req.user.id, req.user.role);
+        
+        // Simplification : récupérer tous les rôles sans filtrage pour l'instant
+        console.log('📋 Récupération de tous les rôles...');
+        
+        const rolesQuery = `
+            SELECT id, name, description
+            FROM roles
+            ORDER BY name
+        `;
+        
+        console.log('🔍 Exécution de la requête SQL...');
+        const rolesResult = await pool.query(rolesQuery);
+        const roles = rolesResult.rows;
+        
+        console.log(`✅ ${roles.length} rôles récupérés`);
+        
+        res.json({
+            success: true,
+            data: roles
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de la récupération des rôles:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des rôles',
+            error: error.message
+        });
+    }
+});
 
 // Récupérer un utilisateur par ID (DOIT ÊTRE APRÈS /roles)
 router.get('/:id', authenticateToken, requirePermission('users:read'), async (req, res) => {
@@ -115,14 +180,17 @@ router.get('/:id', authenticateToken, requirePermission('users:read'), async (re
 router.post('/', authenticateToken, requirePermission('users:create'), async (req, res) => {
     try {
         // Validation des données
+        console.log('🔍 Données reçues pour validation:', req.body);
         const { error, value } = userValidation.create.validate(req.body);
         if (error) {
+            console.error('❌ Erreur de validation:', error.details);
             return res.status(400).json({
                 success: false,
                 message: 'Données invalides',
                 errors: error.details.map(detail => detail.message)
             });
         }
+        console.log('✅ Validation réussie:', value);
 
         // Validation personnalisée : au moins un rôle doit être fourni
         if (!value.roles && !value.role) {
@@ -147,7 +215,7 @@ router.post('/', authenticateToken, requirePermission('users:create'), async (re
         const newUser = await User.create(value);
 
         // Récupérer les rôles de l'utilisateur créé pour la réponse
-        const userRoles = await User.getUserRoles(newUser.id);
+        const userRoles = await User.getRoles(newUser.id);
 
         res.status(201).json({
             success: true,
@@ -576,72 +644,6 @@ router.get('/alerts/:userId', authenticateToken, async (req, res) => {
             success: false, 
             message: 'Erreur lors de la récupération des alertes',
             error: error.message 
-        });
-    }
-});
-
-// ===== GESTION DES RÔLES MULTIPLES =====
-
-/**
- * GET /api/users/roles
- * Récupérer tous les rôles disponibles
- * IMPORTANT: Cette route doit être définie AVANT /:id/roles
- */
-router.get('/roles', authenticateToken, async (req, res) => {
-    try {
-        console.log('🔄 Récupération des rôles...');
-        
-        // Vérifier l'existence de la table roles
-        const tableExistsQuery = `
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'public' 
-                AND table_name = 'roles'
-            );
-        `;
-        
-        const tableExistsResult = await pool.query(tableExistsQuery);
-        const tableExists = tableExistsResult.rows[0].exists;
-        
-        console.log('📊 Table roles existe:', tableExists);
-        
-        if (!tableExists) {
-            console.log('❌ Table roles non trouvée');
-            return res.status(404).json({
-                success: false,
-                message: 'Table des rôles non trouvée'
-            });
-        }
-        
-        console.log('📋 Récupération des rôles depuis la table roles...');
-        console.log('👤 Utilisateur connecté:', req.user.id, req.user.role);
-        
-        // Simplification : récupérer tous les rôles sans filtrage pour l'instant
-        console.log('📋 Récupération de tous les rôles...');
-        
-        const rolesQuery = `
-            SELECT id, name, description
-            FROM roles
-            ORDER BY name
-        `;
-        
-        console.log('🔍 Exécution de la requête SQL...');
-        const rolesResult = await pool.query(rolesQuery);
-        const roles = rolesResult.rows;
-        
-        console.log(`✅ ${roles.length} rôles récupérés`);
-        
-        res.json({
-            success: true,
-            data: roles
-        });
-        
-    } catch (error) {
-        console.error('Erreur lors de la récupération des rôles:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la récupération des rôles',
-            error: error.message
         });
     }
 });

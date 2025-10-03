@@ -174,7 +174,7 @@
                     <div class="col-12">
                         <div class="d-flex justify-content-between align-items-center">
                             <h2><i class="fas fa-user-shield me-2"></i>Gestion des Utilisateurs</h2>
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                            <button class="btn btn-primary" onclick="showNewUserModal()">
                                 <i class="fas fa-plus me-2"></i>Nouvel Utilisateur
                             </button>
                         </div>
@@ -353,8 +353,8 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="userName" class="form-label">Nom *</label>
-                            <input type="text" class="form-control" id="userName" required autocomplete="off">
+                            <label for="addUserName" class="form-label">Nom *</label>
+                            <input type="text" class="form-control" id="addUserName" required autocomplete="off">
                         </div>
                         <div class="mb-3">
                             <label for="userFirstName" class="form-label">Prénom *</label>
@@ -678,7 +678,7 @@
             // Recherche en temps réel
             document.getElementById('search-input').addEventListener('input', filterUsers);
             document.getElementById('role-filter').addEventListener('change', filterUsers);
-            document.getElementById('status-filter').addEventListener('change', filterUsers);
+            document.getElementById('status-filter').addEventListener('change', loadUsers);
             document.getElementById('type-filter').addEventListener('change', filterUsers);
             document.getElementById('show-deleted').addEventListener('change', loadUsers);
         }
@@ -779,7 +779,6 @@
         function filterUsers() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const roleFilter = document.getElementById('role-filter').value;
-            const statusFilter = document.getElementById('status-filter').value;
             const typeFilter = document.getElementById('type-filter').value;
 
             filteredUsers = allUsers.filter(user => {
@@ -791,13 +790,12 @@
                     user.email.toLowerCase().includes(searchTerm) ||
                     (user.login && user.login.toLowerCase().includes(searchTerm));
                 
-                const matchesRole = !roleFilter || user.role === roleFilter;
-                const matchesStatus = !statusFilter || user.statut === statusFilter;
+                const matchesRole = !roleFilter || (user.roles && user.roles.includes(roleFilter));
                 const matchesType = !typeFilter || 
                     (typeFilter === 'linked' && isLinked) ||
                     (typeFilter === 'free' && !isLinked);
 
-                return matchesSearch && matchesRole && matchesStatus && matchesType;
+                return matchesSearch && matchesRole && matchesType;
             });
 
             displayUsers(filteredUsers);
@@ -821,7 +819,7 @@
             document.getElementById('status-filter').value = '';
             document.getElementById('type-filter').value = '';
             document.getElementById('show-deleted').value = 'active';
-            filterUsers();
+            loadUsers(); // Recharger les données au lieu de filtrer
         }
 
         function exportUsers() {
@@ -858,10 +856,15 @@
             showLoading(true);
             try {
                 const token = localStorage.getItem('authToken');
+                const statusFilter = document.getElementById('status-filter').value;
                 const showDeleted = document.getElementById('show-deleted').value;
                 
                 let url = `${API_BASE_URL}/users?limit=100`;
-                if (showDeleted === 'deleted') {
+                
+                // Priorité au filtre status-filter, sinon utiliser show-deleted
+                if (statusFilter) {
+                    url += `&status=${statusFilter}`;
+                } else if (showDeleted === 'deleted') {
                     url += '&status=INACTIF';
                 } else if (showDeleted === 'active') {
                     url += '&status=ACTIF';
@@ -932,7 +935,12 @@
                         ${user.email}
                         ${isLinked ? '<br><small class="text-muted">(via collaborateur)</small>' : ''}
                     </td>
-                    <td><span class="badge bg-primary role-badge">${user.role}</span></td>
+                    <td>
+                        ${user.roles && user.roles.length > 0 
+                            ? user.roles.map(role => `<span class="badge bg-primary me-1">${role}</span>`).join('')
+                            : '<span class="badge bg-secondary">Aucun rôle</span>'
+                        }
+                    </td>
                     <td>
                         <span class="badge ${isLinked ? 'bg-info' : 'bg-secondary'}">
                             ${isLinked ? 'Lié' : 'Libre'}
@@ -978,22 +986,33 @@
         async function showNewUserModal() {
             console.log('🔄 Ouverture du modal "Ajouter un Utilisateur"...');
             
-            // Réinitialiser complètement le formulaire
+            // Réinitialiser le formulaire AVANT de charger les rôles
             const form = document.getElementById('addUserForm');
-            form.reset();
-            
-            // Vider explicitement tous les champs pour éviter l'autofill
-            document.getElementById('userLogin').value = '';
-            document.getElementById('userPassword').value = '';
-            document.getElementById('userName').value = '';
-            document.getElementById('userFirstName').value = '';
-            document.getElementById('userEmail').value = '';
+            if (form) {
+                form.reset();
+                
+                // Vider explicitement tous les champs pour éviter l'autofill
+                const loginField = document.getElementById('userLogin');
+                const passwordField = document.getElementById('userPassword');
+                const nameField = document.getElementById('addUserName');
+                const firstNameField = document.getElementById('userFirstName');
+                const emailField = document.getElementById('userEmail');
+                
+                if (loginField) loginField.value = '';
+                if (passwordField) passwordField.value = '';
+                if (nameField) nameField.value = '';
+                if (firstNameField) firstNameField.value = '';
+                if (emailField) emailField.value = '';
+                
+                console.log('✅ Formulaire réinitialisé');
+            }
             
             // Charger les rôles
             await loadRolesForModal();
             
             // Ouvrir le modal
-            new bootstrap.Modal(document.getElementById('addUserModal')).show();
+            const modal = new bootstrap.Modal(document.getElementById('addUserModal'));
+            modal.show();
             
             console.log('✅ Modal "Ajouter un Utilisateur" ouvert');
         }
@@ -1084,11 +1103,11 @@
                 return;
             }
 
-            // Récupérer les rôles sélectionnés
+            // Récupérer les rôles sélectionnés (UUIDs)
             const selectedRoles = [];
             const roleCheckboxes = document.querySelectorAll('#userRolesCheckboxes input[type="checkbox"]:checked');
             roleCheckboxes.forEach(checkbox => {
-                selectedRoles.push(parseInt(checkbox.value));
+                selectedRoles.push(checkbox.value); // Les IDs de rôles sont des UUIDs, pas des entiers
             });
 
             if (selectedRoles.length === 0) {
@@ -1097,7 +1116,7 @@
             }
 
             const formData = {
-                nom: document.getElementById('userName').value,
+                nom: document.getElementById('addUserName').value,
                 prenom: document.getElementById('userFirstName').value,
                 email: document.getElementById('userEmail').value,
                 password: document.getElementById('userPassword').value,
@@ -1106,6 +1125,7 @@
             };
 
             try {
+                console.log('📤 Envoi des données utilisateur:', formData);
                 const token = localStorage.getItem('authToken');
                 const response = await authenticatedFetch(`${API_BASE_URL}/users`, {
                     method: 'POST',
@@ -1116,16 +1136,24 @@
                     body: JSON.stringify(formData)
                 });
                 const data = await response.json();
+                console.log('📥 Réponse du serveur:', data);
+                
                 if (data.success) {
                     showAlert('Utilisateur ajouté avec succès', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
                     loadUsers();
                 } else {
-                    showAlert(`Erreur lors de l\'ajout: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
+                    // Afficher les erreurs détaillées si disponibles
+                    let errorMessage = data.message || data.error || 'Erreur inconnue';
+                    if (data.errors && Array.isArray(data.errors)) {
+                        errorMessage += '\n' + data.errors.join('\n');
+                    }
+                    console.error('❌ Erreur de validation:', data);
+                    showAlert(`Erreur lors de l'ajout: ${errorMessage}`, 'danger');
                 }
             } catch (error) {
-                console.error('Erreur lors de l\'ajout:', error);
-                showAlert('Erreur lors de l\'ajout', 'danger');
+                console.error('❌ Erreur lors de l\'ajout:', error);
+                showAlert('Erreur lors de l\'ajout: ' + error.message, 'danger');
             }
         }
 
@@ -1470,7 +1498,8 @@
                 if (!allRolesResponse.ok) {
                     throw new Error('Erreur lors du chargement des rôles');
                 }
-                const allRoles = await allRolesResponse.json();
+                const allRolesData = await allRolesResponse.json();
+                const allRoles = allRolesData.data || [];
                 console.log('📋 Tous les rôles:', allRoles);
                 
                 // Charger les rôles de l'utilisateur
@@ -1637,5 +1666,36 @@
             }, 5000);
         }
     </script>
+
+    <!-- Notifications Modal -->
+    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationsModalLabel">
+                        <i class="fas fa-bell me-2"></i>Toutes les Notifications
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="notificationsContainerFull" class="list-group">
+                        <!-- Liste complète des notifications sera chargée ici -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Fermer
+                    </button>
+                    <button type="button" class="btn btn-info" onclick="markAllAsRead()">
+                        <i class="fas fa-check-double me-1"></i>Marquer tout comme lu
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="clearReadNotifications()">
+                        <i class="fas fa-trash me-1"></i>Supprimer les lues
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     </body>
 </html>

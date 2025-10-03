@@ -193,3 +193,4 @@ class FinalMigrationChecker {
 // Exécuter la vérification
 const checker = new FinalMigrationChecker();
 checker.check();
+

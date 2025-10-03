@@ -20,6 +20,16 @@ class MenuPermissionsManager {
     getUserRole() {
         try {
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            // Support des rôles multiples
+            if (userData.roles && Array.isArray(userData.roles)) {
+                // Si l'utilisateur a le rôle SUPER_ADMIN, le retourner en priorité
+                if (userData.roles.includes('SUPER_ADMIN')) {
+                    return 'SUPER_ADMIN';
+                }
+                // Sinon retourner le premier rôle
+                return userData.roles[0] || null;
+            }
+            // Fallback pour l'ancien système (compatibilité)
             return userData.role || userData.principal_role || null;
         } catch (error) {
             console.error('Erreur lors de la récupération du rôle:', error);

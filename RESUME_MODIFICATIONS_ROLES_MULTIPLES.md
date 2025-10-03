@@ -141,3 +141,4 @@ Le modal "Ajouter un Utilisateur" est maintenant **entièrement fonctionnel** av
 **🎊 MISSION ACCOMPLIE AVEC SUCCÈS ! 🎊**
 
 *Le modal "Ajouter un Utilisateur" supporte maintenant les rôles multiples et est parfaitement intégré au nouveau système de gestion des rôles.*
+

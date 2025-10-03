@@ -60,7 +60,13 @@ router.post('/login', async (req, res) => {
         // Mettre à jour la dernière connexion
         await User.updateLastLogin(user.id);
 
-        // Générer le token JWT avec permissions par défaut
+        // Récupérer les rôles multiples de l'utilisateur
+        const userRolesData = await User.getRoles(user.id);
+        const userRoles = userRolesData.map(r => r.name); // Extraire juste les noms des rôles
+        
+        console.log(`👤 Connexion de ${user.email} avec les rôles:`, userRoles);
+
+        // Générer le token JWT avec les rôles multiples
         const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
         const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
         
@@ -70,7 +76,7 @@ router.post('/login', async (req, res) => {
                 email: user.email,
                 nom: user.nom,
                 prenom: user.prenom,
-                role: user.role,
+                roles: userRoles, // Rôles multiples au lieu d'un seul rôle
                 permissions: ['users:read', 'users:create', 'users:update', 'users:delete']
             },
             JWT_SECRET,
@@ -95,7 +101,7 @@ router.post('/login', async (req, res) => {
                         prenom: user.prenom,
                         email: user.email,
                         login: user.login,
-                        role: user.role
+                        roles: userRoles // Rôles multiples
                     }
                 }
             });
@@ -115,7 +121,7 @@ router.post('/login', async (req, res) => {
                         prenom: user.prenom,
                         email: user.email,
                         login: user.login,
-                        role: user.role
+                        roles: userRoles // Rôles multiples
                     }
                 }
             });

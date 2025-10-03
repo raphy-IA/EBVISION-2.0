@@ -70,3 +70,4 @@ console.log('- Bouton "Suivant" (désactivé sur la dernière page)');
 console.log('- Navigation fonctionnelle entre les pages');
 
 
+

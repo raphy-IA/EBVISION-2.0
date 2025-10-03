@@ -165,3 +165,4 @@ class MigrationSuccessChecker {
 // Exécuter la vérification
 const checker = new MigrationSuccessChecker();
 checker.check();
+

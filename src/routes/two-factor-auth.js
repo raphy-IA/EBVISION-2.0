@@ -238,3 +238,4 @@ router.post('/regenerate-backup-codes', authenticateToken, async (req, res) => {
 });
 
 module.exports = router;
+

@@ -116,3 +116,4 @@ class ProfileScriptsChecker {
 // Exécuter la vérification
 const checker = new ProfileScriptsChecker();
 checker.check();
+

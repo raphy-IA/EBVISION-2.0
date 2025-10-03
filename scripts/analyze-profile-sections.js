@@ -168,3 +168,4 @@ class ProfileSectionAnalyzer {
 // Exécuter l'analyse
 const analyzer = new ProfileSectionAnalyzer();
 analyzer.analyze();
+

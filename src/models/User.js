@@ -10,9 +10,13 @@ class User {
             email,
             password,
             login,
-            role,
-            roles // Nouveau: rôles multiples
+            roles // Rôles multiples (obligatoire)
         } = userData;
+
+        // Validation : au moins un rôle doit être fourni
+        if (!roles || roles.length === 0) {
+            throw new Error('Au moins un rôle doit être fourni');
+        }
 
         // Hasher le mot de passe
         const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
@@ -21,25 +25,21 @@ class User {
         // Générer un login basé sur les initiales si non fourni
         const userLogin = login || (nom.substring(0, 1) + prenom.substring(0, 1)).toLowerCase();
 
-        // Utiliser le premier rôle comme rôle principal pour la compatibilité
-        const primaryRole = roles && roles.length > 0 ? roles[0] : role;
-
+        // Créer l'utilisateur SANS rôle principal (le champ role doit être NULL)
         const sql = `
             INSERT INTO users (nom, prenom, email, password_hash, login, role)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING id, nom, prenom, email, login, role, statut, created_at
+            VALUES ($1, $2, $3, $4, $5, NULL)
+            RETURNING id, nom, prenom, email, login, statut, created_at
         `;
 
         const result = await query(sql, [
-            nom, prenom, email, passwordHash, userLogin, primaryRole
+            nom, prenom, email, passwordHash, userLogin
         ]);
 
         const newUser = result.rows[0];
 
-        // Ajouter les rôles multiples si fournis
-        if (roles && roles.length > 0) {
-            await this.addMultipleRoles(newUser.id, roles);
-        }
+        // Ajouter les rôles via la table user_roles
+        await this.addMultipleRoles(newUser.id, roles);
 
         return newUser;
     }
@@ -209,8 +209,34 @@ class User {
 
         const result = await query(sql, [...params, limit, offset]);
 
+        // Récupérer les rôles multiples pour chaque utilisateur
+        const usersWithRoles = await Promise.all(result.rows.map(async (user) => {
+            try {
+                const rolesQuery = `
+                    SELECT r.name
+                    FROM user_roles ur
+                    JOIN roles r ON ur.role_id = r.id
+                    WHERE ur.user_id = $1
+                    ORDER BY r.name
+                `;
+                const rolesResult = await query(rolesQuery, [user.id]);
+                const roles = rolesResult.rows.map(row => row.name);
+                
+                return {
+                    ...user,
+                    roles: roles // Ajouter les rôles multiples
+                };
+            } catch (error) {
+                console.error(`Erreur lors de la récupération des rôles pour l'utilisateur ${user.id}:`, error);
+                return {
+                    ...user,
+                    roles: [] // Retourner un tableau vide en cas d'erreur
+                };
+            }
+        }));
+
         return {
-            users: result.rows,
+            users: usersWithRoles,
             pagination: {
                 page,
                 limit,

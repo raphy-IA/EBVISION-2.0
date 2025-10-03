@@ -102,3 +102,4 @@ console.log('! @ # $ % ^ & * ( ) _ + - = [ ] { } | ; : , . < > ? / \\');
 console.log('(Au lieu de seulement @ $ ! % * ? &)');
 
 
+
