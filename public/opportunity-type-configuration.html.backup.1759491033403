@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Types d'Opportunités - EBVISION 2.0</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+        
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+        }
+        
+        .stage-card {
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .stage-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .action-item, .document-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid var(--success-color);
+        }
+        
+        .action-item.mandatory, .document-item.mandatory {
+            border-left-color: var(--warning-color);
+            background: #fff3cd;
+        }
+        
+        .action-item.optional, .document-item.optional {
+            border-left-color: var(--secondary-color);
+            background: #d1ecf1;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .badge-custom {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .modal-xl {
+            max-width: 90%;
+        }
+        
+        .stage-order-badge {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+        
+        .requirements-panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .requirements-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .drag-handle {
+            cursor: move;
+            color: #6c757d;
+            margin-right: 0.5rem;
+        }
+        
+        .drag-handle:hover {
+            color: var(--primary-color);
+        }
+        
+        .sortable-ghost {
+            opacity: 0.5;
+            background: #e9ecef;
+        }
+        
+        .sortable-chosen {
+            background: #fff3cd;
+        }
+    </style>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    
+    
+    
+</head>
+
+<body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2><i class="fas fa-cogs me-2"></i>Configuration Types d'Opportunités</h2>
+                            <p class="text-muted mb-0">Configurez les étapes, actions et documents pour chaque type d'opportunité</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary me-2" onclick="loadTypes()">
+                                <i class="fas fa-sync-alt me-1"></i>Actualiser
+                            </button>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTypeModal">
+                                <i class="fas fa-plus-circle me-1"></i>Nouveau Type
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Types Configuration -->
+            <div id="types-configuration">
+                <div id="types-loading" class="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+                <div id="types-content" style="display: none;">
+                    <!-- Les types seront chargés ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    
+    <!-- Add Type Modal -->
+    <div class="modal fade" id="addTypeModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>
+                        Nouveau Type d'Opportunité
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTypeForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="typeName" class="form-label">Nom du Type *</label>
+                                    <input type="text" class="form-control" id="typeName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="typeCode" class="form-label">Code</label>
+                                    <input type="text" class="form-control" id="typeCode" placeholder="Ex: AUDIT, CONSEIL">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="typeColor" class="form-label">Couleur</label>
+                                    <input type="color" class="form-control form-control-color" id="typeColor" value="#3498db">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="typeProbability" class="form-label">Probabilité par défaut (%)</label>
+                                    <input type="number" class="form-control" id="typeProbability" min="0" max="100" value="50">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="typeDuration" class="form-label">Durée par défaut (jours)</label>
+                                    <input type="number" class="form-control" id="typeDuration" min="1" value="30">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="typeDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="typeDescription" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Configuration par défaut :</strong> Ce type d'opportunité sera créé avec la configuration standard (étapes, actions, documents). Vous pourrez ensuite personnaliser cette configuration.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="addType()">
+                        <i class="fas fa-save me-1"></i>Créer le Type
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configure Type Modal -->
+    <div class="modal fade" id="configureTypeModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-cogs me-2"></i>
+                        Configuration du Type : <span id="configureTypeName"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Étapes -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-list-ol me-2"></i>Étapes du Workflow</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="stages-list">
+                                        <!-- Les étapes seront chargées ici -->
+                                    </div>
+                                    <button class="btn btn-outline-primary btn-sm mt-3" onclick="addStage()">
+                                        <i class="fas fa-plus me-1"></i>Ajouter une étape
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Configuration de l'étape sélectionnée -->
+                        <div class="col-md-6">
+                            <div id="stage-configuration" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-cog me-2"></i>
+                                            Configuration : <span id="selectedStageName"></span>
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nom de l'étape</label>
+                                            <input type="text" class="form-control" id="stageNameInput">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Description</label>
+                                            <textarea class="form-control" id="stageDescriptionInput" rows="2"></textarea>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Durée min (jours)</label>
+                                                    <input type="number" class="form-control" id="stageMinDuration" min="1">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Durée max (jours)</label>
+                                                    <input type="number" class="form-control" id="stageMaxDuration" min="1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="stageMandatory">
+                                                <label class="form-check-label" for="stageMandatory">
+                                                    Étape obligatoire
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="stageValidationRequired">
+                                                <label class="form-check-label" for="stageValidationRequired">
+                                                    Validation requise
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-primary btn-sm" onclick="saveStageConfig()">
+                                                <i class="fas fa-save me-1"></i>Sauvegarder
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="deleteStage()">
+                                                <i class="fas fa-trash me-1"></i>Supprimer
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Actions requises -->
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-tasks me-2"></i>Actions Requises
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="required-actions-list">
+                                            <!-- Les actions requises seront chargées ici -->
+                                        </div>
+                                        <button class="btn btn-outline-primary btn-sm mt-3" onclick="addRequiredAction()">
+                                            <i class="fas fa-plus me-1"></i>Ajouter une action
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Documents requis -->
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-file-alt me-2"></i>Documents Requis
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="required-documents-list">
+                                            <!-- Les documents requis seront chargés ici -->
+                                        </div>
+                                        <button class="btn btn-outline-primary btn-sm mt-3" onclick="addRequiredDocument()">
+                                            <i class="fas fa-plus me-1"></i>Ajouter un document
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-success" onclick="saveTypeConfiguration()">
+                        <i class="fas fa-save me-1"></i>Sauvegarder la Configuration
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Action Modal -->
+    <div class="modal fade" id="addActionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>
+                        Ajouter une Action
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addActionForm">
+                        <div class="mb-3">
+                            <label for="actionType" class="form-label">Type d'action *</label>
+                            <select class="form-select" id="actionType" required>
+                                <option value="">Sélectionner un type d'action</option>
+                                <!-- Les options seront chargées dynamiquement -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="actionMandatory" checked>
+                                <label class="form-check-label" for="actionMandatory">
+                                    Action obligatoire
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="actionOrder" class="form-label">Ordre de validation</label>
+                            <input type="number" class="form-control" id="actionOrder" min="1" value="1">
+                            <small class="form-text text-muted">Ordre dans lequel cette action doit être validée</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmAddAction()">
+                        <i class="fas fa-plus me-1"></i>Ajouter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Document Modal -->
+    <div class="modal fade" id="addDocumentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>
+                        Ajouter un Document
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addDocumentForm">
+                        <div class="mb-3">
+                            <label for="documentType" class="form-label">Type de document *</label>
+                            <select class="form-select" id="documentType" required>
+                                <option value="">Sélectionner un type de document</option>
+                                <!-- Les options seront chargées dynamiquement -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="documentMandatory" checked>
+                                <label class="form-check-label" for="documentMandatory">
+                                    Document obligatoire
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmAddDocument()">
+                        <i class="fas fa-plus me-1"></i>Ajouter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
+    <!-- Scripts de l'application -->
+    <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/user-modals.js"></script>
+    <script src="js/global-auth.js"></script>
+    <script src="js/sidebar.js"></script>
+    
+    <script src="js/opportunity-type-configuration.js"></script>
+    </body>
+</html>

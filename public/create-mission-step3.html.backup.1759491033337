@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EBVISION 2.0 - Création de Mission - Étape 3</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+        }
+        
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 1rem;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .step-number.active {
+            background-color: var(--success-color);
+        }
+        
+        .step-number.completed {
+            background-color: var(--success-color);
+        }
+        
+        .btn-next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        
+        .btn-next:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-prev {
+            background: var(--secondary-color);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-prev:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        
+        .info-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-section h6 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        /* Styles pour les lignes de paiement */
+        .payment-line {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        
+        .payment-line-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .payment-line-number {
+            background: var(--secondary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .payment-line-remove {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-line-remove:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+        
+        .payment-line-content {
+            padding: 1rem 0;
+        }
+        
+        .payment-line-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .payment-line-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .payment-line-group input,
+        .payment-line-group select {
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 0.5rem;
+        }
+        
+        .payment-line-group input:focus,
+        .payment-line-group select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+        
+        .calculated-amount {
+            background: #e8f5e8;
+            border: 1px solid #28a745;
+            color: #155724;
+            padding: 0.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .payment-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+        
+        .payment-summary h6 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .payment-summary .row {
+            margin-bottom: 0.5rem;
+        }
+        
+        .payment-summary strong {
+            color: #f8f9fa;
+        }
+        
+        .budget-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .budget-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .budget-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .currency-input {
+            position: relative;
+        }
+        
+        .currency-symbol {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-weight: bold;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .currency-input input {
+            padding-left: 30px;
+        }
+
+        /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
+        .sidebar-container {
+            width: 300px; /* Largeur fixe pour la sidebar */
+            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            .sidebar-container {
+                width: 100%; /* La sidebar prend toute la largeur */
+                height: auto; /* Hauteur automatique */
+            }
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    
+        /* Styles pour la sidebar unifiée */
+        .main-content-wrapper {
+            margin-left: 300px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            padding: 0;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content-wrapper {
+                margin-left: 0;
+            }
+            
+            .sidebar-container {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar-container.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    
+    
+    
+    <!-- Script pour la gestion utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/menu-permissions.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+</head>
+<body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div class="container-fluid">
+
+                <!-- Indicateur d'étapes -->
+                <div class="step-indicator">
+                    <div class="step">
+                        <div class="step-number completed">1</div>
+                        <span>Sélection Opportunité & Type</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-number completed">2</div>
+                        <span>Configuration Mission</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-number active">3</div>
+                        <span>Configuration Financière</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <span>Planification</span>
+                    </div>
+                </div>
+
+                <!-- En-tête -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-euro-sign me-2"></i>Configuration Financière - Étape 3</h2>
+                    <a href="create-mission-step2.html" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à l'Étape 2
+                    </a>
+                </div>
+
+                <!-- Résumé de la mission -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Résumé de la Mission
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-tasks me-2"></i>Mission</h6>
+                                <div id="mission-summary">
+                                    <div class="info-badge mb-2">Chargement...</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-trophy me-2"></i>Opportunité Source</h6>
+                                <div id="opportunity-summary">
+                                    <div class="info-badge mb-2">Chargement...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration financière -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-calculator me-2"></i>Configuration Financière
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="financial-config-form">
+                            <!-- Configuration Financière -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-calculator me-2"></i>Configuration Financière</h6>
+                                
+                                <!-- Honoraires et Débours sur la même ligne -->
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label for="honorairesMontant" class="form-label">Montant Honoraires *</label>
+                                        <div class="currency-input">
+                                            <span class="currency-symbol" id="honoraires-symbol">FCFA</span>
+                                            <input type="number" class="form-control" id="honorairesMontant" min="0" step="0.01" required>
+                                        </div>
+                                        <div class="form-text">Montant des honoraires convenus</div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Devise</label>
+                                        <div class="form-control-plaintext" id="honorairesDeviseDisplay">
+                                            <!-- La devise sera affichée ici -->
+                                        </div>
+                                        <div class="form-text">Devise définie à l'étape 2</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="deboursMontant" class="form-label">Montant Débours</label>
+                                        <div class="currency-input">
+                                            <span class="currency-symbol" id="debours-symbol">FCFA</span>
+                                            <input type="number" class="form-control" id="deboursMontant" min="0" step="0.01" value="0">
+                                        </div>
+                                        <div class="form-text">Frais de déplacement, hébergement, etc.</div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Devise</label>
+                                        <div class="form-control-plaintext" id="deboursDeviseDisplay">
+                                            <!-- La devise sera affichée ici -->
+                                        </div>
+                                        <div class="form-text">Devise définie à l'étape 2</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Descriptions -->
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="honorairesDescription" class="form-label">Description des Honoraires</label>
+                                        <textarea class="form-control" id="honorairesDescription" rows="2" placeholder="Détail des honoraires (ex: audit comptable, conseil fiscal, etc.)"></textarea>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="deboursDescription" class="form-label">Description des Débours</label>
+                                        <textarea class="form-control" id="deboursDescription" rows="2" placeholder="Détail des débours (ex: frais de déplacement, hébergement, repas, etc.)"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Conditions de paiement -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-credit-card me-2"></i>Conditions de Paiement</h6>
+                                <div class="mb-3">
+                                    <button type="button" class="btn btn-success" id="btn-add-payment-condition">
+                                        <i class="fas fa-plus me-2"></i>Ajouter une condition de paiement
+                                    </button>
+                                    <div class="form-text">Définissez les échéances de paiement pour cette mission</div>
+                                </div>
+                                
+                                <!-- Container pour les lignes de paiement -->
+                                <div id="payment-conditions-container">
+                                    <!-- Message d'avertissement quand aucune condition n'est configurée -->
+                                    <div id="no-payment-warning" class="alert alert-warning" style="display: none;">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Attention :</strong> Vous devez configurer au moins une condition de paiement pour continuer.
+                                    </div>
+                                    <!-- Les lignes de paiement seront ajoutées ici dynamiquement -->
+                                </div>
+                                
+                                <!-- Résumé des conditions de paiement -->
+                                <div class="mt-4">
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-calculator me-2"></i>Résumé des Conditions de Paiement</h6>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <strong>Total Honoraires:</strong>
+                                                <span id="total-honoraires-payment">€0.00</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Total Débours:</strong>
+                                                <span id="total-debours-payment">€0.00</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Total Général:</strong>
+                                                <span id="total-general-payment">€0.00</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Nombre de tranches:</strong>
+                                                <span id="nombre-tranches">0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Notes financières -->
+                            <div class="form-section">
+                                <h6><i class="fas fa-sticky-note me-2"></i>Notes Financières</h6>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="notesFinancieres" class="form-label">Notes Additionnelles</label>
+                                        <textarea class="form-control" id="notesFinancieres" rows="3" placeholder="Notes spécifiques sur la configuration financière..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Résumé budgétaire -->
+                <div class="budget-summary">
+                    <h5 class="mb-3"><i class="fas fa-calculator me-2"></i>Résumé Budgétaire</h5>
+                    <div id="budget-summary-content">
+                        <div class="budget-item">
+                            <span>Budget Prévisionnel:</span>
+                            <span id="budget-previsionnel">€0.00</span>
+                        </div>
+                        <div class="budget-item">
+                            <span>Honoraires:</span>
+                            <span id="budget-honoraires">€0.00</span>
+                        </div>
+                        <div class="budget-item">
+                            <span>Débours:</span>
+                            <span id="budget-debours">€0.00</span>
+                        </div>
+                        <div class="budget-item">
+                            <span>Total:</span>
+                            <span id="budget-total">€0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons de navigation -->
+                <div class="text-center mt-4">
+                    <button id="btn-prev" class="btn btn-prev me-3">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à l'Étape 2
+                    </button>
+                    <button id="btn-next" class="btn btn-next">
+                        <i class="fas fa-arrow-right me-2"></i>Continuer vers l'Étape 4
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <script src="/js/currency-config.js" defer></script>
+    <script>
+        // Variables globales
+        let selectedOpportunity = null;
+        let selectedMissionType = null;
+        let missionData = null;
+        let paymentConditions = []; // Tableau pour stocker les conditions de paiement
+        let paymentLineCounter = 0; // Compteur pour les lignes de paiement
+
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Page create-mission-step3.html chargée');
+            
+            await loadData();
+            setupEventListeners();
+        });
+        
+        // Fonction pour afficher la devise de la mission
+        function displayMissionCurrency() {
+            const missionDataStr = sessionStorage.getItem('missionData');
+            if (missionDataStr) {
+                const missionData = JSON.parse(missionDataStr);
+                const missionCurrency = missionData.devise || 'XAF';
+                
+                // Afficher la devise pour les honoraires
+                const honorairesDisplay = document.getElementById('honorairesDeviseDisplay');
+                if (honorairesDisplay) {
+                    honorairesDisplay.textContent = missionCurrency;
+                }
+                
+                // Afficher la devise pour les débours
+                const deboursDisplay = document.getElementById('deboursDeviseDisplay');
+                if (deboursDisplay) {
+                    deboursDisplay.textContent = missionCurrency;
+                }
+                
+                // Mettre à jour les symboles de devise
+                updateCurrencySymbols(missionCurrency);
+            }
+        }
+        
+        // Fonction pour mettre à jour les symboles de devise
+        function updateCurrencySymbols(currencyCode) {
+            const currencyConfig = CURRENCY_CONFIG.AVAILABLE_CURRENCIES[currencyCode];
+            if (currencyConfig) {
+                // Mettre à jour le symbole des honoraires
+                const honorairesSymbol = document.getElementById('honoraires-symbol');
+                if (honorairesSymbol) {
+                    honorairesSymbol.textContent = currencyConfig.symbol;
+                }
+                
+                // Mettre à jour le symbole des débours
+                const deboursSymbol = document.getElementById('debours-symbol');
+                if (deboursSymbol) {
+                    deboursSymbol.textContent = currencyConfig.symbol;
+                }
+            }
+        }
+        
+        // Fonction pour récupérer la devise de la mission
+        function getMissionCurrency() {
+            const missionDataStr = sessionStorage.getItem('missionData');
+            if (missionDataStr) {
+                const missionData = JSON.parse(missionDataStr);
+                return missionData.devise || 'XAF';
+            }
+            return 'XAF';
+        }
+
+        // Fonction pour mettre à jour le symbole de devise
+        function updateCurrencySymbol(selectId, symbolId) {
+            const select = document.getElementById(selectId);
+            const symbolElement = document.getElementById(symbolId);
+            
+            if (select && symbolElement) {
+                const selectedCurrency = select.value;
+                const currencyConfig = CURRENCY_CONFIG.AVAILABLE_CURRENCIES[selectedCurrency];
+                
+                if (currencyConfig) {
+                    symbolElement.textContent = currencyConfig.symbol;
+                }
+            }
+        }
+
+        // Charger les données
+        async function loadData() {
+            try {
+                // Récupérer les données depuis sessionStorage
+                const opportunityData = sessionStorage.getItem('selectedOpportunity');
+                const missionTypeData = sessionStorage.getItem('selectedMissionType');
+                const missionDataStr = sessionStorage.getItem('missionData');
+
+                if (!opportunityData || !missionTypeData || !missionDataStr) {
+                    console.error('❌ Données manquantes');
+                    alert('Veuillez retourner à l\'étape 1 pour recommencer');
+                    window.location.href = 'create-mission-step1.html';
+                    return;
+                }
+
+                selectedOpportunity = JSON.parse(opportunityData);
+                selectedMissionType = JSON.parse(missionTypeData);
+                missionData = JSON.parse(missionDataStr);
+
+                console.log('✅ Données chargées:', { selectedOpportunity, selectedMissionType, missionData });
+
+                // Afficher les résumés
+                displaySummaries();
+                
+                // Afficher la devise de la mission
+                displayMissionCurrency();
+                
+                // Pré-remplir le formulaire
+                populateForm();
+
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des données:', error);
+            }
+        }
+
+        // Afficher les résumés
+        function displaySummaries() {
+            // Résumé de la mission
+            const missionSummary = document.getElementById('mission-summary');
+            missionSummary.innerHTML = `
+                <div class="info-badge mb-2">${missionData.code}</div>
+                <p class="mb-1"><strong>Nom:</strong> ${missionData.nom}</p>
+                <p class="mb-1"><strong>Budget:</strong> ${formatCurrency(missionData.budget_prevue)}</p>
+                <p class="mb-1"><strong>Période:</strong> ${formatDate(missionData.date_debut)} - ${formatDate(missionData.date_fin_prevue)}</p>
+            `;
+
+            // Résumé de l'opportunité
+            const opportunitySummary = document.getElementById('opportunity-summary');
+            opportunitySummary.innerHTML = `
+                <div class="info-badge mb-2">${selectedOpportunity.nom}</div>
+                <p class="mb-1"><strong>Client:</strong> ${selectedOpportunity.client_nom}</p>
+                <p class="mb-1"><strong>Montant:</strong> ${formatCurrency(selectedOpportunity.montant_estime)}</p>
+                <p class="mb-1"><strong>Business Unit:</strong> ${selectedOpportunity.business_unit_nom || 'N/A'}</p>
+            `;
+        }
+
+        // Pré-remplir le formulaire
+        function populateForm() {
+            // Honoraires (basés sur le budget prévisionnel)
+            document.getElementById('honorairesMontant').value = missionData.budget_prevue || 0;
+            
+            // Débours (par défaut 0)
+            document.getElementById('deboursMontant').value = 0;
+            
+            // Mettre à jour le résumé budgétaire
+            updateBudgetSummary();
+        }
+
+        // Configuration des événements
+        function setupEventListeners() {
+            // Bouton retour
+            document.getElementById('btn-prev').addEventListener('click', function() {
+                window.location.href = 'create-mission-step2.html';
+            });
+
+            // Bouton suivant
+            document.getElementById('btn-next').addEventListener('click', function() {
+                if (validateForm()) {
+                    saveFinancialData();
+                    window.location.href = 'create-mission-step4.html';
+                }
+            });
+
+            // Écouter les changements pour mettre à jour le résumé
+            document.getElementById('honorairesMontant').addEventListener('input', function() {
+                updateBudgetSummary();
+                updateAllPaymentCalculations();
+            });
+            document.getElementById('deboursMontant').addEventListener('input', function() {
+                updateBudgetSummary();
+                updateAllPaymentCalculations();
+            });
+            
+            // Bouton pour ajouter une condition de paiement
+            document.getElementById('btn-add-payment-condition').addEventListener('click', addPaymentCondition);
+
+        }
+        
+        // Fonction pour ajouter une nouvelle condition de paiement
+        function addPaymentCondition() {
+            paymentLineCounter++;
+            const lineId = `payment-line-${paymentLineCounter}`;
+            
+            const paymentLine = {
+                id: lineId,
+                numero: paymentLineCounter,
+                pourcentageHonoraires: 0,
+                montantHonoraires: 0,
+                pourcentageDebours: 0,
+                montantDebours: 0,
+                datePrevisionnelle: '',
+                details: ''
+            };
+            
+            paymentConditions.push(paymentLine);
+            
+            // Créer l'élément HTML
+            const paymentLineHTML = createPaymentLineHTML(paymentLine);
+            document.getElementById('payment-conditions-container').insertAdjacentHTML('beforeend', paymentLineHTML);
+            
+            // Ajouter les écouteurs d'événements pour cette ligne
+            addPaymentLineEventListeners(lineId);
+            
+            // Mettre à jour le résumé
+            updatePaymentSummary();
+        }
+        
+        // Fonction pour créer le HTML d'une ligne de paiement
+        function createPaymentLineHTML(paymentLine) {
+            return `
+                <div class="payment-line" id="${paymentLine.id}">
+                    <div class="payment-line-header">
+                        <span class="payment-line-number">Tranche ${paymentLine.numero}</span>
+                        <button type="button" class="payment-line-remove" onclick="removePaymentCondition('${paymentLine.id}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="payment-line-content">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="payment-line-group">
+                                    <label>% Honoraires</label>
+                                    <input type="number" class="form-control" 
+                                           id="${paymentLine.id}-pourcentage-honoraires" 
+                                           min="0" max="100" step="0.01" 
+                                           value="${paymentLine.pourcentageHonoraires}">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="payment-line-group">
+                                    <label>Montant Honoraires</label>
+                                    <div class="calculated-amount" id="${paymentLine.id}-montant-honoraires">
+                                        0.00
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="payment-line-group">
+                                    <label>% Débours</label>
+                                    <input type="number" class="form-control" 
+                                           id="${paymentLine.id}-pourcentage-debours" 
+                                           min="0" max="100" step="0.01" 
+                                           value="${paymentLine.pourcentageDebours}">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="payment-line-group">
+                                    <label>Montant Débours</label>
+                                    <div class="calculated-amount" id="${paymentLine.id}-montant-debours">
+                                        0.00
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="payment-line-group">
+                                    <label>Date</label>
+                                    <input type="date" class="form-control" 
+                                           id="${paymentLine.id}-date-previsionnelle" 
+                                           value="${paymentLine.datePrevisionnelle}"
+                                           onchange="updatePaymentLineData('${paymentLine.id}')">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="payment-line-group">
+                                    <label>Détails</label>
+                                    <input type="text" class="form-control" 
+                                           id="${paymentLine.id}-details" 
+                                           placeholder="Ex: Avance de démarrage"
+                                           value="${paymentLine.details}"
+                                           onchange="updatePaymentLineData('${paymentLine.id}')">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Fonction pour ajouter les écouteurs d'événements à une ligne de paiement
+        function addPaymentLineEventListeners(lineId) {
+            // Attendre un peu que le DOM soit mis à jour
+            setTimeout(() => {
+                const pourcentageHonorairesInput = document.getElementById(`${lineId}-pourcentage-honoraires`);
+                const pourcentageDeboursInput = document.getElementById(`${lineId}-pourcentage-debours`);
+                const dateInput = document.getElementById(`${lineId}-date-previsionnelle`);
+                const detailsInput = document.getElementById(`${lineId}-details`);
+                
+                console.log(`🔧 Ajout des écouteurs pour la ligne ${lineId}:`, {
+                    honorairesInput: !!pourcentageHonorairesInput,
+                    deboursInput: !!pourcentageDeboursInput,
+                    dateInput: !!dateInput,
+                    detailsInput: !!detailsInput
+                });
+                
+                if (pourcentageHonorairesInput) {
+                    pourcentageHonorairesInput.addEventListener('input', () => {
+                        console.log(`📊 Changement pourcentage honoraires: ${lineId}`);
+                        updatePaymentLineCalculations(lineId);
+                    });
+                }
+                if (pourcentageDeboursInput) {
+                    pourcentageDeboursInput.addEventListener('input', () => {
+                        console.log(`📊 Changement pourcentage débours: ${lineId}`);
+                        updatePaymentLineCalculations(lineId);
+                    });
+                }
+                if (dateInput) {
+                    dateInput.addEventListener('input', () => {
+                        dateInput.classList.remove('is-invalid');
+                        updatePaymentLineData(lineId);
+                    });
+                }
+                if (detailsInput) {
+                    detailsInput.addEventListener('input', () => {
+                        detailsInput.classList.remove('is-invalid');
+                        updatePaymentLineData(lineId);
+                    });
+                }
+            }, 100);
+        }
+        
+        // Fonction pour mettre à jour les calculs d'une ligne de paiement
+        function updatePaymentLineCalculations(lineId) {
+            const paymentLine = paymentConditions.find(p => p.id === lineId);
+            if (!paymentLine) return;
+            
+            const pourcentageHonoraires = parseFloat(document.getElementById(`${lineId}-pourcentage-honoraires`).value) || 0;
+            const pourcentageDebours = parseFloat(document.getElementById(`${lineId}-pourcentage-debours`).value) || 0;
+            
+            const honorairesTotal = parseFloat(document.getElementById('honorairesMontant').value) || 0;
+            const deboursTotal = parseFloat(document.getElementById('deboursMontant').value) || 0;
+            
+            const montantHonoraires = (pourcentageHonoraires / 100) * honorairesTotal;
+            const montantDebours = (pourcentageDebours / 100) * deboursTotal;
+            
+            console.log(`🧮 Calculs pour ${lineId}:`, {
+                pourcentageHonoraires,
+                pourcentageDebours,
+                honorairesTotal,
+                deboursTotal,
+                montantHonoraires,
+                montantDebours
+            });
+            
+            // Mettre à jour l'affichage
+            const missionCurrency = getMissionCurrency();
+            document.getElementById(`${lineId}-montant-honoraires`).textContent = formatCurrency(montantHonoraires, missionCurrency);
+            document.getElementById(`${lineId}-montant-debours`).textContent = formatCurrency(montantDebours, missionCurrency);
+            
+            // Mettre à jour les données
+            paymentLine.pourcentageHonoraires = pourcentageHonoraires;
+            paymentLine.montantHonoraires = montantHonoraires;
+            paymentLine.pourcentageDebours = pourcentageDebours;
+            paymentLine.montantDebours = montantDebours;
+            
+            // Mettre à jour le résumé
+            updatePaymentSummary();
+        }
+        
+        // Fonction pour mettre à jour les données d'une ligne de paiement
+        function updatePaymentLineData(lineId) {
+            const paymentLine = paymentConditions.find(p => p.id === lineId);
+            if (!paymentLine) return;
+            
+            paymentLine.datePrevisionnelle = document.getElementById(`${lineId}-date-previsionnelle`).value;
+            paymentLine.details = document.getElementById(`${lineId}-details`).value;
+        }
+        
+        // Fonction pour supprimer une condition de paiement
+        function removePaymentCondition(lineId) {
+            const index = paymentConditions.findIndex(p => p.id === lineId);
+            if (index > -1) {
+                paymentConditions.splice(index, 1);
+                document.getElementById(lineId).remove();
+                
+                // Renuméroter toutes les tranches
+                renumberPaymentConditions();
+                
+                // Mettre à jour le résumé
+                updatePaymentSummary();
+            }
+        }
+        
+        // Fonction pour renuméroter les conditions de paiement
+        function renumberPaymentConditions() {
+            paymentConditions.forEach((condition, index) => {
+                condition.numero = index + 1;
+                const lineElement = document.getElementById(condition.id);
+                if (lineElement) {
+                    const numberElement = lineElement.querySelector('.payment-line-number');
+                    if (numberElement) {
+                        numberElement.textContent = `Tranche ${condition.numero}`;
+                    }
+                }
+            });
+            
+            // Mettre à jour le compteur pour la prochaine tranche
+            paymentLineCounter = paymentConditions.length;
+        }
+        
+        // Fonction pour mettre à jour tous les calculs de paiement
+        function updateAllPaymentCalculations() {
+            paymentConditions.forEach(condition => {
+                updatePaymentLineCalculations(condition.id);
+            });
+        }
+        
+        // Fonction pour mettre à jour le résumé des conditions de paiement
+        function updatePaymentSummary() {
+            const totalHonoraires = paymentConditions.reduce((sum, p) => sum + p.montantHonoraires, 0);
+            const totalDebours = paymentConditions.reduce((sum, p) => sum + p.montantDebours, 0);
+            const totalGeneral = totalHonoraires + totalDebours;
+            
+            const honorairesTotal = parseFloat(document.getElementById('honorairesMontant').value) || 0;
+            const deboursTotal = parseFloat(document.getElementById('deboursMontant').value) || 0;
+            
+            // Vérifier la cohérence des totaux
+            const tolerance = 0.01;
+            const honorairesOk = Math.abs(totalHonoraires - honorairesTotal) <= tolerance;
+            const deboursOk = Math.abs(totalDebours - deboursTotal) <= tolerance;
+            
+            // Mettre à jour l'affichage avec des indicateurs visuels
+            const honorairesElement = document.getElementById('total-honoraires-payment');
+            const deboursElement = document.getElementById('total-debours-payment');
+            
+            const missionCurrency = getMissionCurrency();
+            
+            honorairesElement.textContent = formatCurrency(totalHonoraires, missionCurrency);
+            deboursElement.textContent = formatCurrency(totalDebours, missionCurrency);
+            
+            // Ajouter des indicateurs visuels
+            if (paymentConditions.length > 0) {
+                honorairesElement.innerHTML = `${formatCurrency(totalHonoraires, missionCurrency)} ${honorairesOk ? '<i class="fas fa-check text-success"></i>' : '<i class="fas fa-exclamation-triangle text-warning"></i>'}`;
+                deboursElement.innerHTML = `${formatCurrency(totalDebours, missionCurrency)} ${deboursOk ? '<i class="fas fa-check text-success"></i>' : '<i class="fas fa-exclamation-triangle text-warning"></i>'}`;
+            }
+            
+            document.getElementById('total-general-payment').textContent = formatCurrency(totalGeneral, missionCurrency);
+            document.getElementById('nombre-tranches').textContent = paymentConditions.length;
+            
+            // Afficher/masquer le message d'avertissement
+            const warningElement = document.getElementById('no-payment-warning');
+            if (paymentConditions.length === 0) {
+                warningElement.style.display = 'block';
+            } else {
+                warningElement.style.display = 'none';
+            }
+        }
+
+        // Mettre à jour le résumé budgétaire
+        function updateBudgetSummary() {
+            const honoraires = parseFloat(document.getElementById('honorairesMontant').value) || 0;
+            const debours = parseFloat(document.getElementById('deboursMontant').value) || 0;
+            const budgetPrevisionnel = missionData.budget_prevue || 0;
+            const total = honoraires + debours;
+
+            document.getElementById('budget-previsionnel').textContent = formatCurrency(budgetPrevisionnel);
+            document.getElementById('budget-honoraires').textContent = formatCurrency(honoraires);
+            document.getElementById('budget-debours').textContent = formatCurrency(debours);
+            document.getElementById('budget-total').textContent = formatCurrency(total);
+        }
+
+        // Validation du formulaire
+        function validateForm() {
+            const honoraires = parseFloat(document.getElementById('honorairesMontant').value) || 0;
+            const debours = parseFloat(document.getElementById('deboursMontant').value) || 0;
+            
+            if (honoraires <= 0) {
+                alert('Le montant des honoraires doit être supérieur à 0');
+                document.getElementById('honorairesMontant').classList.add('is-invalid');
+                return false;
+            }
+
+            document.getElementById('honorairesMontant').classList.remove('is-invalid');
+            
+            // Validation obligatoire des conditions de paiement
+            if (paymentConditions.length === 0) {
+                alert('❌ Erreur : Vous devez configurer au moins une condition de paiement avant de pouvoir continuer.');
+                return false;
+            }
+            
+            // Validation des conditions de paiement
+            if (paymentConditions.length > 0) {
+                for (let i = 0; i < paymentConditions.length; i++) {
+                    const condition = paymentConditions[i];
+                    const lineId = condition.id;
+                    
+                    const dateInput = document.getElementById(`${lineId}-date-previsionnelle`);
+                    const detailsInput = document.getElementById(`${lineId}-details`);
+                    
+                    if (!dateInput.value.trim()) {
+                        alert(`La tranche ${condition.numero} doit avoir une date prévisionnelle`);
+                        dateInput.classList.add('is-invalid');
+                        return false;
+                    }
+                    
+                    if (!detailsInput.value.trim()) {
+                        alert(`La tranche ${condition.numero} doit avoir des détails`);
+                        detailsInput.classList.add('is-invalid');
+                        return false;
+                    }
+                    
+                    // Retirer les classes d'erreur si tout est valide
+                    dateInput.classList.remove('is-invalid');
+                    detailsInput.classList.remove('is-invalid');
+                }
+                
+                // Validation des totaux des tranches
+                const totalHonorairesTranches = paymentConditions.reduce((sum, p) => sum + p.montantHonoraires, 0);
+                const totalDeboursTranches = paymentConditions.reduce((sum, p) => sum + p.montantDebours, 0);
+                
+                // Tolérance de 0.01€ pour les arrondis
+                const tolerance = 0.01;
+                
+                const missionCurrency = getMissionCurrency();
+                
+                if (Math.abs(totalHonorairesTranches - honoraires) > tolerance) {
+                    alert(`❌ Erreur de cohérence : Le total des honoraires des tranches (${formatCurrency(totalHonorairesTranches, missionCurrency)}) ne correspond pas au montant total des honoraires (${formatCurrency(honoraires, missionCurrency)})`);
+                    return false;
+                }
+                
+                if (Math.abs(totalDeboursTranches - debours) > tolerance) {
+                    alert(`❌ Erreur de cohérence : Le total des débours des tranches (${formatCurrency(totalDeboursTranches, missionCurrency)}) ne correspond pas au montant total des débours (${formatCurrency(debours, missionCurrency)})`);
+                    return false;
+                }
+                
+                console.log('✅ Validation des totaux réussie:', {
+                    totalHonorairesTranches,
+                    honoraires,
+                    totalDeboursTranches,
+                    debours
+                });
+            }
+            
+            return true;
+        }
+
+        // Sauvegarder les données financières
+        function saveFinancialData() {
+            // Récupérer la devise de la mission depuis sessionStorage
+            const missionDataStr = sessionStorage.getItem('missionData');
+            const missionData = missionDataStr ? JSON.parse(missionDataStr) : {};
+            const missionCurrency = missionData.devise || 'XAF';
+            
+            const financialData = {
+                honoraires_montant: parseFloat(document.getElementById('honorairesMontant').value) || 0,
+                honoraires_devise: missionCurrency, // Utiliser la devise de la mission
+                honoraires_description: document.getElementById('honorairesDescription').value,
+                debours_montant: parseFloat(document.getElementById('deboursMontant').value) || 0,
+                debours_devise: missionCurrency, // Utiliser la devise de la mission
+                debours_description: document.getElementById('deboursDescription').value,
+                conditions_paiement: paymentConditions, // Nouvelles conditions de paiement
+                notes_financieres: document.getElementById('notesFinancieres').value
+            };
+
+            // Stocker dans sessionStorage
+            sessionStorage.setItem('financialData', JSON.stringify(financialData));
+            console.log('✅ Données financières sauvegardées:', financialData);
+        }
+
+        // Fonction utilitaire pour formater les montants
+        function formatCurrency(amount, currencyCode = null) {
+            if (!amount) return CURRENCY_CONFIG.formatCurrency(0, currencyCode);
+            return CURRENCY_CONFIG.formatCurrency(amount, currencyCode);
+        }
+
+        // Fonction utilitaire pour formater les dates
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR');
+        }
+    </script>
+</body>
+</html> 

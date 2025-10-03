@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier le Planning - EBVISION 2.0</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden; /* Empêche le défilement horizontal */
+        }
+        
+        /* Le conteneur principal de la page qui contient la sidebar et le contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Styles pour le contenu principal */
+        .main-content-area {
+            flex-grow: 1; /* Prend l'espace restant */
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .task-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .task-header {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .assignment-row {
+            background-color: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        .collaborateur-select {
+            min-width: 200px;
+        }
+        .hours-input {
+            width: 100px;
+        }
+        .rate-input {
+            width: 120px;
+        }
+        .btn-remove-assignment {
+            color: #dc3545;
+            border: none;
+            background: none;
+            padding: 0.25rem 0.5rem;
+        }
+        .btn-remove-assignment:hover {
+            color: #c82333;
+        }
+        .task-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .task-status {
+            font-size: 0.875rem;
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    
+    
+    
+</head>
+<body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+                <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+        <!-- Header de la page -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-edit me-2"></i>Modifier le Planning</h2>
+            <div class="text-muted">
+                <i class="fas fa-calendar me-1"></i>
+                <span id="current-date"></span>
+            </div>
+        </div>
+                    <!-- Mission Info -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Informations de la mission
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6 id="missionTitle">Chargement...</h6>
+                                            <p class="text-muted mb-0" id="missionDescription">Chargement...</p>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <span class="badge bg-primary" id="missionStatus">Chargement...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Planning Editor -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-tasks me-2"></i>
+                                        Planning des tâches
+                                    </h5>
+                                    <div>
+                                        <button type="button" class="btn btn-success me-2" onclick="savePlanning()">
+                                            <i class="fas fa-save me-2"></i>
+                                            Enregistrer
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="window.close()">
+                                            <i class="fas fa-times me-2"></i>
+                                            Fermer
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Résumé du planning -->
+                                    <div id="planningSummary" class="mb-4" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="card bg-primary text-white">
+                                                    <div class="card-body text-center">
+                                                        <h6 class="card-title">
+                                                            <i class="fas fa-tasks me-2"></i>Tâches
+                                                        </h6>
+                                                        <h4 id="totalTasks">0</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-success text-white">
+                                                    <div class="card-body text-center">
+                                                        <h6 class="card-title">
+                                                            <i class="fas fa-users me-2"></i>Collaborateurs
+                                                        </h6>
+                                                        <h4 id="totalCollaborators">0</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-info text-white">
+                                                    <div class="card-body text-center">
+                                                        <h6 class="card-title">
+                                                            <i class="fas fa-clock me-2"></i>Heures planifiées
+                                                        </h6>
+                                                        <h4 id="totalPlannedHours">0h</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-warning text-white">
+                                                    <div class="card-body text-center">
+                                                        <h6 class="card-title">
+                                                            <i class="fas fa-check-circle me-2"></i>Heures effectuées
+                                                        </h6>
+                                                        <h4 id="totalCompletedHours">0h</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Available Tasks -->
+                                    <div class="mb-4">
+                                        <h6>
+                                            <i class="fas fa-plus-circle me-2"></i>
+                                            Ajouter une tâche
+                                        </h6>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <select class="form-select" id="availableTasks">
+                                                    <option value="">Sélectionner une tâche...</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button type="button" class="btn btn-primary" onclick="addTask()">
+                                                    <i class="fas fa-plus me-2"></i>
+                                                    Ajouter
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Current Tasks -->
+                                    <div id="currentTasks">
+                                        <div class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Chargement...</span>
+                                            </div>
+                                            <p class="mt-2">Chargement du planning...</p>
+                                                                                 </div>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/user-modals.js"></script>
+    <script src="js/sidebar.js" defer></script>
+    <script>
+        // Initialisation de la sidebar et de la date
+        document.addEventListener('DOMContentLoaded', function() {
+            // Afficher la date actuelle
+            const currentDate = new Date().toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('current-date').textContent = currentDate;
+        });
+    </script>
+    <script>
+        let missionId = null;
+        let missionData = null;
+        let availableTasks = [];
+        let currentTasks = [];
+        let collaborators = [];
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page de modification du planning chargée');
+            
+            // Récupérer l'ID de la mission depuis l'URL
+            const urlParams = new URLSearchParams(window.location.search);
+            missionId = urlParams.get('mission_id') || urlParams.get('id');
+            
+            if (!missionId) {
+                alert('Erreur: ID de mission manquant');
+                window.close();
+                return;
+            }
+
+            // Charger les données dans l'ordre correct
+            initializePlanningEditor();
+        });
+
+        // Initialiser l'éditeur de planning
+        async function initializePlanningEditor() {
+            try {
+                // 1. Charger d'abord les données de la mission
+                await loadMissionData();
+                
+                // 2. Charger les collaborateurs (indépendant de la mission)
+                await loadCollaborators();
+                
+                // 3. Charger les tâches disponibles (dépend du type de mission)
+                await loadAvailableTasks();
+                
+                // 4. Charger le planning actuel
+                await loadCurrentPlanning();
+                
+                console.log('✅ Éditeur de planning initialisé avec succès');
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'initialisation:', error);
+                alert('Erreur lors du chargement des données: ' + error.message);
+            }
+        }
+
+        // Charger les données de la mission
+        async function loadMissionData() {
+            try {
+                const response = await fetch(`/api/missions/${missionId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    missionData = result.data || result;
+                    
+                    // Mettre à jour l'affichage
+                    document.getElementById('missionTitle').textContent = missionData.nom || 'Mission sans titre';
+                    document.getElementById('missionDescription').textContent = missionData.description || 'Aucune description';
+                    document.getElementById('missionStatus').textContent = missionData.statut || 'N/A';
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des données de mission:', error);
+            }
+        }
+
+        // Charger les tâches disponibles pour ce type de mission
+        async function loadAvailableTasks() {
+            try {
+                console.log('🔍 Chargement des tâches disponibles...');
+                console.log('  - missionData:', missionData);
+                console.log('  - mission_type_id:', missionData?.mission_type_id);
+                
+                if (!missionData || !missionData.mission_type_id) {
+                    console.log('❌ Type de mission non disponible');
+                    document.getElementById('availableTasks').innerHTML = '<option value="">Aucune tâche disponible - Type de mission manquant</option>';
+                    return;
+                }
+
+                const url = `/api/mission-types/${missionData.mission_type_id}/tasks`;
+                console.log('📡 Appel API:', url);
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                console.log('📊 Réponse API:', response.status, response.statusText);
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('📋 Données reçues:', result);
+                    
+                    availableTasks = result.tasks || result.data || [];
+                    console.log(`✅ ${availableTasks.length} tâches chargées:`, availableTasks);
+                    
+                    // Remplir le select des tâches disponibles
+                    const select = document.getElementById('availableTasks');
+                    select.innerHTML = '<option value="">Sélectionner une tâche...</option>';
+                    
+                    if (availableTasks.length === 0) {
+                        select.innerHTML = '<option value="">Aucune tâche disponible pour ce type de mission</option>';
+                    } else {
+                        availableTasks.forEach(task => {
+                            const option = document.createElement('option');
+                            option.value = task.id;
+                            option.textContent = `${task.code || 'N/A'} - ${task.libelle || task.description || 'Sans nom'}`;
+                            select.appendChild(option);
+                        });
+                    }
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Erreur API:', response.status, errorText);
+                    document.getElementById('availableTasks').innerHTML = '<option value="">Erreur lors du chargement des tâches</option>';
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des tâches disponibles:', error);
+                document.getElementById('availableTasks').innerHTML = '<option value="">Erreur de connexion</option>';
+            }
+        }
+
+        // Charger les collaborateurs
+        async function loadCollaborators() {
+            try {
+                const response = await fetch('/api/collaborateurs', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    collaborators = result.data || result;
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des collaborateurs:', error);
+            }
+        }
+
+        // Charger le planning actuel
+        async function loadCurrentPlanning() {
+            try {
+                const response = await fetch(`/api/missions/${missionId}/planning`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    currentTasks = result.tasks || [];
+                    renderCurrentTasks();
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement du planning:', error);
+            }
+        }
+
+        // Mettre à jour le résumé du planning
+        function updatePlanningSummary() {
+            const summaryContainer = document.getElementById('planningSummary');
+            
+            if (currentTasks.length === 0) {
+                summaryContainer.style.display = 'none';
+                return;
+            }
+            
+            // Calculer les totaux
+            let totalTasks = currentTasks.length;
+            let totalCollaborators = 0;
+            let totalPlannedHours = 0;
+            let totalCompletedHours = 0;
+            
+            currentTasks.forEach(task => {
+                if (task.assignments) {
+                    totalCollaborators += task.assignments.length;
+                    task.assignments.forEach(assignment => {
+                        totalPlannedHours += parseFloat(assignment.heures_planifiees) || 0;
+                        totalCompletedHours += parseFloat(assignment.heures_effectuees) || 0;
+                    });
+                }
+            });
+            
+            // Mettre à jour l'affichage
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('totalCollaborators').textContent = totalCollaborators;
+            document.getElementById('totalPlannedHours').textContent = totalPlannedHours + 'h';
+            document.getElementById('totalCompletedHours').textContent = totalCompletedHours + 'h';
+            
+            summaryContainer.style.display = 'block';
+        }
+
+        // Afficher les tâches actuelles
+        function renderCurrentTasks() {
+            const container = document.getElementById('currentTasks');
+            
+            if (currentTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Aucune tâche planifiée</h5>
+                        <p class="text-muted">Ajoutez des tâches pour commencer le planning.</p>
+                    </div>
+                `;
+                updatePlanningSummary();
+                return;
+            }
+
+            let html = '<h6 class="mb-3"><i class="fas fa-list me-2"></i>Tâches planifiées</h6>';
+            
+            currentTasks.forEach((task, taskIndex) => {
+                // Calculer les totaux pour cette tâche
+                const totalHeuresPlanifiees = task.assignments ? task.assignments.reduce((sum, a) => sum + (parseFloat(a.heures_planifiees) || 0), 0) : 0;
+                const totalHeuresEffectuees = task.assignments ? task.assignments.reduce((sum, a) => sum + (parseFloat(a.heures_effectuees) || 0), 0) : 0;
+                const nombreCollaborateurs = task.assignments ? task.assignments.length : 0;
+                
+                html += `
+                    <div class="task-card">
+                        <div class="task-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${task.libelle}</h6>
+                                <small class="text-muted">${task.code}</small>
+                                <div class="mt-1">
+                                    <small class="text-primary">
+                                        <i class="fas fa-users me-1"></i>${nombreCollaborateurs} collaborateur(s) assigné(s)
+                                    </small>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>${totalHeuresPlanifiees}h planifiées - ${totalHeuresEffectuees}h effectuées
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <span class="badge bg-${getStatusColor(task.statut)} task-status">${task.statut}</span>
+                                <button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeTask(${taskIndex})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Durée planifiée (heures)</label>
+                                    <input type="number" class="form-control" value="${task.duree_planifiee || 0}" 
+                                           onchange="updateTaskDuration(${taskIndex}, this.value)">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Date début</label>
+                                    <input type="date" class="form-control" value="${task.date_debut ? task.date_debut.split('T')[0] : ''}" 
+                                           onchange="updateTaskDate(${taskIndex}, 'date_debut', this.value)">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Date fin</label>
+                                    <input type="date" class="form-control" value="${task.date_fin ? task.date_fin.split('T')[0] : ''}" 
+                                           onchange="updateTaskDate(${taskIndex}, 'date_fin', this.value)">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Statut</label>
+                                    <select class="form-select" onchange="updateTaskStatus(${taskIndex}, this.value)">
+                                        <option value="PLANIFIEE" ${task.statut === 'PLANIFIEE' ? 'selected' : ''}>Planifiée</option>
+                                        <option value="EN_COURS" ${task.statut === 'EN_COURS' ? 'selected' : ''}>En cours</option>
+                                        <option value="TERMINEE" ${task.statut === 'TERMINEE' ? 'selected' : ''}>Terminée</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Affectations de collaborateurs -->
+                            <div class="mb-3">
+                                <h6 class="mb-2">
+                                    <i class="fas fa-users me-2"></i>
+                                    Collaborateurs assignés (${nombreCollaborateurs})
+                                </h6>
+                                <div id="assignments-${taskIndex}">
+                `;
+
+                if (task.assignments && task.assignments.length > 0) {
+                    task.assignments.forEach((assignment, assignmentIndex) => {
+                        html += createAssignmentRow(taskIndex, assignmentIndex, assignment);
+                    });
+                }
+
+                html += `
+                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addAssignment(${taskIndex})">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Ajouter un collaborateur
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            updatePlanningSummary();
+        }
+
+        // Créer une ligne d'affectation
+        function createAssignmentRow(taskIndex, assignmentIndex, assignment = null) {
+            const collaborateurId = assignment ? assignment.collaborateur_id : '';
+            const heuresPlanifiees = assignment ? assignment.heures_planifiees : 0;
+            const heuresEffectuees = assignment ? assignment.heures_effectuees : 0;
+            const tauxHoraire = assignment ? assignment.taux_horaire : 0;
+            const nom = assignment ? assignment.nom : '';
+            const prenom = assignment ? assignment.prenom : '';
+            const gradeNom = assignment ? assignment.grade_nom : '';
+
+            return `
+                <div class="assignment-row">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <label class="form-label">Collaborateur</label>
+                            <select class="form-select collaborateur-select" onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'collaborateur_id', this.value)">
+                                <option value="">Sélectionner...</option>
+                                ${collaborators.map(collab => `
+                                    <option value="${collab.id}" ${collab.id === collaborateurId ? 'selected' : ''}>
+                                        ${collab.nom} ${collab.prenom}
+                                    </option>
+                                `).join('')}
+                            </select>
+                            ${assignment && nom ? `
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>${prenom} ${nom}
+                                    ${gradeNom ? `(${gradeNom})` : ''}
+                                </small>
+                            ` : ''}
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Heures planifiées</label>
+                            <input type="number" class="form-control hours-input" value="${heuresPlanifiees}" 
+                                   onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'heures_planifiees', this.value)">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Heures effectuées</label>
+                            <input type="number" class="form-control hours-input" value="${heuresEffectuees}" 
+                                   onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'heures_effectuees', this.value)">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Taux horaire (€)</label>
+                            <input type="number" step="0.01" class="form-control rate-input" value="${tauxHoraire}" 
+                                   onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'taux_horaire', this.value)">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Statut</label>
+                            <select class="form-select" onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'statut', this.value)">
+                                <option value="PLANIFIE" ${assignment && assignment.statut === 'PLANIFIE' ? 'selected' : ''}>Planifié</option>
+                                <option value="EN_COURS" ${assignment && assignment.statut === 'EN_COURS' ? 'selected' : ''}>En cours</option>
+                                <option value="TERMINE" ${assignment && assignment.statut === 'TERMINE' ? 'selected' : ''}>Terminé</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" class="btn btn-remove-assignment" onclick="removeAssignment(${taskIndex}, ${assignmentIndex})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Ajouter une tâche
+        function addTask() {
+            const taskSelect = document.getElementById('availableTasks');
+            const selectedTaskId = taskSelect.value;
+            
+            if (!selectedTaskId) {
+                alert('Veuillez sélectionner une tâche');
+                return;
+            }
+
+            const selectedTask = availableTasks.find(t => t.id === selectedTaskId);
+            if (!selectedTask) {
+                alert('Tâche non trouvée');
+                return;
+            }
+
+            // Vérifier si la tâche n'est pas déjà ajoutée
+            if (currentTasks.some(t => t.task_id === selectedTaskId)) {
+                alert('Cette tâche est déjà planifiée');
+                return;
+            }
+
+            // Ajouter la nouvelle tâche
+            const newTask = {
+                task_id: selectedTask.id,
+                code: selectedTask.code,
+                libelle: selectedTask.libelle,
+                description: selectedTask.description,
+                statut: 'PLANIFIEE',
+                duree_planifiee: selectedTask.duree_estimee || 0,
+                date_debut: missionData.date_debut || '',
+                date_fin: missionData.date_fin || '',
+                assignments: []
+            };
+
+            currentTasks.push(newTask);
+            renderCurrentTasks();
+            
+            // Réinitialiser le select
+            taskSelect.value = '';
+        }
+
+        // Supprimer une tâche
+        function removeTask(taskIndex) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+                currentTasks.splice(taskIndex, 1);
+                renderCurrentTasks();
+            }
+        }
+
+        // Ajouter une affectation
+        function addAssignment(taskIndex) {
+            if (!currentTasks[taskIndex].assignments) {
+                currentTasks[taskIndex].assignments = [];
+            }
+            
+            currentTasks[taskIndex].assignments.push({
+                collaborateur_id: '',
+                heures_planifiees: 0,
+                taux_horaire: 0,
+                statut: 'PLANIFIE'
+            });
+            
+            renderCurrentTasks();
+        }
+
+        // Supprimer une affectation
+        function removeAssignment(taskIndex, assignmentIndex) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette affectation ?')) {
+                currentTasks[taskIndex].assignments.splice(assignmentIndex, 1);
+                renderCurrentTasks();
+            }
+        }
+
+        // Mettre à jour les propriétés d'une tâche
+        function updateTaskDuration(taskIndex, value) {
+            currentTasks[taskIndex].duree_planifiee = parseInt(value) || 0;
+        }
+
+        function updateTaskDate(taskIndex, field, value) {
+            currentTasks[taskIndex][field] = value;
+        }
+
+        function updateTaskStatus(taskIndex, value) {
+            currentTasks[taskIndex].statut = value;
+        }
+
+        // Mettre à jour les propriétés d'une affectation
+        function updateAssignment(taskIndex, assignmentIndex, field, value) {
+            if (!currentTasks[taskIndex].assignments) {
+                currentTasks[taskIndex].assignments = [];
+            }
+            
+            if (!currentTasks[taskIndex].assignments[assignmentIndex]) {
+                currentTasks[taskIndex].assignments[assignmentIndex] = {};
+            }
+            
+            currentTasks[taskIndex].assignments[assignmentIndex][field] = value;
+        }
+
+        // Fonction pour déterminer la couleur du statut
+        function getStatusColor(statut) {
+            switch (statut?.toUpperCase()) {
+                case 'TERMINE':
+                case 'TERMINEE':
+                    return 'success';
+                case 'EN_COURS':
+                    return 'warning';
+                case 'PLANIFIE':
+                case 'PLANIFIEE':
+                    return 'info';
+                default:
+                    return 'secondary';
+            }
+        }
+
+        // Sauvegarder le planning
+        async function savePlanning() {
+            try {
+                console.log('Sauvegarde du planning:', currentTasks);
+                
+                const response = await fetch(`/api/missions/${missionId}/planning`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({
+                        tasks: currentTasks
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Planning sauvegardé avec succès !');
+                        // Rafraîchir la page parent si elle existe
+                        if (window.opener && !window.opener.closed) {
+                            window.opener.location.reload();
+                        }
+                    } else {
+                        alert('Erreur lors de la sauvegarde: ' + (result.error || 'Erreur inconnue'));
+                    }
+                } else {
+                    const error = await response.json();
+                    alert('Erreur lors de la sauvegarde: ' + (error.error || 'Erreur inconnue'));
+                }
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde:', error);
+                alert('Erreur lors de la sauvegarde: ' + error.message);
+            }
+        }
+    </script>
+    </body>
+</html> 

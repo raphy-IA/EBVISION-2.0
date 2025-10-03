@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EBVISION 2.0 - Prospection - Campagnes</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    <!-- CSS pour le titre de l'application -->
+    <link rel="stylesheet" href="css/app-title.css">
+    
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+                
+    <!-- Scripts de zone utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/user-modals.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden; /* Empêche le défilement horizontal */
+        }
+        
+        /* Le conteneur principal de la page qui contient la sidebar et le contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Styles pour le contenu principal */
+        .main-content-area {
+            flex-grow: 1; /* Prend l'espace restant */
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+        .form-text {
+            font-size: 0.875em;
+            color: #6c757d;
+        }
+        .card.bg-light {
+            border: 1px solid #dee2e6;
+        }
+        .text-primary {
+            color: #0d6efd !important;
+        }
+        .fw-bold {
+            font-weight: 600 !important;
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+
+    <script src="js/global-auth.js"></script>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    
+    
+    
+</head>
+<body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <!-- Prospection Campaigns Section -->
+            <div id="prospection-campaigns-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-bullhorn me-2"></i>Campagnes de prospection</h2>
+                    <div class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>
+                        <span id="current-date"></span>
+                    </div>
+                    <!-- Notification Dropdown -->
+                    <div class="dropdown ms-3">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false" onclick="openNotificationsModal()">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge bg-danger rounded-pill" id="notificationBadge">0</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                            <li><h6 class="dropdown-header">Notifications</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <div id="notificationsContainer" class="list-group list-group-flush">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-center" href="#" onclick="markAllAsRead()">Marquer tout comme lu</a></li>
+                            <li><a class="dropdown-item text-center text-danger" href="#" onclick="clearReadNotifications()">Supprimer les lues</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <button class="btn btn-primary" onclick="openCreateModal()">
+                            <i class="fas fa-plus me-1"></i> Nouvelle campagne
+                        </button>
+                    </div>
+                    <div class="text-muted">
+                        <small>Gérez vos campagnes de prospection</small>
+                    </div>
+                </div>
+
+                <!-- Campaigns Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Liste des campagnes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Canal</th>
+                                        <th>Statut</th>
+                                        <th>Type de contenu</th>
+                                        <th>BU</th>
+                                        <th>Responsable</th>
+                                        <th>Planifiée</th>
+                                        <th>Entreprises</th>
+                                        <th>Créée le</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="campaignsTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="campaignModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>Nouvelle campagne
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="campaignForm">
+                        <!-- Informations de base -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="campName" class="form-label required-field">Nom de la campagne *</label>
+                                <input id="campName" class="form-control" placeholder="Généré automatiquement" readonly>
+                                <div class="form-text">Le nom est généré automatiquement selon le format : NomModèle-YY-MM-QNumeroSemaine-NumeroOrdre</div>
+                    </div>
+                            <div class="col-md-6">
+                                <label for="campResponsible" class="form-label required-field">Responsable de la campagne *</label>
+                                <select id="campResponsible" class="form-select" required>
+                                    <option value="">Sélectionnez un responsable</option>
+                        </select>
+                    </div>
+                    </div>
+
+                        <!-- Sélection du modèle -->
+                        <div class="mb-3">
+                            <label for="campTemplate" class="form-label required-field">Modèle de prospection *</label>
+                            <select id="campTemplate" class="form-select" required onchange="updateAutoConfig()">
+                                <option value="">Sélectionnez un modèle</option>
+                            </select>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Le modèle détermine automatiquement le canal, la Business Unit et la division
+                            </div>
+                        </div>
+
+                        <!-- Configuration automatique -->
+                        <div class="mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-cogs me-2"></i>Configuration automatique
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-broadcast-tower me-2 text-primary"></i>
+                                                <div>
+                                                    <small class="text-muted">Canal</small>
+                                                    <div id="autoChannel" class="fw-bold">-</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-sitemap me-2 text-primary"></i>
+                                                <div>
+                                                    <small class="text-muted">Business Unit</small>
+                                                    <div id="autoBU" class="fw-bold">-</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-layer-group me-2 text-primary"></i>
+                                                <div>
+                                                    <small class="text-muted">Division</small>
+                                                    <div id="autoDivision" class="fw-bold">-</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Planification -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="campDate" class="form-label">Date de lancement planifiée</label>
+                        <input id="campDate" type="date" class="form-control">
+                                <div class="form-text">Laissez vide pour lancer immédiatement</div>
+                    </div>
+                            <div class="col-md-6">
+                                <label for="campPriority" class="form-label">Priorité</label>
+                                <select id="campPriority" class="form-select">
+                                    <option value="NORMAL">Normale</option>
+                                    <option value="HIGH">Élevée</option>
+                                    <option value="URGENT">Urgente</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="campDescription" class="form-label">Description de la campagne</label>
+                            <textarea id="campDescription" class="form-control" rows="3" 
+                                      placeholder="Décrivez l'objectif et le contexte de cette campagne..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button class="btn btn-primary" onclick="createCampaign()">
+                        <i class="fas fa-save me-2"></i>Créer la campagne
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal d'affectation d'entreprises -->
+    <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen-lg-down modal-xl" style="max-width: 95vw;">
+            <div class="modal-content" style="height: 90vh;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignModalLabel">
+                        <i class="fas fa-users me-2"></i>Affecter des entreprises à la campagne
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="height: calc(90vh - 140px); overflow-y: auto;">
+                    <div class="row h-100">
+                        <!-- Section gauche : Sélection et ajout d'entreprises -->
+                        <div class="col-md-7">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-plus me-2"></i>Ajouter des entreprises</h6>
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <!-- Sélection de source -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Source d'entreprises :</label>
+                                        <select id="sourceSelect" class="form-select" onchange="loadSourceCompanies()">
+                                            <option value="">Sélectionnez une source...</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Filtres avancés -->
+                                    <div class="mb-3" id="filtersSection" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Secteur d'activité</label>
+                                                <select id="filterIndustry" class="form-select form-select-sm" onchange="applyFilters()">
+                                                    <option value="">Tous les secteurs</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Ville</label>
+                                                <select id="filterCity" class="form-select form-select-sm" onchange="applyFilters()">
+                                                    <option value="">Toutes les villes</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Taille</label>
+                                                <select id="filterSize" class="form-select form-select-sm" onchange="applyFilters()">
+                                                    <option value="">Toutes les tailles</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Recherche dans la source -->
+                                    <div class="mb-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                            <input type="text" id="companySearch" class="form-control" placeholder="Rechercher une entreprise..." oninput="filterCompanies()">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="clearFilters()">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Liste des entreprises de la source -->
+                                    <div class="mb-3 flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted">
+                                                Entreprises de la source 
+                                                <span id="companiesCount" class="badge bg-secondary ms-2">0</span>
+                                            </small>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="selectAllSource" onchange="toggleSelectAllSource()">
+                                                <label class="form-check-label" for="selectAllSource">Tout sélectionner</label>
+                                            </div>
+                                        </div>
+                                        <div id="sourceCompaniesList" style="height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem;">
+                                            <div class="text-center py-4">
+                                                <i class="fas fa-database fa-2x text-muted"></i>
+                                                <p class="text-muted mt-2">Sélectionnez une source pour voir les entreprises</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Pagination -->
+                                        <div class="d-flex justify-content-between align-items-center mt-2" id="paginationSection" style="display: none;">
+                                            <div class="d-flex align-items-center">
+                                                <span class="text-muted me-2">Page</span>
+                                                <select id="pageSelect" class="form-select form-select-sm" style="width: auto;" onchange="goToPage()">
+                                                </select>
+                                                <span class="text-muted ms-2">sur <span id="totalPages">0</span></span>
+                                            </div>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-secondary" onclick="previousPage()" id="prevBtn">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </button>
+                                                <button class="btn btn-outline-secondary" onclick="nextPage()" id="nextBtn">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bouton d'ajout -->
+                                    <button class="btn btn-primary w-100" onclick="addSelectedCompanies()" id="addCompaniesBtn" disabled>
+                                        <i class="fas fa-plus me-2"></i>Ajouter les entreprises sélectionnées
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section droite : Entreprises de la campagne -->
+                        <div class="col-md-5">
+                            <div class="row h-100">
+                                <!-- Entreprises sélectionnées pour ajout -->
+                                <div class="col-12 mb-3">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-clock me-2"></i>À ajouter (<span id="selectedCount">0</span>)</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="selectedCompaniesList" style="max-height: 200px; overflow-y: auto;">
+                                                <div class="text-center py-3">
+                                                    <i class="fas fa-list fa-2x text-muted"></i>
+                                                    <p class="text-muted mt-2">Aucune entreprise sélectionnée</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Entreprises déjà affectées -->
+                                <div class="col-12 flex-grow-1">
+                                    <div class="card h-100">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-check me-2"></i>Déjà affectées (<span id="assignedCount">0</span>)</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="assignedCompaniesList" style="height: 300px; overflow-y: auto;">
+                                                <div class="text-center py-3">
+                                                    <div class="spinner-border spinner-border-sm" role="status">
+                                                        <span class="visually-hidden">Chargement...</span>
+                                                    </div>
+                                                    <p class="text-muted mt-2">Chargement...</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-success" onclick="saveAssignments()" id="saveAssignmentsBtn">
+                        <i class="fas fa-save me-2"></i>Sauvegarder les affectations
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        const API = new URL('/api/prospecting', window.location.origin).toString();
+        let campaignModal;
+
+        function getAuthHeader() {
+            const token = localStorage.getItem('authToken');
+            console.log('🔍 [DEBUG] Token d\'authentification:', token ? 'Présent' : 'Absent');
+            return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+        }
+
+        async function loadCampaigns() {
+            try {
+            console.log('🔍 [DEBUG] Chargement des campagnes...');
+            const res = await fetch(`${API}/campaigns`, { headers: getAuthHeader() });
+            console.log('🔍 [DEBUG] Réponse API:', res.status, res.statusText);
+            
+            // Vérifier si le token est invalide
+            if (res.status === 401) {
+                console.log('❌ [DEBUG] Token invalide, redirection vers la page de connexion');
+                localStorage.removeItem('authToken');
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Vérifier si il y a une erreur serveur
+            if (res.status === 500) {
+                console.log('❌ [DEBUG] Erreur serveur 500');
+                const errorData = await res.json();
+                console.log('❌ [DEBUG] Détails de l\'erreur:', errorData);
+                alert('Erreur serveur: ' + (errorData.message || 'Erreur inconnue'));
+                return;
+            }
+            
+            const data = await res.json();
+            console.log('🔍 [DEBUG] Données reçues:', data);
+            const tbody = document.getElementById('campaignsTable');
+            if (tbody) tbody.innerHTML = '';
+                
+                if (!data.success || !data.data || data.data.length === 0) {
+                    if (tbody) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="10" class="text-center py-4">
+                                    <i class="fas fa-bullhorn fa-2x text-muted mb-3"></i>
+                                    <p class="text-muted">Aucune campagne créée pour le moment</p>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    return;
+                }
+                
+            console.log('🔍 [DEBUG] Traitement de', (data.data || []).length, 'campagnes');
+            (data.data || []).forEach(c => {
+                const tr = document.createElement('tr');
+                    // Utiliser validation_statut au lieu de status
+                    const validationStatus = c.validation_statut;
+                    const statusClass = getValidationStatusBadgeClass(validationStatus);
+                    const channelClass = c.channel === 'EMAIL' ? 'info' : 'secondary';
+                    const createdDate = c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '-';
+                    const scheduledDate = c.scheduled_date ? new Date(c.scheduled_date).toLocaleDateString('fr-FR') : '-';
+                    
+                    // Type de contenu du template
+                    const templateType = c.template_type === 'PRESENTATION_GENERALE' ? 'Présentation générale' : 
+                                       c.template_type === 'SERVICE_SPECIFIQUE' ? 'Service spécifique' : '-';
+                    
+                    // BU
+                    const businessUnit = c.business_unit_name || '-';
+                    
+                    // Responsable
+                    const responsible = c.responsible_nom && c.responsible_prenom ? 
+                                      `${c.responsible_prenom} ${c.responsible_nom}` : '-';
+                    
+                tr.innerHTML = `
+                        <td><strong>${c.name}</strong></td>
+                        <td><span class="badge bg-${channelClass}">${c.channel}</span></td>
+                        <td><span class="badge ${statusClass}">${getValidationStatusText(validationStatus)}</span></td>
+                        <td><span class="badge bg-primary">${templateType}</span></td>
+                        <td><small class="text-muted">${businessUnit}</small></td>
+                        <td><small class="text-muted">${responsible}</small></td>
+                        <td>${scheduledDate}</td>
+                    <td><span class="badge bg-light text-dark">${c.companies_count || 0}</span></td>
+                        <td><small class="text-muted">${createdDate}</small></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                                ${validationStatus === 'EN_VALIDATION' ? 
+                                    `<button class="btn btn-outline-secondary" disabled title="Affectation non autorisée - Campagne en validation">
+                                        <i class="fas fa-users"></i> Affecter
+                                    </button>` :
+                                    validationStatus === 'VALIDE' ?
+                                    `<button class="btn btn-outline-success" onclick="executeCampaign('${c.id}')" title="Exécuter la campagne">
+                                        <i class="fas fa-play"></i> Exécuter
+                                    </button>` :
+                                    `<button class="btn btn-outline-primary" onclick="assignCompanies('${c.id}')" title="Affecter des entreprises">
+                                        <i class="fas fa-users"></i> Affecter
+                                    </button>`
+                                }
+                                <a class="btn btn-outline-info" href="prospecting-campaign-summary.html?id=${c.id}" title="Voir récapitulatif">
+                                    <i class="fas fa-eye"></i> Récap
+                                </a>
+                                ${validationStatus === 'EN_VALIDATION' || validationStatus === 'VALIDE' ? 
+                                    `<button class="btn btn-outline-secondary" disabled title="Modification non autorisée - Campagne en validation">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary" disabled title="Suppression non autorisée - Campagne en validation">
+                                        <i class="fas fa-trash"></i>
+                                    </button>` :
+                                    `<button class="btn btn-outline-warning" onclick="editCampaign('${c.id}')" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteCampaign('${c.id}')" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>`
+                                }
+                        </div>
+                    </td>
+                `;
+                if (tbody) tbody.appendChild(tr);
+            });
+            } catch (error) {
+                console.error('Erreur chargement campagnes:', error);
+                const campaignsTable = document.getElementById('campaignsTable');
+                if (campaignsTable) {
+                    campaignsTable.innerHTML = `
+                        <tr>
+                            <td colspan="10" class="text-center py-4">
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Erreur lors du chargement des campagnes
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'DRAFT': return 'warning';
+                case 'READY': return 'primary';
+                case 'SENT': return 'success';
+                case 'ARCHIVED': return 'secondary';
+                default: return 'secondary';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'DRAFT': return 'Brouillon';
+                case 'READY': return 'Prête';
+                case 'SENT': return 'Envoyée';
+                case 'ARCHIVED': return 'Archivée';
+                default: return status;
+            }
+        }
+
+        function getValidationStatusText(validationStatus) {
+            switch(validationStatus) {
+                case 'BROUILLON': return 'Brouillon';
+                case 'EN_VALIDATION': return 'En attente de validation';
+                case 'VALIDE': return 'Validée';
+                case 'REJETE': return 'Rejetée';
+                default: return validationStatus || 'Brouillon';
+            }
+        }
+
+        function getValidationStatusBadgeClass(validationStatus) {
+            switch(validationStatus) {
+                case 'BROUILLON': return 'bg-secondary';
+                case 'EN_VALIDATION': return 'bg-warning';
+                case 'VALIDE': return 'bg-success';
+                case 'REJETE': return 'bg-danger';
+                default: return 'bg-secondary';
+            }
+        }
+
+        // Variable globale pour stocker les modèles
+        let templates = [];
+
+        async function loadTemplates() {
+            try {
+                const res = await fetch(`${API}/templates`, { headers: getAuthHeader() });
+            const data = await res.json();
+                
+                // Stocker les modèles globalement
+                templates = data.data || [];
+                
+            const sel = document.getElementById('campTemplate');
+                if (sel) {
+                    sel.innerHTML = '<option value="">Sélectionnez un modèle</option>';
+                    
+                    templates.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                        const channelText = t.channel === 'EMAIL' ? 'Email' : 'Courrier physique';
+                        opt.textContent = `${t.name} (${channelText})`;
+                sel.appendChild(opt);
+            });
+                }
+            } catch (error) {
+                console.error('Erreur chargement modèles:', error);
+            }
+        }
+
+        // Fonction pour générer automatiquement le nom de la campagne
+        async function updateCampaignName() {
+            const templateSelect = document.getElementById('campTemplate');
+            const dateInput = document.getElementById('campDate');
+            const nameInput = document.getElementById('campName');
+            
+            if (!templateSelect || !nameInput) return;
+            
+            const selectedTemplateId = templateSelect.value;
+            const selectedDate = dateInput.value;
+            
+            if (!selectedTemplateId) {
+                nameInput.value = '';
+                return;
+            }
+            
+            try {
+                // Récupérer le nom du modèle
+                const templateRes = await fetch(`${API}/templates/${selectedTemplateId}`, { headers: getAuthHeader() });
+                const templateData = await templateRes.json();
+                
+                if (!templateRes.ok || !templateData.data) {
+                    console.error('Erreur lors de la récupération du modèle');
+                    return;
+                }
+                
+                const templateName = templateData.data.name;
+                
+                // Utiliser la date sélectionnée ou la date actuelle
+                const launchDate = selectedDate ? new Date(selectedDate) : new Date();
+                
+                // Extraire YY et MM
+                const year = launchDate.getFullYear().toString().slice(-2); // YY
+                const month = (launchDate.getMonth() + 1).toString().padStart(2, '0'); // MM
+                
+                // Calculer le numéro de semaine dans le mois
+                const firstDayOfMonth = new Date(launchDate.getFullYear(), launchDate.getMonth(), 1);
+                const dayOfWeek = firstDayOfMonth.getDay();
+                const weekNumber = Math.ceil((launchDate.getDate() + dayOfWeek) / 7);
+                
+                // Construire le nom de base
+                const baseName = `${templateName}-${year}-${month}-Q${weekNumber}`;
+                
+                // Trouver le prochain numéro d'ordre
+                const orderNumber = await findNextCampaignOrderNumber(baseName);
+                
+                // Générer le nom final
+                const finalName = `${baseName}-${orderNumber.toString().padStart(2, '0')}`;
+                
+                nameInput.value = finalName;
+                
+            } catch (error) {
+                console.error('Erreur lors de la génération du nom:', error);
+            }
+        }
+        
+        // Fonction pour trouver le prochain numéro d'ordre
+        async function findNextCampaignOrderNumber(baseName) {
+            try {
+                const response = await fetch(`${API}/campaigns`, { headers: getAuthHeader() });
+                const data = await response.json();
+                const campaigns = data.data || data || [];
+                
+                // Filtrer les campagnes qui commencent par le même nom de base
+                const matchingCampaigns = campaigns.filter(campaign => 
+                    campaign.name && campaign.name.startsWith(baseName)
+                );
+                
+                if (matchingCampaigns.length === 0) {
+                    return 1; // Premier numéro
+                }
+                
+                // Extraire les numéros d'ordre existants
+                const orderNumbers = matchingCampaigns.map(campaign => {
+                    const match = campaign.name.match(/-(\d{2})$/);
+                    return match ? parseInt(match[1]) : 0;
+                });
+                
+                // Trouver le prochain numéro disponible
+                const maxOrder = Math.max(...orderNumbers, 0);
+                return maxOrder + 1;
+                
+            } catch (error) {
+                console.error('Erreur lors de la recherche du numéro d\'ordre:', error);
+                return 1; // Retourner 1 en cas d'erreur
+            }
+        }
+        
+        // Fonction pour filtrer les responsables par Business Unit
+        async function filterResponsiblesByBU(businessUnitId) {
+            const responsibleSelect = document.getElementById('campResponsible');
+            if (!responsibleSelect) return;
+            
+            // Vider la liste actuelle
+            responsibleSelect.innerHTML = '<option value="">Sélectionnez un responsable</option>';
+            
+            if (!businessUnitId) {
+                console.log('🔍 [DEBUG] Aucune BU sélectionnée, pas de filtrage des responsables');
+                return;
+            }
+            
+            try {
+                console.log('🔍 [DEBUG] Filtrage des responsables pour BU:', businessUnitId);
+                
+                // Récupérer tous les collaborateurs
+                const response = await fetch('/api/collaborateurs', { headers: getAuthHeader() });
+                const data = await response.json();
+                const collaborateurs = data.data || data || [];
+                
+                // Filtrer par Business Unit
+                const filteredCollaborateurs = collaborateurs.filter(collab => 
+                    collab.business_unit_id === businessUnitId
+                );
+                
+                console.log('🔍 [DEBUG] Collaborateurs filtrés:', filteredCollaborateurs.length);
+                
+                // Ajouter les options filtrées
+                filteredCollaborateurs.forEach(collab => {
+                    const option = document.createElement('option');
+                    option.value = collab.id;
+                    option.textContent = `${collab.nom} ${collab.prenom}`;
+                    responsibleSelect.appendChild(option);
+                });
+                
+                if (filteredCollaborateurs.length === 0) {
+                    const noOption = document.createElement('option');
+                    noOption.value = '';
+                    noOption.textContent = 'Aucun responsable disponible pour cette BU';
+                    noOption.disabled = true;
+                    responsibleSelect.appendChild(noOption);
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du filtrage des responsables:', error);
+            }
+        }
+        
+        // Fonction pour réinitialiser la liste des responsables
+        function resetResponsiblesList() {
+            const responsibleSelect = document.getElementById('campResponsible');
+            if (responsibleSelect) {
+                responsibleSelect.innerHTML = '<option value="">Sélectionnez un responsable</option>';
+            }
+        }
+
+        function openCreateModal() {
+            resetCreateModal();
+            if (!campaignModal) campaignModal = new bootstrap.Modal(document.getElementById('campaignModal'));
+            campaignModal.show();
+        }
+
+        function resetCreateModal() {
+            // Réinitialiser le formulaire
+            const campName = document.getElementById('campName');
+            const campResponsible = document.getElementById('campResponsible');
+            const campTemplate = document.getElementById('campTemplate');
+            const campDate = document.getElementById('campDate');
+            const campPriority = document.getElementById('campPriority');
+            const campDescription = document.getElementById('campDescription');
+            
+            if (campName) campName.value = '';
+            if (campResponsible) campResponsible.value = '';
+            if (campTemplate) campTemplate.value = '';
+            if (campDate) campDate.value = '';
+            if (campPriority) campPriority.value = 'NORMAL';
+            if (campDescription) campDescription.value = '';
+            
+            // Réinitialiser l'affichage automatique
+            const autoChannel = document.getElementById('autoChannel');
+            const autoBU = document.getElementById('autoBU');
+            const autoDivision = document.getElementById('autoDivision');
+            
+            if (autoChannel) autoChannel.textContent = '-';
+            if (autoBU) autoBU.textContent = '-';
+            if (autoDivision) autoDivision.textContent = '-';
+            
+            // Remettre le titre et le bouton en mode création
+            const modalTitle = document.querySelector('#campaignModal .modal-title');
+            const saveBtn = document.querySelector('#campaignModal .btn-primary');
+            
+            if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>Nouvelle campagne';
+            if (saveBtn) {
+                saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Créer la campagne';
+                saveBtn.onclick = createCampaign;
+            }
+            
+            // Réinitialiser la liste des responsables
+            resetResponsiblesList();
+        }
+
+        async function createCampaign() {
+            // Validation des champs obligatoires
+            const name = document.getElementById('campName').value.trim();
+            const template_id = document.getElementById('campTemplate').value;
+            const responsible_id = document.getElementById('campResponsible').value;
+            const scheduled_date = document.getElementById('campDate').value || null;
+            const priority = document.getElementById('campPriority').value;
+            const description = document.getElementById('campDescription').value.trim();
+
+            // Validations
+            if (!name) {
+                alert('Le nom de la campagne est obligatoire');
+                return;
+            }
+            if (!template_id) {
+                alert('Veuillez sélectionner un modèle de prospection');
+                return;
+            }
+            if (!responsible_id) {
+                alert('Veuillez sélectionner un responsable de la campagne');
+                return;
+            }
+
+            try {
+                // Récupérer les informations du modèle sélectionné
+                const templateRes = await fetch(`${API}/templates/${template_id}`, { headers: getAuthHeader() });
+                const templateData = await templateRes.json();
+                
+                if (!templateRes.ok || !templateData.data) {
+                    alert('Erreur lors de la récupération du modèle');
+                    return;
+                }
+
+                const template = templateData.data;
+                
+                // Récupérer les informations de l'utilisateur connecté
+                const userRes = await fetch('/api/auth/me', { headers: getAuthHeader() });
+                const userData = await userRes.json();
+                
+                if (!userRes.ok || !userData.data) {
+                    alert('Erreur lors de la récupération des informations utilisateur');
+                    return;
+                }
+                
+                const currentUser = userData.data;
+                const currentDate = new Date().toISOString();
+                
+                const campaignData = {
+                    name,
+                    template_id,
+                    responsible_id,
+                    scheduled_date,
+                    priority,
+                    description,
+                    // Récupérer automatiquement depuis le modèle
+                    channel: template.channel,
+                    business_unit_id: template.business_unit_id,
+                    division_id: template.division_id,
+                    // Ajouter automatiquement le créateur et la date de création
+                    created_by: currentUser.id,
+                    created_at: currentDate
+                };
+
+                const res = await fetch(`${API}/campaigns`, {
+                    method: 'POST',
+                    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify(campaignData)
+                });
+
+                if (res.ok) {
+                    alert('Campagne créée avec succès !');
+                    campaignModal.hide();
+                    await loadCampaigns();
+                } else {
+                    const error = await res.json().catch(() => ({}));
+                    alert('Erreur: ' + (error.message || error.error || res.status));
+                }
+            } catch (error) {
+                console.error('Erreur création campagne:', error);
+                alert('Erreur lors de la création de la campagne');
+            }
+        }
+
+        // Fonction pour affecter des entreprises à une campagne
+        function assignCompanies(campaignId) {
+            // Ouvrir le modal d'affectation d'entreprises
+            openAssignModal(campaignId);
+        }
+
+        // Fonction pour éditer une campagne
+        async function editCampaign(campaignId) {
+            try {
+                const res = await fetch(`${API}/campaigns/${campaignId}`, { headers: getAuthHeader() });
+                const data = await res.json();
+                
+                if (res.ok && data.data) {
+                    const campaign = data.data;
+                    
+                    // Remplir le formulaire avec les données existantes
+                    document.getElementById('campName').value = campaign.name;
+                    document.getElementById('campResponsible').value = campaign.responsible_id || '';
+                    document.getElementById('campTemplate').value = campaign.template_id || '';
+                    document.getElementById('campDate').value = campaign.scheduled_date || '';
+                    document.getElementById('campPriority').value = campaign.priority || 'NORMAL';
+                    document.getElementById('campDescription').value = campaign.description || '';
+                    
+                    // Mettre à jour l'affichage automatique
+                    updateAutoConfig();
+                    
+                    // Changer le titre du modal
+                    document.querySelector('#campaignModal .modal-title').innerHTML = '<i class="fas fa-edit me-2"></i>Modifier la campagne';
+                    
+                    // Changer le bouton
+                    const saveBtn = document.querySelector('#campaignModal .btn-primary');
+                    saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Mettre à jour';
+                    saveBtn.onclick = () => updateCampaign(campaignId);
+                    
+                    // Afficher le modal
+                    if (!campaignModal) campaignModal = new bootstrap.Modal(document.getElementById('campaignModal'));
+                    campaignModal.show();
+                } else {
+                    alert('Erreur lors du chargement de la campagne');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors du chargement de la campagne');
+            }
+        }
+
+        // Fonction pour mettre à jour une campagne
+        async function updateCampaign(campaignId) {
+            // Validation des champs obligatoires
+            const name = document.getElementById('campName').value.trim();
+            const template_id = document.getElementById('campTemplate').value;
+            const responsible_id = document.getElementById('campResponsible').value;
+            const scheduled_date = document.getElementById('campDate').value || null;
+            const priority = document.getElementById('campPriority').value;
+            const description = document.getElementById('campDescription').value.trim();
+
+            // Validations
+            if (!name) {
+                alert('Le nom de la campagne est obligatoire');
+                return;
+            }
+            if (!template_id) {
+                alert('Veuillez sélectionner un modèle de prospection');
+                return;
+            }
+            if (!responsible_id) {
+                alert('Veuillez sélectionner un responsable de la campagne');
+                return;
+            }
+
+            try {
+                // Récupérer les informations du modèle sélectionné
+                const templateRes = await fetch(`${API}/templates/${template_id}`, { headers: getAuthHeader() });
+                const templateData = await templateRes.json();
+                
+                if (!templateRes.ok || !templateData.data) {
+                    alert('Erreur lors de la récupération du modèle');
+                    return;
+                }
+
+                const template = templateData.data;
+                
+                const campaignData = {
+                    name,
+                    template_id,
+                    responsible_id,
+                    scheduled_date,
+                    priority,
+                    description,
+                    // Récupérer automatiquement depuis le modèle
+                    channel: template.channel,
+                    business_unit_id: template.business_unit_id,
+                    division_id: template.division_id
+                };
+
+                const res = await fetch(`${API}/campaigns/${campaignId}`, {
+                    method: 'PUT',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify(campaignData)
+                });
+                
+                if (res.ok) {
+                    campaignModal.hide();
+                    await loadCampaigns();
+                    alert('Campagne mise à jour avec succès !');
+                } else {
+                    const error = await res.json().catch(() => ({}));
+                    alert('Erreur: ' + (error.message || error.error || res.status));
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la mise à jour');
+            }
+        }
+
+        // Fonction pour supprimer une campagne
+        async function deleteCampaign(campaignId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette campagne ? Cette action est irréversible.')) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API}/campaigns/${campaignId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeader()
+                });
+                
+                if (res.ok) {
+                    await loadCampaigns();
+                    alert('Campagne supprimée avec succès !');
+                } else {
+                    const d = await res.json().catch(() => ({}));
+                    alert('Erreur: ' + (d.message || d.error || res.status));
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la suppression');
+            }
+        }
+
+
+
+        // ===== FONCTIONS DU MODAL D'AFFECTATION =====
+        
+        let assignModal;
+        let currentCampaignId;
+        let currentSourceCompanies = [];
+        let selectedCompanies = new Set();
+        let assignedCompanies = new Set();
+
+        // Ouvrir le modal d'affectation
+        async function openAssignModal(campaignId) {
+            currentCampaignId = campaignId;
+            selectedCompanies.clear();
+            assignedCompanies.clear();
+            
+            // Réinitialiser l'interface
+            resetAssignModal();
+            
+            // Charger les sources et les entreprises déjà affectées
+            await Promise.all([
+                loadSources(),
+                loadAssignedCompanies()
+            ]);
+            
+            // Afficher le modal
+            if (!assignModal) {
+                assignModal = new bootstrap.Modal(document.getElementById('assignModal'));
+            }
+            assignModal.show();
+        }
+
+        // Réinitialiser le modal
+        function resetAssignModal() {
+            document.getElementById('sourceSelect').value = '';
+            document.getElementById('companySearch').value = '';
+            document.getElementById('selectAllSource').checked = false;
+            document.getElementById('addCompaniesBtn').disabled = true;
+            
+            // Réinitialiser les filtres
+            document.getElementById('filterIndustry').value = '';
+            document.getElementById('filterCity').value = '';
+            document.getElementById('filterSize').value = '';
+            document.getElementById('filtersSection').style.display = 'none';
+            
+            // Réinitialiser la pagination
+            currentPage = 1;
+            allSourceCompanies = [];
+            filteredCompanies = [];
+            
+            // Vider les listes
+            document.getElementById('sourceCompaniesList').innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-database fa-2x text-muted"></i>
+                    <p class="text-muted mt-2">Sélectionnez une source pour voir les entreprises</p>
+                </div>
+            `;
+            
+            // Masquer la pagination
+            document.getElementById('paginationSection').style.display = 'none';
+            
+            updateSelectedCompaniesList();
+            updateCounts();
+        }
+
+        // Charger les sources
+        async function loadSources() {
+            try {
+                console.log('🔍 [DEBUG] Chargement des sources...');
+                const res = await fetch(`${API}/sources`, { headers: getAuthHeader() });
+                console.log('🔍 [DEBUG] Réponse sources:', res.status, res.statusText);
+                
+                const data = await res.json();
+                console.log('🔍 [DEBUG] Données sources:', data);
+                
+                const select = document.getElementById('sourceSelect');
+                
+                // Garder l'option par défaut et ajouter "Toutes les sources"
+                select.innerHTML = '<option value="">Sélectionnez une source...</option>';
+                
+                // Ajouter l'option "Toutes les sources"
+                const allSourcesOption = document.createElement('option');
+                allSourcesOption.value = 'all';
+                allSourcesOption.textContent = '📋 Toutes les sources';
+                select.appendChild(allSourcesOption);
+                
+                if (data.data && data.data.length > 0) {
+                    console.log('🔍 [DEBUG] Sources trouvées:', data.data.length);
+                    data.data.forEach(source => {
+                        const option = document.createElement('option');
+                        option.value = source.id;
+                        option.textContent = source.name;
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.log('🔍 [DEBUG] Aucune source trouvée');
+                }
+            } catch (error) {
+                console.error('❌ [DEBUG] Erreur chargement sources:', error);
+            }
+        }
+
+        // Charger les entreprises d'une source ou de toutes les sources
+        async function loadSourceCompanies() {
+            const sourceId = document.getElementById('sourceSelect').value;
+            console.log('🔍 [DEBUG] Chargement entreprises pour source:', sourceId);
+            
+            if (!sourceId) {
+                console.log('🔍 [DEBUG] Aucune source sélectionnée');
+                resetSourceCompaniesList();
+                return;
+            }
+
+            try {
+                let apiUrl;
+                if (sourceId === 'all') {
+                    // Charger toutes les entreprises de toutes les sources
+                    console.log('🔍 [DEBUG] Chargement de toutes les entreprises');
+                    apiUrl = `${API}/companies`;
+                } else {
+                    // Charger les entreprises d'une source spécifique
+                    console.log('🔍 [DEBUG] Appel API:', `${API}/sources/${sourceId}/companies`);
+                    apiUrl = `${API}/sources/${sourceId}/companies`;
+                }
+                
+                const res = await fetch(apiUrl, { headers: getAuthHeader() });
+                console.log('🔍 [DEBUG] Réponse entreprises:', res.status, res.statusText);
+                
+                const data = await res.json();
+                console.log('🔍 [DEBUG] Données entreprises:', data);
+                console.log('🔍 [DEBUG] Structure data:', Object.keys(data));
+                console.log('🔍 [DEBUG] data.data type:', typeof data.data);
+                console.log('🔍 [DEBUG] data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
+                
+                // Adapter selon l'API utilisée
+                if (sourceId === 'all') {
+                    allSourceCompanies = data.data || [];
+                    console.log('🔍 [DEBUG] Mode "all" - entreprises trouvées:', allSourceCompanies.length);
+                } else {
+                    allSourceCompanies = data.data || [];
+                    console.log('🔍 [DEBUG] Mode source spécifique - entreprises trouvées:', allSourceCompanies.length);
+                }
+                
+                currentSourceCompanies = allSourceCompanies;
+                console.log('🔍 [DEBUG] Nombre d\'entreprises trouvées:', allSourceCompanies.length);
+                
+                // Réinitialiser la pagination
+                currentPage = 1;
+                
+                // Charger les filtres
+                loadFilters();
+                
+                // Afficher les entreprises
+                renderSourceCompanies(currentSourceCompanies);
+                
+                // Afficher la section des filtres si il y a des entreprises
+                if (allSourceCompanies.length > 0) {
+                    document.getElementById('filtersSection').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('❌ [DEBUG] Erreur chargement entreprises source:', error);
+                resetSourceCompaniesList();
+            }
+        }
+
+        // Variables pour la pagination
+        let currentPage = 1;
+        let companiesPerPage = 20;
+        let allSourceCompanies = [];
+        let filteredCompanies = [];
+
+        // Afficher les entreprises de la source
+        function renderSourceCompanies(companies) {
+            const container = document.getElementById('sourceCompaniesList');
+            
+            if (companies.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-building fa-2x text-muted"></i>
+                        <p class="text-muted mt-2">Aucune entreprise dans cette source</p>
+                        <small class="text-muted">Essayez de sélectionner une autre source ou importez des entreprises via la page "Sources d'entreprises"</small>
+                    </div>
+                `;
+                return;
+            }
+
+            // Calculer la pagination
+            const startIndex = (currentPage - 1) * companiesPerPage;
+            const endIndex = startIndex + companiesPerPage;
+            const companiesToShow = companies.slice(startIndex, endIndex);
+
+            container.innerHTML = companiesToShow.map(company => `
+                <div class="form-check mb-3 company-item p-3 border rounded" data-company-id="${company.id}">
+                    <div class="d-flex align-items-start">
+                        <input class="form-check-input mt-1 me-3" type="checkbox" value="${company.id}" id="company_${company.id}" onchange="toggleCompanySelection('${company.id}')">
+                        <div class="flex-grow-1">
+                            <label class="form-check-label w-100" for="company_${company.id}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold">${company.name}</h6>
+                                        ${document.getElementById('sourceSelect').value === 'all' && company.source_name ? `
+                                        <div class="row text-muted small mb-1">
+                                            <div class="col-12">
+                                                <i class="fas fa-database me-1"></i>
+                                                <strong>Source:</strong> <span class="badge bg-info">${company.source_name}</span>
+                                            </div>
+                                        </div>
+                                        ` : ''}
+                                        <div class="row text-muted small">
+                                            <div class="col-md-4">
+                                                <i class="fas fa-industry me-1"></i>
+                                                <strong>Secteur:</strong> ${company.industry || 'Non renseigné'}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                <strong>Ville:</strong> ${company.city || 'Non renseigné'}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <i class="fas fa-tag me-1"></i>
+                                                <strong>Sigle:</strong> ${company.sigle ? `<span class="badge bg-primary">${company.sigle}</span>` : 'Non renseigné'}
+                                            </div>
+                                        </div>
+                                        <div class="row text-muted small mt-1">
+                                            <div class="col-md-6">
+                                                <i class="fas fa-envelope me-1"></i>
+                                                <strong>Email:</strong> ${company.email || 'Non renseigné'}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <i class="fas fa-phone me-1"></i>
+                                                <strong>Téléphone:</strong> ${company.phone || 'Non renseigné'}
+                                            </div>
+                                        </div>
+                                        ${company.website ? `
+                                        <div class="row text-muted small mt-1">
+                                            <div class="col-12">
+                                                <i class="fas fa-globe me-1"></i>
+                                                <strong>Site web:</strong> <a href="${company.website}" target="_blank" class="text-decoration-none">${company.website}</a>
+                                            </div>
+                                        </div>
+                                        ` : ''}
+                                        ${company.size_label ? `
+                                        <div class="row text-muted small mt-1">
+                                            <div class="col-12">
+                                                <i class="fas fa-users me-1"></i>
+                                                <strong>Taille:</strong> ${company.size_label}
+                                            </div>
+                                        </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Mettre à jour la pagination
+            updatePagination(companies.length);
+        }
+
+        // Réinitialiser la liste des entreprises de la source
+        function resetSourceCompaniesList() {
+            document.getElementById('sourceCompaniesList').innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-database fa-2x text-muted"></i>
+                    <p class="text-muted mt-2">Sélectionnez une source pour voir les entreprises</p>
+                </div>
+            `;
+        }
+
+        // Charger les filtres
+        function loadFilters() {
+            const industries = [...new Set(allSourceCompanies.map(c => c.industry).filter(Boolean))].sort();
+            const cities = [...new Set(allSourceCompanies.map(c => c.city).filter(Boolean))].sort();
+            const sizes = [...new Set(allSourceCompanies.map(c => c.size_label).filter(Boolean))].sort();
+
+            // Remplir les filtres
+            const industrySelect = document.getElementById('filterIndustry');
+            const citySelect = document.getElementById('filterCity');
+            const sizeSelect = document.getElementById('filterSize');
+
+            industrySelect.innerHTML = '<option value="">Tous les secteurs</option>';
+            citySelect.innerHTML = '<option value="">Toutes les villes</option>';
+            sizeSelect.innerHTML = '<option value="">Toutes les tailles</option>';
+
+            industries.forEach(industry => {
+                const option = document.createElement('option');
+                option.value = industry;
+                option.textContent = industry;
+                industrySelect.appendChild(option);
+            });
+
+            cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+
+            sizes.forEach(size => {
+                const option = document.createElement('option');
+                option.value = size;
+                option.textContent = size;
+                sizeSelect.appendChild(option);
+            });
+        }
+
+        // Appliquer les filtres
+        function applyFilters() {
+            const searchTerm = document.getElementById('companySearch').value.toLowerCase();
+            const industryFilter = document.getElementById('filterIndustry').value;
+            const cityFilter = document.getElementById('filterCity').value;
+            const sizeFilter = document.getElementById('filterSize').value;
+
+            filteredCompanies = allSourceCompanies.filter(company => {
+                const matchesSearch = !searchTerm || 
+                    company.name.toLowerCase().includes(searchTerm) ||
+                    (company.sigle && company.sigle.toLowerCase().includes(searchTerm)) ||
+                    (company.industry && company.industry.toLowerCase().includes(searchTerm)) ||
+                    (company.city && company.city.toLowerCase().includes(searchTerm));
+
+                const matchesIndustry = !industryFilter || company.industry === industryFilter;
+                const matchesCity = !cityFilter || company.city === cityFilter;
+                const matchesSize = !sizeFilter || company.size_label === sizeFilter;
+
+                return matchesSearch && matchesIndustry && matchesCity && matchesSize;
+            });
+
+            currentSourceCompanies = filteredCompanies;
+            currentPage = 1;
+            renderSourceCompanies(currentSourceCompanies);
+        }
+
+        // Filtrer les entreprises (recherche en temps réel)
+        function filterCompanies() {
+            applyFilters();
+        }
+
+        // Effacer tous les filtres
+        function clearFilters() {
+            document.getElementById('companySearch').value = '';
+            document.getElementById('filterIndustry').value = '';
+            document.getElementById('filterCity').value = '';
+            document.getElementById('filterSize').value = '';
+            
+            currentSourceCompanies = allSourceCompanies;
+            currentPage = 1;
+            renderSourceCompanies(currentSourceCompanies);
+        }
+
+        // Mettre à jour la pagination
+        function updatePagination(totalCompanies) {
+            const totalPages = Math.ceil(totalCompanies / companiesPerPage);
+            const paginationSection = document.getElementById('paginationSection');
+            const pageSelect = document.getElementById('pageSelect');
+            const totalPagesSpan = document.getElementById('totalPages');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (totalPages <= 1) {
+                paginationSection.style.display = 'none';
+                return;
+            }
+            
+            paginationSection.style.display = 'flex';
+            totalPagesSpan.textContent = totalPages;
+
+            // Mettre à jour le sélecteur de page
+            pageSelect.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                if (i === currentPage) option.selected = true;
+                pageSelect.appendChild(option);
+            }
+
+            // Mettre à jour les boutons
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+
+            // Mettre à jour le compteur
+            document.getElementById('companiesCount').textContent = totalCompanies;
+        }
+
+        // Aller à une page spécifique
+        function goToPage() {
+            const pageSelect = document.getElementById('pageSelect');
+            currentPage = parseInt(pageSelect.value);
+            renderSourceCompanies(currentSourceCompanies);
+        }
+
+        // Page précédente
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderSourceCompanies(currentSourceCompanies);
+            }
+            }
+            
+            // Page suivante
+        function nextPage() {
+            const totalPages = Math.ceil(currentSourceCompanies.length / companiesPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderSourceCompanies(currentSourceCompanies);
+            }
+        }
+
+        // Sélectionner/désélectionner tout
+        function toggleSelectAllSource() {
+            const selectAll = document.getElementById('selectAllSource');
+            const checkboxes = document.querySelectorAll('#sourceCompaniesList input[type="checkbox"]:not([style*="display: none"])');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+                if (selectAll.checked) {
+                    selectedCompanies.add(checkbox.value);
+                } else {
+                    selectedCompanies.delete(checkbox.value);
+                }
+            });
+            
+            updateSelectedCompaniesList();
+            updateCounts();
+            updateAddButton();
+        }
+
+        // Basculer la sélection d'une entreprise
+        function toggleCompanySelection(companyId) {
+            if (selectedCompanies.has(companyId)) {
+                selectedCompanies.delete(companyId);
+            } else {
+                selectedCompanies.add(companyId);
+            }
+            
+            updateSelectedCompaniesList();
+            updateCounts();
+            updateAddButton();
+        }
+
+        // Mettre à jour la liste des entreprises sélectionnées
+        function updateSelectedCompaniesList() {
+            const container = document.getElementById('selectedCompaniesList');
+            
+            if (selectedCompanies.size === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="fas fa-list fa-2x text-muted"></i>
+                        <p class="text-muted mt-2">Aucune entreprise sélectionnée</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = Array.from(selectedCompanies).map(companyId => {
+                const company = currentSourceCompanies.find(c => c.id === companyId);
+                if (!company) return '';
+                
+                return `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div>
+                            <strong>${company.name}</strong><br>
+                            <small class="text-muted">${company.industry || 'N/A'} • ${company.city || 'N/A'}</small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeSelectedCompany('${companyId}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Supprimer une entreprise de la sélection
+        function removeSelectedCompany(companyId) {
+            selectedCompanies.delete(companyId);
+            
+            // Décocher la checkbox correspondante
+            const checkbox = document.getElementById(`company_${companyId}`);
+            if (checkbox) checkbox.checked = false;
+            
+            updateSelectedCompaniesList();
+            updateCounts();
+            updateAddButton();
+        }
+
+        // Ajouter les entreprises sélectionnées
+        function addSelectedCompanies() {
+            if (selectedCompanies.size === 0) return;
+            
+            // Ajouter aux entreprises assignées et stocker leurs détails
+            selectedCompanies.forEach(companyId => {
+                assignedCompanies.add(companyId);
+                
+                // Suivre les ajouts
+                if (!originalAssignedCompanies.has(companyId)) {
+                    addedCompanies.add(companyId);
+                }
+                // Si l'entreprise était marquée comme supprimée, la retirer de cette liste
+                removedCompanies.delete(companyId);
+                
+                // Trouver les détails de l'entreprise dans currentSourceCompanies
+                const companyDetails = currentSourceCompanies.find(c => c.id === companyId);
+                if (companyDetails) {
+                    // Ajouter aux détails des entreprises assignées
+                    if (!window.assignedCompaniesDetails) {
+                        window.assignedCompaniesDetails = [];
+                    }
+                    window.assignedCompaniesDetails.push(companyDetails);
+                }
+            });
+            
+            // Vider la sélection
+            selectedCompanies.clear();
+            
+            // Mettre à jour l'interface
+            updateSelectedCompaniesList();
+            updateAssignedCompaniesList();
+            updateCounts();
+            updateAddButton();
+            
+            // Décocher toutes les checkboxes
+            document.querySelectorAll('#sourceCompaniesList input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            document.getElementById('selectAllSource').checked = false;
+        }
+
+        // Charger les entreprises déjà affectées
+        async function loadAssignedCompanies() {
+            try {
+                const res = await fetch(`${API}/campaigns/${currentCampaignId}/companies`, { headers: getAuthHeader() });
+                const data = await res.json();
+                
+                assignedCompanies.clear();
+                originalAssignedCompanies.clear();
+                addedCompanies.clear();
+                removedCompanies.clear();
+                
+                // Stocker les détails complets des entreprises assignées
+                window.assignedCompaniesDetails = data.data || [];
+                
+                (data.data || []).forEach(company => {
+                    assignedCompanies.add(company.id);
+                    originalAssignedCompanies.add(company.id); // Garder une copie des entreprises originales
+                });
+                
+                updateAssignedCompaniesList();
+                updateCounts();
+            } catch (error) {
+                console.error('Erreur chargement entreprises assignées:', error);
+            }
+        }
+
+        // Mettre à jour la liste des entreprises assignées
+        function updateAssignedCompaniesList() {
+            const container = document.getElementById('assignedCompaniesList');
+            
+            if (assignedCompanies.size === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="fas fa-check fa-2x text-muted"></i>
+                        <p class="text-muted mt-2">Aucune entreprise affectée</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Afficher les vraies informations des entreprises assignées
+            container.innerHTML = (window.assignedCompaniesDetails || []).map(company => `
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                    <div>
+                        <strong>${company.name}</strong><br>
+                        <small class="text-muted">
+                            ${company.industry || 'N/A'} • ${company.city || 'N/A'}
+                            ${company.email ? ` • ${company.email}` : ''}
+                        </small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeAssignedCompany('${company.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Supprimer une entreprise assignée
+        function removeAssignedCompany(companyId) {
+            assignedCompanies.delete(companyId);
+            
+            // Suivre les suppressions
+            if (originalAssignedCompanies.has(companyId)) {
+                removedCompanies.add(companyId);
+            }
+            // Si l'entreprise était marquée comme ajoutée, la retirer de cette liste
+            addedCompanies.delete(companyId);
+            
+            // Supprimer aussi des détails
+            if (window.assignedCompaniesDetails) {
+                window.assignedCompaniesDetails = window.assignedCompaniesDetails.filter(c => c.id !== companyId);
+            }
+            
+            updateAssignedCompaniesList();
+            updateCounts();
+        }
+
+        // Mettre à jour les compteurs
+        function updateCounts() {
+            document.getElementById('selectedCount').textContent = selectedCompanies.size;
+            document.getElementById('assignedCount').textContent = assignedCompanies.size;
+        }
+
+        // Mettre à jour l'état du bouton d'ajout
+        function updateAddButton() {
+            const btn = document.getElementById('addCompaniesBtn');
+            btn.disabled = selectedCompanies.size === 0;
+        }
+
+                // Variables pour suivre les modifications
+        let originalAssignedCompanies = new Set();
+        let addedCompanies = new Set();
+        let removedCompanies = new Set();
+
+        // Chargement des collaborateurs (responsables)
+        async function loadCollaborateurs() {
+            try {
+                const res = await fetch(`/api/collaborateurs`, { headers: getAuthHeader() });
+                const data = await res.json();
+                const collaborateurs = data.data || [];
+                
+                const responsibleSel = document.getElementById('campResponsible');
+                if (responsibleSel) {
+                    responsibleSel.innerHTML = '<option value="">Sélectionnez un responsable</option>';
+                    
+                    collaborateurs.forEach(collab => {
+                        const opt = document.createElement('option');
+                        opt.value = collab.id;
+                        opt.textContent = `${collab.prenom} ${collab.nom}`;
+                        responsibleSel.appendChild(opt);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur chargement collaborateurs:', error);
+            }
+        }
+
+        // Mise à jour de l'affichage automatique lors de la sélection d'un modèle
+        async function updateAutoConfig() {
+            const templateSel = document.getElementById('campTemplate');
+            const selectedTemplateId = templateSel.value;
+            
+            console.log('🔍 [DEBUG] updateAutoConfig - Template ID sélectionné:', selectedTemplateId);
+            console.log('🔍 [DEBUG] updateAutoConfig - Templates disponibles:', templates);
+            
+            if (selectedTemplateId) {
+                // Trouver le modèle sélectionné dans la liste des modèles
+                const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
+                console.log('🔍 [DEBUG] updateAutoConfig - Modèle trouvé:', selectedTemplate);
+                
+                if (selectedTemplate) {
+                    const autoChannel = document.getElementById('autoChannel');
+                    const autoBU = document.getElementById('autoBU');
+                    const autoDivision = document.getElementById('autoDivision');
+                    
+                    if (autoChannel) autoChannel.textContent = selectedTemplate.channel === 'EMAIL' ? 'Email' : 'Courrier physique';
+                    if (autoBU) autoBU.textContent = selectedTemplate.business_unit_name || '-';
+                    if (autoDivision) autoDivision.textContent = selectedTemplate.division_name || '-';
+                    
+                    console.log('🔍 [DEBUG] updateAutoConfig - Valeurs mises à jour:', {
+                        channel: selectedTemplate.channel === 'EMAIL' ? 'Email' : 'Courrier physique',
+                        business_unit: selectedTemplate.business_unit_name || '-',
+                        division: selectedTemplate.division_name || '-'
+                    });
+                    
+                    // Filtrer les responsables par Business Unit
+                    await filterResponsiblesByBU(selectedTemplate.business_unit_id);
+                }
+                
+                // Mettre à jour le nom de la campagne automatiquement
+                await updateCampaignName();
+            } else {
+                const autoChannel = document.getElementById('autoChannel');
+                const autoBU = document.getElementById('autoBU');
+                const autoDivision = document.getElementById('autoDivision');
+                
+                if (autoChannel) autoChannel.textContent = '-';
+                if (autoBU) autoBU.textContent = '-';
+                if (autoDivision) autoDivision.textContent = '-';
+                
+                // Vider le nom de la campagne
+                const nameInput = document.getElementById('campName');
+                if (nameInput) nameInput.value = '';
+                
+                // Réinitialiser la liste des responsables
+                resetResponsiblesList();
+            }
+        }
+
+        // Sauvegarder les affectations
+        async function saveAssignments() {
+            try {
+                console.log('🔍 [DEBUG] Sauvegarde des affectations...');
+                console.log('🔍 [DEBUG] Entreprises originales:', originalAssignedCompanies.size);
+                console.log('🔍 [DEBUG] Entreprises ajoutées:', addedCompanies.size);
+                console.log('🔍 [DEBUG] Entreprises supprimées:', removedCompanies.size);
+                console.log('🔍 [DEBUG] Entreprises finales:', assignedCompanies.size);
+
+                // Si aucune modification, ne rien faire
+                if (addedCompanies.size === 0 && removedCompanies.size === 0) {
+                    alert('Aucune modification à sauvegarder');
+                    return;
+                }
+
+                // Préparer les données pour l'API
+                const data = {
+                    added_company_ids: Array.from(addedCompanies),
+                    removed_company_ids: Array.from(removedCompanies)
+                };
+
+                console.log('🔍 [DEBUG] Données à envoyer:', data);
+
+                const res = await fetch(`${API}/campaigns/${currentCampaignId}/companies/batch`, {
+                    method: 'PUT',
+                    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+            if (res.ok) {
+                    const result = await res.json();
+                    const message = [];
+                    if (addedCompanies.size > 0) message.push(`${addedCompanies.size} entreprise(s) ajoutée(s)`);
+                    if (removedCompanies.size > 0) message.push(`${removedCompanies.size} entreprise(s) supprimée(s)`);
+                    
+                    alert(`Modifications sauvegardées avec succès !\n${message.join('\n')}`);
+                    assignModal.hide();
+                    await loadCampaigns(); // Recharger la liste des campagnes
+                } else {
+                    const error = await res.json();
+                    alert('Erreur lors de la sauvegarde : ' + (error.error || 'Erreur inconnue'));
+                }
+            } catch (error) {
+                console.error('❌ [DEBUG] Erreur sauvegarde affectations:', error);
+                alert('Erreur lors de la sauvegarde des affectations');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Afficher la date actuelle
+            const currentDate = new Date().toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('current-date').textContent = currentDate;
+            
+            // Charger les données
+            await loadCampaigns();
+            await loadTemplates();
+            await loadCollaborateurs();
+            
+            // Ajouter l'event listener pour la date de lancement
+            const dateInput = document.getElementById('campDate');
+            if (dateInput) {
+                dateInput.addEventListener('change', async () => {
+                    await updateCampaignName();
+                });
+            }
+        });
+
+        // Fonctions utilitaires (comme dans dashboard.html)
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.main-content-area');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        function showComingSoon(feature) {
+            showAlert(`La fonctionnalité "${feature}" est en cours de développement.`, 'warning');
+        }
+
+        function executeCampaign(campaignId) {
+            window.location.href = `campaign-execution.html?id=${campaignId}`;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleDateString('fr-FR');
+        }
+
+        // Fonctions pour les notifications (compatibilité avec dashboard.html)
+        function openNotificationsModal() {
+            showComingSoon('Notifications');
+        }
+
+        function markAllAsRead() {
+            showComingSoon('Marquer comme lu');
+        }
+
+        function clearReadNotifications() {
+            showComingSoon('Supprimer notifications');
+        }
+    </script>
+    <script src="js/session-manager.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+</body>
+</html>
+
+

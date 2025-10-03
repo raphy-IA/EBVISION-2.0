@@ -1,27 +1,41 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Gestion RH</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .loading { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
-        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
-        #results { margin-top: 20px; }
-    </style>
-    <!-- Script pour la gestion utilisateur -->
+    <title>Test Rh - EBVISION 2.0</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+    
+    <!-- Script de gestion des permissions de menu -->
+    <script src="js/menu-permissions.js"></script>
+                
+    <!-- Scripts de zone utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
-    <script src="js/notifications.js"></script>
-    <script src="js/tasks.js"></script>
 </head>
 <body>
-    <h1>🧪 Test de la Gestion RH</h1>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <h1>🧪 Test de la Gestion RH</h1>
     
     <div>
         <button onclick="testAllAPIs()">Tester toutes les APIs</button>
@@ -156,5 +170,16 @@
             }, 100);
         }
     </script>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Script d'authentification déjà inclus plus haut -->
+    <script src="js/sidebar.js" defer></script>
+    <!-- SessionManager pour la gestion centralisée des sessions -->
+    <script src="js/session-manager.js"></script>
+    <script src="/js/notifications.js" defer></script>
+    <script src="js/tasks.js" defer></script>
 </body>
 </html>

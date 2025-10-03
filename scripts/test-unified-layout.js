@@ -208,7 +208,7 @@ class UnifiedLayoutTester {
     }
 
     async testIntegration() {
-        console.log('🔗 Test de l'intégration...');
+        console.log('🔗 Test de l\'intégration...');
         
         // Vérifier l'intégration avec les scripts existants
         const existingScripts = [

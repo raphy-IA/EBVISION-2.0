@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration des Notifications - EBVISION 2.0</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    <style>
+        .config-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .config-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .config-body {
+            padding: 25px;
+        }
+        
+        .notification-type {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .notification-type:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+        }
+        
+        .notification-type.active {
+            border-color: #28a745;
+            background-color: #f8fff9;
+        }
+        
+        .email-test-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .alert-history {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .alert-item {
+            border-left: 4px solid #007bff;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .alert-item.high {
+            border-left-color: #dc3545;
+        }
+        
+        .alert-item.medium {
+            border-left-color: #ffc107;
+        }
+        
+        .alert-item.low {
+            border-left-color: #28a745;
+        }
+        
+        .cron-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .cron-status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .cron-status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .form-switch {
+            padding-left: 2.5em;
+        }
+        
+        .form-check-input:checked {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        
+        /* Le conteneur principal de la page qui contient la sidebar et le contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Styles pour le contenu principal */
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">
+                    <i class="bi bi-bell-gear text-primary me-2"></i>
+                    Configuration des Notifications et Alertes
+                </h1>
+            </div>
+
+        <!-- Onglets de configuration -->
+        <ul class="nav nav-tabs mb-4" id="configTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">
+                    <i class="bi bi-gear me-2"></i>Général
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email" type="button" role="tab">
+                    <i class="bi bi-envelope me-2"></i>Configuration Email
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab">
+                    <i class="bi bi-bell me-2"></i>Types de Notifications
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="alerts-tab" data-bs-toggle="tab" data-bs-target="#alerts" type="button" role="tab">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Alertes Automatiques
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
+                    <i class="bi bi-clock-history me-2"></i>Historique
+                </button>
+            </li>
+        </ul>
+
+        <!-- Contenu des onglets -->
+        <div class="tab-content" id="configTabContent">
+            <!-- Onglet Général -->
+            <div class="tab-pane fade show active" id="general" role="tabpanel">
+                <div class="config-section">
+                    <div class="config-header">
+                        <h3><i class="bi bi-toggle-on me-2"></i>Activation Générale</h3>
+                    </div>
+                    <div class="config-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="enableNotifications" checked>
+                                    <label class="form-check-label" for="enableNotifications">
+                                        <strong>Activer toutes les notifications</strong>
+                                    </label>
+                                    <div class="form-text">Active ou désactive toutes les notifications système</div>
+                                </div>
+                                
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="enableEmailNotifications" checked>
+                                    <label class="form-check-label" for="enableEmailNotifications">
+                                        <strong>Notifications par email</strong>
+                                    </label>
+                                    <div class="form-text">Envoi automatique d'emails pour les notifications importantes</div>
+                                </div>
+                                
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="enableCronJobs" checked>
+                                    <label class="form-check-label" for="enableCronJobs">
+                                        <strong>Tâches automatiques (Cron)</strong>
+                                    </label>
+                                    <div class="form-text">Vérifications automatiques quotidiennes</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Statut des Services</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Service Email:</span>
+                                            <span class="cron-status" id="emailStatus">Actif</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Cron Jobs:</span>
+                                            <span class="cron-status" id="cronStatus">Actif</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>Base de données:</span>
+                                            <span class="cron-status" id="dbStatus">Connecté</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button class="btn btn-primary" onclick="saveGeneralSettings()">
+                                <i class="bi bi-save me-2"></i>Sauvegarder les paramètres
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="resetGeneralSettings()">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Réinitialiser
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet Configuration Email -->
+            <div class="tab-pane fade" id="email" role="tabpanel">
+                <div class="config-section">
+                    <div class="config-header">
+                        <h3><i class="bi bi-envelope-gear me-2"></i>Configuration Email</h3>
+                    </div>
+                    <div class="config-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Paramètres SMTP</h5>
+                                <div class="mb-3">
+                                    <label for="smtpHost" class="form-label">Serveur SMTP</label>
+                                    <input type="text" class="form-control" id="smtpHost" value="smtp.gmail.com">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="smtpPort" class="form-label">Port</label>
+                                    <input type="number" class="form-control" id="smtpPort" value="587">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="smtpUser" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="smtpUser" value="trs.notifications@gmail.com">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="smtpPassword" class="form-label">Mot de passe</label>
+                                    <input type="password" class="form-control" id="smtpPassword" placeholder="Mot de passe d'application">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="smtpFrom" class="form-label">Email d'expédition</label>
+                                    <input type="email" class="form-control" id="smtpFrom" value="EBVISION 2.0 Notifications <trs.notifications@gmail.com>">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5>Test de Configuration</h5>
+                                <div class="email-test-section">
+                                    <div class="mb-3">
+                                        <label for="testEmail" class="form-label">Email de test</label>
+                                        <input type="email" class="form-control" id="testEmail" placeholder="email@exemple.com">
+                                    </div>
+                                    
+                                    <button class="btn btn-success" onclick="testEmailConfiguration()">
+                                        <i class="bi bi-send me-2"></i>Tester la configuration
+                                    </button>
+                                    
+                                    <div id="emailTestResult" class="mt-3"></div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <h6>Paramètres avancés</h6>
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="enableSSL" checked>
+                                        <label class="form-check-label" for="enableSSL">Activer SSL/TLS</label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="enableDebug">
+                                        <label class="form-check-label" for="enableDebug">Mode debug</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button class="btn btn-primary" onclick="saveEmailSettings()">
+                                <i class="bi bi-save me-2"></i>Sauvegarder la configuration email
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="resetEmailSettings()">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Réinitialiser
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet Types de Notifications -->
+            <div class="tab-pane fade" id="notifications" role="tabpanel">
+                <div class="config-section">
+                    <div class="config-header">
+                        <h3><i class="bi bi-bell-slash me-2"></i>Types de Notifications</h3>
+                    </div>
+                    <div class="config-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Notifications d'Opportunités</h5>
+                                
+                                <div class="notification-type active" data-type="opportunity_stage_overdue">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Étapes en retard</h6>
+                                            <small class="text-muted">Alertes pour les étapes dépassant leur échéance</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-envelope me-1"></i>Email activé
+                                            <i class="bi bi-bell me-2 ms-2"></i>Notification activée
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="notification-type active" data-type="opportunity_won">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Opportunité gagnée</h6>
+                                            <small class="text-muted">Félicitations lors d'une opportunité gagnée</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-envelope me-1"></i>Email activé
+                                            <i class="bi bi-bell me-2 ms-2"></i>Notification activée
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="notification-type active" data-type="opportunity_lost">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Opportunité perdue</h6>
+                                            <small class="text-muted">Notifications lors d'une opportunité perdue</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-envelope me-1"></i>Email activé
+                                            <i class="bi bi-bell me-2 ms-2"></i>Notification activée
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="notification-type active" data-type="opportunity_inactive">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Opportunité inactive</h6>
+                                            <small class="text-muted">Alertes pour les opportunités sans activité</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-envelope me-1"></i>Email activé
+                                            <i class="bi bi-bell me-2 ms-2"></i>Notification activée
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5>Notifications de Feuilles de Temps</h5>
+                                
+                                <div class="notification-type active" data-type="timesheet_overdue">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Feuilles de temps en retard</h6>
+                                            <small class="text-muted">Rappels pour les feuilles de temps non soumises</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-envelope me-1"></i>Email activé
+                                            <i class="bi bi-bell me-2 ms-2"></i>Notification activée
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="notification-type active" data-type="timesheet_approved">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Feuille de temps approuvée</h6>
+                                            <small class="text-muted">Confirmation d'approbation</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-envelope me-1"></i>Email activé
+                                            <i class="bi bi-bell me-2 ms-2"></i>Notification activée
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="notification-type active" data-type="timesheet_rejected">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Feuille de temps rejetée</h6>
+                                            <small class="text-muted">Notifications de rejet avec commentaires</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-envelope me-1"></i>Email activé
+                                            <i class="bi bi-bell me-2 ms-2"></i>Notification activée
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button class="btn btn-primary" onclick="saveNotificationSettings()">
+                                <i class="bi bi-save me-2"></i>Sauvegarder les types de notifications
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="resetNotificationSettings()">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Réinitialiser
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet Alertes Automatiques -->
+            <div class="tab-pane fade" id="alerts" role="tabpanel">
+                <div class="config-section">
+                    <div class="config-header">
+                        <h3><i class="bi bi-clock me-2"></i>Alertes Automatiques (Cron Jobs)</h3>
+                    </div>
+                    <div class="config-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Vérifications Quotidiennes</h5>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">Étapes en retard</h6>
+                                                <small class="text-muted">Vérification quotidienne à 9h00</small>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">Opportunités inactives</h6>
+                                                <small class="text-muted">Vérification quotidienne à 10h00</small>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">Feuilles de temps en retard</h6>
+                                                <small class="text-muted">Vérification hebdomadaire (lundi 8h00)</small>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">Nettoyage des notifications</h6>
+                                                <small class="text-muted">Nettoyage hebdomadaire (dimanche 2h00)</small>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5>Paramètres Avancés</h5>
+                                
+                                <div class="mb-3">
+                                    <label for="overdueThreshold" class="form-label">Seuil d'alerte étapes en retard (jours)</label>
+                                    <input type="number" class="form-control" id="overdueThreshold" value="1" min="0">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="inactiveThreshold" class="form-label">Seuil d'inactivité opportunités (jours)</label>
+                                    <input type="number" class="form-control" id="inactiveThreshold" value="7" min="1">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="notificationRetention" class="form-label">Rétention des notifications (jours)</label>
+                                    <input type="number" class="form-control" id="notificationRetention" value="30" min="1">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="timezone" class="form-label">Fuseau horaire</label>
+                                    <select class="form-select" id="timezone">
+                                        <option value="Europe/Paris" selected>Europe/Paris (UTC+1/+2)</option>
+                                        <option value="UTC">UTC</option>
+                                        <option value="America/New_York">America/New_York (UTC-5/-4)</option>
+                                        <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Note:</strong> Les tâches automatiques s'exécutent selon le fuseau horaire configuré.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button class="btn btn-primary" onclick="saveAlertSettings()">
+                                <i class="bi bi-save me-2"></i>Sauvegarder les alertes automatiques
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="resetAlertSettings()">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Réinitialiser
+                            </button>
+                            <button class="btn btn-warning ms-2" onclick="testCronJobs()">
+                                <i class="bi bi-play-circle me-2"></i>Tester les tâches
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet Historique -->
+            <div class="tab-pane fade" id="history" role="tabpanel">
+                <div class="config-section">
+                    <div class="config-header">
+                        <h3><i class="bi bi-clock-history me-2"></i>Historique des Notifications et Alertes</h3>
+                    </div>
+                    <div class="config-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control" id="historySearch" placeholder="Rechercher dans l'historique...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="historyFilter">
+                                    <option value="">Tous les types</option>
+                                    <option value="STAGE_OVERDUE">Étapes en retard</option>
+                                    <option value="OPPORTUNITY_WON">Opportunités gagnées</option>
+                                    <option value="OPPORTUNITY_LOST">Opportunités perdues</option>
+                                    <option value="TIMESHEET_OVERDUE">Feuilles de temps en retard</option>
+                                    <option value="CAMPAIGN_CREATED">Campagne créée</option>
+                                    <option value="CAMPAIGN_SUBMITTED">Campagne soumise</option>
+                                    <option value="CAMPAIGN_VALIDATION_DECISION">Validation campagne</option>
+                                    <option value="CAMPAIGN_STARTED">Campagne démarrée</option>
+                                    <option value="CAMPAIGN_PROGRESS">Progression campagne</option>
+                                    <option value="CAMPAIGN_CONVERSION">Conversion campagne</option>
+                                    <option value="CAMPAIGN_OVERDUE">Campagne en retard</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3" id="userFilterContainer" style="display: none;">
+                                <select class="form-select" id="userFilter">
+                                    <option value="">Tous les utilisateurs</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-primary" onclick="refreshHistory()">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="alert-history" id="alertHistory">
+                            <!-- L'historique sera chargé dynamiquement -->
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button class="btn btn-outline-danger" onclick="clearHistory()">
+                                <i class="bi bi-trash me-2"></i>Vider l'historique
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="exportHistory()">
+                                <i class="bi bi-download me-2"></i>Exporter l'historique
+                            </button>
+                            <div id="adminControls" style="display: none;" class="mt-2">
+                                <hr>
+                                <h6 class="text-danger"><i class="bi bi-shield-exclamation me-2"></i>Actions d'administration</h6>
+                                <button class="btn btn-danger btn-sm" onclick="clearAllHistory()">
+                                    <i class="bi bi-trash me-2"></i>Vider TOUT l'historique (tous utilisateurs)
+                                </button>
+                                <button class="btn btn-warning btn-sm ms-2" onclick="clearUserHistory()">
+                                    <i class="bi bi-person-x me-2"></i>Vider l'historique de l'utilisateur sélectionné
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts de l'application -->
+    <script src="js/auth.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/user-header.js"></script>
+    <script src="js/notification-settings.js"></script>
+    </body>
+</html>

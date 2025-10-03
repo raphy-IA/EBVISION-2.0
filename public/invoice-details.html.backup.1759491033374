@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails Facture - EBVISION 2.0</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    
+    <style>
+        .invoice-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-brouillon { background-color: #6c757d; color: white; }
+        .status-emise { background-color: #17a2b8; color: white; }
+        .status-payee { background-color: #28a745; color: white; }
+        .status-annulee { background-color: #dc3545; color: white; }
+        
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        /* Garantir l'agencement côte à côte sidebar + contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar-container {
+            width: 300px;
+            flex-shrink: 0;
+        }
+    </style>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    
+    
+    
+    <!-- Script pour la gestion utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/menu-permissions.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+</head>
+<body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <!-- Sidebar unifiée -->
+        <div class="sidebar-container"></div>
+
+        <!-- Zone de contenu principale -->
+        <div class="main-content-area">
+            <div class="container-fluid">
+            <!-- Contenu existant -->
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 id="invoiceTitle">Détails de la facture</h2>
+                            <p class="text-muted" id="invoiceSubtitle">Chargement...</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-secondary me-2" onclick="goBack()">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
+                            </button>
+                            <button class="btn btn-primary" onclick="printInvoice()">
+                                <i class="fas fa-print me-2"></i>Imprimer
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Informations de la facture -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Informations générales</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Numéro:</strong> <span id="invoiceNumber">...</span></p>
+                                    <p><strong>Statut:</strong> <span id="invoiceStatus">...</span></p>
+                                    <p><strong>Date d'émission:</strong> <span id="invoiceEmissionDate">...</span></p>
+                                    <p><strong>Date d'échéance:</strong> <span id="invoiceDueDate">...</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Client:</strong> <span id="invoiceClient">...</span></p>
+                                    <p><strong>Mission:</strong> <span id="invoiceMission">...</span></p>
+                                     <p><strong>Unité d'affaires:</strong> <span id="invoiceBU">...</span></p>
+                                    <p><strong>TVA:</strong> <span id="invoiceTVARate">...</span></p>
+                                    <p><strong>Créé par:</strong> <span id="invoiceCreatedBy">...</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Montants -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h6>Montant HT</h6>
+                                    <h4 id="invoiceHT">...</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h6>Montant TVA</h6>
+                                    <h4 id="invoiceTVAAmount">...</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h6>Montant TTC</h6>
+                                    <h4 id="invoiceTTC">...</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h6>Montant payé</h6>
+                                    <h4 id="invoicePaid">...</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Onglets -->
+                    <ul class="nav nav-tabs" id="invoiceTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="items-tab" data-bs-toggle="tab" data-bs-target="#items" type="button" role="tab">
+                                <i class="fas fa-list me-2"></i>Lignes de facture
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab">
+                                <i class="fas fa-credit-card me-2"></i>Paiements
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="invoiceTabContent">
+                        <!-- Onglet Lignes de facture -->
+                        <div class="tab-pane fade show active" id="items" role="tabpanel">
+                            <div class="card mt-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-list"></i> Lignes de facture
+                                    </h5>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="addInvoiceItem()">
+                                            <i class="fas fa-plus"></i> Ajouter une ligne
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="regenerateItems()">
+                                            <i class="fas fa-sync"></i> Régénérer depuis la mission
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="invoiceItems">Chargement des lignes...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Onglet Paiements -->
+                        <div class="tab-pane fade" id="payments" role="tabpanel">
+                            <div class="card mt-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-credit-card"></i> Paiements
+                                    </h5>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="addPayment()">
+                                            <i class="fas fa-plus"></i> Ajouter un paiement
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="invoicePayments">Chargement des paiements...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour ajouter/modifier une ligne -->
+    <div class="modal fade" id="itemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="itemModalTitle">Ajouter une ligne</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="itemForm">
+                        <input type="hidden" id="itemId">
+                        <div class="mb-3">
+                            <label for="itemDescription" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="itemDescription" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="itemQuantity" class="form-label">Quantité</label>
+                                    <input type="number" class="form-control" id="itemQuantity" value="1" min="0" step="0.01" required>
+    </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="itemUnit" class="form-label">Unité</label>
+                                    <select class="form-control" id="itemUnit">
+                                        <option value="heure">Heure</option>
+                                        <option value="jour">Jour</option>
+                                        <option value="forfait">Forfait</option>
+                                        <option value="piece">Pièce</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="itemUnitPrice" class="form-label">Prix unitaire</label>
+                                    <input type="number" class="form-control" id="itemUnitPrice" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="itemTaxRate" class="form-label">Taux TVA (%)</label>
+                                    <input type="number" class="form-control" id="itemTaxRate" value="19.25" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveInvoiceItem()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour ajouter/modifier un paiement -->
+    <div class="modal fade" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentModalTitle">Ajouter un paiement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="paymentForm">
+                        <input type="hidden" id="paymentId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="paymentDate" class="form-label">Date de paiement</label>
+                                    <input type="date" class="form-control" id="paymentDate" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="paymentAmount" class="form-label">Montant</label>
+                                    <input type="number" class="form-control" id="paymentAmount" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="paymentMode" class="form-label">Mode de paiement</label>
+                                    <select class="form-control" id="paymentMode" required>
+                                        <option value="">Sélectionner...</option>
+                                        <option value="VIREMENT">Virement</option>
+                                        <option value="CHEQUE">Chèque</option>
+                                        <option value="ESPECES">Espèces</option>
+                                        <option value="CARTE">Carte bancaire</option>
+                                        <option value="AUTRE">Autre</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="paymentStatus" class="form-label">Statut</label>
+                                    <select class="form-control" id="paymentStatus" required>
+                                        <option value="EN_ATTENTE">En attente</option>
+                                        <option value="CONFIRME">Confirmé</option>
+                                        <option value="ANNULE">Annulé</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="paymentReference" class="form-label">Référence</label>
+                            <input type="text" class="form-control" id="paymentReference" placeholder="Numéro de chèque, référence virement...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="paymentNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="paymentNotes" rows="3" placeholder="Informations complémentaires..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="savePayment()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <script>
+        let currentInvoice = null;
+        let invoiceId = null;
+
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
+        // Fonction utilitaire pour formater les montants
+        function formatCurrency(amount, currency = 'XAF') {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: currency
+            }).format(amount || 0);
+        }
+
+        // Fonction utilitaire pour formater les dates
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleDateString('fr-FR');
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            invoiceId = urlParams.get('id');
+            
+            if (invoiceId) {
+                loadInvoiceDetails(invoiceId);
+            } else {
+                showError('ID de facture manquant');
+            }
+        });
+
+        // Bouton retour robuste
+        function goBack() {
+            try {
+                if (document.referrer && document.referrer !== '' && document.referrer.indexOf(window.location.hostname) !== -1) {
+                    window.history.back();
+                } else {
+                    window.location.href = '/invoices.html';
+                }
+            } catch (e) {
+                window.location.href = '/invoices.html';
+            }
+        }
+
+        // Chargement des détails de la facture
+        async function loadInvoiceDetails(id) {
+            try {
+                const response = await authenticatedFetch(`/api/invoices/${id}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    currentInvoice = data.data;
+                    displayInvoiceDetails();
+                } else {
+                    showError('Erreur lors du chargement de la facture');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Erreur de connexion');
+            }
+        }
+
+        // Affichage des détails de la facture
+        function displayInvoiceDetails() {
+            if (!currentInvoice) return;
+
+            // Titre et sous-titre
+            document.getElementById('invoiceTitle').textContent = `Facture ${currentInvoice.numero_facture}`;
+            document.getElementById('invoiceSubtitle').textContent = `Créée le ${formatDate(currentInvoice.created_at)}`;
+
+            // Informations générales
+            document.getElementById('invoiceNumber').textContent = currentInvoice.numero_facture;
+            document.getElementById('invoiceStatus').innerHTML = `<span class="badge status-${currentInvoice.statut.toLowerCase()}">${currentInvoice.statut}</span>`;
+            document.getElementById('invoiceEmissionDate').textContent = formatDate(currentInvoice.date_emission);
+            document.getElementById('invoiceDueDate').textContent = formatDate(currentInvoice.date_echeance);
+            document.getElementById('invoiceClient').textContent = currentInvoice.client_nom || 'N/A';
+            document.getElementById('invoiceMission').textContent = currentInvoice.mission_nom || 'N/A';
+            document.getElementById('invoiceBU').textContent = currentInvoice.business_unit_nom || currentInvoice.business_unit_code || 'N/A';
+            document.getElementById('invoiceTVARate').textContent = `${currentInvoice.taux_tva}%`;
+            document.getElementById('invoiceCreatedBy').textContent = currentInvoice.created_by_prenom ? 
+                `${currentInvoice.created_by_prenom} ${currentInvoice.created_by_nom}` : 'N/A';
+
+            // Montants
+            document.getElementById('invoiceHT').textContent = formatCurrency(currentInvoice.montant_ht);
+            document.getElementById('invoiceTVAAmount').textContent = formatCurrency(currentInvoice.montant_tva);
+            document.getElementById('invoiceTTC').textContent = formatCurrency(currentInvoice.montant_ttc);
+            document.getElementById('invoicePaid').textContent = formatCurrency(currentInvoice.montant_paye);
+
+            // Charger les lignes et paiements
+            displayInvoiceItems();
+            displayInvoicePayments();
+        }
+
+        // Affichage des lignes de facture
+        function displayInvoiceItems() {
+            if (!currentInvoice.items || currentInvoice.items.length === 0) {
+                document.getElementById('invoiceItems').innerHTML = `
+                    <div class="text-muted">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Aucune ligne de facture trouvée
+                    </div>
+                `;
+                return;
+            }
+
+            const itemsHtml = `
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Quantité</th>
+                                <th>Prix unitaire</th>
+                                <th>Montant HT</th>
+                                <th>TVA</th>
+                                <th>Montant TTC</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${currentInvoice.items.map(item => `
+                                <tr>
+                                    <td>${item.description}</td>
+                                    <td>${item.quantite} ${item.unite}</td>
+                                    <td>${formatCurrency(item.prix_unitaire)}</td>
+                                    <td>${formatCurrency(item.montant_ht)}</td>
+                                    <td>${formatCurrency(item.montant_tva)}</td>
+                                    <td>${formatCurrency(item.montant_ttc)}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editInvoiceItem('${item.id}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoiceItem('${item.id}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('invoiceItems').innerHTML = itemsHtml;
+        }
+
+        // Affichage des paiements
+        function displayInvoicePayments() {
+            if (!currentInvoice.payments || currentInvoice.payments.length === 0) {
+                document.getElementById('invoicePayments').innerHTML = `
+                    <div class="text-muted">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Aucun paiement enregistré
+                    </div>
+                `;
+                return;
+            }
+
+            const paymentsHtml = `
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Montant</th>
+                                <th>Mode de paiement</th>
+                                <th>Statut</th>
+                                <th>Référence</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${currentInvoice.payments.map(payment => `
+                                <tr>
+                                    <td>${formatDate(payment.date_paiement)}</td>
+                                    <td>${formatCurrency(payment.montant)}</td>
+                                    <td>${payment.mode_paiement}</td>
+                                    <td><span class="badge bg-${getPaymentStatusColor(payment.statut)}">${payment.statut}</span></td>
+                                    <td>${payment.reference || 'N/A'}</td>
+                                    <td>${payment.notes || ''}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editPayment('${payment.id}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deletePayment('${payment.id}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('invoicePayments').innerHTML = paymentsHtml;
+        }
+
+        // Fonction pour obtenir la couleur du statut de paiement
+        function getPaymentStatusColor(status) {
+            switch (status) {
+                case 'CONFIRME': return 'success';
+                case 'EN_ATTENTE': return 'warning';
+                case 'ANNULE': return 'danger';
+                default: return 'secondary';
+            }
+        }
+
+        // Fonction pour imprimer la facture
+        function printInvoice() {
+            window.print();
+        }
+
+        // Fonction pour afficher les erreurs
+        function showError(message) {
+            alert(message);
+        }
+
+        // Fonction pour ajouter une ligne de facture
+        function addInvoiceItem() {
+            document.getElementById('itemModalTitle').textContent = 'Ajouter une ligne';
+            document.getElementById('itemId').value = '';
+            document.getElementById('itemDescription').value = '';
+            document.getElementById('itemQuantity').value = '1';
+            document.getElementById('itemUnit').value = 'forfait';
+            document.getElementById('itemUnitPrice').value = '';
+            document.getElementById('itemTaxRate').value = '19.25';
+            
+            const modal = new bootstrap.Modal(document.getElementById('itemModal'));
+            modal.show();
+        }
+
+        // Fonction pour éditer une ligne de facture
+        function editInvoiceItem(itemId) {
+            const item = currentInvoice.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            document.getElementById('itemModalTitle').textContent = 'Modifier une ligne';
+            document.getElementById('itemId').value = item.id;
+            document.getElementById('itemDescription').value = item.description;
+            document.getElementById('itemQuantity').value = item.quantite;
+            document.getElementById('itemUnit').value = item.unite;
+            document.getElementById('itemUnitPrice').value = item.prix_unitaire;
+            document.getElementById('itemTaxRate').value = item.taux_tva;
+            
+            const modal = new bootstrap.Modal(document.getElementById('itemModal'));
+            modal.show();
+        }
+
+        // Fonction pour sauvegarder une ligne de facture
+        async function saveInvoiceItem() {
+            const itemId = document.getElementById('itemId').value;
+            const itemData = {
+                description: document.getElementById('itemDescription').value,
+                quantite: parseFloat(document.getElementById('itemQuantity').value),
+                unite: document.getElementById('itemUnit').value,
+                prix_unitaire: parseFloat(document.getElementById('itemUnitPrice').value),
+                taux_tva: parseFloat(document.getElementById('itemTaxRate').value)
+            };
+
+            try {
+                let response;
+                if (itemId) {
+                    // Modification
+                    response = await authenticatedFetch(`/api/invoices/${invoiceId}/items/${itemId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(itemData)
+                    });
+                } else {
+                    // Ajout
+                    response = await authenticatedFetch(`/api/invoices/${invoiceId}/items`, {
+                        method: 'POST',
+                        body: JSON.stringify(itemData)
+                    });
+                }
+
+                if (response.ok) {
+                    // Fermer le modal et recharger les données
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('itemModal'));
+                    modal.hide();
+                    await loadInvoiceDetails(invoiceId);
+                } else {
+                    const errorData = await response.json();
+                    showError(`Erreur: ${errorData.error}`);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Erreur de connexion');
+            }
+        }
+
+        // Fonction pour supprimer une ligne de facture
+        async function deleteInvoiceItem(itemId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette ligne ?')) {
+                return;
+            }
+
+            try {
+                const response = await authenticatedFetch(`/api/invoices/${invoiceId}/items/${itemId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    await loadInvoiceDetails(invoiceId);
+                } else {
+                    const errorData = await response.json();
+                    showError(`Erreur: ${errorData.error}`);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Erreur de connexion');
+            }
+        }
+
+        // Fonction pour régénérer les lignes depuis la mission
+        async function regenerateItems() {
+            if (!confirm('Cela va remplacer toutes les lignes actuelles. Continuer ?')) {
+                return;
+            }
+
+            try {
+                const response = await authenticatedFetch(`/api/invoices/${invoiceId}/generate-items`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    await loadInvoiceDetails(invoiceId);
+                    alert('Lignes régénérées avec succès !');
+                } else {
+                    const errorData = await response.json();
+                    showError(`Erreur: ${errorData.error}`);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Erreur de connexion');
+            }
+        }
+
+        // Fonction pour ajouter un paiement
+        function addPayment() {
+            document.getElementById('paymentModalTitle').textContent = 'Ajouter un paiement';
+            document.getElementById('paymentId').value = '';
+            document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('paymentAmount').value = '';
+            document.getElementById('paymentMode').value = '';
+            document.getElementById('paymentStatus').value = 'EN_ATTENTE';
+            document.getElementById('paymentReference').value = '';
+            document.getElementById('paymentNotes').value = '';
+            
+            const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+            modal.show();
+        }
+
+        // Fonction pour éditer un paiement
+        function editPayment(paymentId) {
+            const payment = currentInvoice.payments.find(p => p.id === paymentId);
+            if (!payment) return;
+
+            document.getElementById('paymentModalTitle').textContent = 'Modifier un paiement';
+            document.getElementById('paymentId').value = payment.id;
+            document.getElementById('paymentDate').value = payment.date_paiement.split('T')[0];
+            document.getElementById('paymentAmount').value = payment.montant;
+            document.getElementById('paymentMode').value = payment.mode_paiement;
+            document.getElementById('paymentStatus').value = payment.statut;
+            document.getElementById('paymentReference').value = payment.reference || '';
+            document.getElementById('paymentNotes').value = payment.notes || '';
+            
+            const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+            modal.show();
+        }
+
+        // Fonction pour sauvegarder un paiement
+        async function savePayment() {
+            const paymentId = document.getElementById('paymentId').value;
+            const paymentData = {
+                date_paiement: document.getElementById('paymentDate').value,
+                montant: parseFloat(document.getElementById('paymentAmount').value),
+                mode_paiement: document.getElementById('paymentMode').value,
+                statut: document.getElementById('paymentStatus').value,
+                reference: document.getElementById('paymentReference').value,
+                notes: document.getElementById('paymentNotes').value
+            };
+
+            try {
+                let response;
+                if (paymentId) {
+                    // Modification
+                    response = await authenticatedFetch(`/api/invoices/${invoiceId}/payments/${paymentId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(paymentData)
+                    });
+                } else {
+                    // Ajout
+                    response = await authenticatedFetch(`/api/invoices/${invoiceId}/payments`, {
+                        method: 'POST',
+                        body: JSON.stringify(paymentData)
+                    });
+                }
+
+                if (response.ok) {
+                    // Fermer le modal et recharger les données
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+                    modal.hide();
+                    await loadInvoiceDetails(invoiceId);
+                } else {
+                    const errorData = await response.json();
+                    showError(`Erreur: ${errorData.error}`);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Erreur de connexion');
+            }
+        }
+
+        // Fonction pour supprimer un paiement
+        async function deletePayment(paymentId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce paiement ?')) {
+                return;
+            }
+
+            try {
+                const response = await authenticatedFetch(`/api/invoices/${invoiceId}/payments/${paymentId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    await loadInvoiceDetails(invoiceId);
+                } else {
+                    const errorData = await response.json();
+                    showError(`Erreur: ${errorData.error}`);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Erreur de connexion');
+            }
+        }
+    </script>
+
+    <!-- SessionManager pour la gestion centralisée des sessions -->
+    <script src="js/session-manager.js"></script>
+</body>
+</html> 

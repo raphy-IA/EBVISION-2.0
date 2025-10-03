@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EBVISION 2.0 - Gestion des Pays</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CSS de la sidebar moderne -->
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden; /* Empêche le défilement horizontal */
+        }
+        
+        /* Le conteneur principal de la page qui contient la sidebar et le contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Styles pour le contenu principal */
+        .main-content-area {
+            flex-grow: 1; /* Prend l'espace restant */
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .stat-card.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-actif { background-color: #e8f5e8; color: #388e3c; }
+        .status-inactif { background-color: #ffebee; color: #d32f2f; }
+        
+        .flag-icon {
+            width: 20px;
+            height: 15px;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+        
+        .search-box {
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    
+    
+    
+    <!-- Script pour la gestion utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/menu-permissions.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+</head>
+<body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div id="pays-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-globe me-2"></i>Gestion des Pays</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPaysModal">
+                        <i class="fas fa-plus me-2"></i>Nouveau Pays
+                    </button>
+                </div>
+
+                <!-- Filtres -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="statusFilter" class="form-label">Statut</label>
+                                <select class="form-select" id="statusFilter">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="true">Actif</option>
+                                    <option value="false">Inactif</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="deviseFilter" class="form-label">Devise</label>
+                                <select class="form-select" id="deviseFilter">
+                                    <option value="">Toutes les devises</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="searchInput" class="form-label">Recherche</label>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Rechercher un pays...">
+                            </div>
+                            <div class="col-md-3 mb-3 d-flex align-items-end">
+                                <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                                    <i class="fas fa-refresh me-2"></i>Réinitialiser
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tableau des pays -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list me-2"></i>Liste des Pays
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Drapeau</th>
+                                        <th>Nom</th>
+                                        <th>Code Pays</th>
+                                        <th>Code Appel</th>
+                                        <th>Devise</th>
+                                        <th>Langue</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paysTableBody">
+                                    <tr>
+                                        <td colspan="8" class="text-center">
+                                            <div class="loading">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Chargement...</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour ajouter/modifier un pays -->
+    <div class="modal fade" id="addPaysModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paysModalTitle">
+                        <i class="fas fa-plus me-2"></i>Nouveau Pays
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="paysForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="paysNom" class="form-label">Nom du Pays *</label>
+                                <input type="text" class="form-control" id="paysNom" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="paysCode" class="form-label">Code Pays *</label>
+                                <input type="text" class="form-control" id="paysCode" maxlength="3" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="paysCodeAppel" class="form-label">Code d'Appel</label>
+                                <input type="text" class="form-control" id="paysCodeAppel" maxlength="10">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="paysDevise" class="form-label">Devise</label>
+                                <input type="text" class="form-control" id="paysDevise" maxlength="10">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="paysLangue" class="form-label">Langue Principale</label>
+                                <input type="text" class="form-control" id="paysLangue" maxlength="50">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="paysFuseau" class="form-label">Fuseau Horaire</label>
+                                <input type="text" class="form-control" id="paysFuseau" maxlength="50">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="paysCapitale" class="form-label">Capitale</label>
+                                <input type="text" class="form-control" id="paysCapitale" maxlength="100">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="paysPopulation" class="form-label">Population</label>
+                                <input type="number" class="form-control" id="paysPopulation" min="0">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="paysSuperficie" class="form-label">Superficie (km²)</label>
+                                <input type="number" class="form-control" id="paysSuperficie" min="0" step="0.01">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="paysPIB" class="form-label">PIB (USD)</label>
+                                <input type="number" class="form-control" id="paysPIB" min="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="paysDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="paysDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="paysActif" checked>
+                                <label class="form-check-label" for="paysActif">
+                                    Pays actif
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="savePays()">
+                        <i class="fas fa-save me-2"></i>Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <script>
+        // Variables globales
+        let pays = [];
+        let currentPaysId = null;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPays();
+            setupEventListeners();
+        });
+
+        // Configuration des événements
+        function setupEventListeners() {
+            document.getElementById('statusFilter').addEventListener('change', filterPays);
+            document.getElementById('deviseFilter').addEventListener('change', filterPays);
+            document.getElementById('searchInput').addEventListener('input', filterPays);
+        }
+
+        // Chargement des pays
+        async function loadPays() {
+            try {
+                const response = await fetch('/api/pays');
+                if (response.ok) {
+                    const responseData = await response.json();
+                    if (responseData.success) {
+                        pays = responseData.data.pays;
+                        displayPays(pays);
+                        updateDeviseFilter();
+                    } else {
+                        console.error('Erreur API:', responseData.message);
+                    }
+                } else {
+                    console.error('Erreur lors du chargement des pays');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Affichage des pays
+        function displayPays(paysToShow) {
+            const tbody = document.getElementById('paysTableBody');
+            
+            if (paysToShow.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-3"></i>
+                            <p>Aucun pays trouvé</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = paysToShow.map(pays => {
+                return `
+                    <tr>
+                        <td>
+                            <span class="flag-icon">🏳️</span>
+                        </td>
+                        <td>${pays.nom || 'N/A'}</td>
+                        <td><strong>${pays.code_pays || 'N/A'}</strong></td>
+                        <td>${pays.code_appel || 'N/A'}</td>
+                        <td>${pays.devise || 'N/A'}</td>
+                        <td>${pays.langue_principale || 'N/A'}</td>
+                        <td><span class="status-badge status-${pays.actif ? 'actif' : 'inactif'}">${pays.actif ? 'Actif' : 'Inactif'}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editPays('${pays.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deletePays('${pays.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Filtrage des pays
+        function filterPays() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const deviseFilter = document.getElementById('deviseFilter').value;
+            const searchFilter = document.getElementById('searchInput').value.toLowerCase();
+
+            let filteredPays = pays.filter(pays => {
+                const statusMatch = !statusFilter || pays.actif.toString() === statusFilter;
+                const deviseMatch = !deviseFilter || pays.devise === deviseFilter;
+                const searchMatch = !searchFilter || 
+                    (pays.nom && pays.nom.toLowerCase().includes(searchFilter)) ||
+                    (pays.code_pays && pays.code_pays.toLowerCase().includes(searchFilter));
+
+                return statusMatch && deviseMatch && searchMatch;
+            });
+
+            displayPays(filteredPays);
+        }
+
+        // Mise à jour du filtre devise
+        function updateDeviseFilter() {
+            const devises = [...new Set(pays.map(p => p.devise).filter(d => d))];
+            const deviseFilter = document.getElementById('deviseFilter');
+            
+            deviseFilter.innerHTML = '<option value="">Toutes les devises</option>';
+            devises.forEach(devise => {
+                deviseFilter.innerHTML += `<option value="${devise}">${devise}</option>`;
+            });
+        }
+
+        // Réinitialisation des filtres
+        function resetFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('deviseFilter').value = '';
+            document.getElementById('searchInput').value = '';
+            displayPays(pays);
+        }
+
+        // Sauvegarde d'un pays
+        async function savePays() {
+            const formData = {
+                nom: document.getElementById('paysNom').value,
+                code_pays: document.getElementById('paysCode').value,
+                code_appel: document.getElementById('paysCodeAppel').value,
+                devise: document.getElementById('paysDevise').value,
+                langue_principale: document.getElementById('paysLangue').value,
+                fuseau_horaire: document.getElementById('paysFuseau').value,
+                capitale: document.getElementById('paysCapitale').value,
+                population: document.getElementById('paysPopulation').value || null,
+                superficie: document.getElementById('paysSuperficie').value || null,
+                pib: document.getElementById('paysPIB').value || null,
+                description: document.getElementById('paysDescription').value,
+                actif: document.getElementById('paysActif').checked
+            };
+
+            try {
+                const url = currentPaysId ? `/api/pays/${currentPaysId}` : '/api/pays';
+                const method = currentPaysId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addPaysModal')).hide();
+                    loadPays();
+                    resetPaysForm();
+                } else {
+                    console.error('Erreur lors de la sauvegarde');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Édition d'un pays
+        function editPays(paysId) {
+            const pays = pays.find(p => p.id === paysId);
+            if (pays) {
+                currentPaysId = paysId;
+                document.getElementById('paysModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Modifier le Pays';
+                
+                document.getElementById('paysNom').value = pays.nom || '';
+                document.getElementById('paysCode').value = pays.code_pays || '';
+                document.getElementById('paysCodeAppel').value = pays.code_appel || '';
+                document.getElementById('paysDevise').value = pays.devise || '';
+                document.getElementById('paysLangue').value = pays.langue_principale || '';
+                document.getElementById('paysFuseau').value = pays.fuseau_horaire || '';
+                document.getElementById('paysCapitale').value = pays.capitale || '';
+                document.getElementById('paysPopulation').value = pays.population || '';
+                document.getElementById('paysSuperficie').value = pays.superficie || '';
+                document.getElementById('paysPIB').value = pays.pib || '';
+                document.getElementById('paysDescription').value = pays.description || '';
+                document.getElementById('paysActif').checked = pays.actif;
+
+                new bootstrap.Modal(document.getElementById('addPaysModal')).show();
+            }
+        }
+
+        // Suppression d'un pays
+        async function deletePays(paysId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce pays ?')) {
+                try {
+                    const response = await fetch(`/api/pays/${paysId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        loadPays();
+                    } else {
+                        console.error('Erreur lors de la suppression');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                }
+            }
+        }
+
+        // Réinitialisation du formulaire
+        function resetPaysForm() {
+            currentPaysId = null;
+            document.getElementById('paysModalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>Nouveau Pays';
+            document.getElementById('paysForm').reset();
+        }
+
+        // Gestion du modal
+        document.getElementById('addPaysModal').addEventListener('hidden.bs.modal', function () {
+            resetPaysForm();
+        });
+    </script>
+
+    <!-- SessionManager pour la gestion centralisée des sessions -->
+    <script src="js/session-manager.js"></script>
+    </body>
+</html>

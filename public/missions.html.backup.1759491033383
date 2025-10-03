@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EBVISION 2.0 - Gestion des Missions</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden; /* Empêche le défilement horizontal */
+        }
+        
+        /* Le conteneur principal de la page qui contient la sidebar et le contenu */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Styles pour le contenu principal */
+        .main-content-area {
+            flex-grow: 1; /* Prend l'espace restant */
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .stat-card.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-saisie { background-color: #e3f2fd; color: #1976d2; }
+        .status-soumise { background-color: #fff3e0; color: #f57c00; }
+        .status-validee { background-color: #e8f5e8; color: #388e3c; }
+        .status-rejetee { background-color: #ffebee; color: #d32f2f; }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Ajustements pour les petits écrans */
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column; /* Empile la sidebar et le contenu */
+            }
+            
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    
+        /* Styles pour la sidebar unifiée */
+        .main-content-wrapper {
+            margin-left: 300px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            padding: 0;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content-wrapper {
+                margin-left: 0;
+            }
+
+            .sidebar-container.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+
+        <script src="js/global-auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+    <!-- Script pour la gestion utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    
+    
+    
+</head>
+<body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div id="missions-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-tasks me-2"></i>Gestion des Missions</h2>
+                    <div>
+                        <a href="create-mission-step1.html" class="btn btn-success me-2">
+                            <i class="fas fa-trophy me-2"></i>Créer Mission depuis Opportunité
+                        </a>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMissionModal">
+                            <i class="fas fa-plus me-2"></i>Nouvelle Mission
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtres -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="statusFilter" class="form-label">Statut</label>
+                                <select class="form-select" id="statusFilter">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="COMPLETED">Terminée</option>
+                                    <option value="PENDING">En attente</option>
+                                    <option value="CANCELLED">Annulée</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="clientFilter" class="form-label">Client</label>
+                                <select class="form-select" id="clientFilter">
+                                    <option value="">Tous les clients</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="buFilter" class="form-label">Unité d'affaires</label>
+                                <select class="form-select" id="buFilter">
+                                    <option value="">Toutes les unités</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="divisionFilter" class="form-label">Division</label>
+                                <select class="form-select" id="divisionFilter">
+                                    <option value="">Toutes les divisions</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="searchInput" class="form-label">Recherche</label>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Rechercher une mission...">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="codeFilter" class="form-label">Code</label>
+                                <input type="text" class="form-control" id="codeFilter" placeholder="Code mission (ex: MIS-001)">
+                            </div>
+                            <div class="col-md-3 mb-3 d-flex align-items-end">
+                                <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                                    <i class="fas fa-refresh me-2"></i>Réinitialiser
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tableau des missions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list me-2"></i>Liste des Missions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Nom</th>
+                                        <th>Client</th>
+                                        <th>Date début</th>
+                                        <th>Date fin</th>
+                                        <th>Statut</th>
+                                        <th>Budget</th>
+                                        <th>Date création</th>
+                                        <th>Business Unit</th>
+                                        <th>Division</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="missionsTableBody">
+                                    <tr>
+                                        <td colspan="8" class="text-center">
+                                            <div id="loadingSpinner" class="loading">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Chargement...</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+    <!-- Modal Ajout Mission -->
+    <div class="modal fade" id="addMissionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="missionModalTitle">
+                        <i class="fas fa-plus me-2"></i>Nouvelle Mission
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="missionForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="missionCode" class="form-label">Code Mission *</label>
+                                <input type="text" class="form-control" id="missionCode" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="missionName" class="form-label">Nom Mission *</label>
+                                <input type="text" class="form-control" id="missionName" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="missionClient" class="form-label">Client *</label>
+                                <select class="form-select" id="missionClient" required>
+                                    <option value="">Sélectionner un client</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="missionStatus" class="form-label">Statut</label>
+                                <select class="form-select" id="missionStatus">
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="PENDING">En attente</option>
+                                    <option value="COMPLETED">Terminée</option>
+                                    <option value="CANCELLED">Annulée</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="missionStartDate" class="form-label">Date de début</label>
+                                <input type="date" class="form-control" id="missionStartDate">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="missionEndDate" class="form-label">Date de fin</label>
+                                <input type="date" class="form-control" id="missionEndDate">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="missionDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="missionDescription" rows="3"></textarea>
+                        </div>
+                        <!-- Champs financiers uniquement pour la création; masqués à l'édition basique -->
+                        <div class="row" id="createOnlyFinancialRow">
+                            <div class="col-md-6 mb-3">
+                                <label for="missionBudget" class="form-label">Budget (€)</label>
+                                <input type="number" class="form-control" id="missionBudget" min="0" step="0.01">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="missionRate" class="form-label">Taux horaire (€/h)</label>
+                                <input type="number" class="form-control" id="missionRate" min="0" step="0.01">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveMission()">
+                        <i class="fas fa-save me-2"></i>Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edition basique (Nom + Description seulement) -->
+    <div class="modal fade" id="editMissionBasicModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Modifier la Mission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editMissionBasicForm">
+                        <div class="mb-3">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="editMissionName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="editMissionDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button class="btn btn-primary" onclick="updateMissionBasic()"><i class="fas fa-save me-2"></i>Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/sidebar.js" defer></script>
+    <!-- SessionManager pour la gestion centralisée des sessions -->
+    <script src="js/session-manager.js"></script>
+    <script>
+        // Variables globales
+        let missions = [];
+        let clients = [];
+        let currentMissionId = null;
+
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMissions();
+            loadClients();
+            setupEventListeners();
+        });
+
+        // Configuration des événements
+        function setupEventListeners() {
+            document.getElementById('statusFilter').addEventListener('change', filterMissions);
+            document.getElementById('clientFilter').addEventListener('change', filterMissions);
+            document.getElementById('buFilter').addEventListener('change', filterMissions);
+            document.getElementById('divisionFilter').addEventListener('change', filterMissions);
+            document.getElementById('searchInput').addEventListener('input', filterMissions);
+            document.getElementById('codeFilter').addEventListener('input', filterMissions);
+        }
+
+        // Fonction pour afficher/masquer le loading
+        function showLoading(show) {
+            const loadingElement = document.getElementById('loadingSpinner');
+            if (loadingElement) {
+                loadingElement.style.display = show ? 'block' : 'none';
+            }
+        }
+
+        // Chargement des missions
+        async function loadMissions() {
+            showLoading(true);
+            try {
+                const params = new URLSearchParams({
+                    statut: document.getElementById('statusFilter').value || '',
+                    client_id: document.getElementById('clientFilter').value || '',
+                    business_unit_id: document.getElementById('buFilter').value || '',
+                    division_id: document.getElementById('divisionFilter').value || '',
+                    code: document.getElementById('codeFilter').value || '',
+                    search: document.getElementById('searchInput').value || ''
+                });
+                // supprimer les vides
+                Array.from(params.keys()).forEach(k => { if (!params.get(k)) params.delete(k); });
+                console.log('🔎 loadMissions params', Object.fromEntries(params.entries()));
+                const response = await authenticatedFetch(`/api/missions?${params.toString()}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    // L'API missions retourne {data: Array} directement
+                    missions = data.data || data;
+                    // Mettre à jour les options de filtres au réel des missions affichées
+                    populateFilterOptionsFromMissions(missions);
+                    displayMissions(missions);
+                } else {
+                    console.error('Erreur lors du chargement des missions');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Chargement des clients
+        async function loadClients() {
+            try {
+                const response = await authenticatedFetch('/api/clients');
+                if (response.ok) {
+                    const data = await response.json();
+                    // Gérer la structure {data: {clients: Array}}
+                    if (data.data && data.data.clients) {
+                        clients = data.data.clients;
+                    } else if (data.data) {
+                        clients = data.data;
+                    } else {
+                        clients = data;
+                    }
+                    populateClientFilters();
+                } else {
+                    console.error('Erreur lors du chargement des clients');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Affichage des missions
+        function displayMissions(missionsToShow) {
+            const tbody = document.getElementById('missionsTableBody');
+            
+            // Réinitialise le tableau pour éviter les doublons
+            if (tbody) {
+                tbody.innerHTML = '';
+            }
+
+            if (missionsToShow.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="11" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-3"></i>
+                            <p>Aucune mission trouvée</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            missionsToShow.forEach(mission => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${mission.code || 'N/A'}</strong></td>
+                    <td>${mission.nom || 'N/A'}</td>
+                    <td>${mission.client_nom || 'N/A'}</td>
+                    <td>${formatDate(mission.date_debut)}</td>
+                    <td>${formatDate(mission.date_fin)}</td>
+                    <td><span class="status-badge status-${mission.statut?.toLowerCase()}">${mission.statut || 'N/A'}</span></td>
+                    <td>${formatCurrency(mission.budget_estime || mission.budget_reel || 0, mission.devise)}</td>
+                    <td>${formatDate(mission.created_at)}</td>
+                    <td>${mission.business_unit_nom || 'N/A'}</td>
+                    <td>${mission.division_nom || 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info me-1" onclick="viewMissionDetails('${mission.id}')" title="Voir les détails">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditMissionBasic('${mission.id}')" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteMission('${mission.id}')" title="Supprimer">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Filtrage des missions
+        function filterMissions() { loadMissions(); }
+
+        // Réinitialisation des filtres
+        function resetFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('clientFilter').value = '';
+            document.getElementById('buFilter').value = '';
+            document.getElementById('divisionFilter').value = '';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('codeFilter').value = '';
+            loadMissions();
+        }
+
+        // Remplissage du sélecteur client du formulaire (tous les clients)
+        function populateClientFilters() {
+            const missionClient = document.getElementById('missionClient');
+            
+            // Vérifier que clients est un tableau
+            if (!Array.isArray(clients)) {
+                console.error('Erreur: clients n\'est pas un tableau:', clients);
+                clients = [];
+            }
+            
+            const clientOptions = clients.map(client => 
+                `<option value="${client.id}">${client.nom || client.raison_sociale}</option>`
+            ).join('');
+            
+            missionClient.innerHTML = '<option value="">Sélectionner un client</option>' + clientOptions;
+        }
+
+        // Construire les listes des filtres (Client, BU, Division) à partir des missions affichées
+        function populateFilterOptionsFromMissions(list) {
+            const clientFilter = document.getElementById('clientFilter');
+            const buFilter = document.getElementById('buFilter');
+            const divisionFilter = document.getElementById('divisionFilter');
+
+            const selectedClient = clientFilter.value;
+            const selectedBU = buFilter.value;
+            const selectedDivision = divisionFilter.value;
+
+            const clientsMap = new Map();
+            const buMap = new Map();
+            const divMap = new Map();
+
+            (list || []).forEach(m => {
+                if (m.client_id) clientsMap.set(m.client_id, m.client_nom || m.client_id);
+                if (m.business_unit_id) buMap.set(m.business_unit_id, m.business_unit_nom || m.business_unit_id);
+                if (m.division_id) divMap.set(m.division_id, m.division_nom || m.division_id);
+            });
+
+            clientFilter.innerHTML = '<option value="">Tous les clients</option>' +
+                Array.from(clientsMap.entries())
+                    .sort((a,b) => a[1].localeCompare(b[1]))
+                    .map(([id, nom]) => `<option value="${id}">${nom}</option>`)
+                    .join('');
+            buFilter.innerHTML = '<option value="">Toutes les unités</option>' +
+                Array.from(buMap.entries())
+                    .sort((a,b) => a[1].localeCompare(b[1]))
+                    .map(([id, nom]) => `<option value="${id}">${nom}</option>`)
+                    .join('');
+            divisionFilter.innerHTML = '<option value="">Toutes les divisions</option>' +
+                Array.from(divMap.entries())
+                    .sort((a,b) => a[1].localeCompare(b[1]))
+                    .map(([id, nom]) => `<option value="${id}">${nom}</option>`)
+                    .join('');
+
+            // Restaurer sélection si toujours disponible
+            if ([...clientsMap.keys()].includes(selectedClient)) clientFilter.value = selectedClient; else clientFilter.value = '';
+            if ([...buMap.keys()].includes(selectedBU)) buFilter.value = selectedBU; else buFilter.value = '';
+            if ([...divMap.keys()].includes(selectedDivision)) divisionFilter.value = selectedDivision; else divisionFilter.value = '';
+        }
+
+        // Sauvegarde d'une mission
+        async function saveMission() {
+            const formData = {
+                code: document.getElementById('missionCode').value,
+                nom: document.getElementById('missionName').value,
+                client_id: document.getElementById('missionClient').value,
+                statut: document.getElementById('missionStatus').value,
+                date_debut: document.getElementById('missionStartDate').value,
+                date_fin: document.getElementById('missionEndDate').value,
+                description: document.getElementById('missionDescription').value,
+                budget: parseFloat(document.getElementById('missionBudget').value) || 0,
+                taux_horaire: parseFloat(document.getElementById('missionRate').value) || 0
+            };
+
+            try {
+                const url = currentMissionId ? `/api/missions/${currentMissionId}` : '/api/missions';
+                const method = currentMissionId ? 'PUT' : 'POST';
+
+                const response = await authenticatedFetch(url, {
+                    method: method,
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    showAlert('Mission sauvegardée avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('addMissionModal')).hide();
+                    loadMissions();
+                    resetMissionForm();
+                } else {
+                    showAlert('Erreur lors de la sauvegarde', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur de connexion', 'danger');
+            }
+        }
+
+        // Édition basique (Nom + Description seulement)
+        let editBasicMissionId = null;
+        function openEditMissionBasic(missionId) {
+            const mission = missions.find(m => m.id === missionId);
+            if (!mission) return;
+            editBasicMissionId = missionId;
+            document.getElementById('editMissionName').value = mission.nom || '';
+            document.getElementById('editMissionDescription').value = mission.description || '';
+            new bootstrap.Modal(document.getElementById('editMissionBasicModal')).show();
+        }
+
+        async function updateMissionBasic() {
+            if (!editBasicMissionId) return;
+            const payload = {
+                nom: document.getElementById('editMissionName').value,
+                description: document.getElementById('editMissionDescription').value
+            };
+            try {
+                const response = await authenticatedFetch(`/api/missions/${editBasicMissionId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    try {
+                        const text = await response.text();
+                        console.error('Erreur MAJ mission:', text);
+                    } catch (_) {}
+                    showAlert('Erreur lors de la mise à jour', 'danger');
+                    return;
+                }
+                bootstrap.Modal.getInstance(document.getElementById('editMissionBasicModal')).hide();
+                showAlert('Mission mise à jour avec succès', 'success');
+                loadMissions();
+            } catch (e) {
+                showAlert('Erreur de connexion', 'danger');
+            }
+        }
+
+        // Affichage des détails d'une mission
+        function viewMissionDetails(missionId) {
+            window.location.href = `mission-details.html?id=${missionId}`;
+        }
+
+        // Suppression d'une mission
+        async function deleteMission(missionId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette mission ?')) {
+                try {
+                    const response = await authenticatedFetch(`/api/missions/${missionId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        showAlert('Mission supprimée avec succès', 'success');
+                        loadMissions();
+                    } else {
+                        showAlert('Erreur lors de la suppression', 'danger');
+                    }
+                } catch (error) {
+                    showAlert('Erreur de connexion', 'danger');
+                }
+            }
+        }
+
+        // Réinitialisation du formulaire
+        function resetMissionForm() {
+            currentMissionId = null;
+            document.getElementById('missionModalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>Nouvelle Mission';
+            document.getElementById('missionForm').reset();
+        }
+
+        // Utilitaires
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleDateString('fr-FR');
+        }
+
+        function formatCurrency(amount) {
+            if (!amount) return 'N/A';
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(amount);
+        }
+
+        // Gestion du modal
+        document.getElementById('addMissionModal').addEventListener('hidden.bs.modal', function () {
+            resetMissionForm();
+        });
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.main-content-area');
+            if (container) {
+                container.insertBefore(alertDiv, container.firstChild);
+            } else {
+                document.body.appendChild(alertDiv);
+            }
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+    </script>
+    </body>
+</html>
