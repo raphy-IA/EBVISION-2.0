@@ -343,26 +343,26 @@
                     <form id="addUserForm">
                         <div class="mb-3">
                             <label for="userLogin" class="form-label">Login (optionnel - généré automatiquement si vide)</label>
-                            <input type="text" class="form-control" id="userLogin" maxlength="50" placeholder="Ex: jdupont">
+                            <input type="text" class="form-control" id="userLogin" maxlength="50" placeholder="Ex: jdupont" autocomplete="off">
                         </div>
                         <div class="mb-3">
                             <label for="userPassword" class="form-label">Mot de passe *</label>
-                            <input type="password" class="form-control" id="userPassword" required>
+                            <input type="password" class="form-control" id="userPassword" required autocomplete="new-password">
                             <div class="form-text">
                                 Le mot de passe doit contenir au moins 8 caractères, une minuscule, une majuscule, un chiffre et un caractère spécial.
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="userName" class="form-label">Nom *</label>
-                            <input type="text" class="form-control" id="userName" required>
+                            <input type="text" class="form-control" id="userName" required autocomplete="off">
                         </div>
                         <div class="mb-3">
                             <label for="userFirstName" class="form-label">Prénom *</label>
-                            <input type="text" class="form-control" id="userFirstName" required>
+                            <input type="text" class="form-control" id="userFirstName" required autocomplete="off">
                         </div>
                         <div class="mb-3">
                             <label for="userEmail" class="form-label">Email *</label>
-                            <input type="email" class="form-control" id="userEmail" required>
+                            <input type="email" class="form-control" id="userEmail" required autocomplete="off">
                         </div>
                         <div class="mb-3">
                             <label for="userRoles" class="form-label">Rôles *</label>
@@ -964,26 +964,62 @@
         }
 
         async function showNewUserModal() {
-            document.getElementById('addUserForm').reset();
+            console.log('🔄 Ouverture du modal "Ajouter un Utilisateur"...');
+            
+            // Réinitialiser complètement le formulaire
+            const form = document.getElementById('addUserForm');
+            form.reset();
+            
+            // Vider explicitement tous les champs pour éviter l'autofill
+            document.getElementById('userLogin').value = '';
+            document.getElementById('userPassword').value = '';
+            document.getElementById('userName').value = '';
+            document.getElementById('userFirstName').value = '';
+            document.getElementById('userEmail').value = '';
+            
+            // Charger les rôles
             await loadRolesForModal();
+            
+            // Ouvrir le modal
             new bootstrap.Modal(document.getElementById('addUserModal')).show();
+            
+            console.log('✅ Modal "Ajouter un Utilisateur" ouvert');
         }
 
         async function loadRolesForModal() {
             try {
+                console.log('🔄 Chargement des rôles pour le modal...');
                 const token = localStorage.getItem('authToken');
-                const response = await authenticatedFetch(`${API_BASE_URL}/roles`, {
+                console.log('🔑 Token présent:', !!token);
+                
+                // Utiliser le même endpoint que loadRoles() qui fonctionne
+                const response = await authenticatedFetch(`${API_BASE_URL}/users/roles`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
                     }
                 });
-                const data = await response.json();
                 
-                if (data.success) {
-                    const rolesContainer = document.getElementById('userRolesCheckboxes');
-                    rolesContainer.innerHTML = '';
-                    
-                    data.data.forEach(role => {
+                console.log('📡 Réponse API rôles modal:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
+                const roles = await response.json();
+                console.log('📋 Rôles récupérés pour modal:', roles);
+                
+                const rolesContainer = document.getElementById('userRolesCheckboxes');
+                if (!rolesContainer) {
+                    console.error('❌ Container userRolesCheckboxes non trouvé');
+                    return;
+                }
+                
+                rolesContainer.innerHTML = '';
+                
+                if (roles && roles.length > 0) {
+                    roles.forEach(role => {
                         const colDiv = document.createElement('div');
                         colDiv.className = 'col-md-6 mb-2';
                         
@@ -999,12 +1035,18 @@
                         
                         rolesContainer.appendChild(colDiv);
                     });
+                    console.log(`✅ ${roles.length} rôles chargés dans le modal`);
                 } else {
-                    console.error('Erreur lors du chargement des rôles:', data.message);
-                    showAlert('Erreur lors du chargement des rôles', 'danger');
+                    console.warn('⚠️ Aucun rôle trouvé');
+                    rolesContainer.innerHTML = '<div class="col-12"><p class="text-muted">Aucun rôle disponible</p></div>';
                 }
+                
             } catch (error) {
-                console.error('Erreur lors du chargement des rôles:', error);
+                console.error('❌ Erreur lors du chargement des rôles pour le modal:', error);
+                const rolesContainer = document.getElementById('userRolesCheckboxes');
+                if (rolesContainer) {
+                    rolesContainer.innerHTML = '<div class="col-12"><p class="text-danger">Erreur lors du chargement des rôles</p></div>';
+                }
                 showAlert('Erreur lors du chargement des rôles', 'danger');
             }
         }
