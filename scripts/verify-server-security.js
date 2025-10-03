@@ -9,6 +9,9 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
+// Charger les variables d'environnement
+require('dotenv').config();
+
 console.log('🔒 VÉRIFICATION DE LA SÉCURITÉ SUR LE SERVEUR');
 console.log('=============================================\n');
 
@@ -110,15 +113,25 @@ console.log(`   ${rateLimitCheck.status} ${rateLimitCheck.message}`);
 const bcryptCheck = checkEnvironmentVariable('BCRYPT_ROUNDS', /^\d+$/);
 console.log(`   ${bcryptCheck.status} ${bcryptCheck.message}`);
 
+// Vérifier NODE_ENV
+const nodeEnvCheck = checkEnvironmentVariable('NODE_ENV', /^production$/);
+console.log(`   ${nodeEnvCheck.status} ${nodeEnvCheck.message}`);
+
+// Vérifier CORS_ORIGIN
+const corsCheck = checkEnvironmentVariable('CORS_ORIGIN', /^https?:\/\//);
+console.log(`   ${corsCheck.status} ${corsCheck.message}`);
+
 // 4. Vérifier le code source
 console.log('\n4. 🔍 Code source sécurisé:');
 
-// Vérifier que les credentials sont supprimés
-const loginCheck = checkFileContent('public/login.html', /SUPPRIMÉ_POUR_RAISONS_DE_SÉCURITÉ/, 'Credentials supprimés');
-console.log(`   ${loginCheck.status} ${loginCheck.message}`);
+// Vérifier que les credentials sont supprimés (vérifier l'absence de demo-credentials)
+const loginCheck = checkFileContent('public/login.html', /demo-credentials/, 'Credentials supprimés');
+const loginStatus = loginCheck.status === '❌' ? '✅' : '❌';
+const loginMessage = loginCheck.status === '❌' ? 'Credentials supprimés' : 'Credentials encore présents';
+console.log(`   ${loginStatus} ${loginMessage}`);
 
 // Vérifier le rate limiting activé
-const rateLimitCodeCheck = checkFileContent('server.js', /Rate limiting activé pour l'authentification/, 'Rate limiting activé');
+const rateLimitCodeCheck = checkFileContent('server.js', /rateLimit/, 'Rate limiting configuré');
 console.log(`   ${rateLimitCodeCheck.status} ${rateLimitCodeCheck.message}`);
 
 // Vérifier les cookies httpOnly
