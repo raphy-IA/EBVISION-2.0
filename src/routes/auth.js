@@ -5,6 +5,8 @@ const User = require('../models/User');
 const { authValidation } = require('../utils/validators');
 const { authenticateToken } = require('../middleware/auth');
 const { setAuthCookie, clearAuthCookies, authenticateHybrid } = require('../middleware/cookieAuth');
+const TwoFactorAuthService = require('../services/twoFactorAuth');
+const PasswordPolicyService = require('../services/passwordPolicy');
 const pool = require('../utils/database');
 
 const router = express.Router();
@@ -75,24 +77,49 @@ router.post('/login', async (req, res) => {
             { expiresIn: JWT_EXPIRES_IN }
         );
 
-        // Définir les cookies sécurisés
-        setAuthCookie(res, token, user);
-
-        res.json({
-            success: true,
-            message: 'Connexion réussie',
-            data: {
-                token, // Ajouter le token pour compatibilité développement
-                user: {
-                    id: user.id,
-                    nom: user.nom,
-                    prenom: user.prenom,
-                    email: user.email,
-                    login: user.login,
-                    role: user.role
+        // Vérifier si l'utilisateur a le 2FA activé
+        const is2FAEnabled = await TwoFactorAuthService.is2FAEnabled(user.id);
+        
+        if (is2FAEnabled) {
+            // Si 2FA activé, ne pas connecter immédiatement
+            // Retourner l'ID utilisateur pour la vérification 2FA
+            res.json({
+                success: true,
+                message: 'Code 2FA requis',
+                requires2FA: true,
+                data: {
+                    userId: user.id,
+                    user: {
+                        id: user.id,
+                        nom: user.nom,
+                        prenom: user.prenom,
+                        email: user.email,
+                        login: user.login,
+                        role: user.role
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            // Si pas de 2FA, connexion normale
+            setAuthCookie(res, token, user);
+
+            res.json({
+                success: true,
+                message: 'Connexion réussie',
+                requires2FA: false,
+                data: {
+                    token, // Ajouter le token pour compatibilité développement
+                    user: {
+                        id: user.id,
+                        nom: user.nom,
+                        prenom: user.prenom,
+                        email: user.email,
+                        login: user.login,
+                        role: user.role
+                    }
+                }
+            });
+        }
 
     } catch (error) {
         console.error('Erreur lors de la connexion:', error);
@@ -428,6 +455,243 @@ router.get('/verify', authenticateHybrid, (req, res) => {
             role: req.user.role
         }
     });
+});
+
+// Route pour changer le mot de passe
+router.post('/change-password', authenticateToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user.id;
+        
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mot de passe actuel et nouveau mot de passe requis'
+            });
+        }
+        
+        // Récupérer l'utilisateur
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Utilisateur non trouvé'
+            });
+        }
+        
+        // Vérifier le mot de passe actuel
+        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isCurrentPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                message: 'Mot de passe actuel incorrect'
+            });
+        }
+        
+        // Vérifier que le nouveau mot de passe est différent
+        if (currentPassword === newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Le nouveau mot de passe doit être différent de l\'actuel'
+            });
+        }
+        
+        // Valider le nouveau mot de passe selon la politique
+        const validation = await PasswordPolicyService.validatePasswordComplete(newPassword, {
+            nom: user.nom,
+            prenom: user.prenom,
+            email: user.email
+        });
+        
+        if (!validation.isValid) {
+            return res.status(400).json({
+                success: false,
+                message: 'Le nouveau mot de passe ne respecte pas la politique de sécurité',
+                errors: validation.errors,
+                suggestions: PasswordPolicyService.getPasswordSuggestions(validation)
+            });
+        }
+        
+        // Hasher le nouveau mot de passe
+        const saltRounds = 12;
+        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+        
+        // Mettre à jour le mot de passe en base
+        await pool.query(
+            'UPDATE users SET password = $1, password_changed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+            [hashedPassword, userId]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Mot de passe modifié avec succès',
+            securityScore: validation.securityScore,
+            strength: validation.strength
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors du changement de mot de passe:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors du changement de mot de passe'
+        });
+    }
+});
+
+// Route pour générer un mot de passe sécurisé
+router.get('/generate-password', authenticateToken, (req, res) => {
+    try {
+        const length = parseInt(req.query.length) || 16;
+        
+        if (length < 8 || length > 128) {
+            return res.status(400).json({
+                success: false,
+                message: 'La longueur doit être entre 8 et 128 caractères'
+            });
+        }
+        
+        const password = PasswordPolicyService.generateSecurePassword(length);
+        const validation = PasswordPolicyService.validatePassword(password);
+        
+        res.json({
+            success: true,
+            data: {
+                password,
+                securityScore: validation.securityScore,
+                strength: validation.strength
+            }
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de la génération du mot de passe:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la génération du mot de passe'
+        });
+    }
+});
+
+// Route pour valider un mot de passe
+router.post('/validate-password', authenticateToken, (req, res) => {
+    try {
+        const { password } = req.body;
+        
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mot de passe requis'
+            });
+        }
+        
+        const validation = PasswordPolicyService.validatePassword(password, {
+            nom: req.user.nom,
+            prenom: req.user.prenom,
+            email: req.user.email
+        });
+        
+        res.json({
+            success: true,
+            data: {
+                isValid: validation.isValid,
+                errors: validation.errors,
+                warnings: validation.warnings,
+                securityScore: validation.securityScore,
+                strength: validation.strength,
+                suggestions: PasswordPolicyService.getPasswordSuggestions(validation)
+            }
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de la validation du mot de passe:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la validation du mot de passe'
+        });
+    }
+});
+
+// Route pour finaliser la connexion avec 2FA
+router.post('/login-2fa', async (req, res) => {
+    try {
+        const { userId, token, backupCode } = req.body;
+        
+        if (!userId || (!token && !backupCode)) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID utilisateur et code 2FA ou code de récupération requis'
+            });
+        }
+        
+        let isValid = false;
+        
+        if (token) {
+            // Vérifier le code 2FA normal
+            const result = await TwoFactorAuthService.verifyToken(userId, token);
+            isValid = result.success;
+        } else if (backupCode) {
+            // Vérifier le code de récupération
+            isValid = await TwoFactorAuthService.verifyBackupCode(userId, backupCode);
+        }
+        
+        if (isValid) {
+            // Récupérer les informations utilisateur
+            const user = await User.findById(userId);
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Utilisateur non trouvé'
+                });
+            }
+            
+            // Générer le token JWT final
+            const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
+            const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+            
+            const finalToken = jwt.sign(
+                {
+                    id: user.id,
+                    email: user.email,
+                    nom: user.nom,
+                    prenom: user.prenom,
+                    role: user.role,
+                    permissions: ['users:read', 'users:create', 'users:update', 'users:delete']
+                },
+                JWT_SECRET,
+                { expiresIn: JWT_EXPIRES_IN }
+            );
+            
+            // Définir les cookies sécurisés
+            setAuthCookie(res, finalToken, user);
+            
+            res.json({
+                success: true,
+                message: 'Connexion 2FA réussie',
+                data: {
+                    token: finalToken,
+                    user: {
+                        id: user.id,
+                        nom: user.nom,
+                        prenom: user.prenom,
+                        email: user.email,
+                        login: user.login,
+                        role: user.role
+                    }
+                }
+            });
+        } else {
+            res.status(401).json({
+                success: false,
+                message: 'Code 2FA ou code de récupération invalide'
+            });
+        }
+        
+    } catch (error) {
+        console.error('Erreur lors de la connexion 2FA:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la connexion 2FA'
+        });
+    }
 });
 
 module.exports = router; 

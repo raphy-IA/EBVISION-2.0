@@ -10,6 +10,7 @@ const path = require('path');
 
 // Import des routes
 const authRoutes = require('./src/routes/auth');
+const twoFactorAuthRoutes = require('./src/routes/two-factor-auth');
 const userRoutes = require('./src/routes/users');
 const businessUnitsRoutes = require('./src/routes/business-units');
 const divisionRoutes = require('./src/routes/divisions');
@@ -145,6 +146,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Enregistrement des routes
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/2fa', twoFactorAuthRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/business-units', businessUnitsRoutes);
 app.use('/api/divisions', divisionRoutes);
