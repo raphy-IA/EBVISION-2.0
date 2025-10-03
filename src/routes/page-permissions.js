@@ -19,7 +19,7 @@ router.post('/check-page-permission', authenticateToken, async (req, res) => {
         }
 
         // SUPER_ADMIN a accès à tout
-        if (req.user.role === 'SUPER_ADMIN') {
+        if (req.user.roles && req.user.roles.includes('SUPER_ADMIN')) {
             return res.json({
                 success: true,
                 message: 'Accès autorisé (SUPER_ADMIN)',
@@ -46,12 +46,12 @@ router.post('/check-page-permission', authenticateToken, async (req, res) => {
         };
 
         const allowedRoles = defaultPermissions[pageName];
-        if (allowedRoles && allowedRoles.includes(req.user.role)) {
+        if (allowedRoles && req.user.roles && req.user.roles.some(role => allowedRoles.includes(role))) {
             return res.json({
                 success: true,
                 message: 'Accès autorisé par rôle par défaut',
                 pageName,
-                userRole: req.user.role
+                userRoles: req.user.roles
             });
         }
 
@@ -61,7 +61,7 @@ router.post('/check-page-permission', authenticateToken, async (req, res) => {
                 success: true,
                 message: 'Accès autorisé par défaut',
                 pageName,
-                userRole: req.user.role
+                userRoles: req.user.roles
             });
         }
 
@@ -69,7 +69,7 @@ router.post('/check-page-permission', authenticateToken, async (req, res) => {
             success: false,
             message: 'Accès non autorisé à cette page',
             pageName,
-            userRole: req.user.role,
+            userRoles: req.user.roles,
             requiredRoles: allowedRoles
         });
 

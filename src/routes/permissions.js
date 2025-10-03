@@ -10,12 +10,12 @@ const requireAdminPermission = async (req, res, next) => {
         // Vérifier si l'utilisateur est déjà attaché à la requête (par le middleware JWT)
         if (req.user && req.user.id) {
             const userId = req.user.id;
-            const userRole = req.user.role;
+            const userRoles = req.user.roles || [];
             
-            // Permettre l'accès pour ADMIN, ADMINISTRATEUR, ou tout rôle contenant "admin"
-            if (userRole === 'ADMIN' || userRole === 'ADMINISTRATEUR' || 
-                userRole.toLowerCase().includes('admin')) {
-                console.log(`Accès autorisé pour l'utilisateur ${userId} avec le rôle ${userRole}`);
+            // Permettre l'accès pour SUPER_ADMIN, ADMIN, ADMINISTRATEUR, ou tout rôle contenant "admin"
+            if (userRoles.includes('SUPER_ADMIN') || userRoles.includes('ADMIN') || userRoles.includes('ADMINISTRATEUR') || 
+                userRoles.some(role => role.toLowerCase().includes('admin'))) {
+                console.log(`Accès autorisé pour l'utilisateur ${userId} avec les rôles ${userRoles.join(', ')}`);
                 return next();
             }
             
