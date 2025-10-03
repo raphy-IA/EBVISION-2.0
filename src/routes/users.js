@@ -170,6 +170,14 @@ router.post('/', authenticateToken, requirePermission('users:create'), async (re
             });
         }
 
+        // Validation personnalisée : au moins un rôle doit être fourni
+        if (!value.roles && !value.role) {
+            return res.status(400).json({
+                success: false,
+                message: 'Au moins un rôle doit être fourni (role ou roles)'
+            });
+        }
+
         // Vérifier si l'email existe déjà
         const existingUser = await User.findByEmail(value.email);
         if (existingUser) {
@@ -181,13 +189,19 @@ router.post('/', authenticateToken, requirePermission('users:create'), async (re
 
 
 
-        // Créer l'utilisateur (le modèle User.create fait le hashage)
+        // Créer l'utilisateur (le modèle User.create fait le hashage et gère les rôles multiples)
         const newUser = await User.create(value);
+
+        // Récupérer les rôles de l'utilisateur créé pour la réponse
+        const userRoles = await User.getUserRoles(newUser.id);
 
         res.status(201).json({
             success: true,
             message: 'Utilisateur créé avec succès',
-            data: newUser
+            data: {
+                ...newUser,
+                roles: userRoles
+            }
         });
 
     } catch (error) {

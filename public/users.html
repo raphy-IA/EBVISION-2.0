@@ -365,10 +365,16 @@
                             <input type="email" class="form-control" id="userEmail" required>
                         </div>
                         <div class="mb-3">
-                            <label for="userRole" class="form-label">Rôle *</label>
-                            <select class="form-select" id="userRole" required>
-                                <option value="">Sélectionner un rôle</option>
-                            </select>
+                            <label for="userRoles" class="form-label">Rôles *</label>
+                            <div id="userRolesContainer">
+                                <div class="form-text mb-2">
+                                    <i class="fas fa-info-circle text-info"></i>
+                                    Sélectionnez un ou plusieurs rôles pour cet utilisateur
+                                </div>
+                                <div id="userRolesCheckboxes" class="row">
+                                    <!-- Les rôles seront chargés dynamiquement -->
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -968,9 +974,50 @@
             });
         }
 
-        function showNewUserModal() {
+        async function showNewUserModal() {
             document.getElementById('addUserForm').reset();
+            await loadRolesForModal();
             new bootstrap.Modal(document.getElementById('addUserModal')).show();
+        }
+
+        async function loadRolesForModal() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await authenticatedFetch(`${API_BASE_URL}/roles`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const rolesContainer = document.getElementById('userRolesCheckboxes');
+                    rolesContainer.innerHTML = '';
+                    
+                    data.data.forEach(role => {
+                        const colDiv = document.createElement('div');
+                        colDiv.className = 'col-md-6 mb-2';
+                        
+                        colDiv.innerHTML = `
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="${role.id}" id="role_${role.id}">
+                                <label class="form-check-label" for="role_${role.id}">
+                                    <strong>${role.name}</strong>
+                                    ${role.description ? `<br><small class="text-muted">${role.description}</small>` : ''}
+                                </label>
+                            </div>
+                        `;
+                        
+                        rolesContainer.appendChild(colDiv);
+                    });
+                } else {
+                    console.error('Erreur lors du chargement des rôles:', data.message);
+                    showAlert('Erreur lors du chargement des rôles', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des rôles:', error);
+                showAlert('Erreur lors du chargement des rôles', 'danger');
+            }
         }
 
         async function addUser() {
@@ -980,13 +1027,25 @@
                 return;
             }
 
+            // Récupérer les rôles sélectionnés
+            const selectedRoles = [];
+            const roleCheckboxes = document.querySelectorAll('#userRolesCheckboxes input[type="checkbox"]:checked');
+            roleCheckboxes.forEach(checkbox => {
+                selectedRoles.push(parseInt(checkbox.value));
+            });
+
+            if (selectedRoles.length === 0) {
+                showAlert('Veuillez sélectionner au moins un rôle', 'warning');
+                return;
+            }
+
             const formData = {
                 nom: document.getElementById('userName').value,
                 prenom: document.getElementById('userFirstName').value,
                 email: document.getElementById('userEmail').value,
                 password: document.getElementById('userPassword').value,
                 login: document.getElementById('userLogin').value || null,
-                role: document.getElementById('userRole').value
+                roles: selectedRoles // Envoyer les rôles multiples
             };
 
             try {

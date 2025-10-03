@@ -44,10 +44,14 @@ const userValidation = {
                 'string.min': 'Le login doit contenir au moins 3 caractères',
                 'string.max': 'Le login ne peut pas dépasser 50 caractères'
             }),
-        role: Joi.string().valid('SUPER_ADMIN', 'ADMIN_IT', 'IT', 'ADMIN', 'MANAGER', 'CONSULTANT', 'COLLABORATEUR', 'ASSOCIE', 'DIRECTEUR', 'SUPER_USER').required()
+        role: Joi.string().valid('SUPER_ADMIN', 'ADMIN_IT', 'IT', 'ADMIN', 'MANAGER', 'CONSULTANT', 'COLLABORATEUR', 'ASSOCIE', 'DIRECTEUR', 'SUPER_USER').optional()
             .messages({
-                'any.only': 'Rôle invalide',
-                'any.required': 'Le rôle est requis'
+                'any.only': 'Rôle invalide'
+            }),
+        roles: Joi.array().items(Joi.number().integer().positive()).min(1).optional()
+            .messages({
+                'array.min': 'Au moins un rôle doit être sélectionné',
+                'number.base': 'Les rôles doivent être des identifiants valides'
             })
     }),
 

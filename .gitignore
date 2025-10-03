@@ -67,3 +67,6 @@ nohup.out
 
 # Dossier des fichiers non utilisés
 Old_files/
+
+# Dossier des scripts de production (modifiés localement)
+production-scripts/

@@ -10,7 +10,8 @@ class User {
             email,
             password,
             login,
-            role
+            role,
+            roles // Nouveau: rôles multiples
         } = userData;
 
         // Hasher le mot de passe
@@ -20,6 +21,9 @@ class User {
         // Générer un login basé sur les initiales si non fourni
         const userLogin = login || (nom.substring(0, 1) + prenom.substring(0, 1)).toLowerCase();
 
+        // Utiliser le premier rôle comme rôle principal pour la compatibilité
+        const primaryRole = roles && roles.length > 0 ? roles[0] : role;
+
         const sql = `
             INSERT INTO users (nom, prenom, email, password_hash, login, role)
             VALUES ($1, $2, $3, $4, $5, $6)
@@ -27,10 +31,34 @@ class User {
         `;
 
         const result = await query(sql, [
-            nom, prenom, email, passwordHash, userLogin, role
+            nom, prenom, email, passwordHash, userLogin, primaryRole
         ]);
 
-        return result.rows[0];
+        const newUser = result.rows[0];
+
+        // Ajouter les rôles multiples si fournis
+        if (roles && roles.length > 0) {
+            await this.addMultipleRoles(newUser.id, roles);
+        }
+
+        return newUser;
+    }
+
+    // Ajouter plusieurs rôles à un utilisateur
+    static async addMultipleRoles(userId, roleIds) {
+        if (!roleIds || roleIds.length === 0) return;
+
+        const values = roleIds.map((roleId, index) => 
+            `($1, $${index + 2}, NOW())`
+        ).join(', ');
+
+        const sql = `
+            INSERT INTO user_roles (user_id, role_id, created_at)
+            VALUES ${values}
+            ON CONFLICT (user_id, role_id) DO NOTHING
+        `;
+
+        await query(sql, [userId, ...roleIds]);
     }
 
     // Récupérer un utilisateur par ID
