@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { authValidation } = require('../utils/validators');
 const { authenticateToken } = require('../middleware/auth');
+const { setAuthCookie, clearAuthCookies, authenticateHybrid } = require('../middleware/cookieAuth');
 const pool = require('../utils/database');
 
 const router = express.Router();
@@ -74,11 +75,14 @@ router.post('/login', async (req, res) => {
             { expiresIn: JWT_EXPIRES_IN }
         );
 
+        // Définir les cookies sécurisés
+        setAuthCookie(res, token, user);
+
         res.json({
             success: true,
             message: 'Connexion réussie',
             data: {
-                token,
+                token, // Ajouter le token pour compatibilité développement
                 user: {
                     id: user.id,
                     nom: user.nom,
@@ -390,6 +394,40 @@ router.post('/logout', authenticateToken, async (req, res) => {
             message: 'Erreur lors de la déconnexion'
         });
     }
+});
+
+// Route de déconnexion
+router.post('/logout', (req, res) => {
+    try {
+        // Supprimer les cookies d'authentification
+        clearAuthCookies(res);
+        
+        res.json({
+            success: true,
+            message: 'Déconnexion réussie'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la déconnexion:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la déconnexion'
+        });
+    }
+});
+
+// Route de vérification du token (support cookies et headers)
+router.get('/verify', authenticateHybrid, (req, res) => {
+    res.json({
+        success: true,
+        message: 'Token valide',
+        user: {
+            id: req.user.id,
+            nom: req.user.nom,
+            prenom: req.user.prenom,
+            email: req.user.email,
+            role: req.user.role
+        }
+    });
 });
 
 module.exports = router; 

@@ -74,3 +74,4 @@ console.log('===================');
 console.log('Utiliser un pattern plus permissif qui accepte plus de caractères spéciaux');
 console.log('ou utiliser des validations séparées au lieu d\'un seul pattern restrictif');
 
+

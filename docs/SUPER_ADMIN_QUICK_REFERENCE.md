@@ -193,3 +193,4 @@ psql -d eb_vision_2_0 -c "
 **Dernière mise à jour** : 2 octobre 2025
 
 
+

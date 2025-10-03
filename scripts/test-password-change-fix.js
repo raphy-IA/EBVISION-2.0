@@ -56,3 +56,4 @@ console.log('• Admin2024!');
 console.log('\n✅ La fonctionnalité de changement de mot de passe devrait maintenant fonctionner correctement !');
 console.log('   Les utilisateurs recevront des messages d\'erreur clairs si leur mot de passe ne respecte pas les exigences.');
 
+

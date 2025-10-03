@@ -213,12 +213,8 @@
                 <!-- Alert Container -->
                 <div id="alertContainer"></div>
 
-                <!-- Demo Credentials -->
-                <div class="demo-credentials">
-                    <h6><i class="fas fa-info-circle me-1"></i>Identifiants de démonstration</h6>
-                    <p><strong>Email:</strong> admin@ebvision.com</p>
-                    <p><strong>Mot de passe:</strong> admin123</p>
-                </div>
+                <!-- Demo Credentials - SUPPRIMÉ POUR RAISONS DE SÉCURITÉ -->
+                <!-- Les identifiants de démonstration ne doivent JAMAIS être exposés dans le code source -->
 
                 <form id="loginForm">
                     <div class="form-floating">
@@ -301,11 +297,8 @@
                     <p>Utilisez vos identifiants fournis par votre administrateur système.</p>
                     
                     <h6>Identifiants de démonstration</h6>
-                    <p>Pour tester l'application, utilisez :</p>
-                    <ul>
-                        <li><strong>Email:</strong> admin@trs.com</li>
-                        <li><strong>Mot de passe:</strong> admin123</li>
-                    </ul>
+                    <p>Contactez votre administrateur système pour obtenir vos identifiants de connexion.</p>
+                    <p><strong>⚠️ Sécurité :</strong> Ne jamais utiliser de mots de passe par défaut en production.</p>
                     
                     <h6>Fonctionnalités principales</h6>
                     <ul>
@@ -339,7 +332,7 @@
                     <p><i class="fas fa-phone me-2"></i>+33 1 23 45 67 89</p>
                     
                     <p><strong>Administrateur système:</strong></p>
-                    <p><i class="fas fa-envelope me-2"></i>admin@trs.com</p>
+                    <p><i class="fas fa-envelope me-2"></i>[EMAIL_SUPPRIMÉ_POUR_SÉCURITÉ]</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -407,18 +400,8 @@
         function setupEventListeners() {
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             
-            // Auto-remplissage des identifiants de démo
-            document.getElementById('email').addEventListener('focus', function() {
-                if (!this.value) {
-                    this.value = 'admin@trs.com';
-                }
-            });
-            
-            document.getElementById('password').addEventListener('focus', function() {
-                if (!this.value) {
-                    this.value = 'admin123';
-                }
-            });
+            // Auto-remplissage des identifiants de démo - SUPPRIMÉ POUR RAISONS DE SÉCURITÉ
+            // Ne jamais exposer d'identifiants dans le code source
         }
 
         // Gestion de la connexion

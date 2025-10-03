@@ -259,3 +259,4 @@ const obsoleteMenuPatterns = [
 **Auteur :** Système EB-Vision 2.0
 
 
+

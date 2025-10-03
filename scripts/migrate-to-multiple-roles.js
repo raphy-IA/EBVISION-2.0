@@ -178,3 +178,4 @@ console.log('\n');
 // Exécuter automatiquement (pour la production, on peut ajouter une confirmation)
 migrateToMultipleRoles();
 
+

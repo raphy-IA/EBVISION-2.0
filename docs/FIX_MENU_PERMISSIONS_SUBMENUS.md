@@ -161,3 +161,4 @@ Exemples :
 **Date** : 2024-12-19  
 **Version** : EB-Vision 2.0  
 **Statut** : ✅ Corrigé et testé
+

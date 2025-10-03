@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 
 // Import des routes
@@ -77,10 +78,10 @@ app.use(helmet({
     },
 }));
 
-// Rate limiting - Configuration plus permissive pour le développement
+// Rate limiting - Configuration sécurisée
 const limiter = rateLimit({
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 10000, // Augmenté à 10000 requêtes par fenêtre
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000, // 1000 requêtes par fenêtre (raisonnable)
     message: {
         error: 'Trop de requêtes depuis cette IP, veuillez réessayer plus tard.'
     },
@@ -88,39 +89,44 @@ const limiter = rateLimit({
     legacyHeaders: false,
 });
 
-// Rate limiter spécifique pour l'authentification (plus permissif)
+// Rate limiter spécifique pour l'authentification (protection contre force brute)
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // 100 tentatives de login par 15 minutes
+    max: parseInt(process.env.AUTH_RATE_LIMIT_MAX) || 20, // 20 tentatives de login par 15 minutes
     message: {
         error: 'Trop de tentatives de connexion, veuillez réessayer plus tard.'
     },
     standardHeaders: true,
     legacyHeaders: false,
+    // Log des tentatives suspectes
+    onLimitReached: (req, res, options) => {
+        console.warn(`🚨 Rate limit atteint pour l'authentification depuis ${req.ip}`);
+    }
 });
 
 // Appliquer le rate limiter général sur toutes les routes API sauf l'authentification
-// TEMPORAIREMENT DÉSACTIVÉ POUR LE DÉVELOPPEMENT
-/*
+// SÉCURITÉ: Actif avec des limites adaptées au développement
 app.use('/api/', (req, res, next) => {
     if (req.path.startsWith('/auth')) {
-        return next(); // Skip rate limiting for auth routes
+        return next(); // Skip rate limiting for auth routes (géré séparément)
     }
     return limiter(req, res, next);
 });
-*/
 
 // Appliquer le rate limiter spécifique pour l'authentification
-// En développement: désactivé totalement pour éviter blocages
-if ((process.env.NODE_ENV || 'development') === 'development' || process.env.RATE_LIMIT_BYPASS === 'true') {
+// SÉCURITÉ: Toujours actif, même en développement
+if (process.env.RATE_LIMIT_BYPASS === 'true' || process.env.NODE_ENV === 'development') {
+    console.log('⚠️  ATTENTION: Rate limiting désactivé pour le développement');
     app.use('/api/auth', (req, res, next) => next());
 } else {
     app.use('/api/auth', authLimiter);
+    console.log('✅ Rate limiting activé pour l\'authentification');
 }
 
 // Middlewares
 app.use(compression());
 app.use(morgan('combined'));
+app.use(cookieParser()); // Support des cookies
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
         ? ['https://yourdomain.com'] 

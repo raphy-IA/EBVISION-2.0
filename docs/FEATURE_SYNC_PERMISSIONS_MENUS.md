@@ -609,3 +609,4 @@ Après chaque synchronisation, l'application affiche des statistiques détaillé
 **Type** : Nouvelle Fonctionnalité
 
 
+

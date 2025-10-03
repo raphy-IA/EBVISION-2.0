@@ -109,3 +109,4 @@ echo -e "${YELLOW}📊 Vérification des logs :${NC}"
 echo "tail -f logs/server.log"
 echo ""
 echo -e "${GREEN}🎉 La correction des permissions de menu est maintenant active !${NC}"
+

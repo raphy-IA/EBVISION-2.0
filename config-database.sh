@@ -83,3 +83,4 @@ echo "🔍 Pour vérifier les logs : pm2 logs eb-vision-2.0"
 
 
 
+
