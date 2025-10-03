@@ -709,15 +709,9 @@
                     roleFilter.innerHTML += `<option value="${role.name}">${displayText}</option>`;
                 });
                 
-                // Mettre à jour le sélecteur de rôle dans le modal d'ajout
-                const userRole = document.getElementById('userRole');
-                userRole.innerHTML = '<option value="">Sélectionner un rôle</option>';
-                roles.forEach(role => {
-                    const displayText = role.description ? `${role.name} - ${role.description}` : role.name;
-                    userRole.innerHTML += `<option value="${role.name}">${displayText}</option>`;
-                });
-                
-                // Note: Les rôles dans le modal de modification sont chargés dynamiquement
+                // Note: Les rôles dans le modal d'ajout sont maintenant chargés dynamiquement
+                // via loadRolesForModal() avec des checkboxes multiples
+                // Les rôles dans le modal de modification sont chargés dynamiquement
                 // via loadUserRolesForEdit() avec des checkboxes multiples
                 
                 console.log(`✅ ${roles.length} rôles chargés avec succès`);
@@ -737,13 +731,8 @@
                 roleFilter.innerHTML += `<option value="${role.name}">${displayText}</option>`;
             });
             
-            // Mettre à jour le sélecteur de rôle dans le modal d'ajout
-            const userRole = document.getElementById('userRole');
-            userRole.innerHTML = '<option value="">Sélectionner un rôle</option>';
-            roles.forEach(role => {
-                const displayText = role.description ? `${role.name} - ${role.description}` : role.name;
-                userRole.innerHTML += `<option value="${role.name}">${displayText}</option>`;
-            });
+            // Note: Le modal d'ajout utilise maintenant des checkboxes multiples
+            // chargées dynamiquement via loadRolesForModal()
             
             // Mettre à jour le sélecteur de rôle dans le modal de modification
             const editUserRole = document.getElementById('editUserRole');
