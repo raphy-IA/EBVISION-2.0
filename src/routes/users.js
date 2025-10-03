@@ -614,31 +614,18 @@ router.get('/roles', authenticateToken, async (req, res) => {
         }
         
         console.log('📋 Récupération des rôles depuis la table roles...');
+        console.log('👤 Utilisateur connecté:', req.user.id, req.user.role);
         
-        // Vérifier si l'utilisateur connecté est SUPER_ADMIN
-        const userRolesResult = await pool.query(`
-            SELECT r.name
-            FROM user_roles ur
-            JOIN roles r ON ur.role_id = r.id
-            WHERE ur.user_id = $1
-        `, [req.user.id]);
+        // Simplification : récupérer tous les rôles sans filtrage pour l'instant
+        console.log('📋 Récupération de tous les rôles...');
         
-        const userRoles = userRolesResult.rows.map(r => r.name);
-        const isSuperAdmin = userRoles.includes('SUPER_ADMIN') || req.user.role === 'SUPER_ADMIN';
-        
-        // Si pas SUPER_ADMIN, exclure le rôle SUPER_ADMIN
-        const whereClause = isSuperAdmin 
-            ? '' 
-            : "WHERE name != 'SUPER_ADMIN'";
-        
-        // Récupérer tous les rôles (filtrés si nécessaire)
         const rolesQuery = `
             SELECT id, name, description
             FROM roles
-            ${whereClause}
             ORDER BY name
         `;
         
+        console.log('🔍 Exécution de la requête SQL...');
         const rolesResult = await pool.query(rolesQuery);
         const roles = rolesResult.rows;
         
