@@ -644,7 +644,10 @@ router.get('/roles', authenticateToken, async (req, res) => {
         
         console.log(`✅ ${roles.length} rôles récupérés`);
         
-        res.json(roles);
+        res.json({
+            success: true,
+            data: roles
+        });
         
     } catch (error) {
         console.error('Erreur lors de la récupération des rôles:', error);

@@ -698,8 +698,20 @@
                 });
                 console.log('📡 Réponse API:', response.status, response.statusText);
                 
-                const roles = await response.json();
-                console.log('📋 Rôles récupérés:', roles);
+                const responseData = await response.json();
+                console.log('📋 Réponse API rôles:', responseData);
+                
+                // Gérer le format de réponse
+                let roles;
+                if (Array.isArray(responseData)) {
+                    roles = responseData;
+                } else if (responseData.success && responseData.data) {
+                    roles = responseData.data;
+                } else {
+                    throw new Error('Format de réponse inattendu');
+                }
+                
+                console.log('📋 Rôles extraits:', roles);
                 
                 // Mettre à jour le filtre de rôles
                 const roleFilter = document.getElementById('role-filter');
