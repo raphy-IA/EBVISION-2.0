@@ -81,53 +81,7 @@ router.get('/statistics', authenticateToken, requirePermission('users:read'), as
     }
 });
 
-// GET /api/users/roles - Récupérer les rôles disponibles (DOIT ÊTRE AVANT /:id)
-router.get('/roles', authenticateToken, async (req, res) => {
-    try {
-        console.log('🔄 Récupération des rôles...');
-        
-        // Vérifier si la table roles existe (nouveau système)
-        console.log('🔍 Vérification de l\'existence de la table roles...');
-        const tableExists = await pool.query(`
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'public' 
-                AND table_name = 'roles'
-            );
-        `);
-        
-        console.log('📊 Table roles existe:', tableExists.rows[0].exists);
-        
-        if (tableExists.rows[0].exists) {
-            // Utiliser le nouveau système de rôles
-            console.log('📋 Récupération des rôles depuis la table roles...');
-            const result = await pool.query(`
-                SELECT id, name, description
-                FROM roles
-                ORDER BY name
-            `);
-            
-            console.log(`✅ ${result.rows.length} rôles récupérés`);
-            
-            res.json(result.rows);
-        } else {
-            // Table roles n'existe pas - erreur
-            console.log('❌ Table roles non trouvée - ERREUR');
-            res.status(500).json({ 
-                success: false,
-                message: 'Table roles non trouvée dans la base de données',
-                error: 'Table roles inexistante'
-            });
-        }
-    } catch (error) {
-        console.error('❌ Erreur lors de la récupération des rôles:', error);
-        res.status(500).json({ 
-            success: false,
-            message: 'Erreur interne du serveur',
-            error: error.message 
-        });
-    }
-});
+// Note: Route /roles déplacée plus bas dans le fichier pour éviter les doublons
 
 // Récupérer un utilisateur par ID (DOIT ÊTRE APRÈS /roles)
 router.get('/:id', authenticateToken, requirePermission('users:read'), async (req, res) => {

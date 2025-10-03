@@ -1007,8 +1007,22 @@
                     throw new Error(`Erreur HTTP: ${response.status}`);
                 }
                 
-                const roles = await response.json();
-                console.log('📋 Rôles récupérés pour modal:', roles);
+                const responseData = await response.json();
+                console.log('📋 Réponse API complète:', responseData);
+                
+                // Gérer les deux formats de réponse possibles
+                let roles;
+                if (Array.isArray(responseData)) {
+                    // Format direct: [role1, role2, ...]
+                    roles = responseData;
+                } else if (responseData.success && responseData.data) {
+                    // Format avec success: {success: true, data: [...]}
+                    roles = responseData.data;
+                } else {
+                    throw new Error('Format de réponse inattendu');
+                }
+                
+                console.log('📋 Rôles extraits pour modal:', roles);
                 
                 const rolesContainer = document.getElementById('userRolesCheckboxes');
                 if (!rolesContainer) {
