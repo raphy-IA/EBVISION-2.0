@@ -174,9 +174,17 @@
                     <div class="col-12">
                         <div class="d-flex justify-content-between align-items-center">
                             <h2><i class="fas fa-user-shield me-2"></i>Gestion des Utilisateurs</h2>
-                            <button class="btn btn-primary" onclick="showNewUserModal()">
-                                <i class="fas fa-plus me-2"></i>Nouvel Utilisateur
-                            </button>
+                            <div class="btn-group">
+                                <button class="btn btn-primary" onclick="showNewUserModal()">
+                                    <i class="fas fa-plus me-2"></i>Nouvel Utilisateur
+                                </button>
+                                <button class="btn btn-warning btn-sm" onclick="debugClickIssues()" title="Debug Clics">
+                                    <i class="fas fa-bug"></i>
+                                </button>
+                                <button class="btn btn-success btn-sm" onclick="forceEnableClicks()" title="Forcer Clics">
+                                    <i class="fas fa-mouse-pointer"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -668,6 +676,9 @@
             loadUsers();
             loadStatistics();
             setupEventListeners();
+            
+            // Debug: Vérifier les problèmes de clics
+            debugClickIssues();
         });
 
         // Variables globales pour les filtres
@@ -1642,6 +1653,112 @@
         function showLoading(show) {
             document.getElementById('users-loading').style.display = show ? 'flex' : 'none';
             document.getElementById('users-content').style.display = show ? 'none' : 'block';
+        }
+
+        // Fonction de débogage pour les problèmes de clics
+        function debugClickIssues() {
+            console.log('🔍 Début du diagnostic des problèmes de clics...');
+            
+            // Vérifier les modals actifs
+            const activeModals = document.querySelectorAll('.modal.show');
+            console.log('📋 Modals actifs:', activeModals.length);
+            activeModals.forEach((modal, index) => {
+                console.log(`  Modal ${index + 1}:`, modal.id);
+            });
+            
+            // Vérifier les backdrops
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            console.log('🖼️ Backdrops trouvés:', backdrops.length);
+            backdrops.forEach((backdrop, index) => {
+                console.log(`  Backdrop ${index + 1}:`, backdrop);
+            });
+            
+            // Vérifier les éléments avec pointer-events: none
+            const allElements = document.querySelectorAll('*');
+            let blockedElements = 0;
+            allElements.forEach(el => {
+                const style = window.getComputedStyle(el);
+                if (style.pointerEvents === 'none') {
+                    blockedElements++;
+                    if (blockedElements <= 5) { // Limiter les logs
+                        console.log('🚫 Élément bloqué:', el.tagName, el.className);
+                    }
+                }
+            });
+            console.log(`🚫 Total éléments bloqués: ${blockedElements}`);
+            
+            // Vérifier les z-index élevés
+            let highZIndexElements = 0;
+            allElements.forEach(el => {
+                const style = window.getComputedStyle(el);
+                const zIndex = parseInt(style.zIndex);
+                if (zIndex > 1000) {
+                    highZIndexElements++;
+                    if (highZIndexElements <= 5) {
+                        console.log('⬆️ Z-index élevé:', el.tagName, el.className, zIndex);
+                    }
+                }
+            });
+            console.log(`⬆️ Total éléments avec z-index > 1000: ${highZIndexElements}`);
+            
+            // Test de clic sur le bouton principal
+            const mainButton = document.querySelector('button[onclick="showNewUserModal()"]');
+            if (mainButton) {
+                console.log('🔘 Bouton principal trouvé:', mainButton);
+                const style = window.getComputedStyle(mainButton);
+                console.log('🔘 Style du bouton:', {
+                    pointerEvents: style.pointerEvents,
+                    cursor: style.cursor,
+                    zIndex: style.zIndex,
+                    position: style.position
+                });
+            } else {
+                console.log('❌ Bouton principal non trouvé');
+            }
+            
+            // Nettoyer les backdrops orphelins
+            if (backdrops.length > 0) {
+                console.log('🧹 Nettoyage des backdrops orphelins...');
+                backdrops.forEach(backdrop => backdrop.remove());
+            }
+            
+            console.log('✅ Diagnostic terminé');
+        }
+
+        // Fonction pour forcer le nettoyage et permettre les clics
+        function forceEnableClicks() {
+            console.log('🔧 Forçage de l\'activation des clics...');
+            
+            // Supprimer tous les backdrops
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            
+            // Fermer tous les modals
+            const modals = document.querySelectorAll('.modal.show');
+            modals.forEach(modal => {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            });
+            
+            // Forcer pointer-events sur les éléments interactifs
+            const interactiveElements = document.querySelectorAll('button, a, input, select, textarea, [onclick]');
+            interactiveElements.forEach(el => {
+                el.style.pointerEvents = 'auto';
+                el.style.cursor = 'pointer';
+            });
+            
+            // Supprimer les overlays invisibles
+            const overlays = document.querySelectorAll('[style*="position: fixed"][style*="z-index"]');
+            overlays.forEach(overlay => {
+                const style = window.getComputedStyle(overlay);
+                if (style.pointerEvents === 'none' || style.display === 'none') {
+                    overlay.remove();
+                }
+            });
+            
+            console.log('✅ Clics forcés activés');
         }
 
         function showAlert(message, type) {
