@@ -1432,14 +1432,22 @@ function displayUsersForRoles(users) {
 
 // Sélectionner un utilisateur pour gérer ses rôles
 async function selectUserForRoles(userId, userName) {
+    console.log(`🔄 Sélection de l'utilisateur: ${userName} (${userId})`);
+    
     // Mettre à jour l'interface
     document.querySelectorAll('.user-item').forEach(item => {
         item.classList.remove('active');
     });
-    document.querySelector(`[data-user-id="${userId}"]`).classList.add('active');
+    const selectedItem = document.querySelector(`[data-user-id="${userId}"]`);
+    if (selectedItem) {
+        selectedItem.classList.add('active');
+    }
 
     // Activer le bouton d'ajout de rôle
-    document.getElementById('add-role-btn').disabled = false;
+    const addRoleBtn = document.getElementById('add-user-to-role-btn');
+    if (addRoleBtn) {
+        addRoleBtn.disabled = false;
+    }
 
     // Charger les rôles de l'utilisateur
     await loadUserRoles(userId, userName);
@@ -1478,8 +1486,12 @@ async function loadUserRoles(userId, userName) {
 
 // Afficher les rôles d'un utilisateur
 function displayUserRoles(userId, userName, userRoles) {
-    const container = document.getElementById('user-roles-content');
-    if (!container) return;
+    console.log(`📋 Affichage des rôles pour ${userName}:`, userRoles);
+    const container = document.getElementById('role-users-content');
+    if (!container) {
+        console.error('❌ Conteneur role-users-content non trouvé');
+        return;
+    }
 
     container.innerHTML = `
         <div class="mb-3">

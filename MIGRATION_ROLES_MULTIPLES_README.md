@@ -282,3 +282,4 @@ console.log(decoded.roles); // ['ADMIN', 'MANAGER']
 
 Pour toute question ou problème, consulter la documentation complète ou contacter l'équipe de développement.
 
+

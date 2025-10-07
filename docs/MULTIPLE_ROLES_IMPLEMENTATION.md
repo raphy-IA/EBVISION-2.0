@@ -194,3 +194,4 @@ node scripts/test-multiple-roles.js
 **Auteur** : Assistant IA  
 **Statut** : Implémenté et testé
 
+

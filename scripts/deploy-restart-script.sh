@@ -24,3 +24,4 @@ echo "💡 Pour faciliter l'utilisation, vous pouvez créer un alias:"
 echo "   alias restart-ebvision='./production-scripts/restart-server.sh'"
 echo "   Ajoutez cette ligne à votre ~/.bashrc ou ~/.profile"
 
+

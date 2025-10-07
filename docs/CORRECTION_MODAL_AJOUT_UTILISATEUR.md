@@ -217,3 +217,4 @@ Le modal d'ajout d'utilisateur est maintenant entièrement fonctionnel pour gér
 
 Le système ne dépend plus du champ `users.role` (qui est maintenant déprécié ou NULL) et utilise exclusivement la table de liaison `user_roles` pour la gestion des autorisations.
 
+

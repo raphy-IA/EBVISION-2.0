@@ -367,3 +367,4 @@ En cas de problème :
 **Auteur :** EB Vision 2.0 Team  
 **Date :** 3 octobre 2025
 
+

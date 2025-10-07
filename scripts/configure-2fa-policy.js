@@ -228,3 +228,4 @@ function showHelp() {
 // Exécuter le script
 configure2FAPolicy();
 
+

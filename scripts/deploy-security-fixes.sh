@@ -179,3 +179,4 @@ print_status "Préparation du déploiement terminée !"
 print_info "Tag créé: $tag_name"
 print_warning "N'oubliez pas de pousser les changements: git push origin $current_branch --tags"
 
+

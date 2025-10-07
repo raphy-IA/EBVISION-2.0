@@ -404,3 +404,4 @@ La route `/auth/me` retourne **à la fois** `role` (legacy) et `roles` (nouveau)
 **Auteur :** EB Vision 2.0 Team  
 **Date de dernière modification :** 3 octobre 2025
 
+

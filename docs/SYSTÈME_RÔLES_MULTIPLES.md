@@ -292,3 +292,4 @@ Le système inclut des logs détaillés :
 **Version :** 1.0  
 **Auteur :** Système EB Vision 2.0
 
+

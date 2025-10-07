@@ -154,3 +154,4 @@ console.log('4. Tester la fonction dans la console du navigateur');
 
 
 
+

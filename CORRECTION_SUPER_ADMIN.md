@@ -265,3 +265,4 @@ Si le problème persiste, vérifier :
 **Version :** 2.0  
 **Auteur :** EB Vision 2.0 Team
 
+

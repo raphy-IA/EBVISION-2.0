@@ -166,3 +166,4 @@ class MigrationSuccessChecker {
 const checker = new MigrationSuccessChecker();
 checker.check();
 
+

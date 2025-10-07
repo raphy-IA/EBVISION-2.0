@@ -96,3 +96,4 @@ async function applyMigration() {
 // Exécuter la migration
 applyMigration();
 
+

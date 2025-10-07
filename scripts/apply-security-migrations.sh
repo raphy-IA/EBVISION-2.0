@@ -156,3 +156,4 @@ echo "   3. Vérifier que le score s'améliore"
 
 print_status "Migrations de sécurité appliquées avec succès !"
 
+
