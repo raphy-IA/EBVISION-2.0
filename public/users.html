@@ -93,6 +93,19 @@
             font-weight: 600;
         }
         
+        /* FIX: Empêcher les modals de bloquer les clics quand ils sont cachés */
+        .modal {
+            pointer-events: none !important;
+        }
+        
+        .modal.show {
+            pointer-events: auto !important;
+        }
+        
+        .modal-dialog {
+            pointer-events: auto !important;
+        }
+        
         .status-saisie { background-color: #e3f2fd; color: #1976d2; }
         .status-soumise { background-color: #fff3e0; color: #f57c00; }
         .status-validee { background-color: #e8f5e8; color: #388e3c; }
