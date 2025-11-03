@@ -37,7 +37,7 @@ Vous avez hébergé une nouvelle instance de l'application avec un nouveau brand
 ### Un seul script Node.js fait tout :
 
 ```bash
-node scripts/init-super-admin-complete.js
+node scripts/database/init-super-admin-complete.js
 ```
 
 > ✅ Cette commande fonctionne partout : Windows, Linux, Mac, et directement dans le terminal de votre serveur
@@ -65,27 +65,27 @@ Si vous préférez contrôler chaque étape :
 
 ### 1. Créer le système de rôles
 ```bash
-node scripts/setup-roles-system.js
+node scripts/permissions/setup-roles-system.js
 ```
 
 ### 2. Créer l'utilisateur admin
 ```bash
-node scripts/create-admin-user.js
+node scripts/ui/create-admin-user.js
 ```
 
 ### 3. Créer les permissions de menu
 ```bash
-node scripts/create-menu-permissions.js
+node scripts/permissions/create-menu-permissions.js
 ```
 
 ### 4. Créer les permissions API
 ```bash
-node scripts/create-api-permissions.js
+node scripts/permissions/create-api-permissions.js
 ```
 
 ### 5. Vérifier que tout est OK
 ```bash
-node scripts/verify-super-admin-production.js
+node scripts/analysis/verify-super-admin-production.js
 ```
 
 ---
@@ -112,20 +112,20 @@ npm start
 ### Erreur de connexion à la base de données
 ```bash
 # Vérifier les variables d'environnement
-node scripts/check-env-loading.js
+node scripts/utilities/check-env-loading.js
 
 # Tester la connexion à la BD
-node scripts/test-database.js
+node scripts/database/test-database.js
 ```
 
 ### Récupérer les credentials du super admin
 ```bash
-node scripts/get-super-admin-credentials.js
+node scripts/utilities/get-super-admin-credentials.js
 ```
 
 ### Vérifier les permissions
 ```bash
-node scripts/check-admin-permissions.js
+node scripts/analysis/check-admin-permissions.js
 ```
 
 ### Erreur "Table already exists"
@@ -140,7 +140,7 @@ Le script détecte automatiquement si un utilisateur admin existe et le réutili
 
 ### Modifier les informations de l'admin
 
-Éditez le fichier `scripts/init-super-admin-complete.js` ligne 219 :
+Éditez le fichier `scripts/database/init-super-admin-complete.js` ligne 219 :
 
 ```javascript
 const adminUser = {
@@ -216,12 +216,12 @@ Si vous rencontrez des problèmes :
 
 ## 📌 Fichiers Importants
 
-- `scripts/init-super-admin-complete.js` - Script d'initialisation complet ⭐
-- `scripts/create-admin-user.js` - Créer uniquement l'utilisateur
-- `scripts/setup-roles-system.js` - Configurer uniquement les rôles
-- `scripts/create-menu-permissions.js` - Créer uniquement les permissions de menu
-- `scripts/create-api-permissions.js` - Créer uniquement les permissions API
-- `scripts/verify-super-admin-production.js` - Vérifier la configuration
+- `scripts/database/init-super-admin-complete.js` - Script d'initialisation complet ⭐
+- `scripts/ui/create-admin-user.js` - Créer uniquement l'utilisateur
+- `scripts/permissions/setup-roles-system.js` - Configurer uniquement les rôles
+- `scripts/permissions/create-menu-permissions.js` - Créer uniquement les permissions de menu
+- `scripts/permissions/create-api-permissions.js` - Créer uniquement les permissions API
+- `scripts/analysis/verify-super-admin-production.js` - Vérifier la configuration
 
 ---
 

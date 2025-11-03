@@ -4,9 +4,9 @@
 
 Ce guide présente **3 scripts modulaires** qui permettent d'initialiser votre application étape par étape :
 
-1. **`1-init-database-tables.js`** - Créer toutes les tables
-2. **`2-create-super-admin.js`** - Créer un utilisateur super admin
-3. **`3-assign-all-permissions.js`** - Affecter toutes les permissions
+1. **`scripts/database/1-init-database-tables.js`** - Créer toutes les tables
+2. **`scripts/database/2-create-super-admin.js`** - Créer un utilisateur super admin
+3. **`scripts/database/3-assign-all-permissions.js`** - Affecter toutes les permissions
 
 ---
 
@@ -30,7 +30,7 @@ Ce guide présente **3 scripts modulaires** qui permettent d'initialiser votre a
 
 ### 💻 Commande :
 ```bash
-node scripts/1-init-database-tables.js
+node scripts/database/1-init-database-tables.js
 ```
 
 ### 📝 Questions posées :
@@ -78,7 +78,7 @@ node scripts/1-init-database-tables.js
 
 ### 💻 Commande :
 ```bash
-node scripts/2-create-super-admin.js
+node scripts/database/2-create-super-admin.js
 ```
 
 ### 📝 Questions posées :
@@ -114,7 +114,7 @@ Réexécutez simplement le script avec des identifiants différents.
 
 ### 💻 Commande :
 ```bash
-node scripts/3-assign-all-permissions.js
+node scripts/database/3-assign-all-permissions.js
 ```
 
 ### 📝 Questions posées :
@@ -147,13 +147,13 @@ node scripts/3-assign-all-permissions.js
 
 ```bash
 # Étape 1 : Créer les tables
-node scripts/1-init-database-tables.js
+node scripts/database/1-init-database-tables.js
 
 # Étape 2 : Créer le super admin
-node scripts/2-create-super-admin.js
+node scripts/database/2-create-super-admin.js
 
 # Étape 3 : Affecter les permissions
-node scripts/3-assign-all-permissions.js
+node scripts/database/3-assign-all-permissions.js
 
 # Étape 4 : Démarrer l'application
 npm start
@@ -165,10 +165,10 @@ Si la base de données existe déjà :
 
 ```bash
 # Créer un nouveau super admin
-node scripts/2-create-super-admin.js
+node scripts/database/2-create-super-admin.js
 
 # Lui affecter toutes les permissions
-node scripts/3-assign-all-permissions.js
+node scripts/database/3-assign-all-permissions.js
 ```
 
 ### Cas d'usage 3 : Réaffecter les Permissions
@@ -177,7 +177,7 @@ Si vous avez ajouté de nouvelles permissions dans le code :
 
 ```bash
 # Réexécuter l'affectation
-node scripts/3-assign-all-permissions.js
+node scripts/database/3-assign-all-permissions.js
 ```
 
 ---
@@ -229,7 +229,7 @@ Les scripts sont **idempotents** :
 
 **Solution :**
 ```bash
-node scripts/1-init-database-tables.js
+node scripts/database/1-init-database-tables.js
 ```
 
 ### Aucun utilisateur Super Admin trouvé
@@ -240,7 +240,7 @@ node scripts/1-init-database-tables.js
 
 **Solution :**
 ```bash
-node scripts/2-create-super-admin.js
+node scripts/database/2-create-super-admin.js
 ```
 
 ### Mot de passe non conforme
@@ -288,10 +288,11 @@ Respectez les exigences :
 
 | Script | Fichier | Description |
 |--------|---------|-------------|
-| **Modulaire 1** | `scripts/1-init-database-tables.js` | Créer tables + rôles |
-| **Modulaire 2** | `scripts/2-create-super-admin.js` | Créer super admin |
-| **Modulaire 3** | `scripts/3-assign-all-permissions.js` | Affecter permissions |
-| **Tout-en-Un** | `scripts/init-super-admin-complete.js` | Tout en une fois |
+| **Modulaire 0** | `scripts/database/0-reset-database.js` | Remise à zéro DB |
+| **Modulaire 1** | `scripts/database/1-init-database-tables.js` | Créer tables + rôles |
+| **Modulaire 2** | `scripts/database/2-create-super-admin.js` | Créer super admin |
+| **Modulaire 3** | `scripts/database/3-assign-all-permissions.js` | Affecter permissions |
+| **Tout-en-Un** | `scripts/database/init-super-admin-complete.js` | Tout en une fois |
 
 ---
 

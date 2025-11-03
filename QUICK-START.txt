@@ -18,13 +18,13 @@ Voici comment créer un compte super admin avec toutes les permissions :
 ───────────────────────────────────────────────────────────────────
 
 APPROCHE 1 : TOUT-EN-UN (Rapide)
-    node scripts/init-super-admin-complete.js
+    node scripts/database/init-super-admin-complete.js
     → Tout en une seule commande (identifiants par défaut)
 
 APPROCHE 2 : MODULAIRE (Personnalisable)
-    node scripts/1-init-database-tables.js    # Tables + rôles
-    node scripts/2-create-super-admin.js       # Super admin interactif
-    node scripts/3-assign-all-permissions.js   # Affectation permissions
+    node scripts/database/1-init-database-tables.js    # Tables + rôles
+    node scripts/database/2-create-super-admin.js       # Super admin interactif
+    node scripts/database/3-assign-all-permissions.js   # Affectation permissions
     → Contrôle total + personnalisation des identifiants
 
 📖 Guide détaillé modulaire : INIT-MODULAIRE.md
@@ -68,11 +68,11 @@ APPROCHE 2 : MODULAIRE (Personnalisable)
 ───────────────────────────────────────────────────────────────────
 
 MÉTHODE 1 : Utiliser les scripts modulaires (RECOMMANDÉ)
-    node scripts/2-create-super-admin.js
+    node scripts/database/2-create-super-admin.js
     → Les scripts posent des questions interactivement
 
 MÉTHODE 2 : Modifier le script tout-en-un
-    Éditez : scripts/init-super-admin-complete.js (ligne 219)
+    Éditez : scripts/database/init-super-admin-complete.js (ligne 219)
     Puis réexécutez le script.
 
 ───────────────────────────────────────────────────────────────────
@@ -82,13 +82,13 @@ MÉTHODE 2 : Modifier le script tout-en-un
 Erreur de connexion à la BD ?
     → Vérifiez votre .env
     → Vérifiez que PostgreSQL est démarré
-    → Testez : node scripts/test-database.js
+    → Testez : node scripts/database/test-database.js
 
 Récupérer les credentials ?
-    → node scripts/get-super-admin-credentials.js
+    → node scripts/utilities/get-super-admin-credentials.js
 
 Vérifier les permissions ?
-    → node scripts/check-admin-permissions.js
+    → node scripts/analysis/check-admin-permissions.js
 
 ───────────────────────────────────────────────────────────────────
   📚 DOCUMENTATION COMPLÈTE

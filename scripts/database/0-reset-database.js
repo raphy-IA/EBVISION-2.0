@@ -1,0 +1,424 @@
+#!/usr/bin/env node
+
+/**
+ * Script de remise à zéro de la base de données
+ * Offre plusieurs niveaux de nettoyage avec préservation sélective des données
+ */
+
+require('dotenv').config();
+const { Pool } = require('pg');
+const inquirer = require('inquirer');
+const chalk = require('chalk');
+
+// Configuration de la connexion
+const pool = new Pool({
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT) || 5432,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000
+});
+
+// Types de remise à zéro disponibles
+const RESET_TYPES = {
+    LIGHT: {
+        name: '🧹 LÉGÈRE - Supprimer uniquement les données de test/demo',
+        value: 'light',
+        description: 'Conserve : Tables, Rôles, Super Admins, Permissions, Business Units'
+    },
+    MODERATE: {
+        name: '⚠️  MODÉRÉE - Supprimer les données opérationnelles',
+        value: 'moderate',
+        description: 'Conserve : Tables, Rôles, Super Admins, Permissions\nSupprime : Collaborateurs, Opportunités, Campagnes, etc.'
+    },
+    HEAVY: {
+        name: '🔥 COMPLÈTE - Supprimer toutes les données',
+        value: 'heavy',
+        description: 'Conserve : Tables, Rôles\nSupprime : Tous les utilisateurs, toutes les données'
+    },
+    BRUTAL: {
+        name: '💀 BRUTALE - Tout supprimer et recréer',
+        value: 'brutal',
+        description: '⚠️  ATTENTION : Supprime TOUT (tables, données, rôles, permissions)'
+    }
+};
+
+async function resetDatabase() {
+    try {
+        console.log(chalk.yellow.bold('\n╔══════════════════════════════════════════════════════════════╗'));
+        console.log(chalk.yellow.bold('║         REMISE À ZÉRO DE LA BASE DE DONNÉES                  ║'));
+        console.log(chalk.yellow.bold('╚══════════════════════════════════════════════════════════════╝\n'));
+
+        // Test de connexion
+        console.log(chalk.cyan('📡 Connexion à la base de données...'));
+        await pool.query('SELECT NOW()');
+        console.log(chalk.green(`✓ Connecté à: ${process.env.DB_NAME}`));
+        console.log(chalk.gray(`  Hôte: ${process.env.DB_HOST}:${process.env.DB_PORT}`));
+        console.log(chalk.gray(`  Utilisateur: ${process.env.DB_USER}\n`));
+
+        // Afficher les statistiques actuelles
+        const stats = await getDatabaseStats();
+        console.log(chalk.cyan('📊 ÉTAT ACTUEL DE LA BASE DE DONNÉES'));
+        console.log(chalk.gray('─'.repeat(60)));
+        console.log(chalk.white(`   Utilisateurs: ${stats.users}`));
+        console.log(chalk.white(`   Collaborateurs: ${stats.collaborateurs}`));
+        console.log(chalk.white(`   Opportunités: ${stats.opportunities}`));
+        console.log(chalk.white(`   Campagnes: ${stats.campaigns}`));
+        console.log(chalk.white(`   Business Units: ${stats.business_units}`));
+        console.log(chalk.white(`   Permissions: ${stats.permissions}\n`));
+
+        // Choix du type de remise à zéro
+        const { resetType } = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'resetType',
+                message: 'Quel type de remise à zéro souhaitez-vous effectuer ?',
+                choices: Object.values(RESET_TYPES).map(type => ({
+                    name: type.name,
+                    value: type.value,
+                    short: type.value.toUpperCase()
+                })),
+                pageSize: 10
+            }
+        ]);
+
+        // Afficher la description
+        const selectedType = Object.values(RESET_TYPES).find(t => t.value === resetType);
+        console.log(chalk.yellow('\n⚠️  ATTENTION:'));
+        console.log(chalk.white(selectedType.description));
+
+        // Confirmation de sécurité
+        const { confirmation } = await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'confirmation',
+                message: `Tapez "${resetType.toUpperCase()}" pour confirmer:`,
+                validate: (input) => {
+                    if (input === resetType.toUpperCase()) {
+                        return true;
+                    }
+                    return 'Confirmation incorrecte. Opération annulée.';
+                }
+            }
+        ]);
+
+        // Double confirmation pour les niveaux heavy et brutal
+        if (resetType === 'heavy' || resetType === 'brutal') {
+            const { doubleConfirm } = await inquirer.prompt([
+                {
+                    type: 'confirm',
+                    name: 'doubleConfirm',
+                    message: chalk.red.bold('⚠️  DERNIÈRE CHANCE: Êtes-vous ABSOLUMENT SÛR ?'),
+                    default: false
+                }
+            ]);
+
+            if (!doubleConfirm) {
+                console.log(chalk.yellow('\n✋ Opération annulée par l\'utilisateur.\n'));
+                return;
+            }
+        }
+
+        console.log(chalk.cyan('\n🔄 Démarrage de la remise à zéro...\n'));
+
+        // Exécuter la remise à zéro selon le type
+        switch (resetType) {
+            case 'light':
+                await resetLight();
+                break;
+            case 'moderate':
+                await resetModerate();
+                break;
+            case 'heavy':
+                await resetHeavy();
+                break;
+            case 'brutal':
+                await resetBrutal();
+                break;
+        }
+
+        // Afficher les statistiques finales
+        const finalStats = await getDatabaseStats();
+        console.log(chalk.cyan('\n📊 ÉTAT FINAL DE LA BASE DE DONNÉES'));
+        console.log(chalk.gray('─'.repeat(60)));
+        console.log(chalk.white(`   Utilisateurs: ${finalStats.users} (${stats.users - finalStats.users} supprimés)`));
+        console.log(chalk.white(`   Collaborateurs: ${finalStats.collaborateurs} (${stats.collaborateurs - finalStats.collaborateurs} supprimés)`));
+        console.log(chalk.white(`   Opportunités: ${finalStats.opportunities} (${stats.opportunities - finalStats.opportunities} supprimés)`));
+        console.log(chalk.white(`   Campagnes: ${finalStats.campaigns} (${stats.campaigns - finalStats.campaigns} supprimés)`));
+        console.log(chalk.white(`   Business Units: ${finalStats.business_units} (${stats.business_units - finalStats.business_units} supprimés)`));
+        console.log(chalk.white(`   Permissions: ${finalStats.permissions} (${stats.permissions - finalStats.permissions} supprimés)\n`));
+
+        console.log(chalk.green.bold('✅ REMISE À ZÉRO TERMINÉE AVEC SUCCÈS!\n'));
+
+    } catch (error) {
+        console.error(chalk.red('❌ Erreur lors de la remise à zéro:'), error);
+        throw error;
+    } finally {
+        await pool.end();
+    }
+}
+
+async function getDatabaseStats() {
+    const stats = {
+        users: 0,
+        collaborateurs: 0,
+        opportunities: 0,
+        campaigns: 0,
+        business_units: 0,
+        permissions: 0
+    };
+
+    // Requêtes individuelles avec try-catch pour chacune
+    try {
+        const usersResult = await pool.query('SELECT COUNT(*) FROM users');
+        stats.users = parseInt(usersResult.rows[0].count);
+    } catch (error) {
+        // Table users n'existe pas ou erreur
+    }
+
+    try {
+        const collabResult = await pool.query('SELECT COUNT(*) FROM collaborateurs');
+        stats.collaborateurs = parseInt(collabResult.rows[0].count);
+    } catch (error) {
+        // Table collaborateurs n'existe pas ou erreur
+    }
+
+    try {
+        const oppsResult = await pool.query('SELECT COUNT(*) FROM opportunities');
+        stats.opportunities = parseInt(oppsResult.rows[0].count);
+    } catch (error) {
+        // Table opportunities n'existe pas ou erreur
+    }
+
+    try {
+        const campaignsResult = await pool.query('SELECT COUNT(*) FROM prospecting_campaigns');
+        stats.campaigns = parseInt(campaignsResult.rows[0].count);
+    } catch (error) {
+        // Table prospecting_campaigns n'existe pas ou erreur
+    }
+
+    try {
+        const buResult = await pool.query('SELECT COUNT(*) FROM business_units');
+        stats.business_units = parseInt(buResult.rows[0].count);
+    } catch (error) {
+        // Table business_units n'existe pas ou erreur
+    }
+
+    try {
+        const permsResult = await pool.query('SELECT COUNT(*) FROM permissions');
+        stats.permissions = parseInt(permsResult.rows[0].count);
+    } catch (error) {
+        // Table permissions n'existe pas ou erreur
+    }
+
+    return stats;
+}
+
+async function resetLight() {
+    console.log(chalk.cyan('🧹 REMISE À ZÉRO LÉGÈRE\n'));
+
+    // Supprimer uniquement les campagnes de test et opportunités de démo
+    let count = 0;
+
+    console.log(chalk.gray('   → Suppression des campagnes de test...'));
+    const campaignsResult = await pool.query(`
+        DELETE FROM prospecting_campaigns 
+        WHERE name ILIKE '%test%' OR name ILIKE '%demo%' OR status = 'BROUILLON'
+        RETURNING id
+    `);
+    count += campaignsResult.rowCount;
+    console.log(chalk.green(`   ✓ ${campaignsResult.rowCount} campagnes supprimées`));
+
+    console.log(chalk.gray('   → Suppression des opportunités de démo...'));
+    const oppsResult = await pool.query(`
+        DELETE FROM opportunities 
+        WHERE nom ILIKE '%test%' OR nom ILIKE '%demo%' OR statut = 'BROUILLON'
+        RETURNING id
+    `);
+    count += oppsResult.rowCount;
+    console.log(chalk.green(`   ✓ ${oppsResult.rowCount} opportunités supprimées`));
+
+    console.log(chalk.gray('   → Suppression des notifications...'));
+    const notifsResult = await pool.query('DELETE FROM notifications RETURNING id');
+    count += notifsResult.rowCount;
+    console.log(chalk.green(`   ✓ ${notifsResult.rowCount} notifications supprimées`));
+
+    console.log(chalk.green(`\n✅ ${count} enregistrements supprimés`));
+}
+
+async function resetModerate() {
+    console.log(chalk.cyan('⚠️  REMISE À ZÉRO MODÉRÉE\n'));
+
+    let count = 0;
+
+    // Désactiver temporairement les contraintes FK
+    await pool.query('SET session_replication_role = replica;');
+
+    const tablesToClean = [
+        'notifications',
+        'tasks',
+        'prospecting_campaigns',
+        'prospecting_campaign_validations',
+        'prospecting_campaign_companies',
+        'prospecting_campaign_validation_companies',
+        'campaign_templates',
+        'opportunities',
+        'opportunity_steps',
+        'opportunity_comments',
+        'contracts',
+        'invoices',
+        'timesheets',
+        'timesheet_entries',
+        'rh_evolutions',
+        'rh_competences',
+        'rh_formations',
+        'documents'
+    ];
+
+    for (const table of tablesToClean) {
+        try {
+            console.log(chalk.gray(`   → Nettoyage de ${table}...`));
+            const result = await pool.query(`DELETE FROM ${table} RETURNING id`);
+            count += result.rowCount;
+            console.log(chalk.green(`   ✓ ${result.rowCount} enregistrements supprimés`));
+        } catch (error) {
+            console.log(chalk.yellow(`   ⚠ ${table} : ${error.message}`));
+        }
+    }
+
+    // Supprimer les utilisateurs non-admin
+    console.log(chalk.gray('   → Suppression des utilisateurs non-admin...'));
+    const usersResult = await pool.query(`
+        DELETE FROM users 
+        WHERE role NOT IN ('SUPER_ADMIN', 'ADMIN')
+        RETURNING id
+    `);
+    count += usersResult.rowCount;
+    console.log(chalk.green(`   ✓ ${usersResult.rowCount} utilisateurs supprimés`));
+
+    // Supprimer les collaborateurs
+    console.log(chalk.gray('   → Suppression des collaborateurs...'));
+    const collabResult = await pool.query('DELETE FROM collaborateurs RETURNING id');
+    count += collabResult.rowCount;
+    console.log(chalk.green(`   ✓ ${collabResult.rowCount} collaborateurs supprimés`));
+
+    // Réactiver les contraintes FK
+    await pool.query('SET session_replication_role = DEFAULT;');
+
+    console.log(chalk.green(`\n✅ ${count} enregistrements supprimés`));
+}
+
+async function resetHeavy() {
+    console.log(chalk.cyan('🔥 REMISE À ZÉRO COMPLÈTE\n'));
+
+    let count = 0;
+
+    // Désactiver temporairement les contraintes FK
+    await pool.query('SET session_replication_role = replica;');
+
+    const tablesToClean = [
+        'notifications',
+        'tasks',
+        'prospecting_campaigns',
+        'prospecting_campaign_validations',
+        'prospecting_campaign_companies',
+        'prospecting_campaign_validation_companies',
+        'campaign_templates',
+        'opportunities',
+        'opportunity_steps',
+        'opportunity_comments',
+        'opportunity_types',
+        'contracts',
+        'invoices',
+        'timesheets',
+        'timesheet_entries',
+        'rh_evolutions',
+        'rh_competences',
+        'rh_formations',
+        'documents',
+        'collaborateurs',
+        'business_units',
+        'divisions',
+        'secteurs',
+        'user_roles',
+        'role_permissions',
+        'permissions',
+        'users'
+    ];
+
+    for (const table of tablesToClean) {
+        try {
+            console.log(chalk.gray(`   → Nettoyage de ${table}...`));
+            const result = await pool.query(`DELETE FROM ${table}`);
+            count += result.rowCount;
+            console.log(chalk.green(`   ✓ ${result.rowCount} enregistrements supprimés`));
+        } catch (error) {
+            console.log(chalk.yellow(`   ⚠ ${table} : ${error.message}`));
+        }
+    }
+
+    // Réactiver les contraintes FK
+    await pool.query('SET session_replication_role = DEFAULT;');
+
+    console.log(chalk.yellow('\n⚠️  ATTENTION: Tous les utilisateurs ont été supprimés!'));
+    console.log(chalk.cyan('💡 Conseil: Exécutez maintenant le script de création de super admin:'));
+    console.log(chalk.white('   node scripts/database/2-create-super-admin.js\n'));
+
+    console.log(chalk.green(`✅ ${count} enregistrements supprimés`));
+}
+
+async function resetBrutal() {
+    console.log(chalk.red.bold('💀 REMISE À ZÉRO BRUTALE\n'));
+
+    // Récupérer toutes les tables
+    const tablesResult = await pool.query(`
+        SELECT tablename 
+        FROM pg_tables 
+        WHERE schemaname = 'public'
+        ORDER BY tablename
+    `);
+
+    const tables = tablesResult.rows.map(row => row.tablename);
+    console.log(chalk.gray(`   → ${tables.length} tables trouvées\n`));
+
+    // Supprimer toutes les tables
+    console.log(chalk.gray('   → Suppression de toutes les tables...'));
+    for (const table of tables) {
+        try {
+            await pool.query(`DROP TABLE IF EXISTS ${table} CASCADE`);
+            console.log(chalk.green(`   ✓ Table ${table} supprimée`));
+        } catch (error) {
+            console.log(chalk.red(`   ✗ Erreur sur ${table}: ${error.message}`));
+        }
+    }
+
+    console.log(chalk.red.bold('\n💀 BASE DE DONNÉES COMPLÈTEMENT VIDÉE!'));
+    console.log(chalk.yellow('⚠️  Toutes les tables ont été supprimées!'));
+    console.log(chalk.cyan('\n💡 Conseil: Exécutez maintenant les scripts d\'initialisation:'));
+    console.log(chalk.white('   1. node scripts/database/1-init-database-tables.js'));
+    console.log(chalk.white('   2. node scripts/database/2-create-super-admin.js\n'));
+}
+
+// Menu principal
+async function main() {
+    try {
+        await resetDatabase();
+    } catch (error) {
+        console.error(chalk.red('\n❌ Erreur fatale:'), error);
+        process.exit(1);
+    }
+}
+
+// Gestion du Ctrl+C
+process.on('SIGINT', async () => {
+    console.log(chalk.yellow('\n\n✋ Opération annulée par l\'utilisateur.\n'));
+    await pool.end();
+    process.exit(0);
+});
+
+main();
+
