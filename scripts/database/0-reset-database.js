@@ -38,7 +38,7 @@ const RESET_TYPES = {
     HEAVY: {
         name: '🔥 COMPLÈTE - Supprimer toutes les données',
         value: 'heavy',
-        description: 'Conserve : Tables, Rôles\nSupprime : Tous les utilisateurs, toutes les données'
+        description: 'Conserve : Tables, Rôles, Super Admins\nSupprime : Permissions, BU, Divisions, tous les autres utilisateurs'
     },
     BRUTAL: {
         name: '💀 BRUTALE - Tout supprimer et recréer',
@@ -286,7 +286,11 @@ async function resetModerate() {
         { name: 'rh_evolutions', hasId: true },
         
         // Collaborateurs (avant users car FK)
-        { name: 'collaborateurs', hasId: true }
+        { name: 'collaborateurs', hasId: true },
+        
+        // Settings utilisateurs (AVANT de supprimer les users)
+        { name: 'notification_settings', hasId: true },
+        { name: 'user_settings', hasId: true }
     ];
 
     for (const table of tablesToClean) {
@@ -364,16 +368,21 @@ async function resetHeavy() {
         // Collaborateurs (avant divisions/secteurs/business_units car FK)
         'collaborateurs',
         
+        // Taux horaires (AVANT divisions car FK sur divisions)
+        'taux_horaires',
+        
         // Structure organisationnelle
         'divisions',
         'secteurs',
         'business_units',
         
-        // Permissions et utilisateurs (à la fin)
-        'user_roles',
+        // Settings utilisateurs (AVANT users car FK sur users)
+        'notification_settings',
+        'user_settings',
+        
+        // Permissions (supprimer AVANT user_roles)
         'role_permissions',
-        'permissions',
-        'users'
+        'permissions'
     ];
 
     for (const table of tablesToClean) {
@@ -387,9 +396,50 @@ async function resetHeavy() {
         }
     }
 
-    console.log(chalk.yellow('\n⚠️  ATTENTION: Tous les utilisateurs ont été supprimés!'));
-    console.log(chalk.cyan('💡 Conseil: Exécutez maintenant le script de création de super admin:'));
-    console.log(chalk.white('   node scripts/database/2-create-super-admin.js\n'));
+    // Supprimer les user_roles pour les non-admin
+    console.log(chalk.gray('   → Nettoyage des rôles utilisateurs non-admin...'));
+    try {
+        const userRolesResult = await pool.query(`
+            DELETE FROM user_roles 
+            WHERE user_id IN (
+                SELECT id FROM users 
+                WHERE role NOT IN ('SUPER_ADMIN', 'ADMIN')
+                AND id NOT IN (
+                    SELECT DISTINCT user_id 
+                    FROM user_roles ur 
+                    JOIN roles r ON ur.role_id = r.id 
+                    WHERE r.name IN ('SUPER_ADMIN', 'ADMIN')
+                )
+            )
+        `);
+        count += userRolesResult.rowCount;
+        console.log(chalk.green(`   ✓ ${userRolesResult.rowCount} rôles utilisateurs supprimés`));
+    } catch (error) {
+        console.log(chalk.yellow(`   ⚠ user_roles : ${error.message}`));
+    }
+
+    // Supprimer les utilisateurs non-admin (GARDER les SUPER_ADMIN)
+    console.log(chalk.gray('   → Suppression des utilisateurs non-admin...'));
+    try {
+        const usersResult = await pool.query(`
+            DELETE FROM users 
+            WHERE role NOT IN ('SUPER_ADMIN', 'ADMIN')
+            AND id NOT IN (
+                SELECT DISTINCT user_id 
+                FROM user_roles ur 
+                JOIN roles r ON ur.role_id = r.id 
+                WHERE r.name IN ('SUPER_ADMIN', 'ADMIN')
+            )
+            RETURNING id
+        `);
+        count += usersResult.rowCount;
+        console.log(chalk.green(`   ✓ ${usersResult.rowCount} utilisateurs supprimés`));
+    } catch (error) {
+        console.log(chalk.yellow(`   ⚠ users : ${error.message}`));
+    }
+
+    console.log(chalk.yellow('\n⚠️  Les utilisateurs SUPER_ADMIN et ADMIN ont été conservés'));
+    console.log(chalk.cyan('💡 Vous pouvez vous reconnecter avec vos comptes administrateurs\n'));
 
     console.log(chalk.green(`✅ ${count} enregistrements supprimés`));
 }
