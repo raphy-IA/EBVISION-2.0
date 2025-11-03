@@ -103,8 +103,8 @@ async function importOpportunityTypes(filename) {
         console.log(chalk.gray(`     Colonnes disponibles: ${availableColumns.join(', ')}`));
 
         // Construire la requête dynamiquement selon les colonnes disponibles
-        const columnsToImport = ['code', 'nom', 'description'];
-        const optionalColumns = ['default_probability', 'default_amount', 'duree_moyenne_jours', 'is_active', 'created_at', 'updated_at'];
+        const columnsToImport = ['name', 'description'];
+        const optionalColumns = ['default_probability', 'default_duration_days', 'is_active', 'created_at', 'updated_at'];
         
         optionalColumns.forEach(col => {
             if (availableColumns.includes(col)) {
@@ -123,14 +123,14 @@ async function importOpportunityTypes(filename) {
             const values = columnsToImport.map(col => type[col]);
             const placeholders = columnsToImport.map((_, i) => `$${i + 1}`).join(', ');
             const updateSet = columnsToImport
-                .filter(col => col !== 'code') // code est la clé unique
+                .filter(col => col !== 'name') // name est la clé unique
                 .map(col => `${col} = EXCLUDED.${col}`)
                 .join(', ');
             
             const query = `
                 INSERT INTO opportunity_types (${columnsToImport.join(', ')})
                 VALUES (${placeholders})
-                ON CONFLICT (code) DO UPDATE SET ${updateSet}
+                ON CONFLICT (name) DO UPDATE SET ${updateSet}
                 RETURNING id
             `;
 
@@ -153,18 +153,19 @@ async function importOpportunityTypes(filename) {
             const result = await pool.query(`
                 INSERT INTO opportunity_stage_templates (
                     opportunity_type_id, stage_name, stage_order, 
-                    description, is_mandatory, requires_validation, created_at, updated_at
+                    description, is_mandatory, validation_required,
+                    min_duration_days, max_duration_days
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 RETURNING id
             `, [
                 newTypeId,
                 stage.stage_name,
                 stage.stage_order,
-                stage.description,
-                stage.is_mandatory,
-                stage.requires_validation,
-                stage.created_at,
-                stage.updated_at
+                stage.description || '',
+                stage.is_mandatory !== false,
+                stage.validation_required || stage.requires_validation || false,
+                stage.min_duration_days || 1,
+                stage.max_duration_days || 10
             ]);
 
             stageIdMap.set(oldId, result.rows[0].id);
