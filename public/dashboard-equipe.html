@@ -161,12 +161,51 @@
             padding: 1rem;
             margin-bottom: 2rem;
         }
+        
+        .main-content {
+            padding: 2rem !important;
+            padding-top: 2rem !important;
+            padding-left: 3rem !important;
+            background-color: #f8f9fa;
+            margin-left: 0 !important;
+        }
+        
+        /* Override Bootstrap column padding */
+        .col-md-9.main-content,
+        .col-lg-10.main-content {
+            padding-left: 3rem !important;
+            padding-right: 2rem !important;
+        }
+        
+        .container-fluid {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        
+        .container-fluid > .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        
+        /* Ensure sidebar has no right padding */
+        .col-md-3.px-0,
+        .col-lg-2.px-0 {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
     </style>
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
+
+    <!-- CSS des variables de branding dynamiques -->
+    <link rel="stylesheet" href="/config/themes/brand-variables.css">
+    
+    <!-- Scripts de branding -->
+    <script src="js/branding-loader.js"></script>
+    <script src="js/sidebar-branding.js"></script>
 </head>
 <body>
     <div class="container-fluid">

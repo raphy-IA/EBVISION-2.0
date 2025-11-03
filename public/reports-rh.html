@@ -8,9 +8,13 @@
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
     
     <!-- Chart.js pour les graphiques -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
     
     <style>
         :root {
@@ -28,63 +32,17 @@
             background-color: var(--light-bg);
         }
         
-        /* Navigation Top Bar */
-        .top-navbar {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-bg) 100%);
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .top-navbar .brand {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: white;
-            text-decoration: none;
-        }
-        
-        .top-navbar .nav-links {
+        /* Page Wrapper */
+        .page-wrapper {
             display: flex;
-            gap: 1.5rem;
-            align-items: center;
+            min-height: 100vh;
         }
         
-        .top-navbar .nav-links a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            transition: all 0.3s;
-        }
-        
-        .top-navbar .nav-links a:hover,
-        .top-navbar .nav-links a.active {
-            background-color: rgba(255,255,255,0.2);
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        
-        /* Main Content */
-        .main-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem 2rem;
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+            max-width: calc(100% - 300px);
         }
         
         .page-header {
@@ -291,49 +249,19 @@
             }
         }
     </style>
+
+    <!-- CSS des variables de branding dynamiques -->
+    <link rel="stylesheet" href="/config/themes/brand-variables.css">
+    
+    <!-- Scripts de branding -->
+    <script src="js/branding-loader.js"></script>
+    <script src="js/sidebar-branding.js"></script>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
-    <nav class="top-navbar">
-        <div class="container-fluid px-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <a href="/dashboard.html" class="brand">
-                    <i class="fas fa-chart-line me-2"></i>EB Vision 2.0
-                </a>
-                
-                <div class="nav-links d-none d-md-flex">
-                    <a href="/dashboard.html">
-                        <i class="fas fa-home me-1"></i>Accueil
-                    </a>
-                    <a href="/reports-rh.html" class="active">
-                        <i class="fas fa-users me-1"></i>Rapport RH
-                    </a>
-                    <a href="/reports.html">
-                        <i class="fas fa-chart-bar me-1"></i>Autres Rapports
-                    </a>
-                    <a href="/collaborateurs.html">
-                        <i class="fas fa-user-tie me-1"></i>Collaborateurs
-                    </a>
-                </div>
-                
-                <div class="user-info">
-                    <div class="user-avatar" id="userAvatar">
-                        <span id="userInitials">A</span>
-                    </div>
-                    <div class="d-none d-md-block">
-                        <div style="font-weight: 600;" id="userName">Chargement...</div>
-                        <small id="userRole">-</small>
-                    </div>
-                    <a href="#" class="btn btn-sm btn-outline-light ms-2" onclick="logout(event)">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <div class="page-wrapper">
+        <div class="sidebar-container"></div>
 
-    <!-- Main Container -->
-    <div class="main-container">
+        <div class="main-content-area">
         <!-- Page Header -->
         <div class="page-header">
             <div class="d-flex justify-content-between align-items-center">
@@ -1065,6 +993,19 @@
             }
         });
     </script>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/menu-permissions.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/session-manager.js"></script>
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
 </body>
 </html>
 
