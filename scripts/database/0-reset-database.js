@@ -349,7 +349,6 @@ async function resetHeavy() {
         'opportunity_comments',
         'opportunity_steps',
         'opportunities',
-        'opportunity_types',
         
         // Documents et contrats
         'documents',
@@ -366,10 +365,7 @@ async function resetHeavy() {
         // Collaborateurs (avant divisions/secteurs/business_units car FK)
         'collaborateurs',
         
-        // Templates et étapes (AVANT BU/Divisions car FK)
-        'stage_required_documents',
-        'stage_required_actions',
-        'opportunity_stage_templates',
+        // Modèles de prospection uniquement (AVANT BU/Divisions car FK)
         'prospecting_templates',
         
         // Taux horaires (AVANT divisions car FK sur divisions)
