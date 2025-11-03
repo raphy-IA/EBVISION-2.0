@@ -71,8 +71,14 @@ async function resetDatabase() {
         console.log(chalk.gray('─'.repeat(60)));
         console.log(chalk.white(`   Utilisateurs: ${stats.users}`));
         console.log(chalk.white(`   Collaborateurs: ${stats.collaborateurs}`));
+        console.log(chalk.white(`   Clients: ${stats.clients}`));
+        console.log(chalk.white(`   Missions: ${stats.missions}`));
         console.log(chalk.white(`   Opportunités: ${stats.opportunities}`));
         console.log(chalk.white(`   Campagnes: ${stats.campaigns}`));
+        console.log(chalk.white(`   Factures: ${stats.invoices}`));
+        console.log(chalk.white(`   Entrées de temps: ${stats.time_entries}`));
+        console.log(chalk.white(`   Tâches: ${stats.tasks}`));
+        console.log(chalk.white(`   Notifications: ${stats.notifications}`));
         console.log(chalk.white(`   Business Units: ${stats.business_units}`));
         console.log(chalk.white(`   Permissions: ${stats.permissions}\n`));
 
@@ -155,8 +161,14 @@ async function resetDatabase() {
         console.log(chalk.gray('─'.repeat(60)));
         console.log(chalk.white(`   Utilisateurs: ${finalStats.users} (${stats.users - finalStats.users} supprimés)`));
         console.log(chalk.white(`   Collaborateurs: ${finalStats.collaborateurs} (${stats.collaborateurs - finalStats.collaborateurs} supprimés)`));
+        console.log(chalk.white(`   Clients: ${finalStats.clients} (${stats.clients - finalStats.clients} supprimés)`));
+        console.log(chalk.white(`   Missions: ${finalStats.missions} (${stats.missions - finalStats.missions} supprimés)`));
         console.log(chalk.white(`   Opportunités: ${finalStats.opportunities} (${stats.opportunities - finalStats.opportunities} supprimés)`));
         console.log(chalk.white(`   Campagnes: ${finalStats.campaigns} (${stats.campaigns - finalStats.campaigns} supprimés)`));
+        console.log(chalk.white(`   Factures: ${finalStats.invoices} (${stats.invoices - finalStats.invoices} supprimés)`));
+        console.log(chalk.white(`   Entrées de temps: ${finalStats.time_entries} (${stats.time_entries - finalStats.time_entries} supprimés)`));
+        console.log(chalk.white(`   Tâches: ${finalStats.tasks} (${stats.tasks - finalStats.tasks} supprimés)`));
+        console.log(chalk.white(`   Notifications: ${finalStats.notifications} (${stats.notifications - finalStats.notifications} supprimés)`));
         console.log(chalk.white(`   Business Units: ${finalStats.business_units} (${stats.business_units - finalStats.business_units} supprimés)`));
         console.log(chalk.white(`   Permissions: ${finalStats.permissions} (${stats.permissions - finalStats.permissions} supprimés)\n`));
 
@@ -177,51 +189,38 @@ async function getDatabaseStats() {
         opportunities: 0,
         campaigns: 0,
         business_units: 0,
-        permissions: 0
+        permissions: 0,
+        clients: 0,
+        missions: 0,
+        invoices: 0,
+        time_entries: 0,
+        tasks: 0,
+        notifications: 0
     };
 
-    // Requêtes individuelles avec try-catch pour chacune
-    try {
-        const usersResult = await pool.query('SELECT COUNT(*) FROM users');
-        stats.users = parseInt(usersResult.rows[0].count);
-    } catch (error) {
-        // Table users n'existe pas ou erreur
-    }
+    // Fonction helper pour compter une table
+    const countTable = async (tableName) => {
+        try {
+            const result = await pool.query(`SELECT COUNT(*) FROM ${tableName}`);
+            return parseInt(result.rows[0].count);
+        } catch (error) {
+            return 0;
+        }
+    };
 
-    try {
-        const collabResult = await pool.query('SELECT COUNT(*) FROM collaborateurs');
-        stats.collaborateurs = parseInt(collabResult.rows[0].count);
-    } catch (error) {
-        // Table collaborateurs n'existe pas ou erreur
-    }
-
-    try {
-        const oppsResult = await pool.query('SELECT COUNT(*) FROM opportunities');
-        stats.opportunities = parseInt(oppsResult.rows[0].count);
-    } catch (error) {
-        // Table opportunities n'existe pas ou erreur
-    }
-
-    try {
-        const campaignsResult = await pool.query('SELECT COUNT(*) FROM prospecting_campaigns');
-        stats.campaigns = parseInt(campaignsResult.rows[0].count);
-    } catch (error) {
-        // Table prospecting_campaigns n'existe pas ou erreur
-    }
-
-    try {
-        const buResult = await pool.query('SELECT COUNT(*) FROM business_units');
-        stats.business_units = parseInt(buResult.rows[0].count);
-    } catch (error) {
-        // Table business_units n'existe pas ou erreur
-    }
-
-    try {
-        const permsResult = await pool.query('SELECT COUNT(*) FROM permissions');
-        stats.permissions = parseInt(permsResult.rows[0].count);
-    } catch (error) {
-        // Table permissions n'existe pas ou erreur
-    }
+    // Compter toutes les tables importantes
+    stats.users = await countTable('users');
+    stats.collaborateurs = await countTable('collaborateurs');
+    stats.opportunities = await countTable('opportunities');
+    stats.campaigns = await countTable('prospecting_campaigns');
+    stats.business_units = await countTable('business_units');
+    stats.permissions = await countTable('permissions');
+    stats.clients = await countTable('clients');
+    stats.missions = await countTable('missions');
+    stats.invoices = await countTable('invoices');
+    stats.time_entries = await countTable('time_entries');
+    stats.tasks = await countTable('tasks');
+    stats.notifications = await countTable('notifications');
 
     return stats;
 }
