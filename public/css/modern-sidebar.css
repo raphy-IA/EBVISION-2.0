@@ -19,7 +19,9 @@
 
 /* Container principal de la sidebar */
 .sidebar-container {
-    height: 100vh;
+    min-height: 100vh; /* Hauteur minimale, mais peut s'étendre */
+    display: flex;
+    flex-direction: column; /* Pour que le footer puisse utiliser margin-top: auto */
     z-index: 1000;
     background: linear-gradient(180deg, var(--sidebar-bg-primary) 0%, var(--sidebar-bg-secondary) 100%);
     box-shadow: var(--sidebar-shadow);
@@ -41,6 +43,7 @@
     background: linear-gradient(135deg, rgba(233, 69, 96, 0.1) 0%, rgba(15, 52, 96, 0.2) 100%);
     border-bottom: 1px solid var(--sidebar-border);
     position: relative;
+    flex-shrink: 0; /* Empêche le header de se compresser */
 }
 
 .sidebar-header h3 {
@@ -68,6 +71,7 @@
 /* Navigation principale */
 .sidebar-nav {
     padding: 1rem 0;
+    flex: 1; /* Prend tout l'espace disponible, pousse le footer en bas */
     /* Forcer la stabilité */
     transform: translateZ(0);
     backface-visibility: hidden;
@@ -285,10 +289,8 @@
     transform: translateZ(0);
     backface-visibility: hidden;
     /* Ajouter un margin-top pour éviter les conflits */
-    margin-top: 1rem;
-    /* Forcer la position fixe en bas */
-    position: sticky;
-    bottom: 0;
+    margin-top: auto; /* Pousse le footer en bas naturellement */
+    flex-shrink: 0; /* Empêche le footer de se compresser */
     z-index: 10;
 }
 
