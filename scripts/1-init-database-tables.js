@@ -23,88 +23,187 @@ console.log('╚═════════════════════�
 async function initDatabaseTables() {
     try {
         // ===============================================
-        // Demander les informations de connexion
+        // Afficher la configuration depuis .env
         // ===============================================
-        console.log('📋 Configuration de la connexion à la base de données\n');
-        
-        const answers = await inquirer.prompt([
+        console.log('📋 Configuration PostgreSQL (depuis .env):\n');
+        console.log(`   🏠 Hôte       : ${process.env.DB_HOST || 'localhost'}`);
+        console.log(`   🔌 Port       : ${process.env.DB_PORT || '5432'}`);
+        console.log(`   👤 Utilisateur: ${process.env.DB_USER || 'Non défini'}`);
+        console.log(`   🗄️  Base      : ${process.env.DB_NAME || 'Non définie'}`);
+        console.log(`   🔐 SSL        : ${process.env.NODE_ENV === 'production' ? 'Oui' : 'Non'}\n`);
+
+        // ===============================================
+        // Choix : Nouvelle BD ou existante
+        // ===============================================
+        const dbChoice = await inquirer.prompt([
             {
-                type: 'input',
-                name: 'host',
-                message: 'Hôte PostgreSQL:',
-                default: process.env.DB_HOST || 'localhost'
-            },
-            {
-                type: 'input',
-                name: 'port',
-                message: 'Port PostgreSQL:',
-                default: process.env.DB_PORT || '5432'
-            },
-            {
-                type: 'input',
-                name: 'database',
-                message: 'Nom de la base de données:',
-                default: process.env.DB_NAME,
-                validate: (input) => input.length > 0 ? true : 'Le nom de la base de données est requis'
-            },
-            {
-                type: 'input',
-                name: 'user',
-                message: 'Utilisateur PostgreSQL:',
-                default: process.env.DB_USER,
-                validate: (input) => input.length > 0 ? true : 'L\'utilisateur est requis'
-            },
-            {
-                type: 'password',
-                name: 'password',
-                message: 'Mot de passe PostgreSQL:',
-                default: process.env.DB_PASSWORD,
-                mask: '*'
-            },
-            {
-                type: 'confirm',
-                name: 'useSSL',
-                message: 'Utiliser SSL?',
-                default: process.env.NODE_ENV === 'production'
+                type: 'list',
+                name: 'mode',
+                message: 'Que voulez-vous faire?',
+                choices: [
+                    {
+                        name: '📂 Utiliser une base de données existante (créer uniquement les tables)',
+                        value: 'existing',
+                        short: 'Base existante'
+                    },
+                    {
+                        name: '🆕 Créer une nouvelle base de données (puis créer les tables)',
+                        value: 'new',
+                        short: 'Nouvelle base'
+                    }
+                ]
             }
         ]);
 
-        // Créer la connexion
-        const pool = new Pool({
-            host: answers.host,
-            port: parseInt(answers.port),
-            database: answers.database,
-            user: answers.user,
-            password: answers.password,
-            ssl: answers.useSSL ? { rejectUnauthorized: false } : false,
+        let targetDatabase;
+        let connectionConfig = {
+            host: process.env.DB_HOST || 'localhost',
+            port: parseInt(process.env.DB_PORT) || 5432,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
             max: 20,
             idleTimeoutMillis: 30000,
             connectionTimeoutMillis: 5000
+        };
+
+        // ===============================================
+        // Mode : Nouvelle base de données
+        // ===============================================
+        if (dbChoice.mode === 'new') {
+            console.log('\n🆕 Création d\'une nouvelle base de données\n');
+            
+            const newDbAnswers = await inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'newDbName',
+                    message: 'Nom de la nouvelle base de données:',
+                    validate: (input) => {
+                        if (input.length === 0) return 'Le nom est requis';
+                        if (!/^[a-zA-Z0-9_-]+$/.test(input)) return 'Caractères autorisés: lettres, chiffres, - et _';
+                        return true;
+                    }
+                },
+                {
+                    type: 'confirm',
+                    name: 'proceed',
+                    message: (answers) => `Créer la base de données "${answers.newDbName}"?`,
+                    default: true
+                }
+            ]);
+
+            if (!newDbAnswers.proceed) {
+                console.log('\n❌ Opération annulée\n');
+                return;
+            }
+
+            targetDatabase = newDbAnswers.newDbName;
+
+            // Se connecter à la base "postgres" pour créer la nouvelle BD
+            console.log('\n📡 Connexion à PostgreSQL (base "postgres")...');
+            const adminPool = new Pool({
+                ...connectionConfig,
+                database: 'postgres'
+            });
+
+            try {
+                await adminPool.query('SELECT NOW()');
+                console.log('✅ Connexion réussie!');
+
+                // Vérifier si la base existe déjà
+                console.log(`\n🔍 Vérification de l'existence de "${targetDatabase}"...`);
+                const checkDb = await adminPool.query(
+                    `SELECT 1 FROM pg_database WHERE datname = $1`,
+                    [targetDatabase]
+                );
+
+                if (checkDb.rows.length > 0) {
+                    console.log(`⚠️  La base de données "${targetDatabase}" existe déjà`);
+                    
+                    const overwriteAnswer = await inquirer.prompt([
+                        {
+                            type: 'confirm',
+                            name: 'useExisting',
+                            message: 'Voulez-vous l\'utiliser (créer les tables dedans)?',
+                            default: true
+                        }
+                    ]);
+
+                    if (!overwriteAnswer.useExisting) {
+                        console.log('\n❌ Opération annulée\n');
+                        await adminPool.end();
+                        return;
+                    }
+                } else {
+                    // Créer la nouvelle base de données
+                    console.log(`\n🏗️  Création de la base de données "${targetDatabase}"...`);
+                    await adminPool.query(`CREATE DATABASE "${targetDatabase}"`);
+                    console.log('✅ Base de données créée avec succès!');
+                }
+
+                await adminPool.end();
+
+            } catch (error) {
+                console.error(`\n❌ Erreur lors de la création de la base: ${error.message}`);
+                await adminPool.end();
+                throw error;
+            }
+
+        } else {
+            // ===============================================
+            // Mode : Base de données existante
+            // ===============================================
+            console.log('\n📂 Utilisation d\'une base de données existante\n');
+            
+            const existingDbAnswers = await inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'database',
+                    message: 'Nom de la base de données existante:',
+                    default: process.env.DB_NAME,
+                    validate: (input) => input.length > 0 ? true : 'Le nom de la base de données est requis'
+                },
+                {
+                    type: 'confirm',
+                    name: 'proceed',
+                    message: (answers) => `Créer les tables dans "${answers.database}"?`,
+                    default: true
+                }
+            ]);
+
+            if (!existingDbAnswers.proceed) {
+                console.log('\n❌ Opération annulée\n');
+                return;
+            }
+
+            targetDatabase = existingDbAnswers.database;
+        }
+
+        // ===============================================
+        // Connexion à la base de données cible
+        // ===============================================
+        console.log(`\n📡 Connexion à la base de données "${targetDatabase}"...`);
+        
+        const pool = new Pool({
+            ...connectionConfig,
+            database: targetDatabase
         });
 
-        console.log('\n📡 Test de connexion à la base de données...');
-        await pool.query('SELECT NOW()');
-        console.log('✅ Connexion réussie!\n');
-
-        // ===============================================
-        // Confirmation avant création
-        // ===============================================
-        const confirmAnswers = await inquirer.prompt([
-            {
-                type: 'confirm',
-                name: 'proceed',
-                message: `Créer les tables dans la base "${answers.database}"?`,
-                default: true
-            }
-        ]);
-
-        if (!confirmAnswers.proceed) {
-            console.log('\n❌ Opération annulée\n');
+        try {
+            await pool.query('SELECT NOW()');
+            console.log('✅ Connexion réussie!\n');
+        } catch (error) {
+            console.error(`\n❌ Impossible de se connecter à "${targetDatabase}"`);
+            console.error(`   Erreur: ${error.message}`);
+            console.error('\n💡 Vérifiez que:');
+            console.error('   - La base de données existe');
+            console.error('   - L\'utilisateur a les droits d\'accès');
+            console.error('   - Les informations dans .env sont correctes\n');
             await pool.end();
             return;
         }
 
-        console.log('\n🏗️  Création des tables...\n');
+        console.log('🏗️  Création des tables...\n');
 
         // ===============================================
         // CRÉATION DES TABLES
@@ -402,8 +501,9 @@ async function initDatabaseTables() {
         console.log('═══════════');
         console.log(`   ✓ ${tableCount} tables créées/vérifiées`);
         console.log(`   ✓ ${baseRoles.length} rôles de base créés`);
-        console.log(`   ✓ Base de données: ${answers.database}`);
-        console.log(`   ✓ Utilisateur: ${answers.user}`);
+        console.log(`   ✓ Base de données: ${targetDatabase}`);
+        console.log(`   ✓ Hôte: ${connectionConfig.host}:${connectionConfig.port}`);
+        console.log(`   ✓ Utilisateur: ${connectionConfig.user}`);
         
         console.log('\n🎯 PROCHAINES ÉTAPES :');
         console.log('══════════════════════');
