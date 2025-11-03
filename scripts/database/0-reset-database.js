@@ -33,10 +33,15 @@ const RESET_TYPES = {
     MODERATE: {
         name: '⚠️  MODÉRÉE - Supprimer les données opérationnelles',
         value: 'moderate',
-        description: 'Conserve : Tables, Rôles, Super Admins, Permissions\nSupprime : Collaborateurs, Opportunités, Campagnes, etc.'
+        description: 'Conserve : Tables, Rôles, Super Admins, Permissions, BU, Divisions, Clients, Missions\nSupprime : Collaborateurs, Opportunités, Campagnes, Contrats, etc.'
+    },
+    MODERATE_PLUS: {
+        name: '🔥 MODÉRÉE+ - Données opérationnelles + Clients/Missions',
+        value: 'moderate_plus',
+        description: 'Conserve : Tables, Rôles, Super Admins, Permissions, BU, Divisions\nSupprime : Collaborateurs, Opportunités, Campagnes, Clients, Missions, etc.'
     },
     HEAVY: {
-        name: '🔥 COMPLÈTE - Supprimer toutes les données',
+        name: '💥 COMPLÈTE - Supprimer toutes les données',
         value: 'heavy',
         description: 'Conserve : Tables, Rôles, Super Admins\nSupprime : Permissions, BU, Divisions, tous les autres utilisateurs'
     },
@@ -106,8 +111,8 @@ async function resetDatabase() {
             }
         ]);
 
-        // Double confirmation pour les niveaux heavy et brutal
-        if (resetType === 'heavy' || resetType === 'brutal') {
+        // Double confirmation pour les niveaux moderate_plus, heavy et brutal
+        if (resetType === 'moderate_plus' || resetType === 'heavy' || resetType === 'brutal') {
             const { doubleConfirm } = await inquirer.prompt([
                 {
                     type: 'confirm',
@@ -132,6 +137,9 @@ async function resetDatabase() {
                 break;
             case 'moderate':
                 await resetModerate();
+                break;
+            case 'moderate_plus':
+                await resetModeratePlus();
                 break;
             case 'heavy':
                 await resetHeavy();
@@ -278,11 +286,91 @@ async function resetModerate() {
         { name: 'contracts', hasId: true },
         
         // Temps et RH
-        { name: 'timesheet_entries', hasId: true },
-        { name: 'timesheets', hasId: true },
+        { name: 'time_entries', hasId: true },
         { name: 'rh_formations', hasId: true },
         { name: 'rh_competences', hasId: true },
         { name: 'rh_evolutions', hasId: true },
+        
+        // Collaborateurs (avant users car FK)
+        { name: 'collaborateurs', hasId: true },
+        
+        // Settings utilisateurs (AVANT de supprimer les users)
+        { name: 'notification_settings', hasId: true },
+        { name: 'user_settings', hasId: true }
+    ];
+
+    for (const table of tablesToClean) {
+        try {
+            console.log(chalk.gray(`   → Nettoyage de ${table.name}...`));
+            const result = table.hasId 
+                ? await pool.query(`DELETE FROM ${table.name} RETURNING id`)
+                : await pool.query(`DELETE FROM ${table.name}`);
+            count += result.rowCount;
+            console.log(chalk.green(`   ✓ ${result.rowCount} enregistrements supprimés`));
+        } catch (error) {
+            console.log(chalk.yellow(`   ⚠ ${table.name} : ${error.message}`));
+        }
+    }
+
+    // Supprimer les utilisateurs non-admin (après collaborateurs)
+    console.log(chalk.gray('   → Suppression des utilisateurs non-admin...'));
+    try {
+        const usersResult = await pool.query(`
+            DELETE FROM users 
+            WHERE role NOT IN ('SUPER_ADMIN', 'ADMIN')
+            AND id NOT IN (
+                SELECT DISTINCT user_id 
+                FROM user_roles ur 
+                JOIN roles r ON ur.role_id = r.id 
+                WHERE r.name IN ('SUPER_ADMIN', 'ADMIN')
+            )
+            RETURNING id
+        `);
+        count += usersResult.rowCount;
+        console.log(chalk.green(`   ✓ ${usersResult.rowCount} utilisateurs supprimés`));
+    } catch (error) {
+        console.log(chalk.yellow(`   ⚠ Utilisateurs : ${error.message}`));
+    }
+
+    console.log(chalk.green(`\n✅ ${count} enregistrements supprimés`));
+}
+
+async function resetModeratePlus() {
+    console.log(chalk.cyan('🔥 REMISE À ZÉRO MODÉRÉE+\n'));
+
+    let count = 0;
+
+    // Ordre de suppression respectant les contraintes FK (enfants avant parents)
+    const tablesToClean = [
+        // Notifications et tâches
+        { name: 'notifications', hasId: true },
+        { name: 'tasks', hasId: true },
+        
+        // Relations campagnes (enfants en premier)
+        { name: 'prospecting_campaign_validation_companies', hasId: false },
+        { name: 'prospecting_campaign_companies', hasId: false },
+        { name: 'prospecting_campaign_validations', hasId: true },
+        { name: 'prospecting_campaigns', hasId: true },
+        
+        // Relations opportunités
+        { name: 'opportunity_comments', hasId: true },
+        { name: 'opportunity_steps', hasId: true },
+        { name: 'opportunities', hasId: true },
+        
+        // Documents et contrats
+        { name: 'documents', hasId: true },
+        { name: 'invoices', hasId: true },
+        { name: 'contracts', hasId: true },
+        
+        // Temps et RH
+        { name: 'time_entries', hasId: true },
+        { name: 'rh_formations', hasId: true },
+        { name: 'rh_competences', hasId: true },
+        { name: 'rh_evolutions', hasId: true },
+        
+        // Missions et Clients (AJOUT pour MODÉRÉE+)
+        { name: 'missions', hasId: true },
+        { name: 'clients', hasId: true },
         
         // Collaborateurs (avant users car FK)
         { name: 'collaborateurs', hasId: true },
@@ -356,8 +444,7 @@ async function resetHeavy() {
         'contracts',
         
         // Temps et RH
-        'timesheet_entries',
-        'timesheets',
+        'time_entries',
         'rh_formations',
         'rh_competences',
         'rh_evolutions',
