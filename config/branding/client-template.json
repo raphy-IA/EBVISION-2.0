@@ -1,0 +1,108 @@
+{
+  "_comment": "Template de configuration pour un nouveau client - Dupliquer et personnaliser",
+  "app": {
+    "name": "NOM_CLIENT",
+    "shortName": "SIGLE",
+    "tagline": "Votre slogan personnalisé",
+    "description": "Description de votre entreprise",
+    "version": "2.0.0"
+  },
+  "branding": {
+    "logo": {
+      "main": "/assets/brands/[CLIENT-ID]/logo.svg",
+      "icon": "/assets/brands/[CLIENT-ID]/icon.svg",
+      "favicon": "/assets/brands/[CLIENT-ID]/favicon.ico"
+    },
+    "colors": {
+      "primary": "#YOUR_PRIMARY_COLOR",
+      "secondary": "#YOUR_SECONDARY_COLOR",
+      "accent": "#YOUR_ACCENT_COLOR",
+      "success": "#27ae60",
+      "warning": "#f39c12",
+      "danger": "#e74c3c",
+      "info": "#3498db",
+      "dark": "#YOUR_DARK_COLOR",
+      "light": "#YOUR_LIGHT_COLOR"
+    },
+    "theme": "custom"
+  },
+  "ui": {
+    "sidebarTitle": "VOTRE TITRE",
+    "sidebarSubtitle": "Votre sous-titre",
+    "loginTitle": "Bienvenue sur [NOM]",
+    "loginSubtitle": "Connectez-vous à votre compte",
+    "footer": {
+      "text": "Nom de votre entreprise",
+      "copyright": "© 2024 Votre Entreprise. Tous droits réservés."
+    }
+  },
+  "features": {
+    "dashboard": true,
+    "reports": true,
+    "timeManagement": true,
+    "missionManagement": true,
+    "marketPipeline": true,
+    "hrManagement": true,
+    "configurations": true,
+    "businessUnits": true,
+    "administration": true
+  },
+  "modules": {
+    "dashboard": {
+      "enabled": true,
+      "displayName": "Tableau de bord"
+    },
+    "reports": {
+      "enabled": true,
+      "displayName": "Rapports"
+    },
+    "timeManagement": {
+      "enabled": true,
+      "displayName": "Gestion des temps"
+    },
+    "missions": {
+      "enabled": true,
+      "displayName": "Missions"
+    },
+    "marketPipeline": {
+      "enabled": true,
+      "displayName": "Pipeline Commercial"
+    },
+    "hr": {
+      "enabled": true,
+      "displayName": "Ressources Humaines"
+    },
+    "configurations": {
+      "enabled": true,
+      "displayName": "Configurations"
+    },
+    "businessUnits": {
+      "enabled": true,
+      "displayName": "Unités d'Affaires"
+    },
+    "administration": {
+      "enabled": true,
+      "displayName": "Administration"
+    }
+  },
+  "contact": {
+    "email": "contact@votre-entreprise.com",
+    "phone": "+33 X XX XX XX XX",
+    "website": "https://votre-entreprise.com",
+    "supportUrl": "https://support.votre-entreprise.com"
+  },
+  "localization": {
+    "defaultLanguage": "fr",
+    "availableLanguages": ["fr", "en"],
+    "dateFormat": "DD/MM/YYYY",
+    "timeFormat": "HH:mm",
+    "currency": "EUR",
+    "currencySymbol": "€"
+  },
+  "demo": {
+    "mode": false,
+    "bannerText": "",
+    "watermark": false
+  }
+}
+

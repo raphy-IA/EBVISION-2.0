@@ -405,3 +405,11 @@ La route `/auth/me` retourne **à la fois** `role` (legacy) et `roles` (nouveau)
 **Date de dernière modification :** 3 octobre 2025
 
 
+
+
+
+
+
+
+
+

@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapports Temps - EB-Vision 2.0</title>
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    <link rel="stylesheet" href="css/app-title.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: #f5f7fa;
+        }
+
+        .reports-header {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #11998e;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .filters-card, .chart-card, .table-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            max-height: 350px;
+            width: 100%;
+        }
+
+        .chart-container canvas {
+            max-height: 350px !important;
+        }
+
+        @media (max-width: 768px) {
+            .page-wrapper { flex-direction: column; }
+            .main-content-area { padding: 1rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="page-wrapper">
+        <div class="sidebar-container"></div>
+
+        <div class="main-content-area">
+            <div class="reports-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-clock me-3"></i>Rapports Temps</h2>
+                        <p class="mb-0">Analyse détaillée des saisies de temps et performances</p>
+                    </div>
+                    <button class="btn btn-light" onclick="refreshData()">
+                        <i class="fas fa-sync-alt me-1"></i> Actualiser
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalHours">0h</div>
+                    <div class="stat-label">Total heures</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="billableHours">0h</div>
+                    <div class="stat-label">Heures facturables</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="nonBillableHours">0h</div>
+                    <div class="stat-label">Heures non facturables</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="billableRate">0%</div>
+                    <div class="stat-label">Taux de facturation</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCollaborators">0</div>
+                    <div class="stat-label">Collaborateurs actifs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalMissions">0</div>
+                    <div class="stat-label">Missions actives</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-card">
+                <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filtres</h5>
+                <!-- Filtres en cascade: BU → Division → Collaborateur → Grade → Type → Période -->
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="businessUnitFilter" class="form-label">1. Business Unit</label>
+                        <select class="form-select" id="businessUnitFilter">
+                            <option value="">Toutes</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="divisionFilter" class="form-label">2. Division</label>
+                        <select class="form-select" id="divisionFilter">
+                            <option value="">Toutes</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="collaboratorFilter" class="form-label">3. Collaborateur</label>
+                        <select class="form-select" id="collaboratorFilter">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="gradeFilter" class="form-label">4. Grade</label>
+                        <select class="form-select" id="gradeFilter">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row g-3 mt-2">
+                    <div class="col-md-3">
+                        <label for="typeFilter" class="form-label">5. Type d'heures</label>
+                        <select class="form-select" id="typeFilter">
+                            <option value="">Tous</option>
+                            <option value="BILLABLE">Facturable</option>
+                            <option value="NON_BILLABLE">Non facturable</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="periodFilter" class="form-label">6. Période</label>
+                        <select class="form-select" id="periodFilter">
+                            <option value="all">Toutes les périodes</option>
+                            <option value="today">Aujourd'hui</option>
+                            <option value="yesterday">Hier</option>
+                            <option value="week">Cette semaine</option>
+                            <option value="last_week">Semaine précédente</option>
+                            <option value="month">Ce mois</option>
+                            <option value="last_month">Mois précédent</option>
+                            <option value="quarter">Ce trimestre</option>
+                            <option value="year">Cette année</option>
+                            <option value="custom">Période personnalisée</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Période personnalisée (cachée par défaut) -->
+                <div class="row g-3 mt-2" id="customPeriodRow" style="display: none;">
+                    <div class="col-md-3">
+                        <label for="startDate" class="form-label">Date de début</label>
+                        <input type="date" class="form-control" id="startDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="endDate" class="form-label">Date de fin</label>
+                        <input type="date" class="form-control" id="endDate">
+                    </div>
+                </div>
+                
+                <div class="row g-3 mt-2">
+                    <div class="col-12">
+                        <button class="btn btn-primary" onclick="applyFilters()">
+                            <i class="fas fa-search me-1"></i> Appliquer les filtres
+                        </button>
+                        <button class="btn btn-secondary ms-2" onclick="resetFilters()">
+                            <i class="fas fa-undo me-1"></i> Réinitialiser
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="chart-card">
+                        <h5 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Par Type d'heures</h5>
+                        <div class="chart-container">
+                            <canvas id="typeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-card">
+                        <h5 class="mb-3"><i class="fas fa-chart-bar me-2"></i>Top 10 Collaborateurs</h5>
+                        <div class="chart-container">
+                            <canvas id="collaboratorChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-card">
+                        <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i>Top 10 Missions</h5>
+                        <div class="chart-container">
+                            <canvas id="missionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-card">
+                        <h5 class="mb-3"><i class="fas fa-chart-area me-2"></i>Top 10 Clients</h5>
+                        <div class="chart-container">
+                            <canvas id="clientChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-card">
+                <h5 class="mb-3"><i class="fas fa-table me-2"></i>Liste des saisies de temps</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Date</th>
+                                <th>Collaborateur</th>
+                                <th>Business Unit</th>
+                                <th>Grade</th>
+                                <th>Mission</th>
+                                <th>Client</th>
+                                <th>Type</th>
+                                <th>Heures</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeEntriesTable">
+                            <tr><td colspan="9" class="text-center">Chargement...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/global-auth.js"></script>
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/session-manager.js"></script>
+
+    <script>
+        const API_BASE_URL = '/api';
+        let charts = {};
+        let allTimeEntries = [];
+        
+        // Données complètes pour les filtres en cascade
+        let allBusinessUnits = [];
+        let allDivisions = [];
+        let allCollaborators = [];
+        let allGrades = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCascadingFilters();
+            loadData();
+            
+            // Event listener for period filter
+            const periodFilter = document.getElementById('periodFilter');
+            if (periodFilter) {
+                periodFilter.addEventListener('change', function() {
+                    const customRow = document.getElementById('customPeriodRow');
+                    if (this.value === 'custom') {
+                        customRow.style.display = 'flex';
+                        setDefaultDates();
+                    } else {
+                        customRow.style.display = 'none';
+                    }
+                });
+            }
+        });
+        
+        async function initializeCascadingFilters() {
+            await Promise.all([
+                loadBusinessUnits(),
+                loadDivisions(),
+                loadCollaborators(),
+                loadGrades()
+            ]);
+            
+            // Peupler TOUS les filtres au démarrage avec toutes les données
+            populateAllFilters();
+            
+            // Configurer les event listeners pour la cascade
+            setupCascadingListeners();
+        }
+        
+        // Peupler tous les filtres avec toutes les données disponibles au démarrage
+        function populateAllFilters() {
+            // Peupler Business Units
+            const buSelect = document.getElementById('businessUnitFilter');
+            buSelect.innerHTML = '<option value="">Toutes</option>';
+            allBusinessUnits.forEach(bu => {
+                const option = document.createElement('option');
+                option.value = bu.id;
+                option.textContent = bu.nom;
+                buSelect.appendChild(option);
+            });
+            
+            // Peupler Divisions
+            const divisionSelect = document.getElementById('divisionFilter');
+            divisionSelect.innerHTML = '<option value="">Toutes</option>';
+            allDivisions.forEach(div => {
+                const option = document.createElement('option');
+                option.value = div.id;
+                option.textContent = div.nom;
+                divisionSelect.appendChild(option);
+            });
+            
+            // Peupler Collaborateurs
+            const collabSelect = document.getElementById('collaboratorFilter');
+            collabSelect.innerHTML = '<option value="">Tous</option>';
+            allCollaborators.forEach(collab => {
+                const option = document.createElement('option');
+                option.value = collab.id;
+                option.textContent = `${collab.prenom} ${collab.nom}`;
+                collabSelect.appendChild(option);
+            });
+            
+            // Peupler Grades
+            const gradeSelect = document.getElementById('gradeFilter');
+            gradeSelect.innerHTML = '<option value="">Tous</option>';
+            allGrades.forEach(grade => {
+                const option = document.createElement('option');
+                option.value = grade.id;
+                option.textContent = grade.nom;
+                gradeSelect.appendChild(option);
+            });
+            
+            console.log(`✅ Filtres initialisés: ${allBusinessUnits.length} BUs, ${allDivisions.length} divisions, ${allCollaborators.length} collaborateurs, ${allGrades.length} grades`);
+        }
+        
+        function setupCascadingListeners() {
+            // Chaque filtre met à jour LES AUTRES (pas lui-même)
+            document.getElementById('businessUnitFilter').addEventListener('change', function() {
+                updateDependentFilters('businessUnit');
+            });
+            
+            document.getElementById('divisionFilter').addEventListener('change', function() {
+                updateDependentFilters('division');
+            });
+            
+            document.getElementById('collaboratorFilter').addEventListener('change', function() {
+                updateDependentFilters('collaborator');
+            });
+            
+            document.getElementById('gradeFilter').addEventListener('change', function() {
+                updateDependentFilters('grade');
+            });
+            
+            console.log('✅ Filtres croisés configurés');
+        }
+        
+        // Mettre à jour les filtres dépendants (SAUF celui qui a changé)
+        function updateDependentFilters(changedFilter) {
+            const buId = document.getElementById('businessUnitFilter').value;
+            const divisionId = document.getElementById('divisionFilter').value;
+            const collaboratorId = document.getElementById('collaboratorFilter').value;
+            const gradeId = document.getElementById('gradeFilter').value;
+            
+            console.log(`🔄 Filtre "${changedFilter}" changé, mise à jour des autres`);
+            
+            // Filtrer les collaborateurs selon TOUTES les sélections
+            let filteredCollabs = [...allCollaborators];
+            
+            if (buId) {
+                filteredCollabs = filteredCollabs.filter(c => String(c.business_unit_id) === String(buId));
+            }
+            if (divisionId) {
+                filteredCollabs = filteredCollabs.filter(c => String(c.division_id) === String(divisionId));
+            }
+            if (collaboratorId) {
+                filteredCollabs = filteredCollabs.filter(c => String(c.id) === String(collaboratorId));
+            }
+            if (gradeId) {
+                filteredCollabs = filteredCollabs.filter(c => String(c.grade_actuel_id) === String(gradeId));
+            }
+            
+            // Mettre à jour chaque filtre SAUF celui qui a changé
+            if (changedFilter !== 'businessUnit') {
+                updateBusinessUnitFilterFromCollabs(filteredCollabs, buId);
+            }
+            if (changedFilter !== 'division') {
+                updateDivisionFilterFromCollabs(filteredCollabs, buId, divisionId);
+            }
+            if (changedFilter !== 'collaborator') {
+                updateCollaboratorFilterFromCollabs(filteredCollabs, collaboratorId);
+            }
+            if (changedFilter !== 'grade') {
+                updateGradeFilterFromCollabs(filteredCollabs, gradeId);
+            }
+        }
+        
+        function updateBusinessUnitFilterFromCollabs(filteredCollabs, currentValue) {
+            const select = document.getElementById('businessUnitFilter');
+            select.innerHTML = '<option value="">Toutes</option>';
+            
+            const buIds = [...new Set(filteredCollabs.map(c => c.business_unit_id).filter(id => id))];
+            const availableBUs = allBusinessUnits.filter(bu => buIds.includes(bu.id));
+            
+            availableBUs.forEach(bu => {
+                const option = document.createElement('option');
+                option.value = bu.id;
+                option.textContent = bu.nom;
+                if (String(bu.id) === String(currentValue)) option.selected = true;
+                select.appendChild(option);
+            });
+            
+            console.log(`  📍 BU: ${availableBUs.length} disponibles`);
+        }
+        
+        function updateDivisionFilterFromCollabs(filteredCollabs, currentBuId, currentValue) {
+            const select = document.getElementById('divisionFilter');
+            select.innerHTML = '<option value="">Toutes</option>';
+            
+            const divisionIds = [...new Set(filteredCollabs.map(c => c.division_id).filter(id => id))];
+            let availableDivisions = allDivisions.filter(div => divisionIds.includes(div.id));
+            
+            // Si une BU est sélectionnée, filtrer aussi par BU
+            if (currentBuId) {
+                availableDivisions = availableDivisions.filter(div => 
+                    String(div.business_unit_id) === String(currentBuId)
+                );
+            }
+            
+            availableDivisions.forEach(div => {
+                const option = document.createElement('option');
+                option.value = div.id;
+                option.textContent = div.nom;
+                if (String(div.id) === String(currentValue)) option.selected = true;
+                select.appendChild(option);
+            });
+            
+            console.log(`  📍 Divisions: ${availableDivisions.length} disponibles`);
+        }
+        
+        function updateCollaboratorFilterFromCollabs(filteredCollabs, currentValue) {
+            const select = document.getElementById('collaboratorFilter');
+            select.innerHTML = '<option value="">Tous</option>';
+            
+            filteredCollabs.forEach(collab => {
+                const option = document.createElement('option');
+                option.value = collab.id;
+                option.textContent = `${collab.prenom} ${collab.nom}`;
+                if (String(collab.id) === String(currentValue)) option.selected = true;
+                select.appendChild(option);
+            });
+            
+            console.log(`  📍 Collaborateurs: ${filteredCollabs.length} disponibles`);
+        }
+        
+        function updateGradeFilterFromCollabs(filteredCollabs, currentValue) {
+            const select = document.getElementById('gradeFilter');
+            select.innerHTML = '<option value="">Tous</option>';
+            
+            const gradeIds = [...new Set(filteredCollabs.map(c => c.grade_actuel_id).filter(id => id))];
+            const availableGrades = allGrades.filter(grade => gradeIds.includes(grade.id));
+            
+            availableGrades.forEach(grade => {
+                const option = document.createElement('option');
+                option.value = grade.id;
+                option.textContent = grade.nom;
+                if (String(grade.id) === String(currentValue)) option.selected = true;
+                select.appendChild(option);
+            });
+            
+            console.log(`  📍 Grades: ${availableGrades.length} disponibles`);
+        }
+
+        function setDefaultDates() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            document.getElementById('startDate').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        }
+
+        async function loadBusinessUnits() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/business-units`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    allBusinessUnits = data.data.businessUnits || data.data || [];
+                    const select = document.getElementById('businessUnitFilter');
+                    allBusinessUnits.forEach(bu => {
+                        const option = document.createElement('option');
+                        option.value = bu.id;
+                        option.textContent = bu.nom;
+                        select.appendChild(option);
+                    });
+                    console.log('✅ Business Units chargées:', allBusinessUnits.length);
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement business units:', error);
+            }
+        }
+        
+        async function loadDivisions() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/divisions`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    allDivisions = data.data.divisions || data.data || [];
+                    console.log('✅ Divisions chargées:', allDivisions.length);
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement divisions:', error);
+            }
+        }
+
+        async function loadCollaborators() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/collaborateurs?limit=1000`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    allCollaborators = data.data.collaborateurs || data.data || [];
+                    console.log('✅ Collaborateurs chargés:', allCollaborators.length);
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement collaborateurs:', error);
+            }
+        }
+
+        async function loadGrades() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/grades`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    allGrades = data.data.grades || data.data || [];
+                    console.log('✅ Grades chargés:', allGrades.length);
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement grades:', error);
+            }
+        }
+
+        // Get Date Range based on period filter
+        function getDateRange() {
+            const period = document.getElementById('periodFilter').value;
+            const now = new Date();
+            let startDate, endDate;
+
+            switch (period) {
+                case 'today':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+                    break;
+                case 'yesterday':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
+                    break;
+                case 'week':
+                    const dayOfWeek = now.getDay();
+                    const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                    startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), diff + 6, 23, 59, 59);
+                    break;
+                case 'last_week':
+                    const lastWeekDayOfWeek = now.getDay();
+                    const lastWeekDiff = now.getDate() - lastWeekDayOfWeek + (lastWeekDayOfWeek === 0 ? -6 : 1) - 7;
+                    startDate = new Date(now.getFullYear(), now.getMonth(), lastWeekDiff);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), lastWeekDiff + 6, 23, 59, 59);
+                    break;
+                case 'month':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                    break;
+                case 'last_month':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+                    break;
+                case 'quarter':
+                    const quarter = Math.floor(now.getMonth() / 3);
+                    startDate = new Date(now.getFullYear(), quarter * 3, 1);
+                    endDate = new Date(now.getFullYear(), (quarter + 1) * 3, 0, 23, 59, 59);
+                    break;
+                case 'year':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+                    break;
+                case 'custom':
+                    const startInput = document.getElementById('startDate').value;
+                    const endInput = document.getElementById('endDate').value;
+                    if (startInput && endInput) {
+                        startDate = new Date(startInput);
+                        endDate = new Date(endInput);
+                        endDate.setHours(23, 59, 59);
+                    } else {
+                        return null;
+                    }
+                    break;
+                default:
+                    return null;
+            }
+
+            return { startDate, endDate };
+        }
+
+        async function loadData() {
+            const collaboratorId = document.getElementById('collaboratorFilter').value;
+            const dateRange = getDateRange();
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                let url = `${API_BASE_URL}/reports/timeEntries?`;
+                
+                if (dateRange) {
+                    url += `startDate=${dateRange.startDate.toISOString()}&`;
+                    url += `endDate=${dateRange.endDate.toISOString()}&`;
+                }
+                if (collaboratorId) url += `collaboratorId=${collaboratorId}&`;
+                
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    allTimeEntries = result.data || [];
+                    console.log('Saisies chargées:', allTimeEntries.length);
+                    if (allTimeEntries.length > 0) {
+                        console.log('Échantillon première saisie:', allTimeEntries[0]);
+                        console.log('business_unit_nom:', allTimeEntries[0].business_unit_nom);
+                        console.log('grade_nom:', allTimeEntries[0].grade_nom);
+                    }
+                    applyFilters();
+                } else {
+                    console.error('Erreur API:', response.status);
+                    document.getElementById('timeEntriesTable').innerHTML = 
+                        '<tr><td colspan="9" class="text-center text-danger">Erreur de chargement</td></tr>';
+                }
+            } catch (error) {
+                console.error('Erreur chargement:', error);
+                document.getElementById('timeEntriesTable').innerHTML = 
+                    '<tr><td colspan="9" class="text-center text-danger">Erreur: ' + error.message + '</td></tr>';
+            }
+        }
+
+        function applyFilters() {
+            const businessUnitFilter = document.getElementById('businessUnitFilter').value;
+            const divisionFilter = document.getElementById('divisionFilter').value;
+            const collaboratorFilter = document.getElementById('collaboratorFilter').value;
+            const gradeFilter = document.getElementById('gradeFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+
+            console.log('🔍 Filtres appliqués:', { 
+                businessUnitFilter, 
+                divisionFilter,
+                collaboratorFilter, 
+                gradeFilter,
+                typeFilter
+            });
+
+            // Filtrer selon la hiérarchie en cascade
+            let filtered = allTimeEntries;
+            
+            // 1. Filtre Business Unit (obligatoire pour activer les autres)
+            if (businessUnitFilter) {
+                filtered = filtered.filter(entry => 
+                    String(entry.business_unit_id) === String(businessUnitFilter)
+                );
+                console.log(`📊 Après filtre BU: ${filtered.length} saisies`);
+                
+                // 2. Filtre Division (si sélectionné)
+                if (divisionFilter) {
+                    // Filtrer par les collaborateurs de cette division
+                    const collaboratorsInDivision = allCollaborators
+                        .filter(c => String(c.division_id) === String(divisionFilter))
+                        .map(c => c.id);
+                    
+                    filtered = filtered.filter(entry => 
+                        collaboratorsInDivision.some(id => String(entry.collaborateur_id) === String(id))
+                    );
+                    console.log(`📊 Après filtre Division: ${filtered.length} saisies`);
+                }
+                
+                // 3. Filtre Collaborateur (si sélectionné)
+                if (collaboratorFilter) {
+                    filtered = filtered.filter(entry => 
+                        String(entry.collaborateur_id) === String(collaboratorFilter)
+                    );
+                    console.log(`📊 Après filtre Collaborateur: ${filtered.length} saisies`);
+                }
+                
+                // 4. Filtre Grade (si sélectionné)
+                if (gradeFilter) {
+                    filtered = filtered.filter(entry => 
+                        String(entry.grade_id) === String(gradeFilter)
+                    );
+                    console.log(`📊 Après filtre Grade: ${filtered.length} saisies`);
+                }
+            }
+            
+            // 5. Filtre Type d'heures (indépendant)
+            if (typeFilter) {
+                filtered = filtered.filter(entry => entry.type_heures === typeFilter);
+                console.log(`📊 Après filtre Type: ${filtered.length} saisies`);
+            }
+            
+            // 6. Filtre Période
+            const dateRange = getDateRange();
+            if (dateRange) {
+                const { startDate, endDate } = dateRange;
+                filtered = filtered.filter(entry => {
+                    const entryDate = new Date(entry.date);
+                    return entryDate >= startDate && entryDate <= endDate;
+                });
+                console.log(`📊 Après filtre Période: ${filtered.length} saisies`);
+            }
+
+            console.log('✅ Total saisies filtrées:', filtered.length);
+            displayData(filtered);
+        }
+
+        function displayData(entries) {
+            // Calculate statistics
+            const totalHours = entries.reduce((sum, e) => sum + e.heures, 0);
+            const billableHours = entries.filter(e => e.type_heures === 'BILLABLE').reduce((sum, e) => sum + e.heures, 0);
+            const nonBillableHours = entries.filter(e => e.type_heures === 'NON_BILLABLE').reduce((sum, e) => sum + e.heures, 0);
+            const billableRate = totalHours > 0 ? ((billableHours / totalHours) * 100).toFixed(1) : 0;
+            const collaborators = new Set(entries.map(e => e.collaborateur)).size;
+            const missions = new Set(entries.filter(e => e.mission !== '-').map(e => e.mission)).size;
+
+            // Update stats
+            document.getElementById('totalHours').textContent = totalHours.toFixed(1) + 'h';
+            document.getElementById('billableHours').textContent = billableHours.toFixed(1) + 'h';
+            document.getElementById('nonBillableHours').textContent = nonBillableHours.toFixed(1) + 'h';
+            document.getElementById('billableRate').textContent = `${billableRate}%`;
+            document.getElementById('totalCollaborators').textContent = collaborators;
+            document.getElementById('totalMissions').textContent = missions;
+
+            updateCharts(entries);
+            updateTable(entries);
+        }
+
+        function updateCharts(entries) {
+            // Type chart
+            const billable = entries.filter(e => e.type_heures === 'BILLABLE').reduce((sum, e) => sum + e.heures, 0);
+            const nonBillable = entries.filter(e => e.type_heures === 'NON_BILLABLE').reduce((sum, e) => sum + e.heures, 0);
+
+            if (charts.typeChart) charts.typeChart.destroy();
+            const ctx1 = document.getElementById('typeChart').getContext('2d');
+            charts.typeChart = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Facturable', 'Non facturable'],
+                    datasets: [{
+                        data: [billable, nonBillable],
+                        backgroundColor: ['rgba(17,153,142,0.7)', 'rgba(254,87,108,0.7)']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Collaborator chart (top 10)
+            const collabHours = {};
+            entries.forEach(e => {
+                const collab = e.collaborateur;
+                collabHours[collab] = (collabHours[collab] || 0) + e.heures;
+            });
+            const topCollabs = Object.entries(collabHours)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            if (charts.collaboratorChart) charts.collaboratorChart.destroy();
+            const ctx2 = document.getElementById('collaboratorChart').getContext('2d');
+            charts.collaboratorChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: topCollabs.map(c => c[0]),
+                    datasets: [{
+                        label: 'Heures',
+                        data: topCollabs.map(c => c[1]),
+                        backgroundColor: 'rgba(102,126,234,0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Mission chart (top 10)
+            const missionHours = {};
+            entries.filter(e => e.mission !== '-').forEach(e => {
+                const mission = e.mission;
+                missionHours[mission] = (missionHours[mission] || 0) + e.heures;
+            });
+            const topMissions = Object.entries(missionHours)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            if (charts.missionChart) charts.missionChart.destroy();
+            const ctx3 = document.getElementById('missionChart').getContext('2d');
+            charts.missionChart = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: topMissions.map(m => m[0]),
+                    datasets: [{
+                        label: 'Heures',
+                        data: topMissions.map(m => m[1]),
+                        backgroundColor: 'rgba(17,153,142,0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true } }
+                }
+            });
+
+            // Client chart (top 10)
+            const clientHours = {};
+            entries.filter(e => e.client !== '-').forEach(e => {
+                const client = e.client;
+                clientHours[client] = (clientHours[client] || 0) + e.heures;
+            });
+            const topClients = Object.entries(clientHours)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            if (charts.clientChart) charts.clientChart.destroy();
+            const ctx4 = document.getElementById('clientChart').getContext('2d');
+            charts.clientChart = new Chart(ctx4, {
+                type: 'bar',
+                data: {
+                    labels: topClients.map(c => c[0]),
+                    datasets: [{
+                        label: 'Heures',
+                        data: topClients.map(c => c[1]),
+                        backgroundColor: 'rgba(118,75,162,0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function updateTable(entries) {
+            const tbody = document.getElementById('timeEntriesTable');
+            tbody.innerHTML = '';
+
+            if (entries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center">Aucune saisie trouvée</td></tr>';
+                return;
+            }
+
+            entries.slice(0, 100).forEach(e => {
+                const row = document.createElement('tr');
+                const date = new Date(e.date).toLocaleDateString('fr-FR');
+                const typeClass = e.type_heures === 'BILLABLE' ? 'success' : 'secondary';
+                const typeBadge = e.type_heures === 'BILLABLE' ? 'Facturable' : 'Non facturable';
+                
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${e.collaborateur}</td>
+                    <td>${e.business_unit_nom || '-'}</td>
+                    <td>${e.grade_nom || '-'}</td>
+                    <td>${e.mission}</td>
+                    <td>${e.client}</td>
+                    <td><span class="badge bg-${typeClass}">${typeBadge}</span></td>
+                    <td><strong>${e.heures.toFixed(1)}h</strong></td>
+                    <td>${e.statut}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            if (entries.length > 100) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="9" class="text-center text-muted">... et ${entries.length - 100} autres saisies</td>`;
+                tbody.appendChild(row);
+            }
+        }
+
+        function resetFilters() {
+            // Réinitialiser tous les filtres
+            document.getElementById('businessUnitFilter').value = '';
+            document.getElementById('divisionFilter').value = '';
+            document.getElementById('collaboratorFilter').value = '';
+            document.getElementById('gradeFilter').value = '';
+            document.getElementById('typeFilter').value = '';
+            document.getElementById('periodFilter').value = 'all';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('customPeriodRow').style.display = 'none';
+            
+            // Repeupler TOUS les filtres avec toutes les données
+            populateAllFilters();
+            
+            // ✅ NE PAS désactiver les filtres - ils doivent rester actifs !
+            
+            loadData();
+        }
+
+        function refreshData() {
+            loadData();
+        }
+    </script>
+</body>
+</html>

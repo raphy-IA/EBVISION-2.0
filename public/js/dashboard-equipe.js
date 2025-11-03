@@ -1,126 +1,231 @@
 // Dashboard Équipe - EBVISION
-// Gestion des indicateurs de performance collective
+// Gestion des indicateurs de performance collective avec autorisations managériales
 
-const API_BASE_URL = new URL('/api', window.location.origin).toString();
+const API_BASE_URL = '/api/analytics';
 
 // Variables globales pour les graphiques
-let teamPerformanceChart, teamDistributionChart;
+let teamPerformanceChart, teamDistributionChart, collabChart;
 
 // Variables pour les filtres
 let currentFilters = {
-    team: '',
-    period: 30,
-    businessUnit: ''
+    period: 90,
+    businessUnit: '',
+    division: ''
 };
 
+// Variables globales pour les équipes gérées
+let managedBusinessUnits = [];
+let managedDivisions = [];
+
+// Fonction d'authentification
+function getAuthHeader() {
+    const token = localStorage.getItem('authToken');
+    return { 'Authorization': `Bearer ${token}` };
+}
+
+async function authenticatedFetch(url) {
+    return fetch(url, { headers: getAuthHeader() });
+}
+
 // Initialisation du dashboard
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Initialisation du Dashboard Équipe...');
-    
-    // Vérifier l'authentification
-    if (!isAuthenticated()) {
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    // Vérifier les permissions de superviseur
-    if (!hasSupervisorRole()) {
-        showError('Accès réservé aux superviseurs');
-        return;
-    }
-    
-    // Initialiser les filtres
-    initializeFilters();
-    
-    // Charger les données du dashboard
-    loadDashboardData();
-    
-    // Initialiser les graphiques
-    initializeCharts();
-    
-    // Charger les membres d'équipe
-    loadTeamMembers();
-    
-    // Charger les alertes équipe
-    loadTeamAlerts();
-    
-    // Charger les missions actives
-    loadActiveMissions();
-    
-    // Mettre à jour les informations superviseur
-    updateSupervisorInfo();
+    await initializeDashboard();
 });
 
-// Vérifier si l'utilisateur a le rôle superviseur
-function hasSupervisorRole() {
-    const user = getCurrentUser();
-    return user && (user.role === 'SUPERVISOR' || user.role === 'ADMIN');
-}
-
-// Initialiser les filtres
-function initializeFilters() {
-    console.log('🔧 Initialisation des filtres...');
-    
-    // Charger les équipes
-    loadTeams();
-    
-    // Charger les business units
-    loadBusinessUnits();
-    
-    // Écouter les changements de filtres
-    document.getElementById('team-filter').addEventListener('change', function() {
-        currentFilters.team = this.value;
-        refreshDashboard();
-    });
-    
-    document.getElementById('period-filter').addEventListener('change', function() {
-        currentFilters.period = parseInt(this.value);
-        refreshDashboard();
-    });
-    
-    document.getElementById('business-unit-filter').addEventListener('change', function() {
-        currentFilters.businessUnit = this.value;
-        refreshDashboard();
-    });
-}
-
-// Charger les équipes
-async function loadTeams() {
+// Fonction principale d'initialisation
+async function initializeDashboard() {
     try {
-        const response = await authenticatedFetch(`${API_BASE_URL}/teams`);
-        if (response.ok) {
-            const data = await response.json();
-            const select = document.getElementById('team-filter');
-            
-            data.data.forEach(team => {
-                const option = document.createElement('option');
-                option.value = team.id;
-                option.textContent = team.nom;
-                select.appendChild(option);
-            });
+        console.log('📊 Démarrage initialisation...');
+        
+        // 1. Charger les équipes gérées
+        const response = await authenticatedFetch('/api/analytics/managed-teams');
+        const result = await response.json();
+        
+        if (!result.success) {
+            showError('Erreur d\'initialisation', 'Impossible de charger vos équipes');
+            return;
         }
+        
+        const { business_units, divisions, is_manager } = result.data;
+        
+        console.log('✅ Équipes gérées:', { business_units, divisions, is_manager });
+        
+        // 2. Vérifier si l'utilisateur est un manager
+        if (!is_manager) {
+            showWarning(
+                'Accès restreint',
+                'Vous devez être responsable d\'une Business Unit ou Division pour accéder à ce dashboard.'
+            );
+            return;
+        }
+        
+        // 3. Stocker les équipes gérées
+        managedBusinessUnits = business_units;
+        managedDivisions = divisions;
+        
+        // 4. Initialiser les graphiques
+        initializeCharts();
+        
+        // 5. Peupler les filtres avec UNIQUEMENT les équipes gérées
+        populateBusinessUnitFilter(business_units);
+        populateDivisionFilter(divisions);
+        
+        // 6. Configurer les événements des filtres
+        setupFilterListeners();
+        
+        // 7. Charger automatiquement la première équipe
+        let initialBusinessUnit = null;
+        let initialDivision = null;
+        
+        if (divisions.length > 0) {
+            // Priorité aux divisions
+            initialDivision = divisions[0].id;
+            currentFilters.division = initialDivision;
+            document.getElementById('division-filter').value = initialDivision;
+        } else if (business_units.length > 0) {
+            // Sinon, BU
+            initialBusinessUnit = business_units[0].id;
+            currentFilters.businessUnit = initialBusinessUnit;
+            document.getElementById('business-unit-filter').value = initialBusinessUnit;
+        }
+        
+        // 8. Charger les données
+        await loadDashboardData();
+        
     } catch (error) {
-        console.error('❌ Erreur lors du chargement des équipes:', error);
+        console.error('❌ Erreur initialisation:', error);
+        showError('Erreur technique', 'Impossible d\'initialiser le dashboard. Veuillez rafraîchir la page.');
     }
 }
 
-// Charger les business units
-async function loadBusinessUnits() {
-    try {
-        const response = await authenticatedFetch(`${API_BASE_URL}/business-units`);
-        if (response.ok) {
-            const data = await response.json();
-            const select = document.getElementById('business-unit-filter');
-            
-            data.data.forEach(bu => {
-                const option = document.createElement('option');
-                option.value = bu.id;
-                option.textContent = bu.nom;
-                select.appendChild(option);
-            });
-        }
-    } catch (error) {
-        console.error('❌ Erreur lors du chargement des business units:', error);
+// Fonction pour afficher une erreur visible
+function showError(title, message) {
+    console.error(`❌ ${title}:`, message);
+    
+    // Supprimer les alertes existantes
+    const existingAlerts = document.querySelectorAll('.alert-api-error');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Trouver le conteneur principal
+    const mainContent = document.querySelector('.main-content-area');
+    if (!mainContent) return;
+    
+    // Créer la nouvelle alerte
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show mb-4 alert-api-error';
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.innerHTML = `
+        <div class="d-flex align-items-start">
+            <i class="fas fa-exclamation-circle me-3 mt-1" style="font-size: 1.5rem;"></i>
+            <div class="flex-grow-1">
+                <h5 class="alert-heading mb-2">${title}</h5>
+                <p class="mb-2">${message}</p>
+                <div class="mt-3">
+                    <button type="button" class="btn btn-sm btn-outline-danger me-2" onclick="location.reload()">
+                        <i class="fas fa-sync-alt me-1"></i> Rafraîchir la page
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="alert">
+                        <i class="fas fa-times me-1"></i> Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Insérer au début du contenu principal
+    mainContent.insertBefore(alertDiv, mainContent.firstChild);
+    
+    // Auto-scroll vers l'alerte
+    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Fonction pour afficher un avertissement
+function showWarning(title, message) {
+    console.warn(`⚠️ ${title}:`, message);
+    
+    const mainContent = document.querySelector('.main-content-area');
+    if (!mainContent) return;
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-warning alert-dismissible fade show mb-4';
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.innerHTML = `
+        <div class="d-flex align-items-start">
+            <i class="fas fa-exclamation-triangle me-3 mt-1" style="font-size: 1.5rem;"></i>
+            <div class="flex-grow-1">
+                <h5 class="alert-heading mb-2">${title}</h5>
+                <p class="mb-0">${message}</p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    mainContent.insertBefore(alertDiv, mainContent.firstChild);
+}
+
+// Peupler le filtre Business Unit
+function populateBusinessUnitFilter(businessUnits) {
+    const select = document.getElementById('business-unit-filter');
+    if (!select) return;
+    
+    // Vider le select (sauf l'option "Toutes")
+    while (select.options.length > 1) {
+        select.remove(1);
+    }
+    
+    // Ajouter les BU gérées
+    businessUnits.forEach(bu => {
+        const option = document.createElement('option');
+        option.value = bu.id;
+        option.textContent = bu.nom;
+        select.appendChild(option);
+    });
+}
+
+// Peupler le filtre Division
+function populateDivisionFilter(divisions) {
+    const select = document.getElementById('division-filter');
+    if (!select) return;
+    
+    // Vider le select (sauf l'option "Toutes")
+    while (select.options.length > 1) {
+        select.remove(1);
+    }
+    
+    // Ajouter les divisions gérées
+    divisions.forEach(div => {
+        const option = document.createElement('option');
+        option.value = div.id;
+        option.textContent = div.nom;
+        select.appendChild(option);
+    });
+}
+
+// Configurer les événements des filtres
+function setupFilterListeners() {
+    const periodFilter = document.getElementById('period-filter');
+    if (periodFilter) {
+        periodFilter.addEventListener('change', function() {
+            currentFilters.period = parseInt(this.value);
+            refreshDashboard();
+        });
+    }
+    
+    const buFilter = document.getElementById('business-unit-filter');
+    if (buFilter) {
+        buFilter.addEventListener('change', function() {
+            currentFilters.businessUnit = this.value;
+            refreshDashboard();
+        });
+    }
+    
+    const divFilter = document.getElementById('division-filter');
+    if (divFilter) {
+        divFilter.addEventListener('change', function() {
+            currentFilters.division = this.value;
+            refreshDashboard();
+        });
     }
 }
 
@@ -130,36 +235,36 @@ async function loadDashboardData() {
         console.log('📊 Chargement des données du dashboard équipe...');
         
         // Construire les paramètres de requête
-        const params = new URLSearchParams({
-            period: currentFilters.period,
-            team: currentFilters.team,
-            business_unit: currentFilters.businessUnit
-        });
+        let queryParams = `period=${currentFilters.period}`;
+        if (currentFilters.businessUnit) queryParams += `&businessUnit=${currentFilters.businessUnit}`;
+        if (currentFilters.division) queryParams += `&division=${currentFilters.division}`;
         
         // Charger les statistiques d'équipe
-        const statsResponse = await authenticatedFetch(`${API_BASE_URL}/teams/statistics?${params}`);
-        if (statsResponse.ok) {
-            const statsData = await statsResponse.json();
-            updateKPIs(statsData.data);
+        const response = await authenticatedFetch(`${API_BASE_URL}/team-performance?${queryParams}`);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            if (response.status === 403) {
+                showError('Accès non autorisé', errorData.error || 'Vous n\'avez pas les autorisations nécessaires');
+            } else {
+                showError('Erreur API', `Erreur HTTP ${response.status}: ${errorData.error || 'Erreur inconnue'}`);
+            }
+            return;
         }
         
-        // Charger les données pour les graphiques
-        const chartDataResponse = await authenticatedFetch(`${API_BASE_URL}/teams/chart-data?${params}`);
-        if (chartDataResponse.ok) {
-            const chartData = await chartDataResponse.json();
-            updateCharts(chartData.data);
-        }
-        
-        // Charger les objectifs d'équipe
-        const objectivesResponse = await authenticatedFetch(`${API_BASE_URL}/teams/objectives?${params}`);
-        if (objectivesResponse.ok) {
-            const objectivesData = await objectivesResponse.json();
-            updateTeamObjectives(objectivesData.data);
+        const result = await response.json();
+        if (result.success) {
+            console.log('✅ Données reçues:', result.data);
+            updateKPIs(result.data.kpis);
+            updateCollaborateursTable(result.data.collaborateurs);
+            updateGradesChart(result.data.distribution_grades);
+        } else {
+            showError('Erreur de données', result.error || 'Impossible de charger les données');
         }
         
     } catch (error) {
         console.error('❌ Erreur lors du chargement des données:', error);
-        showError('Erreur lors du chargement des données du dashboard');
+        showError('Erreur technique', 'Une erreur est survenue lors du chargement des données. Veuillez réessayer.');
     }
 }
 
@@ -167,60 +272,40 @@ async function loadDashboardData() {
 function updateKPIs(data) {
     console.log('📈 Mise à jour des KPIs équipe:', data);
     
-    // Heures totales
+    // Total membres
+    const membresElement = document.getElementById('total-membres');
+    if (membresElement) {
+        membresElement.textContent = data.total_membres || 0;
+    }
+    
+    // Total heures
     const heuresElement = document.getElementById('total-heures');
-    const heuresTrendElement = document.getElementById('heures-trend');
-    if (heuresElement && data.heures_totales) {
-        heuresElement.textContent = `${data.heures_totales}h`;
-        
-        const tendance = data.tendance_heures || 0;
-        updateTrend(heuresTrendElement, tendance);
+    if (heuresElement) {
+        heuresElement.textContent = (data.total_heures || 0).toFixed(1) + 'h';
     }
     
-    // Taux de facturation
-    const facturationElement = document.getElementById('taux-facturation');
-    const facturationTrendElement = document.getElementById('facturation-trend');
-    if (facturationElement && data.taux_facturation !== undefined) {
-        facturationElement.textContent = `${data.taux_facturation.toFixed(1)}%`;
-        
-        const tendance = data.tendance_facturation || 0;
-        updateTrend(facturationTrendElement, tendance);
+    // Taux de chargeabilité
+    const chargeabiliteElement = document.getElementById('taux-chargeabilite');
+    if (chargeabiliteElement) {
+        chargeabiliteElement.textContent = (data.taux_chargeabilite || 0).toFixed(1) + '%';
     }
     
-    // Productivité
-    const productiviteElement = document.getElementById('productivite');
-    const productiviteTrendElement = document.getElementById('productivite-trend');
-    if (productiviteElement && data.productivite !== undefined) {
-        productiviteElement.textContent = `${data.productivite.toFixed(1)}%`;
-        
-        const tendance = data.tendance_productivite || 0;
-        updateTrend(productiviteTrendElement, tendance);
+    // Missions actives
+    const missionsElement = document.getElementById('missions-actives');
+    if (missionsElement) {
+        missionsElement.textContent = data.missions_actives || 0;
     }
     
-    // Satisfaction
-    const satisfactionElement = document.getElementById('satisfaction');
-    const satisfactionTrendElement = document.getElementById('satisfaction-trend');
-    if (satisfactionElement && data.satisfaction !== undefined) {
-        satisfactionElement.textContent = `${data.satisfaction.toFixed(1)}%`;
-        
-        const tendance = data.tendance_satisfaction || 0;
-        updateTrend(satisfactionTrendElement, tendance);
+    // Heures facturables
+    const facturablesElement = document.getElementById('heures-facturables');
+    if (facturablesElement) {
+        facturablesElement.textContent = (data.heures_facturables || 0).toFixed(1) + 'h';
     }
-}
-
-// Mettre à jour les tendances
-function updateTrend(element, tendance) {
-    if (!element) return;
     
-    if (tendance > 0) {
-        element.className = 'kpi-trend positive';
-        element.innerHTML = `<i class="fas fa-arrow-up"></i> +${tendance.toFixed(1)}%`;
-    } else if (tendance < 0) {
-        element.className = 'kpi-trend negative';
-        element.innerHTML = `<i class="fas fa-arrow-down"></i> ${tendance.toFixed(1)}%`;
-    } else {
-        element.className = 'kpi-trend info';
-        element.innerHTML = `<i class="fas fa-minus"></i> Stable`;
+    // Heures non facturables
+    const nonFacturablesElement = document.getElementById('heures-non-facturables');
+    if (nonFacturablesElement) {
+        nonFacturablesElement.textContent = (data.heures_non_facturables || 0).toFixed(1) + 'h';
     }
 }
 
@@ -228,70 +313,55 @@ function updateTrend(element, tendance) {
 function initializeCharts() {
     console.log('📊 Initialisation des graphiques équipe...');
     
-    // Graphique de performance d'équipe
-    const performanceCtx = document.getElementById('teamPerformanceChart');
-    if (performanceCtx) {
-        teamPerformanceChart = new Chart(performanceCtx, {
-            type: 'line',
+    // Graphique de performance par collaborateur
+    const collabCtx = document.getElementById('collabPerformanceChart');
+    if (collabCtx) {
+        collabChart = new Chart(collabCtx, {
+            type: 'bar',
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Heures Facturables',
+                    label: 'Heures totales',
                     data: [],
+                    backgroundColor: '#4facfe',
                     borderColor: '#4facfe',
-                    backgroundColor: 'rgba(79, 172, 254, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4
-                }, {
-                    label: 'Heures Non Facturables',
-                    data: [],
-                    borderColor: '#ffc107',
-                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4
+                    borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                indexAxis: 'y',
                 plugins: {
                     legend: {
-                        position: 'top'
+                        display: false
                     }
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0,0,0,0.1)'
-                        }
-                    },
                     x: {
-                        grid: {
-                            display: false
-                        }
+                        beginAtZero: true
                     }
                 }
             }
         });
     }
     
-    // Graphique de répartition par équipe
-    const distributionCtx = document.getElementById('teamDistributionChart');
-    if (distributionCtx) {
-        teamDistributionChart = new Chart(distributionCtx, {
+    // Graphique de distribution par grade
+    const gradeCtx = document.getElementById('gradeDistributionChart');
+    if (gradeCtx) {
+        teamDistributionChart = new Chart(gradeCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Équipe A', 'Équipe B', 'Équipe C', 'Équipe D'],
+                labels: [],
                 datasets: [{
-                    data: [30, 25, 25, 20],
+                    data: [],
                     backgroundColor: [
                         '#4facfe',
                         '#00f2fe',
                         '#667eea',
-                        '#764ba2'
+                        '#764ba2',
+                        '#fa709a',
+                        '#fee140'
                     ],
                     borderWidth: 0
                 }]
@@ -303,7 +373,7 @@ function initializeCharts() {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            padding: 20,
+                            padding: 15,
                             usePointStyle: true
                         }
                     }
@@ -313,293 +383,77 @@ function initializeCharts() {
     }
 }
 
-// Mettre à jour les graphiques avec les données
-function updateCharts(data) {
-    console.log('📊 Mise à jour des graphiques équipe:', data);
+// Mettre à jour le tableau des collaborateurs
+function updateCollaborateursTable(collaborateurs) {
+    console.log('📋 Mise à jour tableau collaborateurs:', collaborateurs);
     
-    // Mettre à jour le graphique de performance
-    if (teamPerformanceChart && data.performance_equipe) {
-        teamPerformanceChart.data.labels = data.performance_equipe.labels;
-        teamPerformanceChart.data.datasets[0].data = data.performance_equipe.facturables;
-        teamPerformanceChart.data.datasets[1].data = data.performance_equipe.non_facturables;
-        teamPerformanceChart.update();
+    const tbody = document.getElementById('collaborateurs-tbody');
+    if (!tbody) return;
+    
+    if (!collaborateurs || collaborateurs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fas fa-users fa-3x mb-3 d-block" style="opacity: 0.3;"></i>Aucun collaborateur trouvé pour cette période</td></tr>';
+        
+        // Vider le graphique
+        if (collabChart) {
+            collabChart.data.labels = [];
+            collabChart.data.datasets[0].data = [];
+            collabChart.update();
+        }
+        return;
     }
     
-    // Mettre à jour le graphique de répartition
-    if (teamDistributionChart && data.repartition_equipes) {
-        teamDistributionChart.data.labels = data.repartition_equipes.labels;
-        teamDistributionChart.data.datasets[0].data = data.repartition_equipes.data;
+    // Mettre à jour le graphique des collaborateurs
+    if (collabChart) {
+        const topCollabs = collaborateurs.slice(0, 10);
+        collabChart.data.labels = topCollabs.map(c => `${c.prenom} ${c.nom}`);
+        collabChart.data.datasets[0].data = topCollabs.map(c => c.total_heures);
+        collabChart.update();
+    }
+    
+    // Mettre à jour le tableau
+    const rows = collaborateurs.map(collab => {
+        const chargeabilite = collab.taux_chargeabilite || 0;
+        const badgeClass = chargeabilite >= 80 ? 'success' : chargeabilite >= 60 ? 'warning' : 'danger';
+        
+        return `
+            <tr>
+                <td>${collab.prenom} ${collab.nom}</td>
+                <td>${collab.grade_nom || '-'}</td>
+                <td class="text-end">${(collab.total_heures || 0).toFixed(1)}h</td>
+                <td class="text-end">${(collab.heures_facturables || 0).toFixed(1)}h</td>
+                <td class="text-center">
+                    <span class="badge bg-${badgeClass}">${chargeabilite.toFixed(1)}%</span>
+                </td>
+                <td class="text-center">${collab.missions_assignees || 0}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    tbody.innerHTML = rows;
+}
+
+// Mettre à jour le graphique des grades
+function updateGradesChart(grades) {
+    console.log('📊 Mise à jour graphique grades:', grades);
+    
+    if (!teamDistributionChart) return;
+    
+    if (!grades || grades.length === 0) {
+        teamDistributionChart.data.labels = [];
+        teamDistributionChart.data.datasets[0].data = [];
         teamDistributionChart.update();
-    }
-}
-
-// Charger les membres d'équipe
-async function loadTeamMembers() {
-    try {
-        const params = new URLSearchParams({
-            team: currentFilters.team,
-            business_unit: currentFilters.businessUnit
-        });
-        
-        const response = await authenticatedFetch(`${API_BASE_URL}/teams/members?${params}`);
-        
-        if (response.ok) {
-            const data = await response.json();
-            displayTeamMembers(data.data);
-        }
-    } catch (error) {
-        console.error('❌ Erreur lors du chargement des membres d\'équipe:', error);
-    }
-}
-
-// Afficher les membres d'équipe
-function displayTeamMembers(members) {
-    const container = document.getElementById('team-members-list');
-    if (!container) return;
-    
-    if (!members || members.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center">Aucun membre d\'équipe trouvé</p>';
         return;
     }
     
-    const membersHTML = members.map(member => {
-        const performanceClass = getPerformanceClass(member.performance);
-        const performanceIndicator = getPerformanceIndicator(member.performance);
-        
-        return `
-            <div class="team-member-card ${performanceClass}">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div class="d-flex align-items-center">
-                        <span class="performance-indicator ${performanceIndicator}"></span>
-                        <h6 class="mb-0">${member.prenom} ${member.nom}</h6>
-                    </div>
-                    <span class="badge bg-${getGradeColor(member.grade)}">${member.grade}</span>
-                </div>
-                <p class="text-muted small mb-2">${member.poste || 'Poste non défini'}</p>
-                <div class="row">
-                    <div class="col-6">
-                        <small class="text-muted">Heures: ${member.heures_mois}h</small>
-                    </div>
-                    <div class="col-6">
-                        <small class="text-muted">Facturation: ${member.taux_facturation}%</small>
-                    </div>
-                </div>
-                <div class="progress progress-custom mt-2">
-                    <div class="progress-bar bg-success" style="width: ${member.objectif_atteint}%"></div>
-                </div>
-                <small class="text-muted">Objectif: ${member.objectif_atteint}%</small>
-            </div>
-        `;
-    }).join('');
-    
-    container.innerHTML = membersHTML;
-}
-
-// Charger les alertes équipe
-async function loadTeamAlerts() {
-    try {
-        const params = new URLSearchParams({
-            team: currentFilters.team,
-            business_unit: currentFilters.businessUnit
-        });
-        
-        const response = await authenticatedFetch(`${API_BASE_URL}/teams/alerts?${params}`);
-        
-        if (response.ok) {
-            const data = await response.json();
-            displayTeamAlerts(data.data);
-        }
-    } catch (error) {
-        console.error('❌ Erreur lors du chargement des alertes équipe:', error);
-    }
-}
-
-// Afficher les alertes équipe
-function displayTeamAlerts(alerts) {
-    const container = document.getElementById('team-alerts-list');
-    if (!container) return;
-    
-    if (!alerts || alerts.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center">Aucune alerte</p>';
-        return;
-    }
-    
-    const alertsHTML = alerts.map(alert => {
-        const alertClass = alert.type === 'URGENT' ? 'alert-card' : 
-                          alert.type === 'SUCCESS' ? 'success-card' : 'info-card';
-        
-        return `
-            <div class="${alertClass}">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-${getAlertIcon(alert.type)} me-3"></i>
-                    <div>
-                        <strong>${alert.titre}</strong>
-                        <p class="mb-0 small">${alert.message}</p>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
-    
-    container.innerHTML = alertsHTML;
-}
-
-// Charger les missions actives
-async function loadActiveMissions() {
-    try {
-        const params = new URLSearchParams({
-            team: currentFilters.team,
-            business_unit: currentFilters.businessUnit
-        });
-        
-        const response = await authenticatedFetch(`${API_BASE_URL}/teams/active-missions?${params}`);
-        
-        if (response.ok) {
-            const data = await response.json();
-            displayActiveMissions(data.data);
-        }
-    } catch (error) {
-        console.error('❌ Erreur lors du chargement des missions actives:', error);
-    }
-}
-
-// Afficher les missions actives
-function displayActiveMissions(missions) {
-    const container = document.getElementById('active-missions-list');
-    if (!container) return;
-    
-    if (!missions || missions.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center">Aucune mission active</p>';
-        return;
-    }
-    
-    const missionsHTML = missions.map(mission => {
-        const progress = (mission.progression || 0);
-        const priorityClass = mission.priorite === 'URGENTE' ? 'danger' : 
-                            mission.priorite === 'HAUTE' ? 'warning' : 'primary';
-        
-        return `
-            <div class="team-member-card">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h6 class="mb-0">${mission.titre}</h6>
-                    <span class="badge bg-${priorityClass}">${mission.priorite}</span>
-                </div>
-                <p class="text-muted small mb-2">${mission.client_nom || 'Client non défini'}</p>
-                <div class="progress progress-custom mb-2">
-                    <div class="progress-bar bg-success" style="width: ${progress}%"></div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Progression: ${progress}%</small>
-                    <small class="text-muted">Fin: ${formatDate(mission.date_fin_prevue)}</small>
-                </div>
-            </div>
-        `;
-    }).join('');
-    
-    container.innerHTML = missionsHTML;
-}
-
-// Mettre à jour les objectifs d'équipe
-function updateTeamObjectives(data) {
-    console.log('🎯 Mise à jour des objectifs équipe:', data);
-    
-    // Objectif heures
-    if (data.objectif_heures) {
-        const progress = (data.heures_actuelles / data.objectif_heures.cible) * 100;
-        const progressElement = document.getElementById('objectif-heures-progress');
-        const actuelElement = document.getElementById('objectif-heures-actuel');
-        const cibleElement = document.getElementById('objectif-heures-cible');
-        
-        if (progressElement) progressElement.style.width = `${Math.min(progress, 100)}%`;
-        if (actuelElement) actuelElement.textContent = data.heures_actuelles || 0;
-        if (cibleElement) cibleElement.textContent = data.objectif_heures.cible || 0;
-    }
-    
-    // Objectif facturation
-    if (data.objectif_facturation) {
-        const progress = (data.facturation_actuelle / data.objectif_facturation.cible) * 100;
-        const progressElement = document.getElementById('objectif-facturation-progress');
-        const actuelElement = document.getElementById('objectif-facturation-actuel');
-        const cibleElement = document.getElementById('objectif-facturation-cible');
-        
-        if (progressElement) progressElement.style.width = `${Math.min(progress, 100)}%`;
-        if (actuelElement) actuelElement.textContent = data.facturation_actuelle || 0;
-        if (cibleElement) cibleElement.textContent = data.objectif_facturation.cible || 0;
-    }
-}
-
-// Mettre à jour les informations superviseur
-function updateSupervisorInfo() {
-    const supervisorElement = document.getElementById('supervisor-name');
-    if (supervisorElement) {
-        const user = getCurrentUser();
-        if (user) {
-            supervisorElement.textContent = `${user.prenom} ${user.nom}`;
-        }
-    }
-}
-
-// Fonctions utilitaires
-function getPerformanceClass(performance) {
-    if (performance >= 90) return '';
-    if (performance >= 75) return 'warning';
-    return 'danger';
-}
-
-function getPerformanceIndicator(performance) {
-    if (performance >= 90) return 'performance-excellent';
-    if (performance >= 75) return 'performance-good';
-    if (performance >= 60) return 'performance-average';
-    return 'performance-poor';
-}
-
-function getGradeColor(grade) {
-    switch (grade) {
-        case 'PARTNER': return 'danger';
-        case 'DIRECTOR': return 'warning';
-        case 'MANAGER': return 'info';
-        case 'SENIOR': return 'primary';
-        case 'ASSISTANT': return 'secondary';
-        default: return 'secondary';
-    }
-}
-
-function getAlertIcon(type) {
-    switch (type) {
-        case 'URGENT': return 'exclamation-triangle';
-        case 'SUCCESS': return 'check-circle';
-        case 'INFO': return 'info-circle';
-        default: return 'bell';
-    }
-}
-
-function formatDate(dateString) {
-    if (!dateString) return 'Non définie';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR');
-}
-
-function showError(message) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    const mainContent = document.querySelector('.main-content');
-    if (mainContent) {
-        mainContent.insertBefore(alertDiv, mainContent.firstChild);
-    }
+    teamDistributionChart.data.labels = grades.map(g => g.grade_nom || 'Non défini');
+    teamDistributionChart.data.datasets[0].data = grades.map(g => g.total_heures || 0);
+    teamDistributionChart.update();
 }
 
 // Fonction pour rafraîchir le dashboard
 function refreshDashboard() {
     console.log('🔄 Rafraîchissement du dashboard équipe...');
     loadDashboardData();
-    loadTeamMembers();
-    loadTeamAlerts();
-    loadActiveMissions();
 }
 
 // Rafraîchir automatiquement toutes les 5 minutes
@@ -610,7 +464,7 @@ window.dashboardEquipe = {
     refreshDashboard,
     loadDashboardData,
     updateKPIs,
-    updateCharts,
-    currentFilters
+    currentFilters,
+    managedBusinessUnits,
+    managedDivisions
 };
-

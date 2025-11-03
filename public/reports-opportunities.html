@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapports Opportunités - EB-Vision 2.0</title>
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    <link rel="stylesheet" href="css/app-title.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: #f5f7fa;
+        }
+
+        .reports-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .filters-card, .chart-card, .table-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            max-height: 350px;
+            width: 100%;
+        }
+
+        .chart-container canvas {
+            max-height: 350px !important;
+        }
+
+        @media (max-width: 768px) {
+            .page-wrapper { flex-direction: column; }
+            .main-content-area { padding: 1rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="page-wrapper">
+        <div class="sidebar-container"></div>
+
+        <div class="main-content-area">
+            <div class="reports-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-chart-line me-3"></i>Rapports Opportunités</h2>
+                        <p class="mb-0">Analyse détaillée des opportunités commerciales</p>
+                    </div>
+                    <button class="btn btn-light" onclick="refreshData()">
+                        <i class="fas fa-sync-alt me-1"></i> Actualiser
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalOpportunities">0</div>
+                    <div class="stat-label">Total opportunités</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="wonOpportunities">0</div>
+                    <div class="stat-label">Gagnées</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalValue">0€</div>
+                    <div class="stat-label">Valeur totale</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgValue">0€</div>
+                    <div class="stat-label">Valeur moyenne</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="winRate">0%</div>
+                    <div class="stat-label">Taux de conversion</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalBU">0</div>
+                    <div class="stat-label">Business Units</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-card">
+                <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filtres</h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="periodFilter" class="form-label">Période</label>
+                        <select class="form-select" id="periodFilter">
+                            <option value="all">Toutes les périodes</option>
+                            <option value="today">Aujourd'hui</option>
+                            <option value="yesterday">Hier</option>
+                            <option value="week">Cette semaine</option>
+                            <option value="last_week">Semaine précédente</option>
+                            <option value="month">Ce mois</option>
+                            <option value="last_month">Mois précédent</option>
+                            <option value="quarter">Ce trimestre</option>
+                            <option value="year">Cette année</option>
+                            <option value="custom">Période personnalisée</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="businessUnitFilter" class="form-label">Business Unit</label>
+                        <select class="form-select" id="businessUnitFilter">
+                            <option value="">Toutes</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="typeFilter" class="form-label">Type d'opportunité</label>
+                        <select class="form-select" id="typeFilter">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="statusFilter" class="form-label">Statut</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">Tous</option>
+                            <option value="EN_COURS">En cours</option>
+                            <option value="GAGNEE">Gagnée</option>
+                            <option value="PERDUE">Perdue</option>
+                            <option value="ANNULEE">Annulée</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Période personnalisée (cachée par défaut) -->
+                <div class="row g-3 mt-2" id="customPeriodRow" style="display: none;">
+                    <div class="col-md-3">
+                        <label for="startDate" class="form-label">Date de début</label>
+                        <input type="date" class="form-control" id="startDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="endDate" class="form-label">Date de fin</label>
+                        <input type="date" class="form-control" id="endDate">
+                    </div>
+                </div>
+                
+                <div class="row g-3 mt-2">
+                    <div class="col-md-3">
+                        <label for="minAmount" class="form-label">Montant min (€)</label>
+                        <input type="number" class="form-control" id="minAmount" placeholder="0">
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary" onclick="applyFilters()">
+                            <i class="fas fa-search me-1"></i> Appliquer les filtres
+                        </button>
+                        <button class="btn btn-secondary ms-2" onclick="resetFilters()">
+                            <i class="fas fa-undo me-1"></i> Réinitialiser
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="chart-card">
+                        <h5 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Par Type</h5>
+                        <div class="chart-container">
+                            <canvas id="typeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-card">
+                        <h5 class="mb-3"><i class="fas fa-chart-doughnut me-2"></i>Par Business Unit</h5>
+                        <div class="chart-container">
+                            <canvas id="buChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-card">
+                        <h5 class="mb-3"><i class="fas fa-chart-bar me-2"></i>Top 10 par Valeur</h5>
+                        <div class="chart-container">
+                            <canvas id="valueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-card">
+                        <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i>Par Statut</h5>
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-card">
+                <h5 class="mb-3"><i class="fas fa-table me-2"></i>Liste des opportunités</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Client</th>
+                                <th>Type</th>
+                                <th>Business Unit</th>
+                                <th>Montant</th>
+                                <th>Probabilité</th>
+                                <th>Statut</th>
+                                <th>Date clôture</th>
+                            </tr>
+                        </thead>
+                        <tbody id="opportunitiesTable">
+                            <tr><td colspan="8" class="text-center">Chargement...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/global-auth.js"></script>
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/session-manager.js"></script>
+
+    <script>
+        const API_BASE_URL = '/api';
+        let charts = {};
+        let allOpportunities = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFilters();
+            loadData();
+            
+            // Event listener for period filter
+            const periodFilter = document.getElementById('periodFilter');
+            if (periodFilter) {
+                periodFilter.addEventListener('change', function() {
+                    const customRow = document.getElementById('customPeriodRow');
+                    if (this.value === 'custom') {
+                        customRow.style.display = 'flex';
+                    } else {
+                        customRow.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        // Stockage des données de filtres (pour cohérence, pas de dépendances fortes ici)
+        let allBusinessUnits = [];
+        let allOpportunityTypes = [];
+        
+        async function loadFilters() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const headers = { 'Authorization': `Bearer ${token}` };
+
+                // Load Business Units
+                const buResponse = await fetch(`${API_BASE_URL}/business-units?limit=1000`, { headers });
+                if (buResponse.ok) {
+                    const buData = await buResponse.json();
+                    allBusinessUnits = buData.data.businessUnits || buData.data || [];
+                    console.log('✅ Business Units chargées:', allBusinessUnits.length);
+                    const select = document.getElementById('businessUnitFilter');
+                    allBusinessUnits.forEach(bu => {
+                        const option = document.createElement('option');
+                        option.value = bu.id;
+                        option.textContent = bu.nom;
+                        select.appendChild(option);
+                    });
+                }
+
+                // Load Opportunity Types
+                const typeResponse = await fetch(`${API_BASE_URL}/opportunity-types?limit=1000`, { headers });
+                if (typeResponse.ok) {
+                    const typeData = await typeResponse.json();
+                    allOpportunityTypes = typeData.data.opportunityTypes || typeData.data || [];
+                    console.log('✅ Types opportunités chargés:', allOpportunityTypes.length);
+                    const select = document.getElementById('typeFilter');
+                    allOpportunityTypes.forEach(t => {
+                        const option = document.createElement('option');
+                        option.value = t.id;
+                        option.textContent = t.nom || t.name;
+                        select.appendChild(option);
+                    });
+                }
+                
+                console.log('✅ Filtres opportunités initialisés (pas de dépendances croisées)');
+            } catch (error) {
+                console.error('Erreur chargement filtres:', error);
+            }
+        }
+
+        // Get Date Range based on period filter
+        function getDateRange() {
+            const period = document.getElementById('periodFilter').value;
+            const now = new Date();
+            let startDate, endDate;
+
+            switch (period) {
+                case 'today':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+                    break;
+                case 'yesterday':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
+                    break;
+                case 'week':
+                    const dayOfWeek = now.getDay();
+                    const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                    startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), diff + 6, 23, 59, 59);
+                    break;
+                case 'last_week':
+                    const lastWeekDayOfWeek = now.getDay();
+                    const lastWeekDiff = now.getDate() - lastWeekDayOfWeek + (lastWeekDayOfWeek === 0 ? -6 : 1) - 7;
+                    startDate = new Date(now.getFullYear(), now.getMonth(), lastWeekDiff);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), lastWeekDiff + 6, 23, 59, 59);
+                    break;
+                case 'month':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                    break;
+                case 'last_month':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+                    break;
+                case 'quarter':
+                    const quarter = Math.floor(now.getMonth() / 3);
+                    startDate = new Date(now.getFullYear(), quarter * 3, 1);
+                    endDate = new Date(now.getFullYear(), (quarter + 1) * 3, 0, 23, 59, 59);
+                    break;
+                case 'year':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+                    break;
+                case 'custom':
+                    const startInput = document.getElementById('startDate').value;
+                    const endInput = document.getElementById('endDate').value;
+                    if (startInput && endInput) {
+                        startDate = new Date(startInput);
+                        endDate = new Date(endInput);
+                        endDate.setHours(23, 59, 59);
+                    } else {
+                        return null;
+                    }
+                    break;
+                default:
+                    return null;
+            }
+
+            return { startDate, endDate };
+        }
+
+        async function loadData() {
+            try {
+                const token = localStorage.getItem('authToken');
+                
+                // Get all opportunities with high limit
+                const response = await fetch(`${API_BASE_URL}/opportunities?limit=10000`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    allOpportunities = result.data.opportunities || [];
+                    console.log('Opportunités chargées:', allOpportunities.length);
+                    applyFilters();
+                } else {
+                    console.error('Erreur API:', response.status);
+                    document.getElementById('opportunitiesTable').innerHTML = 
+                        '<tr><td colspan="8" class="text-center text-danger">Erreur de chargement</td></tr>';
+                }
+            } catch (error) {
+                console.error('Erreur chargement:', error);
+                document.getElementById('opportunitiesTable').innerHTML = 
+                    '<tr><td colspan="8" class="text-center text-danger">Erreur: ' + error.message + '</td></tr>';
+            }
+        }
+
+        function applyFilters() {
+            const dateRange = getDateRange();
+            const buFilter = document.getElementById('businessUnitFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const minAmount = parseFloat(document.getElementById('minAmount').value) || 0;
+
+            console.log('Filtres appliqués:', { dateRange, buFilter, typeFilter, statusFilter, minAmount });
+            
+            // Debug: afficher un échantillon de données
+            if (allOpportunities.length > 0) {
+                console.log('Échantillon opportunité:', {
+                    business_unit_id: allOpportunities[0].business_unit_id,
+                    opportunity_type_id: allOpportunities[0].opportunity_type_id,
+                    statut: allOpportunities[0].statut,
+                    montant_estime: allOpportunities[0].montant_estime,
+                    created_at: allOpportunities[0].created_at
+                });
+            }
+
+            let filtered = allOpportunities.filter(opp => {
+                // Filtre Période (based on created_at)
+                if (dateRange) {
+                    const oppDate = new Date(opp.created_at);
+                    if (oppDate < dateRange.startDate || oppDate > dateRange.endDate) {
+                        return false;
+                    }
+                }
+                
+                // Filtre Business Unit
+                if (buFilter) {
+                    if (!opp.business_unit_id || String(opp.business_unit_id) !== String(buFilter)) {
+                        return false;
+                    }
+                }
+                
+                // Filtre Type d'opportunité
+                if (typeFilter) {
+                    if (!opp.opportunity_type_id || String(opp.opportunity_type_id) !== String(typeFilter)) {
+                        console.log('Filtre type:', {
+                            typeFilter,
+                            opportunity_type_id: opp.opportunity_type_id,
+                            match: String(opp.opportunity_type_id) === String(typeFilter)
+                        });
+                        return false;
+                    }
+                }
+                
+                // Filtre Statut
+                if (statusFilter && opp.statut !== statusFilter) {
+                    return false;
+                }
+                
+                // Filtre Montant minimum
+                if (minAmount && (parseFloat(opp.montant_estime) || 0) < minAmount) {
+                    return false;
+                }
+                
+                return true;
+            });
+
+            console.log('Opportunités filtrées:', filtered.length);
+            displayData(filtered);
+        }
+
+        function displayData(opportunities) {
+            // Calculate statistics
+            const total = opportunities.length;
+            const won = opportunities.filter(o => o.statut === 'GAGNEE').length;
+            const totalValue = opportunities.reduce((sum, o) => sum + (parseFloat(o.montant_estime) || 0), 0);
+            const avgValue = total > 0 ? totalValue / total : 0;
+            const rate = total > 0 ? ((won / total) * 100).toFixed(1) : 0;
+            const buCount = new Set(opportunities.map(o => o.business_unit_id).filter(id => id)).size;
+
+            // Update stats
+            document.getElementById('totalOpportunities').textContent = total;
+            document.getElementById('wonOpportunities').textContent = won;
+            document.getElementById('totalValue').textContent = 
+                new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(totalValue);
+            document.getElementById('avgValue').textContent = 
+                new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(avgValue);
+            document.getElementById('winRate').textContent = `${rate}%`;
+            document.getElementById('totalBU').textContent = buCount;
+
+            updateCharts(opportunities);
+            updateTable(opportunities);
+        }
+
+        function updateCharts(opportunities) {
+            // Type chart
+            const typeCounts = {};
+            opportunities.forEach(o => {
+                const type = o.opportunity_type_nom || 'Non défini';
+                typeCounts[type] = (typeCounts[type] || 0) + 1;
+            });
+
+            if (charts.typeChart) charts.typeChart.destroy();
+            const ctx1 = document.getElementById('typeChart').getContext('2d');
+            charts.typeChart = new Chart(ctx1, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(typeCounts),
+                    datasets: [{ 
+                        data: Object.values(typeCounts), 
+                        backgroundColor: ['rgba(102,126,234,0.7)', 'rgba(118,75,162,0.7)', 'rgba(17,153,142,0.7)', 
+                                         'rgba(56,239,125,0.7)', 'rgba(240,147,251,0.7)', 'rgba(245,87,108,0.7)']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Business Unit chart
+            const buCounts = {};
+            opportunities.forEach(o => {
+                const bu = o.business_unit_nom || 'Non défini';
+                buCounts[bu] = (buCounts[bu] || 0) + 1;
+            });
+
+            if (charts.buChart) charts.buChart.destroy();
+            const ctx2 = document.getElementById('buChart').getContext('2d');
+            charts.buChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(buCounts),
+                    datasets: [{ 
+                        data: Object.values(buCounts), 
+                        backgroundColor: ['rgba(79,172,254,0.7)', 'rgba(0,242,254,0.7)', 'rgba(168,237,234,0.7)', 
+                                         'rgba(254,214,227,0.7)', 'rgba(250,112,154,0.7)']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Value chart (top 10)
+            const sorted = [...opportunities].sort((a, b) => 
+                (parseFloat(b.montant_estime) || 0) - (parseFloat(a.montant_estime) || 0)
+            ).slice(0, 10);
+
+            if (charts.valueChart) charts.valueChart.destroy();
+            const ctx3 = document.getElementById('valueChart').getContext('2d');
+            charts.valueChart = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(o => o.nom || 'Sans nom'),
+                    datasets: [{
+                        label: 'Montant (€)',
+                        data: sorted.map(o => parseFloat(o.montant_estime) || 0),
+                        backgroundColor: 'rgba(102,126,234,0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Status chart
+            const statusCounts = {};
+            opportunities.forEach(o => {
+                const status = o.statut || 'Non défini';
+                statusCounts[status] = (statusCounts[status] || 0) + 1;
+            });
+
+            if (charts.statusChart) charts.statusChart.destroy();
+            const ctx4 = document.getElementById('statusChart').getContext('2d');
+            charts.statusChart = new Chart(ctx4, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(statusCounts),
+                    datasets: [{
+                        label: 'Nombre',
+                        data: Object.values(statusCounts),
+                        backgroundColor: 'rgba(118,75,162,0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function updateTable(opportunities) {
+            const tbody = document.getElementById('opportunitiesTable');
+            tbody.innerHTML = '';
+
+            if (opportunities.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">Aucune opportunité trouvée</td></tr>';
+                return;
+            }
+
+            opportunities.slice(0, 50).forEach(o => {
+                const row = document.createElement('tr');
+                const value = o.montant_estime ? 
+                    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(o.montant_estime) : '-';
+                const closeDate = o.date_fermeture_prevue ? 
+                    new Date(o.date_fermeture_prevue).toLocaleDateString('fr-FR') : '-';
+                
+                const statusClass = o.statut === 'GAGNEE' ? 'success' : 
+                                   o.statut === 'PERDUE' ? 'danger' : 
+                                   o.statut === 'EN_COURS' ? 'primary' : 'secondary';
+                
+                row.innerHTML = `
+                    <td><strong>${o.nom || '-'}</strong></td>
+                    <td>${o.client_nom || '-'}</td>
+                    <td>${o.opportunity_type_nom || '-'}</td>
+                    <td>${o.business_unit_nom || '-'}</td>
+                    <td><strong>${value}</strong></td>
+                    <td>${o.probabilite || 0}%</td>
+                    <td><span class="badge bg-${statusClass}">${o.statut || 'N/A'}</span></td>
+                    <td>${closeDate}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            if (opportunities.length > 50) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="8" class="text-center text-muted">... et ${opportunities.length - 50} autres opportunités</td>`;
+                tbody.appendChild(row);
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('periodFilter').value = 'all';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('customPeriodRow').style.display = 'none';
+            document.getElementById('businessUnitFilter').value = '';
+            document.getElementById('typeFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('minAmount').value = '';
+            applyFilters();
+        }
+
+        function refreshData() {
+            loadData();
+        }
+    </script>
+</body>
+</html>

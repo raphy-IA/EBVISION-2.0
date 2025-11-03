@@ -1,0 +1,108 @@
+{
+  "_comment": "Exemple de configuration pour TechVision Solutions",
+  "app": {
+    "name": "TECHVISION WORKSPACE",
+    "shortName": "TECHVISION",
+    "tagline": "Innovation Through Technology",
+    "description": "TechVision Solutions - Advanced Workspace Management",
+    "version": "2.0.0"
+  },
+  "branding": {
+    "logo": {
+      "main": "/assets/brands/techvision/logo.svg",
+      "icon": "/assets/brands/techvision/icon.svg",
+      "favicon": "/assets/brands/techvision/favicon.ico"
+    },
+    "colors": {
+      "primary": "#6c5ce7",
+      "secondary": "#a29bfe",
+      "accent": "#00b894",
+      "success": "#00cec9",
+      "warning": "#fdcb6e",
+      "danger": "#d63031",
+      "info": "#74b9ff",
+      "dark": "#2d3436",
+      "light": "#dfe6e9"
+    },
+    "theme": "techvision"
+  },
+  "ui": {
+    "sidebarTitle": "TechVision",
+    "sidebarSubtitle": "Smart Workspace",
+    "loginTitle": "TechVision Workspace",
+    "loginSubtitle": "Your Digital Command Center",
+    "footer": {
+      "text": "TechVision Solutions",
+      "copyright": "© 2024 TechVision Solutions. Innovation Powered."
+    }
+  },
+  "features": {
+    "dashboard": true,
+    "reports": true,
+    "timeManagement": true,
+    "missionManagement": true,
+    "marketPipeline": true,
+    "hrManagement": true,
+    "configurations": true,
+    "businessUnits": true,
+    "administration": true
+  },
+  "modules": {
+    "dashboard": {
+      "enabled": true,
+      "displayName": "Dashboard"
+    },
+    "reports": {
+      "enabled": true,
+      "displayName": "Analytics & Reports"
+    },
+    "timeManagement": {
+      "enabled": true,
+      "displayName": "Time Tracking"
+    },
+    "missions": {
+      "enabled": true,
+      "displayName": "Project Management"
+    },
+    "marketPipeline": {
+      "enabled": true,
+      "displayName": "Sales Pipeline"
+    },
+    "hr": {
+      "enabled": true,
+      "displayName": "People Management"
+    },
+    "configurations": {
+      "enabled": true,
+      "displayName": "Settings"
+    },
+    "businessUnits": {
+      "enabled": true,
+      "displayName": "Teams & Departments"
+    },
+    "administration": {
+      "enabled": true,
+      "displayName": "Admin Panel"
+    }
+  },
+  "contact": {
+    "email": "hello@techvision.io",
+    "phone": "+1 (555) 987-6543",
+    "website": "https://techvision.io",
+    "supportUrl": "https://help.techvision.io"
+  },
+  "localization": {
+    "defaultLanguage": "en",
+    "availableLanguages": ["en", "fr", "es"],
+    "dateFormat": "MM/DD/YYYY",
+    "timeFormat": "hh:mm A",
+    "currency": "USD",
+    "currencySymbol": "$"
+  },
+  "demo": {
+    "mode": false,
+    "bannerText": "",
+    "watermark": false
+  }
+}
+

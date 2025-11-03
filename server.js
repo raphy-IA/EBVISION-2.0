@@ -52,6 +52,7 @@ const notificationSettingsRoutes = require('./src/routes/notification-settings')
 const prospectingRoutes = require('./src/routes/prospecting');
 const pagePermissionsRoutes = require('./src/routes/page-permissions');
 const permissionsRoutes = require('./src/routes/permissions');
+const brandingRoutes = require('./src/routes/branding');
 const { authenticateToken } = require('./src/middleware/auth');
 
 // Import des middlewares
@@ -137,6 +138,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Servir les fichiers statiques
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Servir les fichiers de configuration (CSS, thèmes)
+app.use('/config', express.static(path.join(__dirname, 'config')));
+
 // Servir les fichiers uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -184,6 +188,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/prospecting', prospectingRoutes);
 app.use('/api/permissions', authenticateToken, permissionsRoutes);
 app.use('/api/auth', pagePermissionsRoutes);
+app.use('/api/branding', brandingRoutes);
 
 // Route de synchronisation des permissions et menus
 const syncPermissionsRoutes = require('./src/routes/sync-permissions');

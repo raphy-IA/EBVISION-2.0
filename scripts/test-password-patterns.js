@@ -77,3 +77,11 @@ console.log('ou utiliser des validations séparées au lieu d\'un seul pattern r
 
 
 
+
+
+
+
+
+
+
+

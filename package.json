@@ -32,12 +32,17 @@
     "pm2:stop": "pm2 stop eb-vision-2.0",
     "pm2:restart": "pm2 restart eb-vision-2.0",
     "pm2:logs": "pm2 logs eb-vision-2.0",
-    "pm2:monit": "pm2 monit"
+    "pm2:monit": "pm2 monit",
+    "branding:configure": "node docs/Branding/Scripts/configure_branding.js",
+    "branding:verify": "node docs/Branding/Scripts/verify_branding.js",
+    "branding:verify:fix": "node docs/Branding/Scripts/verify_branding.js --fix",
+    "branding:list": "node docs/Branding/Scripts/configure_branding.js --list"
   },
   "dependencies": {
     "axios": "^1.11.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
+    "chalk": "^4.1.2",
     "cheerio": "^1.1.2",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.7",
@@ -46,7 +51,9 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
+    "fs-extra": "^11.1.1",
     "helmet": "^7.1.0",
+    "inquirer": "^8.2.5",
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",

@@ -107,3 +107,11 @@ console.log(`- Vérifiez les fichiers dans le dossier scripts/`);
 console.log(`- Utilisez des variables d'environnement pour les credentials de test`);
 
 
+
+
+
+
+
+
+
+

@@ -1,0 +1,110 @@
+{
+  "_comment": "Template de configuration pour un nouveau client - Dupliquer et personnaliser",
+  "app": {
+    "name": "CABINET JOUIR",
+    "shortName": "CJ",
+    "tagline": "jouissons en cabinet",
+    "description": "Description de votre entreprise",
+    "version": "2.0.0"
+  },
+  "branding": {
+    "logo": {
+      "main": "/assets/brands/cabnetjouir/logo.svg",
+      "icon": "/assets/brands/cabnetjouir/icon.svg",
+      "favicon": "/assets/brands/cabnetjouir/favicon.ico"
+    },
+    "colors": {
+      "primary": "#2c3e50",
+      "secondary": "#34495e",
+      "accent": "#3498db",
+      "success": "#27ae60",
+      "warning": "#f39c12",
+      "danger": "#e74c3c",
+      "info": "#3498db",
+      "dark": "#1a252f",
+      "light": "#ecf0f1"
+    },
+    "theme": "custom"
+  },
+  "ui": {
+    "sidebarTitle": "CABINET JOUIR",
+    "sidebarSubtitle": "jouissons en cabinet",
+    "loginTitle": "Bienvenue sur CABINET JOUIR",
+    "loginSubtitle": "Connectez-vous à votre compte",
+    "footer": {
+      "text": "CABINET JOUIR",
+      "copyright": "© 2024 CABINET JOUIR. Tous droits réservés."
+    }
+  },
+  "features": {
+    "dashboard": true,
+    "reports": true,
+    "timeManagement": true,
+    "missionManagement": true,
+    "marketPipeline": true,
+    "hrManagement": true,
+    "configurations": true,
+    "businessUnits": true,
+    "administration": true
+  },
+  "modules": {
+    "dashboard": {
+      "enabled": true,
+      "displayName": "Tableau de bord"
+    },
+    "reports": {
+      "enabled": true,
+      "displayName": "Rapports"
+    },
+    "timeManagement": {
+      "enabled": true,
+      "displayName": "Gestion des temps"
+    },
+    "missions": {
+      "enabled": true,
+      "displayName": "Missions"
+    },
+    "marketPipeline": {
+      "enabled": true,
+      "displayName": "Pipeline Commercial"
+    },
+    "hr": {
+      "enabled": true,
+      "displayName": "Ressources Humaines"
+    },
+    "configurations": {
+      "enabled": true,
+      "displayName": "Configurations"
+    },
+    "businessUnits": {
+      "enabled": true,
+      "displayName": "Unités d'Affaires"
+    },
+    "administration": {
+      "enabled": true,
+      "displayName": "Administration"
+    }
+  },
+  "contact": {
+    "email": "contact@cabnetjouir.com",
+    "phone": "+33 X XX XX XX XX",
+    "website": "https://cabnetjouir.com",
+    "supportUrl": "https://support.cabnetjouir.com"
+  },
+  "localization": {
+    "defaultLanguage": "fr",
+    "availableLanguages": [
+      "fr",
+      "en"
+    ],
+    "dateFormat": "DD/MM/YYYY",
+    "timeFormat": "HH:mm",
+    "currency": "EUR",
+    "currencySymbol": "€"
+  },
+  "demo": {
+    "mode": false,
+    "bannerText": "",
+    "watermark": false
+  }
+}

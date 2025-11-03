@@ -10,9 +10,14 @@
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css?v=2.0">
     
+    <!-- CSS des variables de branding dynamiques -->
+    <link rel="stylesheet" href="/config/themes/brand-variables.css">
     
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
+    
+    <!-- Script de chargement du branding (doit être chargé en premier) -->
+    <script src="js/branding-loader.js"></script>
                 
                 <!-- Scripts de zone utilisateur -->
                 <!-- <script src="js/user-header.js"></script> -->
@@ -144,11 +149,12 @@
     <div class="sidebar-container" id="sidebar">
         <!-- Header de la sidebar -->
         <div class="sidebar-header">
+            <!-- Le logo sera injecté dynamiquement par le branding-loader -->
             <h3>
                 <i class="fas fa-eye"></i>
-                EBVISION 2.0
+                <span id="app-name">EWM</span>
             </h3>
-            <p>Gestion Intelligente des Ressources</p>
+            <p id="app-tagline">Intelligent Resource Management</p>
         </div>
 
         <!-- Zone de profil utilisateur -->
@@ -209,11 +215,11 @@
                     Tableau de bord principal
                 </a>
                 <a href="dashboard-personnel.html" class="sidebar-nav-link" data-permission="menu.dashboard.dashboard_personnel">
-                    <i class="fas fa-user-chart"></i>
+                    <i class="fas fa-user-tie"></i>
                     Dashboard Personnel
                 </a>
                 <a href="dashboard-equipe.html" class="sidebar-nav-link" data-permission="menu.dashboard.dashboard_equipe">
-                    <i class="fas fa-users-chart"></i>
+                    <i class="fas fa-users"></i>
                     Dashboard Équipe
                 </a>
                 <a href="dashboard-direction.html" class="sidebar-nav-link" data-permission="menu.dashboard.dashboard_direction">
@@ -248,19 +254,19 @@
                     <i class="fas fa-file-alt"></i>
                     RAPPORTS
                 </div>
-                <a href="reports.html" class="sidebar-nav-link" data-permission="menu.rapports.rapports_generaux">
-                    <i class="fas fa-chart-pie"></i>
-                    Rapports généraux
+                <a href="reports-temps.html" class="sidebar-nav-link" data-permission="menu.rapports.rapports_generaux">
+                    <i class="fas fa-clock"></i>
+                    Rapports de temps
                 </a>
-                <a href="reports.html?type=missions" class="sidebar-nav-link" data-permission="menu.rapports.rapports_missions">
+                <a href="reports-missions.html" class="sidebar-nav-link" data-permission="menu.rapports.rapports_missions">
                     <i class="fas fa-briefcase"></i>
                     Rapports missions
                 </a>
-                <a href="reports.html?type=opportunities" class="sidebar-nav-link" data-permission="menu.rapports.rapports_opportunites">
+                <a href="reports-opportunities.html" class="sidebar-nav-link" data-permission="menu.rapports.rapports_opportunites">
                     <i class="fas fa-lightbulb"></i>
                     Rapports opportunités
                 </a>
-                <a href="reports.html?type=rh" class="sidebar-nav-link" data-permission="menu.rapports.rapports_rh">
+                <a href="reports-rh.html" class="sidebar-nav-link" data-permission="menu.rapports.rapports_rh">
                     <i class="fas fa-users"></i>
                     Rapports RH
                 </a>
@@ -439,8 +445,8 @@
         <!-- Footer de la sidebar -->
         <div class="sidebar-footer">
             <div class="footer-content">
-                <p>© 2024 EBVISION 2.0</p>
-                <small>Gestion Intelligente des Ressources</small>
+                <p id="footer-text">© 2024 EWM</p>
+                <small id="footer-subtitle">Management System</small>
             </div>
         </div></div>
 
@@ -448,6 +454,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/modern-sidebar.js"></script>
     <script src="js/menu-permissions.js"></script>
+    <script src="js/sidebar-branding.js"></script>
     
     <!-- Notifications Modal -->
     <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">

@@ -96,3 +96,11 @@ diagnosticRapide().catch(console.error);
 
 
 
+
+
+
+
+
+
+
+

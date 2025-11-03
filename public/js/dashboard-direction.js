@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Vérifier les permissions de direction
     if (!hasDirectorRole()) {
-        showError('Accès réservé à la direction');
+        showError('Accès Interdit', 'Vous n\'avez pas les permissions nécessaires pour accéder au Dashboard Direction. Contactez votre administrateur.');
         return;
     }
     
@@ -53,8 +53,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Vérifier si l'utilisateur a le rôle direction
 function hasDirectorRole() {
-    const user = getCurrentUser();
-    return user && (user.role === 'DIRECTOR' || user.role === 'ADMIN' || user.role === 'PARTNER');
+    const token = localStorage.getItem('authToken');
+    if (!token) return false;
+    
+    try {
+        // Décoder le JWT pour obtenir les rôles
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const roles = payload.roles || [];
+        
+        // Vérifier si l'utilisateur a un des rôles autorisés
+        const authorizedRoles = ['SUPER_ADMIN', 'ADMIN', 'DIRECTEUR', 'ASSOCIE'];
+        return roles.some(role => authorizedRoles.includes(role));
+    } catch (e) {
+        console.error('❌ Erreur décodage token:', e);
+        return false;
+    }
 }
 
 // Initialiser les filtres
@@ -115,29 +128,83 @@ async function loadDashboardData() {
         
         // Charger les statistiques stratégiques
         const statsResponse = await authenticatedFetch(`${API_BASE_URL}/analytics/strategic-stats?${params}`);
-        if (statsResponse.ok) {
-            const statsData = await statsResponse.json();
-            updateKPIs(statsData.data);
+        
+        if (!statsResponse.ok) {
+            throw new Error(`Erreur HTTP ${statsResponse.status}: ${statsResponse.statusText}`);
         }
+        
+        const statsData = await statsResponse.json();
+        
+        if (!statsData.success) {
+            throw new Error(statsData.error || 'Erreur API statistiques');
+        }
+        
+        updateKPIs(statsData.data);
         
         // Charger les données pour les graphiques
         const chartDataResponse = await authenticatedFetch(`${API_BASE_URL}/analytics/strategic-chart-data?${params}`);
-        if (chartDataResponse.ok) {
-            const chartData = await chartDataResponse.json();
-            updateCharts(chartData.data);
+        
+        if (!chartDataResponse.ok) {
+            throw new Error(`Erreur HTTP ${chartDataResponse.status}: ${chartDataResponse.statusText}`);
         }
+        
+        const chartData = await chartDataResponse.json();
+        
+        if (!chartData.success) {
+            throw new Error(chartData.error || 'Erreur API graphiques');
+        }
+        
+        updateCharts(chartData.data);
         
         // Charger les objectifs stratégiques
         const objectivesResponse = await authenticatedFetch(`${API_BASE_URL}/analytics/strategic-objectives?${params}`);
-        if (objectivesResponse.ok) {
-            const objectivesData = await objectivesResponse.json();
-            updateStrategicObjectives(objectivesData.data);
+        
+        if (!objectivesResponse.ok) {
+            throw new Error(`Erreur HTTP ${objectivesResponse.status}: ${objectivesResponse.statusText}`);
         }
+        
+        const objectivesData = await objectivesResponse.json();
+        
+        if (!objectivesData.success) {
+            throw new Error(objectivesData.error || 'Erreur API objectifs');
+        }
+        
+        updateStrategicObjectives(objectivesData.data);
         
     } catch (error) {
         console.error('❌ Erreur lors du chargement des données:', error);
-        showError('Erreur lors du chargement des données du dashboard');
+        showError(
+            'Erreur de Chargement',
+            `Impossible de charger les données du dashboard: ${error.message}`
+        );
     }
+}
+
+// Fonction pour afficher un message d'état vide pour un graphique
+function showEmptyChartMessage(containerId, title, subtitle) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // Masquer le canvas
+    const canvas = container.querySelector('canvas');
+    if (canvas) canvas.style.display = 'none';
+    
+    // Créer le message vide
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'empty-chart-message text-center p-4';
+    messageDiv.innerHTML = `
+        <i class="fas fa-chart-line text-muted mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+        <h5 class="text-muted">${title}</h5>
+        <p class="text-muted small">${subtitle}</p>
+    `;
+    
+    container.appendChild(messageDiv);
+}
+
+// Fonction pour masquer les messages d'état vide
+function hideEmptyChartMessages() {
+    document.querySelectorAll('.empty-chart-message').forEach(msg => msg.remove());
+    document.querySelectorAll('canvas').forEach(canvas => canvas.style.display = 'block');
 }
 
 // Mettre à jour les KPIs
@@ -321,19 +388,59 @@ function initializeCharts() {
 function updateCharts(data) {
     console.log('📊 Mise à jour des graphiques direction:', data);
     
-    // Mettre à jour le graphique financier
-    if (financialChart && data.evolution) {
-        financialChart.data.labels = data.evolution.map(item => item.mois);
-        financialChart.data.datasets[0].data = data.evolution.map(item => item.ca);
-        financialChart.data.datasets[1].data = data.evolution.map(item => item.marge);
-        financialChart.update();
+    // Vérifier si les données existent et ne sont pas vides
+    if (!data || !data.evolution || data.evolution.length === 0) {
+        showEmptyChartMessage(
+            'financialChart',
+            'Aucune donnée financière',
+            'Il n\'y a pas encore de données pour la période sélectionnée'
+        );
+    } else {
+        // Masquer les messages vides s'ils existent
+        const financialContainer = document.getElementById('financialChart');
+        if (financialContainer) {
+            const emptyMsg = financialContainer.parentElement.querySelector('.empty-chart-message');
+            if (emptyMsg) emptyMsg.remove();
+        }
+        
+        // Afficher le canvas
+        const financialCanvas = document.getElementById('financialChart');
+        if (financialCanvas) financialCanvas.style.display = 'block';
+        
+        // Mettre à jour le graphique financier
+        if (financialChart) {
+            financialChart.data.labels = data.evolution.map(item => item.mois);
+            financialChart.data.datasets[0].data = data.evolution.map(item => item.ca);
+            financialChart.data.datasets[1].data = data.evolution.map(item => item.marge);
+            financialChart.update();
+        }
     }
     
-    // Mettre à jour le graphique de répartition BU
-    if (buDistributionChart && data.bu_repartition) {
-        buDistributionChart.data.labels = data.bu_repartition.map(item => item.bu);
-        buDistributionChart.data.datasets[0].data = data.bu_repartition.map(item => item.ca);
-        buDistributionChart.update();
+    // Même logique pour le graphique de répartition BU
+    if (!data || !data.bu_repartition || data.bu_repartition.length === 0) {
+        showEmptyChartMessage(
+            'buDistributionChart',
+            'Aucune répartition par BU',
+            'Les données de répartition ne sont pas encore disponibles'
+        );
+    } else {
+        // Masquer les messages vides s'ils existent
+        const buContainer = document.getElementById('buDistributionChart');
+        if (buContainer) {
+            const emptyMsg = buContainer.parentElement.querySelector('.empty-chart-message');
+            if (emptyMsg) emptyMsg.remove();
+        }
+        
+        // Afficher le canvas
+        const buCanvas = document.getElementById('buDistributionChart');
+        if (buCanvas) buCanvas.style.display = 'block';
+        
+        // Mettre à jour le graphique de répartition BU
+        if (buDistributionChart) {
+            buDistributionChart.data.labels = data.bu_repartition.map(item => item.bu);
+            buDistributionChart.data.datasets[0].data = data.bu_repartition.map(item => item.ca);
+            buDistributionChart.update();
+        }
     }
 }
 
@@ -558,18 +665,40 @@ function getAlertIcon(type) {
     }
 }
 
-function showError(message) {
+function showError(title, message) {
+    const mainContent = document.querySelector('.main-content-area');
+    if (!mainContent) return;
+    
+    // Supprimer les alertes existantes
+    const existingAlerts = mainContent.querySelectorAll('.alert.api-error-alert');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Créer une nouvelle alerte
     const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show api-error-alert';
+    alertDiv.style.cssText = 'margin: 1rem; position: relative; z-index: 1000;';
     alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-triangle me-3" style="font-size: 1.5rem;"></i>
+            <div class="flex-grow-1">
+                <h5 class="alert-heading mb-1">${title}</h5>
+                <p class="mb-0">${message}</p>
+            </div>
+        </div>
+        <div class="mt-2">
+            <button class="btn btn-sm btn-outline-danger me-2" onclick="location.reload()">
+                <i class="fas fa-sync-alt me-1"></i>Rafraîchir la page
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="alert">
+                <i class="fas fa-times me-1"></i>Fermer
+            </button>
+        </div>
     `;
     
-    const mainContent = document.querySelector('.main-content');
-    if (mainContent) {
-        mainContent.insertBefore(alertDiv, mainContent.firstChild);
-    }
+    mainContent.insertBefore(alertDiv, mainContent.firstChild);
+    
+    // Auto-scroll vers l'alerte
+    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // Fonction pour rafraîchir le dashboard

@@ -195,3 +195,11 @@ node scripts/test-multiple-roles.js
 **Statut** : Implémenté et testé
 
 
+
+
+
+
+
+
+
+

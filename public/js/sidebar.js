@@ -95,6 +95,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 100);
             }
             
+            // Réappliquer le branding après le chargement de la sidebar
+            if (window.whenBrandingReady) {
+                window.whenBrandingReady(function(config) {
+                    if (config && window.SidebarBranding) {
+                        console.log('🎨 Réapplication du branding à la sidebar...');
+                        window.SidebarBranding.apply(config);
+                    }
+                });
+            }
+            
             console.log('✅ Sidebar chargée et configurée avec succès');
         } else {
             console.error("Le contenu de la sidebar (.sidebar-container) n'a pas été trouvé dans le template.");

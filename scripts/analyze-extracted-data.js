@@ -121,3 +121,11 @@ analyzeExtractedData().catch(console.error);
 
 
 
+
+
+
+
+
+
+
+

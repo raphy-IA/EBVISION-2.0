@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport RH - EB Vision 2.0</title>
+    
+    <!-- CSS Bootstrap et FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js pour les graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-bg: #34495e;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+        }
+        
+        /* Navigation Top Bar */
+        .top-navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-bg) 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .top-navbar .brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .top-navbar .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        .top-navbar .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .top-navbar .nav-links a:hover,
+        .top-navbar .nav-links a.active {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        /* Main Content */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 2rem;
+        }
+        
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+        
+        .page-header .breadcrumb {
+            margin: 0.5rem 0 0;
+            background: none;
+            padding: 0;
+        }
+        
+        /* Cards */
+        .stat-card {
+            border: none;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            color: white;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-card.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .stat-card.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            opacity: 0.3;
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-bg) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1rem 1.5rem;
+        }
+        
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        /* Filters */
+        .filters-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .filter-group {
+            margin-bottom: 1rem;
+        }
+        
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            padding: 1rem;
+        }
+        
+        /* Tables */
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 1rem;
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s;
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+            transform: scale(1.01);
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+        
+        /* Badges */
+        .status-badge {
+            padding: 0.35rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-actif { background-color: #d4edda; color: #155724; }
+        .status-inactif { background-color: #f8d7da; color: #721c24; }
+        .status-conge { background-color: #fff3cd; color: #856404; }
+        
+        /* Buttons */
+        .btn-custom {
+            padding: 0.6rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .spinner-custom {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .top-navbar .nav-links {
+                display: none;
+            }
+            
+            .main-container {
+                padding: 0 1rem 1rem;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <div class="container-fluid px-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="/dashboard.html" class="brand">
+                    <i class="fas fa-chart-line me-2"></i>EB Vision 2.0
+                </a>
+                
+                <div class="nav-links d-none d-md-flex">
+                    <a href="/dashboard.html">
+                        <i class="fas fa-home me-1"></i>Accueil
+                    </a>
+                    <a href="/reports-rh.html" class="active">
+                        <i class="fas fa-users me-1"></i>Rapport RH
+                    </a>
+                    <a href="/reports.html">
+                        <i class="fas fa-chart-bar me-1"></i>Autres Rapports
+                    </a>
+                    <a href="/collaborateurs.html">
+                        <i class="fas fa-user-tie me-1"></i>Collaborateurs
+                    </a>
+                </div>
+                
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">
+                        <span id="userInitials">A</span>
+                    </div>
+                    <div class="d-none d-md-block">
+                        <div style="font-weight: 600;" id="userName">Chargement...</div>
+                        <small id="userRole">-</small>
+                    </div>
+                    <a href="#" class="btn btn-sm btn-outline-light ms-2" onclick="logout(event)">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1><i class="fas fa-users me-2"></i>Rapport Ressources Humaines</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/dashboard.html">Accueil</a></li>
+                            <li class="breadcrumb-item active">Rapport RH</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <button class="btn btn-success btn-custom me-2" onclick="exportReport()">
+                        <i class="fas fa-file-excel me-1"></i>Exporter
+                    </button>
+                    <button class="btn btn-primary btn-custom" onclick="refreshData()">
+                        <i class="fas fa-sync-alt me-1"></i>Actualiser
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Card -->
+        <div class="filters-card">
+            <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filtres</h5>
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label">Business Unit</label>
+                    <select class="form-select" id="businessUnitFilter">
+                        <option value="">Toutes les Business Units</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Division</label>
+                    <select class="form-select" id="divisionFilter">
+                        <option value="">Toutes les Divisions</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Statut</label>
+                    <select class="form-select" id="statutFilter">
+                        <option value="">Tous les statuts</option>
+                        <option value="ACTIF">Actif</option>
+                        <option value="INACTIF">Inactif</option>
+                        <option value="CONGE">En congé</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Période</label>
+                    <select class="form-select" id="periodFilter">
+                        <option value="all">Toutes les périodes</option>
+                        <option value="today">Aujourd'hui</option>
+                        <option value="yesterday">Hier</option>
+                        <option value="week">Cette semaine</option>
+                        <option value="last_week">Semaine précédente</option>
+                        <option value="month">Ce mois</option>
+                        <option value="last_month">Mois précédent</option>
+                        <option value="quarter">Ce trimestre</option>
+                        <option value="year">Cette année</option>
+                        <option value="custom">Période personnalisée</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Période personnalisée (cachée par défaut) -->
+            <div class="row mt-3" id="customPeriodRow" style="display: none;">
+                <div class="col-md-3">
+                    <label class="form-label">Date de début</label>
+                    <input type="date" class="form-control" id="startDate">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date de fin</label>
+                    <input type="date" class="form-control" id="endDate">
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <label class="form-label">Grade</label>
+                    <select class="form-select" id="gradeFilter">
+                        <option value="">Tous les grades</option>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <button class="btn btn-primary mt-4" onclick="applyFilters()">
+                        <i class="fas fa-search me-1"></i>Appliquer les filtres
+                    </button>
+                    <button class="btn btn-secondary ms-2 mt-4" onclick="resetFilters()">
+                        <i class="fas fa-undo me-1"></i>Réinitialiser
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card primary position-relative">
+                    <i class="fas fa-users stat-icon"></i>
+                    <div class="stat-label">Total Collaborateurs</div>
+                    <div class="stat-number" id="totalCollaborateurs">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card success position-relative">
+                    <i class="fas fa-user-check stat-icon"></i>
+                    <div class="stat-label">Collaborateurs Actifs</div>
+                    <div class="stat-number" id="collaborateursActifs">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card warning position-relative">
+                    <i class="fas fa-user-times stat-icon"></i>
+                    <div class="stat-label">Collaborateurs Inactifs</div>
+                    <div class="stat-number" id="collaborateursInactifs">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card info position-relative">
+                    <i class="fas fa-exchange-alt stat-icon"></i>
+                    <div class="stat-label">Départs (Total)</div>
+                    <div class="stat-number" id="totalDeparts">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row">
+            <!-- Grade Distribution Chart -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-pie me-2"></i>Répartition par Grade</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="gradeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Unit Distribution Chart -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-building me-2"></i>Répartition par Business Unit</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="buChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Poste Distribution Chart -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-briefcase me-2"></i>Répartition par Poste</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="posteChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Collaborateurs Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-table me-2"></i>Liste Détaillée des Collaborateurs</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Matricule</th>
+                                <th>Nom & Prénom</th>
+                                <th>Email</th>
+                                <th>Business Unit</th>
+                                <th>Grade</th>
+                                <th>Poste</th>
+                                <th>Ancienneté</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="collaborateursTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner-custom"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE_URL = '/api';
+        let charts = {};
+        
+        // Authentication
+        function getAuthHeader() {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+        
+        function checkAuth() {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            return true;
+        }
+        
+        function logout(event) {
+            if (event) event.preventDefault();
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            localStorage.removeItem('userInfo');
+            window.location.href = '/login.html';
+        }
+        
+        // Initialize user info
+        function initUserInfo() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.nom && user.prenom) {
+                document.getElementById('userName').textContent = `${user.prenom} ${user.nom}`;
+                document.getElementById('userInitials').textContent = 
+                    (user.prenom[0] + user.nom[0]).toUpperCase();
+                
+                if (user.roles && user.roles.length > 0) {
+                    document.getElementById('userRole').textContent = user.roles.join(', ');
+                } else if (user.role) {
+                    document.getElementById('userRole').textContent = user.role;
+                }
+            }
+        }
+        
+        // Show/Hide loading
+        function showLoading(show = true) {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+        }
+        
+        // Stockage des données de filtres
+        let allBusinessUnits = [];
+        let allDivisions = [];
+        let allGrades = [];
+        
+        // Load filters
+        async function loadFilters() {
+            try {
+                const [buResponse, divResponse, gradeResponse] = await Promise.all([
+                    fetch(`${API_BASE_URL}/business-units`, { headers: getAuthHeader() }),
+                    fetch(`${API_BASE_URL}/divisions`, { headers: getAuthHeader() }),
+                    fetch(`${API_BASE_URL}/grades`, { headers: getAuthHeader() })
+                ]);
+                
+                if (buResponse.ok) {
+                    const buData = await buResponse.json();
+                    allBusinessUnits = buData.data || buData.business_units || [];
+                    populateBusinessUnits();
+                }
+                
+                if (divResponse.ok) {
+                    const divData = await divResponse.json();
+                    allDivisions = divData.data || divData.divisions || [];
+                    populateDivisions();
+                }
+                
+                if (gradeResponse.ok) {
+                    const gradeData = await gradeResponse.json();
+                    allGrades = gradeData.data || gradeData.grades || [];
+                    populateGrades();
+                }
+                
+                setupFilterListeners();
+                console.log('✅ Filtres RH initialisés:', {
+                    businessUnits: allBusinessUnits.length,
+                    divisions: allDivisions.length,
+                    grades: allGrades.length
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des filtres:', error);
+            }
+        }
+        
+        function populateBusinessUnits(currentValue = '') {
+            const select = document.getElementById('businessUnitFilter');
+            select.innerHTML = '<option value="">Toutes les Business Units</option>';
+            
+            allBusinessUnits.forEach(bu => {
+                const option = document.createElement('option');
+                option.value = bu.id;
+                option.textContent = bu.nom;
+                if (String(bu.id) === String(currentValue)) option.selected = true;
+                select.appendChild(option);
+            });
+        }
+        
+        function populateDivisions(filteredIds = null, currentValue = '') {
+            const select = document.getElementById('divisionFilter');
+            select.innerHTML = '<option value="">Toutes les Divisions</option>';
+            
+            const divisions = filteredIds 
+                ? allDivisions.filter(div => filteredIds.includes(div.id))
+                : allDivisions;
+            
+            divisions.forEach(div => {
+                const option = document.createElement('option');
+                option.value = div.id;
+                option.textContent = div.nom;
+                if (String(div.id) === String(currentValue)) option.selected = true;
+                select.appendChild(option);
+            });
+        }
+        
+        function populateGrades(filteredIds = null, currentValue = '') {
+            const select = document.getElementById('gradeFilter');
+            select.innerHTML = '<option value="">Tous les grades</option>';
+            
+            const grades = filteredIds 
+                ? allGrades.filter(grade => filteredIds.includes(grade.id))
+                : allGrades;
+            
+            grades.forEach(grade => {
+                const option = document.createElement('option');
+                option.value = grade.id;
+                option.textContent = grade.nom;
+                if (String(grade.id) === String(currentValue)) option.selected = true;
+                select.appendChild(option);
+            });
+        }
+        
+        function setupFilterListeners() {
+            // Chaque filtre met à jour LES AUTRES (pas lui-même)
+            document.getElementById('businessUnitFilter').addEventListener('change', function() {
+                updateDependentFiltersRH('businessUnit');
+            });
+            
+            document.getElementById('divisionFilter').addEventListener('change', function() {
+                updateDependentFiltersRH('division');
+            });
+            
+            document.getElementById('gradeFilter').addEventListener('change', function() {
+                updateDependentFiltersRH('grade');
+            });
+            
+            console.log('✅ Filtres RH croisés configurés');
+        }
+        
+        function updateDependentFiltersRH(changedFilter) {
+            const buId = document.getElementById('businessUnitFilter').value;
+            const divisionId = document.getElementById('divisionFilter').value;
+            const gradeId = document.getElementById('gradeFilter').value;
+            
+            console.log(`🔄 Filtre RH "${changedFilter}" changé, mise à jour des autres`);
+            
+            // Filtrer les divisions selon la BU sélectionnée
+            let availableDivisionIds = null;
+            if (buId) {
+                availableDivisionIds = allDivisions
+                    .filter(div => String(div.business_unit_id) === String(buId))
+                    .map(div => div.id);
+            }
+            
+            // Mettre à jour chaque filtre SAUF celui qui a changé
+            if (changedFilter !== 'businessUnit') {
+                populateBusinessUnits(buId);
+            }
+            if (changedFilter !== 'division') {
+                populateDivisions(availableDivisionIds, divisionId);
+            }
+            if (changedFilter !== 'grade') {
+                populateGrades(null, gradeId); // Grades ne dépendent pas de BU/Division
+            }
+            
+            console.log(`  📍 Divisions disponibles: ${availableDivisionIds ? availableDivisionIds.length : 'toutes'}`);
+        }
+        
+        // Get Date Range based on period filter
+        function getDateRange() {
+            const period = document.getElementById('periodFilter').value;
+            const now = new Date();
+            let startDate, endDate;
+
+            switch (period) {
+                case 'today':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+                    break;
+                case 'yesterday':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
+                    break;
+                case 'week':
+                    const dayOfWeek = now.getDay();
+                    const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                    startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), diff + 6, 23, 59, 59);
+                    break;
+                case 'last_week':
+                    const lastWeekDayOfWeek = now.getDay();
+                    const lastWeekDiff = now.getDate() - lastWeekDayOfWeek + (lastWeekDayOfWeek === 0 ? -6 : 1) - 7;
+                    startDate = new Date(now.getFullYear(), now.getMonth(), lastWeekDiff);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), lastWeekDiff + 6, 23, 59, 59);
+                    break;
+                case 'month':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                    break;
+                case 'last_month':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+                    break;
+                case 'quarter':
+                    const quarter = Math.floor(now.getMonth() / 3);
+                    startDate = new Date(now.getFullYear(), quarter * 3, 1);
+                    endDate = new Date(now.getFullYear(), (quarter + 1) * 3, 0, 23, 59, 59);
+                    break;
+                case 'year':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+                    break;
+                case 'custom':
+                    const startInput = document.getElementById('startDate').value;
+                    const endInput = document.getElementById('endDate').value;
+                    if (startInput && endInput) {
+                        startDate = new Date(startInput);
+                        endDate = new Date(endInput);
+                        endDate.setHours(23, 59, 59);
+                    } else {
+                        return null;
+                    }
+                    break;
+                default:
+                    return null;
+            }
+
+            return { startDate, endDate };
+        }
+        
+        // Load HR Report
+        async function loadHRReport() {
+            if (!checkAuth()) return;
+            
+            showLoading(true);
+            
+            try {
+                const businessUnitId = document.getElementById('businessUnitFilter').value;
+                const divisionId = document.getElementById('divisionFilter').value;
+                const gradeId = document.getElementById('gradeFilter').value;
+                const dateRange = getDateRange();
+                
+                let url = `${API_BASE_URL}/reports/hr?`;
+                if (businessUnitId) url += `businessUnitId=${businessUnitId}&`;
+                if (divisionId) url += `divisionId=${divisionId}&`;
+                if (gradeId) url += `gradeId=${gradeId}&`;
+                if (dateRange) {
+                    url += `startDate=${dateRange.startDate.toISOString()}&`;
+                    url += `endDate=${dateRange.endDate.toISOString()}&`;
+                }
+                
+                const response = await fetch(url, { headers: getAuthHeader() });
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayHRData(result.data);
+                } else {
+                    console.error('Erreur:', result.error);
+                    alert('Erreur lors du chargement des données RH');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors du chargement du rapport RH: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Display HR Data
+        function displayHRData(data) {
+            // Update statistics cards
+            const stats = data.global_statistics || {};
+            document.getElementById('totalCollaborateurs').textContent = stats.total_collaborateurs || 0;
+            document.getElementById('collaborateursActifs').textContent = stats.actifs || 0;
+            document.getElementById('collaborateursInactifs').textContent = stats.inactifs || 0;
+            document.getElementById('totalDeparts').textContent = stats.departs || 0;
+            
+            // Update charts
+            updateGradeChart(data.grade_distribution || []);
+            updateBUChart(data.business_unit_distribution || []);
+            updatePosteChart(data.poste_distribution || []);
+            
+            // Load collaborateurs table
+            loadCollaborateursTable();
+        }
+        
+        // Update Grade Chart
+        function updateGradeChart(data) {
+            const ctx = document.getElementById('gradeChart').getContext('2d');
+            
+            if (charts.gradeChart) {
+                charts.gradeChart.destroy();
+            }
+            
+            charts.gradeChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.map(item => item.grade_nom),
+                    datasets: [{
+                        data: data.map(item => item.nb_collaborateurs),
+                        backgroundColor: [
+                            '#667eea', '#764ba2', '#f093fb', '#f5576c',
+                            '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
+                            '#fa709a', '#fee140'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const dataset = context.dataset.data;
+                                    const total = dataset.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update BU Chart
+        function updateBUChart(data) {
+            const ctx = document.getElementById('buChart').getContext('2d');
+            
+            if (charts.buChart) {
+                charts.buChart.destroy();
+            }
+            
+            charts.buChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(item => item.business_unit_nom),
+                    datasets: [{
+                        data: data.map(item => item.nb_collaborateurs),
+                        backgroundColor: [
+                            '#11998e', '#38ef7d', '#667eea', '#764ba2',
+                            '#f093fb', '#f5576c', '#4facfe', '#00f2fe'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    return `${label}: ${value} collaborateurs`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update Poste Chart
+        function updatePosteChart(data) {
+            const ctx = document.getElementById('posteChart').getContext('2d');
+            
+            if (charts.posteChart) {
+                charts.posteChart.destroy();
+            }
+            
+            charts.posteChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(item => item.poste_nom),
+                    datasets: [{
+                        label: 'Nombre de collaborateurs',
+                        data: data.map(item => item.nb_collaborateurs),
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+        
+        // Load Collaborateurs Table
+        async function loadCollaborateursTable() {
+            try {
+                const businessUnitId = document.getElementById('businessUnitFilter').value;
+                const divisionId = document.getElementById('divisionFilter').value;
+                const statut = document.getElementById('statutFilter').value;
+                
+                let url = `${API_BASE_URL}/reports/hr/collaborateurs?`;
+                if (businessUnitId) url += `businessUnitId=${businessUnitId}&`;
+                if (divisionId) url += `divisionId=${divisionId}&`;
+                if (statut) url += `statut=${statut}&`;
+                
+                const response = await fetch(url, { headers: getAuthHeader() });
+                const result = await response.json();
+                
+                const tbody = document.getElementById('collaborateursTableBody');
+                tbody.innerHTML = '';
+                
+                if (result.success && result.data.length > 0) {
+                    result.data.forEach(collab => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${collab.matricule || '-'}</td>
+                            <td><strong>${collab.prenom} ${collab.nom}</strong></td>
+                            <td>${collab.email || '-'}</td>
+                            <td>${collab.business_unit_nom || '-'}</td>
+                            <td>${collab.grade_nom || '-'}</td>
+                            <td>${collab.poste_nom || '-'}</td>
+                            <td>${Math.floor(collab.anciennete_annees || 0)} ans</td>
+                            <td><span class="status-badge status-${collab.statut.toLowerCase()}">${collab.statut}</span></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center">Aucun collaborateur trouvé</td></tr>';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('collaborateursTableBody').innerHTML = 
+                    '<tr><td colspan="8" class="text-center text-danger">Erreur lors du chargement des données</td></tr>';
+            }
+        }
+        
+        // Apply filters
+        function applyFilters() {
+            loadHRReport();
+        }
+        
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('businessUnitFilter').value = '';
+            document.getElementById('divisionFilter').value = '';
+            document.getElementById('statutFilter').value = '';
+            document.getElementById('gradeFilter').value = '';
+            document.getElementById('periodFilter').value = 'all';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('customPeriodRow').style.display = 'none';
+            loadHRReport();
+        }
+        
+        // Refresh data
+        function refreshData() {
+            loadHRReport();
+        }
+        
+        // Export report
+        function exportReport() {
+            alert('Fonctionnalité d\'export en cours de développement');
+            // TODO: Implement export to Excel
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAuth()) return;
+            
+            initUserInfo();
+            loadFilters();
+            loadHRReport();
+            
+            // Event listener for period filter
+            const periodFilter = document.getElementById('periodFilter');
+            if (periodFilter) {
+                periodFilter.addEventListener('change', function() {
+                    const customRow = document.getElementById('customPeriodRow');
+                    if (this.value === 'custom') {
+                        customRow.style.display = 'block';
+                    } else {
+                        customRow.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+

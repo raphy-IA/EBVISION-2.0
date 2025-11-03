@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Personnel - EBVISION</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%232c3e50'/%3E%3Ccircle cx='50' cy='35' r='12' fill='%23fff'/%3E%3Cpath d='M 50 50 Q 35 50 30 65 Q 28 72 30 80 L 70 80 Q 72 72 70 65 Q 65 50 50 50' fill='%23fff'/%3E%3C/svg%3E">
+    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -15,12 +18,48 @@
     <link href="css/modern-sidebar.css" rel="stylesheet">
     <link href="css/app-title.css" rel="stylesheet">
     
+    <!-- Scripts d'authentification -->
+    <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+    <script src="js/global-auth.js"></script>
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+    
     <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+        }
+        
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
         .dashboard-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 2rem 0;
+            padding: 2rem;
+            border-radius: 15px;
             margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         
         .kpi-card {
@@ -37,10 +76,22 @@
             transform: translateY(-5px);
         }
         
+        .kpi-card.success {
+            border-left-color: #27ae60;
+        }
+        
+        .kpi-card.warning {
+            border-left-color: #f39c12;
+        }
+        
+        .kpi-card.info {
+            border-left-color: #3498db;
+        }
+        
         .kpi-number {
             font-size: 2.5rem;
             font-weight: bold;
-            color: #667eea;
+            color: var(--primary-color);
             margin-bottom: 0.5rem;
         }
         
@@ -51,254 +102,190 @@
             letter-spacing: 0.5px;
         }
         
-        .kpi-trend {
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
-        }
-        
-        .kpi-trend.positive {
-            color: #28a745;
-        }
-        
-        .kpi-trend.negative {
-            color: #dc3545;
-        }
-        
         .chart-container {
             background: white;
             border-radius: 15px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
+            height: 400px;
+            max-height: 400px;
         }
         
-        .mission-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 1rem;
+        .chart-container canvas {
+            max-height: 300px !important;
+        }
+        
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
             margin-bottom: 1rem;
-            border-left: 4px solid #28a745;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
         }
         
-        .mission-card.urgent {
-            border-left-color: #dc3545;
-        }
-        
-        .mission-card.warning {
-            border-left-color: #ffc107;
-        }
-        
-        .progress-custom {
-            height: 8px;
-            border-radius: 4px;
-            background-color: #e9ecef;
-        }
-        
-        .progress-custom .progress-bar {
-            border-radius: 4px;
-        }
-        
-        .alert-card {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            color: white;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .success-card {
-            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
-            color: white;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .info-card {
-            background: linear-gradient(135deg, #74c0fc 0%, #339af0 100%);
-            color: white;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            
+            .main-content-area {
+                padding: 1rem;
+            }
+            
+            .kpi-number {
+                font-size: 2rem;
+            }
         }
     </style>
-    <!-- Script pour la gestion utilisateur -->
-    <script src="js/user-header.js"></script>
-    <script src="js/profile-menu.js"></script>
-    <script src="js/notifications.js"></script>
-    <script src="js/tasks.js"></script>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 px-0">
-                <div class="sidebar-container" id="sidebar-container">
-                    <!-- Le contenu de la sidebar sera chargé dynamiquement -->
-                </div>
-            </div>
-            
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content">
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div class="container-fluid">
                 <!-- Dashboard Header -->
                 <div class="dashboard-header">
-                    <div class="container-fluid">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h1><i class="fas fa-user-circle me-3"></i>Dashboard Personnel</h1>
-                                <p class="mb-0">Vue d'ensemble de vos performances et objectifs</p>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <div class="d-flex align-items-center justify-content-end">
-                                    <div class="me-3">
-                                        <small>Connecté en tant que</small><br>
-                                        <strong id="user-name">Chargement...</strong>
-                                    </div>
-                                    <img src="https://ui-avatars.com/api/?name=User&background=667eea&color=fff" 
-                                         alt="Avatar" class="rounded-circle" width="50" height="50">
-                                </div>
-                            </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1><i class="fas fa-user-circle me-3"></i>Dashboard Personnel</h1>
+                            <p class="mb-0 opacity-75">Vue d'ensemble de vos performances et objectifs</p>
+                        </div>
+                        <div>
+                            <select class="form-select" id="period-filter">
+                                <option value="7">7 derniers jours</option>
+                                <option value="30" selected>30 derniers jours</option>
+                                <option value="90">90 derniers jours</option>
+                                <option value="180">6 derniers mois</option>
+                            </select>
                         </div>
                     </div>
                 </div>
                 
+                <!-- Profil Utilisateur -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="kpi-card">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="kpi-label">Nom</div>
+                                    <div class="h5" id="user-name">-</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="kpi-label">Grade</div>
+                                    <div class="h5" id="user-grade">-</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="kpi-label">Division</div>
+                                    <div class="h5" id="user-division">-</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="kpi-label">Business Unit</div>
+                                    <div class="h5" id="user-bu">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- KPIs Principaux -->
-                <div class="container-fluid">
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="kpi-card">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="kpi-number" id="heures-saisies">0h</div>
-                                        <div class="kpi-label">Heures Saisies (Mois)</div>
-                                        <div class="kpi-trend positive" id="heures-trend">
-                                            <i class="fas fa-arrow-up"></i> +12.5%
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-clock fa-2x text-muted"></i>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-3">
-                            <div class="kpi-card">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="kpi-number" id="taux-facturation">0%</div>
-                                        <div class="kpi-label">Taux de Facturation</div>
-                                        <div class="kpi-trend positive" id="facturation-trend">
-                                            <i class="fas fa-arrow-up"></i> +5.2%
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-percentage fa-2x text-muted"></i>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-3">
-                            <div class="kpi-card">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="kpi-number" id="missions-actives">0</div>
-                                        <div class="kpi-label">Missions Actives</div>
-                                        <div class="kpi-trend info" id="missions-trend">
-                                            <i class="fas fa-minus"></i> Stable
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-briefcase fa-2x text-muted"></i>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-3">
-                            <div class="kpi-card">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="kpi-number" id="objectif-atteint">0%</div>
-                                        <div class="kpi-label">Objectif Mensuel</div>
-                                        <div class="kpi-trend positive" id="objectif-trend">
-                                            <i class="fas fa-arrow-up"></i> +8.3%
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-target fa-2x text-muted"></i>
-                                </div>
-                            </div>
+                <div class="row">
+                    <div class="col-xl-4 col-md-6">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total Heures</div>
+                            <div class="kpi-number" id="total-heures">-</div>
                         </div>
                     </div>
-                    
-                    <!-- Graphiques et Analyses -->
-                    <div class="row mb-4">
-                        <div class="col-md-8">
-                            <div class="chart-container">
-                                <h5><i class="fas fa-chart-line me-2"></i>Évolution des Heures (30 derniers jours)</h5>
-                                <canvas id="hoursChart" height="100"></canvas>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <div class="chart-container">
-                                <h5><i class="fas fa-chart-pie me-2"></i>Répartition par Type</h5>
-                                <canvas id="typeChart" height="200"></canvas>
-                            </div>
+                    <div class="col-xl-4 col-md-6">
+                        <div class="kpi-card success">
+                            <div class="kpi-label">Heures Facturables</div>
+                            <div class="kpi-number" id="heures-facturables">-</div>
                         </div>
                     </div>
-                    
-                    <!-- Missions Actives et Alertes -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <h5><i class="fas fa-briefcase me-2"></i>Missions Actives</h5>
-                                <div id="missions-list">
-                                    <!-- Les missions seront chargées dynamiquement -->
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <h5><i class="fas fa-bell me-2"></i>Alertes et Notifications</h5>
-                                <div id="alerts-list">
-                                    <!-- Les alertes seront chargées dynamiquement -->
-                                </div>
-                            </div>
+                    <div class="col-xl-4 col-md-6">
+                        <div class="kpi-card info">
+                            <div class="kpi-label">Taux Chargeabilité</div>
+                            <div class="kpi-number" id="taux-chargeabilite">-</div>
                         </div>
                     </div>
-                    
-                    <!-- Objectifs et Performance -->
-                    <div class="row mt-4">
-                        <div class="col-md-12">
-                            <div class="chart-container">
-                                <h5><i class="fas fa-target me-2"></i>Suivi des Objectifs</h5>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="text-center">
-                                            <h6>Objectif Heures</h6>
-                                            <div class="progress progress-custom mb-2">
-                                                <div class="progress-bar bg-success" id="objectif-heures-progress" style="width: 75%"></div>
-                                            </div>
-                                            <small><span id="objectif-heures-actuel">150</span>h / <span id="objectif-heures-cible">200</span>h</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="text-center">
-                                            <h6>Objectif Facturation</h6>
-                                            <div class="progress progress-custom mb-2">
-                                                <div class="progress-bar bg-info" id="objectif-facturation-progress" style="width: 85%"></div>
-                                            </div>
-                                            <small><span id="objectif-facturation-actuel">85</span>% / <span id="objectif-facturation-cible">90</span>%</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="text-center">
-                                            <h6>Objectif Qualité</h6>
-                                            <div class="progress progress-custom mb-2">
-                                                <div class="progress-bar bg-warning" id="objectif-qualite-progress" style="width: 92%"></div>
-                                            </div>
-                                            <small><span id="objectif-qualite-actuel">92</span>% / <span id="objectif-qualite-cible">95</span>%</small>
-                                        </div>
-                                    </div>
-                                </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-xl-4 col-md-6">
+                        <div class="kpi-card warning">
+                            <div class="kpi-label">Missions Travaillées</div>
+                            <div class="kpi-number" id="missions-travaillees">-</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-6">
+                        <div class="kpi-card success">
+                            <div class="kpi-label">Temps Validés</div>
+                            <div class="kpi-number" id="temps-valides">-</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-6">
+                        <div class="kpi-card warning">
+                            <div class="kpi-label">Temps En Attente</div>
+                            <div class="kpi-number" id="temps-en-attente">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphiques -->
+                <div class="row">
+                    <div class="col-xl-8">
+                        <div class="chart-container">
+                            <div class="chart-title">
+                                <i class="fas fa-chart-line me-2"></i>Évolution Temporelle
+                            </div>
+                            <canvas id="timelineChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="chart-container">
+                            <div class="chart-title">
+                                <i class="fas fa-chart-pie me-2"></i>Répartition Heures
+                            </div>
+                            <canvas id="typeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Missions Actives -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="chart-container" style="height: auto; max-height: none;">
+                            <div class="chart-title">
+                                <i class="fas fa-briefcase me-2"></i>Mes Missions Actives
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Mission</th>
+                                            <th>Client</th>
+                                            <th class="text-center">Statut</th>
+                                            <th class="text-end">Heures Passées</th>
+                                            <th>Date Fin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="missions-tbody">
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">Chargement...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -306,14 +293,12 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="js/auth.js"></script>
-    <script src="js/menu-permissions.js"></script>
+    <!-- Sidebar JS -->
     <script src="js/sidebar.js"></script>
+    <!-- Dashboard Personnel JS -->
     <script src="js/dashboard-personnel.js"></script>
 </body>
 </html>
-

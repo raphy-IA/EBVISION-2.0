@@ -783,31 +783,78 @@ router.get('/strategic-chart-data', authenticateToken, async (req, res) => {
     try {
         const { period = 90, business_unit = '', year = 2024 } = req.query;
 
-        // Données d'évolution CA et marge (simulation)
-        const evolutionData = [];
-        const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-        
-        for (let i = 0; i < 12; i++) {
-            evolutionData.push({
-                mois: months[i],
-                ca: Math.floor(Math.random() * 500000) + 200000,
-                marge: Math.floor(Math.random() * 20) + 15
-            });
+        // Calculer la date de début basée sur la période
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(period));
+
+        // Construire les conditions WHERE
+        let whereConditions = ['m.created_at >= $1'];
+        let params = [startDate.toISOString()];
+        let paramIndex = 2;
+
+        if (business_unit) {
+            whereConditions.push(`bu.id = $${paramIndex++}`);
+            params.push(business_unit);
         }
 
-        // Répartition par BU
-        const buData = [
-            { bu: 'BU Consulting', ca: 35, missions: 45 },
-            { bu: 'BU Audit', ca: 25, missions: 30 },
-            { bu: 'BU Formation', ca: 20, missions: 15 },
-            { bu: 'BU Développement', ca: 20, missions: 10 }
-        ];
+        const whereClause = whereConditions.join(' AND ');
+
+        // 1. Évolution mensuelle CA et marge
+        const evolutionQuery = `
+            SELECT 
+                TO_CHAR(DATE_TRUNC('month', m.created_at), 'Mon') as mois,
+                DATE_TRUNC('month', m.created_at) as mois_date,
+                COALESCE(SUM(m.montant_honoraires), 0) as ca,
+                CASE 
+                    WHEN COALESCE(SUM(m.montant_honoraires), 0) > 0 
+                    THEN ((COALESCE(SUM(m.montant_honoraires), 0) - COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0)) / COALESCE(SUM(m.montant_honoraires), 0)) * 100
+                    ELSE 0 
+                END as marge
+            FROM missions m
+            LEFT JOIN time_entries te ON te.mission_id = m.id
+            LEFT JOIN users u ON te.user_id = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN grades g ON c.grade_actuel_id = g.id
+            LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+            WHERE ${whereClause}
+            GROUP BY DATE_TRUNC('month', m.created_at)
+            ORDER BY mois_date ASC
+        `;
+
+        const evolutionResult = await pool.query(evolutionQuery, params);
+
+        // 2. Répartition par Business Unit
+        const buQuery = `
+            SELECT 
+                bu.nom as bu,
+                COALESCE(SUM(m.montant_honoraires), 0) as ca,
+                COUNT(DISTINCT m.id) as missions
+            FROM business_units bu
+            LEFT JOIN missions m ON m.business_unit_id = bu.id
+                AND m.created_at >= $1
+            ${business_unit ? 'WHERE bu.id = $2' : ''}
+            GROUP BY bu.id, bu.nom
+            HAVING COALESCE(SUM(m.montant_honoraires), 0) > 0
+            ORDER BY ca DESC
+            LIMIT 10
+        `;
+
+        const buResult = await pool.query(buQuery, params);
 
         return res.json({
             success: true,
             data: {
-                evolution: evolutionData,
-                bu_repartition: buData
+                evolution: evolutionResult.rows.map(row => ({
+                    mois: row.mois,
+                    ca: parseFloat(row.ca) || 0,
+                    marge: parseFloat(row.marge).toFixed(2) || 0
+                })),
+                bu_repartition: buResult.rows.map(row => ({
+                    bu: row.bu,
+                    ca: parseFloat(row.ca) || 0,
+                    missions: parseInt(row.missions) || 0
+                }))
             }
         });
     } catch (error) {
@@ -868,35 +915,122 @@ router.get('/financial-indicators', authenticateToken, async (req, res) => {
     try {
         const { period = 90, business_unit = '', year = 2024 } = req.query;
 
-        // Indicateurs financiers (simulation)
+        // Calculer les dates pour période actuelle et précédente
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(period));
+        
+        const prevEndDate = new Date(startDate);
+        const prevStartDate = new Date(prevEndDate);
+        prevStartDate.setDate(prevStartDate.getDate() - parseInt(period));
+
+        // Construire les conditions WHERE
+        let whereConditions = [];
+        let params = [];
+        let paramIndex = 1;
+
+        if (business_unit) {
+            whereConditions.push(`bu.id = $${paramIndex++}`);
+            params.push(business_unit);
+        }
+
+        const whereClause = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
+
+        // 1. EBITDA (Marge brute - approximation)
+        const ebitdaQuery = `
+            SELECT 
+                COALESCE(SUM(CASE WHEN m.created_at >= $${paramIndex} THEN m.montant_honoraires ELSE 0 END), 0) as ca_actuel,
+                COALESCE(SUM(CASE WHEN m.created_at >= $${paramIndex} THEN te.heures * COALESCE(g.taux_horaire_default, 0) ELSE 0 END), 0) as cout_actuel,
+                COALESCE(SUM(CASE WHEN m.created_at BETWEEN $${paramIndex + 1} AND $${paramIndex} THEN m.montant_honoraires ELSE 0 END), 0) as ca_precedent,
+                COALESCE(SUM(CASE WHEN m.created_at BETWEEN $${paramIndex + 1} AND $${paramIndex} THEN te.heures * COALESCE(g.taux_horaire_default, 0) ELSE 0 END), 0) as cout_precedent
+            FROM missions m
+            LEFT JOIN time_entries te ON te.mission_id = m.id
+            LEFT JOIN users u ON te.user_id = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN grades g ON c.grade_actuel_id = g.id
+            LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+            ${whereClause}
+        `;
+
+        params.push(startDate.toISOString(), prevStartDate.toISOString());
+        const ebitdaResult = await pool.query(ebitdaQuery, params);
+        const ebitdaData = ebitdaResult.rows[0];
+        
+        const ebitda_actuel = parseFloat(ebitdaData.ca_actuel) - parseFloat(ebitdaData.cout_actuel);
+        const ebitda_precedent = parseFloat(ebitdaData.ca_precedent) - parseFloat(ebitdaData.cout_precedent);
+        const ebitda_tendance = ebitda_precedent > 0 ? ((ebitda_actuel - ebitda_precedent) / ebitda_precedent) * 100 : 0;
+
+        // 2. ROI (Retour sur investissement)
+        const roi_actuel = parseFloat(ebitdaData.cout_actuel) > 0 
+            ? (ebitda_actuel / parseFloat(ebitdaData.cout_actuel)) * 100 
+            : 0;
+        const roi_precedent = parseFloat(ebitdaData.cout_precedent) > 0 
+            ? (ebitda_precedent / parseFloat(ebitdaData.cout_precedent)) * 100 
+            : 0;
+        const roi_tendance = roi_precedent > 0 ? ((roi_actuel - roi_precedent) / roi_precedent) * 100 : 0;
+
+        // 3. Trésorerie (encaissé - en attente approximation)
+        const tresoQuery = `
+            SELECT 
+                COALESCE(SUM(CASE WHEN f.statut = 'PAYEE' AND f.date_dernier_paiement >= $1::TIMESTAMP THEN f.montant_ttc ELSE 0 END), 0) as encaisse_actuel,
+                COALESCE(SUM(CASE WHEN f.statut IN ('EMISE', 'ENVOYEE') THEN f.montant_ttc ELSE 0 END), 0) as en_attente,
+                COALESCE(SUM(CASE WHEN f.statut = 'PAYEE' AND f.date_dernier_paiement BETWEEN $2::TIMESTAMP AND $1::TIMESTAMP THEN f.montant_ttc ELSE 0 END), 0) as encaisse_precedent
+            FROM invoices f
+            ${business_unit ? 'LEFT JOIN missions m ON f.mission_id = m.id LEFT JOIN business_units bu ON m.business_unit_id = bu.id ' + whereClause : ''}
+        `;
+
+        const tresoResult = await pool.query(tresoQuery, [startDate.toISOString(), prevStartDate.toISOString()].concat(business_unit ? [business_unit] : []));
+        const tresoData = tresoResult.rows[0];
+        
+        const treso_actuel = parseFloat(tresoData.encaisse_actuel) - parseFloat(tresoData.en_attente);
+        const treso_precedent = parseFloat(tresoData.encaisse_precedent);
+        const treso_tendance = treso_precedent !== 0 ? ((treso_actuel - treso_precedent) / Math.abs(treso_precedent)) * 100 : 0;
+
+        // 4. Délai de paiement moyen (DSO)
+        const dsoQuery = `
+            SELECT 
+                COALESCE(AVG(CASE WHEN f.date_dernier_paiement >= $1::TIMESTAMP THEN EXTRACT(EPOCH FROM (f.date_dernier_paiement::TIMESTAMP - f.date_emission::TIMESTAMP))/86400 END), 0) as dso_actuel,
+                COALESCE(AVG(CASE WHEN f.date_dernier_paiement BETWEEN $2::TIMESTAMP AND $1::TIMESTAMP THEN EXTRACT(EPOCH FROM (f.date_dernier_paiement::TIMESTAMP - f.date_emission::TIMESTAMP))/86400 END), 0) as dso_precedent
+            FROM invoices f
+            WHERE f.statut = 'PAYEE'
+            ${business_unit ? 'AND EXISTS (SELECT 1 FROM missions m LEFT JOIN business_units bu ON m.business_unit_id = bu.id WHERE f.mission_id = m.id AND bu.id = $3)' : ''}
+        `;
+
+        const dsoResult = await pool.query(dsoQuery, [startDate.toISOString(), prevStartDate.toISOString()].concat(business_unit ? [business_unit] : []));
+        const dsoData = dsoResult.rows[0];
+        
+        const dso_actuel = Math.round(parseFloat(dsoData.dso_actuel));
+        const dso_precedent = Math.round(parseFloat(dsoData.dso_precedent));
+        const dso_tendance = dso_precedent > 0 ? ((dso_actuel - dso_precedent) / dso_precedent) * 100 : 0;
+
         const indicateurs = [
             {
                 label: 'EBITDA',
-                valeur: 450000,
+                valeur: Math.round(ebitda_actuel),
                 unite: '€',
-                tendance: 8.5,
-                positif: true
+                tendance: parseFloat(ebitda_tendance.toFixed(1)),
+                positif: ebitda_tendance >= 0
             },
             {
                 label: 'ROI',
-                valeur: 18.5,
+                valeur: parseFloat(roi_actuel.toFixed(1)),
                 unite: '%',
-                tendance: 2.3,
-                positif: true
+                tendance: parseFloat(roi_tendance.toFixed(1)),
+                positif: roi_tendance >= 0
             },
             {
                 label: 'Trésorerie',
-                valeur: 850000,
+                valeur: Math.round(treso_actuel),
                 unite: '€',
-                tendance: -5.2,
-                positif: false
+                tendance: parseFloat(treso_tendance.toFixed(1)),
+                positif: treso_tendance >= 0
             },
             {
                 label: 'Délai de paiement',
-                valeur: 45,
+                valeur: dso_actuel,
                 unite: 'jours',
-                tendance: -3.1,
-                positif: true
+                tendance: parseFloat(dso_tendance.toFixed(1)),
+                positif: dso_tendance <= 0 // Une réduction du délai est positive
             }
         ];
 
@@ -915,27 +1049,148 @@ router.get('/strategic-alerts', authenticateToken, async (req, res) => {
     try {
         const { business_unit = '', year = 2024 } = req.query;
 
-        // Alertes stratégiques (simulation)
-        const alertes = [
-            {
-                type: 'warning',
-                titre: 'Marge en baisse',
-                message: 'La marge brute a diminué de 2.3% ce mois',
-                priorite: 'moyenne'
-            },
-            {
-                type: 'success',
-                titre: 'Objectif atteint',
-                message: 'Le taux de satisfaction client dépasse 90%',
-                priorite: 'basse'
-            },
-            {
+        const alertes = [];
+        
+        // Construire les conditions WHERE si business_unit est spécifié
+        const whereClause = business_unit ? 'WHERE bu.id = $1' : '';
+        const params = business_unit ? [business_unit] : [];
+
+        // 1. Vérifier la marge brute (alerte si < 15%)
+        const margeQuery = `
+            SELECT 
+                COALESCE(SUM(m.montant_honoraires), 0) as ca,
+                COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0) as cout,
+                CASE 
+                    WHEN COALESCE(SUM(m.montant_honoraires), 0) > 0 
+                    THEN ((COALESCE(SUM(m.montant_honoraires), 0) - COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0)) / COALESCE(SUM(m.montant_honoraires), 0)) * 100
+                    ELSE 0 
+                END as marge
+            FROM missions m
+            LEFT JOIN time_entries te ON te.mission_id = m.id
+            LEFT JOIN users u ON te.user_id = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN grades g ON c.grade_actuel_id = g.id
+            LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+            ${whereClause}
+            AND m.created_at >= NOW() - INTERVAL '30 days'
+        `;
+
+        const margeResult = await pool.query(margeQuery, params);
+        const marge = parseFloat(margeResult.rows[0]?.marge || 0);
+
+        if (marge > 0 && marge < 15) {
+            alertes.push({
                 type: 'danger',
-                titre: 'Retard de paiement',
-                message: '3 clients ont des retards de paiement > 60 jours',
+                titre: 'Marge critique',
+                message: `La marge brute est de ${marge.toFixed(1)}%, en dessous du seuil de 15%`,
                 priorite: 'haute'
-            }
-        ];
+            });
+        } else if (marge >= 15 && marge < 20) {
+            alertes.push({
+                type: 'warning',
+                titre: 'Marge faible',
+                message: `La marge brute est de ${marge.toFixed(1)}%, attention au seuil critique`,
+                priorite: 'moyenne'
+            });
+        } else if (marge >= 25) {
+            alertes.push({
+                type: 'success',
+                titre: 'Excellente marge',
+                message: `La marge brute atteint ${marge.toFixed(1)}%, au-dessus de l'objectif`,
+                priorite: 'basse'
+            });
+        }
+
+        // 2. Vérifier les retards de paiement (> 60 jours)
+        const retardQuery = `
+            SELECT 
+                COUNT(*) as nombre_clients,
+                SUM(f.montant_ttc) as montant_total
+            FROM invoices f
+            LEFT JOIN clients c ON f.client_id = c.id
+            ${business_unit ? 'LEFT JOIN missions m ON f.mission_id = m.id LEFT JOIN business_units bu ON m.business_unit_id = bu.id WHERE bu.id = $1 AND' : 'WHERE'}
+            f.statut IN ('EMISE', 'ENVOYEE')
+            AND f.date_echeance < CURRENT_DATE - INTERVAL '60 days'
+        `;
+
+        const retardResult = await pool.query(retardQuery, params);
+        const nombreRetards = parseInt(retardResult.rows[0]?.nombre_clients || 0);
+        const montantRetards = parseFloat(retardResult.rows[0]?.montant_total || 0);
+
+        if (nombreRetards > 0) {
+            alertes.push({
+                type: 'danger',
+                titre: 'Retards de paiement',
+                message: `${nombreRetards} client(s) ont des retards > 60 jours (${Math.round(montantRetards)}€)`,
+                priorite: 'haute'
+            });
+        }
+
+        // 3. Vérifier les missions sans saisie de temps récente (> 14 jours)
+        const missionsInactivesQuery = `
+            SELECT COUNT(DISTINCT m.id) as nombre
+            FROM missions m
+            LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+            ${whereClause}
+            ${whereClause ? 'AND' : 'WHERE'} m.statut = 'EN_COURS'
+            AND NOT EXISTS (
+                SELECT 1 FROM time_entries te 
+                WHERE te.mission_id = m.id 
+                AND te.date_saisie >= CURRENT_DATE - INTERVAL '14 days'
+            )
+        `;
+
+        const inactivesResult = await pool.query(missionsInactivesQuery, params);
+        const nombreInactives = parseInt(inactivesResult.rows[0]?.nombre || 0);
+
+        if (nombreInactives > 0) {
+            alertes.push({
+                type: 'warning',
+                titre: 'Missions sans activité',
+                message: `${nombreInactives} mission(s) en cours sans saisie de temps depuis 14 jours`,
+                priorite: 'moyenne'
+            });
+        }
+
+        // 4. Vérifier le taux de chargeabilité (< 70%)
+        const chargeabiliteQuery = `
+            SELECT 
+                COALESCE(SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END), 0) as heures_facturables,
+                COALESCE(SUM(te.heures), 0) as heures_totales,
+                CASE 
+                    WHEN COALESCE(SUM(te.heures), 0) > 0 
+                    THEN (COALESCE(SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END), 0) / COALESCE(SUM(te.heures), 0)) * 100
+                    ELSE 0 
+                END as taux_chargeabilite
+            FROM time_entries te
+            LEFT JOIN users u ON te.user_id = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN business_units bu ON c.business_unit_id = bu.id
+            ${whereClause}
+            ${whereClause ? 'AND' : 'WHERE'} te.date_saisie >= CURRENT_DATE - INTERVAL '30 days'
+        `;
+
+        const chargeResult = await pool.query(chargeabiliteQuery, params);
+        const tauxCharge = parseFloat(chargeResult.rows[0]?.taux_chargeabilite || 0);
+
+        if (tauxCharge > 0 && tauxCharge < 70) {
+            alertes.push({
+                type: 'warning',
+                titre: 'Chargeabilité faible',
+                message: `Le taux de chargeabilité est de ${tauxCharge.toFixed(1)}%, en dessous de l'objectif de 70%`,
+                priorite: 'moyenne'
+            });
+        }
+
+        // Si aucune alerte, ajouter un message positif
+        if (alertes.length === 0) {
+            alertes.push({
+                type: 'success',
+                titre: 'Tout va bien',
+                message: 'Aucune alerte stratégique à signaler pour le moment',
+                priorite: 'basse'
+            });
+        }
 
         return res.json({
             success: true,
@@ -952,16 +1207,69 @@ router.get('/pipeline-summary', authenticateToken, async (req, res) => {
     try {
         const { business_unit = '', year = 2024 } = req.query;
 
-        // Pipeline commercial (simulation)
+        // Construire les conditions WHERE
+        const whereClause = business_unit ? 'WHERE bu.id = $1' : '';
+        const params = business_unit ? [business_unit] : [];
+
+        // Récupérer les opportunités avec leur étape actuelle
+        const pipelineQuery = `
+            SELECT 
+                COUNT(DISTINCT o.id) as total_opportunites,
+                COALESCE(SUM(o.montant_estime), 0) as montant_total,
+                os.stage_name as etape,
+                os.stage_order as ordre,
+                COUNT(o.id) as nombre,
+                COALESCE(SUM(o.montant_estime), 0) as montant
+            FROM opportunities o
+            LEFT JOIN business_units bu ON o.business_unit_id = bu.id
+            LEFT JOIN opportunity_stages os ON o.current_stage_id = os.id
+            ${whereClause}
+            AND o.statut IN ('ACTIVE', 'NOUVEAU', 'EN_COURS')
+            GROUP BY os.id, os.stage_name, os.stage_order
+            ORDER BY os.stage_order ASC
+        `;
+
+        const pipelineResult = await pool.query(pipelineQuery, params);
+
+        // Calculer les totaux globaux
+        const totauxQuery = `
+            SELECT 
+                COUNT(DISTINCT o.id) as total_opportunites,
+                COALESCE(SUM(o.montant_estime), 0) as montant_total
+            FROM opportunities o
+            LEFT JOIN business_units bu ON o.business_unit_id = bu.id
+            ${whereClause}
+            AND o.statut IN ('ACTIVE', 'NOUVEAU', 'EN_COURS')
+        `;
+
+        const totauxResult = await pool.query(totauxQuery, params);
+        const totaux = totauxResult.rows[0];
+
+        // Définir les couleurs par étape (mapping standard)
+        const couleurs = {
+            'Prospection': '#6c757d',
+            'Qualification': '#17a2b8',
+            'Proposition': '#ffc107',
+            'Négociation': '#fd7e14',
+            'Signature': '#28a745',
+            'Gagné': '#28a745',
+            'Perdu': '#dc3545'
+        };
+
+        // Formatter la répartition
+        const repartition = pipelineResult.rows.map(row => ({
+            etape: row.etape || 'Non défini',
+            nombre: parseInt(row.nombre) || 0,
+            montant: parseFloat(row.montant) || 0,
+            couleur: couleurs[row.etape] || '#6c757d'
+        }));
+
+        // Si aucune donnée, retourner un pipeline vide
         const pipeline = {
-            total_opportunites: 45,
-            montant_total: 3200000,
-            repartition: [
-                { etape: 'Prospection', nombre: 15, montant: 800000, couleur: '#6c757d' },
-                { etape: 'Qualification', nombre: 12, montant: 600000, couleur: '#17a2b8' },
-                { etape: 'Proposition', nombre: 10, montant: 900000, couleur: '#ffc107' },
-                { etape: 'Négociation', nombre: 6, montant: 600000, couleur: '#fd7e14' },
-                { etape: 'Signature', nombre: 2, montant: 300000, couleur: '#28a745' }
+            total_opportunites: parseInt(totaux.total_opportunites) || 0,
+            montant_total: parseFloat(totaux.montant_total) || 0,
+            repartition: repartition.length > 0 ? repartition : [
+                { etape: 'Aucune opportunité', nombre: 0, montant: 0, couleur: '#6c757d' }
             ]
         };
 
@@ -972,6 +1280,545 @@ router.get('/pipeline-summary', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Erreur pipeline-summary:', error);
         return res.status(500).json({ success: false, error: 'Erreur pipeline commercial' });
+    }
+});
+
+// ===== ENDPOINTS POUR DASHBOARD ÉQUIPE =====
+
+// GET /api/analytics/team-performance - Performance d'équipe
+router.get('/team-performance', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { period = 90, businessUnit, division } = req.query;
+        
+        // 1. Récupérer le collaborateur_id de l'utilisateur
+        const collaborateurQuery = `SELECT id FROM collaborateurs WHERE user_id = $1`;
+        const collabResult = await pool.query(collaborateurQuery, [userId]);
+        
+        if (collabResult.rows.length === 0) {
+            return res.status(403).json({
+                success: false,
+                error: 'Vous devez être un collaborateur pour accéder à ce dashboard'
+            });
+        }
+        
+        const collaborateurId = collabResult.rows[0].id;
+        
+        // 2. Vérifier les rôles de l'utilisateur (SUPER_ADMIN, ADMIN, etc. ont accès total)
+        const rolesQuery = `
+            SELECT r.name
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = $1
+        `;
+        const rolesResult = await pool.query(rolesQuery, [userId]);
+        const userRoles = rolesResult.rows.map(r => r.name);
+        
+        const isAdmin = userRoles.includes('SUPER_ADMIN') || 
+                        userRoles.includes('ADMIN') || 
+                        userRoles.includes('DIRECTEUR') || 
+                        userRoles.includes('ASSOCIE');
+        
+        // 3. Si pas admin, vérifier les autorisations managériales
+        let authorizedBusinessUnit = businessUnit;
+        let authorizedDivision = division;
+        
+        if (!isAdmin) {
+            const Manager = require('../models/Manager');
+            
+            // Vérifier autorisation pour Business Unit demandée
+            if (businessUnit) {
+                const isAuthorizedBU = await Manager.isBusinessUnitManager(collaborateurId, businessUnit);
+                if (!isAuthorizedBU) {
+                    return res.status(403).json({
+                        success: false,
+                        error: 'Vous n\'êtes pas autorisé à voir les données de cette Business Unit'
+                    });
+                }
+            }
+            
+            // Vérifier autorisation pour Division demandée
+            if (division) {
+                const isAuthorizedDiv = await Manager.isDivisionManager(collaborateurId, division);
+                if (!isAuthorizedDiv) {
+                    return res.status(403).json({
+                        success: false,
+                        error: 'Vous n\'êtes pas autorisé à voir les données de cette Division'
+                    });
+                }
+            }
+            
+            // Si aucun filtre spécifié, charger la première équipe gérée
+            if (!businessUnit && !division) {
+                // Récupérer les BU gérées
+                const managedBUsQuery = `
+                    SELECT id FROM business_units
+                    WHERE responsable_principal_id = $1 OR responsable_adjoint_id = $1
+                    ORDER BY nom
+                    LIMIT 1
+                `;
+                const managedBUs = await pool.query(managedBUsQuery, [collaborateurId]);
+                
+                // Récupérer les Divisions gérées
+                const managedDivsQuery = `
+                    SELECT id FROM divisions
+                    WHERE responsable_principal_id = $1 OR responsable_adjoint_id = $1
+                    ORDER BY nom
+                    LIMIT 1
+                `;
+                const managedDivs = await pool.query(managedDivsQuery, [collaborateurId]);
+                
+                // Priorité aux divisions
+                if (managedDivs.rows.length > 0) {
+                    authorizedDivision = managedDivs.rows[0].id;
+                } else if (managedBUs.rows.length > 0) {
+                    authorizedBusinessUnit = managedBUs.rows[0].id;
+                } else {
+                    return res.status(403).json({
+                        success: false,
+                        error: 'Vous ne gérez aucune équipe'
+                    });
+                }
+            }
+        }
+        
+        // 4. Calculer les dates
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(period));
+        
+        // 5. Construire les conditions WHERE (en utilisant authorizedBusinessUnit et authorizedDivision)
+        let whereConditions = ['te.date_saisie >= $1 AND te.date_saisie <= $2'];
+        let params = [startDate.toISOString(), endDate.toISOString()];
+        let paramIndex = 3;
+        
+        if (authorizedBusinessUnit) {
+            whereConditions.push(`bu.id = $${paramIndex++}`);
+            params.push(authorizedBusinessUnit);
+        }
+        
+        if (authorizedDivision) {
+            whereConditions.push(`d.id = $${paramIndex++}`);
+            params.push(authorizedDivision);
+        }
+        
+        const whereClause = whereConditions.join(' AND ');
+        
+        // KPIs de l'équipe
+        const teamQuery = `
+            SELECT 
+                COUNT(DISTINCT c.id) as total_membres,
+                SUM(te.heures) as total_heures,
+                AVG(te.heures) as moyenne_heures,
+                SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END) as heures_facturables,
+                SUM(CASE WHEN te.type_heures = 'NON_BILLABLE' THEN te.heures ELSE 0 END) as heures_non_facturables,
+                COUNT(DISTINCT m.id) as missions_actives
+            FROM time_entries te
+            LEFT JOIN users u ON te.user_id = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN divisions d ON c.division_id = d.id
+            LEFT JOIN business_units bu ON d.business_unit_id = bu.id
+            LEFT JOIN missions m ON te.mission_id = m.id
+            WHERE ${whereClause}
+        `;
+        
+        const teamResult = await pool.query(teamQuery, params);
+        const teamData = teamResult.rows[0];
+        
+        // Taux de chargeabilité de l'équipe
+        const tauxChargeabilite = teamData.total_heures > 0 ? 
+            (teamData.heures_facturables / teamData.total_heures) * 100 : 0;
+        
+        // Performance par collaborateur
+        const collabQuery = `
+            SELECT 
+                c.id,
+                c.nom,
+                c.prenom,
+                g.nom as grade_nom,
+                SUM(te.heures) as total_heures,
+                SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END) as heures_facturables,
+                COUNT(DISTINCT m.id) as missions_assignees,
+                CASE 
+                    WHEN SUM(te.heures) > 0 
+                    THEN (SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END) / SUM(te.heures)) * 100
+                    ELSE 0 
+                END as taux_chargeabilite
+            FROM time_entries te
+            LEFT JOIN users u ON te.user_id = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN grades g ON c.grade_actuel_id = g.id
+            LEFT JOIN divisions d ON c.division_id = d.id
+            LEFT JOIN business_units bu ON d.business_unit_id = bu.id
+            LEFT JOIN missions m ON te.mission_id = m.id
+            WHERE ${whereClause}
+            GROUP BY c.id, c.nom, c.prenom, g.nom
+            ORDER BY total_heures DESC
+        `;
+        
+        const collabQueryResult = await pool.query(collabQuery, params);
+        
+        // Distribution par grade
+        const gradeQuery = `
+            SELECT 
+                g.nom as grade_nom,
+                COUNT(DISTINCT c.id) as nombre,
+                SUM(te.heures) as total_heures,
+                AVG(te.heures) as moyenne_heures
+            FROM time_entries te
+            LEFT JOIN users u ON te.user_id = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN grades g ON c.grade_actuel_id = g.id
+            LEFT JOIN divisions d ON c.division_id = d.id
+            LEFT JOIN business_units bu ON d.business_unit_id = bu.id
+            WHERE ${whereClause}
+            GROUP BY g.nom
+            ORDER BY total_heures DESC
+        `;
+        
+        const gradeResult = await pool.query(gradeQuery, params);
+        
+        const responseData = {
+            kpis: {
+                total_membres: teamData.total_membres || 0,
+                total_heures: teamData.total_heures || 0,
+                moyenne_heures: teamData.moyenne_heures || 0,
+                heures_facturables: teamData.heures_facturables || 0,
+                heures_non_facturables: teamData.heures_non_facturables || 0,
+                taux_chargeabilite: Math.round(tauxChargeabilite * 10) / 10,
+                missions_actives: teamData.missions_actives || 0
+            },
+            collaborateurs: collabQueryResult.rows,
+            distribution_grades: gradeResult.rows
+        };
+        
+        res.json({
+            success: true,
+            data: responseData
+        });
+        
+    } catch (error) {
+        console.error('Erreur team-performance:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération de la performance équipe'
+        });
+    }
+});
+
+// GET /api/analytics/managed-teams - Récupérer les équipes gérées par le manager
+router.get('/managed-teams', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        // Récupérer le collaborateur_id
+        const collabQuery = `SELECT id FROM collaborateurs WHERE user_id = $1`;
+        const collabResult = await pool.query(collabQuery, [userId]);
+        
+        if (collabResult.rows.length === 0) {
+            return res.json({
+                success: true,
+                data: {
+                    business_units: [],
+                    divisions: [],
+                    is_manager: false
+                }
+            });
+        }
+        
+        const collaborateurId = collabResult.rows[0].id;
+        
+        // Récupérer les BU gérées
+        const busQuery = `
+            SELECT id, nom, code, description
+            FROM business_units
+            WHERE responsable_principal_id = $1 OR responsable_adjoint_id = $1
+            ORDER BY nom
+        `;
+        const busResult = await pool.query(busQuery, [collaborateurId]);
+        
+        // Récupérer les Divisions gérées
+        const divsQuery = `
+            SELECT id, nom, code, description, business_unit_id
+            FROM divisions
+            WHERE responsable_principal_id = $1 OR responsable_adjoint_id = $1
+            ORDER BY nom
+        `;
+        const divsResult = await pool.query(divsQuery, [collaborateurId]);
+        
+        res.json({
+            success: true,
+            data: {
+                business_units: busResult.rows,
+                divisions: divsResult.rows,
+                is_manager: busResult.rows.length > 0 || divsResult.rows.length > 0
+            }
+        });
+        
+    } catch (error) {
+        console.error('Erreur managed-teams:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération des équipes gérées'
+        });
+    }
+});
+
+// ===== ENDPOINTS POUR DASHBOARD PERSONNEL =====
+
+// GET /api/analytics/personal-performance - Performance personnelle
+router.get('/personal-performance', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { period = 30 } = req.query;
+        
+        // Calculer les dates
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(period));
+        
+        // KPIs personnels
+        const personalQuery = `
+            SELECT 
+                COALESCE(c.nom, u.nom) as collaborateur_nom,
+                COALESCE(c.prenom, u.prenom) as collaborateur_prenom,
+                COALESCE(g.nom, 'Administrateur') as grade_nom,
+                COALESCE(d.nom, 'N/A') as division_nom,
+                COALESCE(bu.nom, 'N/A') as business_unit_nom,
+                SUM(te.heures) as total_heures,
+                SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END) as heures_facturables,
+                SUM(CASE WHEN te.type_heures = 'NON_BILLABLE' THEN te.heures ELSE 0 END) as heures_non_facturables,
+                COUNT(DISTINCT te.mission_id) as missions_travaillees,
+                COUNT(CASE WHEN ts.statut = 'VALIDE' THEN 1 END) as temps_valides,
+                COUNT(CASE WHEN ts.statut = 'EN_ATTENTE' THEN 1 END) as temps_en_attente
+            FROM time_entries te
+            LEFT JOIN users u ON te.user_id = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN grades g ON c.grade_actuel_id = g.id
+            LEFT JOIN divisions d ON c.division_id = d.id
+            LEFT JOIN business_units bu ON c.business_unit_id = bu.id
+            LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
+            WHERE u.id = $1 
+            AND te.date_saisie >= $2 
+            AND te.date_saisie <= $3
+            GROUP BY u.nom, u.prenom, c.nom, c.prenom, g.nom, d.nom, bu.nom
+        `;
+        
+        const personalResult = await pool.query(personalQuery, [userId, startDate.toISOString(), endDate.toISOString()]);
+        const personalData = personalResult.rows[0] || {};
+        
+        // Taux de chargeabilité personnel
+        const tauxChargeabilite = personalData.total_heures > 0 ? 
+            (personalData.heures_facturables / personalData.total_heures) * 100 : 0;
+        
+        // Missions actives
+        const missionsQuery = `
+            SELECT 
+                m.id,
+                m.nom as mission_nom,
+                c.raison_sociale as client_nom,
+                m.statut,
+                m.date_debut,
+                m.date_fin,
+                SUM(te.heures) as heures_passees
+            FROM missions m
+            LEFT JOIN time_entries te ON m.id = te.mission_id AND te.user_id = $1
+            LEFT JOIN clients c ON m.client_id = c.id
+            WHERE m.statut IN ('EN_COURS', 'PLANIFIEE')
+            AND EXISTS (
+                SELECT 1 FROM time_entries te2 
+                WHERE te2.mission_id = m.id 
+                AND te2.user_id = $1
+            )
+            GROUP BY m.id, m.nom, c.raison_sociale, m.statut, m.date_debut, m.date_fin
+            ORDER BY m.date_debut DESC
+            LIMIT 10
+        `;
+        
+        const missionsResult = await pool.query(missionsQuery, [userId]);
+        
+        // Évolution temporelle (par jour)
+        const timelineQuery = `
+            SELECT 
+                DATE(te.date_saisie) as jour,
+                SUM(te.heures) as total_heures,
+                SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END) as heures_facturables
+            FROM time_entries te
+            WHERE te.user_id = $1
+            AND te.date_saisie >= $2
+            AND te.date_saisie <= $3
+            GROUP BY DATE(te.date_saisie)
+            ORDER BY jour ASC
+        `;
+        
+        const timelineResult = await pool.query(timelineQuery, [userId, startDate.toISOString(), endDate.toISOString()]);
+        
+        const responseData = {
+            profil: {
+                nom: personalData.collaborateur_nom || '',
+                prenom: personalData.collaborateur_prenom || '',
+                grade: personalData.grade_nom || '',
+                division: personalData.division_nom || '',
+                business_unit: personalData.business_unit_nom || ''
+            },
+            kpis: {
+                total_heures: personalData.total_heures || 0,
+                heures_facturables: personalData.heures_facturables || 0,
+                heures_non_facturables: personalData.heures_non_facturables || 0,
+                taux_chargeabilite: Math.round(tauxChargeabilite * 10) / 10,
+                missions_travaillees: personalData.missions_travaillees || 0,
+                temps_valides: personalData.temps_valides || 0,
+                temps_en_attente: personalData.temps_en_attente || 0
+            },
+            missions_actives: missionsResult.rows,
+            evolution_temporelle: timelineResult.rows
+        };
+        
+        res.json({
+            success: true,
+            data: responseData
+        });
+        
+    } catch (error) {
+        console.error('Erreur personal-performance:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération de la performance personnelle'
+        });
+    }
+});
+
+// ===== ENDPOINTS POUR DASHBOARD RECOUVREMENT =====
+
+// GET /api/analytics/collections - Données de recouvrement
+router.get('/collections', authenticateToken, async (req, res) => {
+    try {
+        const { period = 90 } = req.query;
+        
+        // Calculer les dates
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(period));
+        
+        // KPIs de recouvrement
+        const kpisQuery = `
+            SELECT 
+                SUM(CASE WHEN f.statut IN ('EMISE', 'ENVOYEE', 'PAYEE') THEN f.montant_total ELSE 0 END) as facture_periode,
+                SUM(CASE WHEN f.statut = 'PAYEE' THEN f.montant_total ELSE 0 END) as encaisse_periode,
+                SUM(CASE 
+                    WHEN f.statut IN ('EMISE', 'ENVOYEE') 
+                    AND f.date_echeance < CURRENT_DATE 
+                    THEN f.montant_total 
+                    ELSE 0 
+                END) as montant_retard,
+                COUNT(CASE 
+                    WHEN f.statut IN ('EMISE', 'ENVOYEE') 
+                    AND f.date_echeance < CURRENT_DATE 
+                    THEN 1 
+                END) as nombre_retard
+            FROM invoices f
+            WHERE f.date_emission >= $1
+        `;
+        
+        const kpisResult = await pool.query(kpisQuery, [startDate.toISOString()]);
+        const kpisData = kpisResult.rows[0];
+        
+        // Calcul DSO (Days Sales Outstanding)
+        const dsoQuery = `
+            SELECT 
+                AVG(EXTRACT(EPOCH FROM (f.date_dernier_paiement::TIMESTAMP - f.date_emission::TIMESTAMP))/86400) as dso_moyen
+            FROM invoices f
+            WHERE f.statut = 'PAYEE'
+            AND f.date_dernier_paiement >= $1::TIMESTAMP
+        `;
+        
+        const dsoResult = await pool.query(dsoQuery, [startDate.toISOString()]);
+        const dsoData = dsoResult.rows[0];
+        
+        // Aging analysis (répartition par tranches d'âge)
+        const agingQuery = `
+            SELECT 
+                CASE 
+                    WHEN CURRENT_DATE - f.date_echeance <= 30 THEN '0-30 jours'
+                    WHEN CURRENT_DATE - f.date_echeance <= 60 THEN '31-60 jours'
+                    WHEN CURRENT_DATE - f.date_echeance <= 90 THEN '61-90 jours'
+                    ELSE '> 90 jours'
+                END as tranche,
+                COUNT(*) as nombre_factures,
+                SUM(f.montant_total) as montant_total
+            FROM invoices f
+            WHERE f.statut IN ('EMISE', 'ENVOYEE')
+            AND f.date_echeance < CURRENT_DATE
+            GROUP BY tranche
+            ORDER BY 
+                CASE tranche
+                    WHEN '0-30 jours' THEN 1
+                    WHEN '31-60 jours' THEN 2
+                    WHEN '61-90 jours' THEN 3
+                    ELSE 4
+                END
+        `;
+        
+        const agingResult = await pool.query(agingQuery);
+        
+        // Liste des factures en retard
+        const invoicesQuery = `
+            SELECT 
+                f.id,
+                f.numero as numero_facture,
+                c.raison_sociale as client_nom,
+                f.montant_total,
+                f.date_emission,
+                f.date_echeance,
+                CURRENT_DATE - f.date_echeance as jours_retard
+            FROM invoices f
+            LEFT JOIN clients c ON f.client_id = c.id
+            WHERE f.statut IN ('EMISE', 'ENVOYEE')
+            AND f.date_echeance < CURRENT_DATE
+            ORDER BY jours_retard DESC
+            LIMIT 50
+        `;
+        
+        const invoicesResult = await pool.query(invoicesQuery);
+        
+        // Évolution mensuelle (facturé vs encaissé)
+        const monthlyQuery = `
+            SELECT 
+                DATE_TRUNC('month', f.date_emission) as mois,
+                SUM(CASE WHEN f.statut IN ('EMISE', 'ENVOYEE', 'PAYEE') THEN f.montant_total ELSE 0 END) as facture,
+                SUM(CASE WHEN f.statut = 'PAYEE' THEN f.montant_total ELSE 0 END) as encaisse
+            FROM invoices f
+            WHERE f.date_emission >= $1
+            GROUP BY mois
+            ORDER BY mois ASC
+        `;
+        
+        const monthlyResult = await pool.query(monthlyQuery, [startDate.toISOString()]);
+        
+        const responseData = {
+            kpis: {
+                facture_periode: kpisData.facture_periode || 0,
+                encaisse_periode: kpisData.encaisse_periode || 0,
+                dso_moyen: Math.round(dsoData.dso_moyen || 0),
+                montant_retard: kpisData.montant_retard || 0,
+                nombre_retard: kpisData.nombre_retard || 0
+            },
+            aging_analysis: agingResult.rows,
+            factures_retard: invoicesResult.rows,
+            evolution_mensuelle: monthlyResult.rows
+        };
+        
+        res.json({
+            success: true,
+            data: responseData
+        });
+        
+    } catch (error) {
+        console.error('Erreur collections:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération des données de recouvrement'
+        });
     }
 });
 

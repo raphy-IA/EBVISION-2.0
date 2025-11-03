@@ -1,0 +1,108 @@
+{
+  "_comment": "Exemple de configuration pour ACME Corporation",
+  "app": {
+    "name": "ACME BUSINESS SUITE",
+    "shortName": "ACME",
+    "tagline": "Excellence in Business Management",
+    "description": "ACME Corporation - Complete Business Management Platform",
+    "version": "2.0.0"
+  },
+  "branding": {
+    "logo": {
+      "main": "/assets/brands/acme/logo.svg",
+      "icon": "/assets/brands/acme/icon.svg",
+      "favicon": "/assets/brands/acme/favicon.ico"
+    },
+    "colors": {
+      "primary": "#1a4d7c",
+      "secondary": "#2980b9",
+      "accent": "#16a085",
+      "success": "#27ae60",
+      "warning": "#f39c12",
+      "danger": "#c0392b",
+      "info": "#3498db",
+      "dark": "#0f2d47",
+      "light": "#ecf0f1"
+    },
+    "theme": "acme"
+  },
+  "ui": {
+    "sidebarTitle": "ACME Suite",
+    "sidebarSubtitle": "Business Excellence",
+    "loginTitle": "Welcome to ACME Suite",
+    "loginSubtitle": "Enterprise Management Platform",
+    "footer": {
+      "text": "ACME Corporation",
+      "copyright": "© 2024 ACME Corporation. All rights reserved."
+    }
+  },
+  "features": {
+    "dashboard": true,
+    "reports": true,
+    "timeManagement": true,
+    "missionManagement": true,
+    "marketPipeline": true,
+    "hrManagement": true,
+    "configurations": true,
+    "businessUnits": true,
+    "administration": true
+  },
+  "modules": {
+    "dashboard": {
+      "enabled": true,
+      "displayName": "Tableau de Bord"
+    },
+    "reports": {
+      "enabled": true,
+      "displayName": "Rapports"
+    },
+    "timeManagement": {
+      "enabled": true,
+      "displayName": "Gestion du Temps"
+    },
+    "missions": {
+      "enabled": true,
+      "displayName": "Projets"
+    },
+    "marketPipeline": {
+      "enabled": true,
+      "displayName": "Pipeline Commercial"
+    },
+    "hr": {
+      "enabled": true,
+      "displayName": "Ressources Humaines"
+    },
+    "configurations": {
+      "enabled": true,
+      "displayName": "Configurations"
+    },
+    "businessUnits": {
+      "enabled": true,
+      "displayName": "Unités d'Affaires"
+    },
+    "administration": {
+      "enabled": true,
+      "displayName": "Administration"
+    }
+  },
+  "contact": {
+    "email": "support@acmecorp.com",
+    "phone": "+1 (555) 123-4567",
+    "website": "https://acmecorp.com",
+    "supportUrl": "https://support.acmecorp.com"
+  },
+  "localization": {
+    "defaultLanguage": "fr",
+    "availableLanguages": ["fr", "en"],
+    "dateFormat": "DD/MM/YYYY",
+    "timeFormat": "HH:mm",
+    "currency": "USD",
+    "currencySymbol": "$"
+  },
+  "demo": {
+    "mode": false,
+    "bannerText": "",
+    "watermark": false
+  }
+}
+

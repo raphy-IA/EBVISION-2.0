@@ -612,3 +612,11 @@ Après chaque synchronisation, l'application affiche des statistiques détaillé
 
 
 
+
+
+
+
+
+
+
+

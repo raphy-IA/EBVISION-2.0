@@ -1,0 +1,285 @@
+/**
+ * Variables CSS dynamiques pour le système de thèmes white-label
+ * Ces variables sont injectées dynamiquement en fonction du branding actif
+ */
+
+:root {
+    /* Couleurs principales - Seront remplacées dynamiquement */
+    --brand-primary: #2c3e50;
+    --brand-secondary: #3498db;
+    --brand-accent: #27ae60;
+    --brand-success: #27ae60;
+    --brand-warning: #f39c12;
+    --brand-danger: #e74c3c;
+    --brand-info: #3498db;
+    --brand-dark: #1a252f;
+    --brand-light: #ecf0f1;
+    
+    /* Variations de couleurs */
+    --brand-primary-light: #3a5169;
+    --brand-primary-dark: #1e2c38;
+    --brand-secondary-light: #5dade2;
+    --brand-secondary-dark: #2980b9;
+    
+    /* Couleurs d'arrière-plan */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #e9ecef;
+    --bg-dark: #343a40;
+    
+    /* Couleurs de texte */
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --text-tertiary: #adb5bd;
+    --text-inverse: #ffffff;
+    
+    /* Sidebar */
+    --sidebar-bg: var(--brand-primary);
+    --sidebar-text: #ffffff;
+    --sidebar-hover: var(--brand-primary-light);
+    --sidebar-active: var(--brand-accent);
+    --sidebar-border: rgba(255, 255, 255, 0.1);
+    
+    /* Header/TopBar */
+    --header-bg: #ffffff;
+    --header-text: var(--brand-primary);
+    --header-border: #dee2e6;
+    
+    /* Boutons */
+    --btn-primary-bg: var(--brand-primary);
+    --btn-primary-hover: var(--brand-primary-dark);
+    --btn-primary-text: #ffffff;
+    --btn-secondary-bg: var(--brand-secondary);
+    --btn-secondary-hover: var(--brand-secondary-dark);
+    --btn-secondary-text: #ffffff;
+    
+    /* Cards */
+    --card-bg: #ffffff;
+    --card-border: #dee2e6;
+    --card-shadow: rgba(0, 0, 0, 0.1);
+    
+    /* Forms */
+    --input-bg: #ffffff;
+    --input-border: #ced4da;
+    --input-focus-border: var(--brand-primary);
+    --input-text: #212529;
+    
+    /* Tables */
+    --table-bg: #ffffff;
+    --table-border: #dee2e6;
+    --table-hover: #f8f9fa;
+    --table-stripe: #f8f9fa;
+    
+    /* Links */
+    --link-color: var(--brand-primary);
+    --link-hover: var(--brand-primary-dark);
+    
+    /* Badges */
+    --badge-primary: var(--brand-primary);
+    --badge-secondary: var(--brand-secondary);
+    --badge-success: var(--brand-success);
+    --badge-warning: var(--brand-warning);
+    --badge-danger: var(--brand-danger);
+    --badge-info: var(--brand-info);
+    
+    /* Alerts */
+    --alert-success: #d4edda;
+    --alert-info: #d1ecf1;
+    --alert-warning: #fff3cd;
+    --alert-danger: #f8d7da;
+    
+    /* Ombres et élévations */
+    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease-in-out;
+    --transition-base: 0.3s ease-in-out;
+    --transition-slow: 0.5s ease-in-out;
+    
+    /* Border radius */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+}
+
+/* Thème sombre (optionnel) */
+[data-theme="dark"] {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --bg-tertiary: #3d3d3d;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --text-tertiary: #808080;
+    --card-bg: #2d2d2d;
+    --card-border: #404040;
+    --input-bg: #2d2d2d;
+    --input-border: #404040;
+    --table-bg: #2d2d2d;
+    --table-hover: #3d3d3d;
+    --table-stripe: #353535;
+}
+
+/* Application des variables aux composants Bootstrap */
+.btn-primary {
+    background-color: var(--btn-primary-bg) !important;
+    border-color: var(--btn-primary-bg) !important;
+    color: var(--btn-primary-text) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--btn-primary-hover) !important;
+    border-color: var(--btn-primary-hover) !important;
+}
+
+.btn-secondary {
+    background-color: var(--btn-secondary-bg) !important;
+    border-color: var(--btn-secondary-bg) !important;
+    color: var(--btn-secondary-text) !important;
+}
+
+.btn-secondary:hover {
+    background-color: var(--btn-secondary-hover) !important;
+    border-color: var(--btn-secondary-hover) !important;
+}
+
+.bg-primary {
+    background-color: var(--brand-primary) !important;
+}
+
+.text-primary {
+    color: var(--brand-primary) !important;
+}
+
+.border-primary {
+    border-color: var(--brand-primary) !important;
+}
+
+/* Sidebar personnalisée */
+.sidebar-container {
+    background-color: var(--sidebar-bg) !important;
+    color: var(--sidebar-text) !important;
+}
+
+.sidebar-nav-link {
+    color: var(--sidebar-text) !important;
+}
+
+.sidebar-nav-link:hover {
+    background-color: var(--sidebar-hover) !important;
+}
+
+.sidebar-nav-link.active {
+    background-color: var(--sidebar-active) !important;
+}
+
+/* Header personnalisé */
+.navbar,
+.page-header {
+    background-color: var(--header-bg) !important;
+    color: var(--header-text) !important;
+    border-bottom: 1px solid var(--header-border) !important;
+}
+
+/* Cards */
+.card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+}
+
+/* Forms */
+.form-control {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--input-text) !important;
+}
+
+.form-control:focus {
+    border-color: var(--input-focus-border) !important;
+    box-shadow: 0 0 0 0.2rem rgba(var(--brand-primary), 0.25) !important;
+}
+
+/* Links */
+a {
+    color: var(--link-color) !important;
+}
+
+a:hover {
+    color: var(--link-hover) !important;
+}
+
+/* Tables */
+.table {
+    background-color: var(--table-bg) !important;
+    border-color: var(--table-border) !important;
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--table-hover) !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: var(--table-stripe) !important;
+}
+
+/* Badges */
+.badge-primary {
+    background-color: var(--badge-primary) !important;
+}
+
+.badge-secondary {
+    background-color: var(--badge-secondary) !important;
+}
+
+/* Gradients pour les headers */
+.gradient-primary {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%) !important;
+}
+
+.gradient-accent {
+    background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-secondary) 100%) !important;
+}
+
+/* Animations et transitions */
+* {
+    transition: background-color var(--transition-fast), 
+                color var(--transition-fast), 
+                border-color var(--transition-fast);
+}
+
+/* Mode démo - Watermark optionnel */
+[data-demo="true"]::after {
+    content: "DEMO";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 10rem;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.05);
+    z-index: -1;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Bannière demo */
+.demo-banner {
+    background-color: var(--brand-warning) !important;
+    color: var(--text-inverse) !important;
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: center;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+

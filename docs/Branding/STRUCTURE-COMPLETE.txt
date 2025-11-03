@@ -1,0 +1,28 @@
+﻿Structure du dossier pour le volume DATA
+Le numÚro de sÚrie du volume est 1EBD-911A
+D:\10. PROGRAMMATION\PROJETS\EB-VISION 2.0\DOCS\BRANDING
+ª   ARBORESCENCE.txt
+ª   GUIDE-COMPLET-NAVIGATION.md
+ª   ORGANISATION-DOCUMENTATION.md
+ª   README.md
+ª   REORGANISATION-COMPLETE.md
+ª   START-HERE.md
+ª   STRUCTURE-COMPLETE.txt
+ª   SYNTHESE-FINALE.md
+ª   
++---Configurations
+ª       README-Configurations.md
+ª       
++---Guides
+ª       BRANDING-LOGIN-LOGOUT-INTEGRATION.md
+ª       COMMENT-ACTIVER-WHITE-LABEL.md
+ª       CORRECTIONS-LOGIN-LOGOUT-COMPLETE.md
+ª       GUIDE-DEMARRAGE-URGENT.md
+ª       LISEZ-MOI-EN-PREMIER.md
+ª       NOUVEAU-SYSTEME-WHITE-LABEL.md
+ª       RESUME-FINAL-CONFIGURATION-EB-VISION.md
+ª       
++---Scripts
+        DEMARRER-EB-VISION.bat
+        TEST-BRANDING-RAPIDE.ps1
+        

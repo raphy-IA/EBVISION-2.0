@@ -99,7 +99,13 @@
         
         .chart-container {
             position: relative;
-            height: 300px;
+            height: 350px;
+            max-height: 350px;
+            width: 100%;
+        }
+        
+        .chart-container canvas {
+            max-height: 350px !important;
         }
 
         /* Ajustements pour les petits écrans */
@@ -232,8 +238,10 @@
                                 <span class="visually-hidden">Chargement...</span>
                             </div>
                         </div>
-                        <div id="report-content">
-                            <canvas id="reportChart"></canvas>
+                        <div id="report-content" style="display: none;">
+                            <div class="chart-container mb-4">
+                                <canvas id="reportChart"></canvas>
+                            </div>
                             <div id="report-table" class="table-responsive mt-4">
                                 <!-- Report data will be displayed here -->
                             </div>
@@ -425,23 +433,29 @@
         function displayReport(reportType, reportData) {
             const chartCanvas = document.getElementById('reportChart');
             const reportTableDiv = document.getElementById('report-table');
+            const reportContent = document.getElementById('report-content');
 
             // Destroy previous chart instance if it exists
             if (reportChartInstance) {
                 reportChartInstance.destroy();
+                reportChartInstance = null;
             }
 
             reportTableDiv.innerHTML = ''; // Clear previous table content
 
             if (!reportData || reportData.length === 0) {
                 reportTableDiv.innerHTML = '<p class="text-center text-muted">Aucune donnée disponible pour ce rapport.</p>';
+                reportContent.style.display = 'block';
                 return;
             }
 
+            // Afficher le contenu
+            reportContent.style.display = 'block';
+
             // Example: Time Entries Report
             if (reportType === 'timeEntries') {
-                const labels = reportData.map(item => item.date || item.collaborateur || item.client);
-                const dataValues = reportData.map(item => item.heures || item.total_heures);
+                const labels = reportData.map(item => item.date || item.collaborateur || item.client).slice(0, 10);
+                const dataValues = reportData.map(item => item.heures || item.total_heures).slice(0, 10);
 
                 reportChartInstance = new Chart(chartCanvas, {
                     type: 'bar',
@@ -458,6 +472,9 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 750
+                        },
                         scales: {
                             y: {
                                 beginAtZero: true
@@ -476,8 +493,8 @@
             } 
             // Add more report types here (e.g., collaboratorPerformance, clientBilling)
             else if (reportType === 'collaboratorPerformance') {
-                const labels = reportData.map(item => item.collaborateur);
-                const dataValues = reportData.map(item => item.total_heures);
+                const labels = reportData.map(item => item.collaborateur).slice(0, 10);
+                const dataValues = reportData.map(item => item.total_heures).slice(0, 10);
 
                 reportChartInstance = new Chart(chartCanvas, {
                     type: 'pie',
@@ -495,6 +512,9 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 750
+                        }
                     }
                 });
 
@@ -506,8 +526,8 @@
                 reportTableDiv.innerHTML = tableHtml;
             }
             else if (reportType === 'clientBilling') {
-                const labels = reportData.map(item => item.client);
-                const dataValues = reportData.map(item => item.montant_facture || item.total_heures_facturables);
+                const labels = reportData.map(item => item.client).slice(0, 10);
+                const dataValues = reportData.map(item => item.montant_facture || item.total_heures_facturables).slice(0, 10);
 
                 reportChartInstance = new Chart(chartCanvas, {
                     type: 'line',
@@ -524,6 +544,9 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 750
+                        },
                         scales: {
                             y: {
                                 beginAtZero: true

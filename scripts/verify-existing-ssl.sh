@@ -302,3 +302,11 @@ echo "Port 80: $(netstat -tlnp 2>/dev/null | grep -q ":80 " && echo "✅ Ouvert"
 print_status "Vérification SSL terminée !"
 
 
+
+
+
+
+
+
+
+
