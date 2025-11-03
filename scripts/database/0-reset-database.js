@@ -255,59 +255,72 @@ async function resetModerate() {
 
     let count = 0;
 
-    // Désactiver temporairement les contraintes FK
-    await pool.query('SET session_replication_role = replica;');
-
+    // Ordre de suppression respectant les contraintes FK (enfants avant parents)
     const tablesToClean = [
-        'notifications',
-        'tasks',
-        'prospecting_campaigns',
-        'prospecting_campaign_validations',
-        'prospecting_campaign_companies',
-        'prospecting_campaign_validation_companies',
-        'campaign_templates',
-        'opportunities',
-        'opportunity_steps',
-        'opportunity_comments',
-        'contracts',
-        'invoices',
-        'timesheets',
-        'timesheet_entries',
-        'rh_evolutions',
-        'rh_competences',
-        'rh_formations',
-        'documents'
+        // Notifications et tâches (pas de FK critiques)
+        { name: 'notifications', hasId: true },
+        { name: 'tasks', hasId: true },
+        
+        // Relations campagnes (enfants en premier)
+        { name: 'prospecting_campaign_validation_companies', hasId: false },
+        { name: 'prospecting_campaign_companies', hasId: false },
+        { name: 'prospecting_campaign_validations', hasId: true },
+        { name: 'prospecting_campaigns', hasId: true },
+        { name: 'campaign_templates', hasId: true },
+        
+        // Relations opportunités
+        { name: 'opportunity_comments', hasId: true },
+        { name: 'opportunity_steps', hasId: true },
+        { name: 'opportunities', hasId: true },
+        
+        // Documents et contrats
+        { name: 'documents', hasId: true },
+        { name: 'invoices', hasId: true },
+        { name: 'contracts', hasId: true },
+        
+        // Temps et RH
+        { name: 'timesheet_entries', hasId: true },
+        { name: 'timesheets', hasId: true },
+        { name: 'rh_formations', hasId: true },
+        { name: 'rh_competences', hasId: true },
+        { name: 'rh_evolutions', hasId: true },
+        
+        // Collaborateurs (avant users car FK)
+        { name: 'collaborateurs', hasId: true }
     ];
 
     for (const table of tablesToClean) {
         try {
-            console.log(chalk.gray(`   → Nettoyage de ${table}...`));
-            const result = await pool.query(`DELETE FROM ${table} RETURNING id`);
+            console.log(chalk.gray(`   → Nettoyage de ${table.name}...`));
+            const result = table.hasId 
+                ? await pool.query(`DELETE FROM ${table.name} RETURNING id`)
+                : await pool.query(`DELETE FROM ${table.name}`);
             count += result.rowCount;
             console.log(chalk.green(`   ✓ ${result.rowCount} enregistrements supprimés`));
         } catch (error) {
-            console.log(chalk.yellow(`   ⚠ ${table} : ${error.message}`));
+            console.log(chalk.yellow(`   ⚠ ${table.name} : ${error.message}`));
         }
     }
 
-    // Supprimer les utilisateurs non-admin
+    // Supprimer les utilisateurs non-admin (après collaborateurs)
     console.log(chalk.gray('   → Suppression des utilisateurs non-admin...'));
-    const usersResult = await pool.query(`
-        DELETE FROM users 
-        WHERE role NOT IN ('SUPER_ADMIN', 'ADMIN')
-        RETURNING id
-    `);
-    count += usersResult.rowCount;
-    console.log(chalk.green(`   ✓ ${usersResult.rowCount} utilisateurs supprimés`));
-
-    // Supprimer les collaborateurs
-    console.log(chalk.gray('   → Suppression des collaborateurs...'));
-    const collabResult = await pool.query('DELETE FROM collaborateurs RETURNING id');
-    count += collabResult.rowCount;
-    console.log(chalk.green(`   ✓ ${collabResult.rowCount} collaborateurs supprimés`));
-
-    // Réactiver les contraintes FK
-    await pool.query('SET session_replication_role = DEFAULT;');
+    try {
+        const usersResult = await pool.query(`
+            DELETE FROM users 
+            WHERE role NOT IN ('SUPER_ADMIN', 'ADMIN')
+            AND id NOT IN (
+                SELECT DISTINCT user_id 
+                FROM user_roles ur 
+                JOIN roles r ON ur.role_id = r.id 
+                WHERE r.name IN ('SUPER_ADMIN', 'ADMIN')
+            )
+            RETURNING id
+        `);
+        count += usersResult.rowCount;
+        console.log(chalk.green(`   ✓ ${usersResult.rowCount} utilisateurs supprimés`));
+    } catch (error) {
+        console.log(chalk.yellow(`   ⚠ Utilisateurs : ${error.message}`));
+    }
 
     console.log(chalk.green(`\n✅ ${count} enregistrements supprimés`));
 }
@@ -317,33 +330,46 @@ async function resetHeavy() {
 
     let count = 0;
 
-    // Désactiver temporairement les contraintes FK
-    await pool.query('SET session_replication_role = replica;');
-
+    // Ordre de suppression respectant les contraintes FK (enfants avant parents)
     const tablesToClean = [
+        // Notifications et tâches
         'notifications',
         'tasks',
-        'prospecting_campaigns',
-        'prospecting_campaign_validations',
-        'prospecting_campaign_companies',
+        
+        // Relations campagnes (enfants en premier)
         'prospecting_campaign_validation_companies',
+        'prospecting_campaign_companies',
+        'prospecting_campaign_validations',
+        'prospecting_campaigns',
         'campaign_templates',
-        'opportunities',
-        'opportunity_steps',
+        
+        // Relations opportunités
         'opportunity_comments',
+        'opportunity_steps',
+        'opportunities',
         'opportunity_types',
-        'contracts',
-        'invoices',
-        'timesheets',
-        'timesheet_entries',
-        'rh_evolutions',
-        'rh_competences',
-        'rh_formations',
+        
+        // Documents et contrats
         'documents',
+        'invoices',
+        'contracts',
+        
+        // Temps et RH
+        'timesheet_entries',
+        'timesheets',
+        'rh_formations',
+        'rh_competences',
+        'rh_evolutions',
+        
+        // Collaborateurs (avant divisions/secteurs/business_units car FK)
         'collaborateurs',
-        'business_units',
+        
+        // Structure organisationnelle
         'divisions',
         'secteurs',
+        'business_units',
+        
+        // Permissions et utilisateurs (à la fin)
         'user_roles',
         'role_permissions',
         'permissions',
@@ -360,9 +386,6 @@ async function resetHeavy() {
             console.log(chalk.yellow(`   ⚠ ${table} : ${error.message}`));
         }
     }
-
-    // Réactiver les contraintes FK
-    await pool.query('SET session_replication_role = DEFAULT;');
 
     console.log(chalk.yellow('\n⚠️  ATTENTION: Tous les utilisateurs ont été supprimés!'));
     console.log(chalk.cyan('💡 Conseil: Exécutez maintenant le script de création de super admin:'));
