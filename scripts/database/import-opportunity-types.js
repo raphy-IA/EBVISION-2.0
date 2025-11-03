@@ -92,37 +92,49 @@ async function importOpportunityTypes(filename) {
         const typeIdMap = new Map();
         const stageIdMap = new Map();
 
+        // Détecter la structure de la table opportunity_types
+        console.log(chalk.gray('   → Détection de la structure de la table...'));
+        const columnsResult = await pool.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'opportunity_types'
+        `);
+        const availableColumns = columnsResult.rows.map(r => r.column_name);
+        console.log(chalk.gray(`     Colonnes disponibles: ${availableColumns.join(', ')}`));
+
+        // Construire la requête dynamiquement selon les colonnes disponibles
+        const columnsToImport = ['code', 'nom', 'description'];
+        const optionalColumns = ['default_probability', 'default_amount', 'duree_moyenne_jours', 'is_active', 'created_at', 'updated_at'];
+        
+        optionalColumns.forEach(col => {
+            if (availableColumns.includes(col)) {
+                columnsToImport.push(col);
+            }
+        });
+
+        console.log(chalk.gray(`     Colonnes à importer: ${columnsToImport.join(', ')}\n`));
+
         // 1. Importer les types d'opportunités
         console.log(chalk.gray('   → Import des types d\'opportunités...'));
         for (const type of importData.opportunityTypes) {
             const oldId = type.id;
             
-            const result = await pool.query(`
-                INSERT INTO opportunity_types (
-                    code, nom, description, default_probability, 
-                    default_amount, duree_moyenne_jours, is_active, created_at, updated_at
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-                ON CONFLICT (code) DO UPDATE SET
-                    nom = EXCLUDED.nom,
-                    description = EXCLUDED.description,
-                    default_probability = EXCLUDED.default_probability,
-                    default_amount = EXCLUDED.default_amount,
-                    duree_moyenne_jours = EXCLUDED.duree_moyenne_jours,
-                    is_active = EXCLUDED.is_active,
-                    updated_at = EXCLUDED.updated_at
+            // Préparer les valeurs et placeholders dynamiquement
+            const values = columnsToImport.map(col => type[col]);
+            const placeholders = columnsToImport.map((_, i) => `$${i + 1}`).join(', ');
+            const updateSet = columnsToImport
+                .filter(col => col !== 'code') // code est la clé unique
+                .map(col => `${col} = EXCLUDED.${col}`)
+                .join(', ');
+            
+            const query = `
+                INSERT INTO opportunity_types (${columnsToImport.join(', ')})
+                VALUES (${placeholders})
+                ON CONFLICT (code) DO UPDATE SET ${updateSet}
                 RETURNING id
-            `, [
-                type.code,
-                type.nom,
-                type.description,
-                type.default_probability,
-                type.default_amount,
-                type.duree_moyenne_jours,
-                type.is_active,
-                type.created_at,
-                type.updated_at
-            ]);
+            `;
 
+            const result = await pool.query(query, values);
             typeIdMap.set(oldId, result.rows[0].id);
         }
         console.log(chalk.green(`   ✓ ${importData.opportunityTypes.length} types importés`));

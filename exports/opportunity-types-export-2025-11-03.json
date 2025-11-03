@@ -1,0 +1,857 @@
+{
+  "exportDate": "2025-11-03T18:51:37.658Z",
+  "database": "eb_vision_2_0",
+  "opportunityTypes": [
+    {
+      "id": "f2b8fd7b-34a6-4a07-8839-af2d82a3db79",
+      "name": "Formation",
+      "description": "Formation professionnelle",
+      "default_probability": 90,
+      "default_duration_days": 15,
+      "is_active": true,
+      "created_at": "2025-07-22T00:16:41.141Z",
+      "updated_at": "2025-07-31T20:16:14.280Z",
+      "nom": "Formation",
+      "code": "FOM01",
+      "couleur": "#f39c12"
+    },
+    {
+      "id": "ea4cbca6-43ea-446f-879a-46be309fb710",
+      "name": "Expertise",
+      "description": "Expertise comptable et fiscale",
+      "default_probability": 75,
+      "default_duration_days": 25,
+      "is_active": true,
+      "created_at": "2025-07-22T00:16:41.141Z",
+      "updated_at": "2025-07-30T03:23:01.558Z",
+      "nom": "Expertise",
+      "code": "EXPERTISE",
+      "couleur": "#9b59b6"
+    },
+    {
+      "id": "4880f37d-14ff-4714-ad3c-3036ee79dcbc",
+      "name": "Consulting",
+      "description": "Consulting en organisation",
+      "default_probability": 65,
+      "default_duration_days": 40,
+      "is_active": true,
+      "created_at": "2025-07-22T00:16:41.141Z",
+      "updated_at": "2025-07-30T03:23:01.558Z",
+      "nom": "Consulting",
+      "code": "CONSULTING",
+      "couleur": "#2ecc71"
+    },
+    {
+      "id": "420f2a17-687b-499c-bda5-686bdb882697",
+      "name": "Audit",
+      "description": "Mission d'audit comptable et financier",
+      "default_probability": 80,
+      "default_duration_days": 45,
+      "is_active": true,
+      "created_at": "2025-07-22T00:16:41.141Z",
+      "updated_at": "2025-07-30T04:47:27.734Z",
+      "nom": "Audit",
+      "code": "AUD",
+      "couleur": "#3498db"
+    },
+    {
+      "id": "bfaa79e8-bb1a-475b-91a9-9d911f27ca06",
+      "name": "Conseil",
+      "description": "Mission de conseil en gestion",
+      "default_probability": 70,
+      "default_duration_days": 30,
+      "is_active": true,
+      "created_at": "2025-07-22T00:16:41.141Z",
+      "updated_at": "2025-07-30T03:23:01.558Z",
+      "nom": "Conseil",
+      "code": "CONSEIL",
+      "couleur": "#3498db"
+    },
+    {
+      "id": "c01a16d5-d5f4-41ba-8fb0-0f9580aa4d47",
+      "name": "Implementation",
+      "description": "Implémentation de missions",
+      "default_probability": 50,
+      "default_duration_days": 30,
+      "is_active": true,
+      "created_at": "2025-07-31T20:10:19.248Z",
+      "updated_at": "2025-07-31T20:15:52.677Z",
+      "nom": "Implementation",
+      "code": "IPM",
+      "couleur": "#3498db"
+    },
+    {
+      "id": "dee3329d-39c7-429a-9ea9-ec457fedb9e4",
+      "name": "Vente standard",
+      "description": "Pipeline commercial standard (identification → décision)",
+      "default_probability": 10,
+      "default_duration_days": 30,
+      "is_active": true,
+      "created_at": "2025-08-10T02:03:31.069Z",
+      "updated_at": "2025-09-24T05:57:08.462Z",
+      "nom": "Vente standard",
+      "code": "VENTE_STD",
+      "couleur": null
+    },
+    {
+      "id": "148011aa-377e-46f6-8d1b-f40a9c1ff60a",
+      "name": "test_type",
+      "description": "sdfdfsdfdsf",
+      "default_probability": 50,
+      "default_duration_days": 30,
+      "is_active": true,
+      "created_at": "2025-08-29T03:57:02.278Z",
+      "updated_at": "2025-08-29T03:57:02.278Z",
+      "nom": "test_type",
+      "code": "Test",
+      "couleur": "#3498db"
+    },
+    {
+      "id": "947be653-73f9-47b2-b8eb-fa16ca073d76",
+      "name": "type_test3",
+      "description": "dfdsfsfdsfds",
+      "default_probability": 50,
+      "default_duration_days": 30,
+      "is_active": true,
+      "created_at": "2025-09-09T02:21:40.318Z",
+      "updated_at": "2025-09-09T02:21:40.318Z",
+      "nom": "type_test3",
+      "code": "TT3",
+      "couleur": "#3498db"
+    }
+  ],
+  "stageTemplates": [
+    {
+      "id": "4661ea0f-1e81-4c9f-876d-405a005c0e19",
+      "opportunity_type_id": "420f2a17-687b-499c-bda5-686bdb882697",
+      "stage_name": "Préparation et planification",
+      "stage_order": 1,
+      "description": "Définition du périmètre, constitution de l'équipe, élaboration du planning",
+      "required_documents": [
+        "Lettre de mission",
+        "Planning détaillé",
+        "Composition équipe"
+      ],
+      "required_actions": [
+        "Réunion de lancement",
+        "Analyse des risques",
+        "Préparation des outils"
+      ],
+      "max_duration_days": 7,
+      "min_duration_days": 3,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-07-22T00:17:56.910Z"
+    },
+    {
+      "id": "c0767ab4-e9e5-4b1a-9381-b8aa2c53b033",
+      "opportunity_type_id": "420f2a17-687b-499c-bda5-686bdb882697",
+      "stage_name": "Exécution des travaux",
+      "stage_order": 2,
+      "description": "Réalisation des tests de conformité et des contrôles",
+      "required_documents": [
+        "Fiches de travail",
+        "Échantillons testés",
+        "Correspondances"
+      ],
+      "required_actions": [
+        "Tests de conformité",
+        "Contrôles sur place",
+        "Entretiens"
+      ],
+      "max_duration_days": 25,
+      "min_duration_days": 10,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": false,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-07-22T00:17:56.910Z"
+    },
+    {
+      "id": "298b6959-14ea-4faa-9d01-487deaf3d4d8",
+      "opportunity_type_id": "420f2a17-687b-499c-bda5-686bdb882697",
+      "stage_name": "Finalisation et rapport",
+      "stage_order": 3,
+      "description": "Rédaction du rapport, validation finale, présentation",
+      "required_documents": [
+        "Rapport d'audit",
+        "Lettre de recommandations",
+        "Présentation client"
+      ],
+      "required_actions": [
+        "Rédaction rapport",
+        "Validation hiérarchique",
+        "Présentation résultats"
+      ],
+      "max_duration_days": 10,
+      "min_duration_days": 5,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-07-22T00:17:56.910Z"
+    },
+    {
+      "id": "71b61313-88d2-4232-85db-216a08faad2a",
+      "opportunity_type_id": "420f2a17-687b-499c-bda5-686bdb882697",
+      "stage_name": "kuqfkuhfqfq",
+      "stage_order": 4,
+      "description": "",
+      "required_documents": [],
+      "required_actions": [],
+      "max_duration_days": 10,
+      "min_duration_days": 1,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": false,
+      "created_at": "2025-08-10T15:31:54.527Z",
+      "updated_at": "2025-08-10T15:31:54.527Z"
+    },
+    {
+      "id": "6e6c35ef-1fc2-4afa-9180-0ab9d2cd9cd6",
+      "opportunity_type_id": "4880f37d-14ff-4714-ad3c-3036ee79dcbc",
+      "stage_name": "Phase de découverte",
+      "stage_order": 1,
+      "description": "Exploration approfondie de l'organisation et des enjeux",
+      "required_documents": [
+        "Certificat de conformité"
+      ],
+      "required_actions": [
+        "Analyse des besoins client",
+        "Support post-déploiement",
+        "Présentation de la solution"
+      ],
+      "max_duration_days": 12,
+      "min_duration_days": 5,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-08-29T04:24:46.612Z"
+    },
+    {
+      "id": "7b9f83f2-283f-4e65-a51f-c9dc1fe536c5",
+      "opportunity_type_id": "4880f37d-14ff-4714-ad3c-3036ee79dcbc",
+      "stage_name": "Stratégie et planification",
+      "stage_order": 2,
+      "description": "Définition de la stratégie et plan de transformation",
+      "required_documents": [
+        "Rapport d'analyse"
+      ],
+      "required_actions": [
+        "Étude de faisabilité"
+      ],
+      "max_duration_days": 15,
+      "min_duration_days": 7,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-08-29T04:24:46.626Z"
+    },
+    {
+      "id": "fcd8f2b8-4024-4258-93c7-8279dca3da3b",
+      "opportunity_type_id": "4880f37d-14ff-4714-ad3c-3036ee79dcbc",
+      "stage_name": "Accompagnement au changement",
+      "stage_order": 3,
+      "description": "Mise en œuvre et accompagnement des équipes",
+      "required_documents": [
+        "Plan de projet"
+      ],
+      "required_actions": [
+        "Analyse des besoins client"
+      ],
+      "max_duration_days": 25,
+      "min_duration_days": 15,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": false,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-08-29T04:24:46.627Z"
+    },
+    {
+      "id": "a07f178d-1510-4275-9311-57b468f71239",
+      "opportunity_type_id": "4880f37d-14ff-4714-ad3c-3036ee79dcbc",
+      "stage_name": "Évaluation et pérennisation",
+      "stage_order": 4,
+      "description": "Mesure des résultats et transfert de compétences",
+      "required_documents": [
+        "Rapport de test"
+      ],
+      "required_actions": [
+        "Support post-déploiement"
+      ],
+      "max_duration_days": 8,
+      "min_duration_days": 3,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-08-29T04:24:46.628Z"
+    },
+    {
+      "id": "0abef8f4-e99b-4f07-871f-1334bfd0d298",
+      "opportunity_type_id": "947be653-73f9-47b2-b8eb-fa16ca073d76",
+      "stage_name": "INITIATION",
+      "stage_order": 1,
+      "description": "",
+      "required_documents": [],
+      "required_actions": [],
+      "max_duration_days": 10,
+      "min_duration_days": 1,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": false,
+      "created_at": "2025-09-09T02:22:22.381Z",
+      "updated_at": "2025-09-09T02:22:22.381Z"
+    },
+    {
+      "id": "4b62a0ff-b7ac-4c45-87e7-563e9e6f6643",
+      "opportunity_type_id": "947be653-73f9-47b2-b8eb-fa16ca073d76",
+      "stage_name": "NEGOCIATION",
+      "stage_order": 2,
+      "description": "",
+      "required_documents": [],
+      "required_actions": [],
+      "max_duration_days": 10,
+      "min_duration_days": 1,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": false,
+      "created_at": "2025-09-09T02:24:04.268Z",
+      "updated_at": "2025-09-09T02:24:04.268Z"
+    },
+    {
+      "id": "b0ea8210-10ed-45c5-b3d9-575cd2056416",
+      "opportunity_type_id": "bfaa79e8-bb1a-475b-91a9-9d911f27ca06",
+      "stage_name": "Diagnostic initial",
+      "stage_order": 1,
+      "description": "Analyse de la situation actuelle et identification des besoins",
+      "required_documents": [
+        "Rapport de test"
+      ],
+      "required_actions": [
+        "Présentation de la solution",
+        "Analyse des besoins client"
+      ],
+      "max_duration_days": 10,
+      "min_duration_days": 5,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-08-29T04:21:48.593Z"
+    },
+    {
+      "id": "994db684-ca51-48a6-aabf-4137fc8b57b3",
+      "opportunity_type_id": "bfaa79e8-bb1a-475b-91a9-9d911f27ca06",
+      "stage_name": "Élaboration des recommandations",
+      "stage_order": 2,
+      "description": "Développement des solutions et plan d'action",
+      "required_documents": [
+        "Proposition commerciale"
+      ],
+      "required_actions": [
+        "Analyse des besoins client",
+        "Documentation technique"
+      ],
+      "max_duration_days": 15,
+      "min_duration_days": 7,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-08-29T04:21:48.600Z"
+    },
+    {
+      "id": "d3a9d6b4-9751-4630-a6be-d92da7b4495f",
+      "opportunity_type_id": "bfaa79e8-bb1a-475b-91a9-9d911f27ca06",
+      "stage_name": "Accompagnement à la mise en œuvre",
+      "stage_order": 3,
+      "description": "Suivi de l'implémentation et formation des équipes",
+      "required_documents": [
+        "Rapport de test"
+      ],
+      "required_actions": [
+        "Support post-déploiement",
+        "Validation technique"
+      ],
+      "max_duration_days": 20,
+      "min_duration_days": 10,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": false,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-08-29T04:21:48.601Z"
+    },
+    {
+      "id": "b3ea6bbe-a1d6-4191-9296-ef357be31bc1",
+      "opportunity_type_id": "dee3329d-39c7-429a-9ea9-ec457fedb9e4",
+      "stage_name": "Identification",
+      "stage_order": 1,
+      "description": "Opportunité détectée; enregistrement et qualification rapide",
+      "required_documents": [
+        "Lead/Contact initial",
+        "Notes de détection"
+      ],
+      "required_actions": [
+        "Créer la fiche opportunité",
+        "Qualifier rapidement l'intérêt"
+      ],
+      "max_duration_days": 7,
+      "min_duration_days": 1,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-08-10T02:03:31.069Z",
+      "updated_at": "2025-08-10T02:03:31.069Z"
+    },
+    {
+      "id": "44776cec-9d68-4892-ac6f-0acc16b0c6f0",
+      "opportunity_type_id": "dee3329d-39c7-429a-9ea9-ec457fedb9e4",
+      "stage_name": "Qualification",
+      "stage_order": 2,
+      "description": "Valider besoin, budget, décideurs, timing (ex. BANT)",
+      "required_documents": [
+        "Grille BANT",
+        "Liste des décideurs"
+      ],
+      "required_actions": [
+        "Valider BANT",
+        "Identifier décideurs",
+        "Estimer budget"
+      ],
+      "max_duration_days": 10,
+      "min_duration_days": 3,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-08-10T02:03:31.069Z",
+      "updated_at": "2025-08-10T02:03:31.069Z"
+    },
+    {
+      "id": "b60e5d59-897a-45a0-bd53-e636fe98c47e",
+      "opportunity_type_id": "dee3329d-39c7-429a-9ea9-ec457fedb9e4",
+      "stage_name": "Proposition",
+      "stage_order": 3,
+      "description": "Production et envoi de l'offre (technique + financière)",
+      "required_documents": [
+        "Proposition",
+        "Chiffrage",
+        "Conditions"
+      ],
+      "required_actions": [
+        "Rédaction offre",
+        "Validation interne",
+        "Envoi au client"
+      ],
+      "max_duration_days": 10,
+      "min_duration_days": 3,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-08-10T02:03:31.069Z",
+      "updated_at": "2025-08-10T05:48:36.026Z"
+    },
+    {
+      "id": "0af5beb9-22a7-4fe5-af10-954636033300",
+      "opportunity_type_id": "dee3329d-39c7-429a-9ea9-ec457fedb9e4",
+      "stage_name": "Négociation",
+      "stage_order": 4,
+      "description": "Convergence sur prix, périmètre, délais et conditions",
+      "required_documents": [
+        "Versions d'offre",
+        "Table des concessions"
+      ],
+      "required_actions": [
+        "Négociation",
+        "Alignement interne",
+        "Validation client"
+      ],
+      "max_duration_days": 15,
+      "min_duration_days": 5,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": false,
+      "created_at": "2025-08-10T02:03:31.069Z",
+      "updated_at": "2025-08-10T05:48:36.026Z"
+    },
+    {
+      "id": "e8111589-5d40-48b8-a908-dcbbef2b0082",
+      "opportunity_type_id": "dee3329d-39c7-429a-9ea9-ec457fedb9e4",
+      "stage_name": "Décision",
+      "stage_order": 5,
+      "description": "Issue finale (gagnée/perdue); si gagnée, préparer onboarding",
+      "required_documents": [
+        "Bon pour accord/Contrat",
+        "Compte-rendu de décision"
+      ],
+      "required_actions": [
+        "Clôturer opportunité",
+        "Préparer onboarding si gagnée"
+      ],
+      "max_duration_days": 5,
+      "min_duration_days": 1,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-08-10T02:03:31.069Z",
+      "updated_at": "2025-08-10T05:48:36.026Z"
+    },
+    {
+      "id": "3aca592e-16ca-4275-b655-67fdac423d1a",
+      "opportunity_type_id": "ea4cbca6-43ea-446f-879a-46be309fb710",
+      "stage_name": "Analyse de la demande",
+      "stage_order": 1,
+      "description": "Compréhension du besoin et évaluation de la complexité",
+      "required_documents": [
+        "Demande client",
+        "Analyse préliminaire",
+        "Estimation complexité"
+      ],
+      "required_actions": [
+        "Entretien client",
+        "Analyse documentaire",
+        "Évaluation risques"
+      ],
+      "max_duration_days": 5,
+      "min_duration_days": 2,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-07-22T00:17:56.910Z"
+    },
+    {
+      "id": "fb3c0f1a-0788-49f0-b431-bf35eb6a6464",
+      "opportunity_type_id": "ea4cbca6-43ea-446f-879a-46be309fb710",
+      "stage_name": "Recherche et analyse",
+      "stage_order": 2,
+      "description": "Investigation approfondie et analyse technique",
+      "required_documents": [
+        "Rapport d'analyse",
+        "Études comparatives",
+        "Expertises techniques"
+      ],
+      "required_actions": [
+        "Recherche documentaire",
+        "Consultations experts",
+        "Analyses techniques"
+      ],
+      "max_duration_days": 15,
+      "min_duration_days": 7,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": false,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-07-22T00:17:56.910Z"
+    },
+    {
+      "id": "b8202e29-a73f-42af-a141-028b6252da0e",
+      "opportunity_type_id": "ea4cbca6-43ea-446f-879a-46be309fb710",
+      "stage_name": "Rédaction de l'expertise",
+      "stage_order": 3,
+      "description": "Rédaction du rapport d'expertise et recommandations",
+      "required_documents": [
+        "Rapport d'expertise",
+        "Annexes techniques",
+        "Recommandations"
+      ],
+      "required_actions": [
+        "Rédaction rapport",
+        "Validation technique",
+        "Relecture"
+      ],
+      "max_duration_days": 10,
+      "min_duration_days": 5,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-07-22T00:17:56.910Z"
+    },
+    {
+      "id": "17eb176b-1657-42e7-9b9c-1514cb809a5f",
+      "opportunity_type_id": "f2b8fd7b-34a6-4a07-8839-af2d82a3db79",
+      "stage_name": "Analyse des besoins",
+      "stage_order": 1,
+      "description": "Évaluation des compétences actuelles et définition des objectifs",
+      "required_documents": [
+        "Audit des compétences",
+        "Objectifs de formation",
+        "Profil des participants"
+      ],
+      "required_actions": [
+        "Entretiens RH",
+        "Tests de niveau",
+        "Analyse des postes"
+      ],
+      "max_duration_days": 5,
+      "min_duration_days": 2,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-07-22T00:17:56.910Z"
+    },
+    {
+      "id": "2d05221c-0258-4d37-8372-218c00c0af88",
+      "opportunity_type_id": "f2b8fd7b-34a6-4a07-8839-af2d82a3db79",
+      "stage_name": "Conception du programme",
+      "stage_order": 2,
+      "description": "Élaboration du contenu et des supports de formation",
+      "required_documents": [
+        "Programme détaillé",
+        "Supports pédagogiques",
+        "Exercices pratiques"
+      ],
+      "required_actions": [
+        "Conception pédagogique",
+        "Création supports",
+        "Tests pilotes"
+      ],
+      "max_duration_days": 7,
+      "min_duration_days": 3,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-07-22T00:17:56.910Z"
+    },
+    {
+      "id": "c4fc2b92-066d-4667-8719-4969af3086db",
+      "opportunity_type_id": "f2b8fd7b-34a6-4a07-8839-af2d82a3db79",
+      "stage_name": "Animation de la formation",
+      "stage_order": 3,
+      "description": "Délivrance de la formation et suivi des participants",
+      "required_documents": [
+        "Feuilles de présence",
+        "Évaluations",
+        "Retours participants"
+      ],
+      "required_actions": [
+        "Animation sessions",
+        "Suivi apprentissage",
+        "Ajustements contenu"
+      ],
+      "max_duration_days": 10,
+      "min_duration_days": 5,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": false,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-07-22T00:17:56.910Z"
+    },
+    {
+      "id": "7a97a2f3-9bd4-4189-ac29-8b447eb83dd5",
+      "opportunity_type_id": "f2b8fd7b-34a6-4a07-8839-af2d82a3db79",
+      "stage_name": "Évaluation et suivi",
+      "stage_order": 4,
+      "description": "Mesure de l'efficacité et suivi post-formation",
+      "required_documents": [
+        "Rapport d'évaluation",
+        "Plan de suivi",
+        "Recommandations"
+      ],
+      "required_actions": [
+        "Tests de validation",
+        "Entretiens post-formation",
+        "Analyse ROI"
+      ],
+      "max_duration_days": 5,
+      "min_duration_days": 2,
+      "is_mandatory": true,
+      "can_skip": false,
+      "validation_required": true,
+      "created_at": "2025-07-22T00:17:56.910Z",
+      "updated_at": "2025-07-22T00:17:56.910Z"
+    }
+  ],
+  "requiredActions": [
+    {
+      "id": "5471d628-d0ab-493e-8b96-361e0430f319",
+      "stage_template_id": "0abef8f4-e99b-4f07-871f-1334bfd0d298",
+      "action_type": "premier_contact",
+      "is_mandatory": true,
+      "validation_order": 1,
+      "created_at": "2025-09-09T02:23:01.308Z"
+    },
+    {
+      "id": "988a3199-7e6c-46b2-8990-246b29e12631",
+      "stage_template_id": "0af5beb9-22a7-4fe5-af10-954636033300",
+      "action_type": "negociation_menee",
+      "is_mandatory": true,
+      "validation_order": 1,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "45a8a9e9-3044-4106-999c-64287ffa6232",
+      "stage_template_id": "0af5beb9-22a7-4fe5-af10-954636033300",
+      "action_type": "conditions_acceptees",
+      "is_mandatory": true,
+      "validation_order": 2,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "10c21db0-2a47-49df-9b49-9aebe14ba00a",
+      "stage_template_id": "44776cec-9d68-4892-ac6f-0acc16b0c6f0",
+      "action_type": "rdv_planifie",
+      "is_mandatory": true,
+      "validation_order": 1,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "ef746121-d1ab-4916-b546-0f9ebc495a67",
+      "stage_template_id": "44776cec-9d68-4892-ac6f-0acc16b0c6f0",
+      "action_type": "rdv_realise",
+      "is_mandatory": true,
+      "validation_order": 2,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "454e5a83-516d-47ef-88d4-02ace2b56bc0",
+      "stage_template_id": "4661ea0f-1e81-4c9f-876d-405a005c0e19",
+      "action_type": "contrat_signe",
+      "is_mandatory": true,
+      "validation_order": 1,
+      "created_at": "2025-08-29T04:15:49.595Z"
+    },
+    {
+      "id": "f3439b82-5641-402a-881b-086fd619d8c8",
+      "stage_template_id": "4b62a0ff-b7ac-4c45-87e7-563e9e6f6643",
+      "action_type": "contrat_prepare",
+      "is_mandatory": false,
+      "validation_order": 1,
+      "created_at": "2025-09-09T02:24:22.155Z"
+    },
+    {
+      "id": "30b5c36e-177b-4dd5-a3d5-21278576a7ce",
+      "stage_template_id": "b3ea6bbe-a1d6-4191-9296-ef357be31bc1",
+      "action_type": "premier_contact",
+      "is_mandatory": true,
+      "validation_order": 1,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "01aacd6e-ef07-4faf-bd9e-58ee59824382",
+      "stage_template_id": "b3ea6bbe-a1d6-4191-9296-ef357be31bc1",
+      "action_type": "qualification_besoin",
+      "is_mandatory": true,
+      "validation_order": 2,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "490fea32-a4cd-41cf-b483-a85ae1c867e7",
+      "stage_template_id": "b60e5d59-897a-45a0-bd53-e636fe98c47e",
+      "action_type": "analyse_besoin_approfondie",
+      "is_mandatory": true,
+      "validation_order": 1,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "4b141cc2-3596-4def-bf11-fa7c2483650f",
+      "stage_template_id": "b60e5d59-897a-45a0-bd53-e636fe98c47e",
+      "action_type": "proposition_envoyee",
+      "is_mandatory": true,
+      "validation_order": 2,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "c8331bda-03b3-4a5e-b990-dc7abf035c5f",
+      "stage_template_id": "e8111589-5d40-48b8-a908-dcbbef2b0082",
+      "action_type": "contrat_prepare",
+      "is_mandatory": true,
+      "validation_order": 1,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "cbab2e9d-b594-494f-8cef-b24549637cd7",
+      "stage_template_id": "e8111589-5d40-48b8-a908-dcbbef2b0082",
+      "action_type": "contrat_signe",
+      "is_mandatory": true,
+      "validation_order": 2,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    }
+  ],
+  "requiredDocuments": [
+    {
+      "id": "1d59da4b-89f5-4dc4-b997-abc8bfe1f625",
+      "stage_template_id": "0abef8f4-e99b-4f07-871f-1334bfd0d298",
+      "document_type": "planning_mission",
+      "is_mandatory": true,
+      "created_at": "2025-09-09T02:34:04.755Z"
+    },
+    {
+      "id": "b1ac54e3-2f03-401c-8db7-619d50e59945",
+      "stage_template_id": "0af5beb9-22a7-4fe5-af10-954636033300",
+      "document_type": "planning_mission",
+      "is_mandatory": true,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "f8e14b6c-2f07-48aa-967d-53d4b844fad9",
+      "stage_template_id": "0af5beb9-22a7-4fe5-af10-954636033300",
+      "document_type": "conditions_finales",
+      "is_mandatory": true,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "a1f7da41-e76f-41ef-b1a2-ef3fe506441a",
+      "stage_template_id": "44776cec-9d68-4892-ac6f-0acc16b0c6f0",
+      "document_type": "compte_rendu_rdv",
+      "is_mandatory": true,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "7e3a9061-405d-4f95-9d78-f42531e3b05f",
+      "stage_template_id": "4661ea0f-1e81-4c9f-876d-405a005c0e19",
+      "document_type": "tarification",
+      "is_mandatory": true,
+      "created_at": "2025-08-29T04:16:00.222Z"
+    },
+    {
+      "id": "23b36531-e2b6-4800-aa96-06ae3255d9e3",
+      "stage_template_id": "4b62a0ff-b7ac-4c45-87e7-563e9e6f6643",
+      "document_type": "references_clients",
+      "is_mandatory": true,
+      "created_at": "2025-09-09T02:24:41.381Z"
+    },
+    {
+      "id": "71f7060b-9568-4e0e-ba8b-d0349eb5f1c2",
+      "stage_template_id": "b3ea6bbe-a1d6-4191-9296-ef357be31bc1",
+      "document_type": "fiche_prospect",
+      "is_mandatory": true,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "4992c7c8-983a-4c38-9b11-22f8db05cbbe",
+      "stage_template_id": "b60e5d59-897a-45a0-bd53-e636fe98c47e",
+      "document_type": "elements_techniques",
+      "is_mandatory": true,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "953252c5-091c-4021-a119-19c8defebe03",
+      "stage_template_id": "b60e5d59-897a-45a0-bd53-e636fe98c47e",
+      "document_type": "proposition_commerciale",
+      "is_mandatory": true,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "31f629a4-c513-4054-8360-bd5e9b0af1bc",
+      "stage_template_id": "e8111589-5d40-48b8-a908-dcbbef2b0082",
+      "document_type": "contrat_signe",
+      "is_mandatory": true,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    },
+    {
+      "id": "bb5ed938-b392-454c-9381-e2ebddc2e2ad",
+      "stage_template_id": "e8111589-5d40-48b8-a908-dcbbef2b0082",
+      "document_type": "bon_commande",
+      "is_mandatory": true,
+      "created_at": "2025-08-10T03:51:28.973Z"
+    }
+  ]
+}
