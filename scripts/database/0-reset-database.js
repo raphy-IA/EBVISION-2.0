@@ -266,7 +266,6 @@ async function resetModerate() {
         { name: 'prospecting_campaign_companies', hasId: false },
         { name: 'prospecting_campaign_validations', hasId: true },
         { name: 'prospecting_campaigns', hasId: true },
-        { name: 'campaign_templates', hasId: true },
         
         // Relations opportunités
         { name: 'opportunity_comments', hasId: true },
@@ -345,7 +344,6 @@ async function resetHeavy() {
         'prospecting_campaign_companies',
         'prospecting_campaign_validations',
         'prospecting_campaigns',
-        'campaign_templates',
         
         // Relations opportunités
         'opportunity_comments',
@@ -367,6 +365,12 @@ async function resetHeavy() {
         
         // Collaborateurs (avant divisions/secteurs/business_units car FK)
         'collaborateurs',
+        
+        // Templates et étapes (AVANT BU/Divisions car FK)
+        'stage_required_documents',
+        'stage_required_actions',
+        'opportunity_stage_templates',
+        'prospecting_templates',
         
         // Taux horaires (AVANT divisions car FK sur divisions)
         'taux_horaires',
