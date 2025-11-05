@@ -659,11 +659,11 @@ async function generateDemoData() {
           userId = existing.id;
           console.log(`   ℹ Utilisateur ${collab.email} existe déjà (ID: ${userId})`);
         } else {
-          // Utiliser le premier rôle comme valeur legacy pour la colonne role (NOT NULL)
+          // Utiliser 'COLLABORATEUR' comme valeur legacy pour la colonne role (NOT NULL)
           // Les rôles multiples seront gérés via user_roles
-          const legacyRole = collab.roles && collab.roles.length > 0 
-            ? collab.roles[0] 
-            : 'COLLABORATEUR';
+          // Note: La contrainte CHECK users_role_check n'accepte que certains rôles,
+          // donc on utilise toujours 'COLLABORATEUR' pour le champ legacy
+          const legacyRole = 'COLLABORATEUR';
           
           const userResult = await pool.query(
             `INSERT INTO users (nom, prenom, email, password_hash, login, collaborateur_id, statut, role)
