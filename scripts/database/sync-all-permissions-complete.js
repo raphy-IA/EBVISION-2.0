@@ -236,7 +236,7 @@ async function extractPermissionsFromHTML() {
     
     console.log('📋 Étape 2: Extraction des permissions depuis les pages HTML...\n');
     
-    async function scanDir(dir) {
+    const scanDir = async (dir) => {
         const entries = await fs.readdir(dir, { withFileTypes: true });
         
         for (const entry of entries) {
