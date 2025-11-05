@@ -4,10 +4,15 @@
  * Ce script crée un jeu de données complet et cohérent pour démontrer
  * toutes les fonctionnalités de l'application en mode démo.
  * 
+ * ⚠️  PROTECTION DES ÉLÉMENTS STRUCTURELS:
+ * - Les rôles existants ne seront JAMAIS modifiés ou supprimés
+ * - Les utilisateurs existants (surtout super admin) ne seront JAMAIS modifiés
+ * - Les permissions, business units, divisions, grades, postes existants ne seront JAMAIS supprimés
+ * 
  * Usage: node scripts/database/generate-demo-data.js [--clean]
  * 
  * Options:
- *   --clean : Nettoie les données existantes avant de créer les données de démo
+ *   --clean : Nettoie les données de démo existantes avant de créer les nouvelles données de démo
  */
 
 require('dotenv').config();
@@ -195,10 +200,13 @@ async function checkExistingData() {
 // Fonction pour nettoyer les données (optionnel)
 async function cleanDemoData() {
   console.log('\n🧹 Nettoyage des données de démo...\n');
-  console.log('⚠️  Note: Le nettoyage ne supprime que les données sans contraintes de clés étrangères.');
-  console.log('    Les données liées aux factures et campagnes seront conservées.\n');
+  console.log('⚠️  PROTECTION DES ÉLÉMENTS STRUCTURELS:');
+  console.log('    - Les rôles ne seront JAMAIS supprimés');
+  console.log('    - Les utilisateurs existants (surtout super admin) ne seront JAMAIS supprimés');
+  console.log('    - Seules les données de démo seront supprimées\n');
   
   // Supprimer dans l'ordre inverse des dépendances
+  // IMPORTANT: Ne jamais supprimer les tables structurelles (roles, users, permissions, etc.)
   const tables = [
     'time_entries',
     'time_sheets',
@@ -211,7 +219,43 @@ async function cleanDemoData() {
   
   for (const table of tables) {
     try {
-      const result = await pool.query(`DELETE FROM ${table} WHERE 1=1`);
+      // Protection supplémentaire: Ne supprimer que les données créées par le script de démo
+      // On peut identifier les données de démo par leur email ou leur pattern
+      let deleteQuery;
+      if (table === 'clients') {
+        // Supprimer seulement les clients de démo (identifiés par leur email ou nom contenant les noms de démo)
+        const demoClientNames = CLIENTS.map(c => c.nom);
+        const demoClientNamesSql = demoClientNames.map(n => `'${n.replace(/'/g, "''")}'`).join(',');
+        deleteQuery = `DELETE FROM ${table} WHERE nom IN (${demoClientNamesSql}) OR email LIKE '%@ewm-demo.com' OR code_client LIKE 'DEMO-%'`;
+      } else if (table === 'contacts') {
+        // Supprimer seulement les contacts liés aux clients de démo
+        const demoClientNames = CLIENTS.map(c => c.nom);
+        const demoClientNamesSql = demoClientNames.map(n => `'${n.replace(/'/g, "''")}'`).join(',');
+        deleteQuery = `DELETE FROM ${table} WHERE client_id IN (SELECT id FROM clients WHERE nom IN (${demoClientNamesSql}) OR email LIKE '%@ewm-demo.com' OR code_client LIKE 'DEMO-%')`;
+      } else if (table === 'missions') {
+        // Supprimer seulement les missions liées aux clients de démo
+        const demoClientNames = CLIENTS.map(c => c.nom);
+        const demoClientNamesSql = demoClientNames.map(n => `'${n.replace(/'/g, "''")}'`).join(',');
+        deleteQuery = `DELETE FROM ${table} WHERE client_id IN (SELECT id FROM clients WHERE nom IN (${demoClientNamesSql}) OR email LIKE '%@ewm-demo.com' OR code_client LIKE 'DEMO-%')`;
+      } else if (table === 'opportunities') {
+        // Supprimer seulement les opportunités liées aux clients de démo
+        const demoClientNames = CLIENTS.map(c => c.nom);
+        const demoClientNamesSql = demoClientNames.map(n => `'${n.replace(/'/g, "''")}'`).join(',');
+        deleteQuery = `DELETE FROM ${table} WHERE client_id IN (SELECT id FROM clients WHERE nom IN (${demoClientNamesSql}) OR email LIKE '%@ewm-demo.com' OR code_client LIKE 'DEMO-%')`;
+      } else if (table === 'time_sheets' || table === 'time_entries') {
+        // Supprimer seulement les feuilles de temps des utilisateurs de démo
+        deleteQuery = `DELETE FROM ${table} WHERE user_id IN (SELECT id FROM users WHERE email LIKE '%@ewm-demo.com')`;
+      } else if (table === 'equipes_mission') {
+        // Supprimer seulement les équipes de missions liées aux missions de démo
+        const demoClientNames = CLIENTS.map(c => c.nom);
+        const demoClientNamesSql = demoClientNames.map(n => `'${n.replace(/'/g, "''")}'`).join(',');
+        deleteQuery = `DELETE FROM ${table} WHERE mission_id IN (SELECT id FROM missions WHERE client_id IN (SELECT id FROM clients WHERE nom IN (${demoClientNamesSql}) OR email LIKE '%@ewm-demo.com' OR code_client LIKE 'DEMO-%'))`;
+      } else {
+        // Pour les autres tables, utiliser la suppression conditionnelle
+        deleteQuery = `DELETE FROM ${table} WHERE 1=1`;
+      }
+      
+      const result = await pool.query(deleteQuery);
       console.log(`   ✓ ${table}: ${result.rowCount} ligne(s) supprimée(s)`);
     } catch (error) {
       if (!error.message.includes('violates foreign key')) {
@@ -219,6 +263,16 @@ async function cleanDemoData() {
       }
     }
   }
+  
+  // Protection explicite: Ne jamais toucher aux rôles, utilisateurs existants, permissions
+  console.log('\n   🔒 Éléments protégés (non supprimés):');
+  console.log('      - Rôles (roles)');
+  console.log('      - Utilisateurs existants (users)');
+  console.log('      - Permissions (permissions)');
+  console.log('      - Business Units existantes (business_units)');
+  console.log('      - Divisions existantes (divisions)');
+  console.log('      - Grades existants (grades)');
+  console.log('      - Postes existants (postes)');
   
   console.log('\n✅ Nettoyage terminé\n');
 }
@@ -489,21 +543,56 @@ async function generateDemoData() {
       }
     }
     
-    // 9. Récupérer les rôles existants
+    // 9. Récupérer les rôles existants (NE JAMAIS MODIFIER)
     console.log('\n9️⃣  Récupération des Rôles...');
-    const rolesResult = await pool.query('SELECT id, name FROM roles ORDER BY name');
+    console.log('   ⚠️  Protection: Les rôles existants ne seront jamais modifiés');
+    const rolesResult = await pool.query('SELECT id, name, is_system_role FROM roles ORDER BY name');
     const roles = {};
+    const systemRoles = new Set();
     rolesResult.rows.forEach(row => {
       roles[row.name] = row.id;
+      if (row.is_system_role) {
+        systemRoles.add(row.name);
+      }
     });
     console.log(`   ✓ ${Object.keys(roles).length} rôle(s) trouvé(s)`);
+    if (systemRoles.size > 0) {
+      console.log(`   🔒 ${systemRoles.size} rôle(s) système protégé(s): ${Array.from(systemRoles).join(', ')}`);
+    }
     
     // 10. Créer les Collaborateurs et Utilisateurs
     console.log('\n🔟 Création des Collaborateurs et Utilisateurs...');
+    console.log('   ⚠️  Protection: Les utilisateurs existants (surtout super admin) ne seront jamais modifiés');
+    
+    // Identifier les utilisateurs protégés (super admin, admin, etc.)
+    const protectedUsersResult = await pool.query(`
+      SELECT DISTINCT u.id, u.email, u.login, u.role
+      FROM users u
+      LEFT JOIN user_roles ur ON u.id = ur.user_id
+      LEFT JOIN roles r ON ur.role_id = r.id
+      WHERE u.role IN ('SUPER_ADMIN', 'ADMIN')
+         OR r.name IN ('SUPER_ADMIN', 'ADMIN')
+         OR u.email IN ('admin@system.local', 'admin@trs.com', 'admin@ewm.com')
+         OR u.login = 'admin'
+    `);
+    const protectedUserIds = new Set(protectedUsersResult.rows.map(u => u.id));
+    const protectedEmails = new Set(protectedUsersResult.rows.map(u => u.email.toLowerCase()));
+    const protectedLogins = new Set(protectedUsersResult.rows.map(u => u.login?.toLowerCase()).filter(Boolean));
+    
+    if (protectedUserIds.size > 0) {
+      console.log(`   🔒 ${protectedUserIds.size} utilisateur(s) protégé(s) identifié(s)`);
+    }
+    
     const collaborateurIds = [];
     const userIds = [];
     
     for (const collab of COLLABORATEURS) {
+      // Protection: Ne jamais créer/modifier un utilisateur avec un email protégé
+      if (protectedEmails.has(collab.email.toLowerCase())) {
+        console.log(`   ⚠️  ${collab.prenom} ${collab.nom} (${collab.email}) - SKIP (utilisateur protégé)`);
+        continue;
+      }
+      
       // Créer le collaborateur
       const initiales = `${collab.prenom[0]}${collab.nom[0]}`.toUpperCase();
       const dateEmbauche = randomDateInRange(Math.floor(Math.random() * 1000) + 365);
@@ -544,17 +633,31 @@ async function generateDemoData() {
         
         // Créer l'utilisateur
         const login = `${collab.prenom.toLowerCase()}.${collab.nom.toLowerCase()}`;
+        
+        // Protection: Ne jamais utiliser un login protégé
+        if (protectedLogins.has(login.toLowerCase())) {
+          console.log(`   ⚠️  ${collab.prenom} ${collab.nom} - SKIP (login protégé: ${login})`);
+          continue;
+        }
+        
         const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
         
         // Vérifier si l'utilisateur existe déjà
         const existingUser = await pool.query(
-          'SELECT id FROM users WHERE email = $1',
-          [collab.email]
+          'SELECT id, email, role FROM users WHERE email = $1 OR login = $2',
+          [collab.email, login]
         );
         
         let userId;
         if (existingUser.rows.length > 0) {
-          userId = existingUser.rows[0].id;
+          const existing = existingUser.rows[0];
+          // Protection: Ne jamais modifier un utilisateur protégé
+          if (protectedUserIds.has(existing.id)) {
+            console.log(`   ⚠️  ${collab.prenom} ${collab.nom} - SKIP (utilisateur existant protégé)`);
+            continue;
+          }
+          userId = existing.id;
+          console.log(`   ℹ Utilisateur ${collab.email} existe déjà (ID: ${userId})`);
         } else {
           const userResult = await pool.query(
             `INSERT INTO users (nom, prenom, email, password_hash, login, collaborateur_id, statut, role)
@@ -566,21 +669,29 @@ async function generateDemoData() {
         }
         
         if (userId) {
+          // Protection: Double vérification avant d'assigner des rôles
+          if (protectedUserIds.has(userId)) {
+            console.log(`   ⚠️  ${collab.prenom} ${collab.nom} - SKIP (utilisateur protégé détecté)`);
+            continue;
+          }
+          
           userIds.push(userId);
           stats.users++;
           
-          // Assigner les rôles
+          // Assigner les rôles (seulement les rôles non-système)
           for (const roleName of collab.roles) {
-            if (roles[roleName]) {
+            if (roles[roleName] && !systemRoles.has(roleName)) {
               await pool.query(
                 `INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)
                  ON CONFLICT (user_id, role_id) DO NOTHING`,
                 [userId, roles[roleName]]
               );
+            } else if (systemRoles.has(roleName)) {
+              console.log(`   ⚠️  Rôle système ${roleName} ignoré pour ${collab.prenom} ${collab.nom}`);
             }
           }
           
-          console.log(`   ✓ ${collab.prenom} ${collab.nom} (${collab.email}) - ${collab.roles.join(', ')}`);
+          console.log(`   ✓ ${collab.prenom} ${collab.nom} (${collab.email}) - ${collab.roles.filter(r => !systemRoles.has(r)).join(', ')}`);
         }
       }
     }
