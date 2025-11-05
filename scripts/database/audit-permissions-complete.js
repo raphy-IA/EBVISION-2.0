@@ -165,7 +165,11 @@ async function auditRoutes() {
         ];
         
         const routes = [];
-        routePatterns.forEach(({ method, regex }) => {
+        
+        // Traiter chaque pattern de route
+        for (const { method, regex } of routePatterns) {
+            // Réinitialiser le regex pour chaque fichier
+            regex.lastIndex = 0;
             let match;
             while ((match = regex.exec(content)) !== null) {
                 const routePath = match[1];
@@ -212,7 +216,7 @@ async function auditRoutes() {
                     });
                 }
             }
-        });
+        }
         
         auditReport.routes.found.push({
             file,
