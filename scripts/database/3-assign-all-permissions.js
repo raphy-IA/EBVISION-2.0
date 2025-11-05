@@ -88,7 +88,46 @@ const ALL_PERMISSIONS = [
     { name: 'API - Gestion des utilisateurs', code: 'api.users.manage', category: 'api' },
     { name: 'API - Gestion des clients', code: 'api.clients.manage', category: 'api' },
     { name: 'API - Gestion des missions', code: 'api.missions.manage', category: 'api' },
-    { name: 'API - Gestion des opportunités', code: 'api.opportunities.manage', category: 'api' }
+    { name: 'API - Gestion des opportunités', code: 'api.opportunities.manage', category: 'api' },
+    
+    // Permissions Clients
+    { name: 'Voir les clients', code: 'clients.view', category: 'clients' },
+    { name: 'Créer des clients', code: 'clients.create', category: 'clients' },
+    { name: 'Modifier les clients', code: 'clients.edit', category: 'clients' },
+    { name: 'Supprimer les clients', code: 'clients.delete', category: 'clients' },
+    
+    // Permissions Missions
+    { name: 'Voir les missions', code: 'missions.view', category: 'missions' },
+    { name: 'Créer des missions', code: 'missions.create', category: 'missions' },
+    { name: 'Modifier les missions', code: 'missions.edit', category: 'missions' },
+    { name: 'Supprimer les missions', code: 'missions.delete', category: 'missions' },
+    
+    // Permissions Opportunités
+    { name: 'Voir les opportunités', code: 'opportunities.view', category: 'opportunities' },
+    { name: 'Créer des opportunités', code: 'opportunities.create', category: 'opportunities' },
+    { name: 'Modifier les opportunités', code: 'opportunities.edit', category: 'opportunities' },
+    { name: 'Supprimer les opportunités', code: 'opportunities.delete', category: 'opportunities' },
+    
+    // Permissions Campagnes
+    { name: 'Voir les campagnes', code: 'campaigns.view', category: 'campaigns' },
+    { name: 'Créer des campagnes', code: 'campaigns.create', category: 'campaigns' },
+    { name: 'Modifier les campagnes', code: 'campaigns.edit', category: 'campaigns' },
+    { name: 'Supprimer les campagnes', code: 'campaigns.delete', category: 'campaigns' },
+    { name: 'Valider les campagnes', code: 'campaigns.validate', category: 'campaigns' },
+    { name: 'Exécuter les campagnes', code: 'campaigns.execute', category: 'campaigns' },
+    
+    // Permissions Config
+    { name: 'Voir la configuration', code: 'config.view', category: 'config' },
+    { name: 'Modifier la configuration', code: 'config.edit', category: 'config' },
+    { name: 'Gérer les permissions', code: 'config.manage_permissions', category: 'config' },
+    { name: 'Administrer la configuration', code: 'config.admin', category: 'config' },
+    
+    // Permissions Dashboard
+    { name: 'Voir le dashboard', code: 'dashboard.view', category: 'dashboard' },
+    
+    // Permissions Rapports
+    { name: 'Voir les rapports', code: 'reports.view', category: 'reports' },
+    { name: 'Créer des rapports', code: 'reports.create', category: 'reports' }
 ];
 
 async function assignAllPermissions() {
