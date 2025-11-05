@@ -147,3 +147,5 @@ Ctrl + Shift + R
 
 **Note** : Ce dossier est spécifique à EB-Vision 2.0. Chaque configuration client a son propre dossier dans `public/assets/brands/`.
 
+
+

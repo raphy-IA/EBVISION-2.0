@@ -365,3 +365,5 @@ Afficher une modale de confirmation avec la liste des permissions qui vont être
 
 
 
+
+

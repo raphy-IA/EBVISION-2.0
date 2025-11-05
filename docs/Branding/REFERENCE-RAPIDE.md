@@ -405,3 +405,5 @@ console.log(window.currentBranding);
 
 ⚡ **Référence rapide. Commandes essentielles. Solutions immédiates.**
 
+
+

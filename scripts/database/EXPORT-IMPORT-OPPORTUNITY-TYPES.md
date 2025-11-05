@@ -152,3 +152,5 @@ Pour sauvegarder régulièrement :
 
 **✅ C'est tout ! Vos types d'opportunités sont maintenant restaurés en production.**
 
+
+

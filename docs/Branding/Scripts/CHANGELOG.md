@@ -266,3 +266,5 @@ Merci à tous les utilisateurs qui ont testé et fourni des retours !
 **Version actuelle** : 2.0.0  
 **Statut** : ✅ Production Ready
 
+
+
