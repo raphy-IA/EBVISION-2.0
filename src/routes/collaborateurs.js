@@ -427,10 +427,10 @@ router.put('/:id/type', async (req, res) => {
 router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN', 'ADMIN_IT']), async (req, res) => {
     try {
         const { id } = req.params;
-        const { login, email, nom, prenom, role, password } = req.body;
+        const { login, email, nom, prenom, roles, password } = req.body;
         
         console.log('📥 Génération de compte utilisateur pour collaborateur:', id);
-        console.log('📋 Données reçues:', { login, email, nom, prenom, role });
+        console.log('📋 Données reçues:', { login, email, nom, prenom, roles });
         
         // Vérifier que le collaborateur existe
         const collaborateur = await Collaborateur.findById(id);
@@ -449,28 +449,50 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
             });
         }
         
-        // Créer le compte utilisateur
-        const UserAccessService = require('../services/userAccessService');
+        // Validation: au moins un rôle doit être fourni
+        if (!roles || !Array.isArray(roles) || roles.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Au moins un rôle doit être sélectionné'
+            });
+        }
+        
+        // Créer le compte utilisateur avec rôles multiples
         const userData = {
             login,
             email,
             nom,
             prenom,
-            role: role || 'USER',
+            roles: roles, // Tableau d'IDs de rôles
             password: password || 'TempPass123!'
         };
         
-        const userAccessResult = await UserAccessService.createUserAccessForCollaborateur({
-            ...collaborateur,
-            ...userData
-        });
+        // Utiliser User.create() qui gère les rôles multiples
+        const newUser = await User.create(userData);
         
-        console.log('✅ Compte utilisateur créé:', userAccessResult);
+        // Lier l'utilisateur au collaborateur
+        await pool.query(`
+            UPDATE collaborateurs 
+            SET user_id = $1 
+            WHERE id = $2
+        `, [newUser.id, id]);
+        
+        console.log('✅ Compte utilisateur créé:', {
+            collaborateur_id: id,
+            user_id: newUser.id,
+            email: email,
+            login: login,
+            roles: roles
+        });
         
         res.json({
             success: true,
             message: 'Compte utilisateur créé avec succès',
-            data: userAccessResult
+            data: {
+                user: newUser,
+                password: password || 'TempPass123!',
+                roles: roles
+            }
         });
         
     } catch (error) {

@@ -1893,98 +1893,230 @@
             new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
         }
 
-        // Charger dynamiquement les rôles depuis l'API et remplir le sélecteur du modal Générer un compte
+        // Charger dynamiquement les rôles depuis l'API et remplir les checkboxes du modal Générer un compte
         async function loadGeneratedRoles() {
             try {
-                const select = document.getElementById('generatedRole');
-                if (!select) return;
-
-                // Indicateur de chargement
-                select.innerHTML = '<option value="">Chargement des rôles...</option>';
-
-                const response = await authenticatedFetch(`${API_BASE_URL}/users/roles`, {
-                    method: 'GET'
-                });
-                const roles = await response.json();
-
-                if (!Array.isArray(roles) || roles.length === 0) {
-                    // Fallback minimal si aucun rôle n'est retourné
-                    select.innerHTML = '<option value="USER">Utilisateur</option>';
+                console.log('🔄 Chargement des rôles pour le modal "Générer un compte utilisateur"...');
+                const rolesContainer = document.getElementById('generatedRolesCheckboxes');
+                if (!rolesContainer) {
+                    console.warn('⚠️ Container generatedRolesCheckboxes non trouvé');
                     return;
                 }
 
-                // Remplir les rôles réels
-                select.innerHTML = '';
-                roles.forEach(role => {
-                    const option = document.createElement('option');
-                    option.value = role.name;
-                    option.textContent = role.description ? `${role.name} - ${role.description}` : role.name;
-                    select.appendChild(option);
+                // Indicateur de chargement
+                rolesContainer.innerHTML = '<div class="col-12"><p class="text-muted">Chargement des rôles...</p></div>';
+
+                const response = await authenticatedFetch(`${API_BASE_URL}/users/roles`, {
+                    method: 'GET',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
                 });
-            } catch (error) {
-                console.error('Erreur lors du chargement des rôles:', error);
-                const select = document.getElementById('generatedRole');
-                if (select) {
-                    // Fallback en cas d'erreur
-                    select.innerHTML = `
-                        <option value="USER">Utilisateur</option>
-                        <option value="ADMIN">Administrateur</option>
-                        <option value="MANAGER">Manager</option>
-                    `;
+
+                console.log('📡 Réponse API rôles modal:', response.status, response.statusText);
+
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
                 }
+
+                const responseData = await response.json();
+                console.log('📋 Réponse API complète:', responseData);
+
+                // Gérer les deux formats de réponse possibles
+                let roles;
+                if (Array.isArray(responseData)) {
+                    // Format direct: [role1, role2, ...]
+                    roles = responseData;
+                } else if (responseData.success && responseData.data) {
+                    // Format avec success: {success: true, data: [...]}
+                    roles = responseData.data;
+                } else {
+                    throw new Error('Format de réponse inattendu');
+                }
+
+                console.log('📋 Rôles extraits pour modal:', roles);
+
+                rolesContainer.innerHTML = '';
+
+                if (roles && roles.length > 0) {
+                    roles.forEach(role => {
+                        const colDiv = document.createElement('div');
+                        colDiv.className = 'col-md-6 mb-2';
+                        
+                        colDiv.innerHTML = `
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="${role.id}" id="generatedRole_${role.id}">
+                                <label class="form-check-label" for="generatedRole_${role.id}">
+                                    <strong>${role.name}</strong>
+                                    ${role.description ? `<br><small class="text-muted">${role.description}</small>` : ''}
+                                </label>
+                            </div>
+                        `;
+                        
+                        rolesContainer.appendChild(colDiv);
+                    });
+                    console.log(`✅ ${roles.length} rôles chargés dans le modal`);
+                } else {
+                    console.warn('⚠️ Aucun rôle trouvé');
+                    rolesContainer.innerHTML = '<div class="col-12"><p class="text-muted">Aucun rôle disponible</p></div>';
+                }
+
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des rôles:', error);
+                const rolesContainer = document.getElementById('generatedRolesCheckboxes');
+                if (rolesContainer) {
+                    rolesContainer.innerHTML = '<div class="col-12"><p class="text-danger">Erreur lors du chargement des rôles</p></div>';
+                }
+                showAlert('Erreur lors du chargement des rôles', 'danger');
             }
         }
 
         // Charger dynamiquement les rôles pour le modal "Gérer le Compte Utilisateur"
-        async function loadEditUserRoles() {
+        async function loadUserRolesForEdit(userId) {
             try {
-                const select = document.getElementById('editUserRole');
-                if (!select) return;
-
-                // Indicateur de chargement
-                select.innerHTML = '<option value="">Chargement des rôles...</option>';
-
-                const response = await authenticatedFetch(`${API_BASE_URL}/users/roles`, {
-                    method: 'GET'
-                });
-                const roles = await response.json();
-
-                if (!Array.isArray(roles) || roles.length === 0) {
-                    // Fallback minimal si aucun rôle n'est retourné
-                    select.innerHTML = `
-                        <option value="">Sélectionner un rôle</option>
-                        <option value="USER">Utilisateur</option>
-                        <option value="ADMIN">Administrateur</option>
-                        <option value="MANAGER">Manager</option>
-                    `;
+                console.log('🔄 Chargement des rôles pour l\'utilisateur:', userId);
+                
+                const container = document.getElementById('editUserRolesContainer');
+                if (!container) {
+                    console.warn('⚠️ Container editUserRolesContainer non trouvé');
                     return;
                 }
-
-                // Remplir les rôles réels
-                select.innerHTML = '<option value="">Sélectionner un rôle</option>';
-                roles.forEach(role => {
-                    const option = document.createElement('option');
-                    option.value = role.name;
-                    option.textContent = role.description ? `${role.name} - ${role.description}` : role.name;
-                    select.appendChild(option);
+                
+                // Charger tous les rôles disponibles
+                const allRolesResponse = await authenticatedFetch(`${API_BASE_URL}/users/roles`);
+                if (!allRolesResponse.ok) {
+                    throw new Error('Erreur lors du chargement des rôles');
+                }
+                const allRolesData = await allRolesResponse.json();
+                // Gérer les deux formats de réponse possibles
+                let allRoles = [];
+                if (Array.isArray(allRolesData)) {
+                    allRoles = allRolesData;
+                } else if (allRolesData.success && allRolesData.data) {
+                    allRoles = allRolesData.data;
+                } else if (allRolesData.data) {
+                    allRoles = allRolesData.data;
+                }
+                console.log('📋 Tous les rôles:', allRoles);
+                
+                // Charger les rôles de l'utilisateur
+                const userRolesResponse = await authenticatedFetch(`${API_BASE_URL}/users/${userId}/roles`);
+                let userRoles = [];
+                if (userRolesResponse.ok) {
+                    const userRolesData = await userRolesResponse.json();
+                    userRoles = userRolesData.data || userRolesData || [];
+                }
+                console.log('📊 Rôles de l\'utilisateur:', userRoles);
+                
+                // Créer les checkboxes avec couleurs
+                const roleColors = {
+                    'SUPER_ADMIN': 'danger',
+                    'ADMIN': 'primary',
+                    'ADMIN_IT': 'info',
+                    'ASSOCIE': 'warning',
+                    'DIRECTEUR': 'success',
+                    'MANAGER': 'secondary',
+                    'SUPERVISEUR': 'dark',
+                    'CONSULTANT': 'light',
+                    'COLLABORATEUR': 'light',
+                    'USER': 'light'
+                };
+                
+                // Générer le HTML des checkboxes (design simple)
+                const rolesHTML = allRoles.map(role => {
+                    const isChecked = userRoles.some(ur => ur.id === role.id || ur === role.id);
+                    const colorClass = roleColors[role.name] || 'secondary';
+                    const textColorClass = ['light', 'warning'].includes(colorClass) ? 'text-dark' : 'text-white';
+                    
+                    return `
+                        <div class="col-12">
+                            <div class="form-check d-flex align-items-center py-1 px-2 role-check-item ${isChecked ? 'role-checked' : ''}" 
+                                 style="border-left: 3px solid transparent; transition: all 0.2s;">
+                                <input class="form-check-input me-2 mt-0" 
+                                       type="checkbox" 
+                                       id="editRole_${role.id}" 
+                                       name="userRoles" 
+                                       value="${role.id}"
+                                       ${isChecked ? 'checked' : ''}
+                                       style="cursor: pointer;">
+                                <label class="form-check-label d-flex align-items-center w-100" 
+                                       for="editRole_${role.id}" 
+                                       style="cursor: pointer; margin-bottom: 0;">
+                                    <span class="badge bg-${colorClass} ${textColorClass} me-2" style="min-width: 120px; font-size: 0.75rem;">${role.name}</span>
+                                    <small class="text-muted" style="font-size: 0.8rem; line-height: 1.2;">${role.description || 'Aucune description'}</small>
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = rolesHTML;
+                console.log('✅ Rôles chargés et affichés');
+                
+                // Ajouter les événements pour l'effet visuel au survol et à la sélection
+                const roleCheckItems = container.querySelectorAll('.role-check-item');
+                roleCheckItems.forEach(item => {
+                    const checkbox = item.querySelector('input[type="checkbox"]');
+                    
+                    // Effet au survol
+                    item.addEventListener('mouseenter', function() {
+                        if (!checkbox.checked) {
+                            this.style.backgroundColor = '#e9ecef';
+                            this.style.borderLeftColor = '#6c757d';
+                        }
+                    });
+                    
+                    item.addEventListener('mouseleave', function() {
+                        if (!checkbox.checked) {
+                            this.style.backgroundColor = 'transparent';
+                            this.style.borderLeftColor = 'transparent';
+                        }
+                    });
+                    
+                    // Effet à la sélection
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            item.classList.add('role-checked');
+                            item.style.backgroundColor = '#e7f3ff';
+                            item.style.borderLeftColor = '#0d6efd';
+                        } else {
+                            item.classList.remove('role-checked');
+                            item.style.backgroundColor = 'transparent';
+                            item.style.borderLeftColor = 'transparent';
+                        }
+                    });
+                    
+                    // Initialiser l'apparence pour les rôles déjà cochés
+                    if (checkbox.checked) {
+                        item.style.backgroundColor = '#e7f3ff';
+                        item.style.borderLeftColor = '#0d6efd';
+                    }
                 });
+                
             } catch (error) {
-                console.error('Erreur lors du chargement des rôles pour édition:', error);
-                const select = document.getElementById('editUserRole');
-                if (select) {
-                    // Fallback en cas d'erreur
-                    select.innerHTML = `
-                        <option value="">Sélectionner un rôle</option>
-                        <option value="USER">Utilisateur</option>
-                        <option value="ADMIN">Administrateur</option>
-                        <option value="MANAGER">Manager</option>
-                        <option value="ASSISTANT">Assistant</option>
-                        <option value="SENIOR">Senior</option>
-                        <option value="DIRECTOR">Directeur</option>
-                        <option value="PARTNER">Partenaire</option>
+                console.error('❌ Erreur lors du chargement des rôles:', error);
+                const container = document.getElementById('editUserRolesContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Erreur lors du chargement des rôles. Veuillez réessayer.
+                            </div>
+                        </div>
                     `;
                 }
             }
+        }
+        
+        /**
+         * Récupérer les rôles sélectionnés
+         * @returns {Array<string>} IDs des rôles sélectionnés
+         */
+        function getSelectedRoles() {
+            const checkboxes = document.querySelectorAll('input[name="userRoles"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
         }
 
         async function generateUserAccount(collaborateurId) {
@@ -2034,7 +2166,6 @@
                     document.getElementById('editUserName').value = user.nom;
                     document.getElementById('editUserEmail').value = user.email;
                     document.getElementById('editUserLogin').value = user.login || '';
-                    document.getElementById('editUserRole').value = user.role;
                     document.getElementById('editUserPassword').value = '';
                     
                     // Désactiver les champs nom, prénom, email (utilisateur lié)
@@ -2060,11 +2191,8 @@
                     document.querySelector('#editUserModal .modal-title').innerHTML = 
                         '<i class="fas fa-user-shield me-2"></i>Gérer le Compte Utilisateur (Lié à Collaborateur)';
                     
-                    // Charger les rôles dynamiquement
-                    await loadEditUserRoles();
-                    
-                    // Remettre la valeur du rôle après le chargement
-                    document.getElementById('editUserRole').value = user.role;
+                    // Charger les rôles dynamiquement avec pré-sélection
+                    await loadUserRolesForEdit(user.id);
                     
                     // Afficher le modal
                     new bootstrap.Modal(document.getElementById('editUserModal')).show();
@@ -2100,11 +2228,17 @@
                 formData.login = loginValue;
             }
 
-            // Ajouter rôle seulement s'il n'est pas vide
-            const roleValue = document.getElementById('editUserRole').value;
-            if (roleValue) {
-                formData.role = roleValue;
+            // Récupérer les rôles sélectionnés
+            const selectedRoles = getSelectedRoles();
+            console.log('📋 Rôles sélectionnés:', selectedRoles);
+            
+            // Vérifier qu'au moins un rôle est sélectionné
+            if (selectedRoles.length === 0) {
+                showAlert('Veuillez sélectionner au moins un rôle', 'warning');
+                return;
             }
+            
+            formData.roles = selectedRoles;
 
             // Ajouter nom, prénom, email seulement si les champs ne sont pas désactivés et pas vides
             const nameField = document.getElementById('editUserName');
@@ -2169,11 +2303,22 @@
             const email = document.getElementById('generatedEmail').value;
             const nom = document.getElementById('generatedNom').value;
             const prenom = document.getElementById('generatedPrenom').value;
-            const role = document.getElementById('generatedRole').value;
             const password = document.getElementById('generatedPassword').value;
+
+            // Récupérer les rôles sélectionnés (IDs des rôles)
+            const selectedRoles = [];
+            const roleCheckboxes = document.querySelectorAll('#generatedRolesCheckboxes input[type="checkbox"]:checked');
+            roleCheckboxes.forEach(checkbox => {
+                selectedRoles.push(checkbox.value); // Les IDs de rôles sont des UUIDs
+            });
 
             if (!login || !email || !nom || !prenom) {
                 showAlert('Veuillez remplir tous les champs obligatoires', 'danger');
+                return;
+            }
+
+            if (selectedRoles.length === 0) {
+                showAlert('Veuillez sélectionner au moins un rôle', 'warning');
                 return;
             }
 
@@ -2190,7 +2335,7 @@
                         email,
                         nom,
                         prenom,
-                        role,
+                        roles: selectedRoles, // Envoyer les rôles multiples (tableau d'IDs)
                         password
                     })
                 });
