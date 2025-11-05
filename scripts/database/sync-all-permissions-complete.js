@@ -256,10 +256,39 @@ async function extractPermissionsFromHTML() {
                     const titleMatch = content.match(/<title>(.*?)<\/title>/i);
                     const title = titleMatch ? titleMatch[1].replace(' - EB-Vision 2.0', '').replace(' - EWM', '').trim() : entry.name.replace('.html', '');
                     
+                    // Déterminer la catégorie basée sur le nom du fichier
+                    let category = 'pages';
+                    const fileName = entry.name.toLowerCase();
+                    
+                    // Catégoriser les pages dashboard
+                    if (fileName.includes('dashboard') || fileName.includes('analytics')) {
+                        category = 'dashboard';
+                    } else if (fileName.includes('report') || fileName.includes('rapport')) {
+                        category = 'reports';
+                    } else if (fileName.includes('client')) {
+                        category = 'clients';
+                    } else if (fileName.includes('mission')) {
+                        category = 'missions';
+                    } else if (fileName.includes('opportunit')) {
+                        category = 'opportunities';
+                    } else if (fileName.includes('campaign') || fileName.includes('prospect')) {
+                        category = 'campaigns';
+                    } else if (fileName.includes('collaborateur') || fileName.includes('grade') || fileName.includes('poste')) {
+                        category = 'hr';
+                    } else if (fileName.includes('time') || fileName.includes('feuille') || fileName.includes('temps')) {
+                        category = 'time';
+                    } else if (fileName.includes('invoice') || fileName.includes('facture')) {
+                        category = 'invoices';
+                    } else if (fileName.includes('user') || fileName.includes('utilisateur')) {
+                        category = 'users';
+                    } else if (fileName.includes('business') || fileName.includes('division') || fileName.includes('fiscal') || fileName.includes('config')) {
+                        category = 'config';
+                    }
+                    
                     permissions.set(permCode, {
                         code: permCode,
                         name: `Accès à ${title}`,
-                        category: 'pages',
+                        category,
                         description: `Permission d'accès à la page ${title}`
                     });
                 } catch (error) {
@@ -417,7 +446,17 @@ function getFunctionalPermissions() {
     
     // Permissions Dashboard
     const dashboardPerms = [
-        { code: 'dashboard.view', name: 'Voir le dashboard', category: 'dashboard' }
+        { code: 'dashboard.view', name: 'Voir le dashboard', category: 'dashboard' },
+        { code: 'dashboard:read', name: 'Voir dashboard', category: 'dashboard' },
+        { code: 'dashboard_analytics:read', name: 'Voir analytics', category: 'dashboard' },
+        { code: 'analytics:read', name: 'Voir analytics', category: 'dashboard' },
+        { code: 'dashboard.personnel', name: 'Dashboard Personnel', category: 'dashboard' },
+        { code: 'dashboard.equipe', name: 'Dashboard Équipe', category: 'dashboard' },
+        { code: 'dashboard.direction', name: 'Dashboard Direction', category: 'dashboard' },
+        { code: 'dashboard.recouvrement', name: 'Dashboard Recouvrement', category: 'dashboard' },
+        { code: 'dashboard.rentabilite', name: 'Dashboard Rentabilité', category: 'dashboard' },
+        { code: 'dashboard.chargeabilite', name: 'Dashboard Chargeabilité', category: 'dashboard' },
+        { code: 'dashboard.optimise', name: 'Dashboard Optimisé', category: 'dashboard' }
     ];
     
     // Permissions Rapports
@@ -455,14 +494,21 @@ async function syncAllPermissions() {
         // 2. Fusionner toutes les permissions
         const allPermissions = new Map();
         
-        [routePerms, htmlPerms, menuPerms, apiPerms, funcPerms].forEach(permMap => {
+        // Priorité: routes > fonctionnelles > pages > menu > API
+        [routePerms, funcPerms, htmlPerms, menuPerms, apiPerms].forEach(permMap => {
             permMap.forEach((perm, code) => {
                 if (!allPermissions.has(code)) {
                     allPermissions.set(code, perm);
                 } else {
                     // Mettre à jour si la catégorie est plus spécifique
                     const existing = allPermissions.get(code);
-                    if (existing.category === 'menu' && perm.category !== 'menu') {
+                    // Garder la catégorie la plus spécifique (dashboard > pages, clients > pages, etc.)
+                    const priorityCategories = ['dashboard', 'clients', 'missions', 'opportunities', 'campaigns', 'reports', 'hr', 'time', 'invoices', 'users', 'config'];
+                    if (priorityCategories.includes(perm.category) && !priorityCategories.includes(existing.category)) {
+                        allPermissions.set(code, perm);
+                    } else if (existing.category === 'menu' && perm.category !== 'menu') {
+                        allPermissions.set(code, perm);
+                    } else if (existing.category === 'pages' && perm.category !== 'pages' && perm.category !== 'menu') {
                         allPermissions.set(code, perm);
                     }
                 }
