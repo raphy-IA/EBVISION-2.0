@@ -659,11 +659,17 @@ async function generateDemoData() {
           userId = existing.id;
           console.log(`   ℹ Utilisateur ${collab.email} existe déjà (ID: ${userId})`);
         } else {
+          // Utiliser le premier rôle comme valeur legacy pour la colonne role (NOT NULL)
+          // Les rôles multiples seront gérés via user_roles
+          const legacyRole = collab.roles && collab.roles.length > 0 
+            ? collab.roles[0] 
+            : 'COLLABORATEUR';
+          
           const userResult = await pool.query(
             `INSERT INTO users (nom, prenom, email, password_hash, login, collaborateur_id, statut, role)
-             VALUES ($1, $2, $3, $4, $5, $6, 'ACTIF', NULL)
+             VALUES ($1, $2, $3, $4, $5, $6, 'ACTIF', $7)
              RETURNING id`,
-          [collab.nom, collab.prenom, collab.email, passwordHash, login, collabId]
+          [collab.nom, collab.prenom, collab.email, passwordHash, login, collabId, legacyRole]
           );
           userId = userResult.rows[0].id;
         }
