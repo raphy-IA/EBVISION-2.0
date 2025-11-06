@@ -463,9 +463,21 @@ router.get('/history', authenticateToken, async (req, res) => {
             console.warn('Erreur lors de la vérification de la colonne campaign_id:', error.message);
         }
         
+        // Construire la liste des colonnes explicitement pour éviter n.*
+        // Cela permet de gérer l'absence de campaign_id si nécessaire
+        let notificationColumns = [
+            'n.id', 'n.type', 'n.title', 'n.message', 'n.user_id', 
+            'n.opportunity_id', 'n.stage_id', 'n.read', 'n.created_at'
+        ];
+        
+        // Ajouter campaign_id seulement si la colonne existe
+        if (campaignIdExists) {
+            notificationColumns.push('n.campaign_id');
+        }
+        
         let query = `
             SELECT 
-                n.*,
+                ${notificationColumns.join(', ')},
                 u.nom as user_nom,
                 u.prenom as user_prenom,
                 u.login as user_login,
