@@ -4,8 +4,13 @@
  * SCRIPT DE VÉRIFICATION ET CORRECTION DE LA BASE DE DONNÉES
  * ===========================================================
  * 
- * Ce script vérifie que la structure de la base de données correspond
- * exactement à celle attendue et corrige les différences.
+ * ⚠️  SÉCURITÉ : Ce script est SÛR et ne modifie JAMAIS les données existantes
+ * 
+ * - ✅ AJOUTE uniquement des colonnes/tables MANQUANTES
+ * - ✅ Utilise IF NOT EXISTS pour éviter les doublons
+ * - ❌ NE SUPPRIME JAMAIS de données
+ * - ❌ NE MODIFIE JAMAIS les données existantes
+ * - ❌ NE SUPPRIME JAMAIS de colonnes ou tables
  * 
  * Usage: node scripts/database/verify-and-fix-database.js
  */
@@ -371,5 +376,5 @@ if (require.main === module) {
     verifyAndFixDatabase().catch(console.error);
 }
 
-module.exports = { verifyAndFixDatabase, EXPECTED_SCHEMA };
+module.exports = { verifyAndFixDatabase, EXPECTED_SCHEMA, tableExists, columnExists };
 

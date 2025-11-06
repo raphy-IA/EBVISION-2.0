@@ -2,8 +2,20 @@
 -- SCRIPT SQL COMPLET : CORRECTION DE LA BASE DE DONNÉES
 -- ============================================================
 -- 
+-- ⚠️  SÉCURITÉ : Ce script est SÛR et ne modifie JAMAIS les données existantes
+-- 
+-- ✅ Ce script AJOUTE uniquement :
+--    - Des colonnes manquantes (avec IF NOT EXISTS)
+--    - Des tables optionnelles manquantes (avec IF NOT EXISTS)
+--    - Change le propriétaire des tables (pour les permissions)
+-- 
+-- ❌ Ce script NE FAIT JAMAIS :
+--    - Supprimer des données
+--    - Modifier des données existantes
+--    - Supprimer des colonnes ou tables
+--    - Écraser des données
+--
 -- Ce script doit être exécuté en tant que superuser (postgres)
--- Il corrige toutes les différences de structure identifiées
 --
 -- Usage: sudo -u postgres psql -d ewm_db -f scripts/database/fix-database-complete.sql
 -- ============================================================
