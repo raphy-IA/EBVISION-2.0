@@ -32,21 +32,24 @@ const pool = new Pool({
 });
 
 /**
- * Nettoyer une chaîne des références hardcodées à "EB Vision"
- * Note: On garde les références génériques (EWM, etc.) qui peuvent être personnalisées via le branding
+ * Anonymiser toutes les références hardcodées à "EB Vision" / "EBVISION"
+ * Note: On garde seulement les termes génériques fonctionnels
  */
 function cleanBrandingReferences(text) {
     if (!text) return text;
     
-    // Nettoyer seulement les références hardcodées spécifiques à "EB Vision"
-    // On garde les références génériques qui peuvent être dans le branding du client
+    // Anonymiser toutes les références hardcodées (EB Vision, EBVISION, etc.)
     return text
         .replace(/ - EB-Vision 2\.0/gi, '')
         .replace(/ - EB Vision 2\.0/gi, '')
+        .replace(/ - EBVISION 2\.0/gi, '')
+        .replace(/ - EBVISION/gi, '')
         .replace(/\bEB-Vision 2\.0\b/gi, '')
         .replace(/\bEB Vision 2\.0\b/gi, '')
+        .replace(/\bEBVISION 2\.0\b/gi, '')
         .replace(/\bEB-Vision\b/gi, '')
         .replace(/\bEB Vision\b/gi, '')
+        .replace(/\bEBVISION\b/gi, '')
         // Ne pas supprimer "EWM" ou autres noms génériques qui peuvent être dans le branding
         .trim();
 }

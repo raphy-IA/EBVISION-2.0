@@ -256,17 +256,23 @@ async function extractPermissionsFromHTML() {
                     const titleMatch = content.match(/<title>(.*?)<\/title>/i);
                     let title = titleMatch ? titleMatch[1] : entry.name.replace('.html', '');
                     
-                    // Nettoyer seulement les références hardcodées spécifiques à "EB Vision"
-                    // On garde les références génériques qui peuvent être personnalisées via le branding
+                    // Anonymiser toutes les références hardcodées à "EB Vision" / "EBVISION"
                     title = title
                         .replace(/ - EB-Vision 2\.0/gi, '')
                         .replace(/ - EB Vision 2\.0/gi, '')
+                        .replace(/ - EBVISION 2\.0/gi, '')
+                        .replace(/ - EBVISION/gi, '')
                         .replace(/\bEB-Vision 2\.0\b/gi, '')
                         .replace(/\bEB Vision 2\.0\b/gi, '')
+                        .replace(/\bEBVISION 2\.0\b/gi, '')
                         .replace(/\bEB-Vision\b/gi, '')
                         .replace(/\bEB Vision\b/gi, '')
+                        .replace(/\bEBVISION\b/gi, '')
                         // Ne pas supprimer "EWM" ou autres noms génériques qui peuvent être dans le branding
                         .trim();
+                    
+                    // Nettoyer les tirets en début/fin qui peuvent rester
+                    title = title.replace(/^[\s\-]+/g, '').replace(/[\s\-]+$/g, '').trim();
                     
                     // Déterminer la catégorie basée sur le nom du fichier
                     let category = 'pages';

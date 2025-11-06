@@ -96,17 +96,24 @@ async function auditPages() {
                         
                         // Extraire le titre
                         const titleMatch = content.match(/<title>(.*?)<\/title>/i);
-                        const title = titleMatch 
+                        let title = titleMatch 
                             ? titleMatch[1]
                                 .replace(/ - EB-Vision 2\.0/gi, '')
                                 .replace(/ - EB Vision 2\.0/gi, '')
+                                .replace(/ - EBVISION 2\.0/gi, '')
+                                .replace(/ - EBVISION/gi, '')
                                 .replace(/\bEB-Vision 2\.0\b/gi, '')
                                 .replace(/\bEB Vision 2\.0\b/gi, '')
+                                .replace(/\bEBVISION 2\.0\b/gi, '')
                                 .replace(/\bEB-Vision\b/gi, '')
                                 .replace(/\bEB Vision\b/gi, '')
+                                .replace(/\bEBVISION\b/gi, '')
                                 // Ne pas supprimer "EWM" ou autres noms génériques du branding
                                 .trim() 
                             : entry.name.replace('.html', '');
+                        
+                        // Nettoyer les tirets en début/fin qui peuvent rester
+                        title = title.replace(/^[\s\-]+/g, '').replace(/[\s\-]+$/g, '').trim();
                         
                         // Générer le code de permission attendu
                         const urlPath = '/' + relativePath.replace(/\\/g, '/');
