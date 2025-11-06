@@ -255,6 +255,46 @@ router.get('/roles/:id/permissions', requireAdminPermission, async (req, res) =>
     }
 });
 
+// GET /api/permissions/roles/:id/users - Utilisateurs ayant un rôle spécifique
+router.get('/roles/:id/users', requireAdminPermission, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const client = await pool.connect();
+        
+        // Récupérer le rôle
+        const roleResult = await client.query(`
+            SELECT id, name, description
+            FROM roles
+            WHERE id = $1
+        `, [id]);
+        
+        if (roleResult.rows.length === 0) {
+            client.release();
+            return res.status(404).json({ error: 'Rôle non trouvé' });
+        }
+        
+        // Récupérer tous les utilisateurs ayant ce rôle
+        const usersResult = await client.query(`
+            SELECT DISTINCT u.id, u.nom, u.prenom, u.email, u.login
+            FROM users u
+            JOIN user_roles ur ON u.id = ur.user_id
+            WHERE ur.role_id = $1
+            ORDER BY u.nom, u.prenom
+        `, [id]);
+        
+        client.release();
+        
+        res.json({
+            role: roleResult.rows[0],
+            users: usersResult.rows
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des utilisateurs du rôle:', error);
+        res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+});
+
 // POST /api/permissions/roles/:roleId/permissions/:permissionId - Accorder une permission à un rôle
 router.post('/roles/:roleId/permissions/:permissionId', requireAdminPermission, async (req, res) => {
     try {
@@ -393,7 +433,37 @@ router.get('/users', requireAdminPermission, async (req, res) => {
         const result = await client.query(query);
         client.release();
         
-        res.json(result.rows);
+        // Pour chaque utilisateur, récupérer la liste de ses rôles (via user_roles)
+        const usersWithRoles = await Promise.all(result.rows.map(async (user) => {
+            try {
+                const rolesQuery = `
+                    SELECT r.id, r.name, r.description
+                    FROM user_roles ur
+                    JOIN roles r ON ur.role_id = r.id
+                    WHERE ur.user_id = $1
+                    ORDER BY r.name
+                `;
+                const rolesResult = await client.query(rolesQuery, [user.id]);
+                const roles = rolesResult.rows.map(row => row.name).join(', ');
+                
+                return {
+                    ...user,
+                    roles: rolesResult.rows, // Liste complète des rôles
+                    roles_display: roles || 'Aucun rôle' // Pour affichage
+                };
+            } catch (error) {
+                console.error(`Erreur lors de la récupération des rôles pour l'utilisateur ${user.id}:`, error);
+                return {
+                    ...user,
+                    roles: [],
+                    roles_display: 'Aucun rôle'
+                };
+            }
+        }));
+
+        client.release();
+        
+        res.json(usersWithRoles);
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs:', error);
         res.status(500).json({ error: 'Erreur interne du serveur' });

@@ -5,6 +5,7 @@ class PermissionsAdmin {
         this.currentUser = null;
         this.currentBusinessUnit = null;
         this.currentUserForRoles = null;
+        this.currentRoleForUsers = null;
         this.init();
     }
 
@@ -807,13 +808,65 @@ class PermissionsAdmin {
         }
     }
 
-    // ===== GESTION DES RÔLES MULTIPLES =====
+    // ===== GESTION DES RÔLES UTILISATEURS (LOGIQUE: Rôles → Utilisateurs) =====
     async loadUsersForRoles() {
         try {
-            const response = await authenticatedFetch('/api/permissions/users');
+            // Charger les rôles pour l'onglet "Rôles Utilisateurs"
+            const response = await authenticatedFetch('/api/permissions/roles');
             if (response.ok) {
-                const users = await response.json();
-                this.displayUsersForRoles(users);
+                const roles = await response.json();
+                this.displayRolesForUsers(roles);
+            } else {
+                this.showAlert('Erreur lors du chargement des rôles', 'danger');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            this.showAlert('Erreur lors du chargement des rôles', 'danger');
+        }
+    }
+
+    displayRolesForUsers(roles) {
+        const container = document.getElementById('user-roles-list');
+        if (!container) return;
+
+        if (roles.length === 0) {
+            container.innerHTML = '<p class="text-muted">Aucun rôle trouvé</p>';
+            return;
+        }
+
+        container.innerHTML = roles.map(role => `
+            <div class="role-item mb-2 p-2 border rounded cursor-pointer ${this.currentRoleForUsers === role.id ? 'bg-primary text-white' : 'bg-light'}" 
+                 onclick="permissionsAdmin.selectRoleForUsers('${role.id}')">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${role.name}</strong>
+                        ${role.is_system_role ? '<span class="badge bg-warning ms-1">Système</span>' : ''}
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <small class="${this.currentRoleForUsers === role.id ? 'text-white-50' : 'text-muted'}">${role.description || 'Aucune description'}</small>
+            </div>
+        `).join('');
+    }
+
+    async selectRoleForUsers(roleId) {
+        this.currentRoleForUsers = roleId;
+        await this.loadUsersForRole(roleId);
+        this.loadUsersForRoles(); // Recharger pour mettre à jour la sélection
+    }
+
+    async loadUsersForRole(roleId) {
+        try {
+            const response = await authenticatedFetch(`/api/permissions/roles/${roleId}/users`);
+            if (response.ok) {
+                const data = await response.json();
+                this.displayUsersForRole(data);
+                
+                // Activer le bouton "Ajouter un Utilisateur"
+                const addBtn = document.getElementById('add-user-to-role-btn');
+                if (addBtn) {
+                    addBtn.disabled = false;
+                }
             } else {
                 this.showAlert('Erreur lors du chargement des utilisateurs', 'danger');
             }
@@ -823,37 +876,69 @@ class PermissionsAdmin {
         }
     }
 
-    displayUsersForRoles(users) {
-        const container = document.getElementById('user-roles-list');
+    displayUsersForRole(data) {
+        const container = document.getElementById('role-users-content');
         if (!container) return;
 
-        if (users.length === 0) {
-            container.innerHTML = '<p class="text-muted">Aucun utilisateur trouvé</p>';
+        const { role, users } = data;
+
+        container.innerHTML = `
+            <div class="mb-3">
+                <h6>Rôle: ${role.name}</h6>
+                <p class="text-muted">${role.description || 'Aucune description'}</p>
+            </div>
+            ${users.length > 0 ? `
+                <div class="list-group">
+                    ${users.map(user => `
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">${user.nom} ${user.prenom}</h6>
+                                    <small class="text-muted">${user.email}</small>
+                                </div>
+                                <button class="btn btn-outline-danger btn-sm" 
+                                        onclick="permissionsAdmin.removeUserFromRole('${role.id}', '${user.id}', '${user.nom} ${user.prenom}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : '<p class="text-muted">Aucun utilisateur avec ce rôle</p>'}
+        `;
+    }
+
+    filterRolesForUsers(searchTerm) {
+        const roleItems = document.querySelectorAll('#user-roles-list .role-item');
+        roleItems.forEach(item => {
+            const roleText = item.textContent.toLowerCase();
+            const matches = roleText.includes(searchTerm.toLowerCase());
+            item.style.display = matches ? 'block' : 'none';
+        });
+    }
+
+    async removeUserFromRole(roleId, userId, userName) {
+        if (!confirm(`Êtes-vous sûr de vouloir retirer le rôle de l'utilisateur "${userName}" ?`)) {
             return;
         }
 
-        container.innerHTML = users.map(user => `
-            <div class="list-group-item list-group-item-action user-item" 
-                 data-user-id="${user.id}" 
-                 data-user-name="${user.nom} ${user.prenom}"
-                 onclick="selectUserForRoles('${user.id}', '${user.nom} ${user.prenom}')">
-                <div class="d-flex w-100 justify-content-between">
-                    <h6 class="mb-1">${user.nom} ${user.prenom}</h6>
-                    <small class="text-muted">${user.email}</small>
-                </div>
-                <p class="mb-1 text-muted">${user.role || 'Aucun rôle'}</p>
-            </div>
-        `).join('');
-    }
+        try {
+            const response = await authenticatedFetch(`/api/users/${userId}/roles/${roleId}`, {
+                method: 'DELETE'
+            });
 
-    filterUsersForRoles(searchTerm) {
-        const userItems = document.querySelectorAll('#user-roles-list .user-item');
-        userItems.forEach(item => {
-            const userName = item.dataset.userName.toLowerCase();
-            const email = item.querySelector('small').textContent.toLowerCase();
-            const matches = userName.includes(searchTerm.toLowerCase()) || email.includes(searchTerm.toLowerCase());
-            item.style.display = matches ? 'block' : 'none';
-        });
+            if (response.ok) {
+                this.showAlert('Rôle retiré avec succès', 'success');
+                // Recharger les utilisateurs du rôle
+                await this.loadUsersForRole(roleId);
+            } else {
+                const error = await response.json();
+                this.showAlert(error.message || 'Erreur lors de la suppression du rôle', 'danger');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            this.showAlert('Erreur lors de la suppression du rôle', 'danger');
+        }
     }
 
     // ===== GESTION DES PERMISSIONS DE MENU =====
@@ -1443,7 +1528,7 @@ function displayUsersForRoles(users) {
                 <h6 class="mb-1">${user.nom} ${user.prenom}</h6>
                 <small class="text-muted">${user.email}</small>
             </div>
-            <p class="mb-1 text-muted">${user.role || 'Aucun rôle'}</p>
+                <p class="mb-1 text-muted">${user.roles_display || 'Aucun rôle'}</p>
         </div>
     `).join('');
 }
@@ -1834,6 +1919,124 @@ async function checkSuperAdminAndShowSyncButton() {
         }
     } catch (error) {
         console.error('❌ Erreur lors de la vérification du rôle SUPER_ADMIN:', error);
+    }
+}
+
+// Fonction pour afficher le modal d'ajout d'utilisateur à un rôle
+async function showAddUserToRoleModal() {
+    if (!permissionsAdmin.currentRoleForUsers) {
+        permissionsAdmin.showAlert('Veuillez sélectionner un rôle', 'warning');
+        return;
+    }
+
+    // Charger tous les utilisateurs
+    try {
+        const response = await authenticatedFetch('/api/permissions/users');
+        if (!response.ok) {
+            permissionsAdmin.showAlert('Erreur lors du chargement des utilisateurs', 'danger');
+            return;
+        }
+
+        const allUsers = await response.json();
+        
+        // Récupérer les utilisateurs qui ont déjà ce rôle
+        const roleUsersResponse = await authenticatedFetch(`/api/permissions/roles/${permissionsAdmin.currentRoleForUsers}/users`);
+        let roleUsers = [];
+        if (roleUsersResponse.ok) {
+            const roleUsersData = await roleUsersResponse.json();
+            roleUsers = roleUsersData.users || [];
+        }
+
+        // Filtrer les utilisateurs qui n'ont pas déjà ce rôle
+        const availableUsers = allUsers.filter(user => 
+            !roleUsers.some(roleUser => roleUser.id === user.id)
+        );
+
+        // Créer et afficher le modal
+        const modalHtml = `
+            <div class="modal fade" id="addUserToRoleModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Ajouter un utilisateur au rôle</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Sélectionner un utilisateur</label>
+                                <select class="form-select" id="userToAddToRole">
+                                    <option value="">Sélectionner un utilisateur</option>
+                                    ${availableUsers.map(user => `
+                                        <option value="${user.id}">${user.nom} ${user.prenom} (${user.email})</option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="button" class="btn btn-primary" onclick="addUserToRole()">Ajouter</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Supprimer le modal existant s'il y en a un
+        const existingModal = document.getElementById('addUserToRoleModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Ajouter le modal au DOM
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Afficher le modal
+        const modal = new bootstrap.Modal(document.getElementById('addUserToRoleModal'));
+        modal.show();
+    } catch (error) {
+        console.error('Erreur:', error);
+        permissionsAdmin.showAlert('Erreur lors du chargement des utilisateurs', 'danger');
+    }
+}
+
+// Fonction pour ajouter un utilisateur à un rôle
+async function addUserToRole() {
+    const userId = document.getElementById('userToAddToRole').value;
+    if (!userId) {
+        permissionsAdmin.showAlert('Veuillez sélectionner un utilisateur', 'warning');
+        return;
+    }
+
+    if (!permissionsAdmin.currentRoleForUsers) {
+        permissionsAdmin.showAlert('Aucun rôle sélectionné', 'warning');
+        return;
+    }
+
+    try {
+        const response = await authenticatedFetch(`/api/users/${userId}/roles`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ roleId: permissionsAdmin.currentRoleForUsers })
+        });
+
+        if (response.ok) {
+            permissionsAdmin.showAlert('Utilisateur ajouté au rôle avec succès', 'success');
+            
+            // Fermer le modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addUserToRoleModal'));
+            modal.hide();
+            
+            // Recharger les utilisateurs du rôle
+            await permissionsAdmin.loadUsersForRole(permissionsAdmin.currentRoleForUsers);
+        } else {
+            const error = await response.json();
+            permissionsAdmin.showAlert(error.message || 'Erreur lors de l\'ajout de l\'utilisateur au rôle', 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        permissionsAdmin.showAlert('Erreur lors de l\'ajout de l\'utilisateur au rôle', 'danger');
     }
 }
 
