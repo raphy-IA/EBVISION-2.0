@@ -252,9 +252,21 @@ async function extractPermissionsFromHTML() {
                     const relativePath = path.relative(PUBLIC_DIR, fullPath);
                     const permCode = `page.${relativePath.replace(/\\/g, '/').replace('.html', '').replace(/\//g, '_')}`;
                     
-                    // Extraire le titre
+                    // Extraire le titre et nettoyer toutes les références de branding
                     const titleMatch = content.match(/<title>(.*?)<\/title>/i);
-                    const title = titleMatch ? titleMatch[1].replace(' - EB-Vision 2.0', '').replace(' - EWM', '').trim() : entry.name.replace('.html', '');
+                    let title = titleMatch ? titleMatch[1] : entry.name.replace('.html', '');
+                    
+                    // Nettoyer toutes les références de branding (EB Vision, EB-Vision, EWM, etc.)
+                    title = title
+                        .replace(/ - EB-Vision 2\.0/gi, '')
+                        .replace(/ - EB Vision 2\.0/gi, '')
+                        .replace(/ - EWM/gi, '')
+                        .replace(/ - ENTERPRISE WORKFLOW MANAGEMENT/gi, '')
+                        .replace(/EB-Vision 2\.0/gi, '')
+                        .replace(/EB Vision 2\.0/gi, '')
+                        .replace(/EB-Vision/gi, '')
+                        .replace(/EB Vision/gi, '')
+                        .trim();
                     
                     // Déterminer la catégorie basée sur le nom du fichier
                     let category = 'pages';

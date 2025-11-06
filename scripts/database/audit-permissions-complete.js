@@ -97,7 +97,16 @@ async function auditPages() {
                         // Extraire le titre
                         const titleMatch = content.match(/<title>(.*?)<\/title>/i);
                         const title = titleMatch 
-                            ? titleMatch[1].replace(' - EB-Vision 2.0', '').replace(' - EWM', '').trim() 
+                            ? titleMatch[1]
+                                .replace(/ - EB-Vision 2\.0/gi, '')
+                                .replace(/ - EB Vision 2\.0/gi, '')
+                                .replace(/ - EWM/gi, '')
+                                .replace(/ - ENTERPRISE WORKFLOW MANAGEMENT/gi, '')
+                                .replace(/EB-Vision 2\.0/gi, '')
+                                .replace(/EB Vision 2\.0/gi, '')
+                                .replace(/EB-Vision/gi, '')
+                                .replace(/EB Vision/gi, '')
+                                .trim() 
                             : entry.name.replace('.html', '');
                         
                         // Générer le code de permission attendu
