@@ -5,6 +5,7 @@ class EmailService {
     constructor() {
         this.transporter = null;
         this.isConfigured = false;
+        this.warningLogged = false; // Pour éviter les répétitions d'avertissements
         this.initTransporter();
     }
     
@@ -18,7 +19,11 @@ class EmailService {
             const emailPassword = process.env.EMAIL_PASSWORD;
             
             if (!emailUser || !emailPassword) {
-                console.warn('⚠️ Service email non configuré: paramètres manquants');
+                if (!this.warningLogged) {
+                    console.warn('⚠️ Service email non configuré: paramètres manquants (EMAIL_USER, EMAIL_PASSWORD)');
+                    console.warn('   Les emails ne seront pas envoyés. Pour activer, configurez les variables d\'environnement.');
+                    this.warningLogged = true;
+                }
                 this.isConfigured = false;
                 return;
             }
@@ -35,7 +40,10 @@ class EmailService {
             this.isConfigured = true;
             console.log('✅ Service email configuré');
         } catch (error) {
-            console.warn('⚠️ Service email non configuré:', error.message);
+            if (!this.warningLogged) {
+                console.warn('⚠️ Service email non configuré:', error.message);
+                this.warningLogged = true;
+            }
             this.isConfigured = false;
         }
     }
@@ -45,7 +53,7 @@ class EmailService {
      */
     async sendNotificationEmail(to, subject, htmlContent, textContent = null) {
         if (!this.isConfigured) {
-            console.warn('⚠️ Service email non configuré, email non envoyé');
+            // Ne pas logger à chaque tentative d'envoi pour éviter le spam de logs
             return false;
         }
         
