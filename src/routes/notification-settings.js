@@ -450,17 +450,29 @@ router.get('/history', authenticateToken, async (req, res) => {
         // Vérifier si la colonne campaign_id existe dans notifications
         let campaignIdExists = false;
         try {
-            const columnCheck = await pool.query(`
+            // Vérifier d'abord si la table notifications existe
+            const tableCheck = await pool.query(`
                 SELECT EXISTS (
-                    SELECT FROM information_schema.columns 
+                    SELECT FROM information_schema.tables 
                     WHERE table_schema = 'public' 
-                    AND table_name = 'notifications' 
-                    AND column_name = 'campaign_id'
+                    AND table_name = 'notifications'
                 )
             `);
-            campaignIdExists = columnCheck.rows[0].exists;
+            
+            if (tableCheck.rows[0].exists) {
+                const columnCheck = await pool.query(`
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.columns 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'notifications' 
+                        AND column_name = 'campaign_id'
+                    )
+                `);
+                campaignIdExists = columnCheck.rows[0].exists;
+            }
         } catch (error) {
             console.warn('Erreur lors de la vérification de la colonne campaign_id:', error.message);
+            campaignIdExists = false; // Par sécurité, on considère que la colonne n'existe pas
         }
         
         // Construire la liste des colonnes explicitement pour éviter n.*

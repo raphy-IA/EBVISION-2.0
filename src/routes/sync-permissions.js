@@ -198,16 +198,46 @@ async function syncPages(htmlFiles) {
                     skipped++;
                 }
             } else {
-                // Ajouter la nouvelle page
-                await pool.query(
-                    `INSERT INTO pages (title, url, created_at, updated_at)
-                     VALUES ($1, $2, NOW(), NOW())`,
-                    [file.title, file.path]
-                );
-                added++;
+                // Vérifier si la colonne url existe avant d'insérer
+                try {
+                    const columnCheck = await pool.query(`
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.columns 
+                            WHERE table_schema = 'public' 
+                            AND table_name = 'pages' 
+                            AND column_name = 'url'
+                        )
+                    `);
+                    
+                    if (columnCheck.rows[0].exists) {
+                        // Ajouter la nouvelle page
+                        await pool.query(
+                            `INSERT INTO pages (title, url, created_at, updated_at)
+                             VALUES ($1, $2, NOW(), NOW())`,
+                            [file.title, file.path]
+                        );
+                        added++;
+                    } else {
+                        console.warn(`⚠️  Colonne "url" manquante dans "pages", page ${file.path} ignorée`);
+                        skipped++;
+                    }
+                } catch (insertError) {
+                    // Si l'insertion échoue à cause de la colonne manquante, on ignore
+                    if (insertError.message.includes('column') && insertError.message.includes('url')) {
+                        console.warn(`⚠️  Colonne "url" manquante dans "pages", page ${file.path} ignorée`);
+                        skipped++;
+                    } else {
+                        throw insertError; // Re-lancer les autres erreurs
+                    }
+                }
             }
         } catch (error) {
-            console.error(`Erreur pour la page ${file.path}:`, error.message);
+            // Ignorer seulement les erreurs liées à la colonne url manquante
+            if (error.message.includes('column') && error.message.includes('url')) {
+                console.warn(`⚠️  Colonne "url" manquante dans "pages", page ${file.path} ignorée`);
+            } else {
+                console.error(`Erreur pour la page ${file.path}:`, error.message);
+            }
         }
     }
 
@@ -237,48 +267,61 @@ async function syncMenus(menuStructure) {
 
     for (const section of menuStructure) {
         try {
-            // Gérer la section de menu avec gestion des doublons
+            // Vérifier si la section existe déjà par code OU par name (car contrainte unique sur name)
             const existingSection = await pool.query(
-                'SELECT id FROM menu_sections WHERE code = $1',
-                [section.code]
+                'SELECT id FROM menu_sections WHERE code = $1 OR name = $2',
+                [section.code, section.section]
             );
 
             let sectionId;
             if (existingSection.rows.length > 0) {
                 sectionId = existingSection.rows[0].id;
-                await pool.query(
-                    'UPDATE menu_sections SET name = $1, updated_at = NOW() WHERE id = $2',
-                    [section.section, sectionId]
-                );
-                sectionsUpdated++;
+                // Mettre à jour seulement si nécessaire
+                try {
+                    await pool.query(
+                        'UPDATE menu_sections SET code = $1, name = $2, updated_at = NOW() WHERE id = $3',
+                        [section.code, section.section, sectionId]
+                    );
+                    sectionsUpdated++;
+                } catch (updateError) {
+                    // Si la mise à jour échoue à cause d'une contrainte unique, on ignore
+                    if (updateError.code === '23505' || updateError.message.includes('unique')) {
+                        console.warn(`⚠️  Section "${section.section}" existe déjà, ignorée`);
+                        sectionsUpdated++; // On considère qu'elle a été mise à jour
+                    } else {
+                        throw updateError;
+                    }
+                }
             } else {
-                // Utiliser ON CONFLICT pour éviter les doublons
+                // Essayer d'insérer la nouvelle section
                 try {
                     const result = await pool.query(
                         `INSERT INTO menu_sections (code, name, created_at, updated_at)
                          VALUES ($1, $2, NOW(), NOW())
-                         ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name, updated_at = NOW()
                          RETURNING id`,
                         [section.code, section.section]
                     );
                     sectionId = result.rows[0].id;
                     sectionsAdded++;
                 } catch (insertError) {
-                    // Si ON CONFLICT n'est pas supporté, réessayer avec une requête SELECT
-                    if (insertError.code === '42P01' || insertError.message.includes('ON CONFLICT')) {
-                        // Vérifier à nouveau après l'erreur
+                    // Gérer les erreurs de contrainte unique (sur name)
+                    if (insertError.code === '23505' || insertError.message.includes('unique')) {
+                        // La section existe déjà par name, récupérer son ID
                         const retryResult = await pool.query(
-                            'SELECT id FROM menu_sections WHERE code = $1',
-                            [section.code]
+                            'SELECT id FROM menu_sections WHERE name = $1',
+                            [section.section]
                         );
                         if (retryResult.rows.length > 0) {
                             sectionId = retryResult.rows[0].id;
                             sectionsUpdated++;
+                            console.warn(`⚠️  Section "${section.section}" existe déjà, récupération de l'ID`);
                         } else {
-                            throw insertError;
+                            console.error(`Erreur pour la section ${section.section}:`, insertError.message);
+                            continue; // Passer à la section suivante
                         }
                     } else {
-                        throw insertError;
+                        console.error(`Erreur pour la section ${section.section}:`, insertError.message);
+                        continue; // Passer à la section suivante
                     }
                 }
             }

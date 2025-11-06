@@ -19,11 +19,29 @@ class TwoFactorAuthService {
                 length: 32
             });
             
-            // Sauvegarder le secret en base (temporairement, en attendant la validation)
-            await pool.query(
-                'UPDATE users SET two_factor_secret = $1, two_factor_enabled = false WHERE id = $2',
-                [secret.base32, userId]
-            );
+            // Vérifier si les colonnes 2FA existent
+            const columnCheck = await pool.query(`
+                SELECT EXISTS (
+                    SELECT FROM information_schema.columns 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'users' 
+                    AND column_name IN ('two_factor_secret', 'two_factor_enabled')
+                )
+            `);
+            
+            const has2FAColumns = columnCheck.rows.some(row => row.exists);
+            
+            if (has2FAColumns) {
+                // Sauvegarder le secret en base (temporairement, en attendant la validation)
+                await pool.query(
+                    'UPDATE users SET two_factor_secret = $1, two_factor_enabled = false WHERE id = $2',
+                    [secret.base32, userId]
+                );
+            } else {
+                // Si les colonnes n'existent pas, seulement sauvegarder dans la session ou retourner l'erreur
+                console.warn('⚠️ Colonnes 2FA non disponibles, impossible de sauvegarder le secret');
+                throw new Error('Fonctionnalité 2FA non disponible (colonnes manquantes)');
+            }
             
             return {
                 secret: secret.base32,
