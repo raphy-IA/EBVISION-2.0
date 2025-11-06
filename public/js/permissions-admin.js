@@ -173,6 +173,9 @@ class PermissionsAdmin {
     groupPermissionsByCategory(allPermissions, grantedPermissions) {
         const categories = {};
         
+        // Créer un Set des IDs accordés pour une recherche plus rapide
+        const grantedIds = new Set(grantedPermissions.map(gp => String(gp.id)));
+        
         allPermissions.forEach(perm => {
             if (!categories[perm.category]) {
                 categories[perm.category] = {
@@ -181,7 +184,9 @@ class PermissionsAdmin {
                 };
             }
             
-            const granted = grantedPermissions.some(gp => gp.id === perm.id);
+            // Comparer les IDs en les convertissant en string pour éviter les problèmes de type
+            const granted = grantedIds.has(String(perm.id));
+            
             categories[perm.category].permissions.push({
                 ...perm,
                 granted
@@ -372,9 +377,22 @@ class PermissionsAdmin {
 
         const { user, permissions, allPermissions } = data;
 
+        console.log('📋 Permissions reçues pour l\'utilisateur:', {
+            userId: user.id,
+            userName: `${user.nom} ${user.prenom}`,
+            totalPermissions: allPermissions.length,
+            grantedPermissions: permissions.length,
+            grantedIds: permissions.map(p => p.id)
+        });
+
         // Filtrer les permissions de menu car elles ont leur propre onglet dédié
         const nonMenuPermissions = allPermissions.filter(p => !p.code.startsWith('menu.'));
         const nonMenuGrantedPermissions = permissions.filter(p => !p.code.startsWith('menu.'));
+
+        console.log('📊 Permissions après filtrage menu:', {
+            totalNonMenu: nonMenuPermissions.length,
+            grantedNonMenu: nonMenuGrantedPermissions.length
+        });
 
         container.innerHTML = `
             <div class="mb-3">

@@ -537,14 +537,14 @@ router.get('/users/:id/permissions', requireAdminPermission, async (req, res) =>
             WHERE up.user_id = $1
         `, [id]);
         
-        // Récupérer les permissions du rôle de l'utilisateur
+        // Récupérer les permissions de TOUS les rôles de l'utilisateur (via user_roles pour support rôles multiples)
         const rolePermissionsResult = await client.query(`
-            SELECT p.id, p.code, p.name, p.description, p.category, true as granted
+            SELECT DISTINCT p.id, p.code, p.name, p.description, p.category, true as granted
             FROM role_permissions rp
             JOIN permissions p ON rp.permission_id = p.id
-            JOIN roles r ON rp.role_id = r.id
-            WHERE r.name = $1
-        `, [userResult.rows[0].role_name]);
+            JOIN user_roles ur ON rp.role_id = ur.role_id
+            WHERE ur.user_id = $1
+        `, [id]);
         
         client.release();
         
