@@ -151,64 +151,88 @@ async function getColumnInfo(tableName, columnName) {
  * Créer une table manquante
  */
 async function createTable(tableName, schema) {
-    const columns = schema.columns.map(col => {
-        let def = `${col.name} ${col.type}`;
-        if (col.not_null && !col.default) {
-            def += ' NOT NULL';
-        } else if (col.not_null && col.default) {
-            def += ` NOT NULL DEFAULT ${col.default}`;
-        } else if (col.default) {
-            def += ` DEFAULT ${col.default}`;
-        }
-        if (col.unique) {
-            def += ' UNIQUE';
-        }
-        return def;
-    });
+    try {
+        const columns = schema.columns.map(col => {
+            let def = `${col.name} ${col.type}`;
+            if (col.not_null && !col.default) {
+                def += ' NOT NULL';
+            } else if (col.not_null && col.default) {
+                def += ` NOT NULL DEFAULT ${col.default}`;
+            } else if (col.default) {
+                def += ` DEFAULT ${col.default}`;
+            }
+            if (col.unique) {
+                def += ' UNIQUE';
+            }
+            return def;
+        });
 
-    const primaryKey = schema.columns.find(col => col.primary_key);
-    const primaryKeyDef = primaryKey ? `, PRIMARY KEY (${primaryKey.name})` : '';
+        const primaryKey = schema.columns.find(col => col.primary_key);
+        const primaryKeyDef = primaryKey ? `, PRIMARY KEY (${primaryKey.name})` : '';
 
-    const sql = `CREATE TABLE ${tableName} (${columns.join(', ')}${primaryKeyDef})`;
-    
-    await pool.query(sql);
-    console.log(`   ✅ Table "${tableName}" créée`);
+        const sql = `CREATE TABLE ${tableName} (${columns.join(', ')}${primaryKeyDef})`;
+        
+        await pool.query(sql);
+        console.log(`   ✅ Table "${tableName}" créée`);
+        return true;
+    } catch (error) {
+        if (error.message.includes('must be owner') || error.message.includes('permission denied') || error.code === '42501') {
+            console.error(`   ⚠️  Permission refusée pour créer la table "${tableName}"`);
+            console.error(`      Erreur: ${error.message}`);
+            console.error(`      Solution: Exécutez ce script avec un utilisateur ayant les droits CREATE TABLE`);
+            return false;
+        }
+        throw error;
+    }
 }
 
 /**
  * Ajouter une colonne manquante
  */
 async function addColumn(tableName, column) {
-    let sql = `ALTER TABLE ${tableName} ADD COLUMN ${column.name} ${column.type}`;
-    
-    if (column.not_null && !column.default) {
-        // Pour les colonnes NOT NULL sans default, on doit d'abord ajouter avec default temporaire
-        sql = `ALTER TABLE ${tableName} ADD COLUMN ${column.name} ${column.type} DEFAULT ${column.default || "NULL"}`;
-        await pool.query(sql);
-        // Puis enlever le default si nécessaire
-        if (!column.default) {
-            await pool.query(`ALTER TABLE ${tableName} ALTER COLUMN ${column.name} DROP DEFAULT`);
-            await pool.query(`ALTER TABLE ${tableName} ALTER COLUMN ${column.name} SET NOT NULL`);
+    try {
+        let sql = `ALTER TABLE ${tableName} ADD COLUMN ${column.name} ${column.type}`;
+        
+        if (column.not_null && !column.default) {
+            // Pour les colonnes NOT NULL sans default, on doit d'abord ajouter avec default temporaire
+            sql = `ALTER TABLE ${tableName} ADD COLUMN ${column.name} ${column.type} DEFAULT ${column.default || "NULL"}`;
+            await pool.query(sql);
+            // Puis enlever le default si nécessaire
+            if (!column.default) {
+                await pool.query(`ALTER TABLE ${tableName} ALTER COLUMN ${column.name} DROP DEFAULT`);
+                await pool.query(`ALTER TABLE ${tableName} ALTER COLUMN ${column.name} SET NOT NULL`);
+            }
+        } else if (column.default) {
+            sql += ` DEFAULT ${column.default}`;
+            await pool.query(sql);
+        } else {
+            await pool.query(sql);
         }
-    } else if (column.default) {
-        sql += ` DEFAULT ${column.default}`;
-        await pool.query(sql);
-    } else {
-        await pool.query(sql);
-    }
-    
-    if (column.unique) {
-        try {
-            await pool.query(`CREATE UNIQUE INDEX ${tableName}_${column.name}_key ON ${tableName}(${column.name})`);
-        } catch (error) {
-            // Index peut déjà exister
-            if (!error.message.includes('already exists')) {
-                throw error;
+        
+        if (column.unique) {
+            try {
+                await pool.query(`CREATE UNIQUE INDEX ${tableName}_${column.name}_key ON ${tableName}(${column.name})`);
+            } catch (error) {
+                // Index peut déjà exister
+                if (!error.message.includes('already exists')) {
+                    throw error;
+                }
             }
         }
+        
+        console.log(`   ✅ Colonne "${column.name}" ajoutée à "${tableName}"`);
+        return true;
+    } catch (error) {
+        if (error.message.includes('must be owner') || error.message.includes('permission denied') || error.code === '42501') {
+            console.error(`   ⚠️  Permission refusée pour ajouter la colonne "${column.name}"`);
+            console.error(`      Erreur: ${error.message}`);
+            console.error(`      Solution: Exécutez ce script avec un utilisateur ayant les droits ALTER TABLE`);
+            console.error(`      Commande SQL nécessaire:`);
+            console.error(`      ALTER TABLE ${tableName} ADD COLUMN ${column.name} ${column.type}${column.default ? ` DEFAULT ${column.default}` : ''};`);
+            return false;
+        }
+        throw error;
     }
-    
-    console.log(`   ✅ Colonne "${column.name}" ajoutée à "${tableName}"`);
 }
 
 /**
@@ -268,12 +292,22 @@ async function verifyAndFixDatabase() {
         console.log('🔍 Vérification de la structure...\n');
         
         // Vérifier toutes les tables
+        let permissionErrors = [];
         for (const [tableName, schema] of Object.entries(EXPECTED_SCHEMA)) {
             console.log(`📊 Table: ${tableName}`);
-            const result = await verifyAndFixTable(tableName, schema);
-            stats.tablesChecked++;
-            if (result.created) stats.tablesCreated++;
-            stats.columnsAdded += result.columnsAdded;
+            try {
+                const result = await verifyAndFixTable(tableName, schema);
+                stats.tablesChecked++;
+                if (result.created) stats.tablesCreated++;
+                stats.columnsAdded += result.columnsAdded;
+            } catch (error) {
+                if (error.message.includes('must be owner') || error.message.includes('permission denied') || error.code === '42501') {
+                    permissionErrors.push({ table: tableName, error: error.message });
+                    console.error(`   ⚠️  Erreur de permissions pour "${tableName}"`);
+                } else {
+                    throw error;
+                }
+            }
             console.log('');
         }
         
@@ -290,9 +324,34 @@ async function verifyAndFixDatabase() {
         if (stats.columnsAdded > 0) {
             console.log(`   ✓ ${stats.columnsAdded} colonnes ajoutées`);
         }
-        if (stats.tablesCreated === 0 && stats.columnsAdded === 0) {
+        if (stats.tablesCreated === 0 && stats.columnsAdded === 0 && permissionErrors.length === 0) {
             console.log(`   ✅ La structure est complète et à jour !`);
         }
+        
+        // Afficher les erreurs de permissions
+        if (permissionErrors.length > 0) {
+            console.log('\n⚠️  ERREURS DE PERMISSIONS :');
+            console.log('═══════════════════════════════');
+            console.log(`   ${permissionErrors.length} opération(s) nécessitent des droits administrateur\n`);
+            console.log('💡 SOLUTIONS :');
+            console.log('═══════════════');
+            console.log('   1. Exécutez le script avec un utilisateur PostgreSQL ayant les droits :');
+            console.log('      - ALTER TABLE sur les tables existantes');
+            console.log('      - CREATE TABLE pour les nouvelles tables\n');
+            console.log('   2. Donnez la propriété des tables à ewm_user :');
+            console.log('      En tant que postgres/superuser, exécutez :\n');
+            console.log('      sudo -u postgres psql -d ewm_db -f scripts/database/fix-database-ownership.sql\n');
+            console.log('      Ou manuellement :');
+            console.log('      ALTER TABLE users OWNER TO ewm_user;');
+            console.log('      ALTER TABLE notifications OWNER TO ewm_user;');
+            console.log('      -- etc. pour toutes les tables\n');
+            console.log('   3. Ou accordez les droits (si vous ne pouvez pas changer le propriétaire) :');
+            console.log('      GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ewm_user;');
+            console.log('      ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ewm_user;\n');
+            console.log('   3. Ou exécutez directement les commandes SQL nécessaires :');
+            console.log('      (Voir les commandes SQL affichées ci-dessus)\n');
+        }
+        
         console.log('');
         
     } catch (error) {
