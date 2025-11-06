@@ -25,10 +25,11 @@ class User {
         // Générer un login basé sur les initiales si non fourni
         const userLogin = login || (nom.substring(0, 1) + prenom.substring(0, 1)).toLowerCase();
 
-        // Créer l'utilisateur SANS rôle principal (le champ role doit être NULL)
+        // Créer l'utilisateur avec un rôle legacy par défaut (pour respecter la contrainte NOT NULL)
+        // Les rôles réels seront gérés via la table user_roles
         const sql = `
             INSERT INTO users (nom, prenom, email, password_hash, login, role)
-            VALUES ($1, $2, $3, $4, $5, NULL)
+            VALUES ($1, $2, $3, $4, $5, 'COLLABORATEUR')
             RETURNING id, nom, prenom, email, login, statut, created_at
         `;
 
@@ -48,9 +49,25 @@ class User {
     static async addMultipleRoles(userId, roleIds) {
         if (!roleIds || roleIds.length === 0) return;
 
-        const values = roleIds.map((roleId, index) => 
-            `($1, $${index + 2}, NOW())`
-        ).join(', ');
+        // Vérifier le type de role_id dans la base de données
+        // Support à la fois INTEGER (SERIAL) et UUID
+        const values = roleIds.map((roleId, index) => {
+            // Convertir en entier si c'est une chaîne numérique, sinon utiliser tel quel
+            const paramIndex = index + 2;
+            return `($1, $${paramIndex}, NOW())`;
+        }).join(', ');
+
+        // Convertir les IDs en entiers si nécessaire (pour les bases de données avec SERIAL)
+        const convertedRoleIds = roleIds.map(roleId => {
+            // Si c'est déjà un nombre, le garder tel quel
+            if (typeof roleId === 'number') return roleId;
+            // Si c'est une chaîne qui représente un nombre, la convertir
+            if (typeof roleId === 'string' && /^\d+$/.test(roleId)) {
+                return parseInt(roleId, 10);
+            }
+            // Sinon, utiliser tel quel (pour les UUIDs)
+            return roleId;
+        });
 
         const sql = `
             INSERT INTO user_roles (user_id, role_id, created_at)
@@ -58,7 +75,7 @@ class User {
             ON CONFLICT (user_id, role_id) DO NOTHING
         `;
 
-        await query(sql, [userId, ...roleIds]);
+        await query(sql, [userId, ...convertedRoleIds]);
     }
 
     // Récupérer un utilisateur par ID

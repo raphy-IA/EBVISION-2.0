@@ -497,10 +497,14 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
         
     } catch (error) {
         console.error('❌ Erreur lors de la génération du compte utilisateur:', error);
+        console.error('❌ Stack trace:', error.stack);
+        console.error('❌ Données reçues:', { id, login, email, nom, prenom, roles: roles?.length || 0 });
+        
         res.status(500).json({
             success: false,
             error: 'Erreur lors de la génération du compte utilisateur',
-            details: error.message
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });
