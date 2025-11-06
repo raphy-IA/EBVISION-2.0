@@ -100,12 +100,11 @@ async function auditPages() {
                             ? titleMatch[1]
                                 .replace(/ - EB-Vision 2\.0/gi, '')
                                 .replace(/ - EB Vision 2\.0/gi, '')
-                                .replace(/ - EWM/gi, '')
-                                .replace(/ - ENTERPRISE WORKFLOW MANAGEMENT/gi, '')
-                                .replace(/EB-Vision 2\.0/gi, '')
-                                .replace(/EB Vision 2\.0/gi, '')
-                                .replace(/EB-Vision/gi, '')
-                                .replace(/EB Vision/gi, '')
+                                .replace(/\bEB-Vision 2\.0\b/gi, '')
+                                .replace(/\bEB Vision 2\.0\b/gi, '')
+                                .replace(/\bEB-Vision\b/gi, '')
+                                .replace(/\bEB Vision\b/gi, '')
+                                // Ne pas supprimer "EWM" ou autres noms génériques du branding
                                 .trim() 
                             : entry.name.replace('.html', '');
                         

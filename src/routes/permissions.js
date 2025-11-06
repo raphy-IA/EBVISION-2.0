@@ -434,6 +434,7 @@ router.get('/users', requireAdminPermission, async (req, res) => {
         client.release();
         
         // Pour chaque utilisateur, récupérer la liste de ses rôles (via user_roles)
+        // Utiliser pool.query car le client est déjà libéré
         const usersWithRoles = await Promise.all(result.rows.map(async (user) => {
             try {
                 const rolesQuery = `
@@ -443,7 +444,7 @@ router.get('/users', requireAdminPermission, async (req, res) => {
                     WHERE ur.user_id = $1
                     ORDER BY r.name
                 `;
-                const rolesResult = await client.query(rolesQuery, [user.id]);
+                const rolesResult = await pool.query(rolesQuery, [user.id]);
                 const roles = rolesResult.rows.map(row => row.name).join(', ');
                 
                 return {
@@ -460,8 +461,6 @@ router.get('/users', requireAdminPermission, async (req, res) => {
                 };
             }
         }));
-
-        client.release();
         
         res.json(usersWithRoles);
     } catch (error) {

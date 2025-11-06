@@ -252,20 +252,20 @@ async function extractPermissionsFromHTML() {
                     const relativePath = path.relative(PUBLIC_DIR, fullPath);
                     const permCode = `page.${relativePath.replace(/\\/g, '/').replace('.html', '').replace(/\//g, '_')}`;
                     
-                    // Extraire le titre et nettoyer toutes les références de branding
+                    // Extraire le titre et nettoyer uniquement les références hardcodées à "EB Vision"
                     const titleMatch = content.match(/<title>(.*?)<\/title>/i);
                     let title = titleMatch ? titleMatch[1] : entry.name.replace('.html', '');
                     
-                    // Nettoyer toutes les références de branding (EB Vision, EB-Vision, EWM, etc.)
+                    // Nettoyer seulement les références hardcodées spécifiques à "EB Vision"
+                    // On garde les références génériques qui peuvent être personnalisées via le branding
                     title = title
                         .replace(/ - EB-Vision 2\.0/gi, '')
                         .replace(/ - EB Vision 2\.0/gi, '')
-                        .replace(/ - EWM/gi, '')
-                        .replace(/ - ENTERPRISE WORKFLOW MANAGEMENT/gi, '')
-                        .replace(/EB-Vision 2\.0/gi, '')
-                        .replace(/EB Vision 2\.0/gi, '')
-                        .replace(/EB-Vision/gi, '')
-                        .replace(/EB Vision/gi, '')
+                        .replace(/\bEB-Vision 2\.0\b/gi, '')
+                        .replace(/\bEB Vision 2\.0\b/gi, '')
+                        .replace(/\bEB-Vision\b/gi, '')
+                        .replace(/\bEB Vision\b/gi, '')
+                        // Ne pas supprimer "EWM" ou autres noms génériques qui peuvent être dans le branding
                         .trim();
                     
                     // Déterminer la catégorie basée sur le nom du fichier
