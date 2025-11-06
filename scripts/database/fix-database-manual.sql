@@ -159,3 +159,4 @@ FROM information_schema.columns
 WHERE table_name IN ('users', 'notifications', 'pages', 'menu_sections', 'menu_items')
 ORDER BY table_name, ordinal_position;
 
+

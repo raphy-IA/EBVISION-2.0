@@ -69,14 +69,25 @@ function loadBrandLogo(logoUrl) {
                         logoImg.className = 'brand-logo-sidebar';
                         logoImg.style.cssText = 'height: 30px; width: auto; vertical-align: middle; margin-right: 10px;';
                         
+                        // Gérer les erreurs de chargement de l'image
+                        logoImg.onerror = () => {
+                            // Si l'image ne charge pas, garder l'icône par défaut
+                            console.debug('Logo non chargé, utilisation de l\'icône par défaut');
+                        };
+                        
                         // Remplacer l'icône par le logo
                         icon.replaceWith(logoImg);
                     }
                 }
+            } else {
+                // Fichier non trouvé, utiliser l'icône par défaut (pas d'erreur dans la console)
+                console.debug('Logo non trouvé, utilisation de l\'icône par défaut');
             }
         })
         .catch(error => {
-            console.warn('Logo non trouvé, utilisation de l\'icône par défaut');
+            // Erreur silencieuse - c'est normal si le fichier n'existe pas
+            // On utilise console.debug au lieu de console.warn pour éviter de polluer la console
+            console.debug('Logo non disponible, utilisation de l\'icône par défaut');
         });
 }
 

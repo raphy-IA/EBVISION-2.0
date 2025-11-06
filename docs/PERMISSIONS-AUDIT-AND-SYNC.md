@@ -250,3 +250,4 @@ node scripts/database/sync-all-permissions-complete.js
 - Page de gestion: `/permissions-admin.html`
 - API de permissions: `/api/permissions/*`
 
+

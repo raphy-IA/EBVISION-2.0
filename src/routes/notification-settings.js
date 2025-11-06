@@ -445,72 +445,193 @@ router.get('/history', authenticateToken, async (req, res) => {
             SELECT role FROM users WHERE id = $1
         `, [req.user.id]);
         
+        if (!userResult.rows || userResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Utilisateur non trouvé'
+            });
+        }
+        
         const isAdmin = userResult.rows[0]?.role === 'ADMIN' || userResult.rows[0]?.role === 'IT_ADMIN';
+        
+        // Vérifier si la table notifications existe
+        const tableCheck = await pool.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'notifications'
+            )
+        `);
+        
+        if (!tableCheck.rows[0].exists) {
+            // Si la table n'existe pas, retourner un tableau vide
+            return res.json({
+                success: true,
+                data: [],
+                pagination: isAdmin ? {
+                    total: 0,
+                    limit: parseInt(limit),
+                    offset: parseInt(offset)
+                } : null,
+                isAdmin: isAdmin
+            });
+        }
         
         // Vérifier si la colonne campaign_id existe dans notifications
         let campaignIdExists = false;
         try {
-            // Vérifier d'abord si la table notifications existe
-            const tableCheck = await pool.query(`
+            const columnCheck = await pool.query(`
                 SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
+                    SELECT FROM information_schema.columns 
                     WHERE table_schema = 'public' 
-                    AND table_name = 'notifications'
+                    AND table_name = 'notifications' 
+                    AND column_name = 'campaign_id'
                 )
             `);
-            
-            if (tableCheck.rows[0].exists) {
-                const columnCheck = await pool.query(`
-                    SELECT EXISTS (
-                        SELECT FROM information_schema.columns 
-                        WHERE table_schema = 'public' 
-                        AND table_name = 'notifications' 
-                        AND column_name = 'campaign_id'
-                    )
-                `);
-                campaignIdExists = columnCheck.rows[0].exists;
-            }
+            campaignIdExists = columnCheck.rows[0].exists;
         } catch (error) {
             console.warn('Erreur lors de la vérification de la colonne campaign_id:', error.message);
             campaignIdExists = false; // Par sécurité, on considère que la colonne n'existe pas
         }
         
-        // Construire la liste des colonnes explicitement pour éviter n.*
-        // Cela permet de gérer l'absence de campaign_id si nécessaire
+        // Vérifier quelle colonne existe pour le statut de lecture
+        let readColumnName = 'is_read'; // Par défaut, utiliser is_read
+        try {
+            const readColumnCheck = await pool.query(`
+                SELECT EXISTS (
+                    SELECT FROM information_schema.columns 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'notifications' 
+                    AND column_name = 'is_read'
+                )
+            `);
+            if (!readColumnCheck.rows[0].exists) {
+                // Si is_read n'existe pas, vérifier si 'read' existe
+                const readCheck = await pool.query(`
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.columns 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'notifications' 
+                        AND column_name = 'read'
+                    )
+                `);
+                if (readCheck.rows[0].exists) {
+                    readColumnName = 'read';
+                }
+            }
+        } catch (error) {
+            console.warn('Erreur lors de la vérification de la colonne read/is_read:', error.message);
+        }
+        
+        // Construire la liste des colonnes explicitement
+        // Les tables opportunities, opportunity_stages et prospecting_campaigns existent dans la base de données
         let notificationColumns = [
             'n.id', 'n.type', 'n.title', 'n.message', 'n.user_id', 
-            'n.opportunity_id', 'n.stage_id', 'n.read', 'n.created_at'
+            'n.opportunity_id', 'n.stage_id', `n.${readColumnName} as read`, 'n.created_at'
         ];
         
-        // Ajouter campaign_id seulement si la colonne existe
+        // Ajouter campaign_id seulement si la colonne existe dans la table notifications
         if (campaignIdExists) {
             notificationColumns.push('n.campaign_id');
         }
         
-        let query = `
-            SELECT 
-                ${notificationColumns.join(', ')},
-                u.nom as user_nom,
-                u.prenom as user_prenom,
-                u.login as user_login,
-                o.nom as opportunity_name,
-                os.stage_name as stage_name
-        `;
+        // Construire la requête SELECT avec toutes les colonnes nécessaires
+        // Table opportunities : colonne 'nom'
+        // Table opportunity_stages : colonne 'stage_name'
+        // Table prospecting_campaigns : colonne 'name' (pas 'nom')
+        let selectColumns = [
+            ...notificationColumns,
+            'u.nom as user_nom',
+            'u.prenom as user_prenom',
+            'u.login as user_login'
+        ];
         
-        // Ajouter le JOIN campaign seulement si la colonne existe
-        if (campaignIdExists) {
-            query += `, pc.nom as campaign_name`;
+        // Vérifier si les tables existent avant d'ajouter les colonnes et JOINs
+        let opportunitiesExists = true;
+        let opportunityStagesExists = true;
+        let prospectingCampaignsExists = true;
+        
+        try {
+            const oppCheck = await pool.query(`
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'opportunities'
+                )
+            `);
+            opportunitiesExists = oppCheck.rows[0].exists;
+        } catch (error) {
+            console.warn('Erreur lors de la vérification de opportunities:', error.message);
+            opportunitiesExists = false;
         }
         
-        query += `
-            FROM notifications n
-            LEFT JOIN users u ON n.user_id = u.id
-            LEFT JOIN opportunities o ON n.opportunity_id = o.id
-            LEFT JOIN opportunity_stages os ON n.stage_id = os.id
-        `;
+        try {
+            const stageCheck = await pool.query(`
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'opportunity_stages'
+                )
+            `);
+            opportunityStagesExists = stageCheck.rows[0].exists;
+        } catch (error) {
+            console.warn('Erreur lors de la vérification de opportunity_stages:', error.message);
+            opportunityStagesExists = false;
+        }
         
         if (campaignIdExists) {
-            query += `LEFT JOIN prospecting_campaigns pc ON n.campaign_id = pc.id`;
+            try {
+                const campaignCheck = await pool.query(`
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'prospecting_campaigns'
+                    )
+                `);
+                prospectingCampaignsExists = campaignCheck.rows[0].exists;
+            } catch (error) {
+                console.warn('Erreur lors de la vérification de prospecting_campaigns:', error.message);
+                prospectingCampaignsExists = false;
+            }
+        }
+        
+        // Ajouter les colonnes conditionnellement
+        if (opportunitiesExists) {
+            selectColumns.push('o.nom as opportunity_name');
+        } else {
+            selectColumns.push('NULL as opportunity_name');
+        }
+        
+        if (opportunityStagesExists) {
+            selectColumns.push('os.stage_name as stage_name');
+        } else {
+            selectColumns.push('NULL as stage_name');
+        }
+        
+        if (campaignIdExists && prospectingCampaignsExists) {
+            selectColumns.push('pc.name as campaign_name');
+        } else if (campaignIdExists) {
+            selectColumns.push('NULL as campaign_name');
+        }
+        
+        let query = `
+            SELECT 
+                ${selectColumns.join(', ')}
+            FROM notifications n
+            LEFT JOIN users u ON n.user_id = u.id
+        `;
+        
+        // Ajouter les JOINs seulement si les tables existent
+        if (opportunitiesExists) {
+            query += ` LEFT JOIN opportunities o ON n.opportunity_id = o.id`;
+        }
+        
+        if (opportunityStagesExists) {
+            query += ` LEFT JOIN opportunity_stages os ON n.stage_id = os.id`;
+        }
+        
+        if (campaignIdExists && prospectingCampaignsExists) {
+            query += ` LEFT JOIN prospecting_campaigns pc ON n.campaign_id = pc.id`;
         }
         
         const queryParams = [];
@@ -541,7 +662,24 @@ router.get('/history', authenticateToken, async (req, res) => {
         query += ` ORDER BY n.created_at DESC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
         queryParams.push(parseInt(limit), parseInt(offset));
         
-        const result = await pool.query(query, queryParams);
+        let result;
+        try {
+            // Log de la requête pour le débogage (uniquement en développement)
+            if (process.env.NODE_ENV === 'development') {
+                console.log('🔍 Requête SQL:', query);
+                console.log('🔍 Paramètres:', queryParams);
+            }
+            
+            result = await pool.query(query, queryParams);
+        } catch (queryError) {
+            console.error('❌ Erreur SQL lors de la récupération de l\'historique:', queryError);
+            console.error('❌ Message d\'erreur:', queryError.message);
+            console.error('❌ Code d\'erreur:', queryError.code);
+            console.error('❌ Détails:', queryError.detail);
+            console.error('❌ Requête SQL:', query);
+            console.error('❌ Paramètres:', queryParams);
+            throw queryError;
+        }
         
         // Récupérer le total pour la pagination (admin seulement)
         let totalCount = null;
@@ -584,9 +722,11 @@ router.get('/history', authenticateToken, async (req, res) => {
         });
     } catch (error) {
         console.error('Erreur lors de la récupération de l\'historique:', error);
+        console.error('Stack trace:', error.stack);
         res.status(500).json({
             success: false,
-            error: 'Erreur lors de la récupération de l\'historique'
+            error: 'Erreur lors de la récupération de l\'historique',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });

@@ -13,6 +13,18 @@
     <link rel="stylesheet" href="css/modern-sidebar.css">
     
     <style>
+        :root {
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        
         .config-section {
             background: white;
             border-radius: 10px;
@@ -112,6 +124,7 @@
         .page-wrapper {
             display: flex;
             min-height: 100vh;
+            width: 100%;
         }
 
         /* Styles pour le contenu principal */
@@ -119,6 +132,23 @@
             flex-grow: 1;
             padding: 2rem;
             background-color: var(--light-bg);
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+        }
+        
+        /* S'assurer que la sidebar est visible */
+        .sidebar-container {
+            display: flex !important;
+            flex-shrink: 0;
+            width: 300px !important;
+            min-width: 300px !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        /* S'assurer que le contenu de la sidebar est visible */
+        .sidebar-container > * {
+            visibility: visible !important;
         }
 
         /* Ajustements pour les petits écrans */
@@ -129,6 +159,18 @@
             
             .main-content-area {
                 padding: 1rem;
+                margin-left: 0;
+            }
+            
+            .sidebar-container {
+                position: fixed;
+                left: -300px;
+                transition: left 0.3s ease;
+                z-index: 1000;
+            }
+            
+            .sidebar-container.open {
+                left: 0;
             }
         }
     </style>

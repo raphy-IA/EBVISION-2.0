@@ -31,3 +31,4 @@ FROM information_schema.table_privileges
 WHERE grantee = 'ewm_user' 
 ORDER BY table_name;
 
+

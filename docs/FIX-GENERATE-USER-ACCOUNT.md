@@ -71,3 +71,4 @@ Si l'erreur persiste, vérifiez les logs avec :
 pm2 logs ewmanagement --err --lines 50
 ```
 
+
