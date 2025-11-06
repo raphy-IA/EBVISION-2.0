@@ -67,7 +67,8 @@ const PORT = process.env.PORT || 3000;
 
 // Configuration du proxy (nécessaire pour nginx/reverse proxy)
 // Permet à Express de faire confiance aux headers X-Forwarded-For
-app.set('trust proxy', true);
+// Utiliser 1 au lieu de true pour limiter à un seul proxy (nginx) et éviter les contournements de rate limiting
+app.set('trust proxy', 1);
 
 // Configuration de sécurité
 app.use(helmet({
@@ -93,6 +94,9 @@ const limiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
+    // Indiquer à express-rate-limit que l'app est derrière un proxy (nginx)
+    // Cela fonctionne avec trust proxy: 1 dans Express
+    trustProxy: true,
 });
 
 // Rate limiter spécifique pour l'authentification (protection contre force brute)
@@ -103,7 +107,10 @@ const authLimiter = rateLimit({
         error: 'Trop de tentatives de connexion, veuillez réessayer plus tard.'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    // Indiquer à express-rate-limit que l'app est derrière un proxy (nginx)
+    // Cela fonctionne avec trust proxy: 1 dans Express
+    trustProxy: true,
     // Note: onLimitReached deprecated dans express-rate-limit v7
 });
 
