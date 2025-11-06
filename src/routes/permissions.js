@@ -470,7 +470,7 @@ router.get('/users', requireAdminPermission, async (req, res) => {
 });
 
 // GET /api/permissions/users/me/permissions - Permissions de l'utilisateur connecté
-router.get('/users/me/permissions', async (req, res) => {
+router.get('/users/me/permissions', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
         
