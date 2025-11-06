@@ -145,12 +145,38 @@ async function extractMenuStructure(sidebarPath) {
 }
 
 /**
+ * Vérifier si une table existe dans la base de données
+ */
+async function tableExists(tableName) {
+    try {
+        const result = await pool.query(
+            `SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = $1
+            )`,
+            [tableName]
+        );
+        return result.rows[0].exists;
+    } catch (error) {
+        return false;
+    }
+}
+
+/**
  * Synchroniser les pages dans la base de données
  */
 async function syncPages(htmlFiles) {
     let added = 0;
     let updated = 0;
     let skipped = 0;
+
+    // Vérifier si la table pages existe
+    const pagesTableExists = await tableExists('pages');
+    if (!pagesTableExists) {
+        console.log('⚠️  Table "pages" n\'existe pas, synchronisation des pages ignorée');
+        return { added, updated, skipped, total: htmlFiles.length };
+    }
 
     for (const file of htmlFiles) {
         try {
@@ -197,9 +223,21 @@ async function syncMenus(menuStructure) {
     let itemsAdded = 0;
     let itemsUpdated = 0;
 
+    // Vérifier si les tables de menu existent
+    const menuSectionsExists = await tableExists('menu_sections');
+    const menuItemsExists = await tableExists('menu_items');
+    
+    if (!menuSectionsExists || !menuItemsExists) {
+        console.log('⚠️  Tables "menu_sections" ou "menu_items" n\'existent pas, synchronisation des menus ignorée');
+        return {
+            sections: { added: 0, updated: 0 },
+            items: { added: 0, updated: 0 }
+        };
+    }
+
     for (const section of menuStructure) {
         try {
-            // Gérer la section de menu
+            // Gérer la section de menu avec gestion des doublons
             const existingSection = await pool.query(
                 'SELECT id FROM menu_sections WHERE code = $1',
                 [section.code]
@@ -214,14 +252,35 @@ async function syncMenus(menuStructure) {
                 );
                 sectionsUpdated++;
             } else {
-                const result = await pool.query(
-                    `INSERT INTO menu_sections (code, name, created_at, updated_at)
-                     VALUES ($1, $2, NOW(), NOW())
-                     RETURNING id`,
-                    [section.code, section.section]
-                );
-                sectionId = result.rows[0].id;
-                sectionsAdded++;
+                // Utiliser ON CONFLICT pour éviter les doublons
+                try {
+                    const result = await pool.query(
+                        `INSERT INTO menu_sections (code, name, created_at, updated_at)
+                         VALUES ($1, $2, NOW(), NOW())
+                         ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name, updated_at = NOW()
+                         RETURNING id`,
+                        [section.code, section.section]
+                    );
+                    sectionId = result.rows[0].id;
+                    sectionsAdded++;
+                } catch (insertError) {
+                    // Si ON CONFLICT n'est pas supporté, réessayer avec une requête SELECT
+                    if (insertError.code === '42P01' || insertError.message.includes('ON CONFLICT')) {
+                        // Vérifier à nouveau après l'erreur
+                        const retryResult = await pool.query(
+                            'SELECT id FROM menu_sections WHERE code = $1',
+                            [section.code]
+                        );
+                        if (retryResult.rows.length > 0) {
+                            sectionId = retryResult.rows[0].id;
+                            sectionsUpdated++;
+                        } else {
+                            throw insertError;
+                        }
+                    } else {
+                        throw insertError;
+                    }
+                }
             }
 
             // Gérer les items du menu

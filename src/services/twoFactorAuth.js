@@ -168,6 +168,21 @@ class TwoFactorAuthService {
      */
     static async is2FAEnabled(userId) {
         try {
+            // Vérifier d'abord si la colonne existe
+            const columnCheck = await pool.query(`
+                SELECT EXISTS (
+                    SELECT FROM information_schema.columns 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'users' 
+                    AND column_name = 'two_factor_enabled'
+                )
+            `);
+            
+            if (!columnCheck.rows[0].exists) {
+                // La colonne n'existe pas, retourner false par défaut
+                return false;
+            }
+            
             const result = await pool.query(
                 'SELECT two_factor_enabled FROM users WHERE id = $1',
                 [userId]

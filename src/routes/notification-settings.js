@@ -447,6 +447,22 @@ router.get('/history', authenticateToken, async (req, res) => {
         
         const isAdmin = userResult.rows[0]?.role === 'ADMIN' || userResult.rows[0]?.role === 'IT_ADMIN';
         
+        // Vérifier si la colonne campaign_id existe dans notifications
+        let campaignIdExists = false;
+        try {
+            const columnCheck = await pool.query(`
+                SELECT EXISTS (
+                    SELECT FROM information_schema.columns 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'notifications' 
+                    AND column_name = 'campaign_id'
+                )
+            `);
+            campaignIdExists = columnCheck.rows[0].exists;
+        } catch (error) {
+            console.warn('Erreur lors de la vérification de la colonne campaign_id:', error.message);
+        }
+        
         let query = `
             SELECT 
                 n.*,
@@ -454,14 +470,24 @@ router.get('/history', authenticateToken, async (req, res) => {
                 u.prenom as user_prenom,
                 u.login as user_login,
                 o.nom as opportunity_name,
-                os.stage_name as stage_name,
-                pc.nom as campaign_name
+                os.stage_name as stage_name
+        `;
+        
+        // Ajouter le JOIN campaign seulement si la colonne existe
+        if (campaignIdExists) {
+            query += `, pc.nom as campaign_name`;
+        }
+        
+        query += `
             FROM notifications n
             LEFT JOIN users u ON n.user_id = u.id
             LEFT JOIN opportunities o ON n.opportunity_id = o.id
             LEFT JOIN opportunity_stages os ON n.stage_id = os.id
-            LEFT JOIN prospecting_campaigns pc ON n.campaign_id = pc.id
         `;
+        
+        if (campaignIdExists) {
+            query += `LEFT JOIN prospecting_campaigns pc ON n.campaign_id = pc.id`;
+        }
         
         const queryParams = [];
         let whereConditions = [];

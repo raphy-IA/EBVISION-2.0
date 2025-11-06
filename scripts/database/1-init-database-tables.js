@@ -224,9 +224,41 @@ async function initDatabaseTables() {
                 statut VARCHAR(50) DEFAULT 'ACTIF',
                 collaborateur_id UUID,
                 photo_url TEXT,
+                two_factor_enabled BOOLEAN DEFAULT false,
+                two_factor_secret VARCHAR(255),
+                backup_codes TEXT[],
+                last_login TIMESTAMP WITH TIME ZONE,
+                last_logout TIMESTAMP WITH TIME ZONE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+        `);
+        
+        // Ajouter les colonnes 2FA si elles n'existent pas (pour les bases existantes)
+        await pool.query(`
+            DO $$ 
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name = 'users' AND column_name = 'two_factor_enabled') THEN
+                    ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN DEFAULT false;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name = 'users' AND column_name = 'two_factor_secret') THEN
+                    ALTER TABLE users ADD COLUMN two_factor_secret VARCHAR(255);
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name = 'users' AND column_name = 'backup_codes') THEN
+                    ALTER TABLE users ADD COLUMN backup_codes TEXT[];
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name = 'users' AND column_name = 'last_login') THEN
+                    ALTER TABLE users ADD COLUMN last_login TIMESTAMP WITH TIME ZONE;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name = 'users' AND column_name = 'last_logout') THEN
+                    ALTER TABLE users ADD COLUMN last_logout TIMESTAMP WITH TIME ZONE;
+                END IF;
+            END $$;
         `);
         console.log('   ✓ Table users');
         tableCount++;
@@ -464,6 +496,77 @@ async function initDatabaseTables() {
             );
         `);
         console.log('   ✓ Table invoices');
+        tableCount++;
+
+        // 16. Table notifications (si elle n'existe pas déjà)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS notifications (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                type VARCHAR(50) NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                message TEXT NOT NULL,
+                user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                opportunity_id UUID,
+                stage_id UUID,
+                campaign_id UUID,
+                read BOOLEAN DEFAULT false,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        
+        // Ajouter campaign_id si la colonne n'existe pas
+        await pool.query(`
+            DO $$ 
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name = 'notifications' AND column_name = 'campaign_id') THEN
+                    ALTER TABLE notifications ADD COLUMN campaign_id UUID;
+                END IF;
+            END $$;
+        `);
+        console.log('   ✓ Table notifications');
+        tableCount++;
+
+        // 17. Table pages (optionnelle, pour synchronisation)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS pages (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                title VARCHAR(255) NOT NULL,
+                url VARCHAR(500) NOT NULL UNIQUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('   ✓ Table pages (optionnelle)');
+        tableCount++;
+
+        // 18. Table menu_sections (optionnelle, pour synchronisation)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS menu_sections (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                code VARCHAR(100) NOT NULL UNIQUE,
+                name VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('   ✓ Table menu_sections (optionnelle)');
+        tableCount++;
+
+        // 19. Table menu_items (optionnelle, pour synchronisation)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS menu_items (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                code VARCHAR(255) NOT NULL UNIQUE,
+                label VARCHAR(255) NOT NULL,
+                url VARCHAR(500) NOT NULL,
+                section_id UUID REFERENCES menu_sections(id) ON DELETE CASCADE,
+                display_order INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('   ✓ Table menu_items (optionnelle)');
         tableCount++;
 
         // ===============================================
