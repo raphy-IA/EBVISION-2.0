@@ -28,7 +28,8 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER IF NOT EXISTS update_mission_types_modification 
+DROP TRIGGER IF EXISTS update_mission_types_modification ON mission_types;
+CREATE TRIGGER update_mission_types_modification 
     BEFORE UPDATE ON mission_types 
     FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
