@@ -10,13 +10,12 @@ WITH business_units_without_divisions AS (
 )
 
 -- 2. Créer des divisions par défaut pour ces business units
-INSERT INTO divisions (id, nom, code, business_unit_id, responsable_id, description, statut, created_at, updated_at)
+INSERT INTO divisions (id, nom, code, business_unit_id, description, statut, created_at, updated_at)
 SELECT 
     gen_random_uuid() as id,
     bu.nom as nom,  -- Même nom que la BU
     COALESCE(bu.code, 'DIV_' || substring(bu.nom from 1 for 3)) as code,  -- Code basé sur le nom
     bu.id as business_unit_id,
-    NULL as responsable_id,  -- Pas de responsable par défaut
     'Division par défaut de la business unit ' || bu.nom as description,
     'ACTIF' as statut,
     CURRENT_TIMESTAMP as created_at,
