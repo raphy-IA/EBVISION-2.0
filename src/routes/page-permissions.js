@@ -30,7 +30,7 @@ router.post('/check-page-permission', authenticateToken, async (req, res) => {
         // Vérifier les permissions par défaut
         const defaultPermissions = {
             'users': ['SUPER_ADMIN', 'ADMIN', 'ADMIN_IT'],
-            'permissions-admin': ['SUPER_ADMIN', 'ADMIN'],
+            'permissions-admin': ['SUPER_ADMIN', 'ADMIN', 'ADMIN_IT'],
             'business-units-managers': ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'DIRECTOR', 'PARTNER'],
             'dashboard-direction': ['SUPER_ADMIN', 'MANAGER', 'DIRECTOR', 'PARTNER', 'ADMIN'],
             'dashboard-rentabilite': ['SUPER_ADMIN', 'MANAGER', 'DIRECTOR', 'PARTNER', 'ADMIN'],

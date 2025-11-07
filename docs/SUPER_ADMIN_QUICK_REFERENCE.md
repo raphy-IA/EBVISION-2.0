@@ -207,3 +207,4 @@ psql -d eb_vision_2_0 -c "
 
 
 
+

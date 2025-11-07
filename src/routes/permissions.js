@@ -218,10 +218,10 @@ router.get('/roles/:id/permissions', requireAdminPermission, async (req, res) =>
         // Filtrer les permissions sensibles si pas SUPER_ADMIN
         let permissionsWhereClause = '';
         if (!isSuperAdmin) {
-            // Exclure les permissions de gestion des permissions et du menu PARAMÈTRES ADMINISTRATION
+            // Exclure les permissions de gestion des permissions et l'item "Administration des Permissions"
             permissionsWhereClause = `
                 WHERE p.code NOT LIKE 'permissions.%'
-                AND p.code NOT LIKE 'menu.parametres_administration%'
+                AND p.code NOT LIKE 'menu.parametres_administration.administration_des_permissions%'
             `;
         }
         

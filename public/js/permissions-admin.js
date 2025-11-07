@@ -1067,7 +1067,7 @@ class PermissionsAdmin {
             'gestion_rh': { name: 'GESTION RH', icon: 'fas fa-users', permissions: [] },
             'configurations': { name: 'CONFIGURATIONS', icon: 'fas fa-cog', permissions: [] },
             'business_unit': { name: 'BUSINESS UNIT', icon: 'fas fa-building', permissions: [] },
-            'paramètres_administration': { name: 'PARAMÈTRES ADMINISTRATION', icon: 'fas fa-user-cog', permissions: [] }
+            'parametres_administration': { name: 'PARAMÈTRES ADMINISTRATION', icon: 'fas fa-user-cog', permissions: [] }
         };
 
         // Grouper les permissions par section

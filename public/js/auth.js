@@ -287,15 +287,29 @@ async function authenticatedFetch(url, options = {}) {
     const headers = {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
         ...options.headers
     };
     
     const fetchOptions = {
         ...options,
-        headers
+        headers,
+        cache: 'no-store',
+        credentials: options.credentials || 'include'
     };
     
-    const response = await fetch(url, fetchOptions);
+    let response = await fetch(url, fetchOptions);
+    
+    // Si la réponse est 304 (Not Modified), refaire une requête avec un cache-buster
+    if (response.status === 304) {
+        const cacheBusterUrl = url.includes('?') ? `${url}&_=${Date.now()}` : `${url}?_=${Date.now()}`;
+        response = await fetch(cacheBusterUrl, {
+            ...fetchOptions,
+            cache: 'no-store'
+        });
+    }
     
     // Si la réponse est 401 (non autorisé), rediriger vers la page de connexion
     if (response.status === 401) {

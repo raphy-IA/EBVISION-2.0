@@ -82,7 +82,7 @@ function setupEventListeners() {
 // Chargement des paramètres
 async function loadSettings() {
     try {
-        const response = await authenticatedFetch('/api/notification-settings');
+        const response = await fetchNotificationApi('/api/notification-settings');
         if (response.success) {
             currentSettings = response.data;
             applySettings();
@@ -150,7 +150,7 @@ async function saveGeneralSettings() {
             enableCronJobs: document.getElementById('enableCronJobs').checked
         };
         
-        const response = await authenticatedFetch('/api/notification-settings/general', {
+        const response = await fetchNotificationApi('/api/notification-settings/general', {
             method: 'PUT',
             body: JSON.stringify(settings)
         });
@@ -192,7 +192,7 @@ async function saveEmailSettings() {
             settings.smtpPassword = smtpPassword;
         }
         
-        const response = await authenticatedFetch('/api/notification-settings/email', {
+        const response = await fetchNotificationApi('/api/notification-settings/email', {
             method: 'PUT',
             body: JSON.stringify(settings)
         });
@@ -230,7 +230,7 @@ async function saveNotificationSettings() {
             };
         });
         
-        const response = await authenticatedFetch('/api/notification-settings/notification-types', {
+        const response = await fetchNotificationApi('/api/notification-settings/notification-types', {
             method: 'PUT',
             body: JSON.stringify(settings)
         });
@@ -257,7 +257,7 @@ async function saveAlertSettings() {
             timezone: document.getElementById('timezone').value
         };
         
-        const response = await authenticatedFetch('/api/notification-settings/alerts', {
+        const response = await fetchNotificationApi('/api/notification-settings/alerts', {
             method: 'PUT',
             body: JSON.stringify(settings)
         });
@@ -293,7 +293,7 @@ async function testEmailConfiguration() {
             enableDebug: document.getElementById('enableDebug').checked
         };
         
-        const response = await authenticatedFetch('/api/notification-settings/test-email', {
+        const response = await fetchNotificationApi('/api/notification-settings/test-email', {
             method: 'POST',
             body: JSON.stringify({
                 emailSettings: emailSettings,
@@ -332,7 +332,7 @@ async function testEmailConfiguration() {
 // Test des tâches cron
 async function testCronJobs() {
     try {
-        const response = await authenticatedFetch('/api/notification-settings/test-cron', {
+        const response = await fetchNotificationApi('/api/notification-settings/test-cron', {
             method: 'POST'
         });
         
@@ -350,7 +350,7 @@ async function testCronJobs() {
 // Chargement de l'historique des notifications
 async function loadNotificationHistory() {
     try {
-        const response = await authenticatedFetch('/api/notification-settings/history');
+        const response = await fetchNotificationApi('/api/notification-settings/history');
         if (response.success) {
             notificationHistory = response.data;
             const isAdmin = response.isAdmin;
@@ -393,7 +393,7 @@ function updateAdminInterface(isAdmin) {
 // Charger la liste des utilisateurs pour le filtre (admin seulement)
 async function loadUsersForFilter() {
     try {
-        const response = await authenticatedFetch('/api/users');
+        const response = await fetchNotificationApi('/api/users');
         if (response.success) {
             const userSelect = document.getElementById('userFilter');
             if (userSelect) {
@@ -518,7 +518,7 @@ async function clearHistory() {
     }
     
     try {
-        const response = await authenticatedFetch('/api/notification-settings/clear-history', {
+        const response = await fetchNotificationApi('/api/notification-settings/clear-history', {
             method: 'DELETE'
         });
         
@@ -551,7 +551,7 @@ async function clearUserHistory() {
     }
     
     try {
-        const response = await authenticatedFetch(`/api/notification-settings/clear-history?user_id=${selectedUserId}`, {
+        const response = await fetchNotificationApi(`/api/notification-settings/clear-history?user_id=${selectedUserId}`, {
             method: 'DELETE'
         });
         
@@ -578,7 +578,7 @@ async function clearAllHistory() {
     }
     
     try {
-        const response = await authenticatedFetch('/api/notification-settings/clear-history?confirm_all=true', {
+        const response = await fetchNotificationApi('/api/notification-settings/clear-history?confirm_all=true', {
             method: 'DELETE'
         });
         
@@ -714,7 +714,7 @@ function showAlert(message, type) {
 }
 
 // Fonction fetch authentifiée
-async function authenticatedFetch(url, options = {}) {
+async function fetchNotificationApi(url, options = {}) {
     const token = localStorage.getItem('authToken');
     if (!token) {
         throw new Error('Token d\'authentification manquant');

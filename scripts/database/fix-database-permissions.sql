@@ -32,3 +32,4 @@ WHERE grantee = 'ewm_user'
 ORDER BY table_name;
 
 
+

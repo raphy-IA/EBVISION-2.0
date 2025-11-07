@@ -160,3 +160,4 @@ WHERE table_name IN ('users', 'notifications', 'pages', 'menu_sections', 'menu_i
 ORDER BY table_name, ordinal_position;
 
 
+
