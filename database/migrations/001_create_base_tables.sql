@@ -54,6 +54,7 @@ CREATE TABLE clients (
     code VARCHAR(50) UNIQUE,
     raison_sociale VARCHAR(200) NOT NULL,
     nom VARCHAR(100),
+    siret VARCHAR(20),
     email VARCHAR(255),
     telephone VARCHAR(50),
     adresse TEXT,
