@@ -608,8 +608,32 @@ router.get('/history', authenticateToken, async (req, res) => {
             selectColumns.push('NULL as stage_name');
         }
         
+        let campaignNameColumn = null;
         if (campaignIdExists && prospectingCampaignsExists) {
-            selectColumns.push('pc.name as campaign_name');
+            try {
+                const campaignColumnCheck = await pool.query(`
+                    SELECT column_name
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                    AND table_name = 'prospecting_campaigns'
+                    AND column_name IN ('name', 'nom')
+                `);
+
+                const availableColumns = campaignColumnCheck.rows.map(row => row.column_name);
+                if (availableColumns.includes('name')) {
+                    campaignNameColumn = 'name';
+                } else if (availableColumns.includes('nom')) {
+                    campaignNameColumn = 'nom';
+                }
+            } catch (error) {
+                console.warn('Erreur lors de la vérification des colonnes prospecting_campaigns:', error.message);
+            }
+
+            if (campaignNameColumn) {
+                selectColumns.push(`pc.${campaignNameColumn} as campaign_name`);
+            } else {
+                selectColumns.push('NULL as campaign_name');
+            }
         } else if (campaignIdExists) {
             selectColumns.push('NULL as campaign_name');
         }
@@ -630,7 +654,7 @@ router.get('/history', authenticateToken, async (req, res) => {
             query += ` LEFT JOIN opportunity_stages os ON n.stage_id = os.id`;
         }
         
-        if (campaignIdExists && prospectingCampaignsExists) {
+        if (campaignIdExists && prospectingCampaignsExists && campaignNameColumn) {
             query += ` LEFT JOIN prospecting_campaigns pc ON n.campaign_id = pc.id`;
         }
         
