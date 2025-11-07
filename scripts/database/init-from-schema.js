@@ -51,9 +51,16 @@ async function main() {
         let shouldDropAndRecreate = false;
 
         // ===============================================
-        // Choix : Nouvelle BD ou existante
+        // Mode --yes : Créer une base de test automatiquement
         // ===============================================
-        if (!skipConfirm) {
+        if (skipConfirm) {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            targetDatabase = `ewm_test_${timestamp}`;
+            console.log(`\n🧪 Mode test rapide : création de "${targetDatabase}"\n`);
+        } else {
+            // ===============================================
+            // Choix : Nouvelle BD ou existante
+            // ===============================================
             const dbChoice = await inquirer.prompt([
                 {
                     type: 'list',
@@ -112,56 +119,119 @@ async function main() {
                 // ===============================================
                 console.log('\n📂 Réinitialisation d\'une base de données existante\n');
                 
-                // Lister les bases de données disponibles
-                console.log('📡 Récupération de la liste des bases de données...');
+                // Lister les bases de données où l'utilisateur a des droits
+                console.log('📡 Récupération de la liste des bases de données accessibles...');
                 const adminPool = new Pool({
                     ...connectionConfig,
                     database: 'postgres'
                 });
 
                 try {
+                    // Lister les bases où l'utilisateur a des droits
                     const dbListResult = await adminPool.query(`
-                        SELECT datname 
-                        FROM pg_database 
-                        WHERE datistemplate = false 
-                        AND datname NOT IN ('postgres')
-                        ORDER BY datname
-                    `);
+                        SELECT d.datname 
+                        FROM pg_database d
+                        WHERE d.datistemplate = false 
+                        AND d.datname NOT IN ('postgres')
+                        AND has_database_privilege($1, d.datname, 'CONNECT')
+                        ORDER BY d.datname
+                    `, [connectionConfig.user]);
 
                     const databases = dbListResult.rows.map(row => row.datname);
                     
                     if (databases.length === 0) {
-                        console.log('⚠️  Aucune base de données utilisateur trouvée.');
+                        console.log(`⚠️  Aucune base de données accessible pour l'utilisateur "${connectionConfig.user}".`);
                         await adminPool.end();
                         process.exit(0);
                     }
 
-                    console.log(`✅ ${databases.length} base(s) de données trouvée(s)\n`);
+                    console.log(`✅ ${databases.length} base(s) de données accessible(s)\n`);
 
-                    const existingDbAnswers = await inquirer.prompt([
+                    const dbSelectionAnswer = await inquirer.prompt([
                         {
                             type: 'list',
                             name: 'database',
                             message: 'Sélectionnez la base de données à réinitialiser:',
                             choices: databases,
                             default: process.env.DB_NAME
-                        },
-                        {
-                            type: 'confirm',
-                            name: 'proceed',
-                            message: (answers) => `⚠️  ATTENTION: Toutes les données de "${answers.database}" seront SUPPRIMÉES. Continuer?`,
-                            default: false
                         }
                     ]);
 
-                    if (!existingDbAnswers.proceed) {
-                        console.log('\n❌ Opération annulée\n');
-                        await adminPool.end();
-                        process.exit(0);
-                    }
+                    targetDatabase = dbSelectionAnswer.database;
 
-                    targetDatabase = existingDbAnswers.database;
-                    shouldDropAndRecreate = true;
+                    // Vérifier si la base a des tables
+                    console.log(`\n🔍 Vérification de "${targetDatabase}"...`);
+                    const checkPool = new Pool({
+                        ...connectionConfig,
+                        database: targetDatabase
+                    });
+
+                    try {
+                        const tableCountResult = await checkPool.query(`
+                            SELECT COUNT(*)::int AS count
+                            FROM information_schema.tables
+                            WHERE table_schema = 'public'
+                            AND table_type = 'BASE TABLE'
+                        `);
+
+                        const tableCount = tableCountResult.rows[0]?.count || 0;
+
+                        if (tableCount > 0) {
+                            console.log(`⚠️  La base "${targetDatabase}" contient ${tableCount} table(s).\n`);
+                            
+                            // Double confirmation pour une base avec des tables
+                            const confirmAnswers = await inquirer.prompt([
+                                {
+                                    type: 'confirm',
+                                    name: 'firstConfirm',
+                                    message: `⚠️  ATTENTION: Toutes les données de "${targetDatabase}" (${tableCount} tables) seront DÉFINITIVEMENT SUPPRIMÉES. Continuer?`,
+                                    default: false
+                                },
+                                {
+                                    type: 'confirm',
+                                    name: 'secondConfirm',
+                                    message: `⚠️  DERNIÈRE CONFIRMATION: Êtes-vous ABSOLUMENT SÛR de vouloir supprimer "${targetDatabase}"?`,
+                                    default: false,
+                                    when: (answers) => answers.firstConfirm
+                                }
+                            ]);
+
+                            if (!confirmAnswers.firstConfirm || !confirmAnswers.secondConfirm) {
+                                console.log('\n❌ Opération annulée\n');
+                                await checkPool.end();
+                                await adminPool.end();
+                                process.exit(0);
+                            }
+                        } else {
+                            console.log(`✅ La base "${targetDatabase}" est vide.\n`);
+                            
+                            // Confirmation simple pour une base vide
+                            const confirmAnswer = await inquirer.prompt([
+                                {
+                                    type: 'confirm',
+                                    name: 'proceed',
+                                    message: `Initialiser la base "${targetDatabase}"?`,
+                                    default: true
+                                }
+                            ]);
+
+                            if (!confirmAnswer.proceed) {
+                                console.log('\n❌ Opération annulée\n');
+                                await checkPool.end();
+                                await adminPool.end();
+                                process.exit(0);
+                            }
+                        }
+
+                        await checkPool.end();
+                        shouldDropAndRecreate = true;
+
+                    } catch (error) {
+                        console.error(`❌ Erreur lors de la vérification de "${targetDatabase}":`, error.message);
+                        await checkPool.end();
+                        await adminPool.end();
+                        process.exit(1);
+                    }
 
                 } catch (error) {
                     console.error('❌ Erreur lors de la récupération des bases:', error.message);
@@ -170,13 +240,6 @@ async function main() {
                 } finally {
                     await adminPool.end();
                 }
-            }
-        } else {
-            // Mode --yes : utiliser la base de .env
-            targetDatabase = process.env.DB_NAME;
-            if (!targetDatabase) {
-                console.error('❌ DB_NAME non défini dans .env');
-                process.exit(1);
             }
         }
 
