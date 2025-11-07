@@ -72,7 +72,6 @@ const checkDefaultPageAccess = async (userRole, pageName) => {
         // Pages très sensibles - ADMIN et ADMIN_IT seulement
         'users': ['SUPER_ADMIN', 'ADMIN', 'ADMIN_IT'],
         'permissions-admin': ['SUPER_ADMIN', 'ADMIN'],
-        'business-units-managers': ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'DIRECTOR', 'PARTNER'],
         
         // Pages modérément sensibles - MANAGER et plus
         'dashboard-direction': ['SUPER_ADMIN', 'MANAGER', 'DIRECTOR', 'PARTNER', 'ADMIN'],

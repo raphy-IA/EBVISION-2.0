@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Liste des pages sensibles
         const sensitivePages = [
-            'users', 'permissions-admin', 'business-units-managers',
+            'users', 'permissions-admin',
             'dashboard-direction', 'dashboard-rentabilite', 'invoices',
             'taux-horaires', 'reports', 'analytics', 'missions'
         ];

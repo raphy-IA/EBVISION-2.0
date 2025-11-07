@@ -1058,6 +1058,10 @@ class PermissionsAdmin {
     }
 
     groupMenuPermissionsBySection(allPermissions, userPermissions) {
+        const excludedPermissions = [
+            'menu.business_unit.responsables_bu_division'
+        ];
+
         const sections = {
             'dashboard': { name: 'DASHBOARD', icon: 'fas fa-tachometer-alt', permissions: [] },
             'rapports': { name: 'RAPPORTS', icon: 'fas fa-chart-bar', permissions: [] },
@@ -1072,6 +1076,9 @@ class PermissionsAdmin {
 
         // Grouper les permissions par section
         allPermissions.forEach(permission => {
+            if (excludedPermissions.includes(permission.code)) {
+                return;
+            }
             const sectionKey = permission.code.split('.')[1];
             if (sections[sectionKey]) {
                 const isGranted = userPermissions.some(p => p.code === permission.code);
