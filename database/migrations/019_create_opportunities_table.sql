@@ -60,6 +60,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_opportunities_updated_at ON opportunities;
 CREATE TRIGGER update_opportunities_updated_at
     BEFORE UPDATE ON opportunities
     FOR EACH ROW
