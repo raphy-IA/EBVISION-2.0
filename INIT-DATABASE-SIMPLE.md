@@ -33,10 +33,7 @@ git push
 git clone https://github.com/votre-repo/EBVISION-2.0.git
 cd EBVISION-2.0
 
-# 2. Créer la base
-createdb -U postgres nom_base_client
-
-# 3. Configurer .env
+# 2. Configurer .env
 cat > .env << EOF
 DB_HOST=localhost
 DB_PORT=5432
@@ -46,8 +43,15 @@ DB_NAME=nom_base_client
 DB_SSL=false
 EOF
 
-# 4. Initialiser (VERSION NON-INTERACTIVE)
+# 3. Initialiser
+# MODE INTERACTIF (recommandé) :
+node scripts/database/init-from-schema.js
+# → Choisir "Créer nouvelle base" ou "Réinitialiser base existante"
+# → Si existante : liste des bases disponibles affichée
+
+# MODE AUTOMATIQUE (pour scripts CI/CD) :
 node scripts/database/init-from-schema.js --yes
+# → Utilise DB_NAME du .env, réinitialise sans confirmation
 ```
 
 ## 📦 Ce qui est créé

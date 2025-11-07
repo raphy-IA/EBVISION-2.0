@@ -30,12 +30,7 @@ Cela crée le fichier `scripts/database/schema-complete.sql` qui contient toute 
 
 **Sur n'importe quel serveur** :
 
-1. Créer la base de données :
-```bash
-createdb -U postgres nom_base_client
-```
-
-2. Configurer le `.env` :
+1. Configurer le `.env` :
 ```env
 DB_HOST=localhost
 DB_PORT=5432
@@ -45,10 +40,20 @@ DB_NAME=nom_base_client
 DB_SSL=false
 ```
 
-3. Exécuter l'initialisation :
+2. Exécuter l'initialisation :
 ```bash
 node scripts/database/init-from-schema.js
 ```
+
+Le script vous proposera :
+- **🆕 Créer une nouvelle base** : Entrez le nom, elle sera créée automatiquement
+- **📂 Réinitialiser une base existante** : Choisissez dans la liste, elle sera DROP puis recréée
+
+**Mode automatique (pour scripts CI/CD) :**
+```bash
+node scripts/database/init-from-schema.js --yes
+```
+Utilise la base définie dans `.env` sans confirmation.
 
 **C'est tout !** ✅
 
@@ -78,9 +83,5 @@ Si vous modifiez la structure de votre base de développement :
 → Vérifiez votre fichier `.env`
 
 **Tables déjà existantes**
-→ Supprimez et recréez la base :
-```bash
-dropdb -U postgres nom_base_client
-createdb -U postgres nom_base_client
-```
+→ Utilisez l'option "Réinitialiser une base existante" du script, il s'occupe du DROP/CREATE automatiquement
 
