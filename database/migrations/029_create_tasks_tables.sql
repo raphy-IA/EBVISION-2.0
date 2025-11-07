@@ -107,16 +107,17 @@ INSERT INTO tasks (code, libelle, description, duree_estimee, priorite) VALUES
 
 -- Association des tâches aux types de mission
 INSERT INTO task_mission_types (task_id, mission_type_id, ordre, obligatoire) VALUES
--- AU003: Audit des formes juridiques
-((SELECT id FROM tasks WHERE code = 'AUDIT_COMPTES'), (SELECT id FROM mission_types WHERE codification = 'AU003'), 1, true),
-((SELECT id FROM tasks WHERE code = 'VERIF_FISCALE'), (SELECT id FROM mission_types WHERE codification = 'AU003'), 2, true),
-((SELECT id FROM tasks WHERE code = 'RAPPORT_FINAL'), (SELECT id FROM mission_types WHERE codification = 'AU003'), 3, true),
-((SELECT id FROM tasks WHERE code = 'ANALYSE_RISQUES'), (SELECT id FROM mission_types WHERE codification = 'AU003'), 4, false),
-
--- BA001: Audit des actifs de sécurité
-((SELECT id FROM tasks WHERE code = 'AUDIT_COMPTES'), (SELECT id FROM mission_types WHERE codification = 'BA001'), 1, true),
-((SELECT id FROM tasks WHERE code = 'CONTROLE_INTERNE'), (SELECT id FROM mission_types WHERE codification = 'BA001'), 2, true),
-((SELECT id FROM tasks WHERE code = 'RAPPORT_FINAL'), (SELECT id FROM mission_types WHERE codification = 'BA001'), 3, true),
+-- AU003 et BA001 commentés car ces types de mission n'existent pas dans la migration 028
+-- -- AU003: Audit des formes juridiques
+-- ((SELECT id FROM tasks WHERE code = 'AUDIT_COMPTES'), (SELECT id FROM mission_types WHERE codification = 'AU003'), 1, true),
+-- ((SELECT id FROM tasks WHERE code = 'VERIF_FISCALE'), (SELECT id FROM mission_types WHERE codification = 'AU003'), 2, true),
+-- ((SELECT id FROM tasks WHERE code = 'RAPPORT_FINAL'), (SELECT id FROM mission_types WHERE codification = 'AU003'), 3, true),
+-- ((SELECT id FROM tasks WHERE code = 'ANALYSE_RISQUES'), (SELECT id FROM mission_types WHERE codification = 'AU003'), 4, false),
+-- 
+-- -- BA001: Audit des actifs de sécurité
+-- ((SELECT id FROM tasks WHERE code = 'AUDIT_COMPTES'), (SELECT id FROM mission_types WHERE codification = 'BA001'), 1, true),
+-- ((SELECT id FROM tasks WHERE code = 'CONTROLE_INTERNE'), (SELECT id FROM mission_types WHERE codification = 'BA001'), 2, true),
+-- ((SELECT id FROM tasks WHERE code = 'RAPPORT_FINAL'), (SELECT id FROM mission_types WHERE codification = 'BA001'), 3, true),
 
 -- CONSEIL
 ((SELECT id FROM tasks WHERE code = 'CONSEIL_STRATEGIE'), (SELECT id FROM mission_types WHERE codification = 'CONSEIL'), 1, true),
