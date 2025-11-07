@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS historique_relationnel (
     description TEXT NOT NULL,
     date_interaction TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     collaborateur_id UUID REFERENCES collaborateurs(id) ON DELETE SET NULL,
-    opportunite_id UUID REFERENCES opportunites(id) ON DELETE SET NULL,
+    opportunite_id UUID REFERENCES opportunities(id) ON DELETE SET NULL,
     mission_id UUID REFERENCES missions(id) ON DELETE SET NULL,
     montant DECIMAL(12,2),
     statut VARCHAR(50), -- planifie, realise, annule, etc.
@@ -71,9 +71,10 @@ CREATE INDEX IF NOT EXISTS idx_historique_relationnel_date ON historique_relatio
 CREATE INDEX IF NOT EXISTS idx_historique_relationnel_type ON historique_relationnel(type_interaction);
 
 -- Triggers pour les nouvelles tables
-CREATE TRIGGER IF NOT EXISTS update_documents_clients_updated_at 
+DROP TRIGGER IF EXISTS update_documents_clients_updated_at ON documents_clients;
+CREATE TRIGGER update_documents_clients_updated_at 
     BEFORE UPDATE ON documents_clients 
-    FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Fonction pour calculer automatiquement la notation client
 CREATE OR REPLACE FUNCTION calculer_notation_client()
@@ -97,7 +98,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger pour calculer automatiquement la notation
-CREATE TRIGGER IF NOT EXISTS trigger_calculer_notation_client
+DROP TRIGGER IF EXISTS trigger_calculer_notation_client ON clients;
+CREATE TRIGGER trigger_calculer_notation_client
     BEFORE INSERT OR UPDATE ON clients
     FOR EACH ROW
     EXECUTE FUNCTION calculer_notation_client();
@@ -122,7 +124,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger pour calculer automatiquement le risque
-CREATE TRIGGER IF NOT EXISTS trigger_calculer_risque_client
+DROP TRIGGER IF EXISTS trigger_calculer_risque_client ON clients;
+CREATE TRIGGER trigger_calculer_risque_client
     BEFORE INSERT OR UPDATE ON clients
     FOR EACH ROW
     EXECUTE FUNCTION calculer_risque_client();
@@ -138,24 +141,24 @@ UPDATE clients SET
 WHERE forme_juridique IS NULL;
 
 -- Insertion de données de test pour les documents
-INSERT INTO documents_clients (client_id, nom, type_document, chemin_fichier, description)
-SELECT 
-    c.id,
-    'KYC_' || c.nom || '.pdf',
-    'KYC',
-    '/documents/kyc/' || c.id || '.pdf',
-    'Document KYC pour ' || c.nom
-FROM clients c
-LIMIT 3
-ON CONFLICT DO NOTHING;
+-- (Commenté car ON CONFLICT nécessite une contrainte unique spécifique)
+-- INSERT INTO documents_clients (client_id, nom, type_document, chemin_fichier, description)
+-- SELECT 
+--     c.id,
+--     'KYC_' || c.nom || '.pdf',
+--     'KYC',
+--     '/documents/kyc/' || c.id || '.pdf',
+--     'Document KYC pour ' || c.nom
+-- FROM clients c
+-- LIMIT 3;
 
 -- Insertion de données de test pour l'historique
-INSERT INTO historique_relationnel (client_id, type_interaction, description, collaborateur_id)
-SELECT 
-    c.id,
-    'premier_contact',
-    'Premier contact avec ' || c.nom,
-    c.collaborateur_id
-FROM clients c
-LIMIT 5
-ON CONFLICT DO NOTHING; 
+-- (Commenté car ON CONFLICT nécessite une contrainte unique spécifique)
+-- INSERT INTO historique_relationnel (client_id, type_interaction, description, collaborateur_id)
+-- SELECT 
+--     c.id,
+--     'premier_contact',
+--     'Premier contact avec ' || c.nom,
+--     c.collaborateur_id
+-- FROM clients c
+-- LIMIT 5; 
