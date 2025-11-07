@@ -268,32 +268,59 @@ async function main() {
         }
 
         console.log('📄 Chargement du schéma SQL...');
-        const schemaSql = fs.readFileSync(schemaPath, 'utf8');
         
-        console.log('🔨 Application du schéma...');
-        await pool.query(schemaSql);
-        console.log('✅ Schéma appliqué avec succès!\n');
+        if (!fs.existsSync(schemaPath)) {
+            console.error(`\n❌ Fichier de schéma introuvable: ${schemaPath}`);
+            await pool.end();
+            process.exit(1);
+        }
+        
+        console.log('🔨 Application du schéma via psql...');
+        
+        // Fermer le pool temporairement pour utiliser psql
+        await pool.end();
+        
+        // Utiliser psql pour appliquer le schéma (supporte multi-statements)
+        const { execSync } = require('child_process');
+        const psqlCmd = `psql -h ${connectionConfig.host} -p ${connectionConfig.port} -U ${connectionConfig.user} -d ${targetDatabase} -f "${schemaPath}" -q`;
+        
+        try {
+            process.env.PGPASSWORD = connectionConfig.password;
+            execSync(psqlCmd, { stdio: 'pipe' });
+            delete process.env.PGPASSWORD;
+            console.log('✅ Schéma appliqué avec succès!\n');
+        } catch (error) {
+            delete process.env.PGPASSWORD;
+            console.error('❌ Erreur lors de l\'application du schéma:', error.message);
+            process.exit(1);
+        }
+        
+        // Recréer le pool pour les opérations suivantes
+        const newPool = new Pool({
+            ...connectionConfig,
+            database: targetDatabase
+        });
 
         // Créer les rôles de base avec couleurs
         console.log('👥 Création des rôles de base...');
-        await createBaseRoles(pool);
+        await createBaseRoles(newPool);
         console.log('✅ Rôles créés!\n');
 
         // Créer le super admin
         console.log('👤 Création du super administrateur...');
-        await createSuperAdmin(pool);
+        await createSuperAdmin(newPool);
         console.log('✅ Super administrateur créé!\n');
 
         // Vérification finale
         console.log('📊 Vérification de la base...');
-        const tableResult = await pool.query(`
+        const tableResult = await newPool.query(`
             SELECT COUNT(*)::int AS count
             FROM information_schema.tables 
             WHERE table_schema = 'public' 
             AND table_type = 'BASE TABLE'
         `);
 
-        const rolesResult = await pool.query(`
+        const rolesResult = await newPool.query(`
             SELECT nom, badge_bg_class, badge_text_class, badge_hex_color, badge_priority
             FROM roles
             ORDER BY badge_priority ASC
@@ -301,7 +328,7 @@ async function main() {
         
         const tablesCount = tableResult.rows[0]?.count || 0;
 
-        await pool.end();
+        await newPool.end();
         
         console.log('\n╔══════════════════════════════════════════════════════════════╗');
         console.log('║              ✅ INITIALISATION TERMINÉE                     ║');
