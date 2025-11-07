@@ -28,6 +28,3 @@ CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created
 
 -- Créer un index composite pour les requêtes fréquentes
 CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications(user_id, read_at) WHERE read_at IS NULL;
-
--- Ajouter la migration à la table des migrations
-INSERT INTO migrations (filename, executed_at) VALUES ('027_create_notifications_table.sql', CURRENT_TIMESTAMP) ON CONFLICT (filename) DO NOTHING;
