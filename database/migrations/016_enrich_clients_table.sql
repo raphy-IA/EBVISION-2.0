@@ -137,7 +137,7 @@ UPDATE clients SET
     chiffre_affaires = 1000000.00,
     resultat_net = 100000.00,
     risque_client = 'moyen',
-    secteur_geographique = 'Afrique de l\'Ouest'
+    secteur_geographique = 'Afrique de l''Ouest'
 WHERE forme_juridique IS NULL;
 
 -- Insertion de données de test pour les documents
