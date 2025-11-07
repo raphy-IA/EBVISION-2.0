@@ -226,8 +226,3 @@ SELECT
     3,
     TRUE
 FROM opportunity_types ot WHERE ot.name = 'Consulting';
-
--- Marquer cette migration comme exécutée
-INSERT INTO migrations (filename, executed_at) 
-VALUES ('025_create_default_stage_templates.sql', CURRENT_TIMESTAMP)
-ON CONFLICT (filename) DO NOTHING; 

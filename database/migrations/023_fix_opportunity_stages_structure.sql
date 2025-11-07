@@ -35,8 +35,3 @@ completed_at = CASE
     WHEN status = 'COMPLETED' THEN completion_date 
     ELSE NULL 
 END;
-
--- Marquer cette migration comme exécutée
-INSERT INTO migrations (filename, executed_at) 
-VALUES ('023_fix_opportunity_stages_structure.sql', CURRENT_TIMESTAMP)
-ON CONFLICT (filename) DO NOTHING; 

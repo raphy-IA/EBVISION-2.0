@@ -96,5 +96,3 @@ FROM opportunity_types ot WHERE ot.name = 'Vente standard';
 INSERT INTO migrations (filename, executed_at)
 VALUES ('999_add_standard_sales_pipeline.sql', CURRENT_TIMESTAMP)
 ON CONFLICT (filename) DO NOTHING;
-
-

@@ -151,8 +151,3 @@ INSERT INTO risk_parameters (parameter_name, parameter_value, description) VALUE
     ('URGENT_PRIORITY_DAYS', 2, 'Nombre de jours avant la date limite pour considérer une priorité urgente'),
     ('HIGH_PRIORITY_DAYS', 5, 'Nombre de jours avant la date limite pour considérer une priorité élevée')
 ON CONFLICT (parameter_name) DO NOTHING;
-
--- Marquer cette migration comme exécutée
-INSERT INTO migrations (filename, executed_at) 
-VALUES ('024_refactor_opportunity_stages_advanced.sql', CURRENT_TIMESTAMP)
-ON CONFLICT (filename) DO NOTHING; 

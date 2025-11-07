@@ -16,8 +16,3 @@ UPDATE clients SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL;
 UPDATE clients SET updated_at = CURRENT_TIMESTAMP WHERE updated_at IS NULL;
 UPDATE missions SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL;
 UPDATE missions SET updated_at = CURRENT_TIMESTAMP WHERE updated_at IS NULL;
-
--- Marquer cette migration comme exécutée
-INSERT INTO migrations (filename, executed_at) 
-VALUES ('022_fix_missing_columns.sql', CURRENT_TIMESTAMP)
-ON CONFLICT (filename) DO NOTHING; 
