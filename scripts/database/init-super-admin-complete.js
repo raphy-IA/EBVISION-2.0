@@ -18,11 +18,11 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
+const { ensureExtensions, ensureBaseRoles, runMigrationsWithConfig } = require('./utils/schema-initializer');
 
-// Configuration de la connexion
-const pool = new Pool({
+const connectionConfig = {
     host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT) || 5432,
+    port: parseInt(process.env.DB_PORT, 10) || 5432,
     database: process.env.DB_NAME,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -30,118 +30,39 @@ const pool = new Pool({
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+};
 
 console.log('\n╔══════════════════════════════════════════════════════════════╗');
 console.log('║  INITIALISATION COMPLÈTE - SUPER ADMIN + PERMISSIONS       ║');
 console.log('╚══════════════════════════════════════════════════════════════╝\n');
 
 async function initSuperAdmin() {
+    let pool;
     try {
-        // ===============================================
-        // ÉTAPE 1: Connexion et vérification
-        // ===============================================
-        console.log('📡 ÉTAPE 1/7 : Test de connexion à la base de données...');
+        console.log('📡 ÉTAPE 1/7 : Test de connexion et extensions...');
+        pool = new Pool(connectionConfig);
         await pool.query('SELECT NOW()');
-        console.log('✅ Connexion réussie à la base de données\n');
+        console.log('✅ Connexion réussie à la base de données');
+        await ensureExtensions(pool);
+        console.log('   ✓ Extensions pgcrypto / uuid-ossp disponibles');
+        await pool.end();
 
-        // ===============================================
-        // ÉTAPE 2: Création/Vérification des tables
-        // ===============================================
-        console.log('🗄️  ÉTAPE 2/7 : Vérification et création des tables...');
-        
-        // Table users
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS users (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                nom VARCHAR(100) NOT NULL,
-                prenom VARCHAR(100) NOT NULL,
-                login VARCHAR(100) UNIQUE NOT NULL,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                password_hash VARCHAR(255) NOT NULL,
-                role VARCHAR(50) DEFAULT 'COLLABORATEUR',
-                statut VARCHAR(50) DEFAULT 'ACTIF',
-                collaborateur_id UUID,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-        console.log('   ✓ Table users');
+        console.log('\n🗄️  ÉTAPE 2/7 : Migrations et vérification de la structure...');
+        await runMigrationsWithConfig(connectionConfig);
 
-        // Table roles
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS roles (
-                id SERIAL PRIMARY KEY,
-                name VARCHAR(100) UNIQUE NOT NULL,
-                description TEXT,
-                is_system_role BOOLEAN DEFAULT false,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-        console.log('   ✓ Table roles');
+        process.env.DB_HOST = connectionConfig.host;
+        process.env.DB_PORT = String(connectionConfig.port);
+        process.env.DB_NAME = connectionConfig.database;
+        process.env.DB_USER = connectionConfig.user;
+        process.env.DB_PASSWORD = connectionConfig.password;
 
-        // Table permissions
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS permissions (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                name VARCHAR(255) UNIQUE NOT NULL,
-                code VARCHAR(255) UNIQUE NOT NULL,
-                description TEXT,
-                category VARCHAR(100),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-        console.log('   ✓ Table permissions');
+        delete require.cache[require.resolve('./verify-and-fix-database')];
+        const { verifyAndFixDatabase } = require('./verify-and-fix-database');
+        await verifyAndFixDatabase();
 
-        // Table user_roles
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS user_roles (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(user_id, role_id)
-            );
-        `);
-        console.log('   ✓ Table user_roles');
-
-        // Table role_permissions
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS role_permissions (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-                permission_id UUID NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(role_id, permission_id)
-            );
-        `);
-        console.log('   ✓ Table role_permissions\n');
-
-        // ===============================================
-        // ÉTAPE 3: Création des rôles de base
-        // ===============================================
-        console.log('👥 ÉTAPE 3/7 : Création des rôles de base...');
-        
-        const baseRoles = [
-            { name: 'SUPER_ADMIN', description: 'Super Administrateur - Accès total au système', is_system: true },
-            { name: 'ADMIN', description: 'Administrateur général', is_system: true },
-            { name: 'DIRECTEUR', description: 'Directeur - Accès stratégique', is_system: false },
-            { name: 'MANAGER', description: 'Manager - Gestion d\'équipe', is_system: false },
-            { name: 'CONSULTANT', description: 'Consultant', is_system: false },
-            { name: 'COLLABORATEUR', description: 'Collaborateur standard', is_system: false },
-            { name: 'ASSOCIE', description: 'Associé', is_system: false }
-        ];
-
-        for (const role of baseRoles) {
-            await pool.query(`
-                INSERT INTO roles (name, description, is_system_role)
-                VALUES ($1, $2, $3)
-                ON CONFLICT (name) DO NOTHING
-            `, [role.name, role.description, role.is_system]);
-        }
-        console.log(`   ✅ ${baseRoles.length} rôles créés\n`);
+        console.log('\n👥 ÉTAPE 3/7 : Synchronisation des rôles de base...');
+        pool = new Pool(connectionConfig);
+        await ensureBaseRoles(pool);
 
         // ===============================================
         // ÉTAPE 4: Création de toutes les permissions
@@ -362,7 +283,9 @@ async function initSuperAdmin() {
         console.error('   - Que PostgreSQL est démarré\n');
         throw error;
     } finally {
-        await pool.end();
+        if (pool) {
+            await pool.end();
+        }
     }
 }
 

@@ -101,6 +101,59 @@ const EXPECTED_SCHEMA = {
             { name: 'updated_at', type: 'TIMESTAMP', default: 'CURRENT_TIMESTAMP' }
         ],
         optional: true
+    },
+    roles: {
+        columns: [
+            { name: 'id', type: 'UUID', not_null: true, default: 'gen_random_uuid()', primary_key: true },
+            { name: 'name', type: 'VARCHAR(100)', not_null: true, unique: true },
+            { name: 'description', type: 'TEXT' },
+            { name: 'is_system_role', type: 'BOOLEAN', default: 'false' },
+            { name: 'badge_bg_class', type: 'VARCHAR(50)', not_null: true, default: `'secondary'` },
+            { name: 'badge_text_class', type: 'VARCHAR(50)', not_null: true, default: `'white'` },
+            { name: 'badge_hex_color', type: 'VARCHAR(7)', not_null: true, default: "'#6c757d'" },
+            { name: 'badge_priority', type: 'INTEGER', not_null: true, default: '0' },
+            { name: 'created_at', type: 'TIMESTAMP WITH TIME ZONE', default: 'CURRENT_TIMESTAMP' },
+            { name: 'updated_at', type: 'TIMESTAMP WITH TIME ZONE', default: 'CURRENT_TIMESTAMP' }
+        ],
+        uniqueIndexes: [
+            { name: 'roles_name_key', columns: ['name'] }
+        ]
+    },
+    permissions: {
+        columns: [
+            { name: 'id', type: 'UUID', not_null: true, default: 'gen_random_uuid()', primary_key: true },
+            { name: 'name', type: 'VARCHAR(255)', not_null: true },
+            { name: 'code', type: 'VARCHAR(255)', not_null: true, unique: true },
+            { name: 'description', type: 'TEXT' },
+            { name: 'category', type: 'VARCHAR(100)' },
+            { name: 'created_at', type: 'TIMESTAMP WITH TIME ZONE', default: 'CURRENT_TIMESTAMP' },
+            { name: 'updated_at', type: 'TIMESTAMP WITH TIME ZONE', default: 'CURRENT_TIMESTAMP' }
+        ],
+        uniqueIndexes: [
+            { name: 'permissions_code_key', columns: ['code'] }
+        ]
+    },
+    user_roles: {
+        columns: [
+            { name: 'id', type: 'UUID', not_null: true, default: 'gen_random_uuid()', primary_key: true },
+            { name: 'user_id', type: 'UUID', not_null: true, references: 'users(id)' },
+            { name: 'role_id', type: 'UUID', not_null: true, references: 'roles(id)' },
+            { name: 'created_at', type: 'TIMESTAMP WITH TIME ZONE', default: 'CURRENT_TIMESTAMP' }
+        ],
+        uniqueIndexes: [
+            { name: 'user_roles_user_role_unique', columns: ['user_id', 'role_id'] }
+        ]
+    },
+    role_permissions: {
+        columns: [
+            { name: 'id', type: 'UUID', not_null: true, default: 'gen_random_uuid()', primary_key: true },
+            { name: 'role_id', type: 'UUID', not_null: true, references: 'roles(id)' },
+            { name: 'permission_id', type: 'UUID', not_null: true, references: 'permissions(id)' },
+            { name: 'created_at', type: 'TIMESTAMP WITH TIME ZONE', default: 'CURRENT_TIMESTAMP' }
+        ],
+        uniqueIndexes: [
+            { name: 'role_permissions_role_permission_unique', columns: ['role_id', 'permission_id'] }
+        ]
     }
 };
 
@@ -152,33 +205,55 @@ async function getColumnInfo(tableName, columnName) {
     return result.rows[0] || null;
 }
 
+function formatColumnDefinition(column, includeConstraints = true) {
+    let definition = `${column.name} ${column.type}`;
+
+    if (column.not_null && column.default) {
+        definition += ` DEFAULT ${column.default} NOT NULL`;
+    } else if (column.default) {
+        definition += ` DEFAULT ${column.default}`;
+    } else if (column.not_null) {
+        definition += ' NOT NULL';
+    }
+
+    if (column.references) {
+        definition += ` REFERENCES ${column.references}`;
+    }
+
+    if (includeConstraints && column.unique) {
+        definition += ' UNIQUE';
+    }
+
+    return definition;
+}
+
 /**
  * Créer une table manquante
  */
 async function createTable(tableName, schema) {
     try {
-        const columns = schema.columns.map(col => {
-            let def = `${col.name} ${col.type}`;
-            if (col.not_null && !col.default) {
-                def += ' NOT NULL';
-            } else if (col.not_null && col.default) {
-                def += ` NOT NULL DEFAULT ${col.default}`;
-            } else if (col.default) {
-                def += ` DEFAULT ${col.default}`;
-            }
-            if (col.unique) {
-                def += ' UNIQUE';
-            }
-            return def;
-        });
+        const columnDefinitions = schema.columns.map(column => formatColumnDefinition(column));
+        const primaryKeyColumns = schema.columns
+            .filter(column => column.primary_key)
+            .map(column => column.name);
 
-        const primaryKey = schema.columns.find(col => col.primary_key);
-        const primaryKeyDef = primaryKey ? `, PRIMARY KEY (${primaryKey.name})` : '';
+        let sql = `CREATE TABLE ${tableName} (${columnDefinitions.join(', ')}`;
+        if (primaryKeyColumns.length > 0) {
+            sql += `, PRIMARY KEY (${primaryKeyColumns.join(', ')})`;
+        }
+        sql += ')';
 
-        const sql = `CREATE TABLE ${tableName} (${columns.join(', ')}${primaryKeyDef})`;
-        
         await pool.query(sql);
         console.log(`   ✅ Table "${tableName}" créée`);
+
+        if (schema.uniqueIndexes && schema.uniqueIndexes.length > 0) {
+            for (const uniqueIndex of schema.uniqueIndexes) {
+                const indexName = uniqueIndex.name || `idx_${tableName}_${uniqueIndex.columns.join('_')}_unique`;
+                const indexSql = `CREATE UNIQUE INDEX IF NOT EXISTS ${indexName} ON ${tableName} (${uniqueIndex.columns.join(', ')});`;
+                await pool.query(indexSql);
+            }
+        }
+
         return true;
     } catch (error) {
         if (error.message.includes('must be owner') || error.message.includes('permission denied') || error.code === '42501') {
@@ -196,35 +271,14 @@ async function createTable(tableName, schema) {
  */
 async function addColumn(tableName, column) {
     try {
-        let sql = `ALTER TABLE ${tableName} ADD COLUMN ${column.name} ${column.type}`;
-        
-        if (column.not_null && !column.default) {
-            // Pour les colonnes NOT NULL sans default, on doit d'abord ajouter avec default temporaire
-            sql = `ALTER TABLE ${tableName} ADD COLUMN ${column.name} ${column.type} DEFAULT ${column.default || "NULL"}`;
-            await pool.query(sql);
-            // Puis enlever le default si nécessaire
-            if (!column.default) {
-                await pool.query(`ALTER TABLE ${tableName} ALTER COLUMN ${column.name} DROP DEFAULT`);
-                await pool.query(`ALTER TABLE ${tableName} ALTER COLUMN ${column.name} SET NOT NULL`);
-            }
-        } else if (column.default) {
-            sql += ` DEFAULT ${column.default}`;
-            await pool.query(sql);
-        } else {
-            await pool.query(sql);
-        }
-        
+        const definition = formatColumnDefinition(column, false);
+        await pool.query(`ALTER TABLE ${tableName} ADD COLUMN ${definition}`);
+
         if (column.unique) {
-            try {
-                await pool.query(`CREATE UNIQUE INDEX ${tableName}_${column.name}_key ON ${tableName}(${column.name})`);
-            } catch (error) {
-                // Index peut déjà exister
-                if (!error.message.includes('already exists')) {
-                    throw error;
-                }
-            }
+            const indexName = `${tableName}_${column.name}_key`;
+            await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS ${indexName} ON ${tableName}(${column.name});`);
         }
-        
+
         console.log(`   ✅ Colonne "${column.name}" ajoutée à "${tableName}"`);
         return true;
     } catch (error) {
@@ -237,6 +291,24 @@ async function addColumn(tableName, column) {
             return false;
         }
         throw error;
+    }
+}
+
+async function ensureUniqueIndexes(tableName, schema) {
+    if (!schema.uniqueIndexes || schema.uniqueIndexes.length === 0) {
+        return;
+    }
+
+    for (const uniqueIndex of schema.uniqueIndexes) {
+        const indexName = uniqueIndex.name || `idx_${tableName}_${uniqueIndex.columns.join('_')}_unique`;
+        const sql = `CREATE UNIQUE INDEX IF NOT EXISTS ${indexName} ON ${tableName} (${uniqueIndex.columns.join(', ')});`;
+        try {
+            await pool.query(sql);
+        } catch (error) {
+            if (!error.message.includes('already exists')) {
+                throw error;
+            }
+        }
     }
 }
 
@@ -265,6 +337,8 @@ async function verifyAndFixTable(tableName, schema) {
             columnsAdded++;
         }
     }
+    
+    await ensureUniqueIndexes(tableName, schema);
     
     return { created: false, columnsAdded };
 }
