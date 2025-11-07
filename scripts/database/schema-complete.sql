@@ -898,7 +898,11 @@ CREATE TABLE public.roles (
     nom character varying(50) NOT NULL,
     description text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    badge_bg_class character varying(50),
+    badge_text_class character varying(50),
+    badge_hex_color character varying(7),
+    badge_priority integer
 );
 
 
