@@ -159,16 +159,21 @@ async function main() {
         console.log('📢 Création des Campagnes de prospection...');
         const campaignIds = await createProspectingCampaigns(pool, buIds, divisionIds, collaborateurIds);
         console.log(`   ✓ ${stats.campaigns} campagnes\n`);
+        
+        // 5b. Ajouter des entreprises aux campagnes
+        console.log('🏢 Ajout d\'entreprises aux campagnes...');
+        await addCompaniesToCampaigns(pool, campaignIds, refData.companies);
+        console.log(`   ✓ Entreprises ajoutées aux campagnes\n`);
 
-        // 6. Missions
-        console.log('📋 Création des Missions...');
-        const missionIds = await createMissions(pool, clientIds, buIds, divisionIds, collaborateurIds, refData);
-        console.log(`   ✓ ${stats.missions} missions\n`);
-
-        // 7. Opportunités
+        // 6. Opportunités (AVANT les missions !)
         console.log('💡 Création des Opportunités...');
-        await createOpportunities(pool, clientIds, buIds, collaborateurIds, refData, campaignIds);
-        console.log(`   ✓ ${stats.opportunities} opportunités\n`);
+        const { opportunityIds, wonOpportunityIds } = await createOpportunities(pool, clientIds, buIds, collaborateurIds, refData, campaignIds);
+        console.log(`   ✓ ${stats.opportunities} opportunités (dont ${wonOpportunityIds.length} gagnées)\n`);
+
+        // 7. Missions (depuis opportunités GAGNÉES)
+        console.log('📋 Création des Missions depuis opportunités gagnées...');
+        const missionIds = await createMissionsFromOpportunities(pool, wonOpportunityIds, collaborateurIds, refData);
+        console.log(`   ✓ ${stats.missions} missions créées\n`);
 
         // 8. Time Sheets et Time Entries
         console.log('⏱️  Création des Time Sheets et Time Entries...');
@@ -694,30 +699,60 @@ async function createMissions(pool, clientIds, buIds, divisionIds, collaborateur
 }
 
 async function createOpportunities(pool, clientIds, buIds, collaborateurIds, refData, campaignIds) {
-    const statuts = ['NOUVELLE', 'EN_COURS', 'EN_COURS', 'GAGNEE', 'PERDUE'];
-    const etapesVente = ['PROSPECTION', 'QUALIFICATION', 'PROPOSITION', 'NEGOCIATION', 'FERMETURE'];
+    const opportunityIds = [];
+    const wonOpportunityIds = []; // Pour stocker les opportunités GAGNÉES
+    
+    const opportunities = [
+        // 5 opportunités GAGNÉES (généreront des missions)
+        { nom: 'Audit Financier - Banque ABC', statut: 'GAGNEE', montant: 15000000, typeIdx: 0 },
+        { nom: 'Conseil Management - Assurance XYZ', statut: 'GAGNEE', montant: 12000000, typeIdx: 1 },
+        { nom: 'Expertise Comptable - Industrie DEF', statut: 'GAGNEE', montant: 8000000, typeIdx: 2 },
+        { nom: 'Formation Fiscale - Commerce GHI', statut: 'GAGNEE', montant: 5000000, typeIdx: 3 },
+        { nom: 'Audit Interne - Services JKL', statut: 'GAGNEE', montant: 10000000, typeIdx: 0 },
+        
+        // 5 opportunités EN_COURS
+        { nom: 'Conseil Stratégique - Tech MNO', statut: 'EN_COURS', montant: 20000000, typeIdx: 1 },
+        { nom: 'Audit Qualité - Santé PQR', statut: 'EN_COURS', montant: 9000000, typeIdx: 0 },
+        { nom: 'Expertise Juridique - Finance STU', statut: 'EN_COURS', montant: 7000000, typeIdx: 2 },
+        { nom: 'Formation RH - Industrie VWX', statut: 'EN_COURS', montant: 4000000, typeIdx: 3 },
+        { nom: 'Conseil IT - Commerce YZA', statut: 'EN_COURS', montant: 11000000, typeIdx: 1 },
+        
+        // 3 opportunités NOUVELLES
+        { nom: 'Audit Environnemental - Énergie BCD', statut: 'NOUVELLE', montant: 13000000, typeIdx: 0 },
+        { nom: 'Conseil Marketing - Retail EFG', statut: 'NOUVELLE', montant: 6000000, typeIdx: 1 },
+        { nom: 'Expertise Technique - Construction HIJ', statut: 'NOUVELLE', montant: 8500000, typeIdx: 2 },
+        
+        // 2 opportunités PERDUES
+        { nom: 'Audit Fiscal - Telecom KLM', statut: 'PERDUE', montant: 10000000, typeIdx: 0 },
+        { nom: 'Conseil Organisationnel - Services NOP', statut: 'PERDUE', montant: 7500000, typeIdx: 1 }
+    ];
     
     const fiscalYear = refData.fiscalYears[0];
     if (!fiscalYear) {
         console.log('   ⚠️ Aucune année fiscale disponible');
-        return;
+        return { opportunityIds: [], wonOpportunityIds: [] };
     }
     
-    for (let i = 0; i < Math.min(clientIds.length * 2, 15); i++) {
-        const oppType = refData.oppTypes[i % refData.oppTypes.length];
+    for (let i = 0; i < opportunities.length; i++) {
+        const opp = opportunities[i];
+        const oppType = refData.oppTypes[opp.typeIdx % refData.oppTypes.length];
         const client = clientIds[i % clientIds.length];
         const collaborateur = collaborateurIds[i % collaborateurIds.length];
-        const statut = statuts[i % statuts.length];
-        const etapeVente = etapesVente[Math.floor(i / 3) % etapesVente.length];
+        const bu = buIds[i % buIds.length];
         
-        const montantEstime = Math.floor(Math.random() * 100000) + 20000;
-        const probabilite = Math.floor(Math.random() * 60) + 20;
+        const etapeVente = opp.statut === 'GAGNEE' ? 'FERMETURE' : 
+                          opp.statut === 'EN_COURS' ? 'PROPOSITION' :
+                          opp.statut === 'PERDUE' ? 'NEGOCIATION' : 'PROSPECTION';
+        
+        const probabilite = opp.statut === 'GAGNEE' ? 100 :
+                           opp.statut === 'EN_COURS' ? 60 :
+                           opp.statut === 'PERDUE' ? 0 : 30;
         
         const dateFermeturePrevue = new Date();
-        dateFermeturePrevue.setDate(dateFermeturePrevue.getDate() + 30 + Math.floor(Math.random() * 60));
+        dateFermeturePrevue.setDate(dateFermeturePrevue.getDate() + (opp.statut === 'GAGNEE' ? -30 : 30));
         
         try {
-            await pool.query(`
+            const result = await pool.query(`
                 INSERT INTO opportunities (
                     nom, description,
                     client_id, collaborateur_id, business_unit_id,
@@ -728,25 +763,257 @@ async function createOpportunities(pool, clientIds, buIds, collaborateurIds, ref
                     type_opportunite, source
                 )
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'XAF', $12, $13, 'PROSPECTION')
+                RETURNING id
             `, [
-                `Opportunité ${oppType.name} ${i + 1}`,
+                opp.nom,
                 `Opportunité de type ${oppType.name} pour démonstration`,
                 client,
                 collaborateur,
-                buIds[i % buIds.length],
+                bu,
                 oppType.id,
                 fiscalYear.id,
-                statut,
+                opp.statut,
                 etapeVente,
-                montantEstime,
+                opp.montant,
                 probabilite,
                 dateFermeturePrevue,
                 oppType.name
             ]);
             
+            const oppId = result.rows[0].id;
+            opportunityIds.push(oppId);
             stats.opportunities++;
+            
+            // Si l'opportunité est GAGNÉE, la stocker pour créer une mission
+            if (opp.statut === 'GAGNEE') {
+                wonOpportunityIds.push({
+                    id: oppId,
+                    nom: opp.nom,
+                    client_id: client,
+                    business_unit_id: bu,
+                    collaborateur_id: collaborateur,
+                    montant_estime: opp.montant,
+                    opportunity_type_id: oppType.id,
+                    fiscal_year_id: fiscalYear.id,
+                    type: oppType.name
+                });
+            }
         } catch (error) {
-            console.log(`   ⚠️ Opportunité ${i + 1}: ${error.message}`);
+            console.log(`   ⚠️ ${opp.nom}: ${error.message}`);
+        }
+    }
+    
+    return { opportunityIds, wonOpportunityIds };
+}
+
+async function createMissionsFromOpportunities(pool, wonOpportunities, collaborateurIds, refData) {
+    const missionIds = [];
+    
+    for (let i = 0; i < wonOpportunities.length; i++) {
+        const opp = wonOpportunities[i];
+        
+        try {
+            const missionCode = `MISS-${new Date().getFullYear()}-${String(i + 1).padStart(3, '0')}`;
+            const startDate = new Date();
+            const endDate = new Date(startDate);
+            endDate.setMonth(endDate.getMonth() + 3); // Mission de 3 mois
+            
+            // Trouver le type de mission correspondant
+            const missionType = refData.missionTypes.find(mt => 
+                mt.libelle && opp.type && mt.libelle.toLowerCase().includes(opp.type.toLowerCase())
+            ) || refData.missionTypes[0];
+            
+            const result = await pool.query(`
+                INSERT INTO missions (
+                    nom, code, description,
+                    client_id, business_unit_id, collaborateur_id,
+                    opportunity_id, mission_type_id, fiscal_year_id,
+                    statut, priorite,
+                    date_debut, date_fin, budget_estime
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'PLANIFIEE', 'MOYENNE', $10, $11, $12)
+                RETURNING id
+            `, [
+                opp.nom, // Même nom que l'opportunité
+                missionCode,
+                `Mission créée depuis l'opportunité ${opp.nom}`,
+                opp.client_id, // Hérité
+                opp.business_unit_id, // Hérité
+                opp.collaborateur_id, // Hérité
+                opp.id, // Lien vers l'opportunité
+                missionType?.id,
+                opp.fiscal_year_id,
+                startDate,
+                endDate,
+                opp.montant_estime // Hérité
+            ]);
+            
+            const missionId = result.rows[0].id;
+            missionIds.push(missionId);
+            stats.missions++;
+            
+            // Créer les activités de la mission
+            await createMissionTasks(pool, missionId, opp.type, refData);
+            
+            // Affecter les collaborateurs à la mission
+            await assignCollaboratorsToMission(pool, missionId, opp, collaborateurIds);
+            
+        } catch (error) {
+            console.log(`   ⚠️ Mission ${opp.nom}: ${error.message}`);
+        }
+    }
+    
+    return missionIds;
+}
+
+async function createMissionTasks(pool, missionId, missionType, refData) {
+    // Activités par type de mission
+    const activitesParType = {
+        'Audit': ['Planification', 'Collecte', 'Analyse', 'Rapport'],
+        'Conseil': ['Diagnostic', 'Recommandations', 'Mise en œuvre', 'Suivi'],
+        'Expertise': ['Étude préliminaire', 'Expertise', 'Rapport'],
+        'Formation': ['Préparation', 'Animation', 'Évaluation'],
+        'Comptabilité': ['Saisie', 'Révision', 'Clôture']
+    };
+    
+    // Trouver les activités correspondantes
+    let activites = activitesParType['Audit']; // Par défaut
+    for (const [type, acts] of Object.entries(activitesParType)) {
+        if (missionType && missionType.toLowerCase().includes(type.toLowerCase())) {
+            activites = acts;
+            break;
+        }
+    }
+    
+    let currentDate = new Date();
+    
+    for (const activiteNom of activites) {
+        try {
+            // Chercher la task correspondante
+            const taskResult = await pool.query(`
+                SELECT id FROM tasks 
+                WHERE libelle ILIKE $1 OR code ILIKE $2
+                LIMIT 1
+            `, [`%${activiteNom}%`, `%${activiteNom}%`]);
+            
+            if (taskResult.rows.length > 0) {
+                const duree = 20 + Math.floor(Math.random() * 60); // 20-80 heures
+                const endDate = new Date(currentDate);
+                endDate.setDate(endDate.getDate() + Math.floor(duree / 8)); // Durée en jours
+                
+                await pool.query(`
+                    INSERT INTO mission_tasks (
+                        mission_id, task_id,
+                        statut, duree_planifiee,
+                        date_debut, date_fin
+                    )
+                    VALUES ($1, $2, 'PLANIFIEE', $3, $4, $5)
+                `, [missionId, taskResult.rows[0].id, duree, currentDate, endDate]);
+                
+                currentDate = new Date(endDate);
+                currentDate.setDate(currentDate.getDate() + 1); // Jour suivant
+            }
+        } catch (error) {
+            // Ignorer les erreurs de tâches manquantes
+        }
+    }
+}
+
+async function assignCollaboratorsToMission(pool, missionId, opportunity, collaborateurIds) {
+    // Récupérer des collaborateurs de la même BU
+    const collabsResult = await pool.query(`
+        SELECT c.id, c.grade_actuel_id, g.nom as grade_nom
+        FROM collaborateurs c
+        LEFT JOIN grades g ON c.grade_actuel_id = g.id
+        WHERE c.business_unit_id = $1
+        AND c.statut = 'ACTIF'
+        LIMIT 4
+    `, [opportunity.business_unit_id]);
+    
+    if (collabsResult.rows.length === 0) {
+        // Si aucun collaborateur dans la BU, utiliser les collaborateurs disponibles
+        for (let i = 0; i < Math.min(3, collaborateurIds.length); i++) {
+            const collabId = collaborateurIds[i];
+            await assignCollaborator(pool, missionId, collabId, i);
+        }
+        return;
+    }
+    
+    const roles = ['Chef de mission', 'Consultant senior', 'Consultant', 'Assistant'];
+    
+    for (let i = 0; i < collabsResult.rows.length; i++) {
+        const collab = collabsResult.rows[i];
+        await assignCollaborator(pool, missionId, collab.id, i, collab.grade_actuel_id);
+    }
+}
+
+async function assignCollaborator(pool, missionId, collaborateurId, index, gradeId = null) {
+    const roles = ['Chef de mission', 'Consultant senior', 'Consultant', 'Assistant'];
+    
+    try {
+        // Récupérer le taux horaire si on a le grade
+        let tauxHoraire = 50000; // Valeur par défaut
+        
+        if (gradeId) {
+            const tauxResult = await pool.query(`
+                SELECT taux_horaire 
+                FROM taux_horaires
+                WHERE grade_id = $1 
+                AND statut = 'ACTIF'
+                LIMIT 1
+            `, [gradeId]);
+            
+            if (tauxResult.rows.length > 0) {
+                tauxHoraire = tauxResult.rows[0].taux_horaire;
+            }
+        }
+        
+        const heuresPlanifiees = 40 + Math.floor(Math.random() * 160); // 40-200h
+        
+        await pool.query(`
+            INSERT INTO mission_collaborateurs (
+                mission_id, collaborateur_id,
+                role, taux_horaire,
+                heures_planifiees, statut
+            )
+            VALUES ($1, $2, $3, $4, $5, 'PLANIFIE')
+            ON CONFLICT DO NOTHING
+        `, [
+            missionId,
+            collaborateurId,
+            roles[index % roles.length],
+            tauxHoraire,
+            heuresPlanifiees
+        ]);
+    } catch (error) {
+        // Ignorer les erreurs de doublon
+    }
+}
+
+async function addCompaniesToCampaigns(pool, campaignIds, companies) {
+    if (campaignIds.length === 0 || companies.length === 0) {
+        return;
+    }
+    
+    for (const campaignId of campaignIds) {
+        // Ajouter 5-10 entreprises par campagne
+        const numCompanies = 5 + Math.floor(Math.random() * 6);
+        
+        for (let i = 0; i < numCompanies && i < companies.length; i++) {
+            const company = companies[i % companies.length];
+            
+            try {
+                await pool.query(`
+                    INSERT INTO prospecting_campaign_companies (
+                        campaign_id, company_id,
+                        execution_status
+                    )
+                    VALUES ($1, $2, 'NOT_CONTACTED')
+                    ON CONFLICT DO NOTHING
+                `, [campaignId, company.id]);
+            } catch (error) {
+                // Ignorer les erreurs (table peut ne pas exister)
+            }
         }
     }
 }
