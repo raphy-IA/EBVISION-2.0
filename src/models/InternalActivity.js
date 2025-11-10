@@ -220,7 +220,7 @@ class InternalActivity {
             SELECT id, nom, description
             FROM business_units
             WHERE statut = 'ACTIF'
-            ORDER BY nom
+            ORDER BY name
         `;
         
         try {

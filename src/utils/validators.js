@@ -4,7 +4,7 @@ const pool = require('./database');
 // Fonction pour récupérer les rôles depuis la base de données
 async function getValidRoles() {
     try {
-        const result = await pool.query('SELECT name FROM roles ORDER BY name');
+        const result = await pool.query('SELECT nom as name FROM roles ORDER BY name');
         return result.rows.map(row => row.name);
     } catch (error) {
         console.error('Erreur lors de la récupération des rôles pour validation:', error);

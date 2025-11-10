@@ -370,9 +370,11 @@ function displayRequiredActions(actions) {
                     </span>
                     ${action.validation_order ? `<span class="badge bg-secondary ms-1">Ordre: ${action.validation_order}</span>` : ''}
                 </div>
+                ${!action.id.startsWith('json_') ? `
                 <button class="btn btn-outline-danger btn-sm" onclick="removeRequiredAction('${action.id}')">
                     <i class="fas fa-trash"></i>
                 </button>
+                ` : ''}
             </div>
         </div>
     `).join('');
@@ -398,9 +400,11 @@ function displayRequiredDocuments(documents) {
                         ${doc.is_mandatory ? 'Obligatoire' : 'Optionnel'}
                     </span>
                 </div>
+                ${!doc.id.startsWith('json_') ? `
                 <button class="btn btn-outline-danger btn-sm" onclick="removeRequiredDocument('${doc.id}')">
                     <i class="fas fa-trash"></i>
                 </button>
+                ` : ''}
             </div>
         </div>
     `).join('');

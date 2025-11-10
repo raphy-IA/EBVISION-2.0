@@ -1,13 +1,19 @@
 #!/usr/bin/env node
 
 /**
- * SCRIPT 2/3 : CRÉATION D'UN UTILISATEUR SUPER ADMIN
+ * SCRIPT 2/4 : CRÉATION D'UN UTILISATEUR SUPER ADMIN
  * ===================================================
  * 
- * Ce script crée un utilisateur avec le rôle SUPER_ADMIN
- * et lui affecte toutes les permissions de menu et d'API
+ * Ce script crée un utilisateur avec le rôle Super Administrateur
+ * et lui associe le rôle dans la table user_roles.
  * 
- * Usage: node scripts/2-create-super-admin.js
+ * Fonctionnalités :
+ * - Validation robuste des entrées (email, mot de passe fort)
+ * - Détection des utilisateurs existants
+ * - Mise à jour si l'utilisateur existe déjà
+ * - Association automatique du rôle Super Administrateur
+ * 
+ * Usage: node scripts/database/2-create-super-admin.js
  */
 
 require('dotenv').config();
@@ -16,16 +22,23 @@ const bcrypt = require('bcrypt');
 const inquirer = require('inquirer');
 
 console.log('\n╔══════════════════════════════════════════════════════════════╗');
-console.log('║       ÉTAPE 2/3 : CRÉATION SUPER ADMIN                     ║');
+console.log('║     ÉTAPE 2/4 : CRÉATION SUPER ADMIN                       ║');
 console.log('╚══════════════════════════════════════════════════════════════╝\n');
 
-async function createSuperAdmin() {
+async function main() {
     let pool;
     
     try {
         // ===============================================
-        // Connexion à la base de données
+        // Configuration et connexion
         // ===============================================
+        console.log('📋 Configuration PostgreSQL (depuis .env):\n');
+        console.log(`   🏠 Hôte       : ${process.env.DB_HOST || 'localhost'}`);
+        console.log(`   🔌 Port       : ${process.env.DB_PORT || '5432'}`);
+        console.log(`   👤 Utilisateur: ${process.env.DB_USER || 'Non défini'}`);
+        console.log(`   🗄️  Base      : ${process.env.DB_NAME || 'Non définie'}`);
+        console.log(`   🔐 SSL        : ${process.env.NODE_ENV === 'production' ? 'Oui' : 'Non'}\n`);
+
         pool = new Pool({
             host: process.env.DB_HOST || 'localhost',
             port: parseInt(process.env.DB_PORT) || 5432,
@@ -42,15 +55,21 @@ async function createSuperAdmin() {
         await pool.query('SELECT NOW()');
         console.log('✅ Connexion réussie!\n');
 
+        // ===============================================
         // Vérifier que le rôle SUPER_ADMIN existe
+        // ===============================================
         const roleCheck = await pool.query('SELECT id FROM roles WHERE name = $1', ['SUPER_ADMIN']);
         if (roleCheck.rows.length === 0) {
-            console.log('❌ Le rôle SUPER_ADMIN n\'existe pas dans la base de données');
-            console.log('💡 Exécutez d\'abord: node scripts/1-init-database-tables.js\n');
+            console.log('❌ Le rôle "SUPER_ADMIN" n\'existe pas dans la base de données');
+            console.log('💡 Exécutez d\'abord: node scripts/database/1-init-database-tables.js\n');
             await pool.end();
             return;
         }
         const superAdminRoleId = roleCheck.rows[0].id;
+
+        console.log('\n🛠️  Vérification de la structure de la table users...');
+        await ensureUserColumns(pool);
+        console.log('   ✓ Structure users prête\n');
 
         // ===============================================
         // Demander les informations de l'utilisateur
@@ -73,11 +92,16 @@ async function createSuperAdmin() {
             {
                 type: 'input',
                 name: 'login',
-                message: 'Login (identifiant de connexion):',
-                default: 'admin',
+                message: 'Login (nom d\'utilisateur):',
+                default: (answers) => {
+                    // Générer un login par défaut à partir du nom et prénom
+                    const nom = answers.nom || '';
+                    const prenom = answers.prenom || '';
+                    return (prenom.charAt(0) + nom).toLowerCase().replace(/[^a-z0-9]/g, '');
+                },
                 validate: (input) => {
                     if (input.length < 3) return 'Le login doit contenir au moins 3 caractères';
-                    if (!/^[a-zA-Z0-9_-]+$/.test(input)) return 'Le login ne peut contenir que des lettres, chiffres, - et _';
+                    if (!/^[a-z0-9_-]+$/i.test(input)) return 'Le login ne peut contenir que des lettres, chiffres, tirets et underscores';
                     return true;
                 }
             },
@@ -85,6 +109,7 @@ async function createSuperAdmin() {
                 type: 'input',
                 name: 'email',
                 message: 'Email:',
+                default: 'admin@ebvision.com',
                 validate: (input) => {
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (!emailRegex.test(input)) return 'Email invalide';
@@ -96,6 +121,7 @@ async function createSuperAdmin() {
                 name: 'password',
                 message: 'Mot de passe:',
                 mask: '*',
+                default: 'Admin@2025',
                 validate: (input) => {
                     if (input.length < 8) return 'Le mot de passe doit contenir au moins 8 caractères';
                     if (!/[A-Z]/.test(input)) return 'Le mot de passe doit contenir au moins une majuscule';
@@ -123,15 +149,16 @@ async function createSuperAdmin() {
         console.log('\n🔍 Vérification de l\'existence de l\'utilisateur...');
         
         const existingUser = await pool.query(
-            'SELECT id, login, email FROM users WHERE login = $1 OR email = $2',
-            [answers.login, answers.email]
+            'SELECT id, email FROM users WHERE email = $1',
+            [answers.email]
         );
+
+        let userId;
 
         if (existingUser.rows.length > 0) {
             const existing = existingUser.rows[0];
-            console.log('⚠️  Un utilisateur avec ce login ou email existe déjà:');
+            console.log('⚠️  Un utilisateur avec cet email existe déjà:');
             console.log(`   → ID: ${existing.id}`);
-            console.log(`   → Login: ${existing.login}`);
             console.log(`   → Email: ${existing.email}\n`);
             
             const overwriteAnswer = await inquirer.prompt([
@@ -154,67 +181,99 @@ async function createSuperAdmin() {
             
             await pool.query(`
                 UPDATE users 
-                SET nom = $1, prenom = $2, email = $3, password_hash = $4, role = 'SUPER_ADMIN', statut = 'ACTIF'
-                WHERE id = $5
-            `, [answers.nom, answers.prenom, answers.email, passwordHash, existing.id]);
+                SET nom = $1, prenom = $2, login = $3, email = $4, password_hash = $5, role = 'SUPER_ADMIN', statut = 'ACTIF'
+                WHERE id = $6
+            `, [answers.nom, answers.prenom, answers.login, answers.email, passwordHash, existing.id]);
 
             console.log('\n✅ Utilisateur mis à jour avec succès!');
             console.log(`   → ID: ${existing.id}`);
             
-            // S'assurer que le rôle est associé
-            await pool.query(`
-                INSERT INTO user_roles (user_id, role_id)
-                VALUES ($1, $2)
-                ON CONFLICT (user_id, role_id) DO NOTHING
-            `, [existing.id, superAdminRoleId]);
+            userId = existing.id;
+
+        } else {
+            // ===============================================
+            // Créer le nouvel utilisateur
+            // ===============================================
+            console.log('\n👤 Création de l\'utilisateur...');
             
-            await displaySummary(existing.id, answers, pool);
-            await pool.end();
-            return;
+            const passwordHash = await bcrypt.hash(answers.password, 12);
+            
+            const result = await pool.query(`
+                INSERT INTO users (nom, prenom, login, email, password_hash, role, statut)
+                VALUES ($1, $2, $3, $4, $5, 'SUPER_ADMIN', 'ACTIF')
+                RETURNING id, nom, prenom, login, email, role, created_at
+            `, [
+                answers.nom,
+                answers.prenom,
+                answers.login,
+                answers.email,
+                passwordHash
+            ]);
+
+            const newUser = result.rows[0];
+            console.log('✅ Utilisateur créé avec succès!');
+            console.log(`   → ID: ${newUser.id}`);
+            
+            userId = newUser.id;
         }
 
         // ===============================================
-        // Créer le nouvel utilisateur
+        // Associer le rôle Super Administrateur
         // ===============================================
-        console.log('\n👤 Création de l\'utilisateur...');
-        
-        // Hasher le mot de passe
-        const passwordHash = await bcrypt.hash(answers.password, 12);
-        
-        // Créer l'utilisateur
-        const result = await pool.query(`
-            INSERT INTO users (nom, prenom, login, email, password_hash, role, statut)
-            VALUES ($1, $2, $3, $4, $5, 'SUPER_ADMIN', 'ACTIF')
-            RETURNING id, nom, prenom, login, email, role, created_at
-        `, [
-            answers.nom,
-            answers.prenom,
-            answers.login,
-            answers.email,
-            passwordHash
-        ]);
-
-        const newUser = result.rows[0];
-        console.log('✅ Utilisateur créé avec succès!');
-        console.log(`   → ID: ${newUser.id}`);
-
-        // ===============================================
-        // Associer le rôle SUPER_ADMIN
-        // ===============================================
-        console.log('\n🔗 Association du rôle SUPER_ADMIN...');
+        console.log('\n🔗 Association du rôle Super Administrateur...');
         
         await pool.query(`
             INSERT INTO user_roles (user_id, role_id)
             VALUES ($1, $2)
             ON CONFLICT (user_id, role_id) DO NOTHING
-        `, [newUser.id, superAdminRoleId]);
+        `, [userId, superAdminRoleId]);
         
-        console.log('✅ Rôle SUPER_ADMIN associé');
+        console.log('✅ Rôle Super Administrateur associé');
 
         // ===============================================
-        // Afficher le résumé
+        // Compter les permissions actuelles
         // ===============================================
-        await displaySummary(newUser.id, answers, pool);
+        const permCount = await pool.query('SELECT COUNT(*) as count FROM permissions');
+        const rolePermCount = await pool.query(`
+            SELECT COUNT(*) as count 
+            FROM role_permissions rp
+            JOIN user_roles ur ON rp.role_id = ur.role_id
+            WHERE ur.user_id = $1
+        `, [userId]);
+
+        // ===============================================
+        // Résumé
+        // ===============================================
+        console.log('\n╔══════════════════════════════════════════════════════════════╗');
+        console.log('║           ✅ SUPER ADMIN CRÉÉ AVEC SUCCÈS                   ║');
+        console.log('╚══════════════════════════════════════════════════════════════╝\n');
+        
+        console.log('📊 INFORMATIONS :');
+        console.log('═════════════════');
+        console.log(`   👤 Nom      : ${answers.nom} ${answers.prenom}`);
+        console.log(`   🔑 Login    : ${answers.login}`);
+        console.log(`   📧 Email    : ${answers.email}`);
+        console.log(`   🆔 ID       : ${userId}`);
+        console.log(`   👑 Rôle     : Super Administrateur`);
+        
+        console.log(`\n📋 PERMISSIONS :`);
+        console.log(`   → ${permCount.rows[0].count} permissions disponibles dans la base`);
+        console.log(`   → ${rolePermCount.rows[0].count} permissions actuellement associées`);
+        
+        if (parseInt(rolePermCount.rows[0].count) === 0) {
+            console.log('\n⚠️  ATTENTION : Aucune permission associée pour le moment');
+        }
+        
+        console.log('\n🎯 PROCHAINE ÉTAPE :');
+        console.log('════════════════════');
+        console.log('   Affecter toutes les permissions → node scripts/database/3-assign-all-permissions.js');
+        
+        console.log('\n🔑 INFORMATIONS DE CONNEXION :');
+        console.log('══════════════════════════════');
+        console.log(`   🔑 Login        : ${answers.login}`);
+        console.log(`   📧 Email        : ${answers.email}`);
+        console.log(`   🔐 Mot de passe : [celui que vous avez défini]`);
+        console.log('\n');
 
         await pool.end();
 
@@ -226,48 +285,22 @@ async function createSuperAdmin() {
     }
 }
 
-// Fonction pour afficher le résumé
-async function displaySummary(userId, answers, pool) {
-    console.log('\n╔══════════════════════════════════════════════════════════════╗');
-    console.log('║           ✅ SUPER ADMIN CRÉÉ AVEC SUCCÈS                   ║');
-    console.log('╚══════════════════════════════════════════════════════════════╝\n');
-    
-    console.log('📊 INFORMATIONS :');
-    console.log('═════════════════');
-    console.log(`   👤 Nom      : ${answers.nom} ${answers.prenom}`);
-    console.log(`   🔑 Login    : ${answers.login}`);
-    console.log(`   📧 Email    : ${answers.email}`);
-    console.log(`   🆔 ID       : ${userId}`);
-    console.log(`   👑 Rôle     : SUPER_ADMIN`);
-    
-    // Compter les permissions actuelles
-    const permCount = await pool.query('SELECT COUNT(*) as count FROM permissions');
-    const rolePermCount = await pool.query(`
-        SELECT COUNT(*) as count 
-        FROM role_permissions rp
-        JOIN user_roles ur ON rp.role_id = ur.role_id
-        WHERE ur.user_id = $1
-    `, [userId]);
-    
-    console.log(`\n📋 PERMISSIONS :`);
-    console.log(`   → ${permCount.rows[0].count} permissions disponibles dans la base`);
-    console.log(`   → ${rolePermCount.rows[0].count} permissions actuellement associées`);
-    
-    if (parseInt(rolePermCount.rows[0].count) === 0) {
-        console.log('\n⚠️  ATTENTION : Aucune permission associée pour le moment');
+async function ensureUserColumns(pool) {
+    const queries = [
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS nom VARCHAR(255);`,
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS prenom VARCHAR(255);`,
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);`,
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;`,
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'USER';`,
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS statut VARCHAR(50) DEFAULT 'ACTIF';`
+    ];
+
+    for (const query of queries) {
+        await pool.query(query);
     }
-    
-    console.log('\n🎯 PROCHAINE ÉTAPE :');
-    console.log('════════════════════');
-    console.log('   Affecter toutes les permissions → node scripts/3-assign-all-permissions.js');
-    
-    console.log('\n🔑 INFORMATIONS DE CONNEXION :');
-    console.log('══════════════════════════════');
-    console.log(`   📧 Email/Login : ${answers.email} ou ${answers.login}`);
-    console.log(`   🔐 Mot de passe : [celui que vous avez défini]`);
-    console.log('\n');
+
+    // S'assurer que la colonne email est unique
+    await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_unique ON users(email);`);
 }
 
-// Exécution
-createSuperAdmin().catch(console.error);
-
+main();

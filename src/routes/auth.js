@@ -649,6 +649,12 @@ router.post('/login-2fa', async (req, res) => {
                 });
             }
             
+            // Récupérer les rôles multiples de l'utilisateur
+            const userRolesData = await User.getRoles(user.id);
+            const userRoles = userRolesData.map(r => r.name); // Extraire juste les noms des rôles
+            
+            console.log(`👤 Connexion 2FA de ${user.email} avec les rôles:`, userRoles);
+            
             // Générer le token JWT final
             const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
             const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
@@ -659,7 +665,7 @@ router.post('/login-2fa', async (req, res) => {
                     email: user.email,
                     nom: user.nom,
                     prenom: user.prenom,
-                    role: user.role,
+                    roles: userRoles, // Rôles multiples au lieu d'un seul rôle
                     permissions: ['users:read', 'users:create', 'users:update', 'users:delete']
                 },
                 JWT_SECRET,
@@ -680,7 +686,7 @@ router.post('/login-2fa', async (req, res) => {
                         prenom: user.prenom,
                         email: user.email,
                         login: user.login,
-                        role: user.role
+                        roles: userRoles // Rôles multiples
                     }
                 }
             });

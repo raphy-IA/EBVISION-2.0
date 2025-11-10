@@ -14,16 +14,19 @@
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
     
+    <!-- Script de chargement du branding (DOIT être chargé AVANT les styles) -->
+    <script src="js/branding-loader.js"></script>
+    
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --info-color: #17a2b8;
-            --light-color: #ecf0f1;
-            --dark-color: #2c3e50;
+            --primary-color: var(--brand-primary, #2c3e50);
+            --secondary-color: var(--brand-secondary, #3498db);
+            --accent-color: var(--brand-accent, #e74c3c);
+            --success-color: var(--brand-success, #27ae60);
+            --warning-color: var(--brand-warning, #f39c12);
+            --info-color: var(--brand-info, #17a2b8);
+            --light-color: var(--brand-light, #ecf0f1);
+            --dark-color: var(--brand-dark, #2c3e50);
         }
 
         body {
@@ -176,9 +179,6 @@
         }
 
     </style>
-    
-    <!-- Script de chargement du branding (doit être chargé en premier) -->
-    <script src="js/branding-loader.js"></script>
     
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>

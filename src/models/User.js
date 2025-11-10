@@ -22,8 +22,26 @@ class User {
         const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
-        // Générer un login basé sur les initiales si non fourni
-        const userLogin = login || (nom.substring(0, 1) + prenom.substring(0, 1)).toLowerCase();
+        // Générer un login basé sur les initiales si non fourni, avec gestion de l'unicité
+        let userLogin = login || (nom.substring(0, 1) + prenom.substring(0, 1)).toLowerCase();
+        
+        // Vérifier l'unicité du login et ajouter un numéro si nécessaire
+        if (!login) {
+            // Si le login n'a pas été fourni explicitement, vérifier l'unicité
+            const baseLogin = userLogin;
+            let counter = 1;
+            let isUnique = false;
+            
+            while (!isUnique) {
+                const checkResult = await query('SELECT id FROM users WHERE login = $1', [userLogin]);
+                if (checkResult.rows.length === 0) {
+                    isUnique = true;
+                } else {
+                    userLogin = baseLogin + counter;
+                    counter++;
+                }
+            }
+        }
 
         // Créer l'utilisateur avec un rôle legacy par défaut (pour respecter la contrainte NOT NULL)
         // Les rôles réels seront gérés via la table user_roles
@@ -105,7 +123,7 @@ class User {
     // Récupérer un utilisateur par email
     static async findByEmail(email) {
         const sql = `
-            SELECT u.id, u.nom, u.prenom, u.email, u.password_hash, u.login, u.role,
+            SELECT u.id, u.nom, u.prenom, u.email, u.password_hash, u.role,
                    u.statut, u.last_login, u.created_at, u.updated_at
             FROM users u
             WHERE u.email = $1
@@ -115,13 +133,13 @@ class User {
         return result.rows[0] || null;
     }
 
-    // Récupérer un utilisateur par login
+    // Récupérer un utilisateur par login (alias pour findByEmail)
     static async findByLogin(login) {
         const sql = `
-            SELECT u.id, u.nom, u.prenom, u.email, u.password_hash, u.login, u.role,
+            SELECT u.id, u.nom, u.prenom, u.email, u.password_hash, u.role,
                    u.statut, u.last_login, u.created_at, u.updated_at
             FROM users u
-            WHERE u.login = $1
+            WHERE u.email = $1
         `;
 
         const result = await query(sql, [login]);
@@ -214,7 +232,7 @@ class User {
 
         // Requête pour les données avec information des collaborateurs
         const sql = `
-            SELECT u.id, u.nom, u.prenom, u.email, u.login, u.role,
+            SELECT u.id, u.nom, u.prenom, u.login, u.email, u.role,
                    u.statut, u.last_login, u.created_at, u.updated_at,
                    c.id as collaborateur_id
             FROM users u
@@ -226,28 +244,31 @@ class User {
 
         const result = await query(sql, [...params, limit, offset]);
 
-        // Récupérer les rôles multiples pour chaque utilisateur
+        // Récupérer les rôles multiples pour chaque utilisateur avec leurs couleurs
         const usersWithRoles = await Promise.all(result.rows.map(async (user) => {
             try {
                 const rolesQuery = `
-                    SELECT r.name
+                    SELECT r.name, r.badge_bg_class, r.badge_text_class, r.badge_hex_color, r.badge_priority
                     FROM user_roles ur
                     JOIN roles r ON ur.role_id = r.id
                     WHERE ur.user_id = $1
-                    ORDER BY r.name
+                    ORDER BY r.badge_priority DESC NULLS LAST, r.name
                 `;
                 const rolesResult = await query(rolesQuery, [user.id]);
                 const roles = rolesResult.rows.map(row => row.name);
+                const rolesWithColors = rolesResult.rows; // Conserver toutes les infos des rôles
                 
                 return {
                     ...user,
-                    roles: roles // Ajouter les rôles multiples
+                    roles: roles, // Noms des rôles (pour compatibilité)
+                    roles_details: rolesWithColors // Détails complets des rôles avec couleurs
                 };
             } catch (error) {
                 console.error(`Erreur lors de la récupération des rôles pour l'utilisateur ${user.id}:`, error);
                 return {
                     ...user,
-                    roles: [] // Retourner un tableau vide en cas d'erreur
+                    roles: [], // Retourner un tableau vide en cas d'erreur
+                    roles_details: []
                 };
             }
         }));
@@ -531,7 +552,7 @@ class User {
             SELECT COUNT(*) as count
             FROM user_roles ur
             JOIN roles r ON ur.role_id = r.id
-            WHERE ur.user_id = $1 AND r.nom = $2
+            WHERE ur.user_id = $1 AND r.name = $2
         `;
 
         const result = await query(sql, [userId, roleName]);

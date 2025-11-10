@@ -542,8 +542,7 @@ router.get('/history', authenticateToken, async (req, res) => {
         let selectColumns = [
             ...notificationColumns,
             'u.nom as user_nom',
-            'u.prenom as user_prenom',
-            'u.login as user_login'
+            'u.prenom as user_prenom'
         ];
         
         // Vérifier si les tables existent avant d'ajouter les colonnes et JOINs

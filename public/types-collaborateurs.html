@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Types de Collaborateurs - EB Vision 2.0</title>
+    
+    <!-- Préconnexion CDN -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    
+    <!-- CSS -->
+    <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+        
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .stat-card.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .modal {
+            pointer-events: none !important;
+        }
+        
+        .modal.show {
+            pointer-events: auto !important;
+        }
+        
+        .modal-dialog {
+            pointer-events: auto !important;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+    
+    <!-- CSS des variables de branding dynamiques -->
+    <link rel="stylesheet" href="/config/themes/brand-variables.css">
+    
+    <!-- Scripts de branding -->
+    <script src="js/branding-loader.js"></script>
+    <script src="js/sidebar-branding.js"></script>
+</head>
+<body>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div id="types-section">
+                <!-- Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2><i class="fas fa-user-tag me-2"></i>Types de Collaborateurs</h2>
+                                <p class="text-muted">Gestion des catégories de collaborateurs</p>
+                            </div>
+                            <button class="btn btn-primary" onclick="showNewTypeModal()">
+                                <i class="fas fa-plus me-2"></i>Nouveau Type
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-user-tag fa-2x mb-2"></i>
+                                <h4 id="total-types">-</h4>
+                                <p class="mb-0">Total Types</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                <h4 id="active-types">-</h4>
+                                <p class="mb-0">Types Actifs</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card warning">
+                            <div class="card-body text-center">
+                                <i class="fas fa-pause-circle fa-2x mb-2"></i>
+                                <h4 id="inactive-types">-</h4>
+                                <p class="mb-0">Types Inactifs</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card info">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-2x mb-2"></i>
+                                <h4 id="collaborateurs-count">-</h4>
+                                <p class="mb-0">Collaborateurs</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <label for="search-input" class="form-label">Recherche</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                            <input type="text" class="form-control" id="search-input" placeholder="Nom, code, description...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="status-filter" class="form-label">Statut</label>
+                                        <select class="form-select" id="status-filter">
+                                            <option value="">Tous les statuts</option>
+                                            <option value="ACTIF">Actif</option>
+                                            <option value="INACTIF">Inactif</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Actions rapides</h6>
+                                        <small class="text-muted">Filtres et actions</small>
+                                    </div>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">
+                                        <i class="fas fa-times me-1"></i>Effacer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Types Table -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Liste des Types de Collaborateurs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="types-loading" class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                        <div id="types-content">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Nom</th>
+                                            <th>Description</th>
+                                            <th>Statut</th>
+                                            <th>Collaborateurs</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="types-table">
+                                        <!-- Types will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Type Modal -->
+    <div class="modal fade" id="addTypeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>
+                        Ajouter un Type de Collaborateur
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTypeForm">
+                        <div class="mb-3">
+                            <label for="typeCode" class="form-label">Code *</label>
+                            <input type="text" class="form-control" id="typeCode" required maxlength="20" placeholder="Ex: AUD, CONS">
+                            <div class="form-text">Code unique pour identifier le type</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="typeName" class="form-label">Nom *</label>
+                            <input type="text" class="form-control" id="typeName" required maxlength="100" placeholder="Ex: Auditeur, Consultant">
+                        </div>
+                        <div class="mb-3">
+                            <label for="typeDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="typeDescription" rows="3" placeholder="Description du type de collaborateur..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="typeStatut" class="form-label">Statut *</label>
+                            <select class="form-select" id="typeStatut" required>
+                                <option value="ACTIF">Actif</option>
+                                <option value="INACTIF">Inactif</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="addType()">
+                        <i class="fas fa-save me-1"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Type Modal -->
+    <div class="modal fade" id="editTypeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>
+                        Modifier le Type de Collaborateur
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTypeForm">
+                        <input type="hidden" id="editTypeId">
+                        <div class="mb-3">
+                            <label for="editTypeCode" class="form-label">Code *</label>
+                            <input type="text" class="form-control" id="editTypeCode" required maxlength="20">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTypeName" class="form-label">Nom *</label>
+                            <input type="text" class="form-control" id="editTypeName" required maxlength="100">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTypeDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editTypeDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTypeStatut" class="form-label">Statut *</label>
+                            <select class="form-select" id="editTypeStatut" required>
+                                <option value="ACTIF">Actif</option>
+                                <option value="INACTIF">Inactif</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="updateType()">
+                        <i class="fas fa-save me-1"></i>
+                        Mettre à jour
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                        Confirmer la suppression
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer ce type de collaborateur ?</p>
+                    <p class="text-danger"><strong>Attention :</strong> Cette action est irréversible.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                        <i class="fas fa-trash me-1"></i>
+                        Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js" defer></script>
+    <script src="/js/page-permissions.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <script src="js/user-header.js"></script>
+    <script src="js/menu-permissions.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/session-manager.js"></script>
+    
+    <script>
+        const API_BASE_URL = '/api';
+        let typeToDelete = null;
+        let allTypes = [];
+        let filteredTypes = [];
+
+        // Fonction utilitaire pour les appels API authentifiés
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            const defaultHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTypes();
+            loadStatistics();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('search-input').addEventListener('input', filterTypes);
+            document.getElementById('status-filter').addEventListener('change', filterTypes);
+        }
+
+        async function loadStatistics() {
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/types-collaborateurs/statistics`);
+                const data = await response.json();
+                
+                if (data) {
+                    document.getElementById('total-types').textContent = data.total || 0;
+                    document.getElementById('active-types').textContent = data.actifs || 0;
+                    document.getElementById('inactive-types').textContent = data.inactifs || 0;
+                    document.getElementById('collaborateurs-count').textContent = data.collaborateurs || 0;
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des statistiques:', error);
+            }
+        }
+
+        async function loadTypes() {
+            showLoading(true);
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/types-collaborateurs?limit=100`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allTypes = data.data;
+                    filteredTypes = [...allTypes];
+                    displayTypes(filteredTypes);
+                    console.log(`📊 ${data.data.length} types chargés`);
+                } else {
+                    showAlert('Erreur lors du chargement des types', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur fetch:', error);
+                showAlert('Erreur de connexion', 'danger');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function filterTypes() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+
+            filteredTypes = allTypes.filter(type => {
+                const matchesSearch = !searchTerm || 
+                    type.nom.toLowerCase().includes(searchTerm) ||
+                    type.code.toLowerCase().includes(searchTerm) ||
+                    (type.description && type.description.toLowerCase().includes(searchTerm));
+                
+                const matchesStatus = !statusFilter || type.statut === statusFilter;
+
+                return matchesSearch && matchesStatus;
+            });
+
+            displayTypes(filteredTypes);
+        }
+
+        function displayTypes(types) {
+            const tbody = document.getElementById('types-table');
+            tbody.innerHTML = '';
+            
+            if (types.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="fas fa-user-tag fa-2x mb-3"></i>
+                            <p>Aucun type de collaborateur trouvé</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            types.forEach(type => {
+                const row = document.createElement('tr');
+                const statusClass = type.statut === 'ACTIF' ? 'success' : 'secondary';
+                
+                row.innerHTML = `
+                    <td><code>${type.code}</code></td>
+                    <td><strong>${type.nom}</strong></td>
+                    <td>${type.description || '-'}</td>
+                    <td><span class="badge bg-${statusClass}">${type.statut}</span></td>
+                    <td><span class="badge bg-info">${type.collaborateurs_count || 0}</span></td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-warning" onclick="editType('${type.id}')" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteType('${type.id}')" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function clearFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('status-filter').value = '';
+            loadTypes();
+        }
+
+        function showNewTypeModal() {
+            const form = document.getElementById('addTypeForm');
+            if (form) {
+                form.reset();
+                document.getElementById('typeStatut').value = 'ACTIF';
+            }
+            
+            const modal = new bootstrap.Modal(document.getElementById('addTypeModal'));
+            modal.show();
+        }
+
+        async function addType() {
+            const form = document.getElementById('addTypeForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const formData = {
+                code: document.getElementById('typeCode').value.trim().toUpperCase(),
+                nom: document.getElementById('typeName').value.trim(),
+                description: document.getElementById('typeDescription').value.trim(),
+                statut: document.getElementById('typeStatut').value
+            };
+
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/types-collaborateurs`, {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Type de collaborateur créé avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('addTypeModal')).hide();
+                    loadTypes();
+                    loadStatistics();
+                } else {
+                    showAlert(data.details || 'Erreur lors de la création', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur lors de la création', 'danger');
+            }
+        }
+
+        async function editType(id) {
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/types-collaborateurs/${id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const type = data.data;
+                    document.getElementById('editTypeId').value = type.id;
+                    document.getElementById('editTypeCode').value = type.code;
+                    document.getElementById('editTypeName').value = type.nom;
+                    document.getElementById('editTypeDescription').value = type.description || '';
+                    document.getElementById('editTypeStatut').value = type.statut;
+                    
+                    new bootstrap.Modal(document.getElementById('editTypeModal')).show();
+                } else {
+                    showAlert('Type de collaborateur non trouvé', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur de connexion', 'danger');
+            }
+        }
+
+        async function updateType() {
+            const form = document.getElementById('editTypeForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const id = document.getElementById('editTypeId').value;
+            const formData = {
+                code: document.getElementById('editTypeCode').value.trim().toUpperCase(),
+                nom: document.getElementById('editTypeName').value.trim(),
+                description: document.getElementById('editTypeDescription').value.trim(),
+                statut: document.getElementById('editTypeStatut').value
+            };
+
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/types-collaborateurs/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Type de collaborateur mis à jour avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('editTypeModal')).hide();
+                    loadTypes();
+                    loadStatistics();
+                } else {
+                    showAlert(data.details || 'Erreur lors de la mise à jour', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur lors de la mise à jour', 'danger');
+            }
+        }
+
+        function deleteType(id) {
+            typeToDelete = id;
+            new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+        }
+
+        async function confirmDelete() {
+            if (!typeToDelete) return;
+
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/types-collaborateurs/${typeToDelete}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Type de collaborateur supprimé avec succès', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+                    loadTypes();
+                    loadStatistics();
+                } else {
+                    showAlert(data.details || 'Erreur lors de la suppression', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur lors de la suppression', 'danger');
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('types-loading').style.display = show ? 'flex' : 'none';
+            document.getElementById('types-content').style.display = show ? 'none' : 'block';
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.main-content-area');
+            if (container) {
+                container.insertBefore(alertDiv, container.firstChild);
+            }
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
+
+

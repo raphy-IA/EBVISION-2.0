@@ -22,9 +22,12 @@ router.get('/stages', authenticateToken, async (req, res) => {
     
     const templates = await pool.query(query, params);
     
-    // Récupérer les actions et documents requis depuis les tables dédiées
+    // Récupérer les actions et documents requis depuis les tables dédiées OU depuis les colonnes JSON
     const data = await Promise.all(templates.rows.map(async (t) => {
-      // Récupérer les actions requises depuis la table stage_required_actions
+      let requiredActions = [];
+      let requiredDocuments = [];
+      
+      // Essayer d'abord les tables dédiées
       const actionsQuery = `
         SELECT * FROM stage_required_actions 
         WHERE stage_template_id = $1 
@@ -32,7 +35,6 @@ router.get('/stages', authenticateToken, async (req, res) => {
       `;
       const actionsResult = await pool.query(actionsQuery, [t.id]);
       
-      // Récupérer les documents requis depuis la table stage_required_documents
       const documentsQuery = `
         SELECT * FROM stage_required_documents 
         WHERE stage_template_id = $1 
@@ -40,10 +42,44 @@ router.get('/stages', authenticateToken, async (req, res) => {
       `;
       const documentsResult = await pool.query(documentsQuery, [t.id]);
       
+      // Si les tables dédiées sont vides, utiliser les colonnes JSON
+      if (actionsResult.rows.length === 0 && t.required_actions) {
+        // Parser le JSON et convertir en format attendu par le frontend
+        const actionsArray = typeof t.required_actions === 'string' 
+          ? JSON.parse(t.required_actions) 
+          : t.required_actions;
+        
+        requiredActions = actionsArray.map((action, index) => ({
+          id: `json_action_${index}`,
+          stage_template_id: t.id,
+          action_type: action,
+          is_mandatory: true,
+          validation_order: index + 1
+        }));
+      } else {
+        requiredActions = actionsResult.rows;
+      }
+      
+      if (documentsResult.rows.length === 0 && t.required_documents) {
+        // Parser le JSON et convertir en format attendu par le frontend
+        const documentsArray = typeof t.required_documents === 'string' 
+          ? JSON.parse(t.required_documents) 
+          : t.required_documents;
+        
+        requiredDocuments = documentsArray.map((doc, index) => ({
+          id: `json_doc_${index}`,
+          stage_template_id: t.id,
+          document_type: doc,
+          is_mandatory: true
+        }));
+      } else {
+        requiredDocuments = documentsResult.rows;
+      }
+      
       return {
         template: t,
-        requiredActions: actionsResult.rows,
-        requiredDocuments: documentsResult.rows
+        requiredActions,
+        requiredDocuments
       };
     }));
     

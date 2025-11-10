@@ -1,18 +1,18 @@
 /* Sidebar Moderne et Ergonomique - Design Fluide et Stable */
 
-/* Variables CSS pour la cohérence */
+/* Variables CSS pour la cohérence - LIÉES AU BRANDING */
 :root {
-    --sidebar-bg-primary: #1a1a2e;
-    --sidebar-bg-secondary: #16213e;
-    --sidebar-accent: #0f3460;
-    --sidebar-highlight: #e94560;
-    --sidebar-text-primary: #ffffff;
-    --sidebar-text-secondary: #f1f1f1;
+    --sidebar-bg-primary: var(--brand-dark, #1a1a2e);
+    --sidebar-bg-secondary: var(--brand-primary, #16213e);
+    --sidebar-accent: var(--brand-accent, #0f3460);
+    --sidebar-highlight: var(--brand-danger, #e94560);
+    --sidebar-text-primary: var(--brand-light, #ffffff);
+    --sidebar-text-secondary: var(--brand-light, #f1f1f1);
     --sidebar-text-muted: #a0a0a0;
     --sidebar-border: rgba(255, 255, 255, 0.1);
     --sidebar-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     --sidebar-hover-bg: rgba(233, 69, 96, 0.1);
-    --sidebar-active-bg: linear-gradient(135deg, #e94560 0%, #d63384 100%);
+    --sidebar-active-bg: linear-gradient(135deg, var(--brand-danger, #e94560) 0%, var(--brand-secondary, #d63384) 100%);
     --sidebar-transition: all 0.15s ease;
     --sidebar-border-radius: 8px;
 }

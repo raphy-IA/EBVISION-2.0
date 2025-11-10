@@ -1,275 +1,249 @@
-# 🗄️ Scripts de Base de Données
+# 📚 Scripts d'Initialisation de la Base de Données
 
-Ce dossier contient tous les scripts liés à la gestion, l'initialisation et la maintenance de la base de données PostgreSQL.
+## 🎯 Vue d'Ensemble
+
+Ce dossier contient tous les scripts nécessaires pour initialiser et gérer la base de données de l'application EB-Vision 2.0.
 
 ---
 
-## 📋 Scripts Principaux d'Initialisation
+## 🚀 Initialisation Rapide (Recommandé)
 
-### 🔢 Ordre d'exécution pour une nouvelle installation
+### ✨ Initialisation Complète en Une Commande
 
-#### Option 1 : All-in-One (Recommandé)
 ```bash
-node scripts/database/init-super-admin-complete.js
+node scripts/database/0-init-complete.js
 ```
-**Ce script fait tout en une fois :**
-- ✅ Crée toutes les tables
-- ✅ Insère les rôles de base
-- ✅ Crée un utilisateur SUPER_ADMIN
-- ✅ Assigne toutes les permissions
+
+Ce script exécute automatiquement **toutes les étapes** d'initialisation dans le bon ordre :
+
+1. **Structure** : Création de 81 tables et 11 rôles système
+2. **Super Admin** : Création du compte administrateur
+3. **Données de Référence** : Insertion des données système (secteurs, pays, etc.)
+4. **Permissions** : Synchronisation de 321+ permissions depuis le code
+5. **Assignation** : Attribution de toutes les permissions au Super Admin
+
+**Durée estimée** : ~30-60 secondes
+
+**Identifiants créés** :
+- 📧 Email : `admin@ebvision.com`
+- 🔑 Mot de passe : `Admin@2025`
 
 ---
 
-#### Option 2 : Modulaire (Plus de contrôle)
+## 🔧 Initialisation Modulaire (Avancé)
 
-**1️⃣ Initialiser les tables et rôles**
+Si vous souhaitez exécuter les étapes manuellement ou personnaliser l'initialisation :
+
+### Étape 0 : Réinitialisation (Optionnel)
+
+```bash
+node scripts/database/0-reset-database.js
+```
+
+⚠️ **ATTENTION** : Supprime TOUTES les données de la base !
+
+### Étape 1 : Structure de la Base
+
 ```bash
 node scripts/database/1-init-database-tables.js
 ```
-- Crée toutes les tables de l'application
-- Insère les 7 rôles de base (SUPER_ADMIN, ADMIN, DIRECTEUR, etc.)
-- Peut créer une nouvelle base de données ou utiliser une existante
-- **Idempotent** : Peut être exécuté plusieurs fois sans danger
 
-**2️⃣ Créer un Super Administrateur**
+- Crée 81 tables depuis `schema-structure-only.sql`
+- Crée 11 rôles système (SUPER_ADMIN, ADMIN, MANAGER, etc.)
+- Ajoute les colonnes de badge pour les rôles
+
+### Étape 2 : Création du Super Admin
+
 ```bash
 node scripts/database/2-create-super-admin.js
 ```
-- Création interactive d'un compte SUPER_ADMIN
-- Validation forte du mot de passe
-- Hash sécurisé avec bcrypt
 
-**3️⃣ Assigner toutes les permissions**
+- Création interactive du compte Super Admin
+- Attribution du rôle SUPER_ADMIN
+- Génération automatique du login
+
+### Étape 3 : Données de Référence
+
 ```bash
-node scripts/database/3-assign-all-permissions.js
+node scripts/database/3-insert-reference-data.js
 ```
-- Liste les super admins existants
-- Permet de sélectionner un utilisateur
-- Assigne toutes les permissions menu et API
+
+Insère les données de référence de la base pure :
+
+- **20 Secteurs d'activité** (Audit, Finance, Juridique, etc.)
+- **20 Pays** (France, Sénégal, Cameroun, etc.)
+- **3 Années fiscales** (Année précédente, actuelle, suivante)
+- **5 Types d'opportunités** (Audit, Conseil, Formation, etc.)
+- **4 Activités internes** (Congés, Recherches, etc.)
+- **5 Tâches standard** (Audit des comptes, Analyse des risques, etc.)
+
+### Étape 4 : Synchronisation des Permissions
+
+```bash
+node scripts/database/sync-all-permissions-complete.js
+```
+
+- Scanne automatiquement le code source
+- Détecte toutes les permissions requises
+- Crée 321+ permissions dans la base
+- Catégorise par module
+
+### Étape 5 : Assignation des Permissions
+
+```bash
+node scripts/database/4-assign-all-permissions.js
+```
+
+- Assigne toutes les permissions au SUPER_ADMIN
+- Attribution au niveau rôle ET utilisateur
+- Garantit l'accès complet
 
 ---
 
-## 🔄 Script de Remise à Zéro
+## 🎨 Génération de Données de Démo (Optionnel)
 
-### `0-reset-database.js` - Remise à zéro de la base de données
+### Après l'initialisation, générez des données de test :
 
-**Usage :**
 ```bash
-node scripts/database/0-reset-database.js
+node scripts/database/5-generate-demo-data.js
 ```
 
-**4 niveaux de remise à zéro disponibles :**
+Crée des données réalistes pour le développement et les tests :
 
-#### 🧹 **LÉGÈRE** - Nettoyage de test/démo
-- ✅ Conserve : Tables, Rôles, Super Admins, Permissions, Business Units
-- 🗑️ Supprime : Campagnes de test, Opportunités de démo, Notifications
-- **Idéal pour** : Nettoyer après des tests
+- **3 Business Units**
+- **6 Divisions**
+- **6 Grades**
+- **6 Postes**
+- **~20 Collaborateurs** avec comptes utilisateurs
+- **~10 Clients**
+- **~15 Missions**
 
-#### ⚠️ **MODÉRÉE** - Données opérationnelles
-- ✅ Conserve : Tables, Rôles, Super Admins, Permissions
-- 🗑️ Supprime : Collaborateurs, Opportunités, Campagnes, Contrats, etc.
-- **Idéal pour** : Repartir avec une base propre mais configurée
-
-#### 🔥 **COMPLÈTE** - Toutes les données
-- ✅ Conserve : Tables, Rôles
-- 🗑️ Supprime : **TOUS** les utilisateurs, **TOUTES** les données
-- **Idéal pour** : Reset total avant une nouvelle installation
-- ⚠️ Nécessite de recréer un super admin après
-
-#### 💀 **BRUTALE** - Tout supprimer et recréer
-- 🗑️ Supprime : **TOUT** (tables, données, rôles, permissions)
-- **Idéal pour** : Repartir de zéro absolu
-- ⚠️ Nécessite de réexécuter l'initialisation complète après
-
-**Sécurité :**
-- Demande de confirmation avec saisie du nom du niveau
-- Double confirmation pour les niveaux COMPLÈTE et BRUTALE
-- Affiche les statistiques avant/après
-- Peut être annulé à tout moment avec `Ctrl+C`
+**Mot de passe démo** : `Demo@2025`
 
 ---
 
-## 🔍 Scripts de Vérification et Diagnostic
+## 📋 Scripts Utilitaires
 
-### Structure de la base de données
-- `check-database-consistency.js` - Vérifie la cohérence de la DB
-- `check-database-status.js` - État général de la base
-- `check-missing-tables.js` - Détecte les tables manquantes
-- `check-tables-structure.js` - Vérifie la structure des tables
-- `compare-database-structure.js` - Compare la structure locale/production
+### Sauvegarde de la Base
 
-### Tables spécifiques
-- `check-users-table-structure.js` - Structure de la table users
-- `check-collaborateurs-table-structure.js` - Structure de la table collaborateurs
-- `check-permissions-table-structure.js` - Structure de la table permissions
-- `check-role-permissions-structure.js` - Structure des relations rôles/permissions
-- `check-roles-table.js` - Structure de la table roles
-- `check-rh-tables.js` - Tables RH (évolutions, compétences, formations)
-- `check-secteurs-db.js` - Table secteurs
-
-### Tests de connexion
-- `test-database.js` - Test complet de connexion
-- `test-local-db-connection.js` - Test connexion locale
-- `simple-db-test.js` - Test simple et rapide
-- `diagnose-database.js` - Diagnostic complet
-
----
-
-## 🔧 Scripts de Maintenance
-
-### Backups et Dumps
-- `create-clean-backup.js` - Crée un backup propre
-- `create-clean-dump.js` - Dump nettoyé
-- `create-clean-local-dump.js` - Dump local nettoyé
-- `create-production-dump.js` - Dump de production
-
-### Correction de problèmes
-- `fix-database-consistency.js` - Corrige les incohérences
-- `fix-database-differences.js` - Synchronise les différences
-- `fix-missing-tables.js` - Crée les tables manquantes
-- `fix-missing-tables-production.js` - Idem pour production
-
----
-
-## 📊 Scripts d'Analyse et Export
-
-### Export de structure
-- `export-database-structure.js` - Exporte la structure complète
-- `export-database-structure-local.js` - Export structure locale
-- `export-database-structure-production.js` - Export structure production
-- `database-structure-local.json` - Structure sauvegardée (JSON)
-
-### Comptage et statistiques
-- `count-records.js` - Compte les enregistrements par table
-- `test-sql-query.js` - Exécute des requêtes SQL de test
-
----
-
-## 🔄 Scripts de Migration
-
-### Migrations système
-- `apply-2fa-migration.js` - Applique la migration 2FA
-- `migrate-to-multi-roles.js` - Migration vers multi-rôles
-- `migrate-to-multiple-roles.js` - Migration système de rôles
-- `run-super-admin-migration.js` - Migration super admin
-- `run-sync-migration.js` - Migration de synchronisation
-
----
-
-## 🎯 Scénarios d'Utilisation Courants
-
-### 🆕 Nouvelle Installation
 ```bash
-# Méthode recommandée (tout en un)
-node scripts/database/init-super-admin-complete.js
-
-# OU méthode modulaire
-node scripts/database/1-init-database-tables.js
-node scripts/database/2-create-super-admin.js
-node scripts/database/3-assign-all-permissions.js
+node scripts/database/backup-database.js
 ```
 
-### 🧪 Après des Tests - Nettoyage Léger
-```bash
-node scripts/database/0-reset-database.js
-# Choisir : LÉGÈRE
-```
+Crée une sauvegarde complète dans `backups/backup_YYYYMMDD_HHMMSS.sql`
 
-### 🔄 Repartir à Zéro avec Configuration
-```bash
-node scripts/database/0-reset-database.js
-# Choisir : MODÉRÉE
-# Puis recréer les collaborateurs et données
-```
+### Gestion des Types d'Opportunités
 
-### 💥 Reset Total
 ```bash
-node scripts/database/0-reset-database.js
-# Choisir : COMPLÈTE ou BRUTALE
-# Puis réinitialiser :
-node scripts/database/1-init-database-tables.js
-node scripts/database/2-create-super-admin.js
-```
+# Export
+node scripts/database/export-opportunity-types.js
 
-### 🔍 Vérification de Santé
-```bash
-node scripts/database/check-database-consistency.js
-node scripts/database/check-database-status.js
-```
-
-### 💾 Backup Avant Modifications
-```bash
-node scripts/database/create-clean-backup.js
+# Import
+node scripts/database/import-opportunity-types.js
 ```
 
 ---
 
-## ⚙️ Configuration Requise
+## 📁 Fichiers de Schéma
 
-Tous les scripts utilisent les variables d'environnement du fichier `.env` :
+### `schema-structure-only.sql`
+
+Schéma pur extrait de la base de référence :
+- **Structure uniquement** (pas de données)
+- 81 tables avec toutes leurs contraintes
+- Rôles système pré-définis
+- Base pour une installation vierge
+
+### `schema-complete.sql` (Archive)
+
+Sauvegarde complète de la base pure avec données. **Non utilisé** dans les scripts d'initialisation pour éviter d'importer des données de test.
+
+---
+
+## 🔄 Processus d'Initialisation pour un Nouveau Client
+
+### 1. Configuration
+
+Créez un fichier `.env` avec les paramètres du client :
 
 ```env
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=votre_base
+DB_NAME=nom_client_db
 DB_USER=postgres
-DB_PASSWORD=votre_mot_de_passe
+DB_PASSWORD=mot_de_passe_securise
+DB_SSL=false
 ```
+
+### 2. Initialisation Complète
+
+```bash
+node scripts/database/0-init-complete.js
+```
+
+### 3. (Optionnel) Génération de Données de Démo
+
+```bash
+node scripts/database/5-generate-demo-data.js
+```
+
+### 4. Connexion
+
+- **Email** : `admin@ebvision.com`
+- **Mot de passe** : `Admin@2025`
+
+⚠️ **Important** : Changez le mot de passe après la première connexion !
 
 ---
 
-## 🆘 Aide et Support
+## 🛠️ Dépannage
 
-### En cas de problème
+### Erreur : "la relation ... n'existe pas"
 
-1. **Vérifier la connexion**
-   ```bash
-   node scripts/database/simple-db-test.js
-   ```
+→ La structure de la base n'a pas été créée correctement.  
+**Solution** : Réexécutez l'étape 1 ou le script complet.
 
-2. **Diagnostiquer**
-   ```bash
-   node scripts/database/diagnose-database.js
-   ```
+### Erreur : "le rôle SUPER_ADMIN n'existe pas"
 
-3. **Vérifier la structure**
-   ```bash
-   node scripts/database/check-database-consistency.js
-   ```
+→ Les rôles système n'ont pas été créés.  
+**Solution** : Vérifiez que `schema-structure-only.sql` contient les INSERT pour les rôles.
 
-4. **En dernier recours - Reset complet**
-   ```bash
-   node scripts/database/0-reset-database.js
-   # Choisir : BRUTALE
-   node scripts/database/init-super-admin-complete.js
-   ```
+### Erreur : "une valeur NULL viole la contrainte NOT NULL"
+
+→ Un champ requis n'est pas fourni.  
+**Solution** : Vérifiez que tous les champs obligatoires sont présents dans les scripts.
+
+### Erreur : "la contrainte de vérification ... est violée"
+
+→ Une valeur ne respecte pas une contrainte CHECK.  
+**Solution** : Vérifiez les valeurs autorisées dans `schema-structure-only.sql`.
 
 ---
 
 ## 📝 Notes Importantes
 
-- ⚠️ **Toujours faire un backup avant une remise à zéro**
-- ✅ Les scripts d'initialisation sont **idempotents** (peuvent être réexécutés)
-- 🔒 Les scripts de remise à zéro demandent **toujours confirmation**
-- 🛡️ Les mots de passe sont **toujours hashés** avec bcrypt
-- 📊 Les scripts affichent des **statistiques** avant/après les opérations
+1. **Base Pure** : Le fichier `backup_BD_reference.sql` est la référence absolue. Tout changement de schéma doit en découler.
+
+2. **Données de Référence** : Les données insérées à l'étape 3 proviennent de la base pure et doivent être maintenues.
+
+3. **Permissions** : Les permissions sont automatiquement extraites du code source. Pas besoin de les gérer manuellement.
+
+4. **Rôles Système** : Les 7 rôles système (SUPER_ADMIN, ADMIN_IT, IT, ADMIN, ASSOCIE, DIRECTEUR, SUPER_USER) ne doivent **jamais** être supprimés.
+
+5. **Extensions** : Les colonnes de badge pour les rôles (badge_hex_color, etc.) sont des extensions de la base pure.
 
 ---
 
-## 🚀 Développement
+## 🆘 Support
 
-Pour ajouter un nouveau script de base de données :
-1. Créer le fichier dans `scripts/database/`
-2. Commencer par `#!/usr/bin/env node`
-3. Utiliser `dotenv` pour charger les variables d'environnement
-4. Ajouter une gestion d'erreur appropriée
-5. Documenter dans ce README
+Pour toute question ou problème :
+
+1. Consultez la documentation dans ce fichier
+2. Vérifiez les logs d'erreur
+3. Vérifiez que `.env` est correctement configuré
+4. Assurez-vous que PostgreSQL est accessible
 
 ---
 
-**Dernière mise à jour** : 03/11/2025
-
-
-
-
-
+**Date de dernière mise à jour** : Novembre 2025  
+**Version** : 2.0

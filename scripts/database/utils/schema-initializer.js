@@ -95,27 +95,27 @@ const BASE_ROLES = [
         name: 'CONSULTANT',
         description: 'Consultant',
         is_system_role: false,
-        badge_bg_class: 'light',
-        badge_text_class: 'dark',
-        badge_hex_color: '#f8f9fa',
+        badge_bg_class: 'success',
+        badge_text_class: 'white',
+        badge_hex_color: '#198754',
         badge_priority: 30
     },
     {
         name: 'COLLABORATEUR',
         description: 'Collaborateur standard',
         is_system_role: false,
-        badge_bg_class: 'light',
-        badge_text_class: 'dark',
-        badge_hex_color: '#f8f9fa',
+        badge_bg_class: 'info',
+        badge_text_class: 'white',
+        badge_hex_color: '#17a2b8',
         badge_priority: 20
     },
     {
         name: 'USER',
         description: 'Utilisateur standard',
         is_system_role: false,
-        badge_bg_class: 'light',
-        badge_text_class: 'dark',
-        badge_hex_color: '#f8f9fa',
+        badge_bg_class: 'secondary',
+        badge_text_class: 'white',
+        badge_hex_color: '#6c757d',
         badge_priority: 10
     }
 ];

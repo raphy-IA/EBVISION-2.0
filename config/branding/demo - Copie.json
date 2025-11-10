@@ -1,0 +1,115 @@
+{
+  "app": {
+    "name": "ENTERPRISE WORKFLOW MANAGEMENT",
+    "shortName": "EWM",
+    "tagline": "Demo Version - Intelligent Resource Management",
+    "description": "Complete enterprise management solution - Demo Environment",
+    "version": "2.0.0-demo"
+  },
+  "branding": {
+    "logo": {
+      "main": "/assets/brands/demo/logo.svg",
+      "icon": "/assets/brands/demo/icon.svg",
+      "favicon": "/assets/brands/demo/favicon.ico"
+    },
+    "colors": {
+      "primary": "#5a6c7d",
+      "secondary": "#7fa3c3",
+      "accent": "#5dade2",
+      "success": "#52be80",
+      "warning": "#f5b041",
+      "danger": "#ec7063",
+      "info": "#5dade2",
+      "dark": "#34495e",
+      "light": "#ecf0f1"
+    },
+    "theme": "demo"
+  },
+  "ui": {
+    "sidebarTitle": "EWM DEMO",
+    "sidebarSubtitle": "Demonstration Version",
+    "loginTitle": "EWM Demo Platform",
+    "loginSubtitle": "Explore our enterprise solution",
+    "footer": {
+      "text": "Enterprise Workflow Management - Demo",
+      "copyright": "© 2024 EWM. Demo Version."
+    }
+  },
+  "features": {
+    "dashboard": true,
+    "reports": true,
+    "timeManagement": true,
+    "missionManagement": true,
+    "marketPipeline": true,
+    "hrManagement": true,
+    "configurations": true,
+    "businessUnits": true,
+    "administration": true
+  },
+  "modules": {
+    "dashboard": {
+      "enabled": true,
+      "displayName": "Dashboard"
+    },
+    "reports": {
+      "enabled": true,
+      "displayName": "Reports"
+    },
+    "timeManagement": {
+      "enabled": true,
+      "displayName": "Time Management"
+    },
+    "missions": {
+      "enabled": true,
+      "displayName": "Projects & Missions"
+    },
+    "marketPipeline": {
+      "enabled": true,
+      "displayName": "Market Pipeline"
+    },
+    "hr": {
+      "enabled": true,
+      "displayName": "Human Resources"
+    },
+    "configurations": {
+      "enabled": true,
+      "displayName": "Configurations"
+    },
+    "businessUnits": {
+      "enabled": true,
+      "displayName": "Business Units"
+    },
+    "administration": {
+      "enabled": true,
+      "displayName": "Administration"
+    }
+  },
+  "contact": {
+    "email": "demo@ewm-platform.com",
+    "phone": "+1 (555) 123-4567",
+    "website": "https://ewm-platform.com/demo",
+    "supportUrl": "https://support.ewm-platform.com"
+  },
+  "localization": {
+    "defaultLanguage": "fr",
+    "availableLanguages": ["fr", "en"],
+    "dateFormat": "DD/MM/YYYY",
+    "timeFormat": "HH:mm",
+    "currency": "USD",
+    "currencySymbol": "$"
+  },
+  "demo": {
+    "mode": true,
+    "bannerText": "🎯 DEMO VERSION - Discover all features in action",
+    "watermark": true,
+    "sampleData": true,
+    "restrictedFeatures": []
+  }
+}
+
+
+
+
+
+
+

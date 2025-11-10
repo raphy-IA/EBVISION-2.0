@@ -21,7 +21,7 @@ async function verifySuperAdmin() {
             
             const createRole = await pool.query(`
                 INSERT INTO roles (name, description, is_system_role)
-                VALUES ('SUPER_ADMIN', 'Super Administrateur - Accès total', true)
+                VALUES ('SUPER_ADMIN', 'Super Administrateur - Accès total au système', true)
                 RETURNING id, name
             `);
             

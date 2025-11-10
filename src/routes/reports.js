@@ -48,19 +48,26 @@ router.get('/timeEntries', authenticateToken, async (req, res) => {
                 ts.statut as time_sheet_status,
                 bu.id as business_unit_id,
                 bu.nom as business_unit_nom,
+                d.id as division_id,
+                d.nom as division_nom,
                 g.id as grade_id,
-                g.nom as grade_nom
+                g.nom as grade_nom,
+                p.nom as poste_nom,
+                ia.name as internal_activity_nom
             FROM time_entries te
             LEFT JOIN users u ON te.user_id = u.id
-            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN collaborateurs c ON c.user_id = u.id
             LEFT JOIN missions m ON te.mission_id = m.id
             LEFT JOIN clients cl ON m.client_id = cl.id
             LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
             LEFT JOIN business_units bu ON c.business_unit_id = bu.id
+            LEFT JOIN divisions d ON c.division_id = d.id
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
+            LEFT JOIN postes p ON c.poste_actuel_id = p.id
+            LEFT JOIN internal_activities ia ON te.internal_activity_id = ia.id
             ${whereClause}
             ORDER BY te.date_saisie DESC
-            LIMIT 100
+            LIMIT 1000
         `;
 
         const result = await pool.query(timeEntriesQuery, params);
@@ -71,16 +78,22 @@ router.get('/timeEntries', authenticateToken, async (req, res) => {
             date: row.date_saisie,
             heures: parseFloat(row.heures) || 0,
             type_heures: row.type_heures,
-            description: `${row.type_heures} - ${row.mission_titre || 'Activité interne'}`,
+            description: `${row.type_heures} - ${row.mission_titre || row.internal_activity_nom || 'Activité interne'}`,
             collaborateur_id: row.collaborateur_id || null,
-            collaborateur: `${row.collaborateur_prenom} ${row.collaborateur_nom}`,
+            collaborateur: row.collaborateur_prenom && row.collaborateur_nom 
+                ? `${row.collaborateur_prenom} ${row.collaborateur_nom}` 
+                : 'Non assigné',
             mission: row.mission_titre || '-',
             client: row.client_nom || '-',
             statut: row.time_sheet_status || row.status || 'N/A',
             business_unit_id: row.business_unit_id || null,
             business_unit_nom: row.business_unit_nom || '-',
+            division_id: row.division_id || null,
+            division_nom: row.division_nom || '-',
             grade_id: row.grade_id || null,
-            grade_nom: row.grade_nom || '-'
+            grade_nom: row.grade_nom || '-',
+            poste_nom: row.poste_nom || '-',
+            internal_activity_nom: row.internal_activity_nom || null
         }));
 
         res.json({

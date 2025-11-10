@@ -162,7 +162,7 @@ class UserAccessService {
     static async hasUserAccess(collaborateurId) {
         try {
             const sql = `
-                SELECT u.id, u.email, u.login, u.role, u.statut
+                SELECT u.id, u.email, u.role, u.statut
                 FROM users u
                 JOIN collaborateurs c ON u.id = c.user_id
                 WHERE c.id = $1

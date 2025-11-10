@@ -77,8 +77,9 @@ const requireAdminPermission = async (req, res, next) => {
 
 // GET /api/permissions/roles - Liste des rôles
 router.get('/roles', requireAdminPermission, async (req, res) => {
+    let client;
     try {
-        const client = await pool.connect();
+        client = await pool.connect();
         
         // Vérifier si la table roles existe
         const tableExists = await client.query(`
@@ -121,17 +122,22 @@ router.get('/roles', requireAdminPermission, async (req, res) => {
             : "WHERE name != 'SUPER_ADMIN'";
         
         const result = await client.query(`
-            SELECT id, name, description, is_system_role, created_at
+            SELECT id, name, description, is_system_role, badge_bg_class, badge_text_class, badge_hex_color, badge_priority, created_at
             FROM roles
             ${whereClause}
-            ORDER BY name
+            ORDER BY badge_priority DESC, name
         `);
-        client.release();
         
         res.json(result.rows);
     } catch (error) {
-        console.error('Erreur lors de la récupération des rôles:', error);
-        res.status(500).json({ error: 'Erreur interne du serveur' });
+        console.error('❌ Erreur lors de la récupération des rôles:', error);
+        console.error('   Message:', error.message);
+        console.error('   User ID:', req.user?.id);
+        res.status(500).json({ error: 'Erreur interne du serveur', details: error.message });
+    } finally {
+        if (client) {
+            client.release();
+        }
     }
 });
 
@@ -276,7 +282,7 @@ router.get('/roles/:id/users', requireAdminPermission, async (req, res) => {
         
         // Récupérer tous les utilisateurs ayant ce rôle
         const usersResult = await client.query(`
-            SELECT DISTINCT u.id, u.nom, u.prenom, u.email, u.login
+            SELECT DISTINCT u.id, u.nom, u.prenom, u.email
             FROM users u
             JOIN user_roles ur ON u.id = ur.user_id
             WHERE ur.role_id = $1
@@ -497,7 +503,7 @@ router.get('/users/me/permissions', authenticateToken, async (req, res) => {
         
         // Récupérer les permissions directes de l'utilisateur
         const userPermissionsResult = await client.query(`
-            SELECT p.id, p.code, p.name, p.description, p.category, up.granted
+            SELECT p.id, p.code, p.name, p.description, p.category, true as granted
             FROM user_permissions up
             JOIN permissions p ON up.permission_id = p.id
             WHERE up.user_id = $1
@@ -600,7 +606,7 @@ router.get('/users/:id/permissions', requireAdminPermission, async (req, res) =>
         
         // Récupérer les permissions directes de l'utilisateur
         const userPermissionsResult = await client.query(`
-            SELECT p.id, p.code, p.name, p.description, p.category, up.granted
+            SELECT p.id, p.code, p.name, p.description, p.category, true as granted
             FROM user_permissions up
             JOIN permissions p ON up.permission_id = p.id
             WHERE up.user_id = $1

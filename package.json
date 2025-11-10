@@ -39,6 +39,7 @@
     "branding:list": "node docs/Branding/Scripts/configure_branding.js --list"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
     "axios": "^1.11.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",

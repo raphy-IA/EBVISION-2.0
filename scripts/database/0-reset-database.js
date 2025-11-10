@@ -1,537 +1,274 @@
 #!/usr/bin/env node
 
 /**
- * Script de remise à zéro de la base de données
- * Offre plusieurs niveaux de nettoyage avec préservation sélective des données
+ * SCRIPT 0 : RÉINITIALISATION PROGRESSIVE DE LA BASE DE DONNÉES
+ * ==============================================================
+ * 
+ * Ce script offre 4 niveaux de suppression progressive selon vos besoins :
+ * 
+ * NIVEAU 1 - DONNÉES OPÉRATIONNELLES
+ * ───────────────────────────────────
+ * Supprime uniquement les données métier :
+ * ✓ Factures et lignes de facture
+ * ✓ Missions et affectations
+ * ✓ Opportunités et activités commerciales
+ * ✓ Feuilles de temps et validations
+ * ✓ Absences et congés
+ * ✓ Tâches et activités
+ * ✓ Contacts clients
+ * 
+ * CONSERVE : Structure organisation, collaborateurs, utilisateurs, configuration
+ * 
+ * 
+ * NIVEAU 2 - STRUCTURE ORGANISATIONNELLE
+ * ───────────────────────────────────────
+ * Supprime NIVEAU 1 + Structure organisationnelle :
+ * ✓ Business Units et Divisions
+ * ✓ Grades et Postes
+ * ✓ Campagnes de prospection
+ * ✓ Clients (tous)
+ * 
+ * CONSERVE : Collaborateurs, utilisateurs, données de configuration, référence
+ * 
+ * 
+ * NIVEAU 3 - UTILISATEURS ET COLLABORATEURS
+ * ──────────────────────────────────────────
+ * Supprime NIVEAU 1 + 2 + Personnel :
+ * ✓ Collaborateurs (historique RH, évolutions)
+ * ✓ Utilisateurs (sauf SUPER_ADMIN)
+ * ✓ Permissions utilisateurs
+ * 
+ * CONSERVE : Rôles, permissions système, données de référence, SUPER_ADMIN
+ * 
+ * 
+ * NIVEAU 4 - RESET COMPLET
+ * ─────────────────────────
+ * Supprime TOUT sans recréer :
+ * ✓ Toutes les tables
+ * ✓ Tous les types ENUM
+ * ✓ Toutes les séquences
+ * ✓ Laisse la base de données VIERGE
+ * 
+ * Note: Utilisez les autres scripts pour recréer la structure
+ * 
+ * Usage: 
+ *   node scripts/database/0-reset-database.js
  */
 
 require('dotenv').config();
 const { Pool } = require('pg');
 const inquirer = require('inquirer');
-const chalk = require('chalk');
 
-// Configuration de la connexion
-const pool = new Pool({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT) || 5432,
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000
-});
+console.log('\n╔══════════════════════════════════════════════════════════════╗');
+console.log('║     🔄 RÉINITIALISATION PROGRESSIVE DE LA BASE             ║');
+console.log('╚══════════════════════════════════════════════════════════════╝\n');
 
-// Types de remise à zéro disponibles
-const RESET_TYPES = {
-    LIGHT: {
-        name: '🧹 LÉGÈRE - Supprimer uniquement les données de test/demo',
-        value: 'light',
-        description: 'Conserve : Tables, Rôles, Super Admins, Permissions, Business Units'
-    },
-    MODERATE: {
-        name: '⚠️  MODÉRÉE - Supprimer les données opérationnelles',
-        value: 'moderate',
-        description: 'Conserve : Tables, Rôles, Super Admins, Permissions, BU, Divisions, Clients, Missions\nSupprime : Collaborateurs, Opportunités, Campagnes, Contrats, etc.'
-    },
-    MODERATE_PLUS: {
-        name: '🔥 MODÉRÉE+ - Données opérationnelles + Clients/Missions',
-        value: 'moderate_plus',
-        description: 'Conserve : Tables, Rôles, Super Admins, Permissions, BU, Divisions\nSupprime : Collaborateurs, Opportunités, Campagnes, Clients, Missions, etc.'
-    },
-    HEAVY: {
-        name: '💥 COMPLÈTE - Supprimer toutes les données',
-        value: 'heavy',
-        description: 'Conserve : Tables, Rôles, Super Admins\nSupprime : Permissions, BU, Divisions, tous les autres utilisateurs'
-    },
-    BRUTAL: {
-        name: '💀 BRUTALE - Tout supprimer et recréer',
-        value: 'brutal',
-        description: '⚠️  ATTENTION : Supprime TOUT (tables, données, rôles, permissions)'
-    }
-};
-
-async function resetDatabase() {
+async function main() {
+    let pool;
+    
     try {
-        console.log(chalk.yellow.bold('\n╔══════════════════════════════════════════════════════════════╗'));
-        console.log(chalk.yellow.bold('║         REMISE À ZÉRO DE LA BASE DE DONNÉES                  ║'));
-        console.log(chalk.yellow.bold('╚══════════════════════════════════════════════════════════════╝\n'));
+        // ===============================================
+        // Configuration
+        // ===============================================
+        console.log('📋 Configuration PostgreSQL (depuis .env):\n');
+        console.log(`   🏠 Hôte       : ${process.env.DB_HOST || 'localhost'}`);
+        console.log(`   🔌 Port       : ${process.env.DB_PORT || '5432'}`);
+        console.log(`   👤 Utilisateur: ${process.env.DB_USER || 'Non défini'}`);
+        console.log(`   🗄️  Base      : ${process.env.DB_NAME || 'Non définie'}`);
+        console.log('   🔐 SSL        : ' + (process.env.NODE_ENV === 'production' ? 'Oui' : 'Non') + '\n');
 
-        // Test de connexion
-        console.log(chalk.cyan('📡 Connexion à la base de données...'));
-        await pool.query('SELECT NOW()');
-        console.log(chalk.green(`✓ Connecté à: ${process.env.DB_NAME}`));
-        console.log(chalk.gray(`  Hôte: ${process.env.DB_HOST}:${process.env.DB_PORT}`));
-        console.log(chalk.gray(`  Utilisateur: ${process.env.DB_USER}\n`));
-
-        // Afficher les statistiques actuelles
-        const stats = await getDatabaseStats();
-        console.log(chalk.cyan('📊 ÉTAT ACTUEL DE LA BASE DE DONNÉES'));
-        console.log(chalk.gray('─'.repeat(60)));
-        console.log(chalk.white(`   Utilisateurs: ${stats.users}`));
-        console.log(chalk.white(`   Collaborateurs: ${stats.collaborateurs}`));
-        console.log(chalk.white(`   Clients: ${stats.clients}`));
-        console.log(chalk.white(`   Missions: ${stats.missions}`));
-        console.log(chalk.white(`   Opportunités: ${stats.opportunities}`));
-        console.log(chalk.white(`   Campagnes: ${stats.campaigns}`));
-        console.log(chalk.white(`   Factures: ${stats.invoices}`));
-        console.log(chalk.white(`   Entrées de temps: ${stats.time_entries}`));
-        console.log(chalk.white(`   Tâches: ${stats.tasks}`));
-        console.log(chalk.white(`   Notifications: ${stats.notifications}`));
-        console.log(chalk.white(`   Business Units: ${stats.business_units}`));
-        console.log(chalk.white(`   Permissions: ${stats.permissions}\n`));
-
-        // Choix du type de remise à zéro
-        const { resetType } = await inquirer.prompt([
+        // ===============================================
+        // Sélection du niveau de suppression
+        // ===============================================
+        const { resetLevel } = await inquirer.prompt([
             {
                 type: 'list',
-                name: 'resetType',
-                message: 'Quel type de remise à zéro souhaitez-vous effectuer ?',
-                choices: Object.values(RESET_TYPES).map(type => ({
-                    name: type.name,
-                    value: type.value,
-                    short: type.value.toUpperCase()
-                })),
-                pageSize: 10
-            }
-        ]);
-
-        // Afficher la description
-        const selectedType = Object.values(RESET_TYPES).find(t => t.value === resetType);
-        console.log(chalk.yellow('\n⚠️  ATTENTION:'));
-        console.log(chalk.white(selectedType.description));
-
-        // Confirmation de sécurité
-        const { confirmation } = await inquirer.prompt([
-            {
-                type: 'input',
-                name: 'confirmation',
-                message: `Tapez "${resetType.toUpperCase()}" pour confirmer:`,
-                validate: (input) => {
-                    if (input === resetType.toUpperCase()) {
-                        return true;
+                name: 'resetLevel',
+                message: '🎯 Quel niveau de réinitialisation souhaitez-vous ?',
+                choices: [
+                    {
+                        name: '📊 NIVEAU 1 - Données opérationnelles (factures, missions, temps, opportunités)',
+                        value: 1,
+                        short: 'Niveau 1'
+                    },
+                    {
+                        name: '🏢 NIVEAU 2 - Niveau 1 + Structure organisationnelle (BU, divisions, campagnes)',
+                        value: 2,
+                        short: 'Niveau 2'
+                    },
+                    {
+                        name: '👥 NIVEAU 3 - Niveau 2 + Utilisateurs et collaborateurs (sauf SUPER_ADMIN)',
+                        value: 3,
+                        short: 'Niveau 3'
+                    },
+                    {
+                        name: '💣 NIVEAU 4 - RESET COMPLET (supprime TOUT, laisse la base VIERGE)',
+                        value: 4,
+                        short: 'Niveau 4'
+                    },
+                    new inquirer.Separator(),
+                    {
+                        name: '❌ Annuler',
+                        value: 0,
+                        short: 'Annuler'
                     }
-                    return 'Confirmation incorrecte. Opération annulée.';
-                }
+                ]
             }
         ]);
 
-        // Double confirmation pour les niveaux moderate_plus, heavy et brutal
-        if (resetType === 'moderate_plus' || resetType === 'heavy' || resetType === 'brutal') {
-            const { doubleConfirm } = await inquirer.prompt([
-                {
-                    type: 'confirm',
-                    name: 'doubleConfirm',
-                    message: chalk.red.bold('⚠️  DERNIÈRE CHANCE: Êtes-vous ABSOLUMENT SÛR ?'),
-                    default: false
-                }
-            ]);
+        if (resetLevel === 0) {
+            console.log('\n❌ Opération annulée\n');
+            process.exit(0);
+        }
 
-            if (!doubleConfirm) {
-                console.log(chalk.yellow('\n✋ Opération annulée par l\'utilisateur.\n'));
-                return;
+        // ===============================================
+        // Confirmation
+        // ===============================================
+        console.log('\n' + '═'.repeat(64));
+        console.log(`📋 NIVEAU ${resetLevel} SÉLECTIONNÉ`);
+        console.log('═'.repeat(64) + '\n');
+
+        const descriptions = {
+            1: [
+                '✓ Factures et lignes de facture',
+                '✓ Missions et affectations',
+                '✓ Opportunités et campagnes',
+                '✓ Feuilles de temps et validations',
+                '✓ Absences et congés',
+                '✓ Tâches et activités',
+                '✓ Contacts clients',
+                '',
+                '❌ CONSERVE : Structure, collaborateurs, utilisateurs, configuration'
+            ],
+            2: [
+                '✓ Toutes les suppressions du NIVEAU 1',
+                '✓ Business Units et Divisions',
+                '✓ Grades et Postes',
+                '✓ Campagnes de prospection',
+                '✓ Clients (tous)',
+                '',
+                '❌ CONSERVE : Collaborateurs, utilisateurs, données de référence'
+            ],
+            3: [
+                '✓ Toutes les suppressions du NIVEAU 2',
+                '✓ Collaborateurs et historique RH',
+                '✓ Utilisateurs (sauf SUPER_ADMIN)',
+                '✓ Permissions utilisateurs',
+                '',
+                '❌ CONSERVE : Rôles système, permissions système, SUPER_ADMIN'
+            ],
+            4: [
+                '✓ SUPPRESSION TOTALE de toutes les tables',
+                '✓ Suppression de tous les types ENUM',
+                '✓ Suppression de toutes les séquences',
+                '',
+                '⚠️  BASE DE DONNÉES COMPLÈTEMENT VIERGE',
+                '⚠️  AUCUNE RECRÉATION DE STRUCTURE',
+                '',
+                'ℹ️  Utilisez les autres scripts pour recréer'
+            ]
+        };
+
+        console.log('Ce qui sera supprimé :\n');
+        descriptions[resetLevel].forEach(line => {
+            if (line === '') {
+                console.log('');
+            } else if (line.startsWith('❌')) {
+                console.log(`   ${line}`);
+            } else {
+                console.log(`   ${line}`);
             }
+        });
+        console.log('');
+
+        const { confirm } = await inquirer.prompt([
+            {
+                type: 'confirm',
+                name: 'confirm',
+                message: `⚠️  Confirmer la réinitialisation NIVEAU ${resetLevel} ?`,
+                default: false
+            }
+        ]);
+
+        if (!confirm) {
+            console.log('\n❌ Réinitialisation annulée\n');
+            process.exit(0);
         }
 
-        console.log(chalk.cyan('\n🔄 Démarrage de la remise à zéro...\n'));
+        // ===============================================
+        // Connexion à la base de données
+        // ===============================================
+        console.log('\n📡 Connexion à la base de données...');
+        pool = new Pool({
+            host: process.env.DB_HOST || 'localhost',
+            port: parseInt(process.env.DB_PORT) || 5432,
+            database: process.env.DB_NAME,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+            max: 20,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 5000
+        });
 
-        // Exécuter la remise à zéro selon le type
-        switch (resetType) {
-            case 'light':
-                await resetLight();
-                break;
-            case 'moderate':
-                await resetModerate();
-                break;
-            case 'moderate_plus':
-                await resetModeratePlus();
-                break;
-            case 'heavy':
-                await resetHeavy();
-                break;
-            case 'brutal':
-                await resetBrutal();
-                break;
+        await pool.query('SELECT NOW()');
+        console.log('✅ Connexion réussie!\n');
+
+        // ===============================================
+        // Exécution de la suppression selon le niveau
+        // ===============================================
+        console.log(`🗑️  Suppression NIVEAU ${resetLevel} en cours...\n`);
+
+        if (resetLevel === 4) {
+            await resetLevel4Complete(pool);
+        } else {
+            await resetProgressive(pool, resetLevel);
         }
 
-        // Afficher les statistiques finales
-        const finalStats = await getDatabaseStats();
-        console.log(chalk.cyan('\n📊 ÉTAT FINAL DE LA BASE DE DONNÉES'));
-        console.log(chalk.gray('─'.repeat(60)));
-        console.log(chalk.white(`   Utilisateurs: ${finalStats.users} (${stats.users - finalStats.users} supprimés)`));
-        console.log(chalk.white(`   Collaborateurs: ${finalStats.collaborateurs} (${stats.collaborateurs - finalStats.collaborateurs} supprimés)`));
-        console.log(chalk.white(`   Clients: ${finalStats.clients} (${stats.clients - finalStats.clients} supprimés)`));
-        console.log(chalk.white(`   Missions: ${finalStats.missions} (${stats.missions - finalStats.missions} supprimés)`));
-        console.log(chalk.white(`   Opportunités: ${finalStats.opportunities} (${stats.opportunities - finalStats.opportunities} supprimés)`));
-        console.log(chalk.white(`   Campagnes: ${finalStats.campaigns} (${stats.campaigns - finalStats.campaigns} supprimés)`));
-        console.log(chalk.white(`   Factures: ${finalStats.invoices} (${stats.invoices - finalStats.invoices} supprimés)`));
-        console.log(chalk.white(`   Entrées de temps: ${finalStats.time_entries} (${stats.time_entries - finalStats.time_entries} supprimés)`));
-        console.log(chalk.white(`   Tâches: ${finalStats.tasks} (${stats.tasks - finalStats.tasks} supprimés)`));
-        console.log(chalk.white(`   Notifications: ${finalStats.notifications} (${stats.notifications - finalStats.notifications} supprimés)`));
-        console.log(chalk.white(`   Business Units: ${finalStats.business_units} (${stats.business_units - finalStats.business_units} supprimés)`));
-        console.log(chalk.white(`   Permissions: ${finalStats.permissions} (${stats.permissions - finalStats.permissions} supprimés)\n`));
+        // ===============================================
+        // Résumé final
+        // ===============================================
+        console.log('\n╔══════════════════════════════════════════════════════════════╗');
+        console.log('║         ✅ RÉINITIALISATION TERMINÉE AVEC SUCCÈS            ║');
+        console.log('╚══════════════════════════════════════════════════════════════╝\n');
+        
+        console.log('📊 RÉSUMÉ :');
+        console.log('═══════════');
+        console.log(`   ✓ Niveau de suppression : ${resetLevel}`);
+        console.log(`   ✓ Base de données       : ${process.env.DB_NAME}`);
+        console.log('');
 
-        console.log(chalk.green.bold('✅ REMISE À ZÉRO TERMINÉE AVEC SUCCÈS!\n'));
+        if (resetLevel < 4) {
+            console.log('💡 PROCHAINES ÉTAPES :');
+            console.log('═════════════════════');
+            console.log('   1. Vérifier les données conservées');
+            console.log('   2. Générer de nouvelles données si nécessaire');
+            console.log('   3. Redémarrer l\'application\n');
+        } else {
+            console.log('💡 PROCHAINES ÉTAPES :');
+            console.log('═════════════════════');
+            console.log('   1. Réexécuter l\'initialisation complète :');
+            console.log('      node scripts/database/0-init-complete.js\n');
+        }
 
-    } catch (error) {
-        console.error(chalk.red('❌ Erreur lors de la remise à zéro:'), error);
-        throw error;
-    } finally {
         await pool.end();
-    }
-}
 
-async function getDatabaseStats() {
-    const stats = {
-        users: 0,
-        collaborateurs: 0,
-        opportunities: 0,
-        campaigns: 0,
-        business_units: 0,
-        permissions: 0,
-        clients: 0,
-        missions: 0,
-        invoices: 0,
-        time_entries: 0,
-        tasks: 0,
-        notifications: 0
-    };
-
-    // Fonction helper pour compter une table
-    const countTable = async (tableName) => {
-        try {
-            const result = await pool.query(`SELECT COUNT(*) FROM ${tableName}`);
-            return parseInt(result.rows[0].count);
-        } catch (error) {
-            return 0;
-        }
-    };
-
-    // Compter toutes les tables importantes
-    stats.users = await countTable('users');
-    stats.collaborateurs = await countTable('collaborateurs');
-    stats.opportunities = await countTable('opportunities');
-    stats.campaigns = await countTable('prospecting_campaigns');
-    stats.business_units = await countTable('business_units');
-    stats.permissions = await countTable('permissions');
-    stats.clients = await countTable('clients');
-    stats.missions = await countTable('missions');
-    stats.invoices = await countTable('invoices');
-    stats.time_entries = await countTable('time_entries');
-    stats.tasks = await countTable('tasks');
-    stats.notifications = await countTable('notifications');
-
-    return stats;
-}
-
-async function resetLight() {
-    console.log(chalk.cyan('🧹 REMISE À ZÉRO LÉGÈRE\n'));
-
-    // Supprimer uniquement les campagnes de test et opportunités de démo
-    let count = 0;
-
-    console.log(chalk.gray('   → Suppression des campagnes de test...'));
-    const campaignsResult = await pool.query(`
-        DELETE FROM prospecting_campaigns 
-        WHERE name ILIKE '%test%' OR name ILIKE '%demo%' OR status = 'BROUILLON'
-        RETURNING id
-    `);
-    count += campaignsResult.rowCount;
-    console.log(chalk.green(`   ✓ ${campaignsResult.rowCount} campagnes supprimées`));
-
-    console.log(chalk.gray('   → Suppression des opportunités de démo...'));
-    const oppsResult = await pool.query(`
-        DELETE FROM opportunities 
-        WHERE nom ILIKE '%test%' OR nom ILIKE '%demo%' OR statut = 'BROUILLON'
-        RETURNING id
-    `);
-    count += oppsResult.rowCount;
-    console.log(chalk.green(`   ✓ ${oppsResult.rowCount} opportunités supprimées`));
-
-    console.log(chalk.gray('   → Suppression des notifications...'));
-    const notifsResult = await pool.query('DELETE FROM notifications RETURNING id');
-    count += notifsResult.rowCount;
-    console.log(chalk.green(`   ✓ ${notifsResult.rowCount} notifications supprimées`));
-
-    console.log(chalk.green(`\n✅ ${count} enregistrements supprimés`));
-}
-
-async function resetModerate() {
-    console.log(chalk.cyan('⚠️  REMISE À ZÉRO MODÉRÉE\n'));
-
-    let count = 0;
-
-    // Ordre de suppression respectant les contraintes FK (enfants avant parents)
-    const tablesToClean = [
-        // Notifications et tâches (pas de FK critiques)
-        { name: 'notifications', hasId: true },
-        { name: 'tasks', hasId: true },
-        
-        // Relations campagnes (enfants en premier)
-        { name: 'prospecting_campaign_validation_companies', hasId: false },
-        { name: 'prospecting_campaign_companies', hasId: false },
-        { name: 'prospecting_campaign_validations', hasId: true },
-        { name: 'prospecting_campaigns', hasId: true },
-        
-        // Relations opportunités
-        { name: 'opportunity_comments', hasId: true },
-        { name: 'opportunity_steps', hasId: true },
-        { name: 'opportunities', hasId: true },
-        
-        // Documents et contrats
-        { name: 'documents', hasId: true },
-        { name: 'invoices', hasId: true },
-        { name: 'contracts', hasId: true },
-        
-        // Temps et RH
-        { name: 'time_entries', hasId: true },
-        { name: 'rh_formations', hasId: true },
-        { name: 'rh_competences', hasId: true },
-        { name: 'rh_evolutions', hasId: true },
-        
-        // Collaborateurs (avant users car FK)
-        { name: 'collaborateurs', hasId: true },
-        
-        // Settings utilisateurs (AVANT de supprimer les users)
-        { name: 'notification_settings', hasId: true },
-        { name: 'user_settings', hasId: true }
-    ];
-
-    for (const table of tablesToClean) {
-        try {
-            console.log(chalk.gray(`   → Nettoyage de ${table.name}...`));
-            const result = table.hasId 
-                ? await pool.query(`DELETE FROM ${table.name} RETURNING id`)
-                : await pool.query(`DELETE FROM ${table.name}`);
-            count += result.rowCount;
-            console.log(chalk.green(`   ✓ ${result.rowCount} enregistrements supprimés`));
-        } catch (error) {
-            console.log(chalk.yellow(`   ⚠ ${table.name} : ${error.message}`));
-        }
-    }
-
-    // Supprimer les utilisateurs non-admin (après collaborateurs)
-    console.log(chalk.gray('   → Suppression des utilisateurs non-admin...'));
-    try {
-        const usersResult = await pool.query(`
-            DELETE FROM users 
-            WHERE role NOT IN ('SUPER_ADMIN', 'ADMIN')
-            AND id NOT IN (
-                SELECT DISTINCT user_id 
-                FROM user_roles ur 
-                JOIN roles r ON ur.role_id = r.id 
-                WHERE r.name IN ('SUPER_ADMIN', 'ADMIN')
-            )
-            RETURNING id
-        `);
-        count += usersResult.rowCount;
-        console.log(chalk.green(`   ✓ ${usersResult.rowCount} utilisateurs supprimés`));
     } catch (error) {
-        console.log(chalk.yellow(`   ⚠ Utilisateurs : ${error.message}`));
+        console.error('\n❌ ERREUR:', error.message);
+        console.error(error);
+        if (pool) await pool.end();
+        process.exit(1);
     }
-
-    console.log(chalk.green(`\n✅ ${count} enregistrements supprimés`));
 }
 
-async function resetModeratePlus() {
-    console.log(chalk.cyan('🔥 REMISE À ZÉRO MODÉRÉE+\n'));
+// ===============================================
+// NIVEAU 4 : RESET COMPLET
+// ===============================================
+async function resetLevel4Complete(pool) {
+    console.log('💣 NIVEAU 4 : Suppression complète de toutes les tables...\n');
 
-    let count = 0;
-
-    // Ordre de suppression respectant les contraintes FK (enfants avant parents)
-    const tablesToClean = [
-        // Notifications et tâches
-        { name: 'notifications', hasId: true },
-        { name: 'tasks', hasId: true },
-        
-        // Relations campagnes (enfants en premier)
-        { name: 'prospecting_campaign_validation_companies', hasId: false },
-        { name: 'prospecting_campaign_companies', hasId: false },
-        { name: 'prospecting_campaign_validations', hasId: true },
-        { name: 'prospecting_campaigns', hasId: true },
-        
-        // Relations opportunités
-        { name: 'opportunity_comments', hasId: true },
-        { name: 'opportunity_steps', hasId: true },
-        { name: 'opportunities', hasId: true },
-        
-        // Documents et contrats
-        { name: 'documents', hasId: true },
-        { name: 'invoices', hasId: true },
-        { name: 'contracts', hasId: true },
-        
-        // Temps et RH
-        { name: 'time_entries', hasId: true },
-        { name: 'rh_formations', hasId: true },
-        { name: 'rh_competences', hasId: true },
-        { name: 'rh_evolutions', hasId: true },
-        
-        // Missions et Clients (AJOUT pour MODÉRÉE+)
-        { name: 'missions', hasId: true },
-        { name: 'clients', hasId: true },
-        
-        // Collaborateurs (avant users car FK)
-        { name: 'collaborateurs', hasId: true },
-        
-        // Settings utilisateurs (AVANT de supprimer les users)
-        { name: 'notification_settings', hasId: true },
-        { name: 'user_settings', hasId: true }
-    ];
-
-    for (const table of tablesToClean) {
-        try {
-            console.log(chalk.gray(`   → Nettoyage de ${table.name}...`));
-            const result = table.hasId 
-                ? await pool.query(`DELETE FROM ${table.name} RETURNING id`)
-                : await pool.query(`DELETE FROM ${table.name}`);
-            count += result.rowCount;
-            console.log(chalk.green(`   ✓ ${result.rowCount} enregistrements supprimés`));
-        } catch (error) {
-            console.log(chalk.yellow(`   ⚠ ${table.name} : ${error.message}`));
-        }
-    }
-
-    // Supprimer les utilisateurs non-admin (après collaborateurs)
-    console.log(chalk.gray('   → Suppression des utilisateurs non-admin...'));
-    try {
-        const usersResult = await pool.query(`
-            DELETE FROM users 
-            WHERE role NOT IN ('SUPER_ADMIN', 'ADMIN')
-            AND id NOT IN (
-                SELECT DISTINCT user_id 
-                FROM user_roles ur 
-                JOIN roles r ON ur.role_id = r.id 
-                WHERE r.name IN ('SUPER_ADMIN', 'ADMIN')
-            )
-            RETURNING id
-        `);
-        count += usersResult.rowCount;
-        console.log(chalk.green(`   ✓ ${usersResult.rowCount} utilisateurs supprimés`));
-    } catch (error) {
-        console.log(chalk.yellow(`   ⚠ Utilisateurs : ${error.message}`));
-    }
-
-    console.log(chalk.green(`\n✅ ${count} enregistrements supprimés`));
-}
-
-async function resetHeavy() {
-    console.log(chalk.cyan('🔥 REMISE À ZÉRO COMPLÈTE\n'));
-
-    let count = 0;
-
-    // Ordre de suppression respectant les contraintes FK (enfants avant parents)
-    const tablesToClean = [
-        // Notifications et tâches
-        'notifications',
-        'tasks',
-        
-        // Relations campagnes (enfants en premier)
-        'prospecting_campaign_validation_companies',
-        'prospecting_campaign_companies',
-        'prospecting_campaign_validations',
-        'prospecting_campaigns',
-        
-        // Relations opportunités
-        'opportunity_comments',
-        'opportunity_steps',
-        'opportunities',
-        
-        // Documents et contrats
-        'documents',
-        'invoices',
-        'contracts',
-        
-        // Temps et RH
-        'time_entries',
-        'rh_formations',
-        'rh_competences',
-        'rh_evolutions',
-        
-        // Collaborateurs (avant divisions/secteurs/business_units car FK)
-        'collaborateurs',
-        
-        // Modèles de prospection uniquement (AVANT BU/Divisions car FK)
-        'prospecting_templates',
-        
-        // Taux horaires (AVANT divisions car FK sur divisions)
-        'taux_horaires',
-        
-        // Structure organisationnelle
-        'divisions',
-        'secteurs',
-        'business_units',
-        
-        // Settings utilisateurs (AVANT users car FK sur users)
-        'notification_settings',
-        'user_settings',
-        
-        // Permissions (supprimer AVANT user_roles)
-        'role_permissions',
-        'permissions'
-    ];
-
-    for (const table of tablesToClean) {
-        try {
-            console.log(chalk.gray(`   → Nettoyage de ${table}...`));
-            const result = await pool.query(`DELETE FROM ${table}`);
-            count += result.rowCount;
-            console.log(chalk.green(`   ✓ ${result.rowCount} enregistrements supprimés`));
-        } catch (error) {
-            console.log(chalk.yellow(`   ⚠ ${table} : ${error.message}`));
-        }
-    }
-
-    // Supprimer les user_roles pour les non-admin
-    console.log(chalk.gray('   → Nettoyage des rôles utilisateurs non-admin...'));
-    try {
-        const userRolesResult = await pool.query(`
-            DELETE FROM user_roles 
-            WHERE user_id IN (
-                SELECT id FROM users 
-                WHERE role NOT IN ('SUPER_ADMIN', 'ADMIN')
-                AND id NOT IN (
-                    SELECT DISTINCT user_id 
-                    FROM user_roles ur 
-                    JOIN roles r ON ur.role_id = r.id 
-                    WHERE r.name IN ('SUPER_ADMIN', 'ADMIN')
-                )
-            )
-        `);
-        count += userRolesResult.rowCount;
-        console.log(chalk.green(`   ✓ ${userRolesResult.rowCount} rôles utilisateurs supprimés`));
-    } catch (error) {
-        console.log(chalk.yellow(`   ⚠ user_roles : ${error.message}`));
-    }
-
-    // Supprimer les utilisateurs non-admin (GARDER les SUPER_ADMIN)
-    console.log(chalk.gray('   → Suppression des utilisateurs non-admin...'));
-    try {
-        const usersResult = await pool.query(`
-            DELETE FROM users 
-            WHERE role NOT IN ('SUPER_ADMIN', 'ADMIN')
-            AND id NOT IN (
-                SELECT DISTINCT user_id 
-                FROM user_roles ur 
-                JOIN roles r ON ur.role_id = r.id 
-                WHERE r.name IN ('SUPER_ADMIN', 'ADMIN')
-            )
-            RETURNING id
-        `);
-        count += usersResult.rowCount;
-        console.log(chalk.green(`   ✓ ${usersResult.rowCount} utilisateurs supprimés`));
-    } catch (error) {
-        console.log(chalk.yellow(`   ⚠ users : ${error.message}`));
-    }
-
-    console.log(chalk.yellow('\n⚠️  Les utilisateurs SUPER_ADMIN et ADMIN ont été conservés'));
-    console.log(chalk.cyan('💡 Vous pouvez vous reconnecter avec vos comptes administrateurs\n'));
-
-    console.log(chalk.green(`✅ ${count} enregistrements supprimés`));
-}
-
-async function resetBrutal() {
-    console.log(chalk.red.bold('💀 REMISE À ZÉRO BRUTALE\n'));
+    // Désactiver temporairement les contraintes de clés étrangères
+    await pool.query('SET session_replication_role = replica;');
 
     // Récupérer toutes les tables
     const tablesResult = await pool.query(`
@@ -542,42 +279,312 @@ async function resetBrutal() {
     `);
 
     const tables = tablesResult.rows.map(row => row.tablename);
-    console.log(chalk.gray(`   → ${tables.length} tables trouvées\n`));
+    console.log(`   📋 ${tables.length} table(s) trouvée(s)`);
 
     // Supprimer toutes les tables
-    console.log(chalk.gray('   → Suppression de toutes les tables...'));
     for (const table of tables) {
         try {
-            await pool.query(`DROP TABLE IF EXISTS ${table} CASCADE`);
-            console.log(chalk.green(`   ✓ Table ${table} supprimée`));
+            await pool.query(`DROP TABLE IF EXISTS "${table}" CASCADE`);
+            console.log(`   ✓ Table "${table}" supprimée`);
         } catch (error) {
-            console.log(chalk.red(`   ✗ Erreur sur ${table}: ${error.message}`));
+            console.log(`   ⚠️  Erreur lors de la suppression de "${table}": ${error.message}`);
         }
     }
 
-    console.log(chalk.red.bold('\n💀 BASE DE DONNÉES COMPLÈTEMENT VIDÉE!'));
-    console.log(chalk.yellow('⚠️  Toutes les tables ont été supprimées!'));
-    console.log(chalk.cyan('\n💡 Conseil: Exécutez maintenant les scripts d\'initialisation:'));
-    console.log(chalk.white('   1. node scripts/database/1-init-database-tables.js'));
-    console.log(chalk.white('   2. node scripts/database/2-create-super-admin.js\n'));
-}
+    // Supprimer tous les types ENUM personnalisés
+    const enumsResult = await pool.query(`
+        SELECT typname 
+        FROM pg_type 
+        WHERE typtype = 'e' AND typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
+    `);
 
-// Menu principal
-async function main() {
-    try {
-        await resetDatabase();
-    } catch (error) {
-        console.error(chalk.red('\n❌ Erreur fatale:'), error);
-        process.exit(1);
+    for (const enumRow of enumsResult.rows) {
+        try {
+            await pool.query(`DROP TYPE IF EXISTS "${enumRow.typname}" CASCADE`);
+            console.log(`   ✓ Type ENUM "${enumRow.typname}" supprimé`);
+        } catch (error) {
+            console.log(`   ⚠️  Erreur lors de la suppression du type "${enumRow.typname}": ${error.message}`);
+        }
     }
+
+    // Supprimer toutes les séquences
+    const sequencesResult = await pool.query(`
+        SELECT sequence_name 
+        FROM information_schema.sequences 
+        WHERE sequence_schema = 'public'
+    `);
+
+    for (const seqRow of sequencesResult.rows) {
+        try {
+            await pool.query(`DROP SEQUENCE IF EXISTS "${seqRow.sequence_name}" CASCADE`);
+            console.log(`   ✓ Séquence "${seqRow.sequence_name}" supprimée`);
+        } catch (error) {
+            console.log(`   ⚠️  Erreur lors de la suppression de la séquence "${seqRow.sequence_name}": ${error.message}`);
+        }
+    }
+
+    // Réactiver les contraintes
+    await pool.query('SET session_replication_role = DEFAULT;');
+
+    console.log('\n╔══════════════════════════════════════════════════════════════╗');
+    console.log('║         ✅ BASE DE DONNÉES COMPLÈTEMENT NETTOYÉE            ║');
+    console.log('╚══════════════════════════════════════════════════════════════╝\n');
+    
+    console.log('📊 Résumé:');
+    console.log(`   ✓ ${tables.length} table(s) supprimée(s)`);
+    console.log(`   ✓ ${enumsResult.rows.length} type(s) ENUM supprimé(s)`);
+    console.log(`   ✓ ${sequencesResult.rows.length} séquence(s) supprimée(s)`);
+    
+    console.log('\n💡 Prochaines étapes:');
+    console.log('   1. Pour recréer la structure:');
+    console.log('      node scripts/database/1-create-structure.js');
+    console.log('');
+    console.log('   2. Pour initialiser avec les données de base:');
+    console.log('      node scripts/database/2-seed-base-data.js');
+    console.log('');
+    console.log('   3. Pour générer des données de démo:');
+    console.log('      node scripts/database/5-generate-demo-data.js');
+    console.log('');
+    
+    console.log('✅ Opération terminée - Base de données VIERGE\n');
 }
 
-// Gestion du Ctrl+C
-process.on('SIGINT', async () => {
-    console.log(chalk.yellow('\n\n✋ Opération annulée par l\'utilisateur.\n'));
-    await pool.end();
-    process.exit(0);
-});
+// ===============================================
+// NIVEAUX 1, 2, 3 : RESET PROGRESSIF
+// ===============================================
+async function resetProgressive(pool, level) {
+    let stats = {
+        tables: 0,
+        rows: 0
+    };
+
+    // NIVEAU 1 : Données opérationnelles
+    if (level >= 1) {
+        console.log('📊 NIVEAU 1 : Suppression des données opérationnelles...\n');
+        stats = await deleteLevel1(pool, stats);
+    }
+
+    // NIVEAU 2 : Structure organisationnelle
+    if (level >= 2) {
+        console.log('\n🏢 NIVEAU 2 : Suppression de la structure organisationnelle...\n');
+        stats = await deleteLevel2(pool, stats);
+    }
+
+    // NIVEAU 3 : Utilisateurs et collaborateurs
+    if (level >= 3) {
+        console.log('\n👥 NIVEAU 3 : Suppression des utilisateurs et collaborateurs...\n');
+        stats = await deleteLevel3(pool, stats);
+    }
+
+    console.log(`\n✅ ${stats.tables} table(s) nettoyée(s), ${stats.rows} ligne(s) supprimée(s)`);
+}
+
+// ===============================================
+// NIVEAU 1 : Données opérationnelles
+// ===============================================
+async function deleteLevel1(pool, stats) {
+    const tables = [
+        // Factures (en premier car dépendances)
+        'invoice_lines',
+        'invoices',
+        
+        // Feuilles de temps et validations
+        'time_entry_validations',
+        'time_entries',
+        'validation_history',
+        
+        // Missions et affectations
+        'mission_assignments',
+        'mission_tasks',
+        'missions',
+        
+        // Opportunités et activités commerciales
+        'opportunity_activities',
+        'opportunity_contacts',
+        'opportunity_history',
+        'opportunities',
+        
+        // Campagnes (contacts liés)
+        'campaign_activities',
+        'campaign_contacts',
+        
+        // Tâches et activités
+        'tasks',
+        'activities',
+        
+        // Absences et congés
+        'absences',
+        'conges',
+        
+        // Contacts clients
+        'contacts',
+        
+        // Événements et notifications
+        'events',
+        'notifications',
+        
+        // Documents et pièces jointes
+        'documents',
+        'attachments'
+    ];
+
+    for (const table of tables) {
+        try {
+            const result = await pool.query(`DELETE FROM ${table}`);
+            console.log(`   ✓ ${table}: ${result.rowCount} ligne(s) supprimée(s)`);
+            stats.tables++;
+            stats.rows += result.rowCount;
+        } catch (error) {
+            console.log(`   ⚠️  ${table}: ${error.message}`);
+        }
+    }
+
+    return stats;
+}
+
+// ===============================================
+// NIVEAU 2 : Structure organisationnelle
+// ===============================================
+async function deleteLevel2(pool, stats) {
+    const tables = [
+        // Campagnes de prospection
+        'campaigns',
+        
+        // Clients (toutes les dépendances ont été supprimées au niveau 1)
+        'clients',
+        
+        // Structure organisationnelle (grades, postes, divisions, BU)
+        'grades',
+        'postes',
+        'divisions',
+        'business_units'
+    ];
+
+    for (const table of tables) {
+        try {
+            const result = await pool.query(`DELETE FROM ${table}`);
+            console.log(`   ✓ ${table}: ${result.rowCount} ligne(s) supprimée(s)`);
+            stats.tables++;
+            stats.rows += result.rowCount;
+        } catch (error) {
+            console.log(`   ⚠️  ${table}: ${error.message}`);
+        }
+    }
+
+    return stats;
+}
+
+// ===============================================
+// NIVEAU 3 : Utilisateurs et collaborateurs
+// ===============================================
+async function deleteLevel3(pool, stats) {
+    // Récupérer l'ID du rôle SUPER_ADMIN
+    const superAdminRoleResult = await pool.query(`
+        SELECT id FROM roles WHERE name = 'SUPER_ADMIN'
+    `);
+    
+    const superAdminRoleId = superAdminRoleResult.rows[0]?.id;
+    
+    // Récupérer les IDs des utilisateurs SUPER_ADMIN à conserver
+    let superAdminUserIds = [];
+    if (superAdminRoleId) {
+        const superAdminUsersResult = await pool.query(`
+            SELECT DISTINCT user_id 
+            FROM user_roles 
+            WHERE role_id = $1
+        `, [superAdminRoleId]);
+        
+        superAdminUserIds = superAdminUsersResult.rows.map(row => row.user_id);
+        console.log(`   ℹ️  ${superAdminUserIds.length} compte(s) SUPER_ADMIN conservé(s)\n`);
+    }
+
+    // Historique RH des collaborateurs
+    const hrTables = [
+        'evolution_salaire',
+        'evolution_grade',
+        'evolution_poste',
+        'evolution_organisation',
+        'historique_formations',
+        'evaluations'
+    ];
+
+    for (const table of hrTables) {
+        try {
+            const result = await pool.query(`DELETE FROM ${table}`);
+            console.log(`   ✓ ${table}: ${result.rowCount} ligne(s) supprimée(s)`);
+            stats.tables++;
+            stats.rows += result.rowCount;
+        } catch (error) {
+            console.log(`   ⚠️  ${table}: ${error.message}`);
+        }
+    }
+
+    // Collaborateurs (tous)
+    try {
+        const result = await pool.query(`DELETE FROM collaborateurs`);
+        console.log(`   ✓ collaborateurs: ${result.rowCount} ligne(s) supprimée(s)`);
+        stats.tables++;
+        stats.rows += result.rowCount;
+    } catch (error) {
+        console.log(`   ⚠️  collaborateurs: ${error.message}`);
+    }
+
+    // Permissions utilisateurs (sauf SUPER_ADMIN)
+    if (superAdminUserIds.length > 0) {
+        try {
+            const result = await pool.query(`
+                DELETE FROM user_permissions 
+                WHERE user_id NOT IN (${superAdminUserIds.map((_, i) => `$${i + 1}`).join(',')})
+            `, superAdminUserIds);
+            console.log(`   ✓ user_permissions: ${result.rowCount} ligne(s) supprimée(s)`);
+            stats.tables++;
+            stats.rows += result.rowCount;
+        } catch (error) {
+            console.log(`   ⚠️  user_permissions: ${error.message}`);
+        }
+
+        // Rôles utilisateurs (sauf SUPER_ADMIN)
+        try {
+            const result = await pool.query(`
+                DELETE FROM user_roles 
+                WHERE user_id NOT IN (${superAdminUserIds.map((_, i) => `$${i + 1}`).join(',')})
+            `, superAdminUserIds);
+            console.log(`   ✓ user_roles: ${result.rowCount} ligne(s) supprimée(s)`);
+            stats.tables++;
+            stats.rows += result.rowCount;
+        } catch (error) {
+            console.log(`   ⚠️  user_roles: ${error.message}`);
+        }
+
+        // Utilisateurs (sauf SUPER_ADMIN)
+        try {
+            const result = await pool.query(`
+                DELETE FROM users 
+                WHERE id NOT IN (${superAdminUserIds.map((_, i) => `$${i + 1}`).join(',')})
+            `, superAdminUserIds);
+            console.log(`   ✓ users: ${result.rowCount} ligne(s) supprimée(s)`);
+            stats.tables++;
+            stats.rows += result.rowCount;
+        } catch (error) {
+            console.log(`   ⚠️  users: ${error.message}`);
+        }
+    } else {
+        console.log('   ⚠️  Aucun SUPER_ADMIN trouvé, tous les utilisateurs seront supprimés');
+        
+        // Supprimer toutes les permissions et utilisateurs
+        try {
+            await pool.query(`DELETE FROM user_permissions`);
+            await pool.query(`DELETE FROM user_roles`);
+            const result = await pool.query(`DELETE FROM users`);
+            console.log(`   ✓ users: ${result.rowCount} ligne(s) supprimée(s)`);
+            stats.tables += 3;
+            stats.rows += result.rowCount;
+        } catch (error) {
+            console.log(`   ⚠️  users: ${error.message}`);
+        }
+    }
+
+    return stats;
+}
 
 main();
-

@@ -1363,7 +1363,7 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
                 const managedDivsQuery = `
                     SELECT id FROM divisions
                     WHERE responsable_principal_id = $1 OR responsable_adjoint_id = $1
-                    ORDER BY nom
+                    ORDER BY name
                     LIMIT 1
                 `;
                 const managedDivs = await pool.query(managedDivsQuery, [collaborateurId]);
@@ -1542,7 +1542,7 @@ router.get('/managed-teams', authenticateToken, async (req, res) => {
             SELECT id, nom, code, description, business_unit_id
             FROM divisions
             WHERE responsable_principal_id = $1 OR responsable_adjoint_id = $1
-            ORDER BY nom
+            ORDER BY name
         `;
         const divsResult = await pool.query(divsQuery, [collaborateurId]);
         

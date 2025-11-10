@@ -2,9 +2,9 @@
   "app": {
     "name": "ENTERPRISE WORKFLOW MANAGEMENT",
     "shortName": "EWM",
-    "tagline": "Intelligent Resource Management System",
-    "description": "Complete enterprise management solution for modern businesses",
-    "version": "2.0.0"
+    "tagline": "🎨 TEST BRANDING - Intelligent Resource Management System",
+    "description": "Complete enterprise management solution with RANDOM COLORS for testing",
+    "version": "2.0.0-branding-test"
   },
   "branding": {
     "logo": {
@@ -13,26 +13,26 @@
       "favicon": "/assets/brands/default/favicon.ico"
     },
     "colors": {
-      "primary": "#2c3e50",
-      "secondary": "#3498db",
-      "accent": "#27ae60",
-      "success": "#27ae60",
-      "warning": "#f39c12",
-      "danger": "#e74c3c",
-      "info": "#3498db",
-      "dark": "#1a252f",
-      "light": "#ecf0f1"
+      "primary": "#E91E63",
+      "secondary": "#9C27B0",
+      "accent": "#00BCD4",
+      "success": "#4CAF50",
+      "warning": "#FF9800",
+      "danger": "#F44336",
+      "info": "#2196F3",
+      "dark": "#212121",
+      "light": "#FAFAFA"
     },
     "theme": "default"
   },
   "ui": {
-    "sidebarTitle": "EWM",
-    "sidebarSubtitle": "Intelligent Resource Management",
-    "loginTitle": "Welcome to EWM",
-    "loginSubtitle": "Sign in to your account",
+    "sidebarTitle": "🎨 BRANDING TEST",
+    "sidebarSubtitle": "Random Colors Testing",
+    "loginTitle": "🎨 EWM Branding Test",
+    "loginSubtitle": "Test des couleurs aléatoires - Material Design",
     "footer": {
-      "text": "Enterprise Workflow Management",
-      "copyright": "© 2024 EWM. All rights reserved."
+      "text": "Enterprise Workflow Management - BRANDING TEST",
+      "copyright": "© 2024 EWM. Test Mode - Random Colors."
     }
   },
   "features": {
@@ -100,10 +100,12 @@
   },
   "demo": {
     "mode": true,
-    "bannerText": "DEMO VERSION - For demonstration purposes only",
-    "watermark": false
+    "bannerText": "🎨 BRANDING TEST - Vérification des couleurs personnalisées Material Design",
+    "watermark": true
   }
 }
+
+
 
 
 

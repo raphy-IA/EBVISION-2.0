@@ -149,6 +149,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Servir les fichiers statiques
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Servir FontAwesome depuis node_modules (évite la dépendance au CDN)
+app.use('/vendor/fontawesome', express.static(path.join(__dirname, 'node_modules/@fortawesome/fontawesome-free')));
+
 // Servir les fichiers de configuration (CSS, thèmes)
 app.use('/config', express.static(path.join(__dirname, 'config')));
 

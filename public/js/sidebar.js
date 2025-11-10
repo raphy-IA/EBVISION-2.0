@@ -2,7 +2,7 @@
 let sidebarCache = {
     html: null,
     timestamp: 0,
-    expiry: 10 * 60 * 1000 // 10 minutes
+    expiry: 1 * 60 * 1000 // 1 minute (réduit pour le développement)
 };
 
 document.addEventListener('DOMContentLoaded', function() {

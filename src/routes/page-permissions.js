@@ -11,6 +11,11 @@ router.post('/check-page-permission', authenticateToken, async (req, res) => {
     try {
         const { pageName } = req.body;
         
+        console.log('🔐 [check-page-permission] Vérification d\'accès pour:', pageName);
+        console.log('   👤 User ID:', req.user.id);
+        console.log('   📋 req.user.role:', req.user.role);
+        console.log('   📋 req.user.roles:', req.user.roles);
+        
         if (!pageName) {
             return res.status(400).json({
                 success: false,
@@ -19,7 +24,14 @@ router.post('/check-page-permission', authenticateToken, async (req, res) => {
         }
 
         // SUPER_ADMIN a accès à tout
-        if (req.user.roles && req.user.roles.includes('SUPER_ADMIN')) {
+        // Vérifier à la fois req.user.role (string) et req.user.roles (array)
+        const isSuperAdmin = req.user.role === 'SUPER_ADMIN' || 
+                            (req.user.roles && req.user.roles.includes('SUPER_ADMIN'));
+        
+        console.log('   🔍 isSuperAdmin:', isSuperAdmin);
+        
+        if (isSuperAdmin) {
+            console.log('   ✅ Accès autorisé (SUPER_ADMIN)');
             return res.json({
                 success: true,
                 message: 'Accès autorisé (SUPER_ADMIN)',

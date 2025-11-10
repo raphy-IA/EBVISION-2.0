@@ -1,24 +1,29 @@
 #!/usr/bin/env node
 
 /**
- * SCRIPT 1/3 : INITIALISATION DES TABLES DE LA BASE DE DONNÉES
- * =============================================================
+ * SCRIPT 1 : INITIALISATION DES TABLES DE LA BASE DE DONNÉES
+ * ===========================================================
  * 
  * Ce script crée toutes les tables nécessaires pour l'application
- * - Tables de base (users, roles, permissions, etc.)
- * - Tables de gestion (business_units, divisions, collaborateurs, etc.)
- * - Tables métier (missions, opportunités, campagnes, etc.)
+ * en utilisant le schéma de référence (schema-complete.sql) et
+ * crée les rôles système de base.
  * 
- * Usage: node scripts/1-init-database-tables.js
+ * ⚠️  NOTE IMPORTANTE :
+ * Ce script ne crée QUE les tables et les rôles.
+ * Les données de référence doivent être insérées avec le script
+ * 3-insert-reference-data.js
+ * 
+ * Usage: node scripts/database/1-init-database-tables.js
  */
 
 require('dotenv').config();
 const { Pool } = require('pg');
 const inquirer = require('inquirer');
-const { ensureExtensions, ensureBaseRoles, runMigrationsWithConfig } = require('./utils/schema-initializer');
+const fs = require('fs');
+const path = require('path');
 
 console.log('\n╔══════════════════════════════════════════════════════════════╗');
-console.log('║       ÉTAPE 1/3 : INITIALISATION DES TABLES                ║');
+console.log('║       ÉTAPE 1/4 : INITIALISATION DES TABLES                ║');
 console.log('╚══════════════════════════════════════════════════════════════╝\n');
 
 async function initDatabaseTables() {
@@ -31,7 +36,8 @@ async function initDatabaseTables() {
         console.log(`   🔌 Port       : ${process.env.DB_PORT || '5432'}`);
         console.log(`   👤 Utilisateur: ${process.env.DB_USER || 'Non défini'}`);
         console.log(`   🗄️  Base      : ${process.env.DB_NAME || 'Non définie'}`);
-        console.log(`   🔐 SSL        : ${process.env.NODE_ENV === 'production' ? 'Oui' : 'Non'}\n`);
+        const sslStatus = process.env.NODE_ENV === 'production' ? 'Oui' : 'Non';
+        console.log(`   🔐 SSL        : ${sslStatus}\n`);
 
         // ===============================================
         // Choix : Nouvelle BD ou existante
@@ -100,52 +106,57 @@ async function initDatabaseTables() {
 
             targetDatabase = newDbAnswers.newDbName;
 
-            // Se connecter à la base "postgres" pour créer la nouvelle BD
+            // Créer la base de données
             console.log('\n📡 Connexion à PostgreSQL (base "postgres")...');
-            const adminPool = new Pool({
-                ...connectionConfig,
-                database: 'postgres'
-            });
-
+            const adminPool = new Pool({ ...connectionConfig, database: 'postgres' });
+            
             try {
                 await adminPool.query('SELECT NOW()');
-                console.log('✅ Connexion réussie!');
+                console.log('✅ Connexion réussie!\n');
 
                 // Vérifier si la base existe déjà
-                console.log(`\n🔍 Vérification de l'existence de "${targetDatabase}"...`);
+                console.log('🔍 Vérification de l\'existence de "' + targetDatabase + '"...\n');
                 const checkDb = await adminPool.query(
-                    `SELECT 1 FROM pg_database WHERE datname = $1`,
+                    'SELECT 1 FROM pg_database WHERE datname = $1',
                     [targetDatabase]
                 );
 
                 if (checkDb.rows.length > 0) {
-                    console.log(`⚠️  La base de données "${targetDatabase}" existe déjà`);
-                    
-                    const overwriteAnswer = await inquirer.prompt([
+                    console.log('⚠️  La base de données existe déjà\n');
+                    const overwrite = await inquirer.prompt([
                         {
                             type: 'confirm',
-                            name: 'useExisting',
-                            message: 'Voulez-vous l\'utiliser (créer les tables dedans)?',
-                            default: true
+                            name: 'proceed',
+                            message: 'Voulez-vous la supprimer et la recréer?',
+                            default: false
                         }
                     ]);
 
-                    if (!overwriteAnswer.useExisting) {
+                    if (!overwrite.proceed) {
                         console.log('\n❌ Opération annulée\n');
                         await adminPool.end();
                         return;
                     }
-                } else {
-                    // Créer la nouvelle base de données
-                    console.log(`\n🏗️  Création de la base de données "${targetDatabase}"...`);
-                    await adminPool.query(`CREATE DATABASE "${targetDatabase}"`);
-                    console.log('✅ Base de données créée avec succès!');
+
+                    // Terminer les connexions actives
+                    await adminPool.query(`
+                        SELECT pg_terminate_backend(pg_stat_activity.pid)
+                        FROM pg_stat_activity
+                        WHERE pg_stat_activity.datname = $1
+                        AND pid <> pg_backend_pid()
+                    `, [targetDatabase]);
+
+                    await adminPool.query(`DROP DATABASE "${targetDatabase}"`);
+                    console.log('🗑️  Base supprimée\n');
                 }
 
+                console.log('🏗️  Création de la base de données "' + targetDatabase + '"...');
+                await adminPool.query(`CREATE DATABASE "${targetDatabase}"`);
+                console.log('✅ Base de données créée avec succès!\n');
+                
                 await adminPool.end();
 
             } catch (error) {
-                console.error(`\n❌ Erreur lors de la création de la base: ${error.message}`);
                 await adminPool.end();
                 throw error;
             }
@@ -156,140 +167,216 @@ async function initDatabaseTables() {
             // ===============================================
             console.log('\n📂 Utilisation d\'une base de données existante\n');
             
-            const existingDbAnswers = await inquirer.prompt([
+            targetDatabase = process.env.DB_NAME || 'ewm_db';
+            
+            console.log('📋 Base de données détectée depuis .env:');
+            console.log(`   🗄️  Base : ${targetDatabase}\n`);
+            
+            const confirmAnswers = await inquirer.prompt([
                 {
                     type: 'input',
-                    name: 'database',
-                    message: 'Nom de la base de données existante:',
-                    default: process.env.DB_NAME,
-                    validate: (input) => input.length > 0 ? true : 'Le nom de la base de données est requis'
+                    name: 'databaseName',
+                    message: 'Confirmer ou modifier le nom de la base de données:',
+                    default: targetDatabase,
+                    validate: (input) => {
+                        if (input.length === 0) return 'Le nom est requis';
+                        if (!/^[a-zA-Z0-9_-]+$/.test(input)) return 'Caractères autorisés: lettres, chiffres, - et _';
+                        return true;
+                    }
                 },
                 {
                     type: 'confirm',
                     name: 'proceed',
-                    message: (answers) => `Créer les tables dans "${answers.database}"?`,
-                    default: true
+                    message: (answers) => {
+                        return `⚠️  ATTENTION: Les tables vont être créées dans "${answers.databaseName}". Continuer?`;
+                    },
+                    default: false
                 }
             ]);
 
-            if (!existingDbAnswers.proceed) {
-                console.log('\n❌ Opération annulée\n');
+            if (!confirmAnswers.proceed) {
+                console.log('\n❌ Opération annulée par l\'utilisateur\n');
                 return;
             }
 
-            targetDatabase = existingDbAnswers.database;
+            targetDatabase = confirmAnswers.databaseName;
+            
+            // Vérifier que la base existe
+            console.log('\n🔍 Vérification de l\'existence de la base de données...');
+            const checkPool = new Pool({ ...connectionConfig, database: 'postgres' });
+            
+            try {
+                const checkDb = await checkPool.query(
+                    'SELECT 1 FROM pg_database WHERE datname = $1',
+                    [targetDatabase]
+                );
+                
+                if (checkDb.rows.length === 0) {
+                    await checkPool.end();
+                    console.error(`\n❌ La base de données "${targetDatabase}" n'existe pas!`);
+                    console.log('\n💡 Options:');
+                    console.log('   1. Créer la base manuellement: createdb ' + targetDatabase);
+                    console.log('   2. Relancer le script et choisir "Nouvelle base"\n');
+                    return;
+                }
+                
+                console.log('✅ Base de données trouvée!\n');
+                await checkPool.end();
+                
+            } catch (error) {
+                await checkPool.end();
+                throw error;
+            }
         }
 
         // ===============================================
-        // Connexion à la base de données cible
+        // Connexion à la base cible
         // ===============================================
-        console.log(`\n📡 Connexion à la base de données "${targetDatabase}"...`);
-        
+        console.log('📡 Connexion à la base de données "' + targetDatabase + '"...');
         const pool = new Pool({
             ...connectionConfig,
             database: targetDatabase
         });
 
-        try {
-            await pool.query('SELECT NOW()');
-            console.log('✅ Connexion réussie!\n');
-        } catch (error) {
-            console.error(`\n❌ Impossible de se connecter à "${targetDatabase}"`);
-            console.error(`   Erreur: ${error.message}`);
-            console.error('\n💡 Vérifiez que:');
-            console.error('   - La base de données existe');
-            console.error('   - L\'utilisateur a les droits d\'accès');
-            console.error('   - Les informations dans .env sont correctes\n');
+        await pool.query('SELECT NOW()');
+        console.log('✅ Connexion réussie!\n');
+
+        // ===============================================
+        // Vérifier l'existence du fichier de schéma
+        // ===============================================
+        const schemaPath = path.join(__dirname, 'schema-structure-only.sql');
+        
+        if (!fs.existsSync(schemaPath)) {
+            console.error(`\n❌ Fichier de schéma introuvable: ${schemaPath}`);
+            console.log('\n💡 Le fichier schema-complete.sql est requis pour l\'initialisation.');
+            console.log('   Il devrait se trouver dans: scripts/database/schema-complete.sql\n');
             await pool.end();
             return;
         }
 
-        console.log('\n🧩 Préparation de la structure de base...\n');
-
-        await ensureExtensions(pool);
-        console.log('   ✓ Extensions essentielles vérifiées');
-
+        // ===============================================
+        // Application du schéma via psql
+        // ===============================================
+        console.log('📄 Chargement du schéma SQL depuis schema-complete.sql...');
+        console.log('🔨 Application du schéma via psql...\n');
+        
+        // Fermer le pool temporairement
         await pool.end();
-
-        console.log('\n🚀 Exécution des migrations officielles...');
-        await runMigrationsWithConfig({
-            host: connectionConfig.host,
-            port: connectionConfig.port,
-            user: connectionConfig.user,
-            password: connectionConfig.password,
-            database: targetDatabase
-        });
-        console.log('   ✓ Migrations exécutées avec succès');
-
-        // Préparer l'environnement pour les scripts de vérification
-        process.env.DB_HOST = connectionConfig.host;
-        process.env.DB_PORT = String(connectionConfig.port);
-        process.env.DB_NAME = targetDatabase;
-        process.env.DB_USER = connectionConfig.user;
-        process.env.DB_PASSWORD = connectionConfig.password;
-
-        delete require.cache[require.resolve('./verify-and-fix-database')];
-        const { verifyAndFixDatabase } = require('./verify-and-fix-database');
-        console.log('\n🛠️  Vérification fine de la structure...');
-        await verifyAndFixDatabase();
-
-        const postMigrationPool = new Pool({
+        
+        // Utiliser psql pour appliquer le schéma
+        const { execSync } = require('child_process');
+        const psqlCmd = `psql -h ${connectionConfig.host} -p ${connectionConfig.port} -U ${connectionConfig.user} -d ${targetDatabase} -f "${schemaPath}" -q`;
+        
+        try {
+            process.env.PGPASSWORD = connectionConfig.password;
+            execSync(psqlCmd, { stdio: 'pipe' });
+            delete process.env.PGPASSWORD;
+            console.log('✅ Schéma appliqué avec succès!\n');
+        } catch (error) {
+            delete process.env.PGPASSWORD;
+            console.error('❌ Erreur lors de l\'application du schéma:', error.message);
+            console.log('\n💡 Assurez-vous que psql est installé et accessible dans le PATH\n');
+            process.exit(1);
+        }
+        
+        // Recréer le pool
+        const newPool = new Pool({
             ...connectionConfig,
             database: targetDatabase
         });
 
-        await ensureBaseRoles(postMigrationPool);
+        // ===============================================
+        // Création des rôles de base avec styles
+        // ===============================================
+        console.log('👥 Création des rôles de base...');
+        
+        const baseRoles = [
+            // ===== RÔLES SYSTÈME (is_system_role = true) - comme dans la base pure =====
+            { name: 'SUPER_ADMIN', description: 'Super administrateur - Accès total à toutes les fonctionnalités', is_system: true, badge_bg_class: 'danger', badge_text_class: 'white', badge_hex_color: '#dc3545', badge_priority: 100 },
+            { name: 'ADMIN_IT', description: 'Administrateur IT - Gestion technique et maintenance', is_system: true, badge_bg_class: 'dark', badge_text_class: 'white', badge_hex_color: '#212529', badge_priority: 95 },
+            { name: 'IT', description: 'Technicien IT - Support technique et maintenance', is_system: true, badge_bg_class: 'secondary', badge_text_class: 'white', badge_hex_color: '#6c757d', badge_priority: 92 },
+            { name: 'ADMIN', description: 'Administrateur - Gestion métier et configuration', is_system: true, badge_bg_class: 'primary', badge_text_class: 'white', badge_hex_color: '#0d6efd', badge_priority: 90 },
+            { name: 'MANAGER', description: 'Manager - Gestion d\'équipe et supervision', is_system: true, badge_bg_class: 'info', badge_text_class: 'white', badge_hex_color: '#0dcaf0', badge_priority: 70 },
+            { name: 'CONSULTANT', description: 'Consultant - Utilisateur standard avec accès complet aux données', is_system: true, badge_bg_class: 'success', badge_text_class: 'white', badge_hex_color: '#198754', badge_priority: 60 },
+            { name: 'COLLABORATEUR', description: 'Collaborateur - Accès limité aux données de sa BU', is_system: true, badge_bg_class: 'info', badge_text_class: 'white', badge_hex_color: '#17a2b8', badge_priority: 50 },
+            
+            // ===== RÔLES NON-SYSTÈME (is_system_role = false) - optionnels =====
+            { name: 'DIRECTEUR', description: 'Permissions et roles pour les directeurs', is_system: false, badge_bg_class: 'warning', badge_text_class: 'dark', badge_hex_color: '#ffc107', badge_priority: 80 },
+            { name: 'ASSOCIE', description: 'Permissions et roles pour les Associés', is_system: false, badge_bg_class: 'warning', badge_text_class: 'dark', badge_hex_color: '#ff9800', badge_priority: 85 },
+            { name: 'SUPER_USER', description: 'Permissions et roles pour le SP', is_system: false, badge_bg_class: 'primary', badge_text_class: 'white', badge_hex_color: '#0066cc', badge_priority: 75 },
+            { name: 'SUPERVISEUR', description: 'Permissions pour superviseurs', is_system: false, badge_bg_class: 'info', badge_text_class: 'white', badge_hex_color: '#17a2b8', badge_priority: 65 }
+        ];
 
-        const tableCountResult = await postMigrationPool.query(`
+        // S'assurer que la colonne is_system_role existe
+        await newPool.query(`
+            ALTER TABLE roles ADD COLUMN IF NOT EXISTS is_system_role BOOLEAN DEFAULT false
+        `);
+        
+        for (const role of baseRoles) {
+            await newPool.query(`
+                INSERT INTO roles (name, description, is_system_role, badge_bg_class, badge_text_class, badge_hex_color, badge_priority)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                ON CONFLICT (name) DO UPDATE SET
+                    description = EXCLUDED.description,
+                    is_system_role = EXCLUDED.is_system_role,
+                    badge_bg_class = EXCLUDED.badge_bg_class,
+                    badge_text_class = EXCLUDED.badge_text_class,
+                    badge_hex_color = EXCLUDED.badge_hex_color,
+                    badge_priority = EXCLUDED.badge_priority
+            `, [role.name, role.description, role.is_system, role.badge_bg_class, role.badge_text_class, role.badge_hex_color, role.badge_priority]);
+        }
+        const systemRolesCount = baseRoles.filter(r => r.is_system).length;
+        const nonSystemRolesCount = baseRoles.filter(r => !r.is_system).length;
+        console.log(`   ✅ ${baseRoles.length} rôles créés (${systemRolesCount} système, ${nonSystemRolesCount} non-système)\n`);
+
+        // ===============================================
+        // Vérification finale
+        // ===============================================
+        const tableResult = await newPool.query(`
             SELECT COUNT(*)::int AS count
-            FROM information_schema.tables
-            WHERE table_schema = 'public'
+            FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_type = 'BASE TABLE'
         `);
 
-        const tablesCreated = tableCountResult.rows[0]?.count || 0;
+        const tablesCount = tableResult.rows[0]?.count || 0;
 
-        const rolesResult = await postMigrationPool.query(`
-            SELECT name, badge_bg_class, badge_text_class, badge_hex_color, badge_priority
-            FROM roles
-            ORDER BY badge_priority DESC, name ASC
-        `);
+        await newPool.end();
 
-        await postMigrationPool.end();
-
-        console.log('\n╔══════════════════════════════════════════════════════════════╗');
-        console.log('║              ✅ INITIALISATION TERMINÉE                     ║');
+        // ===============================================
+        // RÉSUMÉ
+        // ===============================================
+        console.log('╔══════════════════════════════════════════════════════════════╗');
+        console.log('║              ✅ TABLES CRÉÉES AVEC SUCCÈS                   ║');
         console.log('╚══════════════════════════════════════════════════════════════╝\n');
         
         console.log('📊 RÉSUMÉ :');
         console.log('═══════════');
-        console.log(`   ✓ Base de données : ${targetDatabase}`);
-        console.log(`   ✓ Hôte             : ${connectionConfig.host}:${connectionConfig.port}`);
-        console.log(`   ✓ Utilisateur      : ${connectionConfig.user}`);
-        console.log(`   ✓ Tables détectées : ${tablesCreated}`);
-        console.log(`   ✓ Rôles synchronisés : ${rolesResult.rowCount}`);
-
-        console.log('\n🎨 Aperçu des rôles et couleurs :');
-        rolesResult.rows.forEach(role => {
-            console.log(
-                `   • ${role.name.padEnd(15)} → badge: ${role.badge_bg_class}/${role.badge_text_class} (${role.badge_hex_color})`
-            );
-        });
+        console.log(`   ✓ ${tablesCount} tables créées/vérifiées`);
+        console.log(`   ✓ ${baseRoles.length} rôles de base créés`);
+        console.log(`   ✓ Base de données: ${targetDatabase}`);
+        console.log(`   ✓ Hôte: ${connectionConfig.host}:${connectionConfig.port}`);
+        console.log(`   ✓ Utilisateur: ${connectionConfig.user}`);
         
         console.log('\n🎯 PROCHAINES ÉTAPES :');
         console.log('══════════════════════');
-        console.log('   1. Créer un super administrateur : node scripts/database/2-create-super-admin.js');
-        console.log('   2. Synchroniser les permissions : node scripts/database/3-assign-all-permissions.js\n');
+        console.log('   1. Créer un super admin → node scripts/database/2-create-super-admin.js');
+        console.log('   2. Insérer les données de référence → node scripts/database/3-insert-reference-data.js');
+        console.log('   3. (Optionnel) Générer des données de démo → node scripts/database/5-generate-demo-data.js\n');
 
     } catch (error) {
         console.error('\n❌ ERREUR:', error.message);
         console.error('\n💡 Vérifiez :');
-        console.error('   - Les informations de connexion');
-        console.error('   - Que la base de données existe');
-        console.error('   - Que PostgreSQL est démarré\n');
+        console.error('   - Les informations de connexion dans le fichier .env');
+        console.error('   - Que la base de données existe (si mode "existante")');
+        console.error('   - Que PostgreSQL est démarré');
+        console.error('   - Que psql est installé et accessible\n');
         process.exit(1);
     }
 }
 
-// Exécution
-initDatabaseTables().catch(console.error);
-
+// Exécution du script
+initDatabaseTables().catch((error) => {
+    console.error('\n❌ Échec de l\'initialisation');
+    process.exit(1);
+});
