@@ -496,10 +496,30 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
         });
         
     } catch (error) {
+        // Récupération sécurisée des données pour le logging
+        const safeParams = req?.params || {};
+        const safeBody = req?.body || {};
+
         console.error('❌ Erreur lors de la génération du compte utilisateur:', error);
         console.error('❌ Stack trace:', error.stack);
-        console.error('❌ Données reçues:', { id, login, email, nom, prenom, roles: roles?.length || 0 });
-        
+        console.error('❌ Données reçues (sécurisées):', {
+            id: safeParams.id,
+            login: safeBody.login,
+            email: safeBody.email,
+            nom: safeBody.nom,
+            prenom: safeBody.prenom,
+            rolesCount: Array.isArray(safeBody.roles) ? safeBody.roles.length : 0
+        });
+
+        // Gestion spécifique des doublons de login
+        if (error.code === '23505' && error.constraint === 'users_login_key') {
+            return res.status(400).json({
+                success: false,
+                message: `Le login "${safeBody.login}" est déjà utilisé. Veuillez en choisir un autre.`,
+                errorCode: 'LOGIN_DUPLICATE'
+            });
+        }
+
         res.status(500).json({
             success: false,
             error: 'Erreur lors de la génération du compte utilisateur',
