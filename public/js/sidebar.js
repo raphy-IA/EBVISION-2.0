@@ -362,12 +362,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 grade = user.grade_nom || null;
             }
 
-            if (poste && grade) {
-                roleElement.textContent = `${poste} · ${grade}`;
-            } else if (poste) {
-                roleElement.textContent = poste;
-            } else if (grade) {
-                roleElement.textContent = grade;
+            // Si nous avons déjà poste/grade en session, les utiliser directement
+            if (poste || grade) {
+                applyPosteGradeToRoleElement(roleElement, poste, grade);
+            } else if (collaborateur && collaborateur.id) {
+                // Sinon, tenter de charger les infos collaborateur détaillées (poste/grade)
+                fetchCollaborateurPosteGrade(collaborateur.id, roleElement);
             }
         }
 
@@ -413,6 +413,47 @@ document.addEventListener('DOMContentLoaded', function() {
         const nomInitial = user.nom ? user.nom.charAt(0).toUpperCase() : '';
         const prenomInitial = user.prenom ? user.prenom.charAt(0).toUpperCase() : '';
         return `${prenomInitial}${nomInitial}` || '';
+    }
+
+    function applyPosteGradeToRoleElement(roleElement, poste, grade) {
+        if (!roleElement) return;
+
+        if (poste && grade) {
+            roleElement.textContent = `${poste} · ${grade}`;
+        } else if (poste) {
+            roleElement.textContent = poste;
+        } else if (grade) {
+            roleElement.textContent = grade;
+        }
+    }
+
+    function fetchCollaborateurPosteGrade(collaborateurId, roleElement) {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token || !collaborateurId) return;
+
+            fetch(`/api/collaborateurs/${collaborateurId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Erreur API collaborateurs');
+                return response.json();
+            })
+            .then(data => {
+                const collab = data.data || data;
+                const poste = collab.poste_nom || null;
+                const grade = collab.grade_nom || null;
+                applyPosteGradeToRoleElement(roleElement, poste, grade);
+            })
+            .catch(err => {
+                console.warn('⚠️ Impossible de charger poste/grade collaborateur pour la sidebar:', err);
+            });
+        } catch (error) {
+            console.warn('⚠️ Erreur lors du chargement collaborateur pour la sidebar:', error);
+        }
     }
 
     // Fonction pour mettre à jour les informations utilisateur
