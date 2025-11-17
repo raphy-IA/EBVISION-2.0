@@ -100,6 +100,9 @@ const limiter = rateLimit({
 });
 
 // Rate limiter spécifique pour l'authentification (protection contre force brute)
+// ATTENTION: on ne doit pas appliquer ce rate limiter aux routes comme /api/auth/verify
+// car le front appelle périodiquement /verify pour vérifier le token. Si cette route
+// est limitée, elle renverra des 429 qui provoqueront la déconnexion des utilisateurs.
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: parseInt(process.env.AUTH_RATE_LIMIT_MAX) || 20, // 20 tentatives de login par 15 minutes
@@ -124,13 +127,14 @@ app.use('/api/', (req, res, next) => {
 });
 
 // Appliquer le rate limiter spécifique pour l'authentification
-// SÉCURITÉ: Toujours actif, même en développement
+// SÉCURITÉ: Toujours actif, même en production, mais UNIQUEMENT sur /api/auth/login
+// pour éviter de limiter /api/auth/verify (appel périodique côté front).
 if (process.env.RATE_LIMIT_BYPASS === 'true' || process.env.NODE_ENV === 'development') {
     console.log('⚠️  ATTENTION: Rate limiting désactivé pour le développement');
-    app.use('/api/auth', (req, res, next) => next());
 } else {
-    app.use('/api/auth', authLimiter);
-    console.log('✅ Rate limiting activé pour l\'authentification');
+    // Ne limiter que les tentatives de connexion
+    app.post('/api/auth/login', authLimiter, (req, res, next) => next());
+    console.log('✅ Rate limiting activé pour les tentatives de connexion (/api/auth/login)');
 }
 
 // Middlewares

@@ -422,3 +422,5 @@ La route `/auth/me` retourne **à la fois** `role` (legacy) et `roles` (nouveau)
 
 
 
+
+

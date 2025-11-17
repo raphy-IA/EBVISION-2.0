@@ -51,7 +51,7 @@ const superAdminActionLimiter = rateLimit({
             // Vérifier si le rôle est SUPER_ADMIN
             if (roleId) {
                 const { pool } = require('../utils/database');
-                const roleResult = await pool.query('SELECT nom as name FROM roles WHERE id = $1', [roleId]);
+                const roleResult = await pool.query('SELECT name FROM roles WHERE id = $1', [roleId]);
                 const roleName = roleResult.rows[0]?.name;
                 
                 if (roleName === 'SUPER_ADMIN') {
@@ -112,6 +112,11 @@ module.exports = {
     superAdminActionLimiter,
     unauthorizedAccessLimiter
 };
+
+
+
+
+
 
 
 
