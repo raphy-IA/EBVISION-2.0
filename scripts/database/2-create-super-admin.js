@@ -71,209 +71,34 @@ async function main() {
         await ensureUserColumns(pool);
         console.log('   ✓ Structure users prête\n');
 
-        // ===============================================
-        // Demander les informations de l'utilisateur
-        // ===============================================
-        console.log('👤 Informations du Super Administrateur\n');
-        
-        const answers = await inquirer.prompt([
+        // Menu principal : créer, modifier mot de passe, supprimer
+        const { action } = await inquirer.prompt([
             {
-                type: 'input',
-                name: 'nom',
-                message: 'Nom:',
-                validate: (input) => input.length > 0 ? true : 'Le nom est requis'
-            },
-            {
-                type: 'input',
-                name: 'prenom',
-                message: 'Prénom:',
-                validate: (input) => input.length > 0 ? true : 'Le prénom est requis'
-            },
-            {
-                type: 'input',
-                name: 'login',
-                message: 'Login (nom d\'utilisateur):',
-                default: (answers) => {
-                    // Générer un login par défaut à partir du nom et prénom
-                    const nom = answers.nom || '';
-                    const prenom = answers.prenom || '';
-                    return (prenom.charAt(0) + nom).toLowerCase().replace(/[^a-z0-9]/g, '');
-                },
-                validate: (input) => {
-                    if (input.length < 3) return 'Le login doit contenir au moins 3 caractères';
-                    if (!/^[a-z0-9_-]+$/i.test(input)) return 'Le login ne peut contenir que des lettres, chiffres, tirets et underscores';
-                    return true;
-                }
-            },
-            {
-                type: 'input',
-                name: 'email',
-                message: 'Email:',
-                default: 'admin@ebvision.com',
-                validate: (input) => {
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(input)) return 'Email invalide';
-                    return true;
-                }
-            },
-            {
-                type: 'password',
-                name: 'password',
-                message: 'Mot de passe:',
-                mask: '*',
-                default: 'Admin@2025',
-                validate: (input) => {
-                    if (input.length < 8) return 'Le mot de passe doit contenir au moins 8 caractères';
-                    if (!/[A-Z]/.test(input)) return 'Le mot de passe doit contenir au moins une majuscule';
-                    if (!/[a-z]/.test(input)) return 'Le mot de passe doit contenir au moins une minuscule';
-                    if (!/[0-9]/.test(input)) return 'Le mot de passe doit contenir au moins un chiffre';
-                    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(input)) return 'Le mot de passe doit contenir au moins un caractère spécial';
-                    return true;
-                }
-            },
-            {
-                type: 'password',
-                name: 'passwordConfirm',
-                message: 'Confirmer le mot de passe:',
-                mask: '*',
-                validate: (input, answers) => {
-                    if (input !== answers.password) return 'Les mots de passe ne correspondent pas';
-                    return true;
-                }
+                type: 'list',
+                name: 'action',
+                message: 'Que voulez-vous faire ?',
+                choices: [
+                    { name: 'Créer ou mettre à jour un Super Admin', value: 'create' },
+                    { name: 'Modifier le mot de passe d\'un Super Admin existant', value: 'changePassword' },
+                    { name: 'Supprimer un Super Admin existant', value: 'delete' },
+                    { name: 'Annuler', value: 'cancel' }
+                ]
             }
         ]);
 
-        // ===============================================
-        // Vérifier si l'utilisateur existe déjà
-        // ===============================================
-        console.log('\n🔍 Vérification de l\'existence de l\'utilisateur...');
-        
-        const existingUser = await pool.query(
-            'SELECT id, email FROM users WHERE email = $1',
-            [answers.email]
-        );
-
-        let userId;
-
-        if (existingUser.rows.length > 0) {
-            const existing = existingUser.rows[0];
-            console.log('⚠️  Un utilisateur avec cet email existe déjà:');
-            console.log(`   → ID: ${existing.id}`);
-            console.log(`   → Email: ${existing.email}\n`);
-            
-            const overwriteAnswer = await inquirer.prompt([
-                {
-                    type: 'confirm',
-                    name: 'overwrite',
-                    message: 'Voulez-vous mettre à jour cet utilisateur?',
-                    default: false
-                }
-            ]);
-
-            if (!overwriteAnswer.overwrite) {
-                console.log('\n❌ Création annulée\n');
-                await pool.end();
-                return;
-            }
-
-            // Mettre à jour l'utilisateur existant
-            const passwordHash = await bcrypt.hash(answers.password, 12);
-            
-            await pool.query(`
-                UPDATE users 
-                SET nom = $1, prenom = $2, login = $3, email = $4, password_hash = $5, role = 'SUPER_ADMIN', statut = 'ACTIF'
-                WHERE id = $6
-            `, [answers.nom, answers.prenom, answers.login, answers.email, passwordHash, existing.id]);
-
-            console.log('\n✅ Utilisateur mis à jour avec succès!');
-            console.log(`   → ID: ${existing.id}`);
-            
-            userId = existing.id;
-
-        } else {
-            // ===============================================
-            // Créer le nouvel utilisateur
-            // ===============================================
-            console.log('\n👤 Création de l\'utilisateur...');
-            
-            const passwordHash = await bcrypt.hash(answers.password, 12);
-            
-            const result = await pool.query(`
-                INSERT INTO users (nom, prenom, login, email, password_hash, role, statut)
-                VALUES ($1, $2, $3, $4, $5, 'SUPER_ADMIN', 'ACTIF')
-                RETURNING id, nom, prenom, login, email, role, created_at
-            `, [
-                answers.nom,
-                answers.prenom,
-                answers.login,
-                answers.email,
-                passwordHash
-            ]);
-
-            const newUser = result.rows[0];
-            console.log('✅ Utilisateur créé avec succès!');
-            console.log(`   → ID: ${newUser.id}`);
-            
-            userId = newUser.id;
+        if (action === 'cancel') {
+            console.log('\n❌ Opération annulée\n');
+            await pool.end();
+            return;
         }
 
-        // ===============================================
-        // Associer le rôle Super Administrateur
-        // ===============================================
-        console.log('\n🔗 Association du rôle Super Administrateur...');
-        
-        await pool.query(`
-            INSERT INTO user_roles (user_id, role_id)
-            VALUES ($1, $2)
-            ON CONFLICT (user_id, role_id) DO NOTHING
-        `, [userId, superAdminRoleId]);
-        
-        console.log('✅ Rôle Super Administrateur associé');
-
-        // ===============================================
-        // Compter les permissions actuelles
-        // ===============================================
-        const permCount = await pool.query('SELECT COUNT(*) as count FROM permissions');
-        const rolePermCount = await pool.query(`
-            SELECT COUNT(*) as count 
-            FROM role_permissions rp
-            JOIN user_roles ur ON rp.role_id = ur.role_id
-            WHERE ur.user_id = $1
-        `, [userId]);
-
-        // ===============================================
-        // Résumé
-        // ===============================================
-        console.log('\n╔══════════════════════════════════════════════════════════════╗');
-        console.log('║           ✅ SUPER ADMIN CRÉÉ AVEC SUCCÈS                   ║');
-        console.log('╚══════════════════════════════════════════════════════════════╝\n');
-        
-        console.log('📊 INFORMATIONS :');
-        console.log('═════════════════');
-        console.log(`   👤 Nom      : ${answers.nom} ${answers.prenom}`);
-        console.log(`   🔑 Login    : ${answers.login}`);
-        console.log(`   📧 Email    : ${answers.email}`);
-        console.log(`   🆔 ID       : ${userId}`);
-        console.log(`   👑 Rôle     : Super Administrateur`);
-        
-        console.log(`\n📋 PERMISSIONS :`);
-        console.log(`   → ${permCount.rows[0].count} permissions disponibles dans la base`);
-        console.log(`   → ${rolePermCount.rows[0].count} permissions actuellement associées`);
-        
-        if (parseInt(rolePermCount.rows[0].count) === 0) {
-            console.log('\n⚠️  ATTENTION : Aucune permission associée pour le moment');
+        if (action === 'create') {
+            await createOrUpdateSuperAdmin(pool, superAdminRoleId);
+        } else if (action === 'changePassword') {
+            await changeSuperAdminPassword(pool);
+        } else if (action === 'delete') {
+            await deleteSuperAdmin(pool, superAdminRoleId);
         }
-        
-        console.log('\n🎯 PROCHAINE ÉTAPE :');
-        console.log('════════════════════');
-        console.log('   Affecter toutes les permissions → node scripts/database/3-assign-all-permissions.js');
-        
-        console.log('\n🔑 INFORMATIONS DE CONNEXION :');
-        console.log('══════════════════════════════');
-        console.log(`   🔑 Login        : ${answers.login}`);
-        console.log(`   📧 Email        : ${answers.email}`);
-        console.log(`   🔐 Mot de passe : [celui que vous avez défini]`);
-        console.log('\n');
 
         await pool.end();
 
@@ -283,6 +108,300 @@ async function main() {
         if (pool) await pool.end();
         process.exit(1);
     }
+}
+
+async function createOrUpdateSuperAdmin(pool, superAdminRoleId) {
+    console.log('👤 Informations du Super Administrateur\n');
+
+    const answers = await inquirer.prompt([
+        {
+            type: 'input',
+            name: 'nom',
+            message: 'Nom:',
+            validate: (input) => input.length > 0 ? true : 'Le nom est requis'
+        },
+        {
+            type: 'input',
+            name: 'prenom',
+            message: 'Prénom:',
+            validate: (input) => input.length > 0 ? true : 'Le prénom est requis'
+        },
+        {
+            type: 'input',
+            name: 'login',
+            message: 'Login (nom d\'utilisateur):',
+            default: (answers) => {
+                const nom = answers.nom || '';
+                const prenom = answers.prenom || '';
+                return (prenom.charAt(0) + nom).toLowerCase().replace(/[^a-z0-9]/g, '');
+            },
+            validate: (input) => {
+                if (input.length < 3) return 'Le login doit contenir au moins 3 caractères';
+                if (!/^[a-z0-9_-]+$/i.test(input)) return 'Le login ne peut contenir que des lettres, chiffres, tirets et underscores';
+                return true;
+            }
+        },
+        {
+            type: 'input',
+            name: 'email',
+            message: 'Email:',
+            default: 'admin@ebvision.com',
+            validate: (input) => {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(input)) return 'Email invalide';
+                return true;
+            }
+        },
+        {
+            type: 'password',
+            name: 'password',
+            message: 'Mot de passe:',
+            mask: '*',
+            default: 'Admin@2025',
+            validate: (input) => {
+                if (input.length < 8) return 'Le mot de passe doit contenir au moins 8 caractères';
+                if (!/[A-Z]/.test(input)) return 'Le mot de passe doit contenir au moins une majuscule';
+                if (!/[a-z]/.test(input)) return 'Le mot de passe doit contenir au moins une minuscule';
+                if (!/[0-9]/.test(input)) return 'Le mot de passe doit contenir au moins un chiffre';
+                if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(input)) return 'Le mot de passe doit contenir au moins un caractère spécial';
+                return true;
+            }
+        },
+        {
+            type: 'password',
+            name: 'passwordConfirm',
+            message: 'Confirmer le mot de passe:',
+            mask: '*',
+            validate: (input, answers) => {
+                if (input !== answers.password) return 'Les mots de passe ne correspondent pas';
+                return true;
+            }
+        }
+    ]);
+
+    console.log('\n🔍 Vérification de l\'existence de l\'utilisateur...');
+
+    const existingUser = await pool.query(
+        'SELECT id, email FROM users WHERE email = $1',
+        [answers.email]
+    );
+
+    let userId;
+
+    if (existingUser.rows.length > 0) {
+        const existing = existingUser.rows[0];
+        console.log('⚠️  Un utilisateur avec cet email existe déjà:');
+        console.log(`   → ID: ${existing.id}`);
+        console.log(`   → Email: ${existing.email}\n`);
+
+        const overwriteAnswer = await inquirer.prompt([
+            {
+                type: 'confirm',
+                name: 'overwrite',
+                message: 'Voulez-vous mettre à jour cet utilisateur ?',
+                default: false
+            }
+        ]);
+
+        if (!overwriteAnswer.overwrite) {
+            console.log('\n❌ Création mise à jour annulée\n');
+            return;
+        }
+
+        const passwordHash = await bcrypt.hash(answers.password, 12);
+
+        await pool.query(`
+            UPDATE users 
+            SET nom = $1, prenom = $2, login = $3, email = $4, password_hash = $5, role = 'SUPER_ADMIN', statut = 'ACTIF'
+            WHERE id = $6
+        `, [answers.nom, answers.prenom, answers.login, answers.email, passwordHash, existing.id]);
+
+        console.log('\n✅ Utilisateur mis à jour avec succès!');
+        console.log(`   → ID: ${existing.id}`);
+
+        userId = existing.id;
+
+    } else {
+        console.log('\n👤 Création de l\'utilisateur...');
+
+        const passwordHash = await bcrypt.hash(answers.password, 12);
+
+        const result = await pool.query(`
+            INSERT INTO users (nom, prenom, login, email, password_hash, role, statut)
+            VALUES ($1, $2, $3, $4, $5, 'SUPER_ADMIN', 'ACTIF')
+            RETURNING id, nom, prenom, login, email, role, created_at
+        `, [
+            answers.nom,
+            answers.prenom,
+            answers.login,
+            answers.email,
+            passwordHash
+        ]);
+
+        const newUser = result.rows[0];
+        console.log('✅ Utilisateur créé avec succès!');
+        console.log(`   → ID: ${newUser.id}`);
+
+        userId = newUser.id;
+    }
+
+    console.log('\n🔗 Association du rôle Super Administrateur...');
+
+    await pool.query(`
+        INSERT INTO user_roles (user_id, role_id)
+        VALUES ($1, $2)
+        ON CONFLICT (user_id, role_id) DO NOTHING
+    `, [userId, superAdminRoleId]);
+
+    console.log('✅ Rôle Super Administrateur associé');
+
+    const permCount = await pool.query('SELECT COUNT(*) as count FROM permissions');
+    const rolePermCount = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM role_permissions rp
+        JOIN user_roles ur ON rp.role_id = ur.role_id
+        WHERE ur.user_id = $1
+    `, [userId]);
+
+    console.log('\n╔══════════════════════════════════════════════════════════════╗');
+    console.log('║           ✅ SUPER ADMIN CRÉÉ AVEC SUCCÈS                   ║');
+    console.log('╚══════════════════════════════════════════════════════════════╝\n');
+
+    console.log('📊 INFORMATIONS :');
+    console.log('═════════════════');
+    console.log(`   👤 Nom      : ${answers.nom} ${answers.prenom}`);
+    console.log(`   🔑 Login    : ${answers.login}`);
+    console.log(`   📧 Email    : ${answers.email}`);
+    console.log(`   🆔 ID       : ${userId}`);
+    console.log(`   👑 Rôle     : Super Administrateur`);
+
+    console.log(`\n📋 PERMISSIONS :`);
+    console.log(`   → ${permCount.rows[0].count} permissions disponibles dans la base`);
+    console.log(`   → ${rolePermCount.rows[0].count} permissions actuellement associées`);
+
+    if (parseInt(rolePermCount.rows[0].count) === 0) {
+        console.log('\n⚠️  ATTENTION : Aucune permission associée pour le moment');
+    }
+
+    console.log('\n🎯 PROCHAINE ÉTAPE :');
+    console.log('════════════════════');
+    console.log('   Affecter toutes les permissions → node scripts/database/3-assign-all-permissions.js');
+
+    console.log('\n🔑 INFORMATIONS DE CONNEXION :');
+    console.log('══════════════════════════════');
+    console.log(`   🔑 Login        : ${answers.login}`);
+    console.log(`   📧 Email        : ${answers.email}`);
+    console.log(`   🔐 Mot de passe : [celui que vous avez défini]`);
+    console.log('\n');
+}
+
+async function listSuperAdmins(pool) {
+    const result = await pool.query(`
+        SELECT u.id, u.nom, u.prenom, u.email, u.login
+        FROM users u
+        JOIN user_roles ur ON ur.user_id = u.id
+        JOIN roles r ON ur.role_id = r.id
+        WHERE r.name = 'SUPER_ADMIN'
+        ORDER BY u.nom, u.prenom
+    `);
+
+    return result.rows;
+}
+
+async function chooseSuperAdmin(pool) {
+    const superAdmins = await listSuperAdmins(pool);
+
+    if (superAdmins.length === 0) {
+        console.log('\n⚠️  Aucun Super Admin trouvé dans la base.');
+        return null;
+    }
+
+    const { userId } = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'userId',
+            message: 'Sélectionnez le Super Admin :',
+            choices: [
+                ...superAdmins.map(u => ({
+                    name: `${u.nom} ${u.prenom} <${u.email}> [${u.login}]`,
+                    value: u.id
+                })),
+                { name: 'Annuler', value: null }
+            ]
+        }
+    ]);
+
+    if (!userId) {
+        console.log('\n❌ Opération annulée');
+        return null;
+    }
+
+    return userId;
+}
+
+async function changeSuperAdminPassword(pool) {
+    const userId = await chooseSuperAdmin(pool);
+    if (!userId) return;
+
+    const answers = await inquirer.prompt([
+        {
+            type: 'password',
+            name: 'password',
+            message: 'Nouveau mot de passe :',
+            mask: '*',
+            validate: (input) => {
+                if (input.length < 8) return 'Le mot de passe doit contenir au moins 8 caractères';
+                if (!/[A-Z]/.test(input)) return 'Le mot de passe doit contenir au moins une majuscule';
+                if (!/[a-z]/.test(input)) return 'Le mot de passe doit contenir au moins une minuscule';
+                if (!/[0-9]/.test(input)) return 'Le mot de passe doit contenir au moins un chiffre';
+                if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(input)) return 'Le mot de passe doit contenir au moins un caractère spécial';
+                return true;
+            }
+        },
+        {
+            type: 'password',
+            name: 'passwordConfirm',
+            message: 'Confirmer le mot de passe :',
+            mask: '*',
+            validate: (input, answers) => {
+                if (input !== answers.password) return 'Les mots de passe ne correspondent pas';
+                return true;
+            }
+        }
+    ]);
+
+    const passwordHash = await bcrypt.hash(answers.password, 12);
+
+    await pool.query(
+        'UPDATE users SET password_hash = $1 WHERE id = $2',
+        [passwordHash, userId]
+    );
+
+    console.log('\n✅ Mot de passe du Super Admin mis à jour avec succès');
+}
+
+async function deleteSuperAdmin(pool, superAdminRoleId) {
+    const userId = await chooseSuperAdmin(pool);
+    if (!userId) return;
+
+    const { confirmDelete } = await inquirer.prompt([
+        {
+            type: 'confirm',
+            name: 'confirmDelete',
+            message: 'Êtes-vous sûr de vouloir supprimer ce Super Admin ? Cette action est irréversible.',
+            default: false
+        }
+    ]);
+
+    if (!confirmDelete) {
+        console.log('\n❌ Suppression annulée');
+        return;
+    }
+
+    await pool.query('DELETE FROM user_roles WHERE user_id = $1 AND role_id = $2', [userId, superAdminRoleId]);
+    await pool.query('DELETE FROM users WHERE id = $1', [userId]);
+
+    console.log('\n✅ Super Admin supprimé avec succès');
 }
 
 async function ensureUserColumns(pool) {

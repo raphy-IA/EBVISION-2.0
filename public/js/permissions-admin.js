@@ -331,7 +331,7 @@ class PermissionsAdmin {
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <strong>${user.nom} ${user.prenom}</strong>
-                        <span class="badge bg-secondary ms-1">${user.role_name || 'Aucun rôle'}</span>
+                        <span class="badge bg-secondary ms-1">${user.roles_display || user.role_name || 'Aucun rôle'}</span>
                     </div>
                     <i class="fas fa-chevron-right"></i>
                 </div>

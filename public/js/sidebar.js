@@ -110,7 +110,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     window.sessionManager.initialize()
                         .then(() => {
+                            // Mise à jour immédiate
                             updateSidebarUserCardFromSession();
+
+                            // Mise à jour différée pour écraser d'éventuelles réécritures (ex: "COLLABORATEUR")
+                            setTimeout(() => {
+                                try {
+                                    updateSidebarUserCardFromSession();
+                                } catch (e) {
+                                    console.warn('⚠️ Erreur lors de la mise à jour différée de la carte utilisateur sidebar:', e);
+                                }
+                            }, 800);
                         })
                         .catch(err => {
                             console.warn('⚠️ Impossible de charger la session pour la sidebar:', err);
@@ -348,26 +358,33 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Poste et grade du collaborateur
+        // Poste/grade OU rôles utilisateur
         if (roleElement) {
             let poste = null;
             let grade = null;
 
             if (collaborateur) {
+                // Utilisateur avec compte collaborateur → poste + grade
                 poste = collaborateur.poste_nom || null;
                 grade = collaborateur.grade_nom || null;
-            } else if (user) {
-                // Fallback si les infos sont directement sur l'utilisateur
-                poste = user.poste_nom || null;
-                grade = user.grade_nom || null;
-            }
 
-            // Si nous avons déjà poste/grade en session, les utiliser directement
-            if (poste || grade) {
-                applyPosteGradeToRoleElement(roleElement, poste, grade);
-            } else if (collaborateur && collaborateur.id) {
-                // Sinon, tenter de charger les infos collaborateur détaillées (poste/grade)
-                fetchCollaborateurPosteGrade(collaborateur.id, roleElement);
+                if (poste || grade) {
+                    applyPosteGradeToRoleElement(roleElement, poste, grade);
+                } else if (collaborateur.id) {
+                    // Si poste/grade pas encore en session, essayer de les charger via l'API collaborateurs
+                    fetchCollaborateurPosteGrade(collaborateur.id, roleElement);
+                }
+            } else if (user) {
+                // Utilisateur SANS compte collaborateur → afficher les rôles
+                let rolesText = null;
+
+                if (Array.isArray(user.roles) && user.roles.length > 0) {
+                    rolesText = user.roles.join(', ');
+                } else if (user.role) {
+                    rolesText = user.role;
+                }
+
+                roleElement.textContent = rolesText || 'Aucun rôle';
             }
         }
 
@@ -419,7 +436,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!roleElement) return;
 
         if (poste && grade) {
-            roleElement.textContent = `${poste} · ${grade}`;
+            // Poste sur la première ligne, grade sur la ligne du dessous
+            roleElement.innerHTML = `${poste}<br><small>${grade}</small>`;
         } else if (poste) {
             roleElement.textContent = poste;
         } else if (grade) {
