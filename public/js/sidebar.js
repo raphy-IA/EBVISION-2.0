@@ -106,29 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Mettre à jour la carte utilisateur de la sidebar avec les infos collaborateur
-            if (window.sessionManager) {
-                try {
-                    window.sessionManager.initialize()
-                        .then(() => {
-                            // Mise à jour immédiate
-                            updateSidebarUserCardFromSession();
-
-                            // Mise à jour différée pour écraser d'éventuelles réécritures (ex: "COLLABORATEUR")
-                            setTimeout(() => {
-                                try {
-                                    updateSidebarUserCardFromSession();
-                                } catch (e) {
-                                    console.warn('⚠️ Erreur lors de la mise à jour différée de la carte utilisateur sidebar:', e);
-                                }
-                            }, 800);
-                        })
-                        .catch(err => {
-                            console.warn('⚠️ Impossible de charger la session pour la sidebar:', err);
-                        });
-                } catch (error) {
-                    console.warn('⚠️ Erreur lors de la mise à jour de la carte utilisateur sidebar:', error);
-                }
-            }
+            ensureSidebarUserCardUpdatedWithRetry();
             
             console.log('✅ Sidebar chargée et configurée avec succès');
         } else {
@@ -325,6 +303,35 @@ document.addEventListener('DOMContentLoaded', function() {
             attributes: true,
             attributeFilter: ['class']
         });
+    }
+
+    // Tente plusieurs fois de mettre à jour la carte utilisateur, en attendant que
+    // window.sessionManager soit disponible et initialisé (utile sur certaines pages).
+    function ensureSidebarUserCardUpdatedWithRetry(maxRetries = 5, delayMs = 300) {
+        const tryUpdate = (attempt) => {
+            if (!window.sessionManager) {
+                if (attempt >= maxRetries) {
+                    console.warn('⚠️ SessionManager non disponible pour la sidebar après plusieurs tentatives');
+                    return;
+                }
+                setTimeout(() => tryUpdate(attempt + 1), delayMs);
+                return;
+            }
+
+            try {
+                window.sessionManager.initialize()
+                    .then(() => {
+                        updateSidebarUserCardFromSession();
+                    })
+                    .catch(err => {
+                        console.warn('⚠️ Impossible de charger la session pour la sidebar:', err);
+                    });
+            } catch (error) {
+                console.warn('⚠️ Erreur lors de la mise à jour de la carte utilisateur sidebar:', error);
+            }
+        };
+
+        tryUpdate(0);
     }
 
     // Met à jour la carte utilisateur de la sidebar à partir du SessionManager
