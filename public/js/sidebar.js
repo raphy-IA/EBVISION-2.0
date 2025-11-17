@@ -104,6 +104,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             }
+
+            // Mettre à jour la carte utilisateur de la sidebar avec les infos collaborateur
+            if (window.sessionManager) {
+                try {
+                    window.sessionManager.initialize()
+                        .then(() => {
+                            updateSidebarUserCardFromSession();
+                        })
+                        .catch(err => {
+                            console.warn('⚠️ Impossible de charger la session pour la sidebar:', err);
+                        });
+                } catch (error) {
+                    console.warn('⚠️ Erreur lors de la mise à jour de la carte utilisateur sidebar:', error);
+                }
+            }
             
             console.log('✅ Sidebar chargée et configurée avec succès');
         } else {
@@ -300,6 +315,104 @@ document.addEventListener('DOMContentLoaded', function() {
             attributes: true,
             attributeFilter: ['class']
         });
+    }
+
+    // Met à jour la carte utilisateur de la sidebar à partir du SessionManager
+    function updateSidebarUserCardFromSession() {
+        if (!window.sessionManager || !window.sessionManager.isLoaded) {
+            return;
+        }
+
+        let user = null;
+        let collaborateur = null;
+
+        try {
+            user = window.sessionManager.getUser();
+            collaborateur = window.sessionManager.getCollaborateur();
+        } catch (error) {
+            console.warn('⚠️ Impossible de récupérer les informations de session pour la sidebar:', error);
+            return;
+        }
+
+        const nameElement = document.getElementById('userName');
+        const roleElement = document.getElementById('userRole');
+        const photoContainer = document.getElementById('sidebar-user-photo');
+
+        // Nom complet
+        if (nameElement && user) {
+            const prenom = user.prenom || '';
+            const nom = user.nom || '';
+            const fullName = `${prenom} ${nom}`.trim();
+            if (fullName) {
+                nameElement.textContent = fullName;
+            }
+        }
+
+        // Poste et grade du collaborateur
+        if (roleElement) {
+            let poste = null;
+            let grade = null;
+
+            if (collaborateur) {
+                poste = collaborateur.poste_nom || null;
+                grade = collaborateur.grade_nom || null;
+            } else if (user) {
+                // Fallback si les infos sont directement sur l'utilisateur
+                poste = user.poste_nom || null;
+                grade = user.grade_nom || null;
+            }
+
+            if (poste && grade) {
+                roleElement.textContent = `${poste} · ${grade}`;
+            } else if (poste) {
+                roleElement.textContent = poste;
+            } else if (grade) {
+                roleElement.textContent = grade;
+            }
+        }
+
+        // Photo du collaborateur
+        if (photoContainer) {
+            let photoUrl = null;
+
+            if (user && user.collaborateur_photo_url) {
+                photoUrl = user.collaborateur_photo_url;
+            }
+
+            // Nettoyer le contenu actuel
+            photoContainer.innerHTML = '';
+
+            if (photoUrl) {
+                const img = document.createElement('img');
+                img.src = `/${photoUrl}`;
+                img.alt = user ? `${user.prenom || ''} ${user.nom || ''}`.trim() : 'Photo collaborateur';
+                img.className = 'sidebar-user-avatar-img';
+                img.onerror = () => {
+                    // Fallback sur les initiales si la photo ne se charge pas
+                    renderSidebarInitials(photoContainer, user);
+                };
+                photoContainer.appendChild(img);
+            } else {
+                // Fallback sur les initiales si pas de photo
+                renderSidebarInitials(photoContainer, user);
+            }
+        }
+    }
+
+    function renderSidebarInitials(container, user) {
+        const initials = getUserInitials(user);
+        const div = document.createElement('div');
+        div.className = 'sidebar-user-avatar-initials';
+        div.textContent = initials;
+        container.innerHTML = '';
+        container.appendChild(div);
+    }
+
+    function getUserInitials(user) {
+        if (!user) return '';
+        const nomInitial = user.nom ? user.nom.charAt(0).toUpperCase() : '';
+        const prenomInitial = user.prenom ? user.prenom.charAt(0).toUpperCase() : '';
+        return `${prenomInitial}${nomInitial}` || '';
     }
 
     // Fonction pour mettre à jour les informations utilisateur
