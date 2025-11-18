@@ -1215,6 +1215,12 @@
                     document.getElementById('editUserName').value = user.nom;
                     document.getElementById('editUserEmail').value = user.email;
                     document.getElementById('editUserLogin').value = user.login || '';
+                    // Toujours vider le champ mot de passe à l'ouverture du modal
+                    // pour éviter toute modification involontaire (auto-fill navigateur, ancienne valeur, etc.)
+                    const passwordField = document.getElementById('editUserPassword');
+                    if (passwordField) {
+                        passwordField.value = '';
+                    }
                     
                     // Charger les rôles de l'utilisateur
                     await loadUserRolesForEdit(user.id);

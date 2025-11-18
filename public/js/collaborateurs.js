@@ -98,6 +98,26 @@
         let collaborateurToDelete = null;
         let collaborateurRHId = null;
 
+        let currentUserRoles = [];
+        let canManageUserAccounts = false;
+
+        function initCurrentUserRoles() {
+            try {
+                const userData = JSON.parse(localStorage.getItem('user') || '{}');
+                if (userData.roles && Array.isArray(userData.roles)) {
+                    currentUserRoles = userData.roles;
+                } else if (userData.role) {
+                    currentUserRoles = [userData.role];
+                } else if (userData.principal_role) {
+                    currentUserRoles = [userData.principal_role];
+                }
+                canManageUserAccounts = currentUserRoles.includes('SUPER_ADMIN') || currentUserRoles.includes('ADMIN_IT');
+            } catch (e) {
+                currentUserRoles = [];
+                canManageUserAccounts = false;
+            }
+        }
+
         // Fonction utilitaire pour les appels API authentifiés
         async function authenticatedFetch(url, options = {}) {
             const token = localStorage.getItem('authToken');
@@ -117,6 +137,7 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
+            initCurrentUserRoles();
             loadCollaborateurs();
             loadBusinessUnits();
             loadDivisions();
@@ -376,14 +397,15 @@
                             <button class="btn btn-outline-primary" onclick="gestionRH('${collaborateur.id}')" title="Gestion RH">
                                 <i class="fas fa-user-tie"></i>
                             </button>
-                            ${collaborateur.user_id ? 
-                                `<button class="btn btn-outline-success" onclick="manageUserAccount('${collaborateur.id}', '${collaborateur.user_id}')" title="Gérer le compte utilisateur">
-                                    <i class="fas fa-user-shield"></i>
-                                </button>` : 
-                                `<button class="btn btn-outline-secondary" onclick="generateUserAccount('${collaborateur.id}')" title="Générer un compte utilisateur">
-                                    <i class="fas fa-user-plus"></i>
-                                </button>`
-                            }
+                            ${canManageUserAccounts ? (
+                                collaborateur.user_id ? 
+                                    `<button class="btn btn-outline-success" onclick="manageUserAccount('${collaborateur.id}', '${collaborateur.user_id}')" title="Gérer le compte utilisateur">
+                                        <i class="fas fa-user-shield"></i>
+                                    </button>` : 
+                                    `<button class="btn btn-outline-secondary" onclick="generateUserAccount('${collaborateur.id}')" title="Générer un compte utilisateur">
+                                        <i class="fas fa-user-plus"></i>
+                                    </button>`
+                            ) : ''}
                             <button class="btn btn-outline-danger" onclick="deleteCollaborateur('${collaborateur.id}')" title="Supprimer">
                                 <i class="fas fa-trash"></i>
                             </button>
