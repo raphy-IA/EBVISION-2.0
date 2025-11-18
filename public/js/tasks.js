@@ -169,9 +169,35 @@ class TasksManager {
     // Mettre à jour les statistiques
     async updateTaskStats() {
         const stats = await this.loadTaskStats();
+        const totalTasks = stats.total_tasks || 0;
+        const activeTasks = stats.active_tasks || 0;
+
+        // Mettre à jour le compteur de tâches dans le menu profil
+        const menuTaskCount = document.getElementById('menuTaskCount');
+        if (menuTaskCount) {
+            const displayCount = activeTasks || totalTasks;
+            menuTaskCount.textContent = displayCount;
+        }
+
+        // Contribuer à la gestion de la bulle de la carte profil
+        const notificationBubble = document.getElementById('notificationBubble');
+        if (notificationBubble) {
+            const hasTasks = (activeTasks || totalTasks) > 0;
+            if (hasTasks) {
+                notificationBubble.style.display = 'flex';
+            } else {
+                // Ne masquer la bulle que si aucune notification non lue
+                const menuNotificationCount = document.getElementById('menuNotificationCount');
+                const notificationCount = menuNotificationCount ? parseInt(menuNotificationCount.textContent) || 0 : 0;
+                if (notificationCount === 0) {
+                    notificationBubble.style.display = 'none';
+                }
+            }
+        }
+
         return {
-            total_tasks: stats.total_tasks || 0,
-            active_tasks: stats.active_tasks || 0
+            total_tasks: totalTasks,
+            active_tasks: activeTasks
         };
     }
 }

@@ -201,12 +201,11 @@ function updateNotificationBadge() {
     console.log('🔔 Mise à jour du badge de notifications');
     console.log('📊 Stats actuelles:', notificationStats);
     
-    // Essayer plusieurs sélecteurs pour le badge
+    // Cibler uniquement les badges explicites
     const badges = [
         document.getElementById('notificationBadge'),
         document.getElementById('menuNotificationCount'),
-        document.querySelector('.notification-count'),
-        document.querySelector('[id*="notification"]')
+        document.querySelector('.notification-count')
     ].filter(Boolean);
     
     console.log('🎯 Badges trouvés:', badges.length);
@@ -227,6 +226,22 @@ function updateNotificationBadge() {
             console.log('✅ Badge masqué');
         }
     });
+
+    // Gérer la bulle sur la carte profil (#notificationBubble)
+    const notificationBubble = document.getElementById('notificationBubble');
+    if (notificationBubble) {
+        // Si au moins une notification non lue → bulle visible
+        if (unreadCount > 0) {
+            notificationBubble.style.display = 'flex';
+        } else {
+            // Sinon, ne masquer la bulle que s'il n'y a pas non plus de tâches actives
+            const menuTaskCount = document.getElementById('menuTaskCount');
+            const taskCount = menuTaskCount ? parseInt(menuTaskCount.textContent) || 0 : 0;
+            if (taskCount === 0) {
+                notificationBubble.style.display = 'none';
+            }
+        }
+    }
 }
 
 // Affichage des notifications

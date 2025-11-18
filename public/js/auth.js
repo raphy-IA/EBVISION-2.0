@@ -4,6 +4,9 @@ class AuthManager {
         this.isLoggingOut = false;
         this.logoutAttempts = 0;
         this.maxLogoutAttempts = 3;
+        // Gestion de l'inactivité utilisateur (15 minutes)
+        this.inactivityDelay = 15 * 60 * 1000; // 15 minutes en ms
+        this.inactivityTimeoutId = null;
         this.init();
     }
 
@@ -11,6 +14,7 @@ class AuthManager {
         this.addLogoutListeners();
         this.checkAuthStatus();
         this.setupPeriodicTokenCheck();
+        this.setupInactivityTracking();
     }
 
     // Ajouter les écouteurs d'événements pour les boutons de déconnexion
@@ -181,6 +185,48 @@ class AuthManager {
         }, 5 * 60 * 1000); // Vérifier toutes les 5 minutes
     }
 
+    // === Gestion de l'inactivité utilisateur ===
+
+    // Initialiser le suivi d'inactivité
+    setupInactivityTracking() {
+        const reset = this.resetInactivityTimer.bind(this);
+
+        // Événements considérés comme activité utilisateur
+        window.addEventListener('mousemove', reset);
+        window.addEventListener('mousedown', reset);
+        window.addEventListener('keydown', reset);
+        window.addEventListener('touchstart', reset);
+        window.addEventListener('scroll', reset, { passive: true });
+
+        // Démarrer le timer une première fois
+        this.resetInactivityTimer();
+    }
+
+    // Réinitialiser le timer d'inactivité
+    resetInactivityTimer() {
+        if (this.isLoggingOut) {
+            return;
+        }
+
+        if (this.inactivityTimeoutId) {
+            clearTimeout(this.inactivityTimeoutId);
+        }
+
+        this.inactivityTimeoutId = setTimeout(() => {
+            this.logoutAfterInactivity();
+        }, this.inactivityDelay);
+    }
+
+    // Déconnexion déclenchée par inactivité
+    logoutAfterInactivity() {
+        if (this.isLoggingOut) {
+            return;
+        }
+
+        console.log('🔒 Déconnexion automatique après 15 minutes d\'inactivité');
+        this.logout();
+    }
+
     // Obtenir les informations de l'utilisateur connecté
     getUserInfo() {
         // Utiliser le SessionManager si disponible, sinon fallback sur localStorage
@@ -199,7 +245,9 @@ class AuthManager {
     // Mettre à jour l'affichage du nom d'utilisateur
     updateUserDisplay() {
         const userInfo = this.getUserInfo();
-        const userElements = document.querySelectorAll('.navbar-text, .user-name');
+        // Ne plus cibler .user-name (utilisé dans la carte profil de la sidebar)
+        // On se limite ici aux éléments de la barre de navigation
+        const userElements = document.querySelectorAll('.navbar-text');
         
         userElements.forEach(element => {
             if (userInfo) {
