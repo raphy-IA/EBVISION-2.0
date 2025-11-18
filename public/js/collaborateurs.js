@@ -96,6 +96,7 @@
         const API_BASE_URL = '/api';
         let collaborateurs = [];
         let collaborateurToDelete = null;
+        let collaborateurDetailsForDelete = null;
         let collaborateurRHId = null;
 
         let currentUserRoles = [];
@@ -367,6 +368,8 @@
                 row.setAttribute('data-collaborateur-id', collaborateur.id);
                 const initials = getInitials(collaborateur.nom, collaborateur.prenom);
                 
+                const isDepart = collaborateur.statut === 'DEPART';
+
                 row.innerHTML = `
                     <td>
                         ${window.photoUploadManager ? 
@@ -391,24 +394,39 @@
                             <button class="btn btn-outline-info" onclick="viewCollaborateur('${collaborateur.id}')" title="Voir">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-outline-warning" onclick="editCollaborateur('${collaborateur.id}')" title="Modifier">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-outline-primary" onclick="gestionRH('${collaborateur.id}')" title="Gestion RH">
-                                <i class="fas fa-user-tie"></i>
-                            </button>
-                            ${canManageUserAccounts ? (
-                                collaborateur.user_id ? 
-                                    `<button class="btn btn-outline-success" onclick="manageUserAccount('${collaborateur.id}', '${collaborateur.user_id}')" title="Gérer le compte utilisateur">
-                                        <i class="fas fa-user-shield"></i>
-                                    </button>` : 
-                                    `<button class="btn btn-outline-secondary" onclick="generateUserAccount('${collaborateur.id}')" title="Générer un compte utilisateur">
-                                        <i class="fas fa-user-plus"></i>
-                                    </button>`
-                            ) : ''}
-                            <button class="btn btn-outline-danger" onclick="deleteCollaborateur('${collaborateur.id}')" title="Supprimer">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            ${!isDepart ? `
+                                <button class="btn btn-outline-warning" onclick="editCollaborateur('${collaborateur.id}')" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="gestionRH('${collaborateur.id}')" title="Gestion RH">
+                                    <i class="fas fa-user-tie"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="viewHistoriqueRH('${collaborateur.id}')" title="Historique RH">
+                                    <i class="fas fa-history"></i>
+                                </button>
+                                ${canManageUserAccounts ? (
+                                    collaborateur.user_id ? 
+                                        `<button class="btn btn-outline-success" onclick="manageUserAccount('${collaborateur.id}', '${collaborateur.user_id}')" title="Gérer le compte utilisateur">
+                                            <i class="fas fa-user-shield"></i>
+                                        </button>` : 
+                                        `<button class="btn btn-outline-secondary" onclick="generateUserAccount('${collaborateur.id}')" title="Générer un compte utilisateur">
+                                            <i class="fas fa-user-plus"></i>
+                                        </button>`
+                                ) : ''}
+                                <button class="btn btn-outline-danger" onclick="deleteCollaborateur('${collaborateur.id}')" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : `
+                                <button class="btn btn-outline-secondary" onclick="viewDepartInfo('${collaborateur.id}')" title="Infos de départ">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="viewHistoriqueRH('${collaborateur.id}')" title="Historique RH">
+                                    <i class="fas fa-history"></i>
+                                </button>
+                                <button class="btn btn-outline-success" onclick="rehireCollaborateur('${collaborateur.id}')" title="Ré-embaucher le collaborateur">
+                                    <i class="fas fa-user-check"></i>
+                                </button>
+                            `}
                         </div>
                     </td>
                 `;
@@ -1910,8 +1928,79 @@
             }
         }
 
+        function ensureDeleteModalFields() {
+            const modalEl = document.getElementById('deleteConfirmModal');
+            if (!modalEl) return;
+
+            const modalBody = modalEl.querySelector('.modal-body');
+            if (!modalBody) return;
+
+            if (modalBody.querySelector('#depart-collab-summary')) {
+                return;
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = `
+                <div id="depart-collab-summary" class="mb-3 p-2 rounded bg-light">
+                    <div class="fw-bold" id="depart-collab-name"></div>
+                    <div class="small text-muted" id="depart-collab-role"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="depart-motif-select" class="form-label">Motif du départ</label>
+                    <select id="depart-motif-select" class="form-select" required>
+                        <option value="FIN_CONTRAT">Fin de contrat</option>
+                        <option value="DEMISSION">Démission</option>
+                        <option value="RUPTURE_PERIODE_ESSAI">Rupture de période d'essai</option>
+                        <option value="LICENCIEMENT_FAUTE">Licenciement pour faute</option>
+                        <option value="LICENCIEMENT_ECO">Licenciement économique / réorganisation</option>
+                        <option value="FIN_MISSION">Fin de mission (consultant)</option>
+                        <option value="RETRAITE">Départ à la retraite</option>
+                        <option value="DECES">Décès</option>
+                        <option value="AUTRE">Autre (préciser dans les remarques)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="depart-date-effet" class="form-label">Date d'effet</label>
+                    <input type="date" id="depart-date-effet" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                    <label for="depart-remarques" class="form-label">Détails / remarques</label>
+                    <textarea id="depart-remarques" class="form-control" rows="3" placeholder="Préciser les conditions du départ si nécessaire..."></textarea>
+                </div>
+            `;
+            while (wrapper.firstChild) {
+                modalBody.appendChild(wrapper.firstChild);
+            }
+        }
+
         function deleteCollaborateur(id) {
             collaborateurToDelete = id;
+            collaborateurDetailsForDelete = collaborateurs.find(c => c.id === id) || null;
+            ensureDeleteModalFields();
+
+            const modalEl = document.getElementById('deleteConfirmModal');
+            if (modalEl && collaborateurDetailsForDelete) {
+                const nameEl = modalEl.querySelector('#depart-collab-name');
+                const roleEl = modalEl.querySelector('#depart-collab-role');
+                const dateEl = modalEl.querySelector('#depart-date-effet');
+                const motifSelect = modalEl.querySelector('#depart-motif-select');
+                const remarquesEl = modalEl.querySelector('#depart-remarques');
+
+                if (nameEl) {
+                    nameEl.textContent = `${collaborateurDetailsForDelete.prenom || ''} ${collaborateurDetailsForDelete.nom || ''}`.trim();
+                }
+                if (roleEl) {
+                    const bu = collaborateurDetailsForDelete.business_unit_nom || '-';
+                    const grade = collaborateurDetailsForDelete.grade_nom || '-';
+                    const poste = collaborateurDetailsForDelete.poste_nom || '-';
+                    roleEl.textContent = `BU: ${bu} | Poste: ${poste} | Grade: ${grade}`;
+                }
+                const today = new Date().toISOString().slice(0, 10);
+                if (dateEl) dateEl.value = today;
+                if (motifSelect && !motifSelect.value) motifSelect.value = 'FIN_CONTRAT';
+                if (remarquesEl) remarquesEl.value = '';
+            }
+
             new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
         }
 
@@ -2389,24 +2478,346 @@
             if (!collaborateurToDelete) return;
             
             try {
-                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateurToDelete}`, {
-                    method: 'DELETE'
+                const modalEl = document.getElementById('deleteConfirmModal');
+                ensureDeleteModalFields();
+
+                const motifSelect = modalEl ? modalEl.querySelector('#depart-motif-select') : null;
+                const dateInput = modalEl ? modalEl.querySelector('#depart-date-effet') : null;
+                const remarquesInput = modalEl ? modalEl.querySelector('#depart-remarques') : null;
+
+                const today = new Date().toISOString().slice(0, 10);
+                const typeDepart = motifSelect && motifSelect.value ? motifSelect.value : 'SUPPRESSION';
+                const dateEffet = dateInput && dateInput.value ? dateInput.value : today;
+                const remarques = remarquesInput && remarquesInput.value ? remarquesInput.value : '';
+
+                const departPayload = {
+                    type_depart: typeDepart,
+                    date_effet: dateEffet,
+                    motif: typeDepart,
+                    remarques
+                };
+
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateurToDelete}/depart`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(departPayload)
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('✅ Collaborateur supprimé avec succès !', 'success');
-                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+                    showAlert('✅ Collaborateur mis en départ et compte désactivé avec succès !', 'success');
+                    if (modalEl) {
+                        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                    }
                     loadCollaborateurs(currentPage);
                 } else {
-                    showAlert(`❌ Erreur lors de la suppression: ${data.message || 'Erreur inconnue'}`, 'danger');
+                    showAlert(`❌ Erreur lors de la mise en départ: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
                 }
             } catch (error) {
-                console.error('❌ Erreur lors de la suppression:', error);
-                showAlert('❌ Erreur lors de la suppression. Veuillez réessayer.', 'danger');
+                console.error('❌ Erreur lors de la mise en départ:', error);
+                showAlert('❌ Erreur lors de la mise en départ. Veuillez réessayer.', 'danger');
             } finally {
                 collaborateurToDelete = null;
+                collaborateurDetailsForDelete = null;
+            }
+        }
+
+        function ensureDepartInfoModal() {
+            let modalEl = document.getElementById('departInfoModal');
+            if (modalEl) return modalEl;
+
+            modalEl = document.createElement('div');
+            modalEl.id = 'departInfoModal';
+            modalEl.className = 'modal fade';
+            modalEl.tabIndex = -1;
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-sign-out-alt me-2"></i>Informations de départ</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="departInfoModalBody">
+                            <p class="text-muted mb-0">Chargement des informations de départ...</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modalEl);
+            return modalEl;
+        }
+
+        async function viewDepartInfo(collaborateurId) {
+            try {
+                const modalEl = ensureDepartInfoModal();
+                const bodyEl = modalEl.querySelector('#departInfoModalBody');
+                if (bodyEl) {
+                    bodyEl.innerHTML = '<p class="text-muted mb-0">Chargement des informations de départ...</p>';
+                }
+
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateurId}/depart-info`);
+                const data = await response.json();
+
+                if (!data.success || !data.data) {
+                    if (bodyEl) {
+                        bodyEl.innerHTML = `<p class="text-danger mb-0">${data.message || data.error || 'Aucune information de départ trouvée.'}</p>`;
+                    }
+                } else {
+                    const depart = data.data;
+                    if (bodyEl) {
+                        bodyEl.innerHTML = `
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Type de départ</dt>
+                                <dd class="col-sm-8">${depart.type_depart || '-'}</dd>
+                                <dt class="col-sm-4">Date d'effet</dt>
+                                <dd class="col-sm-8">${depart.date_effet ? new Date(depart.date_effet).toLocaleDateString('fr-FR') : '-'}</dd>
+                                <dt class="col-sm-4">Motif</dt>
+                                <dd class="col-sm-8">${depart.motif || '-'}</dd>
+                                <dt class="col-sm-4">Remarques</dt>
+                                <dd class="col-sm-8">${depart.remarques || '<span class="text-muted">Aucune remarque</span>'}</dd>
+                            </dl>
+                        `;
+                    }
+                }
+
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des infos de départ:', error);
+                showAlert('❌ Erreur lors du chargement des informations de départ.', 'danger');
+            }
+        }
+
+        async function rehireCollaborateur(collaborateurId) {
+            try {
+                if (!confirm('Confirmez-vous la ré-embauche de ce collaborateur ?')) {
+                    return;
+                }
+
+                const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateurId}/reembaucher`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('✅ Collaborateur ré-embauché avec succès. Son compte utilisateur a été réactivé si disponible.', 'success');
+                    loadCollaborateurs(currentPage);
+                } else {
+                    showAlert(`❌ Erreur lors de la ré-embauche: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors de la ré-embauche:', error);
+                showAlert('❌ Erreur lors de la ré-embauche du collaborateur.', 'danger');
+            }
+        }
+
+        function ensureHistoriqueRHModal() {
+            let modalEl = document.getElementById('historiqueRHModal');
+            if (modalEl) return modalEl;
+
+            modalEl = document.createElement('div');
+            modalEl.id = 'historiqueRHModal';
+            modalEl.className = 'modal fade';
+            modalEl.tabIndex = -1;
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fas fa-history me-2 text-primary"></i>
+                                Historique RH du collaborateur
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="historiqueRHHeader" class="mb-3 small text-muted"></div>
+                            <div id="historiqueRHContainer">
+                                <p class="text-muted mb-0">Chargement de l'historique RH...</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modalEl);
+            return modalEl;
+        }
+
+        async function viewHistoriqueRH(collaborateurId) {
+            try {
+                const collaborateur = collaborateurs.find(c => c.id === collaborateurId);
+                const modalEl = ensureHistoriqueRHModal();
+                const headerEl = modalEl.querySelector('#historiqueRHHeader');
+                const containerEl = modalEl.querySelector('#historiqueRHContainer');
+
+                if (headerEl && collaborateur) {
+                    headerEl.innerHTML = `
+                        <strong>${collaborateur.prenom || ''} ${collaborateur.nom || ''}</strong>
+                        &middot; Statut: <span class="badge bg-${collaborateur.statut === 'DEPART' ? 'danger' : 'secondary'}">${getStatusLabel(collaborateur.statut)}</span>
+                        ${collaborateur.date_embauche ? `&middot; Embauché le ${new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR')}` : ''}
+                    `;
+                }
+
+                if (containerEl) {
+                    containerEl.innerHTML = '<p class="text-muted mb-0">Chargement de l\'historique RH...</p>';
+                }
+
+                const [gradesRes, postesRes, orgRes, departsRes] = await Promise.all([
+                    authenticatedFetch(`${API_BASE_URL}/evolution-grades/collaborateur/${collaborateurId}`),
+                    authenticatedFetch(`${API_BASE_URL}/evolution-postes/collaborateur/${collaborateurId}`),
+                    authenticatedFetch(`${API_BASE_URL}/evolution-organisations/collaborateur/${collaborateurId}`),
+                    authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateurId}/departs-historique`).catch(() => null)
+                ]);
+
+                const gradesData = gradesRes ? await gradesRes.json() : { success: false };
+                const postesData = postesRes ? await postesRes.json() : { success: false };
+                const orgData = orgRes ? await orgRes.json() : { success: false };
+                const departsData = departsRes ? await departsRes.json() : { success: false };
+
+                const events = [];
+
+                // Événement de création du collaborateur (basé sur la date d'embauche)
+                if (collaborateur && collaborateur.date_embauche) {
+                    const bu = collaborateur.business_unit_nom || 'BU non définie';
+                    const division = collaborateur.division_nom || 'Division non définie';
+                    events.push({
+                        type: 'CREATION',
+                        date: collaborateur.date_embauche,
+                        endDate: null,
+                        titre: 'Création du collaborateur',
+                        details: `Affectation initiale: ${bu} / ${division}`
+                    });
+                }
+
+                if (gradesData.success && Array.isArray(gradesData.data)) {
+                    gradesData.data.forEach(e => {
+                        if (!e.date_debut) return;
+                        events.push({
+                            type: 'GRADE',
+                            date: e.date_debut,
+                            endDate: e.date_fin,
+                            titre: `Changement de grade: ${e.grade_nom || 'N/A'}`,
+                            details: `Motif: ${e.motif || '-'}${e.taux_horaire_personnalise !== null ? ` · Salaire personnalisé: ${e.taux_horaire_personnalise.toFixed(2)} €` : ''}`
+                        });
+                    });
+                }
+
+                if (postesData.success && Array.isArray(postesData.data)) {
+                    postesData.data.forEach(e => {
+                        if (!e.date_debut) return;
+                        events.push({
+                            type: 'POSTE',
+                            date: e.date_debut,
+                            endDate: e.date_fin,
+                            titre: `Changement de poste: ${e.poste_nom || 'N/A'}`,
+                            details: `Motif: ${e.motif || '-'}`
+                        });
+                    });
+                }
+
+                if (orgData.success && Array.isArray(orgData.data)) {
+                    orgData.data.forEach(e => {
+                        if (!e.date_debut) return;
+                        events.push({
+                            type: 'ORGANISATION',
+                            date: e.date_debut,
+                            endDate: e.date_fin,
+                            titre: `Changement organisationnel: ${e.business_unit_nom || 'BU ?'} / ${e.division_nom || 'Division ?'}`,
+                            details: `Motif: ${e.motif || '-'}`
+                        });
+                    });
+                }
+
+                if (departsData && departsData.success && Array.isArray(departsData.data)) {
+                    departsData.data.forEach(d => {
+                        if (!d.date_effet) return;
+                        const isRehire = d.type_depart === 'REEMBAUCHE';
+                        events.push({
+                            type: isRehire ? 'REEMBAUCHE' : 'DEPART',
+                            date: d.date_effet,
+                            endDate: null,
+                            titre: isRehire
+                                ? 'Ré-embauche du collaborateur'
+                                : `Départ du collaborateur (${d.type_depart || 'Type non précisé'})`,
+                            details: `Motif: ${d.motif || '-'}${d.remarques ? ` · Remarques: ${d.remarques}` : ''}`
+                        });
+                    });
+                }
+
+                if (!events.length) {
+                    if (containerEl) {
+                        containerEl.innerHTML = '<p class="text-muted mb-0">Aucun historique RH trouvé pour ce collaborateur.</p>';
+                    }
+                } else {
+                    events.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                    const timelineHtml = `
+                        <div class="timeline">
+                            ${events.map(ev => {
+                                const dateStr = new Date(ev.date).toLocaleDateString('fr-FR');
+                                const badgeClass = ev.type === 'DEPART'
+                                    ? 'danger'
+                                    : ev.type === 'REEMBAUCHE'
+                                        ? 'success'
+                                        : ev.type === 'GRADE'
+                                            ? 'info'
+                                            : ev.type === 'POSTE'
+                                                ? 'primary'
+                                                : ev.type === 'CREATION'
+                                                    ? 'dark'
+                                                    : 'secondary';
+                                const typeLabel = ev.type === 'DEPART'
+                                    ? 'Départ'
+                                    : ev.type === 'REEMBAUCHE'
+                                        ? 'Ré-embauche'
+                                        : ev.type === 'GRADE'
+                                            ? 'Grade'
+                                            : ev.type === 'POSTE'
+                                                ? 'Poste'
+                                                : ev.type === 'CREATION'
+                                                    ? 'Création'
+                                                    : 'Organisation';
+                                return `
+                                    <div class="timeline-item mb-3">
+                                        <div class="d-flex">
+                                            <div class="me-3">
+                                                <span class="badge bg-${badgeClass}">${typeLabel}</span>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">${ev.titre}</div>
+                                                <div class="small text-muted">Le ${dateStr}</div>
+                                                ${ev.details ? `<div class="small">${ev.details}</div>` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+
+                    if (containerEl) {
+                        containerEl.innerHTML = timelineHtml;
+                    }
+                }
+
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement de l\'historique RH:', error);
+                showAlert('❌ Erreur lors du chargement de l\'historique RH.', 'danger');
             }
         }
 

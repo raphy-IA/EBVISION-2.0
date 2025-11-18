@@ -46,6 +46,74 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 /**
+ * GET /api/collaborateurs/:id/depart-info
+ * Récupérer la dernière information de départ d'un collaborateur
+ */
+router.get('/:id/depart-info', authenticateToken, async (req, res) => {
+    try {
+        const collaborateurId = req.params.id;
+
+        const result = await pool.query(
+            `SELECT *
+             FROM departs_collaborateurs
+             WHERE collaborateur_id = $1 AND type_depart = 'DEPART'
+             ORDER BY date_effet DESC, created_at DESC
+             LIMIT 1`,
+            [collaborateurId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Aucune information de départ trouvée pour ce collaborateur'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des infos de départ:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des infos de départ',
+            details: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/collaborateurs/:id/departs-historique
+ * Récupérer tout l'historique des départs / réembauches d'un collaborateur
+ */
+router.get('/:id/departs-historique', authenticateToken, async (req, res) => {
+    try {
+        const collaborateurId = req.params.id;
+
+        const result = await pool.query(
+            `SELECT *
+             FROM departs_collaborateurs
+             WHERE collaborateur_id = $1
+             ORDER BY date_effet ASC, created_at ASC`,
+            [collaborateurId]
+        );
+
+        res.json({
+            success: true,
+            data: result.rows
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération de l\'historique des départs:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération de l\'historique des départs',
+            details: error.message
+        });
+    }
+});
+
+/**
  * GET /api/collaborateurs/statistics
  * Récupérer les statistiques des collaborateurs
  */
@@ -153,9 +221,9 @@ router.post('/', authenticateToken, requireRole(['MANAGER']), async (req, res) =
 
 /**
  * POST /api/collaborateurs/:id/depart
- * Gérer le départ d'un collaborateur
+ * Gérer le départ d'un collaborateur (soft delete)
  */
-router.post('/:id/depart', async (req, res) => {
+router.post('/:id/depart', authenticateToken, requireRole(['MANAGER', 'ADMIN', 'ADMIN_IT']), async (req, res) => {
     try {
         const collaborateur = await Collaborateur.findById(req.params.id);
         
@@ -179,7 +247,7 @@ router.post('/:id/depart', async (req, res) => {
 
         const depart = await DepartCollaborateur.create(departData);
 
-        // Mettre à jour le statut du collaborateur
+        // Mettre à jour le statut du collaborateur (soft delete)
         await collaborateur.updateDepart({
             statut: 'DEPART',
             date_depart: req.body.date_effet
@@ -188,11 +256,37 @@ router.post('/:id/depart', async (req, res) => {
         // Désactiver le compte utilisateur si il existe
         try {
             const { pool } = require('../utils/database');
-            await pool.query(`
-                UPDATE users 
-                SET statut = 'INACTIF', updated_at = CURRENT_TIMESTAMP 
-                WHERE email = $1
-            `, [collaborateur.email]);
+
+            // 1) Désactiver via user_id si présent
+            if (collaborateur.user_id) {
+                await pool.query(`
+                    UPDATE users 
+                    SET statut = 'INACTIF', updated_at = CURRENT_TIMESTAMP 
+                    WHERE id = $1
+                `, [collaborateur.user_id]);
+            } else {
+                // 2) Fallback: chercher un user lié par collaborateur_id
+                const result = await pool.query(
+                    'SELECT id FROM users WHERE collaborateur_id = $1 LIMIT 1',
+                    [collaborateur.id]
+                );
+
+                if (result.rows.length > 0) {
+                    const userId = result.rows[0].id;
+                    await pool.query(`
+                        UPDATE users 
+                        SET statut = 'INACTIF', updated_at = CURRENT_TIMESTAMP 
+                        WHERE id = $1
+                    `, [userId]);
+                } else if (collaborateur.email) {
+                    // 3) Dernier fallback : désactiver par email (compatibilité historique)
+                    await pool.query(`
+                        UPDATE users 
+                        SET statut = 'INACTIF', updated_at = CURRENT_TIMESTAMP 
+                        WHERE email = $1
+                    `, [collaborateur.email]);
+                }
+            }
         } catch (error) {
             console.log('Aucun compte utilisateur trouvé pour ce collaborateur');
         }
@@ -216,7 +310,7 @@ router.post('/:id/depart', async (req, res) => {
  * POST /api/collaborateurs/:id/reembaucher
  * Réembaucher un collaborateur
  */
-router.post('/:id/reembaucher', async (req, res) => {
+router.post('/:id/reembaucher', authenticateToken, requireRole(['MANAGER', 'ADMIN', 'ADMIN_IT']), async (req, res) => {
     try {
         const collaborateur = await Collaborateur.findById(req.params.id);
         
@@ -242,6 +336,21 @@ router.post('/:id/reembaucher', async (req, res) => {
 
         // Mettre à jour les informations actuelles depuis l'historique RH
         await Collaborateur.updateCurrentInfoFromEvolutions(collaborateur.id);
+
+        // Tracer la réembauche dans l'historique des départs/réembauches
+        try {
+            await DepartCollaborateur.create({
+                collaborateur_id: collaborateur.id,
+                type_depart: 'REEMBAUCHE',
+                date_effet: new Date(),
+                motif: 'Ré-embauche du collaborateur',
+                preavis: null,
+                documentation: null,
+                remarques: null
+            });
+        } catch (logErr) {
+            console.warn('⚠️ Échec de la création de l\'entrée d\'historique de réembauche:', logErr.message);
+        }
 
         // Réactiver le compte utilisateur si il existe
         try {

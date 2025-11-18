@@ -143,8 +143,13 @@ class Collaborateur {
         }
 
         if (statut) {
-            whereConditions.push(`c.statut = $${paramIndex++}`);
-            queryParams.push(statut);
+            if (statut === 'INACTIF') {
+                // Cas particulier: le filtre "Inactif" doit inclure aussi les collaborateurs en départ
+                whereConditions.push(`c.statut IN ('INACTIF', 'DEPART')`);
+            } else {
+                whereConditions.push(`c.statut = $${paramIndex++}`);
+                queryParams.push(statut);
+            }
         }
 
         if (division_id) {
