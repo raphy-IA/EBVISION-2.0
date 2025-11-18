@@ -470,12 +470,20 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
         // Utiliser User.create() qui gère les rôles multiples
         const newUser = await User.create(userData);
         
-        // Lier l'utilisateur au collaborateur
+        // Lier l'utilisateur au collaborateur (dans les deux sens)
+        // 1) côté collaborateurs: renseigner user_id
         await pool.query(`
             UPDATE collaborateurs 
             SET user_id = $1 
             WHERE id = $2
         `, [newUser.id, id]);
+
+        // 2) côté users: renseigner collaborateur_id pour garder le lien cohérent
+        await pool.query(`
+            UPDATE users
+            SET collaborateur_id = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $2
+        `, [id, newUser.id]);
         
         console.log('✅ Compte utilisateur créé:', {
             collaborateur_id: id,
