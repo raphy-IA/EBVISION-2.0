@@ -49,8 +49,9 @@ router.get('/stages', authenticateToken, async (req, res) => {
           ? JSON.parse(t.required_actions) 
           : t.required_actions;
         
+        // Utiliser un ID spécial encodant l'ID du template et l'index pour permettre la suppression
         requiredActions = actionsArray.map((action, index) => ({
-          id: `json_action_${index}`,
+          id: `json_action_${t.id}_${index}`,
           stage_template_id: t.id,
           action_type: action,
           is_mandatory: true,
@@ -66,8 +67,9 @@ router.get('/stages', authenticateToken, async (req, res) => {
           ? JSON.parse(t.required_documents) 
           : t.required_documents;
         
+        // Utiliser un ID spécial encodant l'ID du template et l'index pour permettre la suppression
         requiredDocuments = documentsArray.map((doc, index) => ({
-          id: `json_doc_${index}`,
+          id: `json_doc_${t.id}_${index}`,
           stage_template_id: t.id,
           document_type: doc,
           is_mandatory: true
@@ -188,15 +190,17 @@ router.put('/stages/:id', authenticateToken, async (req, res) => {
       min_duration_days,
       max_duration_days,
       is_mandatory,
-      validation_required
+      validation_required,
+      stage_order
     } = req.body;
 
     const query = `
       UPDATE opportunity_stage_templates 
       SET stage_name = $1, description = $2, min_duration_days = $3, 
           max_duration_days = $4, is_mandatory = $5, validation_required = $6,
+          stage_order = COALESCE($7, stage_order),
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $7
+      WHERE id = $8
       RETURNING *
     `;
 
@@ -207,6 +211,7 @@ router.put('/stages/:id', authenticateToken, async (req, res) => {
       max_duration_days,
       is_mandatory,
       validation_required,
+      stage_order,
       id
     ]);
 
@@ -316,6 +321,52 @@ router.delete('/stages/actions/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Gestion spéciale des anciennes actions provenant du JSON required_actions
+    if (id.startsWith('json_action_')) {
+      try {
+        const parts = id.split('_'); // [ 'json', 'action', stageTemplateId, index ]
+        const stageTemplateId = parts[2];
+        const index = parseInt(parts[3], 10);
+
+        if (!stageTemplateId || isNaN(index)) {
+          return res.status(400).json({ success: false, error: 'Identifiant d\'action JSON invalide' });
+        }
+
+        const templateResult = await pool.query(
+          'SELECT required_actions FROM opportunity_stage_templates WHERE id = $1',
+          [stageTemplateId]
+        );
+
+        if (templateResult.rows.length === 0) {
+          return res.status(404).json({ success: false, error: 'Template d\'étape non trouvé' });
+        }
+
+        const current = templateResult.rows[0].required_actions;
+        if (!current) {
+          return res.status(404).json({ success: false, error: 'Aucune action JSON à supprimer' });
+        }
+
+        const actionsArray = typeof current === 'string' ? JSON.parse(current) : current;
+
+        if (!Array.isArray(actionsArray) || index < 0 || index >= actionsArray.length) {
+          return res.status(404).json({ success: false, error: 'Action JSON non trouvée' });
+        }
+
+        actionsArray.splice(index, 1);
+
+        await pool.query(
+          'UPDATE opportunity_stage_templates SET required_actions = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+          [JSON.stringify(actionsArray), stageTemplateId]
+        );
+
+        return res.json({ success: true, message: 'Action supprimée' });
+      } catch (error) {
+        console.error('Erreur suppression action JSON:', error);
+        return res.status(500).json({ success: false, error: 'Erreur suppression action JSON' });
+      }
+    }
+
+    // Cas normal: suppression dans la table stage_required_actions
     const query = `DELETE FROM stage_required_actions WHERE id = $1`;
     const result = await pool.query(query, [id]);
 
@@ -364,6 +415,52 @@ router.delete('/stages/documents/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Gestion spéciale des anciens documents provenant du JSON required_documents
+    if (id.startsWith('json_doc_')) {
+      try {
+        const parts = id.split('_'); // [ 'json', 'doc', stageTemplateId, index ]
+        const stageTemplateId = parts[2];
+        const index = parseInt(parts[3], 10);
+
+        if (!stageTemplateId || isNaN(index)) {
+          return res.status(400).json({ success: false, error: 'Identifiant de document JSON invalide' });
+        }
+
+        const templateResult = await pool.query(
+          'SELECT required_documents FROM opportunity_stage_templates WHERE id = $1',
+          [stageTemplateId]
+        );
+
+        if (templateResult.rows.length === 0) {
+          return res.status(404).json({ success: false, error: 'Template d\'étape non trouvé' });
+        }
+
+        const current = templateResult.rows[0].required_documents;
+        if (!current) {
+          return res.status(404).json({ success: false, error: 'Aucun document JSON à supprimer' });
+        }
+
+        const docsArray = typeof current === 'string' ? JSON.parse(current) : current;
+
+        if (!Array.isArray(docsArray) || index < 0 || index >= docsArray.length) {
+          return res.status(404).json({ success: false, error: 'Document JSON non trouvé' });
+        }
+
+        docsArray.splice(index, 1);
+
+        await pool.query(
+          'UPDATE opportunity_stage_templates SET required_documents = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+          [JSON.stringify(docsArray), stageTemplateId]
+        );
+
+        return res.json({ success: true, message: 'Document supprimé' });
+      } catch (error) {
+        console.error('Erreur suppression document JSON:', error);
+        return res.status(500).json({ success: false, error: 'Erreur suppression document JSON' });
+      }
+    }
+
+    // Cas normal: suppression dans la table stage_required_documents
     const query = `DELETE FROM stage_required_documents WHERE id = $1`;
     const result = await pool.query(query, [id]);
 
@@ -479,12 +576,26 @@ router.post('/validate-stage/:opportunityId', authenticateToken, async (req, res
     // Si tout est valide, marquer l'étape comme terminée
     const updateQuery = `
       UPDATE opportunity_stages 
-      SET status = 'COMPLETED', completed_at = CURRENT_TIMESTAMP, validated_by = $1, validated_at = CURRENT_TIMESTAMP
+      SET status = 'COMPLETED', completed_date = CURRENT_TIMESTAMP, validated_by = $1, validated_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
     `;
     
     await pool.query(updateQuery, [req.user.id, currentStage.id]);
-    
+
+    // Mettre à jour le statut de l'opportunité si elle est encore marquée comme "NOUVELLE"
+    try {
+      await pool.query(
+        `UPDATE opportunities
+         SET statut = 'EN_COURS', updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1 AND statut = 'NOUVELLE'`,
+        [currentStage.opportunity_id]
+      );
+    } catch (e) {
+      console.error('⚠️ Erreur lors de la mise à jour du statut de l\'opportunité:', e);
+      // On ne bloque pas la validation de l'étape si cette mise à jour échoue
+    }
+
     // Passer à l'étape suivante si elle existe
     const nextStageQuery = `
       SELECT os.*

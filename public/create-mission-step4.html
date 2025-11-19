@@ -143,6 +143,7 @@
             border: 2px solid transparent;
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
         }
         
         .task-card:hover {
@@ -152,7 +153,9 @@
         
         .task-card.selected {
             border-color: var(--success-color);
+            border-width: 3px;
             background-color: #e8f5e8;
+            box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.3);
         }
         
         .task-card.obligatory {
@@ -168,6 +171,26 @@
         
         .task-card.optional {
             border-left: 4px solid var(--secondary-color);
+        }
+
+        .task-selection-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: none;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            background: var(--success-color);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .task-card.optional.selected .task-selection-badge {
+            display: inline-flex;
         }
         
         .alert-sm {
@@ -678,6 +701,11 @@
                          data-task-id="${task.id}"
                          style="${task.obligatoire ? 'cursor: not-allowed;' : ''}">
                         <div class="card-body">
+                            ${task.obligatoire ? '' : `
+                            <div class="task-selection-badge">
+                                <i class="fas fa-check-circle"></i>
+                                Sélectionnée
+                            </div>`}
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h6 class="card-title">${task.code}</h6>
                                 <span class="badge ${task.obligatoire ? 'bg-warning' : 'bg-info'}">

@@ -476,22 +476,100 @@
       "type": {
         "name": "Audit Comptable",
         "code": "AUDIT-COMP",
-        "description": "Mission d'audit comptable et financier",
+        "description": "Pipeline standard pour missions d'audit comptable",
         "default_probability": 50,
         "default_duration_days": 30,
         "couleur": null
       },
       "stages": [
         {
-          "stage_name": "PROSPECTION",
+          "stage_name": "Identification",
           "stage_order": 1,
-          "description": "Étape de prospection par défaut",
-          "required_documents": [],
-          "required_actions": [],
-          "max_duration_days": 10,
+          "description": "Prospection et détection d'un besoin d'audit comptable chez le client",
+          "required_documents": [
+            "Lead/Contact initial",
+            "Notes de détection"
+          ],
+          "required_actions": [
+            "Créer la fiche opportunité",
+            "Qualifier rapidement l'intérêt"
+          ],
+          "max_duration_days": 7,
           "min_duration_days": 1,
           "is_mandatory": true,
+          "validation_required": true
+        },
+        {
+          "stage_name": "Qualification",
+          "stage_order": 2,
+          "description": "Valider le périmètre d'audit, les enjeux, le budget et les décideurs",
+          "required_documents": [
+            "Grille BANT",
+            "Liste des décideurs"
+          ],
+          "required_actions": [
+            "Valider BANT",
+            "Identifier décideurs",
+            "Estimer budget"
+          ],
+          "max_duration_days": 10,
+          "min_duration_days": 3,
+          "is_mandatory": true,
+          "validation_required": true
+        },
+        {
+          "stage_name": "Proposition",
+          "stage_order": 3,
+          "description": "Production et envoi de la lettre de mission et de la proposition d'honoraires",
+          "required_documents": [
+            "Proposition",
+            "Chiffrage",
+            "Conditions"
+          ],
+          "required_actions": [
+            "Rédaction offre",
+            "Validation interne",
+            "Envoi au client"
+          ],
+          "max_duration_days": 10,
+          "min_duration_days": 3,
+          "is_mandatory": true,
+          "validation_required": true
+        },
+        {
+          "stage_name": "Négociation",
+          "stage_order": 4,
+          "description": "Ajustement des honoraires, du planning et du périmètre de mission",
+          "required_documents": [
+            "Versions d'offre",
+            "Table des concessions"
+          ],
+          "required_actions": [
+            "Négociation",
+            "Alignement interne",
+            "Validation client"
+          ],
+          "max_duration_days": 15,
+          "min_duration_days": 5,
+          "is_mandatory": true,
           "validation_required": false
+        },
+        {
+          "stage_name": "Décision",
+          "stage_order": 5,
+          "description": "Décision finale du client sur la mission d'audit (gagnée/perdue)",
+          "required_documents": [
+            "Bon pour accord/Contrat",
+            "Compte-rendu de décision"
+          ],
+          "required_actions": [
+            "Clôturer opportunité",
+            "Préparer onboarding si gagnée"
+          ],
+          "max_duration_days": 5,
+          "min_duration_days": 1,
+          "is_mandatory": true,
+          "validation_required": true
         }
       ]
     },
@@ -499,22 +577,100 @@
       "type": {
         "name": "Conseil en Management",
         "code": "CONSEIL-MGT",
-        "description": "Mission de conseil en management",
+        "description": "Pipeline standard pour missions de conseil en management",
         "default_probability": 50,
         "default_duration_days": 30,
         "couleur": null
       },
       "stages": [
         {
-          "stage_name": "PROSPECTION",
+          "stage_name": "Identification",
           "stage_order": 1,
-          "description": "Étape de prospection par défaut",
-          "required_documents": [],
-          "required_actions": [],
-          "max_duration_days": 10,
+          "description": "Identification d'un besoin d'accompagnement en management",
+          "required_documents": [
+            "Lead/Contact initial",
+            "Notes de détection"
+          ],
+          "required_actions": [
+            "Créer la fiche opportunité",
+            "Qualifier rapidement l'intérêt"
+          ],
+          "max_duration_days": 7,
           "min_duration_days": 1,
           "is_mandatory": true,
+          "validation_required": true
+        },
+        {
+          "stage_name": "Qualification",
+          "stage_order": 2,
+          "description": "Clarifier les enjeux de management, sponsors, budget et calendrier",
+          "required_documents": [
+            "Grille BANT",
+            "Liste des décideurs"
+          ],
+          "required_actions": [
+            "Valider BANT",
+            "Identifier décideurs",
+            "Estimer budget"
+          ],
+          "max_duration_days": 10,
+          "min_duration_days": 3,
+          "is_mandatory": true,
+          "validation_required": true
+        },
+        {
+          "stage_name": "Proposition",
+          "stage_order": 3,
+          "description": "Élaboration et envoi de la proposition de mission de conseil",
+          "required_documents": [
+            "Proposition",
+            "Chiffrage",
+            "Conditions"
+          ],
+          "required_actions": [
+            "Rédaction offre",
+            "Validation interne",
+            "Envoi au client"
+          ],
+          "max_duration_days": 10,
+          "min_duration_days": 3,
+          "is_mandatory": true,
+          "validation_required": true
+        },
+        {
+          "stage_name": "Négociation",
+          "stage_order": 4,
+          "description": "Ajustement du périmètre, des livrables et des honoraires de conseil",
+          "required_documents": [
+            "Versions d'offre",
+            "Table des concessions"
+          ],
+          "required_actions": [
+            "Négociation",
+            "Alignement interne",
+            "Validation client"
+          ],
+          "max_duration_days": 15,
+          "min_duration_days": 5,
+          "is_mandatory": true,
           "validation_required": false
+        },
+        {
+          "stage_name": "Décision",
+          "stage_order": 5,
+          "description": "Décision finale du client sur la mission de conseil",
+          "required_documents": [
+            "Bon pour accord/Contrat",
+            "Compte-rendu de décision"
+          ],
+          "required_actions": [
+            "Clôturer opportunité",
+            "Préparer onboarding si gagnée"
+          ],
+          "max_duration_days": 5,
+          "min_duration_days": 1,
+          "is_mandatory": true,
+          "validation_required": true
         }
       ]
     },
@@ -522,22 +678,100 @@
       "type": {
         "name": "Expertise Juridique",
         "code": "EXP-JURID",
-        "description": "Mission d'expertise juridique",
+        "description": "Pipeline standard pour missions d'expertise juridique",
         "default_probability": 50,
         "default_duration_days": 30,
         "couleur": null
       },
       "stages": [
         {
-          "stage_name": "PROSPECTION",
+          "stage_name": "Identification",
           "stage_order": 1,
-          "description": "Étape de prospection par défaut",
-          "required_documents": [],
-          "required_actions": [],
-          "max_duration_days": 10,
+          "description": "Identification d'un besoin d'expertise juridique",
+          "required_documents": [
+            "Lead/Contact initial",
+            "Notes de détection"
+          ],
+          "required_actions": [
+            "Créer la fiche opportunité",
+            "Qualifier rapidement l'intérêt"
+          ],
+          "max_duration_days": 7,
           "min_duration_days": 1,
           "is_mandatory": true,
+          "validation_required": true
+        },
+        {
+          "stage_name": "Qualification",
+          "stage_order": 2,
+          "description": "Préciser le périmètre juridique, les risques et les décideurs",
+          "required_documents": [
+            "Grille BANT",
+            "Liste des décideurs"
+          ],
+          "required_actions": [
+            "Valider BANT",
+            "Identifier décideurs",
+            "Estimer budget"
+          ],
+          "max_duration_days": 10,
+          "min_duration_days": 3,
+          "is_mandatory": true,
+          "validation_required": true
+        },
+        {
+          "stage_name": "Proposition",
+          "stage_order": 3,
+          "description": "Rédaction et envoi de la proposition d'expertise juridique",
+          "required_documents": [
+            "Proposition",
+            "Chiffrage",
+            "Conditions"
+          ],
+          "required_actions": [
+            "Rédaction offre",
+            "Validation interne",
+            "Envoi au client"
+          ],
+          "max_duration_days": 10,
+          "min_duration_days": 3,
+          "is_mandatory": true,
+          "validation_required": true
+        },
+        {
+          "stage_name": "Négociation",
+          "stage_order": 4,
+          "description": "Ajustement des termes d'intervention et des honoraires d'expertise",
+          "required_documents": [
+            "Versions d'offre",
+            "Table des concessions"
+          ],
+          "required_actions": [
+            "Négociation",
+            "Alignement interne",
+            "Validation client"
+          ],
+          "max_duration_days": 15,
+          "min_duration_days": 5,
+          "is_mandatory": true,
           "validation_required": false
+        },
+        {
+          "stage_name": "Décision",
+          "stage_order": 5,
+          "description": "Décision finale du client sur la mission d'expertise juridique",
+          "required_documents": [
+            "Bon pour accord/Contrat",
+            "Compte-rendu de décision"
+          ],
+          "required_actions": [
+            "Clôturer opportunité",
+            "Préparer onboarding si gagnée"
+          ],
+          "max_duration_days": 5,
+          "min_duration_days": 1,
+          "is_mandatory": true,
+          "validation_required": true
         }
       ]
     },

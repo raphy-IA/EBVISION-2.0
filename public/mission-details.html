@@ -310,6 +310,14 @@
                                                 <h6><i class="fas fa-tasks me-2"></i>Tâches planifiées</h6>
                                             </div>
                                             <div class="card-body">
+                                                <div class="row mb-2">
+                                                    <div class="col-12 d-flex align-items-center gap-2">
+                                                        <label for="missionTasksFilter" class="form-label mb-0 small text-muted">Filtrer par tâche :</label>
+                                                        <select id="missionTasksFilter" class="form-select form-select-sm" style="max-width: 260px;">
+                                                            <option value="__all__">Toutes les tâches</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
                                                 <div id="missionTasks">...</div>
                                             </div>
                                         </div>
@@ -474,25 +482,99 @@
             const conditions = currentMission.conditions_paiement;
             if (conditions) {
                 try {
-                    const conditionsData = JSON.parse(conditions);
+                    let parsed;
+
+                    // 1) Tentative de parsing JSON direct
+                    try {
+                        parsed = JSON.parse(conditions);
+                    } catch (_) {
+                        parsed = null;
+                    }
+
+                    // Si c'est un objet (ex: {"0": "{...}", ...}) on le convertit en tableau
+                    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                        parsed = Object.values(parsed).map(item => {
+                            if (typeof item === 'string') {
+                                try { return JSON.parse(item); } catch (_) { return null; }
+                            }
+                            return item;
+                        }).filter(Boolean);
+                    }
+
+                    // 2) Si toujours pas un tableau, tenter un parseur "legacy" basé sur regex
+                    if (!Array.isArray(parsed)) {
+                        let legacyMatches = [];
+
+                        // 2.a) Cas le plus courant: conditions = {"{\"id\":...}","{\"id\":...}"}
+                        const quotedRegex = /"\{.*?\}"/g; // extrait chaque "{...}"
+                        let match;
+                        while ((match = quotedRegex.exec(conditions)) !== null) {
+                            legacyMatches.push(match[0]);
+                        }
+
+                        // 2.b) Fallback: si rien trouvé, on tente sur les blocs {..} simples
+                        if (legacyMatches.length === 0) {
+                            const simpleRegex = /\{[^}]*\}/g;
+                            while ((match = simpleRegex.exec(conditions)) !== null) {
+                                legacyMatches.push(match[0]);
+                            }
+                        }
+
+                        if (legacyMatches.length > 0) {
+                            parsed = legacyMatches.map(chunk => {
+                                try {
+                                    // Nettoyer les séquences échappées et guillemets superflus
+                                    let clean = chunk.trim();
+                                    // Retirer les guillemets externes si présents
+                                    if (clean.startsWith('"') && clean.endsWith('"')) {
+                                        clean = clean.substring(1, clean.length - 1);
+                                    }
+                                    // Remplacer \" par "
+                                    clean = clean.replace(/\\"/g, '"');
+                                    return JSON.parse(clean);
+                                } catch (_) { return null; }
+                            }).filter(Boolean);
+                        }
+                    }
+
+                    if (!Array.isArray(parsed) || parsed.length === 0) {
+                        throw new Error('Format de conditions_paiement non supporté');
+                    }
+
                     let conditionsHtml = '';
-                                         conditionsData.forEach((condition, index) => {
-                         conditionsHtml += `
-                             <div class="border-bottom pb-2 mb-2">
-                                 <div class="row">
-                                     <div class="col-md-2">${condition.pourcentage_honoraires || 0}% Honoraires</div>
-                                     <div class="col-md-2">${formatCurrency(condition.montant_honoraires || 0, devise)}</div>
-                                     <div class="col-md-2">${condition.pourcentage_debours || 0}% Débours</div>
-                                     <div class="col-md-2">${formatCurrency(condition.montant_debours || 0, devise)}</div>
-                                     <div class="col-md-2">${formatDate(condition.date)}</div>
-                                     <div class="col-md-2">${condition.details || ''}</div>
-                                 </div>
-                             </div>
-                         `;
-                     });
+
+                    parsed.forEach(condition => {
+                        // Normalisation des champs (camelCase ou snake_case)
+                        const pctHon = condition.pourcentage_honoraires ?? condition.pourcentageHonoraires ?? 0;
+                        const mntHon = condition.montant_honoraires ?? condition.montantHonoraires ?? 0;
+                        const pctDeb = condition.pourcentage_debours ?? condition.pourcentageDebours ?? 0;
+                        const mntDeb = condition.montant_debours ?? condition.montantDebours ?? 0;
+                        const dateCond = condition.date ?? condition.datePrevisionnelle ?? null;
+                        const details = condition.details || '';
+
+                        conditionsHtml += `
+                            <div class="border-bottom pb-2 mb-2">
+                                <div class="row">
+                                    <div class="col-md-2"><strong>${pctHon || 0}%</strong> Honoraires</div>
+                                    <div class="col-md-2">${formatCurrency(mntHon || 0, devise)}</div>
+                                    <div class="col-md-2"><strong>${pctDeb || 0}%</strong> Débours</div>
+                                    <div class="col-md-2">${formatCurrency(mntDeb || 0, devise)}</div>
+                                    <div class="col-md-2">${formatDate(dateCond)}</div>
+                                    <div class="col-md-2">${details}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
                     document.getElementById('paymentConditions').innerHTML = conditionsHtml;
                 } catch (e) {
-                    document.getElementById('paymentConditions').textContent = conditions;
+                    console.error('Erreur de parsing des conditions de paiement:', e, conditions);
+                    document.getElementById('paymentConditions').innerHTML = `
+                        <div class="text-warning mb-2">
+                            Données de conditions de paiement non lisibles (ancien format).
+                        </div>
+                        <pre class="small text-muted" style="white-space: pre-wrap;">${conditions}</pre>
+                    `;
                 }
             } else {
                 document.getElementById('paymentConditions').textContent = 'Aucune condition de paiement définie';
@@ -582,10 +664,57 @@
             document.getElementById('missionTeam').innerHTML = teamHtml;
         }
 
-        // Affichage des données de tâches
+        // Données et affichage des tâches planifiées
+        let missionTasksData = [];
+
         function displayTasksData(tasks) {
-            if (!tasks || tasks.length === 0) {
+            missionTasksData = Array.isArray(tasks) ? tasks : [];
+
+            if (!missionTasksData.length) {
                 document.getElementById('missionTasks').innerHTML = `
+                    <div class="text-muted">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Aucune tâche planifiée pour cette mission
+                    </div>
+                `;
+                const filterSelect = document.getElementById('missionTasksFilter');
+                if (filterSelect) {
+                    filterSelect.innerHTML = '<option value="__all__">Toutes les tâches</option>';
+                }
+                return;
+            }
+
+            initMissionTasksFilter();
+            renderMissionTasks();
+        }
+
+        function initMissionTasksFilter() {
+            const filterSelect = document.getElementById('missionTasksFilter');
+            if (!filterSelect) return;
+
+            // Ne remplir le select qu'une seule fois ou lorsque les tâches changent
+            const currentValue = filterSelect.value || '__all__';
+            const uniqueLabels = Array.from(new Set(missionTasksData.map(t => t.task_libelle || 'Sans libellé')));
+
+            filterSelect.innerHTML = '<option value="__all__">Toutes les tâches</option>' +
+                uniqueLabels.map(label => `<option value="${label}">${label}</option>`).join('');
+
+            filterSelect.value = uniqueLabels.includes(currentValue) ? currentValue : '__all__';
+
+            if (!filterSelect.dataset.initialized) {
+                filterSelect.addEventListener('change', () => {
+                    renderMissionTasks();
+                });
+                filterSelect.dataset.initialized = 'true';
+            }
+        }
+
+        function renderMissionTasks() {
+            const container = document.getElementById('missionTasks');
+            if (!container) return;
+
+            if (!missionTasksData.length) {
+                container.innerHTML = `
                     <div class="text-muted">
                         <i class="fas fa-info-circle me-2"></i>
                         Aucune tâche planifiée pour cette mission
@@ -594,31 +723,93 @@
                 return;
             }
 
+            const filterSelect = document.getElementById('missionTasksFilter');
+            const selectedLabel = filterSelect ? filterSelect.value : '__all__';
+
+            let tasksToDisplay = missionTasksData;
+            if (selectedLabel && selectedLabel !== '__all__') {
+                tasksToDisplay = missionTasksData.filter(t => (t.task_libelle || 'Sans libellé') === selectedLabel);
+            }
+
             let tasksHtml = '';
-            tasks.forEach(task => {
+
+            tasksToDisplay.forEach(task => {
                 const statusClass = getStatusClass(task.statut);
-                
-                // Générer l'affichage des collaborateurs affectés
+
+                // Tableau des informations de la tâche
+                const taskTable = `
+                    <div class="table-responsive mb-2">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nom de la tâche / Description</th>
+                                    <th class="text-center">Heures planifiées</th>
+                                    <th class="text-center">Heures effectuées</th>
+                                    <th class="text-center">Date début</th>
+                                    <th class="text-center">Date fin</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <div>
+                                                <strong>${task.task_libelle || 'N/A'}</strong>
+                                                <span class="badge ms-2 ${statusClass}">${task.statut || 'N/A'}</span>
+                                            </div>
+                                            <small class="text-muted">${task.task_description || ''}</small>
+                                            ${task.notes ? `<small class="text-muted">${task.notes}</small>` : ''}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">${task.duree_planifiee || 0}h</td>
+                                    <td class="text-center">${task.duree_reelle || 0}h</td>
+                                    <td class="text-center">${formatDate(task.date_debut)}</td>
+                                    <td class="text-center">${formatDate(task.date_fin)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                // Tableau des collaborateurs affectés
                 let collaborateursHtml = '';
                 if (task.collaborateurs_affectes && task.collaborateurs_affectes.length > 0) {
+                    const rowsHtml = task.collaborateurs_affectes.map(collab => `
+                        <tr>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span><strong>${collab.prenom} ${collab.nom}</strong>${collab.grade_nom ? ` (${collab.grade_nom})` : ''}</span>
+                                    ${collab.taux_horaire ? `<small class="text-muted">${collab.taux_horaire}€/h</small>` : ''}
+                                </div>
+                            </td>
+                            <td class="text-center">${collab.heures_planifiees || 0}h</td>
+                            <td class="text-center">${collab.heures_effectuees || 0}h</td>
+                            <td class="text-center">${formatDate(collab.date_debut)}</td>
+                            <td class="text-center">${formatDate(collab.date_fin)}</td>
+                        </tr>
+                    `).join('');
+
                     collaborateursHtml = `
                         <div class="mt-2">
-                            <small class="text-primary"><i class="fas fa-users me-1"></i>Collaborateurs affectés:</small>
-                            ${task.collaborateurs_affectes.map(collab => `
-                                <div class="ms-3 mt-1">
-                                    <small>
-                                        <i class="fas fa-user me-1"></i>
-                                        <strong>${collab.prenom} ${collab.nom}</strong>
-                                        ${collab.grade_nom ? `(${collab.grade_nom})` : ''}
-                                    </small>
-                                    <br>
-                                    <small class="text-muted">
-                                        ${collab.heures_planifiees || 0}h planifiées - 
-                                        ${collab.heures_effectuees || 0}h effectuées
-                                        ${collab.taux_horaire ? ` - ${collab.taux_horaire}€/h` : ''}
-                                    </small>
-                                </div>
-                            `).join('')}
+                            <small class="text-primary d-block mb-1">
+                                <i class="fas fa-users me-1"></i>Collaborateurs affectés
+                            </small>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Nom (grade)</th>
+                                            <th class="text-center">Heures planifiées</th>
+                                            <th class="text-center">Heures effectuées</th>
+                                            <th class="text-center">Date début</th>
+                                            <th class="text-center">Date fin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${rowsHtml}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     `;
                 } else {
@@ -630,34 +821,16 @@
                         </div>
                     `;
                 }
-                
+
                 tasksHtml += `
-                    <div class="border-bottom pb-2 mb-2">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <strong>${task.task_libelle || 'N/A'}</strong>
-                                <br><small class="text-muted">${task.task_description || ''}</small>
-                                ${collaborateursHtml}
-                            </div>
-                            <div class="col-md-2">
-                                <span class="badge ${statusClass}">${task.statut || 'N/A'}</span>
-                            </div>
-                            <div class="col-md-2">
-                                <small>Planifié: ${task.duree_planifiee || 0}h</small>
-                                <br><small class="text-muted">Effectué: ${task.duree_reelle || 0}h</small>
-                            </div>
-                            <div class="col-md-2">
-                                <small>Début: ${formatDate(task.date_debut)}</small>
-                                <br><small class="text-muted">Fin: ${formatDate(task.date_fin)}</small>
-                            </div>
-                            <div class="col-md-2">
-                                <small>${task.notes || ''}</small>
-                            </div>
-                        </div>
+                    <div class="border-bottom pb-3 mb-3">
+                        ${taskTable}
+                        ${collaborateursHtml}
                     </div>
                 `;
             });
-            document.getElementById('missionTasks').innerHTML = tasksHtml;
+
+            container.innerHTML = tasksHtml;
         }
 
         // Affichage des données de facturation

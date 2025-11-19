@@ -5,6 +5,7 @@ const API_BASE_URL = '/api';
 let opportunityTypes = [];
 let currentTypeId = null;
 let currentStageId = null;
+let currentStageName = null; // Nom de l'étape sélectionnée (pour protéger Identification / Décision)
 let stagesData = [];
 let requiredActionsData = [];
 let requiredDocumentsData = [];
@@ -50,6 +51,18 @@ const DOC_LABELS = {
     statuts_societe: 'Statuts et informations légales',
     organigramme: 'Structure organisationnelle',
     proces_verbaux: "PV d'assemblées/conseils"
+};
+
+// Référentiels des actions/documents obligatoires par défaut
+// utilisés pour protéger uniquement les éléments créés par le modèle standard
+const DEFAULT_MANDATORY_ACTIONS = {
+    'Identification': ['premier_contact', 'qualification_besoin'],
+    'Décision': ['contrat_prepare', 'contrat_signe']
+};
+
+const DEFAULT_MANDATORY_DOCUMENTS = {
+    'Identification': ['fiche_prospect'],
+    'Décision': ['contrat_signe']
 };
 
 // Appel API authentifié
@@ -100,6 +113,13 @@ async function loadTypes() {
     showLoading(true);
     try {
         const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-types`);
+        if (response.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
         const data = await response.json();
         
         if (data.success) {
@@ -168,6 +188,105 @@ function displayTypes() {
     `).join('');
 }
 
+// Ajouter une nouvelle étape (entre Identification et Décision)
+async function addStage() {
+    if (!currentTypeId) {
+        showAlert('Aucun type d\'opportunité sélectionné', 'warning');
+        return;
+    }
+
+    if (!stagesData || stagesData.length === 0) {
+        showAlert('Aucune étape existante pour ce type. Rechargez la page.', 'danger');
+        return;
+    }
+
+    // Saisir un nom d\'étape minimal (peut être modifié ensuite)
+    const stageName = prompt('Nom de la nouvelle étape :', 'Nouvelle étape');
+    if (!stageName || !stageName.trim()) {
+        return;
+    }
+
+    try {
+        // Identifier les étapes Identification et Décision existantes
+        const identification = stagesData.find(s => s.template.stage_name === 'Identification' || s.template.stage_order === 1);
+        // Toujours repérer Décision par son nom
+        const decision = stagesData.find(s => s.template.stage_name === 'Décision');
+
+        if (!decision || !decision.template) {
+            showAlert('Impossible de trouver l\'étape "Décision" pour ce type.', 'danger');
+            return;
+        }
+
+        const originalDecisionOrder = decision.template.stage_order || stagesData.length;
+        const maxOrder = Math.max(...stagesData.map(s => s.template.stage_order || 0));
+        const newDecisionOrder = (isFinite(maxOrder) && maxOrder > 0) ? maxOrder + 1 : (originalDecisionOrder + 1);
+
+        // 1) Décaler Décision tout à la fin
+        const moveDecisionResponse = await authenticatedFetch(`${API_BASE_URL}/workflow/stages/${decision.template.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                stage_name: decision.template.stage_name,
+                description: decision.template.description || '',
+                min_duration_days: decision.template.min_duration_days || 1,
+                max_duration_days: decision.template.max_duration_days || 10,
+                is_mandatory: decision.template.is_mandatory !== false,
+                validation_required: decision.template.validation_required === true,
+                stage_order: newDecisionOrder
+            })
+        });
+
+        if (moveDecisionResponse.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        const moveDecisionData = await moveDecisionResponse.json();
+        if (!moveDecisionData.success) {
+            showAlert(`Erreur lors du déplacement de l\'étape "Décision": ${moveDecisionData.error || 'Erreur inconnue'}`, 'danger');
+            return;
+        }
+
+        // 2) Créer la nouvelle étape à l'ancien ordre de Décision (juste avant elle)
+        const createResponse = await authenticatedFetch(`${API_BASE_URL}/workflow/stages`, {
+            method: 'POST',
+            body: JSON.stringify({
+                opportunity_type_id: currentTypeId,
+                stage_name: stageName.trim(),
+                stage_order: originalDecisionOrder,
+                description: '',
+                min_duration_days: 1,
+                max_duration_days: 10,
+                is_mandatory: true,
+                validation_required: true
+            })
+        });
+
+        if (createResponse.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        const createData = await createResponse.json();
+        if (!createData.success || !createData.data) {
+            showAlert(`Erreur lors de la création de l\'étape: ${createData.error || 'Erreur inconnue'}`, 'danger');
+            return;
+        }
+
+        // Recharger les étapes pour refléter la nouvelle configuration (Décision dernière, nouvelle étape juste avant)
+        await loadStagesForType(currentTypeId);
+        showAlert('Nouvelle étape ajoutée avec succès', 'success');
+    } catch (error) {
+        console.error('Erreur addStage:', error);
+        showAlert('Erreur lors de l\'ajout de l\'étape', 'danger');
+    }
+}
+
 // Créer un nouveau type d'opportunité
 async function addType() {
     const form = document.getElementById('addTypeForm');
@@ -190,6 +309,14 @@ async function addType() {
             method: 'POST',
             body: JSON.stringify(formData)
         });
+
+        if (response.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
 
         const data = await response.json();
         
@@ -243,6 +370,13 @@ async function configureType(typeId) {
 async function loadStagesForType(typeId) {
     try {
         const response = await authenticatedFetch(`${API_BASE_URL}/workflow/stages?typeId=${typeId}`);
+        if (response.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
         const data = await response.json();
         
         if (data.success) {
@@ -264,7 +398,15 @@ async function createDefaultStages(typeId) {
         const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-types/${typeId}/create-default-stages`, {
             method: 'POST'
         });
-        
+
+        if (response.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
+
         const data = await response.json();
         if (data.success) {
             await loadStagesForType(typeId);
@@ -333,6 +475,7 @@ function selectStage(stageId) {
     }
 
     // Remplir le formulaire de configuration
+    currentStageName = stage.template.stage_name;
     document.getElementById('selectedStageName').textContent = stage.template.stage_name;
     document.getElementById('stageNameInput').value = stage.template.stage_name;
     document.getElementById('stageDescriptionInput').value = stage.template.description || '';
@@ -342,7 +485,45 @@ function selectStage(stageId) {
     document.getElementById('stageValidationRequired').checked = stage.template.validation_required === true;
 
     // Afficher la configuration
-    document.getElementById('stage-configuration').style.display = 'block';
+    const stageConfigContainer = document.getElementById('stage-configuration');
+    stageConfigContainer.style.display = 'block';
+
+    // Protéger les étapes Identification et Décision : pas de modification des métadonnées ni suppression
+    const isProtectedStageMeta = currentStageName === 'Identification' || currentStageName === 'Décision';
+
+    const saveStageBtn = stageConfigContainer.querySelector('button[onclick="saveStageConfig()"]');
+    const deleteStageBtn = stageConfigContainer.querySelector('button[onclick="deleteStage()"]');
+    const nameInput = document.getElementById('stageNameInput');
+    const descInput = document.getElementById('stageDescriptionInput');
+    const minInput = document.getElementById('stageMinDuration');
+    const maxInput = document.getElementById('stageMaxDuration');
+    const mandatoryCheckbox = document.getElementById('stageMandatory');
+    const validationCheckbox = document.getElementById('stageValidationRequired');
+
+    if (isProtectedStageMeta) {
+        // Rendre les champs de métadonnées en lecture seule / désactivés
+        if (nameInput) nameInput.readOnly = true;
+        if (descInput) descInput.readOnly = true;
+        if (minInput) minInput.readOnly = true;
+        if (maxInput) maxInput.readOnly = true;
+        if (mandatoryCheckbox) mandatoryCheckbox.disabled = true;
+        if (validationCheckbox) validationCheckbox.disabled = true;
+
+        // Masquer les boutons de sauvegarde et suppression d'étape
+        if (saveStageBtn) saveStageBtn.style.display = 'none';
+        if (deleteStageBtn) deleteStageBtn.style.display = 'none';
+    } else {
+        // Étapes normales : champs éditables et boutons visibles
+        if (nameInput) nameInput.readOnly = false;
+        if (descInput) descInput.readOnly = false;
+        if (minInput) minInput.readOnly = false;
+        if (maxInput) maxInput.readOnly = false;
+        if (mandatoryCheckbox) mandatoryCheckbox.disabled = false;
+        if (validationCheckbox) validationCheckbox.disabled = false;
+
+        if (saveStageBtn) saveStageBtn.style.display = '';
+        if (deleteStageBtn) deleteStageBtn.style.display = '';
+    }
     
     // Charger les actions et documents requis pour cette étape
     displayRequiredActions(stage.requiredActions || []);
@@ -360,7 +541,24 @@ function displayRequiredActions(actions) {
         return;
     }
 
-    container.innerHTML = actions.map(action => `
+    const isProtectedStage = currentStageName === 'Identification' || currentStageName === 'Décision';
+
+    // Construire un compteur pour les actions obligatoires par défaut à protéger
+    const defaultList = isProtectedStage ? (DEFAULT_MANDATORY_ACTIONS[currentStageName] || []) : [];
+    const defaultQuota = {};
+    defaultList.forEach(type => {
+        defaultQuota[type] = (defaultQuota[type] || 0) + 1;
+    });
+
+    container.innerHTML = actions.map(action => {
+        let protect = false;
+        if (isProtectedStage && action.is_mandatory && defaultQuota[action.action_type] > 0) {
+            // Protéger uniquement jusqu'à concurrence du nombre d'actions obligatoires par défaut
+            protect = true;
+            defaultQuota[action.action_type] -= 1;
+        }
+        const canDelete = !protect;
+        return `
         <div class="action-item ${action.is_mandatory ? 'mandatory' : 'optional'}">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -370,14 +568,14 @@ function displayRequiredActions(actions) {
                     </span>
                     ${action.validation_order ? `<span class="badge bg-secondary ms-1">Ordre: ${action.validation_order}</span>` : ''}
                 </div>
-                ${!action.id.startsWith('json_') ? `
+                ${canDelete ? `
                 <button class="btn btn-outline-danger btn-sm" onclick="removeRequiredAction('${action.id}')">
                     <i class="fas fa-trash"></i>
-                </button>
-                ` : ''}
+                </button>` : ''}
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // Afficher les documents requis
@@ -391,7 +589,24 @@ function displayRequiredDocuments(documents) {
         return;
     }
 
-    container.innerHTML = documents.map(doc => `
+    const isProtectedStage = currentStageName === 'Identification' || currentStageName === 'Décision';
+
+    // Construire un compteur pour les documents obligatoires par défaut à protéger
+    const defaultList = isProtectedStage ? (DEFAULT_MANDATORY_DOCUMENTS[currentStageName] || []) : [];
+    const defaultQuota = {};
+    defaultList.forEach(type => {
+        defaultQuota[type] = (defaultQuota[type] || 0) + 1;
+    });
+
+    container.innerHTML = documents.map(doc => {
+        let protect = false;
+        if (isProtectedStage && doc.is_mandatory && defaultQuota[doc.document_type] > 0) {
+            // Protéger uniquement jusqu'à concurrence du nombre de documents obligatoires par défaut
+            protect = true;
+            defaultQuota[doc.document_type] -= 1;
+        }
+        const canDelete = !protect;
+        return `
         <div class="document-item ${doc.is_mandatory ? 'mandatory' : 'optional'}">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -400,52 +615,14 @@ function displayRequiredDocuments(documents) {
                         ${doc.is_mandatory ? 'Obligatoire' : 'Optionnel'}
                     </span>
                 </div>
-                ${!doc.id.startsWith('json_') ? `
+                ${canDelete ? `
                 <button class="btn btn-outline-danger btn-sm" onclick="removeRequiredDocument('${doc.id}')">
                     <i class="fas fa-trash"></i>
-                </button>
-                ` : ''}
+                </button>` : ''}
             </div>
         </div>
-    `).join('');
-}
-
-// Ajouter une étape
-async function addStage() {
-    if (!currentTypeId) {
-        showAlert('Aucun type sélectionné', 'danger');
-        return;
-    }
-
-    const stageName = prompt('Nom de la nouvelle étape:');
-    if (!stageName) return;
-
-    try {
-        const response = await authenticatedFetch(`${API_BASE_URL}/workflow/stages`, {
-            method: 'POST',
-            body: JSON.stringify({
-                opportunity_type_id: currentTypeId,
-                stage_name: stageName,
-                stage_order: stagesData.length + 1,
-                description: '',
-                min_duration_days: 1,
-                max_duration_days: 10,
-                is_mandatory: true,
-                validation_required: false
-            })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            await loadStagesForType(currentTypeId);
-            showAlert('Étape ajoutée avec succès', 'success');
-        } else {
-            showAlert(`Erreur: ${data.error}`, 'danger');
-        }
-    } catch (error) {
-        console.error('Erreur addStage:', error);
-        showAlert('Erreur lors de l\'ajout de l\'étape', 'danger');
-    }
+        `;
+    }).join('');
 }
 
 // Sauvegarder la configuration d'une étape
@@ -470,6 +647,14 @@ async function saveStageConfig() {
             body: JSON.stringify(formData)
         });
 
+        if (response.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
+
         const data = await response.json();
         if (data.success) {
             await loadStagesForType(currentTypeId);
@@ -490,6 +675,12 @@ async function deleteStage() {
         return;
     }
 
+    // Protection côté UI : empêcher la suppression d'Identification et Décision
+    if (currentStageName === 'Identification' || currentStageName === 'Décision') {
+        showAlert('Les étapes "Identification" et "Décision" ne peuvent pas être supprimées.', 'warning');
+        return;
+    }
+
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette étape ?')) {
         return;
     }
@@ -498,6 +689,14 @@ async function deleteStage() {
         const response = await authenticatedFetch(`${API_BASE_URL}/workflow/stages/${currentStageId}`, {
             method: 'DELETE'
         });
+
+        if (response.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
 
         const data = await response.json();
         if (data.success) {
@@ -552,6 +751,14 @@ async function confirmAddAction() {
             })
         });
 
+        if (response.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
+
         const data = await response.json();
         if (data.success) {
             bootstrap.Modal.getInstance(document.getElementById('addActionModal')).hide();
@@ -577,6 +784,14 @@ async function removeRequiredAction(actionId) {
         const response = await authenticatedFetch(`${API_BASE_URL}/workflow/stages/actions/${actionId}`, {
             method: 'DELETE'
         });
+
+        if (response.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
 
         const data = await response.json();
         if (data.success) {
@@ -629,6 +844,14 @@ async function confirmAddDocument() {
             })
         });
 
+        if (response.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
+
         const data = await response.json();
         if (data.success) {
             bootstrap.Modal.getInstance(document.getElementById('addDocumentModal')).hide();
@@ -655,6 +878,14 @@ async function removeRequiredDocument(documentId) {
             method: 'DELETE'
         });
 
+        if (response.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
+
         const data = await response.json();
         if (data.success) {
             await loadStagesForType(currentTypeId);
@@ -675,6 +906,14 @@ async function saveTypeConfiguration() {
         const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-types/${currentTypeId}/save-configuration`, {
             method: 'POST'
         });
+
+        if (response.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
 
         const data = await response.json();
         if (data.success) {
@@ -719,6 +958,14 @@ async function deleteType(typeId) {
         const response = await authenticatedFetch(`${API_BASE_URL}/opportunity-types/${typeId}`, {
             method: 'DELETE'
         });
+
+        if (response.status === 401) {
+            showAlert('Votre session a expiré. Merci de vous reconnecter.', 'warning');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+            return;
+        }
 
         const data = await response.json();
         

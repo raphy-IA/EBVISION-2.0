@@ -164,6 +164,21 @@ const CURRENCY_CONFIG = {
      */
     getSupportedCurrencies: function() {
         return Object.keys(this.currencies);
+    },
+    
+    /**
+     * Génère les options HTML pour un <select> de devises
+     * @returns {string} Chaîne HTML d'options
+     */
+    getCurrencyOptions: function() {
+        let options = '<option value="">Sélectionner une devise</option>';
+        const codes = this.getSupportedCurrencies();
+        codes.forEach(code => {
+            const currency = this.currencies[code];
+            const selectedAttr = code === this.defaultCurrency ? ' selected' : '';
+            options += `<option value="${currency.code}"${selectedAttr}>${currency.code} - ${currency.name}</option>`;
+        });
+        return options;
     }
 };
 

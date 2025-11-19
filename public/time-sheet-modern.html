@@ -76,8 +76,28 @@
         
         .status-sauvegardé { background-color: #e3f2fd; color: #1976d2; }
         .status-soumis { background-color: #fff3e0; color: #f57c00; }
-        .status-validé { background-color: #e8f5e8; color: #388e3c; }
-        .status-rejeté { background-color: #ffebee; color: #d32f2f; }
+
+        /* Statut validé : vert plus vif + halo fixe pour bien ressortir
+           Compatibilité : le JS utilise status-approved comme classe dynamique */
+        .status-validé,
+        .status-approved {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 10px rgba(39, 174, 96, 0.8) !important;
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.25) !important;
+            border: 1px solid rgba(255, 255, 255, 0.9) !important;
+        }
+
+        /* Statut rejeté : rouge vif + halo fixe pour bien ressortir
+           Compatibilité : le JS peut utiliser status-rejected comme classe dynamique */
+        .status-rejeté,
+        .status-rejected {
+            background: linear-gradient(135deg, #ff5252 0%, #d32f2f 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 10px rgba(211, 47, 47, 0.8) !important;
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.25) !important;
+            border: 1px solid rgba(255, 255, 255, 0.9) !important;
+        }
         
         .week-selector {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

@@ -79,17 +79,32 @@ class OpportunityWorkflowService {
                 throw new Error('Cette étape ne peut pas être terminée');
             }
 
-            // Validation Phase 2: vérifier exigences (actions/documents) pour le template de cette étape
-            const validationOk = await this.validateStageRequirements(stage.opportunity_id, stage);
-            if (!validationOk) {
-                throw new Error("Conditions de validation non satisfaites (actions/documents requis)");
-            }
-
-            // Logique spéciale pour la phase de négociation
+            // Outcome éventuel (utilisé surtout pour la phase de décision)
             let stageOutcome = outcome;
-            if (stage.stage_name === 'Négociation' && !outcome) {
-                // Pour la négociation, demander le résultat si pas fourni
-                throw new Error("Pour la phase de négociation, veuillez spécifier le résultat (gagnée/perdue)");
+            const normalizedOutcome = stageOutcome ? stageOutcome.toLowerCase() : null;
+
+            // Gestion de la validation des exigences selon le type d'étape
+            if (stage.stage_name === 'Décision') {
+                // Pour l'étape Décision :
+                //  - si résultat "gagnée" -> on vérifie les exigences (documents/actions)
+                //  - si résultat "perdue" -> on ne bloque PAS sur les exigences
+                if (!stageOutcome) {
+                    throw new Error("Pour la phase de décision, veuillez spécifier le résultat final (gagnée/perdue)");
+                }
+
+                if (normalizedOutcome === 'gagnée' || normalizedOutcome === 'gagnee') {
+                    const validationOk = await this.validateStageRequirements(stage.opportunity_id, stage);
+                    if (!validationOk) {
+                        throw new Error("Conditions de validation non satisfaites (actions/documents requis)");
+                    }
+                }
+                // Si "perdue" ou autre valeur, on laisse passer sans contrôle d'exigences
+            } else {
+                // Pour toutes les autres étapes : toujours vérifier les exigences
+                const validationOk = await this.validateStageRequirements(stage.opportunity_id, stage);
+                if (!validationOk) {
+                    throw new Error("Conditions de validation non satisfaites (actions/documents requis)");
+                }
             }
 
             // Mettre à jour le statut de l'étape (schéma sans colonne outcome)
@@ -126,63 +141,11 @@ class OpportunityWorkflowService {
                 data: reason ? { reason, details } : null
             });
 
-            // Logique spéciale pour la négociation
-            if (stage.stage_name === 'Négociation' && stageOutcome) {
-                if (stageOutcome.toLowerCase() === 'gagnée') {
-                    // Si négociation gagnée, passer directement à "GAGNEE"
-                    await pool.query(`
-                        UPDATE opportunities 
-                        SET 
-                            statut = 'GAGNEE',
-                            date_fermeture_reelle = CURRENT_TIMESTAMP,
-                            updated_at = CURRENT_TIMESTAMP
-                        WHERE id = $1
-                    `, [stage.opportunity_id]);
-                    
-                    // Marquer l'étape "Décision" comme terminée automatiquement
-                    await pool.query(`
-                        UPDATE opportunity_stages 
-                        SET 
-                            status = 'COMPLETED',
-                            completed_date = CURRENT_TIMESTAMP,
-                            updated_at = CURRENT_TIMESTAMP
-                        WHERE opportunity_id = $1 AND stage_name = 'Décision'
-                    `, [stage.opportunity_id]);
-                    
-                    return updatedStage;
-                } else if (stageOutcome.toLowerCase() === 'perdue') {
-                    // Si négociation perdue, passer à "PERDUE"
-                    await pool.query(`
-                        UPDATE opportunities 
-                        SET 
-                            statut = 'PERDUE',
-                            date_fermeture_reelle = CURRENT_TIMESTAMP,
-                            updated_at = CURRENT_TIMESTAMP
-                        WHERE id = $1
-                    `, [stage.opportunity_id]);
-                    
-                    // Marquer l'étape "Décision" comme terminée automatiquement
-                    await pool.query(`
-                        UPDATE opportunity_stages 
-                        SET 
-                            status = 'COMPLETED',
-                            completed_date = CURRENT_TIMESTAMP,
-                            updated_at = CURRENT_TIMESTAMP
-                        WHERE opportunity_id = $1 AND stage_name = 'Décision'
-                    `, [stage.opportunity_id]);
-                    
-                    return updatedStage;
-                }
-            }
-
             // Logique spéciale pour la phase de décision
             if (stage.stage_name === 'Décision') {
-                // Demander le résultat final si pas fourni
-                if (!stageOutcome) {
-                    throw new Error("Pour la phase de décision, veuillez spécifier le résultat final (gagnée/perdue)");
-                }
-                
-                if (stageOutcome.toLowerCase() === 'gagnée') {
+                const finalOutcome = normalizedOutcome;
+
+                if (finalOutcome === 'gagnée' || finalOutcome === 'gagnee') {
                     await pool.query(`
                         UPDATE opportunities 
                         SET 
@@ -191,7 +154,7 @@ class OpportunityWorkflowService {
                             updated_at = CURRENT_TIMESTAMP
                         WHERE id = $1
                     `, [stage.opportunity_id]);
-                } else if (stageOutcome.toLowerCase() === 'perdue') {
+                } else if (finalOutcome === 'perdue') {
                     await pool.query(`
                         UPDATE opportunities 
                         SET 

@@ -105,8 +105,7 @@ router.post('/', authenticateToken, async (req, res) => {
             description,
             couleur,
             default_probability,
-            default_duration_days,
-            templates
+            default_duration_days
         } = req.body;
 
         if (!nom) {
@@ -138,22 +137,8 @@ router.post('/', authenticateToken, async (req, res) => {
 
         const newType = result.rows[0];
 
-        // Ajouter les templates si fournis
-        if (templates && Array.isArray(templates)) {
-            for (const template of templates) {
-                await pool.query(`
-                    INSERT INTO opportunity_stage_templates 
-                    (opportunity_type_id, nom, description, stage_order, duree_jours)
-                    VALUES ($1, $2, $3, $4, $5)
-                `, [
-                    newType.id,
-                    template.nom,
-                    template.description,
-                    template.stage_order,
-                    template.duree_jours
-                ]);
-            }
-        }
+        // Créer automatiquement les étapes par défaut (modèle standard)
+        await createDefaultStagesForType(pool, newType.id);
 
         res.status(201).json({
             success: true,
@@ -231,6 +216,28 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
         // Mettre à jour les templates si fournis
         if (templates && Array.isArray(templates)) {
+            // Imposer les contraintes Identification/Décision
+            const maxOrder = templates.reduce((max, t) => Math.max(max, t.stage_order || 0), 0);
+            const hasIdentification = templates.some(t => t.stage_order === 1 && t.nom === 'Identification');
+            const hasDecision = templates.some(t => t.stage_order === maxOrder && t.nom === 'Décision');
+
+            if (!hasIdentification || !hasDecision) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'La première étape doit être "Identification" (ordre 1) et la dernière étape doit être "Décision".'
+                });
+            }
+
+            // Forcer les noms sur la première et la dernière étape pour éviter le renommage
+            templates.forEach(t => {
+                if (t.stage_order === 1) {
+                    t.nom = 'Identification';
+                }
+                if (t.stage_order === maxOrder) {
+                    t.nom = 'Décision';
+                }
+            });
+
             // Supprimer les anciens templates
             await pool.query(
                 'DELETE FROM opportunity_stage_templates WHERE opportunity_type_id = $1',
@@ -369,10 +376,10 @@ router.post('/:id/create-default-stages', authenticateToken, async (req, res) =>
             });
         }
 
-        // Étapes par défaut pour tous les types
+        // Étapes par défaut pour tous les types (modèle "vente standard")
         const defaultStages = [
             {
-                stage_name: 'Prospection',
+                stage_name: 'Identification',
                 stage_order: 1,
                 description: 'Identification et premier contact avec le prospect',
                 min_duration_days: 1,
@@ -420,39 +427,7 @@ router.post('/:id/create-default-stages', authenticateToken, async (req, res) =>
 
         await pool.query('BEGIN');
 
-        // Créer les étapes
-        for (const stage of defaultStages) {
-            const stageResult = await pool.query(`
-                INSERT INTO opportunity_stage_templates (
-                    opportunity_type_id, stage_name, stage_order, description,
-                    min_duration_days, max_duration_days, is_mandatory, validation_required
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                RETURNING id
-            `, [
-                id, stage.stage_name, stage.stage_order, stage.description,
-                stage.min_duration_days, stage.max_duration_days, stage.is_mandatory, stage.validation_required
-            ]);
-
-            const stageId = stageResult.rows[0].id;
-
-            // Ajouter les actions requises selon l'étape
-            const stageActions = getDefaultActionsForStage(stage.stage_name);
-            for (const action of stageActions) {
-                await pool.query(`
-                    INSERT INTO stage_required_actions (stage_template_id, action_type, is_mandatory, validation_order)
-                    VALUES ($1, $2, $3, $4)
-                `, [stageId, action.type, action.mandatory, action.order]);
-            }
-
-            // Ajouter les documents requis selon l'étape
-            const stageDocuments = getDefaultDocumentsForStage(stage.stage_name);
-            for (const doc of stageDocuments) {
-                await pool.query(`
-                    INSERT INTO stage_required_documents (stage_template_id, document_type, is_mandatory)
-                    VALUES ($1, $2, $3)
-                `, [stageId, doc.type, doc.mandatory]);
-            }
-        }
+        await createDefaultStagesForType(pool, id, defaultStages);
 
         await pool.query('COMMIT');
 
@@ -504,7 +479,7 @@ router.post('/:id/save-configuration', authenticateToken, async (req, res) => {
 // Fonctions utilitaires pour les actions et documents par défaut
 function getDefaultActionsForStage(stageName) {
     const actionsMap = {
-        'Prospection': [
+        'Identification': [
             { type: 'premier_contact', mandatory: true, order: 1 },
             { type: 'qualification_besoin', mandatory: true, order: 2 }
         ],
@@ -531,7 +506,7 @@ function getDefaultActionsForStage(stageName) {
 
 function getDefaultDocumentsForStage(stageName) {
     const documentsMap = {
-        'Prospection': [
+        'Identification': [
             { type: 'fiche_prospect', mandatory: true }
         ],
         'Qualification': [
@@ -551,6 +526,96 @@ function getDefaultDocumentsForStage(stageName) {
     };
     
     return documentsMap[stageName] || [];
+}
+
+// Créer les étapes par défaut (modèle standard) pour un type donné
+async function createDefaultStagesForType(pool, opportunityTypeId, defaultStagesParam) {
+    const stagesToUse = defaultStagesParam || [
+        {
+            stage_name: 'Identification',
+            stage_order: 1,
+            description: 'Identification et premier contact avec le prospect',
+            min_duration_days: 1,
+            max_duration_days: 7,
+            is_mandatory: true,
+            validation_required: true
+        },
+        {
+            stage_name: 'Qualification',
+            stage_order: 2,
+            description: 'Validation du besoin, budget, décideurs et timing',
+            min_duration_days: 3,
+            max_duration_days: 10,
+            is_mandatory: true,
+            validation_required: true
+        },
+        {
+            stage_name: 'Proposition',
+            stage_order: 3,
+            description: 'Production et envoi de l\'offre commerciale',
+            min_duration_days: 3,
+            max_duration_days: 10,
+            is_mandatory: true,
+            validation_required: true
+        },
+        {
+            stage_name: 'Négociation',
+            stage_order: 4,
+            description: 'Convergence sur prix, périmètre, délais et conditions',
+            min_duration_days: 5,
+            max_duration_days: 15,
+            is_mandatory: true,
+            validation_required: false
+        },
+        {
+            stage_name: 'Décision',
+            stage_order: 5,
+            description: 'Validation finale et signature du contrat',
+            min_duration_days: 1,
+            max_duration_days: 7,
+            is_mandatory: true,
+            validation_required: true
+        }
+    ];
+
+    for (const stage of stagesToUse) {
+        const stageResult = await pool.query(`
+            INSERT INTO opportunity_stage_templates (
+                opportunity_type_id, stage_name, stage_order, description,
+                min_duration_days, max_duration_days, is_mandatory, validation_required
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING id
+        `, [
+            opportunityTypeId,
+            stage.stage_name,
+            stage.stage_order,
+            stage.description,
+            stage.min_duration_days,
+            stage.max_duration_days,
+            stage.is_mandatory,
+            stage.validation_required
+        ]);
+
+        const stageId = stageResult.rows[0].id;
+
+        // Ajouter les actions requises selon l'étape
+        const stageActions = getDefaultActionsForStage(stage.stage_name);
+        for (const action of stageActions) {
+            await pool.query(`
+                INSERT INTO stage_required_actions (stage_template_id, action_type, is_mandatory, validation_order)
+                VALUES ($1, $2, $3, $4)
+            `, [stageId, action.type, action.mandatory, action.order]);
+        }
+
+        // Ajouter les documents requis selon l'étape
+        const stageDocuments = getDefaultDocumentsForStage(stage.stage_name);
+        for (const doc of stageDocuments) {
+            await pool.query(`
+                INSERT INTO stage_required_documents (stage_template_id, document_type, is_mandatory)
+                VALUES ($1, $2, $3)
+            `, [stageId, doc.type, doc.mandatory]);
+        }
+    }
 }
 
 module.exports = router; 

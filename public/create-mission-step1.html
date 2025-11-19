@@ -76,36 +76,47 @@
             background-color: var(--success-color);
         }
         
-        .opportunity-card {
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .opportunity-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .opportunity-card.selected {
-            border-color: var(--success-color);
-            background-color: #e8f5e8;
-        }
-        
+        .opportunity-card,
         .mission-type-card {
             cursor: pointer;
             transition: all 0.3s ease;
             border: 2px solid transparent;
+            position: relative;
         }
         
+        .opportunity-card:hover,
         .mission-type-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         
+        .opportunity-card.selected,
         .mission-type-card.selected {
             border-color: var(--success-color);
+            border-width: 3px;
             background-color: #e8f5e8;
+            box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.3);
+        }
+
+        .selection-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: none;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            background: var(--success-color);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .opportunity-card.selected .selection-badge,
+        .mission-type-card.selected .selection-badge {
+            display: inline-flex;
         }
         
         .loading {
@@ -383,7 +394,11 @@
                 <div class="col-md-6 col-lg-4 mb-3">
                     <div class="card opportunity-card" onclick="selectOpportunity('${opp.id}')" data-opportunity-id="${opp.id}">
                         <div class="card-body">
-                            <h6 class="card-title">${opp.nom}</h6>
+                            <div class="selection-badge">
+                                <i class="fas fa-check-circle"></i>
+                                Sélectionnée
+                            </div>
+                            <h6 class="card-title mt-2">${opp.nom}</h6>
                             <p class="card-text text-muted">${opp.description || 'Aucune description'}</p>
                             <div class="row">
                                 <div class="col-6">
@@ -436,7 +451,11 @@
                 <div class="col-md-6 col-lg-4 mb-3">
                     <div class="card mission-type-card" onclick="selectMissionType('${type.id}')" data-mission-type-id="${type.id}">
                         <div class="card-body">
-                            <h6 class="card-title">${type.codification} - ${type.libelle}</h6>
+                            <div class="selection-badge">
+                                <i class="fas fa-check-circle"></i>
+                                Sélectionné
+                            </div>
+                            <h6 class="card-title mt-2">${type.codification} - ${type.libelle}</h6>
                             <p class="card-text text-muted">${type.description || 'Aucune description'}</p>
                             <div class="row">
                                 <div class="col-12">

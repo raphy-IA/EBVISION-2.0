@@ -18,6 +18,39 @@ router.get('/', authenticateToken, async (req, res) => {
             console.log(`🔍 Récupération des entrées pour la feuille de temps: ${time_sheet_id}`);
             entries = await TimeEntry.findByTimeSheet(time_sheet_id);
             console.log(`✅ ${entries.length} entrées trouvées pour la feuille ${time_sheet_id}`);
+
+            // Fallback de compatibilité : si aucune entrée directe n'est trouvée,
+            // tenter de retrouver les entrées par utilisateur + période de la feuille.
+            if (!entries.length) {
+                try {
+                    console.log('ℹ️ Aucune entrée directe trouvée pour cette feuille, tentative de fallback par période');
+                    const timeSheet = await TimeSheet.findById(time_sheet_id);
+                    if (timeSheet) {
+                        const fallbackUserId = timeSheet.user_id;
+                        const fallbackStart = timeSheet.week_start;
+                        const fallbackEnd = timeSheet.week_end;
+
+                        console.log('🔍 Fallback TimeSheet:', {
+                            id: timeSheet.id,
+                            user_id: fallbackUserId,
+                            week_start: fallbackStart,
+                            week_end: fallbackEnd
+                        });
+
+                        entries = await TimeEntry.findByUserAndPeriod(
+                            fallbackUserId,
+                            fallbackStart,
+                            fallbackEnd
+                        );
+
+                        console.log(`✅ Fallback: ${entries.length} entrées trouvées pour l'utilisateur ${fallbackUserId} entre ${fallbackStart} et ${fallbackEnd}`);
+                    } else {
+                        console.log('ℹ️ Aucun time_sheet trouvé pour l\'ID fourni, aucun fallback possible');
+                    }
+                } catch (fallbackError) {
+                    console.error('❌ Erreur lors du fallback par période pour time_sheet_id:', time_sheet_id, fallbackError);
+                }
+            }
         } else if (userId) {
             if (week_start && week_end) {
                 // Récupérer les entrées pour une période spécifique
