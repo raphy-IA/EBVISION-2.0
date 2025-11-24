@@ -10,6 +10,27 @@ class PermissionsAdmin {
         this.init();
     }
 
+    getCurrentUserRole() {
+        try {
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            if (userData.roles && Array.isArray(userData.roles)) {
+                if (userData.roles.includes('SUPER_ADMIN')) {
+                    return 'SUPER_ADMIN';
+                }
+                return userData.roles[0] || 'USER';
+            }
+            if (userData.role) {
+                return userData.role;
+            }
+            if (userData.principal_role) {
+                return userData.principal_role;
+            }
+        } catch (e) {
+            console.error('Erreur lecture rôle courant dans PermissionsAdmin:', e);
+        }
+        return 'USER';
+    }
+
     async init() {
         await this.loadRoles();
         await this.loadUsers();
