@@ -2,8 +2,8 @@
   "app": {
     "name": "ENTERPRISE WORKFLOW MANAGEMENT",
     "shortName": "EWM",
-    "tagline": "EWN  - Intelligent Resource Management System",
-    "description": "Complete enterprise management solution with RANDOM COLORS",
+    "tagline": "🎨 TEST BRANDING - Intelligent Resource Management System",
+    "description": "Complete enterprise management solution with RANDOM COLORS for testing",
     "version": "2.0.0-branding-test"
   },
   "branding": {
@@ -13,26 +13,26 @@
       "favicon": "/assets/brands/default/favicon.ico"
     },
     "colors": {
-      "primary": "#0D47A1",
-	  "secondary": "#546E7A",
-		"accent": "#03A9F4",
-		"success": "#4CAF50",
-		"warning": "#FF9800",
-		"danger": "#F44336",
-		"info": "#2196F3",
-		"dark": "#212121",
-		"light": "#FAFAFA"
+      "primary": "#E91E63",
+      "secondary": "#9C27B0",
+      "accent": "#00BCD4",
+      "success": "#4CAF50",
+      "warning": "#FF9800",
+      "danger": "#F44336",
+      "info": "#2196F3",
+      "dark": "#212121",
+      "light": "#FAFAFA"
     },
     "theme": "default"
   },
   "ui": {
-    "sidebarTitle": "EW MANAGEMENT",
-    "sidebarSubtitle": "Modern System Scalable",
-    "loginTitle": "EWM -  Systems ",
-    "loginSubtitle": "Powerful Intelligent Systems Management",
+    "sidebarTitle": "🎨 BRANDING TEST",
+    "sidebarSubtitle": "Random Colors Testing",
+    "loginTitle": "🎨 EWM Branding Test",
+    "loginSubtitle": "Test des couleurs aléatoires - Material Design",
     "footer": {
-      "text": "Enterprise Workflow Management - EWM",
-      "copyright": "© 2024 EWM."
+      "text": "Enterprise Workflow Management - BRANDING TEST",
+      "copyright": "© 2024 EWM. Test Mode - Random Colors."
     }
   },
   "features": {
@@ -85,10 +85,10 @@
     }
   },
   "contact": {
-    "email": "contact@ewmanagement.com",
+    "email": "contact@ewm-demo.com",
     "phone": "+1 (555) 000-0000",
-    "website": "https://ewmanagement.bosssystemsai.com",
-    "supportUrl": "https://ewmanagement.bosssystemsai.com
+    "website": "https://ewm-demo.com",
+    "supportUrl": "https://support.ewm-demo.com"
   },
   "localization": {
     "defaultLanguage": "fr",
@@ -100,7 +100,7 @@
   },
   "demo": {
     "mode": true,
-    "bannerText": "EWM - Workforce Management Systems",
+    "bannerText": "🎨 BRANDING TEST - Vérification des couleurs personnalisées Material Design",
     "watermark": true
   }
 }

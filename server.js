@@ -7,6 +7,7 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const fs = require('fs');
 
 // Import des routes
 const authRoutes = require('./src/routes/auth');
@@ -149,6 +150,48 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Middleware de mode maintenance
+const maintenanceConfigPath = path.join(__dirname, 'config', 'maintenance.json');
+
+app.use((req, res, next) => {
+    try {
+        if (!fs.existsSync(maintenanceConfigPath)) {
+            return next();
+        }
+
+        const raw = fs.readFileSync(maintenanceConfigPath, 'utf8');
+        const config = JSON.parse(raw);
+
+        if (!config.enabled) {
+            return next();
+        }
+
+        // Toujours laisser passer la route de santé
+        if (req.path.startsWith('/api/health')) {
+            return next();
+        }
+
+        // Pour les routes API, renvoyer une erreur 503 JSON
+        if (req.path.startsWith('/api')) {
+            return res.status(503).json({
+                error: 'Service en maintenance',
+                message: config.message || 'L\'application est actuellement en maintenance.',
+            });
+        }
+
+        // Laisser passer la page de maintenance et sa configuration
+        if (req.path === '/maintenance.html' || req.path.startsWith('/config/maintenance')) {
+            return next();
+        }
+
+        // Rediriger tout le reste vers la page de maintenance
+        return res.redirect('/maintenance.html');
+    } catch (e) {
+        // En cas de problème de lecture JSON, ne pas bloquer l'application
+        return next();
+    }
+});
 
 // Servir les fichiers statiques
 app.use(express.static(path.join(__dirname, 'public')));

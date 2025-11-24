@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Maintenance en cours</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #e5e7eb;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: #020617;
+            border-radius: 1rem;
+            padding: 2.5rem 2rem;
+            max-width: 540px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(15,23,42,0.8);
+            border: 1px solid rgba(148,163,184,0.2);
+        }
+        .title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+        .message {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            color: #cbd5f5;
+        }
+        .meta {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            margin-bottom: 0.5rem;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            background: rgba(248, 250, 252, 0.03);
+            border: 1px solid rgba(148,163,184,0.3);
+            color: #e5e7eb;
+            margin-bottom: 1rem;
+        }
+        .logo {
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="logo">EB-Vision 2.0</div>
+    <div class="badge">Maintenance planifiée</div>
+    <h1 id="maintenance-title" class="title">Maintenance en cours</h1>
+    <p id="maintenance-message" class="message">
+        L'application est momentanément indisponible pour cause de maintenance.
+    </p>
+    <p id="maintenance-expected" class="meta"></p>
+    <p id="maintenance-contact" class="meta"></p>
+    <p id="maintenance-extra" class="meta"></p>
+</div>
+<script>
+    fetch('/config/maintenance.json', { cache: 'no-store' })
+        .then(function (response) { return response.json(); })
+        .then(function (config) {
+            // Si la maintenance est désactivée, rediriger vers la page de login
+            if (config && config.enabled === false) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            if (config.title) {
+                document.getElementById('maintenance-title').textContent = config.title;
+            }
+            if (config.message) {
+                document.getElementById('maintenance-message').textContent = config.message;
+            }
+            if (config.expectedBackTime) {
+                document.getElementById('maintenance-expected').textContent = 'Retour estimé : ' + config.expectedBackTime;
+            }
+            if (config.contactEmail) {
+                document.getElementById('maintenance-contact').textContent = 'Contact : ' + config.contactEmail;
+            }
+            if (config.extraInfo) {
+                document.getElementById('maintenance-extra').textContent = config.extraInfo;
+            }
+        })
+        .catch(function () {
+            // En cas d'erreur, on garde le texte par défaut
+        });
+</script>
+</body>
+</html>
