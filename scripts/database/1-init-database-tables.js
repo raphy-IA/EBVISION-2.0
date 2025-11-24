@@ -291,20 +291,22 @@ async function initDatabaseTables() {
         console.log('👥 Création des rôles de base...');
         
         const baseRoles = [
-            // ===== RÔLES SYSTÈME (is_system_role = true) - comme dans la base pure =====
+            // ===== RÔLES SYSTÈME (is_system_role = true) =====
             { name: 'SUPER_ADMIN', description: 'Super administrateur - Accès total à toutes les fonctionnalités', is_system: true, badge_bg_class: 'danger', badge_text_class: 'white', badge_hex_color: '#dc3545', badge_priority: 100 },
             { name: 'ADMIN_IT', description: 'Administrateur IT - Gestion technique et maintenance', is_system: true, badge_bg_class: 'dark', badge_text_class: 'white', badge_hex_color: '#212529', badge_priority: 95 },
-            { name: 'IT', description: 'Technicien IT - Support technique et maintenance', is_system: true, badge_bg_class: 'secondary', badge_text_class: 'white', badge_hex_color: '#6c757d', badge_priority: 92 },
-            { name: 'ADMIN', description: 'Administrateur - Gestion métier et configuration', is_system: true, badge_bg_class: 'primary', badge_text_class: 'white', badge_hex_color: '#0d6efd', badge_priority: 90 },
-            { name: 'MANAGER', description: 'Manager - Gestion d\'équipe et supervision', is_system: true, badge_bg_class: 'info', badge_text_class: 'white', badge_hex_color: '#0dcaf0', badge_priority: 70 },
-            { name: 'CONSULTANT', description: 'Consultant - Utilisateur standard avec accès complet aux données', is_system: true, badge_bg_class: 'success', badge_text_class: 'white', badge_hex_color: '#198754', badge_priority: 60 },
-            { name: 'COLLABORATEUR', description: 'Collaborateur - Accès limité aux données de sa BU', is_system: true, badge_bg_class: 'info', badge_text_class: 'white', badge_hex_color: '#17a2b8', badge_priority: 50 },
-            
+            { name: 'ADMIN_METIER', description: 'Administrateur métier - Gestion métier et configuration', is_system: true, badge_bg_class: 'primary', badge_text_class: 'white', badge_hex_color: '#0d6efd', badge_priority: 90 },
+            { name: 'SENIOR_PARTNER', description: 'Senior Partner - Direction stratégique', is_system: true, badge_bg_class: 'warning', badge_text_class: 'dark', badge_hex_color: '#ff9800', badge_priority: 88 },
+            { name: 'PARTNER', description: 'Partner - Associé de haut niveau', is_system: true, badge_bg_class: 'warning', badge_text_class: 'dark', badge_hex_color: '#ffc107', badge_priority: 86 },
+            { name: 'SUPER_USER', description: 'Super utilisateur - Accès avancé pour les power users', is_system: true, badge_bg_class: 'primary', badge_text_class: 'white', badge_hex_color: '#0066cc', badge_priority: 80 },
+            { name: 'DIRECTOR', description: 'Director - Permissions et rôles pour les directeurs', is_system: true, badge_bg_class: 'warning', badge_text_class: 'dark', badge_hex_color: '#ffc107', badge_priority: 82 },
+            { name: 'RESPONSABLE_RH', description: 'Responsable RH - Gestion des ressources humaines', is_system: true, badge_bg_class: 'info', badge_text_class: 'white', badge_hex_color: '#17a2b8', badge_priority: 78 },
+
             // ===== RÔLES NON-SYSTÈME (is_system_role = false) - optionnels =====
-            { name: 'DIRECTEUR', description: 'Permissions et roles pour les directeurs', is_system: false, badge_bg_class: 'warning', badge_text_class: 'dark', badge_hex_color: '#ffc107', badge_priority: 80 },
-            { name: 'ASSOCIE', description: 'Permissions et roles pour les Associés', is_system: false, badge_bg_class: 'warning', badge_text_class: 'dark', badge_hex_color: '#ff9800', badge_priority: 85 },
-            { name: 'SUPER_USER', description: 'Permissions et roles pour le SP', is_system: false, badge_bg_class: 'primary', badge_text_class: 'white', badge_hex_color: '#0066cc', badge_priority: 75 },
-            { name: 'SUPERVISEUR', description: 'Permissions pour superviseurs', is_system: false, badge_bg_class: 'info', badge_text_class: 'white', badge_hex_color: '#17a2b8', badge_priority: 65 }
+            { name: 'MANAGER', description: 'Manager - Gestion d\'équipe et supervision', is_system: false, badge_bg_class: 'info', badge_text_class: 'white', badge_hex_color: '#0dcaf0', badge_priority: 70 },
+            { name: 'CONSULTANT', description: 'Consultant - Utilisateur standard avec accès complet aux données', is_system: false, badge_bg_class: 'success', badge_text_class: 'white', badge_hex_color: '#198754', badge_priority: 60 },
+            { name: 'COLLABORATOR', description: 'Collaborator - Accès limité aux données de sa BU', is_system: false, badge_bg_class: 'info', badge_text_class: 'white', badge_hex_color: '#17a2b8', badge_priority: 50 },
+            { name: 'IT', description: 'Technicien IT - Support technique et maintenance', is_system: false, badge_bg_class: 'secondary', badge_text_class: 'white', badge_hex_color: '#6c757d', badge_priority: 92 },
+            { name: 'SUPERVISOR', description: 'Supervisor - Permissions pour superviseurs', is_system: false, badge_bg_class: 'info', badge_text_class: 'white', badge_hex_color: '#17a2b8', badge_priority: 65 }
         ];
 
         // S'assurer que la colonne is_system_role existe

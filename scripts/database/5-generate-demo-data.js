@@ -77,15 +77,15 @@ const POSTES = [
 ];
 
 const COLLABORATEURS = [
-    // Rôles utilisent les noms de la Base Pure (en anglais majuscules)
-    { nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@ewm-demo.com', grade: 3, poste: 0, bu: 0, division: 0, role: 'COLLABORATEUR' },
+    // Rôles utilisent les noms standardisés (en anglais majuscules)
+    { nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@ewm-demo.com', grade: 3, poste: 0, bu: 0, division: 0, role: 'COLLABORATOR' },
     { nom: 'Martin', prenom: 'Sophie', email: 'sophie.martin@ewm-demo.com', grade: 4, poste: 1, bu: 0, division: 1, role: 'MANAGER' },
     { nom: 'Bernard', prenom: 'Pierre', email: 'pierre.bernard@ewm-demo.com', grade: 5, poste: 3, bu: 1, division: 3, role: 'MANAGER' },
     { nom: 'Dubois', prenom: 'Marie', email: 'marie.dubois@ewm-demo.com', grade: 2, poste: 2, bu: 1, division: 2, role: 'CONSULTANT' },
-    { nom: 'Lefebvre', prenom: 'Thomas', email: 'thomas.lefebvre@ewm-demo.com', grade: 1, poste: 0, bu: 0, division: 0, role: 'COLLABORATEUR' },
+    { nom: 'Lefebvre', prenom: 'Thomas', email: 'thomas.lefebvre@ewm-demo.com', grade: 1, poste: 0, bu: 0, division: 0, role: 'COLLABORATOR' },
     { nom: 'Moreau', prenom: 'Julie', email: 'julie.moreau@ewm-demo.com', grade: 3, poste: 4, bu: 1, division: 3, role: 'CONSULTANT' },
-    { nom: 'Petit', prenom: 'Lucas', email: 'lucas.petit@ewm-demo.com', grade: 2, poste: 5, bu: 2, division: 5, role: 'COLLABORATEUR' },
-    { nom: 'Robert', prenom: 'Emma', email: 'emma.robert@ewm-demo.com', grade: 0, poste: 0, bu: 0, division: 0, role: 'COLLABORATEUR' }
+    { nom: 'Petit', prenom: 'Lucas', email: 'lucas.petit@ewm-demo.com', grade: 2, poste: 5, bu: 2, division: 5, role: 'COLLABORATOR' },
+    { nom: 'Robert', prenom: 'Emma', email: 'emma.robert@ewm-demo.com', grade: 0, poste: 0, bu: 0, division: 0, role: 'COLLABORATOR' }
 ];
 
 const CLIENTS = [
@@ -571,10 +571,10 @@ async function createCollaborateurs(pool, buIds, divisionIds, gradeIds, posteIds
             }
         }
         
-        // Créer l'utilisateur avec le rôle par défaut COLLABORATEUR (conforme à la contrainte users_role_check)
+        // Créer l'utilisateur avec le rôle par défaut COLLABORATOR
         const userResult = await pool.query(`
             INSERT INTO users (nom, prenom, email, password_hash, login, role, statut)
-            VALUES ($1, $2, $3, $4, $5, 'COLLABORATEUR', 'ACTIF')
+            VALUES ($1, $2, $3, $4, $5, 'COLLABORATOR', 'ACTIF')
             ON CONFLICT (email) DO UPDATE SET 
                 password_hash = EXCLUDED.password_hash,
                 login = EXCLUDED.login
@@ -584,8 +584,8 @@ async function createCollaborateurs(pool, buIds, divisionIds, gradeIds, posteIds
         const userId = userResult.rows[0].id;
         stats.users++;
         
-        // Associer le rôle (fallback vers COLLABORATEUR si rôle non trouvé)
-        const roleId = rolesMap[collab.role] || rolesMap['COLLABORATEUR'] || rolesMap['CONSULTANT'];
+        // Associer le rôle (fallback vers COLLABORATOR / CONSULTANT si rôle non trouvé)
+        const roleId = rolesMap[collab.role] || rolesMap['COLLABORATOR'] || rolesMap['CONSULTANT'];
         if (roleId) {
             await pool.query(`
                 INSERT INTO user_roles (user_id, role_id)

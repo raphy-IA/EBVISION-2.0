@@ -28,6 +28,7 @@ const ROLE_COLOR_COLUMNS = [
 ];
 
 const BASE_ROLES = [
+    // Rôles système
     {
         name: 'SUPER_ADMIN',
         description: 'Super Administrateur - Accès total au système',
@@ -38,8 +39,17 @@ const BASE_ROLES = [
         badge_priority: 100
     },
     {
-        name: 'ADMIN',
-        description: 'Administrateur général',
+        name: 'ADMIN_IT',
+        description: 'Administrateur IT - Gestion technique et maintenance',
+        is_system_role: true,
+        badge_bg_class: 'info',
+        badge_text_class: 'white',
+        badge_hex_color: '#0dcaf0',
+        badge_priority: 95
+    },
+    {
+        name: 'ADMIN_METIER',
+        description: 'Administrateur métier - Gestion métier et configuration',
         is_system_role: true,
         badge_bg_class: 'primary',
         badge_text_class: 'white',
@@ -47,32 +57,52 @@ const BASE_ROLES = [
         badge_priority: 90
     },
     {
-        name: 'ADMIN_IT',
-        description: 'Administrateur IT',
+        name: 'SENIOR_PARTNER',
+        description: 'Senior Partner - Direction stratégique',
         is_system_role: true,
-        badge_bg_class: 'info',
-        badge_text_class: 'white',
-        badge_hex_color: '#0dcaf0',
-        badge_priority: 80
+        badge_bg_class: 'warning',
+        badge_text_class: 'dark',
+        badge_hex_color: '#ff9800',
+        badge_priority: 88
     },
     {
-        name: 'ASSOCIE',
-        description: 'Associé',
-        is_system_role: false,
+        name: 'PARTNER',
+        description: 'Partner - Associé de haut niveau',
+        is_system_role: true,
         badge_bg_class: 'warning',
         badge_text_class: 'dark',
         badge_hex_color: '#ffc107',
-        badge_priority: 70
+        badge_priority: 86
     },
     {
-        name: 'DIRECTEUR',
-        description: 'Directeur',
-        is_system_role: false,
+        name: 'SUPER_USER',
+        description: 'Super utilisateur - Accès avancé pour les power users',
+        is_system_role: true,
+        badge_bg_class: 'primary',
+        badge_text_class: 'white',
+        badge_hex_color: '#0066cc',
+        badge_priority: 80
+    },
+    {
+        name: 'DIRECTOR',
+        description: 'Director - Permissions et rôles pour les directeurs',
+        is_system_role: true,
         badge_bg_class: 'success',
         badge_text_class: 'white',
         badge_hex_color: '#198754',
-        badge_priority: 60
+        badge_priority: 82
     },
+    {
+        name: 'RESPONSABLE_RH',
+        description: 'Responsable RH - Gestion des ressources humaines',
+        is_system_role: true,
+        badge_bg_class: 'info',
+        badge_text_class: 'white',
+        badge_hex_color: '#17a2b8',
+        badge_priority: 78
+    },
+
+    // Rôles non-système (optionnels)
     {
         name: 'MANAGER',
         description: 'Manager / Chef d\'équipe',
@@ -80,16 +110,7 @@ const BASE_ROLES = [
         badge_bg_class: 'secondary',
         badge_text_class: 'white',
         badge_hex_color: '#6c757d',
-        badge_priority: 50
-    },
-    {
-        name: 'SUPERVISEUR',
-        description: 'Superviseur',
-        is_system_role: false,
-        badge_bg_class: 'dark',
-        badge_text_class: 'white',
-        badge_hex_color: '#212529',
-        badge_priority: 40
+        badge_priority: 70
     },
     {
         name: 'CONSULTANT',
@@ -98,16 +119,34 @@ const BASE_ROLES = [
         badge_bg_class: 'success',
         badge_text_class: 'white',
         badge_hex_color: '#198754',
-        badge_priority: 30
+        badge_priority: 60
     },
     {
-        name: 'COLLABORATEUR',
-        description: 'Collaborateur standard',
+        name: 'COLLABORATOR',
+        description: 'Collaborator standard',
         is_system_role: false,
         badge_bg_class: 'info',
         badge_text_class: 'white',
         badge_hex_color: '#17a2b8',
-        badge_priority: 20
+        badge_priority: 50
+    },
+    {
+        name: 'IT',
+        description: 'Technicien IT - Support et maintenance',
+        is_system_role: false,
+        badge_bg_class: 'secondary',
+        badge_text_class: 'white',
+        badge_hex_color: '#6c757d',
+        badge_priority: 40
+    },
+    {
+        name: 'SUPERVISOR',
+        description: 'Supervisor',
+        is_system_role: false,
+        badge_bg_class: 'dark',
+        badge_text_class: 'white',
+        badge_hex_color: '#212529',
+        badge_priority: 30
     },
     {
         name: 'USER',

@@ -349,14 +349,14 @@ async function createDivisions(pool, buIds) {
 
 async function createCollaborateurs(pool, buIds, divisionIds, refData) {
     const collaborateurs = [
-        { nom: 'Dupont', prenom: 'Jean', gradeIdx: 2, posteIdx: 0, buIdx: 0, divIdx: 0, role: 'COLLABORATEUR' },
+        { nom: 'Dupont', prenom: 'Jean', gradeIdx: 2, posteIdx: 0, buIdx: 0, divIdx: 0, role: 'COLLABORATOR' },
         { nom: 'Martin', prenom: 'Sophie', gradeIdx: 1, posteIdx: 1, buIdx: 0, divIdx: 1, role: 'MANAGER' },
         { nom: 'Bernard', prenom: 'Pierre', gradeIdx: 1, posteIdx: 2, buIdx: 1, divIdx: 3, role: 'MANAGER' },
         { nom: 'Dubois', prenom: 'Marie', gradeIdx: 3, posteIdx: 2, buIdx: 1, divIdx: 2, role: 'CONSULTANT' },
-        { nom: 'Lefebvre', prenom: 'Thomas', gradeIdx: 4, posteIdx: 0, buIdx: 0, divIdx: 0, role: 'COLLABORATEUR' },
+        { nom: 'Lefebvre', prenom: 'Thomas', gradeIdx: 4, posteIdx: 0, buIdx: 0, divIdx: 0, role: 'COLLABORATOR' },
         { nom: 'Moreau', prenom: 'Julie', gradeIdx: 2, posteIdx: 4, buIdx: 1, divIdx: 3, role: 'CONSULTANT' },
-        { nom: 'Petit', prenom: 'Lucas', gradeIdx: 3, posteIdx: 5, buIdx: 2, divIdx: 5, role: 'COLLABORATEUR' },
-        { nom: 'Robert', prenom: 'Emma', gradeIdx: 0, posteIdx: 0, buIdx: 0, divIdx: 0, role: 'COLLABORATEUR' }
+        { nom: 'Petit', prenom: 'Lucas', gradeIdx: 3, posteIdx: 5, buIdx: 2, divIdx: 5, role: 'COLLABORATOR' },
+        { nom: 'Robert', prenom: 'Emma', gradeIdx: 0, posteIdx: 0, buIdx: 0, divIdx: 0, role: 'COLLABORATOR' }
     ];
     
     const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
@@ -375,7 +375,7 @@ async function createCollaborateurs(pool, buIds, divisionIds, refData) {
             // Créer l'utilisateur
             const userResult = await pool.query(`
                 INSERT INTO users (nom, prenom, email, password_hash, login, role, statut)
-                VALUES ($1, $2, $3, $4, $5, 'COLLABORATEUR', 'ACTIF')
+                VALUES ($1, $2, $3, $4, $5, 'COLLABORATOR', 'ACTIF')
                 ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash
                 RETURNING id
             `, [collab.nom, collab.prenom, email, passwordHash, login]);
@@ -384,7 +384,7 @@ async function createCollaborateurs(pool, buIds, divisionIds, refData) {
             stats.users++;
             
             // Associer le rôle
-            const roleId = rolesMap[collab.role] || rolesMap['COLLABORATEUR'];
+            const roleId = rolesMap[collab.role] || rolesMap['COLLABORATOR'];
             if (roleId) {
                 await pool.query(`
                     INSERT INTO user_roles (user_id, role_id)
