@@ -255,13 +255,15 @@ async function insertMissionTypes(client) {
     console.log('📋 Insertion des Types de Missions...');
     
     const missionTypes = [
-        { codification: 'CONSEIL', libelle: 'Conseil', description: 'Mission de conseil en gestion et stratégie' },
-        { codification: 'AUDIT', libelle: 'Audit', description: 'Mission d\'audit comptable et financier' },
-        { codification: 'FINANCE', libelle: 'Finance', description: 'Mission financière et d\'analyse' },
-        { codification: 'FISCAL', libelle: 'Fiscal', description: 'Mission fiscale et de conformité' },
-        { codification: 'JURIDIQUE', libelle: 'Juridique', description: 'Mission juridique et de conseil légal' },
-        { codification: 'FORMATION', libelle: 'Formation', description: 'Mission de formation professionnelle' },
-        { codification: 'MARKETING', libelle: 'Marketing', description: 'Mission de marketing et communication' }
+        { codification: 'AUDIT_CAC', libelle: 'Audit & Commissariat aux Comptes (CAC)', description: 'Audit légal et commissariat aux comptes' },
+        { codification: 'EXP_REC', libelle: 'Expertise Comptable & Financière - Mission Récurrente', description: 'Tenue et révision comptable récurrente' },
+        { codification: 'EXP_PREV_BP', libelle: 'Exp Compt & FI - Missions Exceptionnelles - Prévisionnel / Business Plan', description: 'Prévisionnels et business plans' },
+        { codification: 'EXP_EVAL_ENTR', libelle: 'Exp Compt & FI - Missions Exceptionnelles - Évaluation d\'Entreprise (Cession / Acquisition)', description: 'Évaluations d\'entreprise pour cession ou acquisition' },
+        { codification: 'EXP_OUTILS_GEST', libelle: 'Exp Compt & FI - Missions Exceptionnelles - Mise en place d\'outils de gestion (TB/Compta Anal.)', description: 'Mise en place de tableaux de bord et comptabilité analytique' },
+        { codification: 'CONSEIL_JUR_FISC', libelle: 'Conseil Juridique & Fiscal (Avocats / Fiscalistes)', description: 'Conseil et contentieux juridique et fiscal' },
+        { codification: 'CONS_MGT', libelle: 'Consulting & Conseil en Management', description: 'Missions de conseil en management et organisation' },
+        { codification: 'DOUANE_COMINT', libelle: 'Douane & Commerce International', description: 'Missions liées aux formalités douanières et commerce international' },
+        { codification: 'FORMATION', libelle: 'Formation', description: 'Missions de formation professionnelle' }
     ];
 
     let created = 0, updated = 0;
@@ -753,130 +755,547 @@ async function insertInternalActivities(client) {
 // ===============================================
 async function insertMissionTasks(client) {
     console.log('📋 Insertion des Tâches pour les Types de Mission...\n');
-    
-    // Tâches pour le type Marketing
-    const marketingTasks = [
+    const missionTypesWithTasks = [
         {
-            code: 'AUDIT_MARCHE',
-            libelle: 'Audit et analyse de marché',
-            description: 'Étude approfondie du marché cible, analyse de la concurrence et identification des opportunités',
-            duree_estimee: 15,
-            priorite: 'HAUTE',
-            obligatoire: true,
-            ordre: 1
+            codification: 'AUDIT_CAC',
+            tasks: [
+                {
+                    code: 'AUDIT_CAC_ACCEPTATION',
+                    libelle: 'Acceptation et Maintien de la mission',
+                    description: 'Vérification de l\'indépendance et absence de conflits d\'intérêts. Lutte anti-blanchiment (KYC - Know Your Customer). Signature de la Lettre de mission.',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 1
+                },
+                {
+                    code: 'AUDIT_CAC_PRISE_CONNAISSANCE',
+                    libelle: 'Prise de connaissance et Orientation',
+                    description: 'Analyse de l\'environnement et des risques. Note d\'orientation générale (Stratégie d\'audit).',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 2
+                },
+                {
+                    code: 'AUDIT_CAC_CONTROLE_INTERNE',
+                    libelle: 'Appréciation du Contrôle Interne',
+                    description: 'Revue des processus (Achats, Ventes, Trésorerie, RH...). Tests de procédures.',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 3
+                },
+                {
+                    code: 'AUDIT_CAC_CONTROLE_COMPTES',
+                    libelle: 'Contrôle des comptes (Substantif)',
+                    description: 'Circularisation (demande de confirmation aux tiers). Audit analytique et tests de détails. Inventaire physique (optionnel selon l\'activité).',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 4
+                },
+                {
+                    code: 'AUDIT_CAC_VERIFICATIONS_SPECIFIQUES',
+                    libelle: 'Vérifications Spécifiques CAC',
+                    description: 'Conventions réglementées, égalité entre actionnaires, documents juridiques.',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 5
+                },
+                {
+                    code: 'AUDIT_CAC_TRAVAUX_FIN_MISSION',
+                    libelle: 'Travaux de fin de mission et Rapports',
+                    description: 'Synthèse des travaux. Émission des rapports (Général et Spécial). Présentation aux instances dirigeantes.',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 6
+                }
+            ]
         },
         {
-            code: 'STRATEGIE_MARKETING',
-            libelle: 'Élaboration de la stratégie marketing',
-            description: 'Définition du positionnement, des objectifs marketing et du plan d\'action stratégique',
-            duree_estimee: 20,
-            priorite: 'CRITIQUE',
-            obligatoire: true,
-            ordre: 2
+            codification: 'EXP_REC',
+            tasks: [
+                {
+                    code: 'EXP_REC_COLLECTE_TRAITEMENT',
+                    libelle: 'Collecte et Traitement',
+                    description: 'Récupération des pièces (automatique ou manuelle). Saisie comptable ou imputation.',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 1
+                },
+                {
+                    code: 'EXP_REC_REVISION_COMPTES',
+                    libelle: 'Révision des comptes',
+                    description: 'Justification des comptes de bilan. Contrôle de cohérence (TVA, Charges sociales).',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 2
+                },
+                {
+                    code: 'EXP_REC_SITUATIONS_INTERMEDIAIRES',
+                    libelle: 'Situations intermédiaires',
+                    description: 'Reporting mensuel ou trimestriel.',
+                    duree_estimee: 4,
+                    priorite: 'MOYENNE',
+                    obligatoire: false,
+                    ordre: 3
+                },
+                {
+                    code: 'EXP_REC_CLOTURE_ANNUELLE',
+                    libelle: 'Clôture Annuelle',
+                    description: 'Écritures d\'inventaire (Amortissements, Stocks, Provisions). Calcul de l\'impôt (IS).',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 4
+                },
+                {
+                    code: 'EXP_REC_ETATS_FINANCIERS',
+                    libelle: 'Établissement des États Financiers',
+                    description: 'Bilan, Compte de résultat, Annexe. Liasse fiscale.',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 5
+                },
+                {
+                    code: 'EXP_REC_ENTRETIEN_BILAN',
+                    libelle: 'Entretien de bilan / Restitution',
+                    description: 'Présentation pédagogique des comptes au client.',
+                    duree_estimee: 4,
+                    priorite: 'MOYENNE',
+                    obligatoire: false,
+                    ordre: 6
+                }
+            ]
         },
         {
-            code: 'PLAN_COMMUNICATION',
-            libelle: 'Conception du plan de communication',
-            description: 'Création des messages clés, choix des canaux de communication et planification des campagnes',
-            duree_estimee: 18,
-            priorite: 'HAUTE',
-            obligatoire: true,
-            ordre: 3
+            codification: 'EXP_PREV_BP',
+            tasks: [
+                {
+                    code: 'EXP_PREV_CADRAGE',
+                    libelle: 'Entretien de cadrage et collecte des hypothèses',
+                    description: 'Définition du projet, CA estimé, besoins RH, investissements.',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 1
+                },
+                {
+                    code: 'EXP_PREV_MODELISATION',
+                    libelle: 'Construction chiffrée (Modélisation)',
+                    description: 'Calcul des charges, SIG (Soldes Intermédiaires de Gestion), Trésorerie.',
+                    duree_estimee: 10,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 2
+                },
+                {
+                    code: 'EXP_PREV_CHOIX_STATUT',
+                    libelle: 'Choix du statut Juridique, Fiscal et Social',
+                    description: 'Comparaison (ex: SAS vs SARL, IS vs IR) et optimisation de la rémunération du dirigeant.',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 3
+                },
+                {
+                    code: 'EXP_PREV_DOSSIER_PRESENTATION',
+                    libelle: 'Rédaction du dossier de présentation',
+                    description: 'Mise en forme pour les banquiers/investisseurs.',
+                    duree_estimee: 8,
+                    priorite: 'MOYENNE',
+                    obligatoire: true,
+                    ordre: 4
+                },
+                {
+                    code: 'EXP_PREV_ACCOMPAGNEMENT_BANCAIRE',
+                    libelle: 'Accompagnement bancaire',
+                    description: 'Présence de l\'expert lors des rendez-vous bancaires.',
+                    duree_estimee: 4,
+                    priorite: 'MOYENNE',
+                    obligatoire: false,
+                    ordre: 5
+                }
+            ]
         },
         {
-            code: 'CREATION_CONTENU',
-            libelle: 'Production de contenu marketing',
-            description: 'Création des supports marketing (visuels, textes, vidéos) et validation avec le client',
-            duree_estimee: 25,
-            priorite: 'HAUTE',
-            obligatoire: true,
-            ordre: 4
+            codification: 'EXP_EVAL_ENTR',
+            tasks: [
+                {
+                    code: 'EXP_EVAL_DIAGNOSTIC',
+                    libelle: 'Prise de connaissance et Diagnostic',
+                    description: 'Analyse SWOT, positionnement marché, analyse des derniers bilans.',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 1
+                },
+                {
+                    code: 'EXP_EVAL_RETRAITEMENTS',
+                    libelle: 'Retraitement des comptes',
+                    description: 'Neutralisation des éléments exceptionnels, recalcul de la rentabilité normative (EBITDA normatif).',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 2
+                },
+                {
+                    code: 'EXP_EVAL_METHODES',
+                    libelle: 'Mise en œuvre des méthodes d\'évaluation',
+                    description: 'Approche patrimoniale, rentabilité, comparables, DCF (Discounted Cash Flow).',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 3
+                },
+                {
+                    code: 'EXP_EVAL_RAPPORT',
+                    libelle: 'Rapport de valorisation',
+                    description: 'Fourchette de valeur et justifications.',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 4
+                },
+                {
+                    code: 'EXP_EVAL_ASSISTANCE_NEGOCIATION',
+                    libelle: 'Assistance à la négociation',
+                    description: 'Assistance à la négociation (Letter of Intent / Gap de garantie).',
+                    duree_estimee: 4,
+                    priorite: 'MOYENNE',
+                    obligatoire: false,
+                    ordre: 5
+                }
+            ]
         },
         {
-            code: 'SUIVI_PERFORMANCE',
-            libelle: 'Suivi et analyse des performances',
-            description: 'Mise en place des KPIs, monitoring des campagnes et reporting des résultats',
-            duree_estimee: 12,
-            priorite: 'MOYENNE',
-            obligatoire: false,
-            ordre: 5
+            codification: 'EXP_OUTILS_GEST',
+            tasks: [
+                {
+                    code: 'OUTILS_GEST_AUDIT_SI',
+                    libelle: 'Audit des systèmes d\'information',
+                    description: 'Analyse des logiciels actuels et des flux de données.',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 1
+                },
+                {
+                    code: 'OUTILS_GEST_KPI',
+                    libelle: 'Définition des indicateurs clés (KPIs)',
+                    description: 'Choix des indicateurs pertinents pour le client.',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 2
+                },
+                {
+                    code: 'OUTILS_GEST_PARAMETRAGE',
+                    libelle: 'Paramétrage et Interfaçage',
+                    description: 'Configuration technique des outils.',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 3
+                },
+                {
+                    code: 'OUTILS_GEST_FORMATION',
+                    libelle: 'Formation des équipes client',
+                    description: 'Formation des équipes client sur les nouveaux outils.',
+                    duree_estimee: 4,
+                    priorite: 'MOYENNE',
+                    obligatoire: false,
+                    ordre: 4
+                }
+            ]
+        },
+        {
+            codification: 'CONSEIL_JUR_FISC',
+            tasks: [
+                {
+                    code: 'JUR_FISC_ANALYSE_PRELIMINAIRE',
+                    libelle: 'Prise de contact et Analyse préliminaire',
+                    description: 'Qualification des faits. Détection des conflits d\'intérêts.',
+                    duree_estimee: 4,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 1
+                },
+                {
+                    code: 'JUR_FISC_CONVENTION_HONORAIRES',
+                    libelle: 'Convention d\'honoraires',
+                    description: 'Définition du périmètre et du mode de facturation.',
+                    duree_estimee: 4,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 2
+                },
+                {
+                    code: 'JUR_FISC_RECHERCHES',
+                    libelle: 'Recherches et Analyse juridique',
+                    description: 'Veille jurisprudentielle. Analyse des textes applicables.',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 3
+                },
+                {
+                    code: 'JUR_FISC_REDACTION_ACTES',
+                    libelle: 'Rédaction d\'actes ou de consultations',
+                    description: 'Rédaction (Statuts, Contrats, Mémos). Relecture / Revue contradictoire (interne).',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 4
+                },
+                {
+                    code: 'JUR_FISC_FORMALITES',
+                    libelle: 'Formalités et Dépôts',
+                    description: 'Greffe, Enregistrement fiscal, INPI...',
+                    duree_estimee: 4,
+                    priorite: 'MOYENNE',
+                    obligatoire: false,
+                    ordre: 5
+                },
+                {
+                    code: 'JUR_FISC_SUIVI_CONTENTIEUX',
+                    libelle: 'Suivi / Contentieux',
+                    description: 'Audiences, Plaidoiries (si phase contentieuse).',
+                    duree_estimee: 6,
+                    priorite: 'MOYENNE',
+                    obligatoire: false,
+                    ordre: 6
+                }
+            ]
+        },
+        {
+            codification: 'CONS_MGT',
+            tasks: [
+                {
+                    code: 'CONS_MGT_CADRAGE',
+                    libelle: 'Cadrage et Lancement (Kick-off)',
+                    description: 'Définition des objectifs SMART. Constitution de l\'équipe projet.',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 1
+                },
+                {
+                    code: 'CONS_MGT_DIAGNOSTIC',
+                    libelle: 'Diagnostic (As-Is)',
+                    description: 'Interviews / Ateliers. Analyse de données. Identification des "Pain points".',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 2
+                },
+                {
+                    code: 'CONS_MGT_CONCEPTION_CIBLE',
+                    libelle: 'Conception de la cible (To-Be)',
+                    description: 'Scénarios et recommandations. Business Case / ROI.',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 3
+                },
+                {
+                    code: 'CONS_MGT_PLANIFICATION',
+                    libelle: 'Planification de la mise en œuvre',
+                    description: 'Roadmap (Feuille de route).',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 4
+                },
+                {
+                    code: 'CONS_MGT_PILOTAGE',
+                    libelle: 'Pilotage du déploiement / Accompagnement',
+                    description: 'PMO (Project Management Office). Conduite du changement (Communication, Formation).',
+                    duree_estimee: 8,
+                    priorite: 'MOYENNE',
+                    obligatoire: false,
+                    ordre: 5
+                },
+                {
+                    code: 'CONS_MGT_BILAN',
+                    libelle: 'Bilan de fin de mission',
+                    description: 'Retour d\'expérience (REX).',
+                    duree_estimee: 4,
+                    priorite: 'MOYENNE',
+                    obligatoire: false,
+                    ordre: 6
+                }
+            ]
+        },
+        {
+            codification: 'DOUANE_COMINT',
+            tasks: [
+                {
+                    code: 'DOUANE_AUDIT_FLUX',
+                    libelle: 'Audit des flux existants',
+                    description: 'Analyse des nomenclatures douanières utilisées (HS Code). Analyse de l\'origine des produits.',
+                    duree_estimee: 6,
+                    priorite: 'MOYENNE',
+                    obligatoire: false,
+                    ordre: 1
+                },
+                {
+                    code: 'DOUANE_CLASSEMENT_SECURISATION',
+                    libelle: 'Classement et Sécurisation',
+                    description: 'Détermination de la valeur en douane. Demande de RTC (Renseignement Tarifaire Contraignant).',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 2
+                },
+                {
+                    code: 'DOUANE_FORMALITES',
+                    libelle: 'Gestion des formalités déclaratives',
+                    description: 'Établissement des déclarations d\'import/export.',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 3
+                },
+                {
+                    code: 'DOUANE_CONTENTIEUX',
+                    libelle: 'Gestion des contentieux ou contrôles',
+                    description: 'Réponse à l\'administration des douanes.',
+                    duree_estimee: 6,
+                    priorite: 'MOYENNE',
+                    obligatoire: false,
+                    ordre: 4
+                }
+            ]
+        },
+        {
+            codification: 'FORMATION',
+            tasks: [
+                {
+                    code: 'FORM_INGENIERIE',
+                    libelle: 'Ingénierie de formation (Cadrage)',
+                    description: 'Analyse des besoins. Définition des objectifs pédagogiques.',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 1
+                },
+                {
+                    code: 'FORM_ADMIN',
+                    libelle: 'Administratif & Convention',
+                    description: 'Envoi des convocations. Signature convention de formation.',
+                    duree_estimee: 4,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 2
+                },
+                {
+                    code: 'FORM_CONCEPTION',
+                    libelle: 'Conception pédagogique',
+                    description: 'Création des supports.',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 3
+                },
+                {
+                    code: 'FORM_ANIMATION',
+                    libelle: 'Animation / Dispense',
+                    description: 'Présentiel ou E-learning. Émargements (Preuve de présence).',
+                    duree_estimee: 8,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 4
+                },
+                {
+                    code: 'FORM_EVALUATION',
+                    libelle: 'Évaluation',
+                    description: 'Évaluation à chaud (satisfaction). Évaluation à froid (acquis). Remise des certificats/attestations.',
+                    duree_estimee: 6,
+                    priorite: 'HAUTE',
+                    obligatoire: true,
+                    ordre: 5
+                }
+            ]
         }
     ];
 
-    // Récupérer l'ID du type de mission Marketing
-    const missionTypeResult = await client.query(`
-        SELECT id, codification, libelle 
-        FROM mission_types 
-        WHERE codification = 'MARKETING'
-    `);
-    
-    if (missionTypeResult.rows.length === 0) {
-        console.log('   ⚠️  Type de mission MARKETING non trouvé, tâches ignorées\n');
-        return;
-    }
-    
-    const marketingType = missionTypeResult.rows[0];
-    console.log(`   🎯 Configuration des tâches pour: ${marketingType.codification} - ${marketingType.libelle}`);
-    
     let tasksCreated = 0;
     let tasksUpdated = 0;
     let linksCreated = 0;
-    
-    for (const task of marketingTasks) {
-        // Vérifier si la tâche existe déjà
-        const existingTask = await client.query(`
-            SELECT id FROM tasks WHERE code = $1
-        `, [task.code]);
-        
-        let taskId;
-        
-        if (existingTask.rows.length > 0) {
-            // Mettre à jour la tâche existante
-            await client.query(`
-                UPDATE tasks 
-                SET libelle = $1, 
-                    description = $2, 
-                    duree_estimee = $3, 
-                    priorite = $4, 
-                    obligatoire = $5,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE code = $6
-            `, [task.libelle, task.description, task.duree_estimee, task.priorite, task.obligatoire, task.code]);
-            
-            taskId = existingTask.rows[0].id;
-            tasksUpdated++;
-        } else {
-            // Créer la tâche
-            const taskResult = await client.query(`
-                INSERT INTO tasks (code, libelle, description, duree_estimee, priorite, actif, obligatoire)
-                VALUES ($1, $2, $3, $4, $5, true, $6)
-                RETURNING id
-            `, [task.code, task.libelle, task.description, task.duree_estimee, task.priorite, task.obligatoire]);
-            
-            taskId = taskResult.rows[0].id;
-            tasksCreated++;
+
+    for (const mt of missionTypesWithTasks) {
+        const missionTypeResult = await client.query(`
+            SELECT id, codification, libelle
+            FROM mission_types
+            WHERE codification = $1
+        `, [mt.codification]);
+
+        if (missionTypeResult.rows.length === 0) {
+            console.log(`   ⚠️  Type de mission ${mt.codification} non trouvé, tâches ignorées`);
+            continue;
         }
-        
-        // Vérifier si le lien existe déjà
-        const existingLink = await client.query(`
-            SELECT id FROM task_mission_types 
-            WHERE task_id = $1 AND mission_type_id = $2
-        `, [taskId, marketingType.id]);
-        
-        if (existingLink.rows.length === 0) {
-            // Créer le lien entre la tâche et le type de mission
-            await client.query(`
-                INSERT INTO task_mission_types (task_id, mission_type_id, ordre, obligatoire)
-                VALUES ($1, $2, $3, $4)
-            `, [taskId, marketingType.id, task.ordre, task.obligatoire]);
-            
-            linksCreated++;
+
+        const missionType = missionTypeResult.rows[0];
+        console.log(`   🎯 Configuration des tâches pour: ${missionType.codification} - ${missionType.libelle}`);
+
+        for (const task of mt.tasks) {
+            const existingTask = await client.query(`
+                SELECT id FROM tasks WHERE code = $1
+            `, [task.code]);
+
+            let taskId;
+
+            if (existingTask.rows.length > 0) {
+                await client.query(`
+                    UPDATE tasks
+                    SET libelle = $1,
+                        description = $2,
+                        duree_estimee = $3,
+                        priorite = $4,
+                        obligatoire = $5,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE code = $6
+                `, [task.libelle, task.description, task.duree_estimee, task.priorite, task.obligatoire, task.code]);
+
+                taskId = existingTask.rows[0].id;
+                tasksUpdated++;
+            } else {
+                const taskResult = await client.query(`
+                    INSERT INTO tasks (code, libelle, description, duree_estimee, priorite, actif, obligatoire)
+                    VALUES ($1, $2, $3, $4, $5, true, $6)
+                    RETURNING id
+                `, [task.code, task.libelle, task.description, task.duree_estimee, task.priorite, task.obligatoire]);
+
+                taskId = taskResult.rows[0].id;
+                tasksCreated++;
+            }
+
+            const existingLink = await client.query(`
+                SELECT id FROM task_mission_types
+                WHERE task_id = $1 AND mission_type_id = $2
+            `, [taskId, missionType.id]);
+
+            if (existingLink.rows.length === 0) {
+                await client.query(`
+                    INSERT INTO task_mission_types (task_id, mission_type_id, ordre, obligatoire)
+                    VALUES ($1, $2, $3, $4)
+                `, [taskId, missionType.id, task.ordre, task.obligatoire]);
+
+                linksCreated++;
+            }
         }
     }
-    
+
     console.log(`   ✓ Tâches: ${tasksCreated} créées, ${tasksUpdated} mises à jour`);
     console.log(`   ✓ Liens: ${linksCreated} créés`);
-    console.log(`   ✓ Total: ${marketingTasks.length} tâches configurées pour MARKETING\n`);
+    console.log(`   ✓ Total: configuration des tâches terminée pour les types de mission\n`);
 }
 
 main().catch(console.error);

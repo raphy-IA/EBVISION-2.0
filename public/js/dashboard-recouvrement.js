@@ -2,10 +2,32 @@
 const API_BASE_URL = '/api/analytics';
 let agingChart, monthlyChart;
 
+// Devise par défaut pour le recouvrement
+let financialDefaultCurrency = (typeof CURRENCY_CONFIG !== 'undefined' && CURRENCY_CONFIG.defaultCurrency)
+    ? CURRENCY_CONFIG.defaultCurrency
+    : 'XAF';
+
 // Fonction d'authentification
 function getAuthHeader() {
     const token = localStorage.getItem('authToken');
     return { 'Authorization': `Bearer ${token}` };
+}
+
+// Charger la configuration financière pour le dashboard recouvrement
+async function loadFinancialSettingsForDashboardRecouvrement() {
+    try {
+        const response = await authenticatedFetch('/api/financial-settings');
+        if (!response.ok) return;
+        const result = await response.json();
+        if (result.success && result.data) {
+            financialDefaultCurrency = result.data.defaultCurrency || financialDefaultCurrency;
+            if (typeof CURRENCY_CONFIG !== 'undefined') {
+                CURRENCY_CONFIG.defaultCurrency = financialDefaultCurrency;
+            }
+        }
+    } catch (error) {
+        console.warn('Impossible de charger les paramètres financiers (recouvrement):', error);
+    }
 }
 
 async function authenticatedFetch(url) {
@@ -30,8 +52,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialiser les graphiques
     initializeCharts();
     
-    // Charger les données
-    loadData();
+    // Charger d abord la configuration financière puis les données
+    loadFinancialSettingsForDashboardRecouvrement()
+        .catch(err => console.warn('Erreur chargement paramètres financiers (recouvrement):', err))
+        .finally(() => {
+            loadData();
+        });
 });
 
 // Initialiser les graphiques
@@ -237,13 +263,24 @@ function updateInvoicesTable(invoices) {
 }
 
 // Fonctions utilitaires
-function formatCurrency(value) {
-    return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(value);
+function formatCurrency(value, currencyCode) {
+    const numeric = Number(value || 0);
+    const code = currencyCode || financialDefaultCurrency || 'XAF';
+
+    if (typeof CURRENCY_CONFIG !== 'undefined' && typeof CURRENCY_CONFIG.format === 'function') {
+        return CURRENCY_CONFIG.format(numeric, code);
+    }
+
+    try {
+        return new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: code,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(numeric);
+    } catch (e) {
+        return `${numeric} ${code}`;
+    }
 }
 
 function formatDate(dateString) {

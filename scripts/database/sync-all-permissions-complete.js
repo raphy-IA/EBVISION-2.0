@@ -362,8 +362,10 @@ async function extractPermissionsFromMenu() {
             }
         }
         
-        // Aussi chercher les permissions de menu dans le format menu.xxx.yyy
-        const menuPermissionRegex = /menu\.([^.]+)\.([^"'\s]+)/g;
+        // Aussi chercher les permissions de menu dans le format strict menu.xxx.yyy
+        // (uniquement lettres, chiffres, underscore) pour éviter de capturer
+        // des bouts de code comme "menu.js" ou des scripts complets
+        const menuPermissionRegex = /menu\.[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+/g;
         let menuMatch;
         while ((menuMatch = menuPermissionRegex.exec(content)) !== null) {
             const permCode = menuMatch[0];

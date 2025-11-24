@@ -110,6 +110,9 @@
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
+
+    <!-- Configuration des devises -->
+    <script src="js/currency-config.js"></script>
 </head>
 <body>
     <button class="sidebar-toggle d-md-none">
@@ -323,10 +326,15 @@
         const API_BASE_URL = '/api';
         let charts = {};
         let allMissions = [];
+        let financialDefaultCurrency = (typeof CURRENCY_CONFIG !== 'undefined' && CURRENCY_CONFIG.defaultCurrency) ? CURRENCY_CONFIG.defaultCurrency : 'XAF';
 
         document.addEventListener('DOMContentLoaded', function() {
             loadFilters();
-            loadData();
+            loadFinancialSettingsForReports()
+                .catch(err => console.warn('Erreur chargement paramètres financiers:', err))
+                .finally(() => {
+                    loadData();
+                });
             
             // Event listener for period filter
             const periodFilter = document.getElementById('periodFilter');
@@ -449,6 +457,32 @@
             return { startDate, endDate };
         }
 
+        async function loadFinancialSettingsForReports() {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) return;
+
+                const response = await fetch(`${API_BASE_URL}/financial-settings`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        financialDefaultCurrency = result.data.defaultCurrency || financialDefaultCurrency;
+                        if (typeof CURRENCY_CONFIG !== 'undefined') {
+                            CURRENCY_CONFIG.defaultCurrency = financialDefaultCurrency;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('Impossible de charger les paramètres financiers:', error);
+            }
+        }
+
         async function loadData() {
             try {
                 const token = localStorage.getItem('authToken');
@@ -547,6 +581,28 @@
             displayData(filtered);
         }
 
+        function formatAmount(amount, currencyCode) {
+            if (amount === null || amount === undefined || isNaN(amount)) {
+                return '-';
+            }
+
+            const code = currencyCode || financialDefaultCurrency || 'XAF';
+
+            if (typeof CURRENCY_CONFIG !== 'undefined' && typeof CURRENCY_CONFIG.format === 'function') {
+                return CURRENCY_CONFIG.format(amount, code);
+            }
+
+            try {
+                return new Intl.NumberFormat('fr-FR', {
+                    style: 'currency',
+                    currency: code,
+                    minimumFractionDigits: 0
+                }).format(amount);
+            } catch (e) {
+                return `${amount} ${code}`;
+            }
+        }
+
         function displayData(missions) {
             // Calculate statistics
             const total = missions.length;
@@ -560,10 +616,8 @@
             document.getElementById('totalMissions').textContent = total;
             document.getElementById('activeMissions').textContent = active;
             document.getElementById('completedMissions').textContent = completed;
-            document.getElementById('totalBudget').textContent = 
-                new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(totalBudget);
-            document.getElementById('totalRevenue').textContent = 
-                new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(totalRevenue);
+            document.getElementById('totalBudget').textContent = formatAmount(totalBudget);
+            document.getElementById('totalRevenue').textContent = formatAmount(totalRevenue);
             document.getElementById('totalClients').textContent = clients;
 
             updateCharts(missions);
@@ -632,7 +686,7 @@
                 data: {
                     labels: topClients.map(c => c[0]),
                     datasets: [{
-                        label: 'Budget (€)',
+                        label: 'Budget',
                         data: topClients.map(c => c[1]),
                         backgroundColor: 'rgba(102,126,234,0.7)'
                     }]
@@ -657,7 +711,7 @@
                 data: {
                     labels: sorted.map(m => m.titre || m.nom || 'Sans nom'),
                     datasets: [{
-                        label: 'Revenu (€)',
+                        label: 'Revenu',
                         data: sorted.map(m => parseFloat(m.budget_reel) || 0),
                         backgroundColor: 'rgba(245,87,108,0.7)'
                     }]
@@ -684,9 +738,9 @@
             missions.slice(0, 50).forEach(m => {
                 const row = document.createElement('tr');
                 const budgetPrevue = m.budget_prevue ? 
-                    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(m.budget_prevue) : '-';
+                    formatAmount(m.budget_prevue, m.devise) : '-';
                 const budgetReel = m.budget_reel ? 
-                    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(m.budget_reel) : '-';
+                    formatAmount(m.budget_reel, m.devise) : '-';
                 const dateDebut = m.date_debut ? new Date(m.date_debut).toLocaleDateString('fr-FR') : '-';
                 const dateFin = m.date_fin_prevue ? new Date(m.date_fin_prevue).toLocaleDateString('fr-FR') : '-';
                 

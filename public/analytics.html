@@ -15,6 +15,9 @@
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
     
+    <!-- Configuration des devises -->
+    <script src="js/currency-config.js"></script>
+    
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -248,13 +251,13 @@
                         <div class="kpi-card">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <div class="kpi-number" id="total-revenue">0€</div>
+                                    <div class="kpi-number" id="total-revenue">-</div>
                                     <div class="kpi-label">CA Opportunités</div>
                                     <div class="kpi-trend positive" id="revenue-trend">
                                         <i class="fas fa-arrow-up"></i> +0%
                                 </div>
                             </div>
-                                <i class="fas fa-euro-sign fa-2x text-muted"></i>
+                                <i class="fas fa-coins fa-2x text-muted"></i>
                         </div>
                     </div>
                 </div>
@@ -450,6 +453,9 @@
     <script>
         const API_BASE_URL = '/api';
         let charts = {};
+        let financialDefaultCurrency = (typeof CURRENCY_CONFIG !== 'undefined' && CURRENCY_CONFIG.defaultCurrency)
+            ? CURRENCY_CONFIG.defaultCurrency
+            : 'XAF';
         
         // Fonction pour récupérer les données avec authentification
         async function authenticatedFetch(url, options = {}) {
@@ -462,6 +468,23 @@
                     'Content-Type': 'application/json'
                 }
             });
+        }
+
+        // Charger les paramètres financiers
+        async function loadFinancialSettingsForAnalytics() {
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/financial-settings`);
+                if (!response.ok) return;
+                const result = await response.json();
+                if (result.success && result.data) {
+                    financialDefaultCurrency = result.data.defaultCurrency || financialDefaultCurrency;
+                    if (typeof CURRENCY_CONFIG !== 'undefined') {
+                        CURRENCY_CONFIG.defaultCurrency = financialDefaultCurrency;
+                    }
+                }
+            } catch (error) {
+                console.warn('Impossible de charger les paramètres financiers (analytics):', error);
+            }
         }
 
         // Charger les Business Units
@@ -541,10 +564,30 @@
             }
         }
         
+        // Fonction de formatage des montants
+        function formatCurrency(amount, currencyCode) {
+            const numeric = Number(amount || 0);
+            const code = currencyCode || financialDefaultCurrency || 'XAF';
+
+            if (typeof CURRENCY_CONFIG !== 'undefined' && typeof CURRENCY_CONFIG.format === 'function') {
+                return CURRENCY_CONFIG.format(numeric, code);
+            }
+
+            try {
+                return new Intl.NumberFormat('fr-FR', {
+                    style: 'currency',
+                    currency: code,
+                    minimumFractionDigits: 0
+                }).format(numeric);
+            } catch (e) {
+                return `${numeric} ${code}`;
+            }
+        }
+
         // Afficher un état vide en cas d'erreur
         function showEmptyState() {
             document.getElementById('conversion-rate').textContent = '0%';
-            document.getElementById('total-revenue').textContent = '0€';
+            document.getElementById('total-revenue').textContent = formatCurrency(0);
             document.getElementById('active-opportunities').textContent = '0';
             document.getElementById('avg-duration').textContent = '0j';
             
@@ -593,11 +636,7 @@
             }
             
             document.getElementById('conversion-rate').textContent = (kpis.conversion_rate || 0).toFixed(1) + '%';
-            document.getElementById('total-revenue').textContent = new Intl.NumberFormat('fr-FR', {
-                style: 'currency',
-                currency: 'EUR',
-                minimumFractionDigits: 0
-            }).format(kpis.total_revenue || 0);
+            document.getElementById('total-revenue').textContent = formatCurrency(kpis.total_revenue || 0);
             document.getElementById('active-opportunities').textContent = kpis.active_opportunities || 0;
             document.getElementById('avg-duration').textContent = Math.round(kpis.avg_duration || 0) + 'j';
             
@@ -773,7 +812,7 @@
                     data: {
                         labels: data.map(d => d.business_unit_name || 'Non assigné'),
                         datasets: [{
-                            label: 'CA (€)',
+                            label: 'CA',
                             data: data.map(d => d.revenue || 0),
                             backgroundColor: '#667eea'
                         }]
@@ -792,11 +831,7 @@
                                 beginAtZero: true,
                                 ticks: {
                                     callback: function(value) {
-                                        return new Intl.NumberFormat('fr-FR', {
-                                            style: 'currency',
-                                            currency: 'EUR',
-                                            minimumFractionDigits: 0
-                                        }).format(value);
+                                        return formatCurrency(value);
                                     }
                                 }
                             }
@@ -820,11 +855,7 @@
                     <td>${bu.business_unit_name || 'Non assigné'}</td>
                     <td class="text-center">${bu.total_opportunities}</td>
                     <td class="text-center">${bu.won_opportunities}</td>
-                    <td class="text-end">${new Intl.NumberFormat('fr-FR', {
-                        style: 'currency',
-                        currency: 'EUR',
-                        minimumFractionDigits: 0
-                    }).format(bu.revenue)}</td>
+                    <td class="text-end">${formatCurrency(bu.revenue)}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -884,11 +915,7 @@
                     <td>${opp.business_unit_nom || 'Non assigné'}</td>
                     <td>${opp.opportunity_type_nom || 'Non défini'}</td>
                     <td class="text-center">${opp.probabilite || 0}%</td>
-                    <td class="text-end">${new Intl.NumberFormat('fr-FR', {
-                        style: 'currency',
-                        currency: opp.devise || 'EUR',
-                        minimumFractionDigits: 0
-                    }).format(opp.montant_estime || 0)}</td>
+                    <td class="text-end">${formatCurrency(opp.montant_estime || 0, opp.devise)}</td>
                     <td class="text-center">
                         <span class="badge bg-${riskClass}">${opp.risk_level || 'N/A'}</span>
                     </td>

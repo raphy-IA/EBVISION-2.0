@@ -6,6 +6,11 @@ const API_BASE_URL = new URL('/api', window.location.origin).toString();
 // Variables globales pour les graphiques
 let financialChart, buDistributionChart;
 
+// Devise par défaut pour l affichage (sera synchronisée avec /api/financial-settings)
+let financialDefaultCurrency = (typeof CURRENCY_CONFIG !== 'undefined' && CURRENCY_CONFIG.defaultCurrency)
+    ? CURRENCY_CONFIG.defaultCurrency
+    : 'XAF';
+
 // Variables pour les filtres
 let currentFilters = {
     period: 90,
@@ -22,6 +27,23 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = 'login.html';
         return;
     }
+
+// Charger la configuration financière (devise par défaut)
+async function loadFinancialSettingsForDashboard() {
+    try {
+        const response = await authenticatedFetch(`${API_BASE_URL}/financial-settings`);
+        if (!response.ok) return;
+        const result = await response.json();
+        if (result.success && result.data) {
+            financialDefaultCurrency = result.data.defaultCurrency || financialDefaultCurrency;
+            if (typeof CURRENCY_CONFIG !== 'undefined') {
+                CURRENCY_CONFIG.defaultCurrency = financialDefaultCurrency;
+            }
+        }
+    } catch (error) {
+        console.warn('Impossible de charger les paramètres financiers (direction):', error);
+    }
+}
     
     // Vérifier les permissions de direction
     if (!hasDirectorRole()) {
@@ -32,23 +54,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialiser les filtres
     initializeFilters();
     
-    // Charger les données du dashboard
-    loadDashboardData();
-    
-    // Initialiser les graphiques
-    initializeCharts();
-    
-    // Charger les indicateurs financiers
-    loadFinancialIndicators();
-    
-    // Charger les alertes stratégiques
-    loadStrategicAlerts();
-    
-    // Charger le pipeline commercial
-    loadPipelineSummary();
-    
-    // Mettre à jour les informations direction
-    updateDirectorInfo();
+    // Charger d abord la configuration financière puis les données
+    loadFinancialSettingsForDashboard()
+        .catch(err => console.warn('Erreur chargement paramètres financiers (dashboard direction):', err))
+        .finally(() => {
+            // Charger les données du dashboard
+            loadDashboardData();
+            
+            // Initialiser les graphiques
+            initializeCharts();
+            
+            // Charger les indicateurs financiers
+            loadFinancialIndicators();
+            
+            // Charger les alertes stratégiques
+            loadStrategicAlerts();
+            
+            // Charger le pipeline commercial
+            loadPipelineSummary();
+            
+            // Mettre à jour les informations direction
+            updateDirectorInfo();
+        });
 });
 
 // Vérifier si l'utilisateur a le rôle direction
@@ -647,12 +674,22 @@ function updateDirectorInfo() {
 }
 
 // Fonctions utilitaires
-function formatCurrency(amount) {
+function formatCurrency(amount, currencyCode) {
     const numericAmount = parseFloat(amount) || 0;
-    return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR'
-    }).format(numericAmount);
+    const code = currencyCode || financialDefaultCurrency || 'XAF';
+
+    if (typeof CURRENCY_CONFIG !== 'undefined' && typeof CURRENCY_CONFIG.format === 'function') {
+        return CURRENCY_CONFIG.format(numericAmount, code);
+    }
+
+    try {
+        return new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: code
+        }).format(numericAmount);
+    } catch (e) {
+        return `${numericAmount} ${code}`;
+    }
 }
 
 function getAlertIcon(type) {

@@ -41,6 +41,9 @@
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
+
+    <!-- Configuration des devises -->
+    <script src="js/currency-config.js"></script>
 </head>
 <body>
   <button class="sidebar-toggle d-md-none"><i class="fas fa-bars"></i></button>
@@ -66,7 +69,7 @@
         <div class="col-md-3 mb-3">
           <div class="card text-center">
             <div class="card-body">
-              <div class="h4 text-primary" id="kpi-facture">0€</div>
+              <div class="h4 text-primary" id="kpi-facture">-</div>
               <div class="text-muted">Facturé période</div>
             </div>
           </div>
@@ -74,7 +77,7 @@
         <div class="col-md-3 mb-3">
           <div class="card text-center">
             <div class="card-body">
-              <div class="h4 text-success" id="kpi-encaisse">0€</div>
+              <div class="h4 text-success" id="kpi-encaisse">-</div>
               <div class="text-muted">Encaissé période</div>
             </div>
           </div>
@@ -90,7 +93,7 @@
         <div class="col-md-3 mb-3">
           <div class="card text-center">
             <div class="card-body">
-              <div class="h4 text-danger" id="kpi-retard">0€</div>
+              <div class="h4 text-danger" id="kpi-retard">-</div>
               <div class="text-muted">Montant en retard</div>
             </div>
           </div>
