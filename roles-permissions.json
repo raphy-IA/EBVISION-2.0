@@ -1,0 +1,5042 @@
+{
+  "exportedAt": "2025-11-24T18:00:31.604Z",
+  "database": "EB-PostProd1",
+  "roles": [
+    {
+      "id": "1b41cbf2-228b-4931-b9a8-834e03383847",
+      "name": "ADMIN",
+      "description": "Administrateur - Gestion métier et configuration",
+      "is_system_role": true,
+      "created_at": "2025-11-24T22:15:14.364Z",
+      "updated_at": "2025-11-24T22:15:14.364Z",
+      "badge_bg_class": "primary",
+      "badge_text_class": "white",
+      "badge_hex_color": "#0d6efd",
+      "badge_priority": 90
+    },
+    {
+      "id": "250acdb2-0b1a-4bac-803e-a5ca97f8b635",
+      "name": "ADMIN_IT",
+      "description": "Administrateur IT - Gestion technique et maintenance",
+      "is_system_role": true,
+      "created_at": "2025-11-24T22:15:14.363Z",
+      "updated_at": "2025-11-24T22:15:14.363Z",
+      "badge_bg_class": "dark",
+      "badge_text_class": "white",
+      "badge_hex_color": "#212529",
+      "badge_priority": 95
+    },
+    {
+      "id": "c7d1244d-b831-4bb5-be98-dc82975899b6",
+      "name": "ASSOCIE",
+      "description": "Permissions et roles pour les Associés",
+      "is_system_role": false,
+      "created_at": "2025-11-24T22:15:14.367Z",
+      "updated_at": "2025-11-24T22:15:14.367Z",
+      "badge_bg_class": "warning",
+      "badge_text_class": "dark",
+      "badge_hex_color": "#ff9800",
+      "badge_priority": 85
+    },
+    {
+      "id": "c5c07b81-a75d-4537-a4d8-fa4907dd2580",
+      "name": "COLLABORATEUR",
+      "description": "Collaborateur - Accès limité aux données de sa BU",
+      "is_system_role": true,
+      "created_at": "2025-11-24T22:15:14.366Z",
+      "updated_at": "2025-11-24T22:15:14.366Z",
+      "badge_bg_class": "info",
+      "badge_text_class": "white",
+      "badge_hex_color": "#17a2b8",
+      "badge_priority": 50
+    },
+    {
+      "id": "9a732444-3186-4510-b883-fe0860c0e2f5",
+      "name": "CONSULTANT",
+      "description": "Consultant - Utilisateur standard avec accès complet aux données",
+      "is_system_role": true,
+      "created_at": "2025-11-24T22:15:14.365Z",
+      "updated_at": "2025-11-24T22:15:14.365Z",
+      "badge_bg_class": "success",
+      "badge_text_class": "white",
+      "badge_hex_color": "#198754",
+      "badge_priority": 60
+    },
+    {
+      "id": "a9e16152-c46b-4f72-91e0-4c45fca4dbdf",
+      "name": "DIRECTEUR",
+      "description": "Permissions et roles pour les directeurs",
+      "is_system_role": false,
+      "created_at": "2025-11-24T22:15:14.367Z",
+      "updated_at": "2025-11-24T22:15:14.367Z",
+      "badge_bg_class": "warning",
+      "badge_text_class": "dark",
+      "badge_hex_color": "#ffc107",
+      "badge_priority": 80
+    },
+    {
+      "id": "192b1a7b-75ff-4fe3-b963-cf1b07586bb0",
+      "name": "IT",
+      "description": "Technicien IT - Support technique et maintenance",
+      "is_system_role": true,
+      "created_at": "2025-11-24T22:15:14.363Z",
+      "updated_at": "2025-11-24T22:15:14.363Z",
+      "badge_bg_class": "secondary",
+      "badge_text_class": "white",
+      "badge_hex_color": "#6c757d",
+      "badge_priority": 92
+    },
+    {
+      "id": "427e3b6c-62af-4afd-b370-80e31996897e",
+      "name": "MANAGER",
+      "description": "Manager - Gestion d'équipe et supervision",
+      "is_system_role": true,
+      "created_at": "2025-11-24T22:15:14.365Z",
+      "updated_at": "2025-11-24T22:15:14.365Z",
+      "badge_bg_class": "info",
+      "badge_text_class": "white",
+      "badge_hex_color": "#0dcaf0",
+      "badge_priority": 70
+    },
+    {
+      "id": "f6a82034-f176-4134-be97-d08d8fbc489a",
+      "name": "SUPER_ADMIN",
+      "description": "Super administrateur - Accès total à toutes les fonctionnalités",
+      "is_system_role": true,
+      "created_at": "2025-11-24T22:15:14.359Z",
+      "updated_at": "2025-11-24T22:15:14.359Z",
+      "badge_bg_class": "danger",
+      "badge_text_class": "white",
+      "badge_hex_color": "#dc3545",
+      "badge_priority": 100
+    },
+    {
+      "id": "7a8b00f5-85b6-4514-bd6c-e6ea0250bdeb",
+      "name": "SUPER_USER",
+      "description": "Permissions et roles pour le SP",
+      "is_system_role": false,
+      "created_at": "2025-11-24T22:15:14.368Z",
+      "updated_at": "2025-11-24T22:15:14.368Z",
+      "badge_bg_class": "primary",
+      "badge_text_class": "white",
+      "badge_hex_color": "#0066cc",
+      "badge_priority": 75
+    },
+    {
+      "id": "d7627adc-fbe4-4ae1-8211-c48e9870f000",
+      "name": "SUPERVISEUR",
+      "description": "Permissions pour superviseurs",
+      "is_system_role": false,
+      "created_at": "2025-11-24T22:15:14.369Z",
+      "updated_at": "2025-11-24T22:15:14.369Z",
+      "badge_bg_class": "info",
+      "badge_text_class": "white",
+      "badge_hex_color": "#17a2b8",
+      "badge_priority": 65
+    }
+  ],
+  "permissions": [
+    {
+      "id": "723f7e68-81b0-4630-8f64-363911137e7b",
+      "code": "activities:create",
+      "name": "Créer activités",
+      "description": "Permission pour create activités",
+      "category": "activities",
+      "created_at": "2025-11-24T22:15:54.563Z",
+      "updated_at": "2025-11-24T22:15:54.563Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "eb4e43f2-4137-4102-a6ff-2f4b523c7570",
+      "code": "activities:delete",
+      "name": "Supprimer activités",
+      "description": "Permission pour delete activités",
+      "category": "activities",
+      "created_at": "2025-11-24T22:15:54.566Z",
+      "updated_at": "2025-11-24T22:15:54.566Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "301b4068-a1d1-45b0-a9e5-39841950e137",
+      "code": "activities:read",
+      "name": "Voir activités",
+      "description": "Permission pour read activités",
+      "category": "activities",
+      "created_at": "2025-11-24T22:15:54.550Z",
+      "updated_at": "2025-11-24T22:15:54.550Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e2320927-659d-484a-923c-cf6ac9f4730c",
+      "code": "activities:update",
+      "name": "Modifier activités",
+      "description": "Permission pour update activités",
+      "category": "activities",
+      "created_at": "2025-11-24T22:15:54.564Z",
+      "updated_at": "2025-11-24T22:15:54.564Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "aa4f2e77-3239-47e0-b16b-8bd53ababb8c",
+      "code": "analytics:read",
+      "name": "Voir analytics",
+      "description": "Permission pour read analytics",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.568Z",
+      "updated_at": "2025-11-24T22:15:54.568Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "faecd8a7-586b-472f-83d8-f88d82eeddf8",
+      "code": "api.clients.manage",
+      "name": "API - Gestion des clients",
+      "description": "API - Gestion des clients",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.756Z",
+      "updated_at": "2025-11-24T22:15:54.756Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2d6d945a-8930-44dd-b231-a6f34b6d22ee",
+      "code": "api.missions.manage",
+      "name": "API - Gestion des missions",
+      "description": "API - Gestion des missions",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.757Z",
+      "updated_at": "2025-11-24T22:15:54.757Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "69156a1a-6389-4970-bd67-4469a109ca21",
+      "code": "api.opportunities.manage",
+      "name": "API - Gestion des opportunités",
+      "description": "API - Gestion des opportunités",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.757Z",
+      "updated_at": "2025-11-24T22:15:54.757Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "7d814c76-d035-41a3-b008-8a0732d315de",
+      "code": "api.permissions.read",
+      "name": "API - Lecture des permissions",
+      "description": "API - Lecture des permissions",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.755Z",
+      "updated_at": "2025-11-24T22:15:54.755Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "07cf78ba-dd6c-4e8f-81b6-9f4ca0efd818",
+      "code": "api.permissions.write",
+      "name": "API - Écriture des permissions",
+      "description": "API - Écriture des permissions",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.755Z",
+      "updated_at": "2025-11-24T22:15:54.755Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "c50ff81f-55b5-4a4d-ace4-9f6cdaf04013",
+      "code": "api.users.manage",
+      "name": "API - Gestion des utilisateurs",
+      "description": "API - Gestion des utilisateurs",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.756Z",
+      "updated_at": "2025-11-24T22:15:54.756Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "27e4c6ff-9472-4870-a255-604749d3f159",
+      "code": "auth:create",
+      "name": "Créer authentification",
+      "description": "Permission pour create authentification",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.571Z",
+      "updated_at": "2025-11-24T22:15:54.571Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2c957476-af48-4a30-a3c7-7f1359ee5638",
+      "code": "auth:read",
+      "name": "Voir authentification",
+      "description": "Permission pour read authentification",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.570Z",
+      "updated_at": "2025-11-24T22:15:54.570Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e5c5d4a6-6067-4ef0-9d5c-135e9f1a729a",
+      "code": "branding:create",
+      "name": "Créer branding",
+      "description": "Permission pour create branding",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.573Z",
+      "updated_at": "2025-11-24T22:15:54.573Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8e2aa2be-8904-4cae-94d4-847a8594c88e",
+      "code": "branding:delete",
+      "name": "Supprimer branding",
+      "description": "Permission pour delete branding",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.574Z",
+      "updated_at": "2025-11-24T22:15:54.574Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4571f10f-4f55-48ce-bd3f-50e3e9b97d9c",
+      "code": "branding:read",
+      "name": "Voir branding",
+      "description": "Permission pour read branding",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.572Z",
+      "updated_at": "2025-11-24T22:15:54.572Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "1b082739-a08f-4ea9-aabd-d9808e79fe2c",
+      "code": "business_units:create",
+      "name": "Créer business units",
+      "description": "Permission pour create business units",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.576Z",
+      "updated_at": "2025-11-24T22:15:54.576Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "ff394a08-7570-42a5-bde2-db51a0b96688",
+      "code": "business_units:delete",
+      "name": "Supprimer business units",
+      "description": "Permission pour delete business units",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.577Z",
+      "updated_at": "2025-11-24T22:15:54.577Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "16608fef-3a7f-4ce8-993f-976ea6a21e6d",
+      "code": "business_units:read",
+      "name": "Voir business units",
+      "description": "Permission pour read business units",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.575Z",
+      "updated_at": "2025-11-24T22:15:54.575Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "35fd637f-7d01-4181-9885-ffff12000748",
+      "code": "business_units:update",
+      "name": "Modifier business units",
+      "description": "Permission pour update business units",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.577Z",
+      "updated_at": "2025-11-24T22:15:54.577Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "11c0d6f6-b9f8-46d2-9f47-599fbe84ad7f",
+      "code": "campaigns.create",
+      "name": "Créer des campagnes",
+      "description": "Créer des campagnes",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.672Z",
+      "updated_at": "2025-11-24T22:15:54.672Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "1831cf66-9802-45d7-855e-30e23ea65cb7",
+      "code": "campaigns.delete",
+      "name": "Supprimer les campagnes",
+      "description": "Supprimer les campagnes",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.673Z",
+      "updated_at": "2025-11-24T22:15:54.673Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "02054409-c141-4f87-98cd-092be2a07337",
+      "code": "campaigns.edit",
+      "name": "Modifier les campagnes",
+      "description": "Modifier les campagnes",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.673Z",
+      "updated_at": "2025-11-24T22:15:54.673Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "74e81c45-7425-430a-ad1d-d5d4fc002f23",
+      "code": "campaigns.execute",
+      "name": "Exécuter les campagnes",
+      "description": "Exécuter les campagnes",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.674Z",
+      "updated_at": "2025-11-24T22:15:54.674Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e9f54ede-aab6-4e51-8068-dae25fbcd1b7",
+      "code": "campaigns.validate",
+      "name": "Valider les campagnes",
+      "description": "Valider les campagnes",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.674Z",
+      "updated_at": "2025-11-24T22:15:54.674Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "7f396bda-6976-4429-8840-7381fd0ba3cb",
+      "code": "campaigns.view",
+      "name": "Voir les campagnes",
+      "description": "Voir les campagnes",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.672Z",
+      "updated_at": "2025-11-24T22:15:54.672Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4aa310c0-7bae-4bed-9aef-65d72ef9e2ca",
+      "code": "clients.create",
+      "name": "Créer des clients",
+      "description": "Créer des clients",
+      "category": "clients",
+      "created_at": "2025-11-24T22:15:54.664Z",
+      "updated_at": "2025-11-24T22:15:54.664Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "b37f9ea5-4806-4633-9ff6-2beacb262bc6",
+      "code": "clients.delete",
+      "name": "Supprimer les clients",
+      "description": "Supprimer les clients",
+      "category": "clients",
+      "created_at": "2025-11-24T22:15:54.666Z",
+      "updated_at": "2025-11-24T22:15:54.666Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "634cfea1-94d6-410c-aab2-b3372ad4bc3e",
+      "code": "clients.edit",
+      "name": "Modifier les clients",
+      "description": "Modifier les clients",
+      "category": "clients",
+      "created_at": "2025-11-24T22:15:54.665Z",
+      "updated_at": "2025-11-24T22:15:54.665Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "01fdd530-9d70-40c2-b2e0-fee91e27c212",
+      "code": "clients.view",
+      "name": "Voir les clients",
+      "description": "Voir les clients",
+      "category": "clients",
+      "created_at": "2025-11-24T22:15:54.664Z",
+      "updated_at": "2025-11-24T22:15:54.664Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "ef8c1686-93b3-4215-939b-b519d1489506",
+      "code": "clients:create",
+      "name": "Créer clients",
+      "description": "Permission pour create clients",
+      "category": "clients",
+      "created_at": "2025-11-24T22:15:54.578Z",
+      "updated_at": "2025-11-24T22:15:54.578Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f3c84419-98c5-4daf-8274-86e7c3eacfb2",
+      "code": "clients:delete",
+      "name": "Supprimer clients",
+      "description": "Permission pour delete clients",
+      "category": "clients",
+      "created_at": "2025-11-24T22:15:54.579Z",
+      "updated_at": "2025-11-24T22:15:54.579Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "5b5b7879-e87d-4165-bc8f-e5d26e04d26f",
+      "code": "clients:read",
+      "name": "Voir clients",
+      "description": "Permission pour read clients",
+      "category": "clients",
+      "created_at": "2025-11-24T22:15:54.578Z",
+      "updated_at": "2025-11-24T22:15:54.578Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "14a89a0d-b618-4c3f-af87-6b7b06451980",
+      "code": "clients:update",
+      "name": "Modifier clients",
+      "description": "Permission pour update clients",
+      "category": "clients",
+      "created_at": "2025-11-24T22:15:54.579Z",
+      "updated_at": "2025-11-24T22:15:54.579Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "c66cd2f6-8ba8-42f5-aaba-10c5bd79d5cb",
+      "code": "collaborateurs:create",
+      "name": "Créer collaborateurs",
+      "description": "Permission pour create collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.580Z",
+      "updated_at": "2025-11-24T22:15:54.580Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "37a645f0-a8d5-4530-96a4-4a5b8cf92200",
+      "code": "collaborateurs:delete",
+      "name": "Supprimer collaborateurs",
+      "description": "Permission pour delete collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.582Z",
+      "updated_at": "2025-11-24T22:15:54.582Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "34b07e05-cd9b-42c8-b310-2716850e0827",
+      "code": "collaborateurs:read",
+      "name": "Voir collaborateurs",
+      "description": "Permission pour read collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.580Z",
+      "updated_at": "2025-11-24T22:15:54.580Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f79bcae4-e63a-492e-8921-4c81108bb4cc",
+      "code": "collaborateurs:update",
+      "name": "Modifier collaborateurs",
+      "description": "Permission pour update collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.581Z",
+      "updated_at": "2025-11-24T22:15:54.581Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "c281c910-ad9b-4986-b814-afbb4a681d1c",
+      "code": "config.admin",
+      "name": "Administrer la configuration",
+      "description": "Administrer la configuration",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.676Z",
+      "updated_at": "2025-11-24T22:15:54.676Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "9e0759da-b54e-455a-a5ef-3991186aaa6c",
+      "code": "config.edit",
+      "name": "Modifier la configuration",
+      "description": "Modifier la configuration",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.675Z",
+      "updated_at": "2025-11-24T22:15:54.675Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "6fbdfc6e-fc00-47a3-a677-bd4850abf287",
+      "code": "config.manage_permissions",
+      "name": "Gérer les permissions",
+      "description": "Gérer les permissions",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.676Z",
+      "updated_at": "2025-11-24T22:15:54.676Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e0f24779-8994-4c1e-b5e1-fd9c788bd070",
+      "code": "config.view",
+      "name": "Voir la configuration",
+      "description": "Voir la configuration",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.675Z",
+      "updated_at": "2025-11-24T22:15:54.675Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "62e0bdec-67f9-4b1a-9939-2acf5685fb63",
+      "code": "contacts:create",
+      "name": "Créer contacts",
+      "description": "Permission pour créer contacts",
+      "category": "clients",
+      "created_at": "2025-11-24T22:15:54.583Z",
+      "updated_at": "2025-11-24T22:15:54.583Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "1b0ed17d-ba0b-4398-9c90-4c5eae3b623f",
+      "code": "contacts:read",
+      "name": "Voir contacts",
+      "description": "Permission pour voir contacts",
+      "category": "clients",
+      "created_at": "2025-11-24T22:15:54.582Z",
+      "updated_at": "2025-11-24T22:15:54.582Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a1c7a991-1a00-4674-bf82-571e5a1af317",
+      "code": "dashboard.chargeabilite",
+      "name": "Dashboard Chargeabilité",
+      "description": "Dashboard Chargeabilité",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.680Z",
+      "updated_at": "2025-11-24T22:15:54.680Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8663bb40-9a65-4704-98cd-f2c7990f1368",
+      "code": "dashboard.direction",
+      "name": "Dashboard Direction",
+      "description": "Dashboard Direction",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.679Z",
+      "updated_at": "2025-11-24T22:15:54.679Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "6feaf5cf-46ef-4afe-9ed7-7bf054fef25e",
+      "code": "dashboard.equipe",
+      "name": "Dashboard Équipe",
+      "description": "Dashboard Équipe",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.678Z",
+      "updated_at": "2025-11-24T22:15:54.678Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e2a1700f-8866-4faa-a6cd-6d814600aa30",
+      "code": "dashboard.optimise",
+      "name": "Dashboard Optimisé",
+      "description": "Dashboard Optimisé",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.681Z",
+      "updated_at": "2025-11-24T22:15:54.681Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "34b34690-1f46-4097-8cd5-a452d06763f0",
+      "code": "dashboard.personnel",
+      "name": "Dashboard Personnel",
+      "description": "Dashboard Personnel",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.678Z",
+      "updated_at": "2025-11-24T22:15:54.678Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "58796803-f9b4-453a-8fa5-4a6484b4aa38",
+      "code": "dashboard.recouvrement",
+      "name": "Dashboard Recouvrement",
+      "description": "Dashboard Recouvrement",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.679Z",
+      "updated_at": "2025-11-24T22:15:54.679Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "7861d9e4-c628-48e8-a2f7-fdf35ae61c25",
+      "code": "dashboard.rentabilite",
+      "name": "Dashboard Rentabilité",
+      "description": "Dashboard Rentabilité",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.679Z",
+      "updated_at": "2025-11-24T22:15:54.679Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2dd4b4fa-6eff-46a3-9fd0-cb707145478d",
+      "code": "dashboard.view",
+      "name": "Voir le dashboard",
+      "description": "Voir le dashboard",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.677Z",
+      "updated_at": "2025-11-24T22:15:54.677Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "5c1ca27e-aea8-45f1-bd14-d20c3dfe2c9d",
+      "code": "dashboard:read",
+      "name": "Voir dashboard",
+      "description": "Voir dashboard",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.677Z",
+      "updated_at": "2025-11-24T22:15:54.677Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "3af0b6b0-942f-4fe5-bfc3-5efc6454dde8",
+      "code": "dashboard_analytics:read",
+      "name": "Voir dashboard",
+      "description": "Permission pour read dashboard",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.584Z",
+      "updated_at": "2025-11-24T22:15:54.584Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2dbb19ae-a896-4109-b7ae-7984759622dc",
+      "code": "divisions:create",
+      "name": "Créer divisions",
+      "description": "Permission pour create divisions",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.585Z",
+      "updated_at": "2025-11-24T22:15:54.585Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "50e2c7e6-6702-474e-b0d2-873a16cb00dc",
+      "code": "divisions:delete",
+      "name": "Supprimer divisions",
+      "description": "Permission pour delete divisions",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.587Z",
+      "updated_at": "2025-11-24T22:15:54.587Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "5d161ce2-a0fb-4b2d-8fb3-db799f129760",
+      "code": "divisions:read",
+      "name": "Voir divisions",
+      "description": "Permission pour read divisions",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.584Z",
+      "updated_at": "2025-11-24T22:15:54.584Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "233356a6-248f-4059-a281-cdf96d74ef02",
+      "code": "divisions:update",
+      "name": "Modifier divisions",
+      "description": "Permission pour update divisions",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.586Z",
+      "updated_at": "2025-11-24T22:15:54.586Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8051cedd-373d-40e0-a38e-b88fc2c9b57f",
+      "code": "evolution_grades:create",
+      "name": "Créer évolution grades",
+      "description": "Permission pour create évolution grades",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.589Z",
+      "updated_at": "2025-11-24T22:15:54.589Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e6db6819-6115-4848-9fae-5a22d46155b2",
+      "code": "evolution_grades:delete",
+      "name": "Supprimer évolution grades",
+      "description": "Permission pour delete évolution grades",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.590Z",
+      "updated_at": "2025-11-24T22:15:54.590Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "5dcef6e9-e275-4ac0-a963-ed491ee5e55a",
+      "code": "evolution_grades:read",
+      "name": "Voir évolution grades",
+      "description": "Permission pour read évolution grades",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.588Z",
+      "updated_at": "2025-11-24T22:15:54.588Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "d4789ed6-4634-4d08-a6c7-3052ba8b15aa",
+      "code": "evolution_grades:update",
+      "name": "Modifier évolution grades",
+      "description": "Permission pour update évolution grades",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.589Z",
+      "updated_at": "2025-11-24T22:15:54.589Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "5793dbcd-95b5-4e15-8cc7-3e559262484e",
+      "code": "evolution_organisations:create",
+      "name": "Créer évolution organisations",
+      "description": "Permission pour create évolution organisations",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.591Z",
+      "updated_at": "2025-11-24T22:15:54.591Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a784dc5b-935e-48d3-9f85-3b19078b695d",
+      "code": "evolution_organisations:delete",
+      "name": "Supprimer évolution organisations",
+      "description": "Permission pour delete évolution organisations",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.593Z",
+      "updated_at": "2025-11-24T22:15:54.593Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "d307daf9-b1dc-4a6c-9e56-dbd8a7a1e2bb",
+      "code": "evolution_organisations:read",
+      "name": "Voir évolution organisations",
+      "description": "Permission pour read évolution organisations",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.591Z",
+      "updated_at": "2025-11-24T22:15:54.591Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f32d8d5f-0b57-4707-a02d-9c3ef0df6226",
+      "code": "evolution_organisations:update",
+      "name": "Modifier évolution organisations",
+      "description": "Permission pour update évolution organisations",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.592Z",
+      "updated_at": "2025-11-24T22:15:54.592Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e0a54857-8a03-43cc-9c79-3e17db2c76ec",
+      "code": "evolution_postes:create",
+      "name": "Créer évolution postes",
+      "description": "Permission pour create évolution postes",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.594Z",
+      "updated_at": "2025-11-24T22:15:54.594Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f0813cb8-102a-463d-8643-5edb74adcce1",
+      "code": "evolution_postes:delete",
+      "name": "Supprimer évolution postes",
+      "description": "Permission pour delete évolution postes",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.595Z",
+      "updated_at": "2025-11-24T22:15:54.595Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4c9349d8-d064-4629-9162-98ab87a49be3",
+      "code": "evolution_postes:read",
+      "name": "Voir évolution postes",
+      "description": "Permission pour read évolution postes",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.593Z",
+      "updated_at": "2025-11-24T22:15:54.593Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "bc347e76-1f75-4118-84aa-21211b89e86f",
+      "code": "evolution_postes:update",
+      "name": "Modifier évolution postes",
+      "description": "Permission pour update évolution postes",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.594Z",
+      "updated_at": "2025-11-24T22:15:54.594Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "145afa11-1658-449a-8080-8cdbc4795941",
+      "code": "feuilles_temps:create",
+      "name": "Créer feuilles de temps",
+      "description": "Permission pour create feuilles de temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.596Z",
+      "updated_at": "2025-11-24T22:15:54.596Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "6c007c04-27f6-47e1-be33-976ec680e3af",
+      "code": "feuilles_temps:delete",
+      "name": "Supprimer feuilles de temps",
+      "description": "Permission pour delete feuilles de temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.597Z",
+      "updated_at": "2025-11-24T22:15:54.597Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "9713ec7b-cc7f-45d8-b75c-0e2bd71501b3",
+      "code": "feuilles_temps:read",
+      "name": "Voir feuilles de temps",
+      "description": "Permission pour read feuilles de temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.595Z",
+      "updated_at": "2025-11-24T22:15:54.595Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f6e91d41-ebda-4ad5-ba77-db55c3d88391",
+      "code": "feuilles_temps:update",
+      "name": "Modifier feuilles de temps",
+      "description": "Permission pour update feuilles de temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.596Z",
+      "updated_at": "2025-11-24T22:15:54.596Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "55784222-f45e-4a8f-85ae-bd2c492a10a4",
+      "code": "fiscal_years:create",
+      "name": "Créer années fiscales",
+      "description": "Permission pour créer années fiscales",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.597Z",
+      "updated_at": "2025-11-24T22:15:54.597Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4ff56001-0e2f-4425-9633-e4401e086125",
+      "code": "fiscal_years:delete",
+      "name": "Supprimer années fiscales",
+      "description": "Permission pour supprimer années fiscales",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.598Z",
+      "updated_at": "2025-11-24T22:15:54.598Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "5a10a978-fba5-493e-a731-6364991b457f",
+      "code": "fiscal_years:read",
+      "name": "Voir années fiscales",
+      "description": "Permission pour read années fiscales",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.598Z",
+      "updated_at": "2025-11-24T22:15:54.598Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "abdfa6fe-9aab-4c34-80a5-fbce4b5bdc82",
+      "code": "fiscal_years:update",
+      "name": "Modifier années fiscales",
+      "description": "Permission pour update années fiscales",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.599Z",
+      "updated_at": "2025-11-24T22:15:54.599Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "9c6ec7dc-a320-4b52-a141-fb402710ad00",
+      "code": "grades:create",
+      "name": "Créer grades",
+      "description": "Permission pour create grades",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.600Z",
+      "updated_at": "2025-11-24T22:15:54.600Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "96f3268a-3445-461c-a128-20b6c7572c38",
+      "code": "grades:delete",
+      "name": "Supprimer grades",
+      "description": "Permission pour delete grades",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.602Z",
+      "updated_at": "2025-11-24T22:15:54.602Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "94bb3255-0550-4a77-abe7-f9cde96fcfd3",
+      "code": "grades:read",
+      "name": "Voir grades",
+      "description": "Permission pour read grades",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.600Z",
+      "updated_at": "2025-11-24T22:15:54.600Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "7faf4745-dd03-46ed-b16f-078b9ed7ae0e",
+      "code": "grades:update",
+      "name": "Modifier grades",
+      "description": "Permission pour update grades",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.601Z",
+      "updated_at": "2025-11-24T22:15:54.601Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "9dbd3bd0-765f-443b-a73b-18dcc8686e5e",
+      "code": "health:read",
+      "name": "Voir santé",
+      "description": "Permission pour read santé",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.602Z",
+      "updated_at": "2025-11-24T22:15:54.602Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a063e092-e0cb-433e-988b-a4bb1c59dc67",
+      "code": "internalActivities:create",
+      "name": "Créer activités internes",
+      "description": "Permission pour create activités internes",
+      "category": "activities",
+      "created_at": "2025-11-24T22:15:54.603Z",
+      "updated_at": "2025-11-24T22:15:54.603Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "acba20cf-ae25-4da1-894d-5f181842c4ab",
+      "code": "internalActivities:delete",
+      "name": "Supprimer activités internes",
+      "description": "Permission pour delete activités internes",
+      "category": "activities",
+      "created_at": "2025-11-24T22:15:54.605Z",
+      "updated_at": "2025-11-24T22:15:54.605Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "6ee78889-761d-412f-bbb6-73a3da69c48e",
+      "code": "internalActivities:read",
+      "name": "Voir activités internes",
+      "description": "Permission pour read activités internes",
+      "category": "activities",
+      "created_at": "2025-11-24T22:15:54.603Z",
+      "updated_at": "2025-11-24T22:15:54.603Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "39d07838-bb6f-4339-991c-26351f0a417a",
+      "code": "internalActivities:update",
+      "name": "Modifier activités internes",
+      "description": "Permission pour update activités internes",
+      "category": "activities",
+      "created_at": "2025-11-24T22:15:54.604Z",
+      "updated_at": "2025-11-24T22:15:54.604Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "aded6fb7-a8a0-4980-9cc5-e12561fc52bc",
+      "code": "invoices:create",
+      "name": "Créer factures",
+      "description": "Permission pour create factures",
+      "category": "invoices",
+      "created_at": "2025-11-24T22:15:54.606Z",
+      "updated_at": "2025-11-24T22:15:54.606Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "eca907b4-10a2-43c4-92a0-f31be0d6b3fe",
+      "code": "invoices:delete",
+      "name": "Supprimer factures",
+      "description": "Permission pour delete factures",
+      "category": "invoices",
+      "created_at": "2025-11-24T22:15:54.607Z",
+      "updated_at": "2025-11-24T22:15:54.607Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4660e11a-c919-44aa-9067-b51ff71262c0",
+      "code": "invoices:read",
+      "name": "Voir factures",
+      "description": "Permission pour read factures",
+      "category": "invoices",
+      "created_at": "2025-11-24T22:15:54.605Z",
+      "updated_at": "2025-11-24T22:15:54.605Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "504e37a4-cd01-4d7e-ae9f-74e328422e8a",
+      "code": "invoices:update",
+      "name": "Modifier factures",
+      "description": "Permission pour update factures",
+      "category": "invoices",
+      "created_at": "2025-11-24T22:15:54.607Z",
+      "updated_at": "2025-11-24T22:15:54.607Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a07415d5-7428-4a9a-8bf7-986625f57f7d",
+      "code": "managers:create",
+      "name": "Créer managers",
+      "description": "Permission pour create managers",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.608Z",
+      "updated_at": "2025-11-24T22:15:54.608Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "190d45e1-d1a1-4ca7-a0f2-8d70c4239c09",
+      "code": "managers:read",
+      "name": "Voir managers",
+      "description": "Permission pour read managers",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.608Z",
+      "updated_at": "2025-11-24T22:15:54.608Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "865b6794-9f52-47eb-8efc-7ebbdda50fe4",
+      "code": "managers:update",
+      "name": "Modifier managers",
+      "description": "Permission pour update managers",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.609Z",
+      "updated_at": "2025-11-24T22:15:54.609Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "c0fa05cd-b1cb-4f1d-b1f4-bb7f4c768ba5",
+      "code": "menu.business_unit.activites_internes",
+      "name": "Menu: menu.business_unit.activites_internes",
+      "description": "Permission d'accès au menu menu.business_unit.activites_internes",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.750Z",
+      "updated_at": "2025-11-24T22:15:54.750Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "bb6de801-6b44-4398-878a-25939ebf8b83",
+      "code": "menu.business_unit.divisions",
+      "name": "Menu: menu.business_unit.divisions",
+      "description": "Permission d'accès au menu menu.business_unit.divisions",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.750Z",
+      "updated_at": "2025-11-24T22:15:54.750Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "d0e73eb9-a784-47ef-b2ca-d872ebdfab11",
+      "code": "menu.business_unit.secteurs_d_activite",
+      "name": "Menu: menu.business_unit.secteurs_d_activite",
+      "description": "Permission d'accès au menu menu.business_unit.secteurs_d_activite",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.751Z",
+      "updated_at": "2025-11-24T22:15:54.751Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "21b35bdf-d41b-4310-b67f-0d895978fc08",
+      "code": "menu.business_unit.unites_d_affaires",
+      "name": "Menu: menu.business_unit.unites_d_affaires",
+      "description": "Permission d'accès au menu menu.business_unit.unites_d_affaires",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.749Z",
+      "updated_at": "2025-11-24T22:15:54.749Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "0f4c3b1b-332f-4c80-88c7-763231d9bf1b",
+      "code": "menu.configurations.annees_fiscales",
+      "name": "Menu: menu.configurations.annees_fiscales",
+      "description": "Permission d'accès au menu menu.configurations.annees_fiscales",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.746Z",
+      "updated_at": "2025-11-24T22:15:54.746Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e5c94e48-6005-4369-8b88-1b97719635d0",
+      "code": "menu.configurations.configuration_types_d_opportunite",
+      "name": "Menu: menu.configurations.configuration_types_d_opportunite",
+      "description": "Permission d'accès au menu menu.configurations.configuration_types_d_opportunite",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.747Z",
+      "updated_at": "2025-11-24T22:15:54.747Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f357a806-980d-4e5e-8df0-a79bf33e0ae9",
+      "code": "menu.configurations.modeles_de_prospection",
+      "name": "Menu: menu.configurations.modeles_de_prospection",
+      "description": "Permission d'accès au menu menu.configurations.modeles_de_prospection",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.748Z",
+      "updated_at": "2025-11-24T22:15:54.748Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "528413dc-d14d-46a2-9514-2d6592fe12ae",
+      "code": "menu.configurations.pays",
+      "name": "Menu: menu.configurations.pays",
+      "description": "Permission d'accès au menu menu.configurations.pays",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.747Z",
+      "updated_at": "2025-11-24T22:15:54.747Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "27b661a9-a0a2-4d41-b718-9a4dd30ad813",
+      "code": "menu.configurations.sources_entreprises",
+      "name": "Menu: menu.configurations.sources_entreprises",
+      "description": "Permission d'accès au menu menu.configurations.sources_entreprises",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.748Z",
+      "updated_at": "2025-11-24T22:15:54.748Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "54006948-3f91-4f96-b532-02b5b9c6b916",
+      "code": "menu.dashboard.analytics_indicateurs",
+      "name": "Menu: menu.dashboard.analytics_indicateurs",
+      "description": "Permission d'accès au menu menu.dashboard.analytics_indicateurs",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.733Z",
+      "updated_at": "2025-11-24T22:15:54.733Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "bf1ccc3c-da78-4b7f-b898-436d35505f5e",
+      "code": "menu.dashboard.dashboard_chargeabilite",
+      "name": "Menu: menu.dashboard.dashboard_chargeabilite",
+      "description": "Permission d'accès au menu menu.dashboard.dashboard_chargeabilite",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.732Z",
+      "updated_at": "2025-11-24T22:15:54.732Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "073fb995-9154-486d-a4af-8bd1fb4baed1",
+      "code": "menu.dashboard.dashboard_direction",
+      "name": "Menu: menu.dashboard.dashboard_direction",
+      "description": "Permission d'accès au menu menu.dashboard.dashboard_direction",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.730Z",
+      "updated_at": "2025-11-24T22:15:54.730Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "23364a4e-2fd8-4bb2-9dab-8971d114d9f8",
+      "code": "menu.dashboard.dashboard_equipe",
+      "name": "Menu: menu.dashboard.dashboard_equipe",
+      "description": "Permission d'accès au menu menu.dashboard.dashboard_equipe",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.729Z",
+      "updated_at": "2025-11-24T22:15:54.729Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "b3852654-472f-4f48-8e7b-d9c34d5e2252",
+      "code": "menu.dashboard.dashboard_optimise",
+      "name": "Menu: menu.dashboard.dashboard_optimise",
+      "description": "Permission d'accès au menu menu.dashboard.dashboard_optimise",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.734Z",
+      "updated_at": "2025-11-24T22:15:54.734Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "d959cd35-7c48-420e-8998-1a5f7d81b375",
+      "code": "menu.dashboard.dashboard_personnel",
+      "name": "Menu: menu.dashboard.dashboard_personnel",
+      "description": "Permission d'accès au menu menu.dashboard.dashboard_personnel",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.728Z",
+      "updated_at": "2025-11-24T22:15:54.728Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2e8b2d7c-cd61-44c2-9a39-002433c28d41",
+      "code": "menu.dashboard.dashboard_recouvrement",
+      "name": "Menu: menu.dashboard.dashboard_recouvrement",
+      "description": "Permission d'accès au menu menu.dashboard.dashboard_recouvrement",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.731Z",
+      "updated_at": "2025-11-24T22:15:54.731Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "00ac2a3a-581c-41c2-929f-d4e8cfc916f7",
+      "code": "menu.dashboard.dashboard_rentabilite",
+      "name": "Menu: menu.dashboard.dashboard_rentabilite",
+      "description": "Permission d'accès au menu menu.dashboard.dashboard_rentabilite",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.731Z",
+      "updated_at": "2025-11-24T22:15:54.731Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8dfb92e3-eac8-4ff9-b9d6-6a801af911ba",
+      "code": "menu.dashboard.tableau_de_bord_principal",
+      "name": "Menu: menu.dashboard.tableau_de_bord_principal",
+      "description": "Permission d'accès au menu menu.dashboard.tableau_de_bord_principal",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.728Z",
+      "updated_at": "2025-11-24T22:15:54.728Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "c8b20c6c-8cd8-45aa-b265-0f12e9f61886",
+      "code": "menu.gestion_des_temps.saisie_des_temps",
+      "name": "Menu: menu.gestion_des_temps.saisie_des_temps",
+      "description": "Permission d'accès au menu menu.gestion_des_temps.saisie_des_temps",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.737Z",
+      "updated_at": "2025-11-24T22:15:54.737Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "beae4435-d8ad-44f3-a5bd-d8330422bb96",
+      "code": "menu.gestion_des_temps.validation_des_temps",
+      "name": "Menu: menu.gestion_des_temps.validation_des_temps",
+      "description": "Permission d'accès au menu menu.gestion_des_temps.validation_des_temps",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.737Z",
+      "updated_at": "2025-11-24T22:15:54.737Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "669e551f-d6e3-4056-9950-ab36ca930670",
+      "code": "menu.gestion_mission.factures_et_paiements",
+      "name": "Menu: menu.gestion_mission.factures_et_paiements",
+      "description": "Permission d'accès au menu menu.gestion_mission.factures_et_paiements",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.739Z",
+      "updated_at": "2025-11-24T22:15:54.739Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "41715345-0bf3-43cc-a714-efdfa99922d2",
+      "code": "menu.gestion_mission.missions",
+      "name": "Menu: menu.gestion_mission.missions",
+      "description": "Permission d'accès au menu menu.gestion_mission.missions",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.738Z",
+      "updated_at": "2025-11-24T22:15:54.738Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "78e5c7a4-45b6-4fdc-9b20-2afe8151a740",
+      "code": "menu.gestion_mission.taches",
+      "name": "Menu: menu.gestion_mission.taches",
+      "description": "Permission d'accès au menu menu.gestion_mission.taches",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.739Z",
+      "updated_at": "2025-11-24T22:15:54.739Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "9fcf5cd6-f247-4376-8c36-93b89030dc2e",
+      "code": "menu.gestion_mission.types_de_mission",
+      "name": "Menu: menu.gestion_mission.types_de_mission",
+      "description": "Permission d'accès au menu menu.gestion_mission.types_de_mission",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.738Z",
+      "updated_at": "2025-11-24T22:15:54.738Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4a430bb4-871b-4f5a-980d-2944879302a3",
+      "code": "menu.gestion_rh.collaborateurs",
+      "name": "Menu: menu.gestion_rh.collaborateurs",
+      "description": "Permission d'accès au menu menu.gestion_rh.collaborateurs",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.742Z",
+      "updated_at": "2025-11-24T22:15:54.742Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "ca32d0e0-45f5-4ed9-b1d6-c0b3b18a67de",
+      "code": "menu.gestion_rh.grades",
+      "name": "Menu: menu.gestion_rh.grades",
+      "description": "Permission d'accès au menu menu.gestion_rh.grades",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.743Z",
+      "updated_at": "2025-11-24T22:15:54.743Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e125dc21-f0da-41be-8469-f0f129250f94",
+      "code": "menu.gestion_rh.postes",
+      "name": "Menu: menu.gestion_rh.postes",
+      "description": "Permission d'accès au menu menu.gestion_rh.postes",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.744Z",
+      "updated_at": "2025-11-24T22:15:54.744Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "c836da42-cdac-4b17-869a-accfb08e5ae7",
+      "code": "menu.gestion_rh.taux_horaires",
+      "name": "Menu: menu.gestion_rh.taux_horaires",
+      "description": "Permission d'accès au menu menu.gestion_rh.taux_horaires",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.745Z",
+      "updated_at": "2025-11-24T22:15:54.745Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2620d532-6ada-424e-97e4-e09efddceb01",
+      "code": "menu.gestion_rh.types_collaborateurs",
+      "name": "Menu: menu.gestion_rh.types_collaborateurs",
+      "description": "Permission d'accès au menu menu.gestion_rh.types_collaborateurs",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.743Z",
+      "updated_at": "2025-11-24T22:15:54.743Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "9909b4a4-f445-4931-9ed9-c9b83069d609",
+      "code": "menu.market_pipeline.campagnes_de_prospection",
+      "name": "Menu: menu.market_pipeline.campagnes_de_prospection",
+      "description": "Permission d'accès au menu menu.market_pipeline.campagnes_de_prospection",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.741Z",
+      "updated_at": "2025-11-24T22:15:54.741Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4b550b70-3165-4a1b-886f-bfe2c68d6a0e",
+      "code": "menu.market_pipeline.clients_et_prospects",
+      "name": "Menu: menu.market_pipeline.clients_et_prospects",
+      "description": "Permission d'accès au menu menu.market_pipeline.clients_et_prospects",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.740Z",
+      "updated_at": "2025-11-24T22:15:54.740Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "3e998a34-2147-45f7-8d31-40fb61b47441",
+      "code": "menu.market_pipeline.opportunites",
+      "name": "Menu: menu.market_pipeline.opportunites",
+      "description": "Permission d'accès au menu menu.market_pipeline.opportunites",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.740Z",
+      "updated_at": "2025-11-24T22:15:54.740Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "bc07c289-1fde-46b7-8262-3192ecdfdd9a",
+      "code": "menu.market_pipeline.types_d_opportunite",
+      "name": "Menu: menu.market_pipeline.types_d_opportunite",
+      "description": "Permission d'accès au menu menu.market_pipeline.types_d_opportunite",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.741Z",
+      "updated_at": "2025-11-24T22:15:54.741Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "86ff36a1-218b-46ba-b087-cfc40a5f073a",
+      "code": "menu.market_pipeline.validation_des_campagnes",
+      "name": "Menu: menu.market_pipeline.validation_des_campagnes",
+      "description": "Permission d'accès au menu menu.market_pipeline.validation_des_campagnes",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.742Z",
+      "updated_at": "2025-11-24T22:15:54.742Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "0fe9b7f1-6d24-45fa-8c8c-9c08afa259cd",
+      "code": "menu.parametres_administration.administration_des_permissions",
+      "name": "Menu: menu.parametres_administration.administration_des_permissions",
+      "description": "Permission d'accès au menu menu.parametres_administration.administration_des_permissions",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.752Z",
+      "updated_at": "2025-11-24T22:15:54.752Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "fd10655a-e75c-413d-91f7-7b2e352494f4",
+      "code": "menu.parametres_administration.configuration_notifications",
+      "name": "Menu: menu.parametres_administration.configuration_notifications",
+      "description": "Permission d'accès au menu menu.parametres_administration.configuration_notifications",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.751Z",
+      "updated_at": "2025-11-24T22:15:54.751Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a5bce937-81a1-4798-bffe-00834d5b664a",
+      "code": "menu.parametres_administration.utilisateurs",
+      "name": "Menu: menu.parametres_administration.utilisateurs",
+      "description": "Permission d'accès au menu menu.parametres_administration.utilisateurs",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.752Z",
+      "updated_at": "2025-11-24T22:15:54.752Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "21ddd619-2d31-4eab-b686-a9ddf8355246",
+      "code": "menu.rapports.rapports_de_prospection",
+      "name": "Menu: menu.rapports.rapports_de_prospection",
+      "description": "Permission d'accès au menu menu.rapports.rapports_de_prospection",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.736Z",
+      "updated_at": "2025-11-24T22:15:54.736Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "fe8dda34-0259-46d2-9d05-38655d183a54",
+      "code": "menu.rapports.rapports_generaux",
+      "name": "Menu: menu.rapports.rapports_generaux",
+      "description": "Permission d'accès au menu menu.rapports.rapports_generaux",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.734Z",
+      "updated_at": "2025-11-24T22:15:54.734Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2b8020fb-bfb3-4d05-976d-a824422010d2",
+      "code": "menu.rapports.rapports_missions",
+      "name": "Menu: menu.rapports.rapports_missions",
+      "description": "Permission d'accès au menu menu.rapports.rapports_missions",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.735Z",
+      "updated_at": "2025-11-24T22:15:54.735Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "ce3f0e67-2754-4e1f-a533-1189dc00e636",
+      "code": "menu.rapports.rapports_opportunites",
+      "name": "Menu: menu.rapports.rapports_opportunites",
+      "description": "Permission d'accès au menu menu.rapports.rapports_opportunites",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.736Z",
+      "updated_at": "2025-11-24T22:15:54.736Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a419269a-6015-411d-b48c-8d802a49b727",
+      "code": "menu.rapports.rapports_rh",
+      "name": "Menu: menu.rapports.rapports_rh",
+      "description": "Permission d'accès au menu menu.rapports.rapports_rh",
+      "category": "menu",
+      "created_at": "2025-11-24T22:15:54.736Z",
+      "updated_at": "2025-11-24T22:15:54.736Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4f389032-e944-45ce-bd27-ccd6903d441b",
+      "code": "mission_types:create",
+      "name": "Créer types de missions",
+      "description": "Permission pour create types de missions",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.610Z",
+      "updated_at": "2025-11-24T22:15:54.610Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2ef9b5c9-769c-4568-9f0a-ef878c414a5b",
+      "code": "mission_types:delete",
+      "name": "Supprimer types de missions",
+      "description": "Permission pour delete types de missions",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.611Z",
+      "updated_at": "2025-11-24T22:15:54.611Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "c147be9c-fe3b-47c5-9c3e-ee28a4eca996",
+      "code": "mission_types:read",
+      "name": "Voir types de missions",
+      "description": "Permission pour read types de missions",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.609Z",
+      "updated_at": "2025-11-24T22:15:54.609Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "573d88a6-e5cf-492b-a5e5-eac4652e324e",
+      "code": "mission_types:update",
+      "name": "Modifier types de missions",
+      "description": "Permission pour update types de missions",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.611Z",
+      "updated_at": "2025-11-24T22:15:54.611Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "899d560b-f8a5-4070-a86c-d6ab59a6e7c9",
+      "code": "missions.create",
+      "name": "Créer des missions",
+      "description": "Créer des missions",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.668Z",
+      "updated_at": "2025-11-24T22:15:54.668Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "43f38c12-7430-47fe-aeb2-79e63dcb1b9f",
+      "code": "missions.delete",
+      "name": "Supprimer les missions",
+      "description": "Supprimer les missions",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.669Z",
+      "updated_at": "2025-11-24T22:15:54.669Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "99d37e69-bf64-4ad9-bae0-a460df4c8a21",
+      "code": "missions.edit",
+      "name": "Modifier les missions",
+      "description": "Modifier les missions",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.669Z",
+      "updated_at": "2025-11-24T22:15:54.669Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "99615f40-b97a-4caf-a43f-89abc41014b0",
+      "code": "missions.view",
+      "name": "Voir les missions",
+      "description": "Voir les missions",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.667Z",
+      "updated_at": "2025-11-24T22:15:54.667Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4394cf7e-052d-452b-a1dc-4afff8c5432e",
+      "code": "missions:create",
+      "name": "Créer missions",
+      "description": "Permission pour create missions",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.612Z",
+      "updated_at": "2025-11-24T22:15:54.612Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "97ae000c-8f9c-41d8-b7c7-5834e4874694",
+      "code": "missions:delete",
+      "name": "Supprimer missions",
+      "description": "Permission pour delete missions",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.614Z",
+      "updated_at": "2025-11-24T22:15:54.614Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "6c9d4e81-f0d4-4136-94ed-a9cbde30d472",
+      "code": "missions:read",
+      "name": "Voir missions",
+      "description": "Permission pour read missions",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.612Z",
+      "updated_at": "2025-11-24T22:15:54.612Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e4deb859-5236-420e-aa8d-22bfcdc340ef",
+      "code": "missions:update",
+      "name": "Modifier missions",
+      "description": "Permission pour update missions",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.613Z",
+      "updated_at": "2025-11-24T22:15:54.613Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "947bca8f-52b5-4f99-ad7e-31e3f37ddcb3",
+      "code": "notification_settings:create",
+      "name": "Créer paramètres de notifications",
+      "description": "Permission pour create paramètres de notifications",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.615Z",
+      "updated_at": "2025-11-24T22:15:54.615Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a7b4b525-0686-4240-916f-959f27728c3e",
+      "code": "notification_settings:delete",
+      "name": "Supprimer paramètres de notifications",
+      "description": "Permission pour delete paramètres de notifications",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.616Z",
+      "updated_at": "2025-11-24T22:15:54.616Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e78b9584-7dd7-466e-831d-ccaefdc9b245",
+      "code": "notification_settings:read",
+      "name": "Voir paramètres de notifications",
+      "description": "Permission pour read paramètres de notifications",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.614Z",
+      "updated_at": "2025-11-24T22:15:54.614Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "1dcb3538-1663-4291-a878-cb85ff30d3d5",
+      "code": "notification_settings:update",
+      "name": "Modifier paramètres de notifications",
+      "description": "Permission pour update paramètres de notifications",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.615Z",
+      "updated_at": "2025-11-24T22:15:54.615Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "eedec1a1-f0dd-4519-9148-38cec3e93380",
+      "code": "notifications:delete",
+      "name": "Supprimer notifications",
+      "description": "Permission pour delete notifications",
+      "category": "notifications",
+      "created_at": "2025-11-24T22:15:54.618Z",
+      "updated_at": "2025-11-24T22:15:54.618Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2d254727-5920-4b9b-84da-08c8f3839c95",
+      "code": "notifications:read",
+      "name": "Voir notifications",
+      "description": "Permission pour read notifications",
+      "category": "notifications",
+      "created_at": "2025-11-24T22:15:54.617Z",
+      "updated_at": "2025-11-24T22:15:54.617Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "cb4770fb-0905-45ac-a1b0-13a0ffcde575",
+      "code": "notifications:update",
+      "name": "Modifier notifications",
+      "description": "Permission pour update notifications",
+      "category": "notifications",
+      "created_at": "2025-11-24T22:15:54.617Z",
+      "updated_at": "2025-11-24T22:15:54.617Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "cfe7ab42-2c46-41bb-9385-0ec3058f4f8e",
+      "code": "opportunities.create",
+      "name": "Créer des opportunités",
+      "description": "Créer des opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.670Z",
+      "updated_at": "2025-11-24T22:15:54.670Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "fc921dda-02c8-4c73-82a0-193fb6d74a6b",
+      "code": "opportunities.delete",
+      "name": "Supprimer les opportunités",
+      "description": "Supprimer les opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.671Z",
+      "updated_at": "2025-11-24T22:15:54.671Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f5dde2cc-f7c1-4df9-9326-737dca06801a",
+      "code": "opportunities.edit",
+      "name": "Modifier les opportunités",
+      "description": "Modifier les opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.671Z",
+      "updated_at": "2025-11-24T22:15:54.671Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "9192e1f3-7e8c-4270-8e1b-e6a17c23ca7c",
+      "code": "opportunities.view",
+      "name": "Voir les opportunités",
+      "description": "Voir les opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.670Z",
+      "updated_at": "2025-11-24T22:15:54.670Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "52fcc961-590d-4bf7-b08a-c965f0d30120",
+      "code": "opportunities:create",
+      "name": "Créer opportunités",
+      "description": "Permission pour create opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.619Z",
+      "updated_at": "2025-11-24T22:15:54.619Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "ea40a4c8-c2be-49d4-8634-7de6a93ce298",
+      "code": "opportunities:delete",
+      "name": "Supprimer opportunités",
+      "description": "Permission pour delete opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.620Z",
+      "updated_at": "2025-11-24T22:15:54.620Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "34bc728c-7aa0-4699-abf3-0f9f4e209312",
+      "code": "opportunities:read",
+      "name": "Voir opportunités",
+      "description": "Permission pour read opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.619Z",
+      "updated_at": "2025-11-24T22:15:54.619Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "d3f93401-78c6-4d0b-a8d8-7c4d6f147965",
+      "code": "opportunities:update",
+      "name": "Modifier opportunités",
+      "description": "Permission pour update opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.619Z",
+      "updated_at": "2025-11-24T22:15:54.619Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "87ead7e4-5ce2-46e7-860c-7417495c75c3",
+      "code": "opportunity_stages:create",
+      "name": "Créer étapes d'opportunités",
+      "description": "Permission pour create étapes d'opportunités",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.621Z",
+      "updated_at": "2025-11-24T22:15:54.621Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "00b4e175-bfd3-41c2-a658-fabeac3d66b4",
+      "code": "opportunity_stages:delete",
+      "name": "Supprimer étapes d'opportunités",
+      "description": "Permission pour delete étapes d'opportunités",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.623Z",
+      "updated_at": "2025-11-24T22:15:54.623Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "792b50cf-c064-4603-b6dc-54dec947f33f",
+      "code": "opportunity_stages:read",
+      "name": "Voir étapes d'opportunités",
+      "description": "Permission pour read étapes d'opportunités",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.620Z",
+      "updated_at": "2025-11-24T22:15:54.620Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "3ebc1159-2413-43ec-8566-4406618b0741",
+      "code": "opportunity_stages:update",
+      "name": "Modifier étapes d'opportunités",
+      "description": "Permission pour update étapes d'opportunités",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.622Z",
+      "updated_at": "2025-11-24T22:15:54.622Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "d20e7a2f-8fc5-48a6-a66d-c9c61a566ac2",
+      "code": "opportunity_types:create",
+      "name": "Créer types d'opportunités",
+      "description": "Permission pour create types d'opportunités",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.624Z",
+      "updated_at": "2025-11-24T22:15:54.624Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e8d5f8b7-87ac-48ca-a303-14cca1697b87",
+      "code": "opportunity_types:delete",
+      "name": "Supprimer types d'opportunités",
+      "description": "Permission pour delete types d'opportunités",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.625Z",
+      "updated_at": "2025-11-24T22:15:54.625Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "692a684f-b75b-4f68-949a-c476333939c7",
+      "code": "opportunity_types:read",
+      "name": "Voir types d'opportunités",
+      "description": "Permission pour read types d'opportunités",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.623Z",
+      "updated_at": "2025-11-24T22:15:54.623Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2c5a614b-f5d4-47f9-aef1-342dac00f4d9",
+      "code": "opportunity_types:update",
+      "name": "Modifier types d'opportunités",
+      "description": "Permission pour update types d'opportunités",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.625Z",
+      "updated_at": "2025-11-24T22:15:54.625Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "78614a81-5856-46fd-acca-dfe9f75b22f0",
+      "code": "page.activites-internes",
+      "name": "Accès à Gestion des Activités Internes",
+      "description": "Permission d'accès à la page Gestion des Activités Internes",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.684Z",
+      "updated_at": "2025-11-24T22:15:54.684Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "816d4cd2-066c-46e5-8d0e-239392eeaab9",
+      "code": "page.analytics",
+      "name": "Accès à Analytics & Indicateurs",
+      "description": "Permission d'accès à la page Analytics & Indicateurs",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.685Z",
+      "updated_at": "2025-11-24T22:15:54.685Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "5b51edde-6178-4820-9dce-4b079b90ae6d",
+      "code": "page.business-units",
+      "name": "Accès à Gestion des Business Units",
+      "description": "Permission d'accès à la page Gestion des Business Units",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.685Z",
+      "updated_at": "2025-11-24T22:15:54.685Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a1f7d8b2-913e-438c-a2f5-b093f46ea382",
+      "code": "page.campaign-execution",
+      "name": "Accès à Exécution de Campagne - V4",
+      "description": "Permission d'accès à la page Exécution de Campagne - V4",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.686Z",
+      "updated_at": "2025-11-24T22:15:54.686Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "ad200f49-d51f-4835-8bb8-ab53b25bf18d",
+      "code": "page.campaign-validations",
+      "name": "Accès à Validation des Campagnes",
+      "description": "Permission d'accès à la page Validation des Campagnes",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.687Z",
+      "updated_at": "2025-11-24T22:15:54.687Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2ea2024e-781b-47e0-bee6-d711689281ac",
+      "code": "page.clear-cache",
+      "name": "Accès à Nettoyage du Cache",
+      "description": "Permission d'accès à la page Nettoyage du Cache",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.687Z",
+      "updated_at": "2025-11-24T22:15:54.687Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "12322620-38a0-4036-84c4-0941598a45af",
+      "code": "page.clients",
+      "name": "Accès à Gestion des Clients",
+      "description": "Permission d'accès à la page Gestion des Clients",
+      "category": "clients",
+      "created_at": "2025-11-24T22:15:54.688Z",
+      "updated_at": "2025-11-24T22:15:54.688Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f42f071d-cc2a-481e-aaae-8b0ac4d14493",
+      "code": "page.collaborateurs",
+      "name": "Accès à Gestion des Collaborateurs",
+      "description": "Permission d'accès à la page Gestion des Collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.688Z",
+      "updated_at": "2025-11-24T22:15:54.688Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "208e9f0b-3ef6-4b9d-8d6a-2c672ab6b6fd",
+      "code": "page.collaborateurs__",
+      "name": "Accès à Gestion des Collaborateurs",
+      "description": "Permission d'accès à la page Gestion des Collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.693Z",
+      "updated_at": "2025-11-24T22:15:54.693Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "dae1511d-1de0-463b-b828-ba51629755cd",
+      "code": "page.collaborateurs__presque_parfait",
+      "name": "Accès à Gestion des Collaborateurs",
+      "description": "Permission d'accès à la page Gestion des Collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.694Z",
+      "updated_at": "2025-11-24T22:15:54.694Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "3a1623f9-9159-4365-8799-e0aba8052065",
+      "code": "page.collaborateurs_backup",
+      "name": "Accès à Gestion des Collaborateurs",
+      "description": "Permission d'accès à la page Gestion des Collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.689Z",
+      "updated_at": "2025-11-24T22:15:54.689Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8a1d3ee4-dfd3-4058-b8e5-ceb6f155e46a",
+      "code": "page.collaborateurs_backup_before_debug_fix",
+      "name": "Accès à Gestion des Collaborateurs",
+      "description": "Permission d'accès à la page Gestion des Collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.689Z",
+      "updated_at": "2025-11-24T22:15:54.689Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "31440bb8-5714-424a-aae2-901d82433c11",
+      "code": "page.collaborateurs_backup_before_duplication_fix",
+      "name": "Accès à Gestion des Collaborateurs",
+      "description": "Permission d'accès à la page Gestion des Collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.690Z",
+      "updated_at": "2025-11-24T22:15:54.690Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "5633b629-971d-4630-be1b-9d75a7984ece",
+      "code": "page.collaborateurs_backup_before_final_cleanup",
+      "name": "Accès à Gestion des Collaborateurs",
+      "description": "Permission d'accès à la page Gestion des Collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.691Z",
+      "updated_at": "2025-11-24T22:15:54.691Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "922a3afd-124c-44b4-a464-95f1a0440bde",
+      "code": "page.collaborateurs_backup_before_final_fix",
+      "name": "Accès à Gestion des Collaborateurs",
+      "description": "Permission d'accès à la page Gestion des Collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.691Z",
+      "updated_at": "2025-11-24T22:15:54.691Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "dd5c02ec-3d55-4224-926c-cd39e86ef9d7",
+      "code": "page.collaborateurs_backup_before_fix",
+      "name": "Accès à Gestion des Collaborateurs",
+      "description": "Permission d'accès à la page Gestion des Collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.692Z",
+      "updated_at": "2025-11-24T22:15:54.692Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "d5e08dbc-8003-4708-83c8-31e39423ae0b",
+      "code": "page.collaborateurs_backup_before_function_fix",
+      "name": "Accès à Gestion des Collaborateurs",
+      "description": "Permission d'accès à la page Gestion des Collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.692Z",
+      "updated_at": "2025-11-24T22:15:54.692Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "60f5091a-6845-433b-93e9-5b3b89c2b209",
+      "code": "page.collaborateurs_backup_final",
+      "name": "Accès à Gestion des Collaborateurs",
+      "description": "Permission d'accès à la page Gestion des Collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.693Z",
+      "updated_at": "2025-11-24T22:15:54.693Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e06f05b1-2147-443c-a79e-2229e00d3036",
+      "code": "page.create-mission-step1",
+      "name": "Accès à Création de Mission - Étape 1",
+      "description": "Permission d'accès à la page Création de Mission - Étape 1",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.694Z",
+      "updated_at": "2025-11-24T22:15:54.694Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2d64cc9e-dda1-41ba-8398-041b4ded8ddb",
+      "code": "page.create-mission-step2",
+      "name": "Accès à Création de Mission - Étape 2",
+      "description": "Permission d'accès à la page Création de Mission - Étape 2",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.695Z",
+      "updated_at": "2025-11-24T22:15:54.695Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2542dbc8-327a-48c1-b966-8c01e3643ecc",
+      "code": "page.create-mission-step3",
+      "name": "Accès à Création de Mission - Étape 3",
+      "description": "Permission d'accès à la page Création de Mission - Étape 3",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.695Z",
+      "updated_at": "2025-11-24T22:15:54.695Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "d347ef4a-64dd-49f7-b8e7-aa81a84c6d0a",
+      "code": "page.create-mission-step4",
+      "name": "Accès à Création de Mission - Étape 4",
+      "description": "Permission d'accès à la page Création de Mission - Étape 4",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.696Z",
+      "updated_at": "2025-11-24T22:15:54.696Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f0a1f4fe-5938-447c-bdc6-ea17176b18f0",
+      "code": "page.dashboard",
+      "name": "Accès à Gestion des Temps",
+      "description": "Permission d'accès à la page Gestion des Temps",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.701Z",
+      "updated_at": "2025-11-24T22:15:54.701Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f046046f-4cfb-4228-b306-193fcffbd600",
+      "code": "page.dashboard-chargeabilite",
+      "name": "Accès à Dashboard Chargeabilité",
+      "description": "Permission d'accès à la page Dashboard Chargeabilité",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.696Z",
+      "updated_at": "2025-11-24T22:15:54.696Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a16f889b-6517-4188-a969-2001907beb8c",
+      "code": "page.dashboard-direction",
+      "name": "Accès à Dashboard Direction",
+      "description": "Permission d'accès à la page Dashboard Direction",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.697Z",
+      "updated_at": "2025-11-24T22:15:54.697Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "6777a7db-efe4-4d61-898a-798bfc10259c",
+      "code": "page.dashboard-equipe",
+      "name": "Accès à Dashboard Équipe",
+      "description": "Permission d'accès à la page Dashboard Équipe",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.698Z",
+      "updated_at": "2025-11-24T22:15:54.698Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "9d2c46b4-3218-40a5-a79c-99c5d04af4a8",
+      "code": "page.dashboard-optimise",
+      "name": "Accès à Dashboard Consolidé",
+      "description": "Permission d'accès à la page Dashboard Consolidé",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.698Z",
+      "updated_at": "2025-11-24T22:15:54.698Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "c3ed5dc6-4535-459e-8b03-9a27376d298d",
+      "code": "page.dashboard-personnel",
+      "name": "Accès à Dashboard Personnel",
+      "description": "Permission d'accès à la page Dashboard Personnel",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.699Z",
+      "updated_at": "2025-11-24T22:15:54.699Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "58492f95-f3fc-4814-a76d-d0cc010459f1",
+      "code": "page.dashboard-recouvrement",
+      "name": "Accès à Dashboard Recouvrement",
+      "description": "Permission d'accès à la page Dashboard Recouvrement",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.699Z",
+      "updated_at": "2025-11-24T22:15:54.699Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "b1e2c3c8-d776-48e3-aeb6-99220507969d",
+      "code": "page.dashboard-rentabilite",
+      "name": "Accès à Dashboard Rentabilité",
+      "description": "Permission d'accès à la page Dashboard Rentabilité",
+      "category": "dashboard",
+      "created_at": "2025-11-24T22:15:54.700Z",
+      "updated_at": "2025-11-24T22:15:54.700Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8b39fbe3-7e3b-4095-9128-e7d35f1489a5",
+      "code": "page.debug-clicks",
+      "name": "Accès à Debug Clicks",
+      "description": "Permission d'accès à la page Debug Clicks",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.702Z",
+      "updated_at": "2025-11-24T22:15:54.702Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "38101594-7159-481f-933f-5724a0991eb3",
+      "code": "page.divisions",
+      "name": "Accès à Gestion des Divisions",
+      "description": "Permission d'accès à la page Gestion des Divisions",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.702Z",
+      "updated_at": "2025-11-24T22:15:54.702Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "0c718376-eaa9-41d3-8ac1-a7dde164aa36",
+      "code": "page.edit-mission-planning",
+      "name": "Accès à Modifier le Planning",
+      "description": "Permission d'accès à la page Modifier le Planning",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.703Z",
+      "updated_at": "2025-11-24T22:15:54.703Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "76e657f1-989f-4585-a6f0-4dc2a0e6ec07",
+      "code": "page.fiscal-years",
+      "name": "Accès à Gestion des Exercices Fiscaux",
+      "description": "Permission d'accès à la page Gestion des Exercices Fiscaux",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.703Z",
+      "updated_at": "2025-11-24T22:15:54.703Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4033b733-783d-48dd-922a-8dbeff72f79a",
+      "code": "page.force-reload",
+      "name": "Accès à Force Reload",
+      "description": "Permission d'accès à la page Force Reload",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.704Z",
+      "updated_at": "2025-11-24T22:15:54.704Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "ac20fb6d-d6a4-42e2-940e-a764e996596d",
+      "code": "page.grades",
+      "name": "Accès à Gestion des Grades",
+      "description": "Permission d'accès à la page Gestion des Grades",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.705Z",
+      "updated_at": "2025-11-24T22:15:54.705Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "c19c2b9d-c173-4a4b-b8d8-23e446729d95",
+      "code": "page.index",
+      "name": "Accès à Redirection",
+      "description": "Permission d'accès à la page Redirection",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.705Z",
+      "updated_at": "2025-11-24T22:15:54.705Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "0a174ccd-1387-46d7-a6a2-770733a88791",
+      "code": "page.invoice-details",
+      "name": "Accès à Détails Facture",
+      "description": "Permission d'accès à la page Détails Facture",
+      "category": "invoices",
+      "created_at": "2025-11-24T22:15:54.706Z",
+      "updated_at": "2025-11-24T22:15:54.706Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8062df56-67c6-4cd3-97ec-556b18d3edda",
+      "code": "page.invoices",
+      "name": "Accès à Facturation",
+      "description": "Permission d'accès à la page Facturation",
+      "category": "invoices",
+      "created_at": "2025-11-24T22:15:54.706Z",
+      "updated_at": "2025-11-24T22:15:54.706Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a8c92074-874c-477f-9936-84a6b9a9b709",
+      "code": "page.login",
+      "name": "Accès à login",
+      "description": "Permission d'accès à la page login",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.707Z",
+      "updated_at": "2025-11-24T22:15:54.707Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "fd75924e-d503-4b30-bf72-740f1746b23b",
+      "code": "page.logout",
+      "name": "Accès à logout",
+      "description": "Permission d'accès à la page logout",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.707Z",
+      "updated_at": "2025-11-24T22:15:54.707Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "39bdc417-cf57-45a8-9a5c-80bcd8ddf751",
+      "code": "page.maintenance",
+      "name": "Accès à Maintenance en cours",
+      "description": "Permission d'accès à la page Maintenance en cours",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.708Z",
+      "updated_at": "2025-11-24T22:15:54.708Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a2c48950-9350-4ec3-afe8-883c23d1736b",
+      "code": "page.mission-details",
+      "name": "Accès à Détails Mission",
+      "description": "Permission d'accès à la page Détails Mission",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.708Z",
+      "updated_at": "2025-11-24T22:15:54.708Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "69958f61-7a6a-436b-aa9a-da846620b365",
+      "code": "page.mission-types",
+      "name": "Accès à Types de Mission - TRS Affichage",
+      "description": "Permission d'accès à la page Types de Mission - TRS Affichage",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.709Z",
+      "updated_at": "2025-11-24T22:15:54.709Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "98416ff9-96e3-4eeb-957a-3f07c83ca739",
+      "code": "page.missions",
+      "name": "Accès à Gestion des Missions",
+      "description": "Permission d'accès à la page Gestion des Missions",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.709Z",
+      "updated_at": "2025-11-24T22:15:54.709Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "36b89381-7a15-4cf8-859a-c65aa52f8da6",
+      "code": "page.notification-settings",
+      "name": "Accès à Configuration des Notifications",
+      "description": "Permission d'accès à la page Configuration des Notifications",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.710Z",
+      "updated_at": "2025-11-24T22:15:54.710Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "df1fcb92-989c-4ac1-b9d8-e540044328e8",
+      "code": "page.opportunities",
+      "name": "Accès à Gestion des Opportunites",
+      "description": "Permission d'accès à la page Gestion des Opportunites",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.712Z",
+      "updated_at": "2025-11-24T22:15:54.712Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "b4d9681f-41c1-4af3-ab55-83cd7465690e",
+      "code": "page.opportunities-fixed",
+      "name": "Accès à Gestion des Opportunités",
+      "description": "Permission d'accès à la page Gestion des Opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.710Z",
+      "updated_at": "2025-11-24T22:15:54.710Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "d925d2a8-98b3-4250-89b0-100cd04f9bf0",
+      "code": "page.opportunities-new",
+      "name": "Accès à Opportunities New",
+      "description": "Permission d'accès à la page Opportunities New",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.711Z",
+      "updated_at": "2025-11-24T22:15:54.711Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "88f1eca1-6dd9-4fe1-98df-f93b28fba2b3",
+      "code": "page.opportunities-test",
+      "name": "Accès à Opportunities Test",
+      "description": "Permission d'accès à la page Opportunities Test",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.711Z",
+      "updated_at": "2025-11-24T22:15:54.711Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "c924ccf4-a141-4699-9c28-c75bf333dfed",
+      "code": "page.opportunities_backup",
+      "name": "Accès à Gestion des Opportunités",
+      "description": "Permission d'accès à la page Gestion des Opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.712Z",
+      "updated_at": "2025-11-24T22:15:54.712Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "19abebd1-5d9d-4706-b3fd-ab358936cdb1",
+      "code": "page.opportunities_backup_autre",
+      "name": "Accès à Gestion des OpportunitÃ©s",
+      "description": "Permission d'accès à la page Gestion des OpportunitÃ©s",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.713Z",
+      "updated_at": "2025-11-24T22:15:54.713Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "88025636-9580-4568-83d6-8c7f342c83a3",
+      "code": "page.opportunities_Gemini",
+      "name": "Accès à Gestion des Opportunités",
+      "description": "Permission d'accès à la page Gestion des Opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.713Z",
+      "updated_at": "2025-11-24T22:15:54.713Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "9d3fb900-a846-4cf8-997a-d4be967c895a",
+      "code": "page.opportunities_simple",
+      "name": "Accès à Opportunities_simple",
+      "description": "Permission d'accès à la page Opportunities_simple",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.714Z",
+      "updated_at": "2025-11-24T22:15:54.714Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4079ab6e-84a9-4eab-b7e3-ced80d6898aa",
+      "code": "page.opportunity-details",
+      "name": "Accès à Détails de l'Opportunité",
+      "description": "Permission d'accès à la page Détails de l'Opportunité",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.714Z",
+      "updated_at": "2025-11-24T22:15:54.714Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8e9053f9-c6ab-411b-96d0-55a031022e0c",
+      "code": "page.opportunity-stages",
+      "name": "Accès à Étapes d'une Opportunité",
+      "description": "Permission d'accès à la page Étapes d'une Opportunité",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.714Z",
+      "updated_at": "2025-11-24T22:15:54.714Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "194c3487-7bd1-4765-af12-1dfe4cf7acac",
+      "code": "page.opportunity-type-configuration",
+      "name": "Accès à Configuration Types d'Opportunités",
+      "description": "Permission d'accès à la page Configuration Types d'Opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.715Z",
+      "updated_at": "2025-11-24T22:15:54.715Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f3ecb6f7-c1ea-49f9-bdad-4079e9ea0109",
+      "code": "page.opportunity-types",
+      "name": "Accès à Types d'Opportunités",
+      "description": "Permission d'accès à la page Types d'Opportunités",
+      "category": "opportunities",
+      "created_at": "2025-11-24T22:15:54.716Z",
+      "updated_at": "2025-11-24T22:15:54.716Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "7c32d0f0-2daf-45db-a927-64e05f3cb474",
+      "code": "page.pays",
+      "name": "Accès à Gestion des Pays",
+      "description": "Permission d'accès à la page Gestion des Pays",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.716Z",
+      "updated_at": "2025-11-24T22:15:54.716Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "cb0e9f75-91fe-4835-a6d2-490b797dcc3d",
+      "code": "page.permissions-admin",
+      "name": "Accès à Administration des Permissions",
+      "description": "Permission d'accès à la page Administration des Permissions",
+      "category": "missions",
+      "created_at": "2025-11-24T22:15:54.717Z",
+      "updated_at": "2025-11-24T22:15:54.717Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "32bfa712-2480-4282-a573-1f375278e6c1",
+      "code": "page.postes",
+      "name": "Accès à Gestion des Postes",
+      "description": "Permission d'accès à la page Gestion des Postes",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.718Z",
+      "updated_at": "2025-11-24T22:15:54.718Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "80bfc204-2e56-4062-bfdb-5e45f6520387",
+      "code": "page.prospecting-campaign-summary",
+      "name": "Accès à Détails de Campagne",
+      "description": "Permission d'accès à la page Détails de Campagne",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.718Z",
+      "updated_at": "2025-11-24T22:15:54.718Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "c1184544-d819-44da-964e-cb3107eaf989",
+      "code": "page.prospecting-campaigns",
+      "name": "Accès à Prospection - Campagnes",
+      "description": "Permission d'accès à la page Prospection - Campagnes",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.719Z",
+      "updated_at": "2025-11-24T22:15:54.719Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4e92df9a-d876-48f4-93cd-570b1b8b5a2e",
+      "code": "page.prospecting-reports",
+      "name": "Accès à Rapports de Prospection",
+      "description": "Permission d'accès à la page Rapports de Prospection",
+      "category": "reports",
+      "created_at": "2025-11-24T22:15:54.719Z",
+      "updated_at": "2025-11-24T22:15:54.719Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e5e71b10-fd86-488a-800f-08096d7a7034",
+      "code": "page.prospecting-sources",
+      "name": "Accès à Prospection - Sources & Entreprises",
+      "description": "Permission d'accès à la page Prospection - Sources & Entreprises",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.720Z",
+      "updated_at": "2025-11-24T22:15:54.720Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4f7864fd-2bd5-4820-9776-37d9a2139f76",
+      "code": "page.prospecting-validations",
+      "name": "Accès à Validations de Campagnes - Prospection - V7",
+      "description": "Permission d'accès à la page Validations de Campagnes - Prospection - V7",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.720Z",
+      "updated_at": "2025-11-24T22:15:54.720Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "9c25aa26-d818-4541-bf0b-35da8de9b2aa",
+      "code": "page.reports",
+      "name": "Accès à Rapports et Analyses",
+      "description": "Permission d'accès à la page Rapports et Analyses",
+      "category": "reports",
+      "created_at": "2025-11-24T22:15:54.723Z",
+      "updated_at": "2025-11-24T22:15:54.723Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4a7b2e48-ba23-4fff-afca-1feeaa567694",
+      "code": "page.reports-missions",
+      "name": "Accès à Rapports Missions",
+      "description": "Permission d'accès à la page Rapports Missions",
+      "category": "reports",
+      "created_at": "2025-11-24T22:15:54.721Z",
+      "updated_at": "2025-11-24T22:15:54.721Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "181a11d6-5934-4b5a-8983-efc2c05e954b",
+      "code": "page.reports-opportunities",
+      "name": "Accès à Rapports Opportunités",
+      "description": "Permission d'accès à la page Rapports Opportunités",
+      "category": "reports",
+      "created_at": "2025-11-24T22:15:54.721Z",
+      "updated_at": "2025-11-24T22:15:54.721Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "794fc6a7-ed1b-44f9-8447-662f078cfc21",
+      "code": "page.reports-rh",
+      "name": "Accès à Rapport RH",
+      "description": "Permission d'accès à la page Rapport RH",
+      "category": "reports",
+      "created_at": "2025-11-24T22:15:54.722Z",
+      "updated_at": "2025-11-24T22:15:54.722Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "b9b08117-88e5-433f-96e1-7a817a895929",
+      "code": "page.reports-temps",
+      "name": "Accès à Rapports Temps",
+      "description": "Permission d'accès à la page Rapports Temps",
+      "category": "reports",
+      "created_at": "2025-11-24T22:15:54.722Z",
+      "updated_at": "2025-11-24T22:15:54.722Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "842c8f88-47a7-4f3c-83e1-858db2ea51c5",
+      "code": "page.secteurs-activite",
+      "name": "Accès à Gestion des Secteurs d'Activité",
+      "description": "Permission d'accès à la page Gestion des Secteurs d'Activité",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.723Z",
+      "updated_at": "2025-11-24T22:15:54.723Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "67c812f7-88e8-4908-a1cb-345f42faf41b",
+      "code": "page.taux-horaires",
+      "name": "Accès à Gestion des Taux Horaires",
+      "description": "Permission d'accès à la page Gestion des Taux Horaires",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.724Z",
+      "updated_at": "2025-11-24T22:15:54.724Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "be0bd812-c5e0-426b-a554-32d16b60e225",
+      "code": "page.test-rh",
+      "name": "Accès à Test Rh",
+      "description": "Permission d'accès à la page Test Rh",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.724Z",
+      "updated_at": "2025-11-24T22:15:54.724Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "b5d3b7f3-1f26-4a23-89f3-c4f3dcb26f7c",
+      "code": "page.test-simple",
+      "name": "Accès à Test Simple",
+      "description": "Permission d'accès à la page Test Simple",
+      "category": "pages",
+      "created_at": "2025-11-24T22:15:54.724Z",
+      "updated_at": "2025-11-24T22:15:54.724Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "fdec1445-5481-4281-8604-111492f07132",
+      "code": "page.time-entry-modern",
+      "name": "Accès à Saisie de Temps",
+      "description": "Permission d'accès à la page Saisie de Temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.725Z",
+      "updated_at": "2025-11-24T22:15:54.725Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "403ad97e-95fa-4d67-86ec-df8350d3740a",
+      "code": "page.time-sheet-approvals",
+      "name": "Accès à Validation des Feuilles de Temps",
+      "description": "Permission d'accès à la page Validation des Feuilles de Temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.725Z",
+      "updated_at": "2025-11-24T22:15:54.725Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "29042acb-0fe4-4fe0-bdf3-d54aa81ea4d1",
+      "code": "page.time-sheet-modern",
+      "name": "Accès à Feuilles de Temps",
+      "description": "Permission d'accès à la page Feuilles de Temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.726Z",
+      "updated_at": "2025-11-24T22:15:54.726Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f711eacb-ba14-4d72-ad2a-1e0114bccdd3",
+      "code": "page.time-sheet-supervisors",
+      "name": "Accès à Configuration des Superviseurs - Feuilles de Temps",
+      "description": "Permission d'accès à la page Configuration des Superviseurs - Feuilles de Temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.726Z",
+      "updated_at": "2025-11-24T22:15:54.726Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8727305b-ae1d-4fe1-8559-870d84a01d09",
+      "code": "page.types-collaborateurs",
+      "name": "Accès à Gestion des Types de Collaborateurs",
+      "description": "Permission d'accès à la page Gestion des Types de Collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.727Z",
+      "updated_at": "2025-11-24T22:15:54.727Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f4235c84-7b96-4c30-bbbc-21e27d4cdce3",
+      "code": "page.users",
+      "name": "Accès à Gestion des Utilisateurs",
+      "description": "Permission d'accès à la page Gestion des Utilisateurs",
+      "category": "users",
+      "created_at": "2025-11-24T22:15:54.727Z",
+      "updated_at": "2025-11-24T22:15:54.727Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "6dcd1df4-39f8-4f4e-9987-669481621bce",
+      "code": "page_permissions:create",
+      "name": "Créer permissions de pages",
+      "description": "Permission pour create permissions de pages",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.626Z",
+      "updated_at": "2025-11-24T22:15:54.626Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "929012a1-0ff4-4c95-a388-8602360a89fd",
+      "code": "pays:create",
+      "name": "Créer pays",
+      "description": "Permission pour create pays",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.627Z",
+      "updated_at": "2025-11-24T22:15:54.627Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "95874ceb-d19a-4825-9d96-611b8dd2ce30",
+      "code": "pays:delete",
+      "name": "Supprimer pays",
+      "description": "Permission pour delete pays",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.628Z",
+      "updated_at": "2025-11-24T22:15:54.628Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "d49de3f9-cdfd-445b-869a-cd4076032854",
+      "code": "pays:read",
+      "name": "Voir pays",
+      "description": "Permission pour read pays",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.626Z",
+      "updated_at": "2025-11-24T22:15:54.626Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "49f4f9c4-75b8-4bea-8706-4a7f515a8d42",
+      "code": "pays:update",
+      "name": "Modifier pays",
+      "description": "Permission pour update pays",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.628Z",
+      "updated_at": "2025-11-24T22:15:54.628Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "ba07e57d-5dec-41b3-a00c-e5760a55d7d0",
+      "code": "permission.assign",
+      "name": "API - Assigner des permissions",
+      "description": "API - Assigner des permissions",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.753Z",
+      "updated_at": "2025-11-24T22:15:54.753Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "97b664ad-da61-4f3e-a158-8ff1839eca00",
+      "code": "permission.manage",
+      "name": "API - Gestion des permissions",
+      "description": "API - Gestion des permissions",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.753Z",
+      "updated_at": "2025-11-24T22:15:54.753Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2dfa32cb-41b5-47ae-88be-04ae85b3472f",
+      "code": "permission.revoke",
+      "name": "API - Révoquer des permissions",
+      "description": "API - Révoquer des permissions",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.754Z",
+      "updated_at": "2025-11-24T22:15:54.754Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "b8e90e87-39eb-4640-b348-cbee28fc6b6a",
+      "code": "permissions:create",
+      "name": "Créer permissions",
+      "description": "Permission pour create permissions",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.629Z",
+      "updated_at": "2025-11-24T22:15:54.629Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "571ec8c5-c3ba-4bb5-ab8b-95a84399acd4",
+      "code": "permissions:delete",
+      "name": "Supprimer permissions",
+      "description": "Permission pour delete permissions",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.631Z",
+      "updated_at": "2025-11-24T22:15:54.631Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "03b2eb10-3253-49e0-a9f1-13c18910d311",
+      "code": "permissions:read",
+      "name": "Voir permissions",
+      "description": "Permission pour read permissions",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.629Z",
+      "updated_at": "2025-11-24T22:15:54.629Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "b4275d50-312a-4a05-b123-810ae5be50cb",
+      "code": "permissions:update",
+      "name": "Modifier permissions",
+      "description": "Permission pour update permissions",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.630Z",
+      "updated_at": "2025-11-24T22:15:54.630Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a841428d-dbaf-4eed-ab63-c020c8781ec2",
+      "code": "postes:create",
+      "name": "Créer postes",
+      "description": "Permission pour create postes",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.632Z",
+      "updated_at": "2025-11-24T22:15:54.632Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "224cf5cc-b969-4a98-a737-70936c1e8d15",
+      "code": "postes:delete",
+      "name": "Supprimer postes",
+      "description": "Permission pour delete postes",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.634Z",
+      "updated_at": "2025-11-24T22:15:54.634Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "fa0c86f2-2944-47a4-95c8-fc0b4202ec4c",
+      "code": "postes:read",
+      "name": "Voir postes",
+      "description": "Permission pour read postes",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.632Z",
+      "updated_at": "2025-11-24T22:15:54.632Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "14598760-9cb3-4e88-9930-f8c3597c99cf",
+      "code": "postes:update",
+      "name": "Modifier postes",
+      "description": "Permission pour update postes",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.633Z",
+      "updated_at": "2025-11-24T22:15:54.633Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "17c86762-82ca-460c-808d-2d1eea31a33a",
+      "code": "prospecting:create",
+      "name": "Créer prospection",
+      "description": "Permission pour create prospection",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.636Z",
+      "updated_at": "2025-11-24T22:15:54.636Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e525f0cc-5447-4efe-834a-d70f23ce98fd",
+      "code": "prospecting:delete",
+      "name": "Supprimer prospection",
+      "description": "Permission pour delete prospection",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.637Z",
+      "updated_at": "2025-11-24T22:15:54.637Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "39450ac3-85fc-4cff-b302-555823e0b015",
+      "code": "prospecting:read",
+      "name": "Voir prospection",
+      "description": "Permission pour read prospection",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.635Z",
+      "updated_at": "2025-11-24T22:15:54.635Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8609ee1f-95d0-4cf7-b616-bdcce7ea6a04",
+      "code": "prospecting:update",
+      "name": "Modifier prospection",
+      "description": "Permission pour update prospection",
+      "category": "campaigns",
+      "created_at": "2025-11-24T22:15:54.636Z",
+      "updated_at": "2025-11-24T22:15:54.636Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "069d2146-e40c-451e-b1c9-f7fdb535d081",
+      "code": "reports.create",
+      "name": "Créer des rapports",
+      "description": "Créer des rapports",
+      "category": "reports",
+      "created_at": "2025-11-24T22:15:54.683Z",
+      "updated_at": "2025-11-24T22:15:54.683Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "277d867d-5f68-441a-b084-310ce30bae77",
+      "code": "reports.view",
+      "name": "Voir les rapports",
+      "description": "Voir les rapports",
+      "category": "reports",
+      "created_at": "2025-11-24T22:15:54.682Z",
+      "updated_at": "2025-11-24T22:15:54.682Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "38847a8f-055c-4cf8-a918-798597a224e1",
+      "code": "reports:read",
+      "name": "Voir rapports",
+      "description": "Permission pour read rapports",
+      "category": "reports",
+      "created_at": "2025-11-24T22:15:54.637Z",
+      "updated_at": "2025-11-24T22:15:54.637Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "da6b8ac2-b67d-440e-ac7b-d7286a83580d",
+      "code": "role.manage",
+      "name": "API - Gestion des rôles",
+      "description": "API - Gestion des rôles",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.754Z",
+      "updated_at": "2025-11-24T22:15:54.754Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e2b94ec6-548c-49e9-a790-c3fab1972543",
+      "code": "secteurs_activite:create",
+      "name": "Créer secteurs d'activité",
+      "description": "Permission pour create secteurs d'activité",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.639Z",
+      "updated_at": "2025-11-24T22:15:54.639Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "853c3d01-841d-4df1-9ac7-997306677df8",
+      "code": "secteurs_activite:delete",
+      "name": "Supprimer secteurs d'activité",
+      "description": "Permission pour delete secteurs d'activité",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.640Z",
+      "updated_at": "2025-11-24T22:15:54.640Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "1099f5a6-d726-4408-b884-58401bb3465a",
+      "code": "secteurs_activite:read",
+      "name": "Voir secteurs d'activité",
+      "description": "Permission pour read secteurs d'activité",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.638Z",
+      "updated_at": "2025-11-24T22:15:54.638Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "e748a1a9-c943-4d05-92e8-a611ca47729c",
+      "code": "secteurs_activite:update",
+      "name": "Modifier secteurs d'activité",
+      "description": "Permission pour update secteurs d'activité",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.639Z",
+      "updated_at": "2025-11-24T22:15:54.639Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "bd77b467-dac9-4a4d-8910-f7a385db73f0",
+      "code": "stage_actions:create",
+      "name": "Créer actions d'étapes",
+      "description": "Permission pour create actions d'étapes",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.641Z",
+      "updated_at": "2025-11-24T22:15:54.641Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "00c5bf46-455c-46f1-8762-703482ec575d",
+      "code": "stage_actions:delete",
+      "name": "Supprimer actions d'étapes",
+      "description": "Permission pour delete actions d'étapes",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.642Z",
+      "updated_at": "2025-11-24T22:15:54.642Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a6e4ae5f-a991-47b2-81bd-a9f3008a0c47",
+      "code": "stage_actions:read",
+      "name": "Voir actions d'étapes",
+      "description": "Permission pour read actions d'étapes",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.641Z",
+      "updated_at": "2025-11-24T22:15:54.641Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "46a51739-33fd-4830-a8f9-8944f844268a",
+      "code": "stage_actions:update",
+      "name": "Modifier actions d'étapes",
+      "description": "Permission pour update actions d'étapes",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.642Z",
+      "updated_at": "2025-11-24T22:15:54.642Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "568bd997-d908-4319-a67d-7bbce221f60c",
+      "code": "supervisors:create",
+      "name": "Créer superviseurs",
+      "description": "Permission pour create superviseurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.643Z",
+      "updated_at": "2025-11-24T22:15:54.643Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "259315e6-ae49-458e-816a-2f08d2169391",
+      "code": "supervisors:delete",
+      "name": "Supprimer superviseurs",
+      "description": "Permission pour delete superviseurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.644Z",
+      "updated_at": "2025-11-24T22:15:54.644Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "77c096b2-0330-4750-b085-e152ee6f5d88",
+      "code": "supervisors:read",
+      "name": "Voir superviseurs",
+      "description": "Permission pour read superviseurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.643Z",
+      "updated_at": "2025-11-24T22:15:54.643Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "c8aac1dc-6f27-48bb-9cb4-3a3ab79eeca6",
+      "code": "sync_permissions:create",
+      "name": "Créer synchronisation des permissions",
+      "description": "Permission pour create synchronisation des permissions",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.644Z",
+      "updated_at": "2025-11-24T22:15:54.644Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "18df272c-4a66-44ba-985e-3bd5e732328e",
+      "code": "sync_permissions:delete",
+      "name": "Supprimer synchronisation des permissions",
+      "description": "Permission pour delete synchronisation des permissions",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.645Z",
+      "updated_at": "2025-11-24T22:15:54.645Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "9e5212b6-6f36-4871-b1ad-db4ee9b69337",
+      "code": "tasks:create",
+      "name": "Créer tâches",
+      "description": "Permission pour create tâches",
+      "category": "tasks",
+      "created_at": "2025-11-24T22:15:54.646Z",
+      "updated_at": "2025-11-24T22:15:54.646Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "75ba0277-167b-41a7-b1f2-17706a659d4c",
+      "code": "tasks:delete",
+      "name": "Supprimer tâches",
+      "description": "Permission pour delete tâches",
+      "category": "tasks",
+      "created_at": "2025-11-24T22:15:54.647Z",
+      "updated_at": "2025-11-24T22:15:54.647Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "b7d08377-24bb-4b88-bf8c-38b9cc09cc46",
+      "code": "tasks:read",
+      "name": "Voir tâches",
+      "description": "Permission pour read tâches",
+      "category": "tasks",
+      "created_at": "2025-11-24T22:15:54.645Z",
+      "updated_at": "2025-11-24T22:15:54.645Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "15e2c5ef-ba9b-422c-8bca-3ea4d7fb7245",
+      "code": "tasks:update",
+      "name": "Modifier tâches",
+      "description": "Permission pour update tâches",
+      "category": "tasks",
+      "created_at": "2025-11-24T22:15:54.646Z",
+      "updated_at": "2025-11-24T22:15:54.646Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "da685b1e-b04a-4eb4-a480-6b265e73debd",
+      "code": "taux_horaires:create",
+      "name": "Créer taux horaires",
+      "description": "Permission pour create taux horaires",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.647Z",
+      "updated_at": "2025-11-24T22:15:54.647Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a10b6268-7e81-4b80-be1d-46a6f67599f6",
+      "code": "taux_horaires:delete",
+      "name": "Supprimer taux horaires",
+      "description": "Permission pour delete taux horaires",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.649Z",
+      "updated_at": "2025-11-24T22:15:54.649Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a536a364-e906-4a22-9689-ba053de27c96",
+      "code": "taux_horaires:read",
+      "name": "Voir taux horaires",
+      "description": "Permission pour read taux horaires",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.647Z",
+      "updated_at": "2025-11-24T22:15:54.647Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "1a4149ae-a92c-4af1-905f-57a1d48919ff",
+      "code": "taux_horaires:update",
+      "name": "Modifier taux horaires",
+      "description": "Permission pour update taux horaires",
+      "category": "config",
+      "created_at": "2025-11-24T22:15:54.648Z",
+      "updated_at": "2025-11-24T22:15:54.648Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "0a6fc164-1f1e-4dce-a2be-98dd2f0a775e",
+      "code": "time_entries:create",
+      "name": "Créer saisies de temps",
+      "description": "Permission pour create saisies de temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.650Z",
+      "updated_at": "2025-11-24T22:15:54.650Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "4716c4a6-0050-47bb-8146-3eed1bc78d5d",
+      "code": "time_entries:delete",
+      "name": "Supprimer saisies de temps",
+      "description": "Permission pour delete saisies de temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.652Z",
+      "updated_at": "2025-11-24T22:15:54.652Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "58e1265c-6cab-4f81-8820-12c222cd50b7",
+      "code": "time_entries:read",
+      "name": "Voir saisies de temps",
+      "description": "Permission pour read saisies de temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.649Z",
+      "updated_at": "2025-11-24T22:15:54.649Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "34443a56-f483-4c2d-9aac-b2c4d2259de7",
+      "code": "time_entries:update",
+      "name": "Modifier saisies de temps",
+      "description": "Permission pour update saisies de temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.651Z",
+      "updated_at": "2025-11-24T22:15:54.651Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "b10a6c29-31a8-4055-9125-92149120eb2c",
+      "code": "time_sheet_approvals:create",
+      "name": "Créer time_sheet_approvals",
+      "description": "Permission pour create time_sheet_approvals",
+      "category": "time_sheet_approvals",
+      "created_at": "2025-11-24T22:15:54.653Z",
+      "updated_at": "2025-11-24T22:15:54.653Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "501acb24-e33a-4960-a1cb-63c0288bd49b",
+      "code": "time_sheet_approvals:read",
+      "name": "Voir time_sheet_approvals",
+      "description": "Permission pour read time_sheet_approvals",
+      "category": "time_sheet_approvals",
+      "created_at": "2025-11-24T22:15:54.652Z",
+      "updated_at": "2025-11-24T22:15:54.652Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "2119ee4a-0b40-4b12-aaf6-8383f2a30b8a",
+      "code": "time_sheet_supervisors:create",
+      "name": "Créer time_sheet_supervisors",
+      "description": "Permission pour create time_sheet_supervisors",
+      "category": "time_sheet_supervisors",
+      "created_at": "2025-11-24T22:15:54.654Z",
+      "updated_at": "2025-11-24T22:15:54.654Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "3751412f-1e4a-4cf2-9c90-18280eef1cb5",
+      "code": "time_sheet_supervisors:delete",
+      "name": "Supprimer time_sheet_supervisors",
+      "description": "Permission pour delete time_sheet_supervisors",
+      "category": "time_sheet_supervisors",
+      "created_at": "2025-11-24T22:15:54.654Z",
+      "updated_at": "2025-11-24T22:15:54.654Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8897206a-cf3d-4456-9040-bf85e0772570",
+      "code": "time_sheet_supervisors:read",
+      "name": "Voir time_sheet_supervisors",
+      "description": "Permission pour read time_sheet_supervisors",
+      "category": "time_sheet_supervisors",
+      "created_at": "2025-11-24T22:15:54.653Z",
+      "updated_at": "2025-11-24T22:15:54.653Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8f8323c6-542b-481a-a7f8-bb8f30d891db",
+      "code": "time_sheets:create",
+      "name": "Créer feuilles de temps",
+      "description": "Permission pour create feuilles de temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.656Z",
+      "updated_at": "2025-11-24T22:15:54.656Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "32535bf1-70d2-40ed-b2bf-806a2c7ffb9f",
+      "code": "time_sheets:delete",
+      "name": "Supprimer feuilles de temps",
+      "description": "Permission pour delete feuilles de temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.656Z",
+      "updated_at": "2025-11-24T22:15:54.656Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "a064fef6-6de3-4af9-985b-6531d02d053a",
+      "code": "time_sheets:read",
+      "name": "Voir feuilles de temps",
+      "description": "Permission pour read feuilles de temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.655Z",
+      "updated_at": "2025-11-24T22:15:54.655Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "d90da0eb-dc39-4282-aec5-d16d75cb36cc",
+      "code": "time_sheets:update",
+      "name": "Modifier feuilles de temps",
+      "description": "Permission pour update feuilles de temps",
+      "category": "time",
+      "created_at": "2025-11-24T22:15:54.656Z",
+      "updated_at": "2025-11-24T22:15:54.656Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8b13e773-fea3-45a5-95a7-f8de76cc655a",
+      "code": "two_factor_auth:create",
+      "name": "Créer authentification à deux facteurs",
+      "description": "Permission pour create authentification à deux facteurs",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.657Z",
+      "updated_at": "2025-11-24T22:15:54.657Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "245c63c1-fc7e-43c0-8ed8-161f7a3b9d75",
+      "code": "two_factor_auth:read",
+      "name": "Voir authentification à deux facteurs",
+      "description": "Permission pour read authentification à deux facteurs",
+      "category": "api",
+      "created_at": "2025-11-24T22:15:54.657Z",
+      "updated_at": "2025-11-24T22:15:54.657Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "fd556388-b7df-4baf-aeb1-a92bc340e375",
+      "code": "types_collaborateurs:create",
+      "name": "Créer types de collaborateurs",
+      "description": "Permission pour create types de collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.658Z",
+      "updated_at": "2025-11-24T22:15:54.658Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "3fa0f176-7ae7-4f44-8b9c-e77aff1443e9",
+      "code": "types_collaborateurs:delete",
+      "name": "Supprimer types de collaborateurs",
+      "description": "Permission pour delete types de collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.659Z",
+      "updated_at": "2025-11-24T22:15:54.659Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "5a9591c2-50cd-4212-8792-e58b8a390314",
+      "code": "types_collaborateurs:read",
+      "name": "Voir types de collaborateurs",
+      "description": "Permission pour read types de collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.658Z",
+      "updated_at": "2025-11-24T22:15:54.658Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "ffc9012f-ffed-45af-ab03-fea1155c870f",
+      "code": "types_collaborateurs:update",
+      "name": "Modifier types de collaborateurs",
+      "description": "Permission pour update types de collaborateurs",
+      "category": "hr",
+      "created_at": "2025-11-24T22:15:54.659Z",
+      "updated_at": "2025-11-24T22:15:54.659Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "32c6f0f9-af01-4a12-89a1-bd8c05bfe7de",
+      "code": "users:create",
+      "name": "Créer utilisateurs",
+      "description": "Permission pour créer utilisateurs",
+      "category": "users",
+      "created_at": "2025-11-24T22:15:54.660Z",
+      "updated_at": "2025-11-24T22:15:54.660Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "8bc5dc20-b818-47d5-b3a7-0e8ab2b0f317",
+      "code": "users:delete",
+      "name": "Supprimer utilisateurs",
+      "description": "Permission pour supprimer utilisateurs",
+      "category": "users",
+      "created_at": "2025-11-24T22:15:54.661Z",
+      "updated_at": "2025-11-24T22:15:54.661Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "86a92667-4ec4-4030-a02b-6344f1da32bd",
+      "code": "users:read",
+      "name": "Voir utilisateurs",
+      "description": "Permission pour voir utilisateurs",
+      "category": "users",
+      "created_at": "2025-11-24T22:15:54.660Z",
+      "updated_at": "2025-11-24T22:15:54.660Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "3b98cd45-2746-4023-b039-7b4cd4b2a99f",
+      "code": "users:update",
+      "name": "Modifier utilisateurs",
+      "description": "Permission pour modifier utilisateurs",
+      "category": "users",
+      "created_at": "2025-11-24T22:15:54.661Z",
+      "updated_at": "2025-11-24T22:15:54.661Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "aea2f516-e888-47fa-a181-07994c4ba6ec",
+      "code": "workflow:create",
+      "name": "Créer workflow",
+      "description": "Permission pour create workflow",
+      "category": "workflow",
+      "created_at": "2025-11-24T22:15:54.662Z",
+      "updated_at": "2025-11-24T22:15:54.662Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "f9b6a0e8-6d49-4be1-8fd8-700605130fe9",
+      "code": "workflow:delete",
+      "name": "Supprimer workflow",
+      "description": "Permission pour delete workflow",
+      "category": "workflow",
+      "created_at": "2025-11-24T22:15:54.663Z",
+      "updated_at": "2025-11-24T22:15:54.663Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "7035a1d5-77d9-4776-8271-4db85f5903e0",
+      "code": "workflow:read",
+      "name": "Voir workflow",
+      "description": "Permission pour read workflow",
+      "category": "workflow",
+      "created_at": "2025-11-24T22:15:54.662Z",
+      "updated_at": "2025-11-24T22:15:54.662Z",
+      "nom": null,
+      "module": null
+    },
+    {
+      "id": "d7ca1f6a-240b-44d4-89a1-8d0e8e713824",
+      "code": "workflow:update",
+      "name": "Modifier workflow",
+      "description": "Permission pour update workflow",
+      "category": "workflow",
+      "created_at": "2025-11-24T22:15:54.663Z",
+      "updated_at": "2025-11-24T22:15:54.663Z",
+      "nom": null,
+      "module": null
+    }
+  ],
+  "rolePermissions": [
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "menu.dashboard.analytics_indicateurs"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "menu.dashboard.dashboard_chargeabilite"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "menu.dashboard.dashboard_direction"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "menu.dashboard.dashboard_equipe"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "menu.dashboard.dashboard_optimise"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "menu.dashboard.dashboard_personnel"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "menu.dashboard.dashboard_recouvrement"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "menu.dashboard.dashboard_rentabilite"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "menu.dashboard.tableau_de_bord_principal"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "page.dashboard"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "activities:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "activities:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "activities:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "activities:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "analytics:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "api.clients.manage"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "api.missions.manage"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "api.opportunities.manage"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "api.permissions.read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "api.permissions.write"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "api.users.manage"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "auth:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "auth:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "branding:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "branding:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "branding:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "business_units:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "business_units:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "business_units:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "business_units:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "campaigns.create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "campaigns.delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "campaigns.edit"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "campaigns.execute"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "campaigns.validate"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "campaigns.view"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "clients.create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "clients.delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "clients.edit"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "clients.view"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "clients:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "clients:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "clients:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "clients:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "collaborateurs:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "collaborateurs:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "collaborateurs:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "collaborateurs:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "config.admin"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "config.edit"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "config.manage_permissions"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "config.view"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "contacts:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "contacts:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "dashboard.chargeabilite"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "dashboard.direction"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "dashboard.equipe"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "dashboard.optimise"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "dashboard.personnel"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "dashboard.recouvrement"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "dashboard.rentabilite"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "dashboard.view"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "dashboard:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "dashboard_analytics:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "divisions:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "divisions:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "divisions:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "divisions:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "evolution_grades:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "evolution_grades:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "evolution_grades:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "evolution_grades:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "evolution_organisations:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "evolution_organisations:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "evolution_organisations:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "evolution_organisations:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "evolution_postes:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "evolution_postes:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "evolution_postes:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "evolution_postes:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "feuilles_temps:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "feuilles_temps:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "feuilles_temps:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "feuilles_temps:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "fiscal_years:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "fiscal_years:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "fiscal_years:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "fiscal_years:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "grades:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "grades:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "grades:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "grades:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "health:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "internalActivities:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "internalActivities:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "internalActivities:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "internalActivities:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "invoices:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "invoices:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "invoices:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "invoices:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "managers:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "managers:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "managers:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.business_unit.activites_internes"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.business_unit.divisions"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.business_unit.secteurs_d_activite"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.business_unit.unites_d_affaires"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.configurations.annees_fiscales"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.configurations.configuration_types_d_opportunite"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.configurations.modeles_de_prospection"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.configurations.pays"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.configurations.sources_entreprises"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.dashboard.analytics_indicateurs"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.dashboard.dashboard_chargeabilite"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.dashboard.dashboard_direction"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.dashboard.dashboard_equipe"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.dashboard.dashboard_optimise"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.dashboard.dashboard_personnel"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.dashboard.dashboard_recouvrement"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.dashboard.dashboard_rentabilite"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.dashboard.tableau_de_bord_principal"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.gestion_des_temps.saisie_des_temps"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.gestion_des_temps.validation_des_temps"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.gestion_mission.factures_et_paiements"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.gestion_mission.missions"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.gestion_mission.taches"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.gestion_mission.types_de_mission"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.gestion_rh.collaborateurs"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.gestion_rh.grades"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.gestion_rh.postes"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.gestion_rh.taux_horaires"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.gestion_rh.types_collaborateurs"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.market_pipeline.campagnes_de_prospection"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.market_pipeline.clients_et_prospects"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.market_pipeline.opportunites"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.market_pipeline.types_d_opportunite"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.market_pipeline.validation_des_campagnes"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.parametres_administration.administration_des_permissions"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.parametres_administration.configuration_notifications"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.parametres_administration.utilisateurs"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.rapports.rapports_de_prospection"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.rapports.rapports_generaux"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.rapports.rapports_missions"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.rapports.rapports_opportunites"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "menu.rapports.rapports_rh"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "mission_types:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "mission_types:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "mission_types:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "mission_types:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "missions.create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "missions.delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "missions.edit"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "missions.view"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "missions:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "missions:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "missions:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "missions:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "notification_settings:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "notification_settings:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "notification_settings:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "notification_settings:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "notifications:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "notifications:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "notifications:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunities.create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunities.delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunities.edit"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunities.view"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunities:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunities:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunities:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunities:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunity_stages:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunity_stages:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunity_stages:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunity_stages:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunity_types:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunity_types:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunity_types:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "opportunity_types:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.activites-internes"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.analytics"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.business-units"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.campaign-execution"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.campaign-validations"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.clear-cache"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.clients"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.collaborateurs"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.collaborateurs__"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.collaborateurs__presque_parfait"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.collaborateurs_backup"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.collaborateurs_backup_before_debug_fix"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.collaborateurs_backup_before_duplication_fix"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.collaborateurs_backup_before_final_cleanup"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.collaborateurs_backup_before_final_fix"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.collaborateurs_backup_before_fix"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.collaborateurs_backup_before_function_fix"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.collaborateurs_backup_final"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.create-mission-step1"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.create-mission-step2"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.create-mission-step3"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.create-mission-step4"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.dashboard"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.dashboard-chargeabilite"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.dashboard-direction"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.dashboard-equipe"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.dashboard-optimise"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.dashboard-personnel"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.dashboard-recouvrement"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.dashboard-rentabilite"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.debug-clicks"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.divisions"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.edit-mission-planning"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.fiscal-years"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.force-reload"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.grades"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.index"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.invoice-details"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.invoices"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.login"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.logout"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.maintenance"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.mission-details"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.mission-types"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.missions"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.notification-settings"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.opportunities"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.opportunities-fixed"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.opportunities-new"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.opportunities-test"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.opportunities_backup"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.opportunities_backup_autre"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.opportunities_Gemini"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.opportunities_simple"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.opportunity-details"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.opportunity-stages"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.opportunity-type-configuration"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.opportunity-types"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.pays"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.permissions-admin"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.postes"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.prospecting-campaign-summary"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.prospecting-campaigns"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.prospecting-reports"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.prospecting-sources"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.prospecting-validations"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.reports"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.reports-missions"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.reports-opportunities"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.reports-rh"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.reports-temps"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.secteurs-activite"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.taux-horaires"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.test-rh"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.test-simple"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.time-entry-modern"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.time-sheet-approvals"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.time-sheet-modern"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.time-sheet-supervisors"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.types-collaborateurs"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page.users"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "page_permissions:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "pays:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "pays:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "pays:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "pays:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "permission.assign"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "permission.manage"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "permission.revoke"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "permissions:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "permissions:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "permissions:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "permissions:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "postes:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "postes:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "postes:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "postes:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "prospecting:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "prospecting:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "prospecting:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "prospecting:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "reports.create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "reports.view"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "reports:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "role.manage"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "secteurs_activite:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "secteurs_activite:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "secteurs_activite:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "secteurs_activite:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "stage_actions:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "stage_actions:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "stage_actions:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "stage_actions:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "supervisors:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "supervisors:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "supervisors:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "sync_permissions:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "sync_permissions:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "tasks:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "tasks:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "tasks:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "tasks:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "taux_horaires:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "taux_horaires:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "taux_horaires:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "taux_horaires:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_entries:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_entries:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_entries:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_entries:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_sheet_approvals:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_sheet_approvals:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_sheet_supervisors:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_sheet_supervisors:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_sheet_supervisors:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_sheets:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_sheets:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_sheets:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "time_sheets:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "two_factor_auth:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "two_factor_auth:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "types_collaborateurs:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "types_collaborateurs:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "types_collaborateurs:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "types_collaborateurs:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "users:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "users:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "users:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "users:update"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "workflow:create"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "workflow:delete"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "workflow:read"
+    },
+    {
+      "role_name": "SUPER_ADMIN",
+      "permission_code": "workflow:update"
+    }
+  ]
+}
