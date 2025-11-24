@@ -1,5 +1,5 @@
 {
-  "exportedAt": "2025-11-24T18:00:31.604Z",
+  "exportedAt": "2025-11-24T20:01:54.279Z",
   "database": "EB-PostProd1",
   "roles": [
     {
@@ -8,7 +8,7 @@
       "description": "Administrateur - Gestion métier et configuration",
       "is_system_role": true,
       "created_at": "2025-11-24T22:15:14.364Z",
-      "updated_at": "2025-11-24T22:15:14.364Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "badge_bg_class": "primary",
       "badge_text_class": "white",
       "badge_hex_color": "#0d6efd",
@@ -20,7 +20,7 @@
       "description": "Administrateur IT - Gestion technique et maintenance",
       "is_system_role": true,
       "created_at": "2025-11-24T22:15:14.363Z",
-      "updated_at": "2025-11-24T22:15:14.363Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "badge_bg_class": "dark",
       "badge_text_class": "white",
       "badge_hex_color": "#212529",
@@ -32,7 +32,7 @@
       "description": "Permissions et roles pour les Associés",
       "is_system_role": false,
       "created_at": "2025-11-24T22:15:14.367Z",
-      "updated_at": "2025-11-24T22:15:14.367Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "badge_bg_class": "warning",
       "badge_text_class": "dark",
       "badge_hex_color": "#ff9800",
@@ -44,7 +44,7 @@
       "description": "Collaborateur - Accès limité aux données de sa BU",
       "is_system_role": true,
       "created_at": "2025-11-24T22:15:14.366Z",
-      "updated_at": "2025-11-24T22:15:14.366Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "badge_bg_class": "info",
       "badge_text_class": "white",
       "badge_hex_color": "#17a2b8",
@@ -56,7 +56,7 @@
       "description": "Consultant - Utilisateur standard avec accès complet aux données",
       "is_system_role": true,
       "created_at": "2025-11-24T22:15:14.365Z",
-      "updated_at": "2025-11-24T22:15:14.365Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "badge_bg_class": "success",
       "badge_text_class": "white",
       "badge_hex_color": "#198754",
@@ -68,7 +68,7 @@
       "description": "Permissions et roles pour les directeurs",
       "is_system_role": false,
       "created_at": "2025-11-24T22:15:14.367Z",
-      "updated_at": "2025-11-24T22:15:14.367Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "badge_bg_class": "warning",
       "badge_text_class": "dark",
       "badge_hex_color": "#ffc107",
@@ -80,7 +80,7 @@
       "description": "Technicien IT - Support technique et maintenance",
       "is_system_role": true,
       "created_at": "2025-11-24T22:15:14.363Z",
-      "updated_at": "2025-11-24T22:15:14.363Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "badge_bg_class": "secondary",
       "badge_text_class": "white",
       "badge_hex_color": "#6c757d",
@@ -92,7 +92,7 @@
       "description": "Manager - Gestion d'équipe et supervision",
       "is_system_role": true,
       "created_at": "2025-11-24T22:15:14.365Z",
-      "updated_at": "2025-11-24T22:15:14.365Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "badge_bg_class": "info",
       "badge_text_class": "white",
       "badge_hex_color": "#0dcaf0",
@@ -104,7 +104,7 @@
       "description": "Super administrateur - Accès total à toutes les fonctionnalités",
       "is_system_role": true,
       "created_at": "2025-11-24T22:15:14.359Z",
-      "updated_at": "2025-11-24T22:15:14.359Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "badge_bg_class": "danger",
       "badge_text_class": "white",
       "badge_hex_color": "#dc3545",
@@ -116,7 +116,7 @@
       "description": "Permissions et roles pour le SP",
       "is_system_role": false,
       "created_at": "2025-11-24T22:15:14.368Z",
-      "updated_at": "2025-11-24T22:15:14.368Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "badge_bg_class": "primary",
       "badge_text_class": "white",
       "badge_hex_color": "#0066cc",
@@ -128,7 +128,7 @@
       "description": "Permissions pour superviseurs",
       "is_system_role": false,
       "created_at": "2025-11-24T22:15:14.369Z",
-      "updated_at": "2025-11-24T22:15:14.369Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "badge_bg_class": "info",
       "badge_text_class": "white",
       "badge_hex_color": "#17a2b8",
@@ -143,7 +143,7 @@
       "description": "Permission pour create activités",
       "category": "activities",
       "created_at": "2025-11-24T22:15:54.563Z",
-      "updated_at": "2025-11-24T22:15:54.563Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -154,7 +154,7 @@
       "description": "Permission pour delete activités",
       "category": "activities",
       "created_at": "2025-11-24T22:15:54.566Z",
-      "updated_at": "2025-11-24T22:15:54.566Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -165,7 +165,7 @@
       "description": "Permission pour read activités",
       "category": "activities",
       "created_at": "2025-11-24T22:15:54.550Z",
-      "updated_at": "2025-11-24T22:15:54.550Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -176,7 +176,7 @@
       "description": "Permission pour update activités",
       "category": "activities",
       "created_at": "2025-11-24T22:15:54.564Z",
-      "updated_at": "2025-11-24T22:15:54.564Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -187,7 +187,7 @@
       "description": "Permission pour read analytics",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.568Z",
-      "updated_at": "2025-11-24T22:15:54.568Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -198,7 +198,7 @@
       "description": "API - Gestion des clients",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.756Z",
-      "updated_at": "2025-11-24T22:15:54.756Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -209,7 +209,7 @@
       "description": "API - Gestion des missions",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.757Z",
-      "updated_at": "2025-11-24T22:15:54.757Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -220,7 +220,7 @@
       "description": "API - Gestion des opportunités",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.757Z",
-      "updated_at": "2025-11-24T22:15:54.757Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -231,7 +231,7 @@
       "description": "API - Lecture des permissions",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.755Z",
-      "updated_at": "2025-11-24T22:15:54.755Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -242,7 +242,7 @@
       "description": "API - Écriture des permissions",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.755Z",
-      "updated_at": "2025-11-24T22:15:54.755Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -253,7 +253,7 @@
       "description": "API - Gestion des utilisateurs",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.756Z",
-      "updated_at": "2025-11-24T22:15:54.756Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -264,7 +264,7 @@
       "description": "Permission pour create authentification",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.571Z",
-      "updated_at": "2025-11-24T22:15:54.571Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -275,7 +275,7 @@
       "description": "Permission pour read authentification",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.570Z",
-      "updated_at": "2025-11-24T22:15:54.570Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -286,7 +286,7 @@
       "description": "Permission pour create branding",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.573Z",
-      "updated_at": "2025-11-24T22:15:54.573Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -297,7 +297,7 @@
       "description": "Permission pour delete branding",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.574Z",
-      "updated_at": "2025-11-24T22:15:54.574Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -308,7 +308,7 @@
       "description": "Permission pour read branding",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.572Z",
-      "updated_at": "2025-11-24T22:15:54.572Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -319,7 +319,7 @@
       "description": "Permission pour create business units",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.576Z",
-      "updated_at": "2025-11-24T22:15:54.576Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -330,7 +330,7 @@
       "description": "Permission pour delete business units",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.577Z",
-      "updated_at": "2025-11-24T22:15:54.577Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -341,7 +341,7 @@
       "description": "Permission pour read business units",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.575Z",
-      "updated_at": "2025-11-24T22:15:54.575Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -352,7 +352,7 @@
       "description": "Permission pour update business units",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.577Z",
-      "updated_at": "2025-11-24T22:15:54.577Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -363,7 +363,7 @@
       "description": "Créer des campagnes",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.672Z",
-      "updated_at": "2025-11-24T22:15:54.672Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -374,7 +374,7 @@
       "description": "Supprimer les campagnes",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.673Z",
-      "updated_at": "2025-11-24T22:15:54.673Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -385,7 +385,7 @@
       "description": "Modifier les campagnes",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.673Z",
-      "updated_at": "2025-11-24T22:15:54.673Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -396,7 +396,7 @@
       "description": "Exécuter les campagnes",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.674Z",
-      "updated_at": "2025-11-24T22:15:54.674Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -407,7 +407,7 @@
       "description": "Valider les campagnes",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.674Z",
-      "updated_at": "2025-11-24T22:15:54.674Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -418,7 +418,7 @@
       "description": "Voir les campagnes",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.672Z",
-      "updated_at": "2025-11-24T22:15:54.672Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -429,7 +429,7 @@
       "description": "Créer des clients",
       "category": "clients",
       "created_at": "2025-11-24T22:15:54.664Z",
-      "updated_at": "2025-11-24T22:15:54.664Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -440,7 +440,7 @@
       "description": "Supprimer les clients",
       "category": "clients",
       "created_at": "2025-11-24T22:15:54.666Z",
-      "updated_at": "2025-11-24T22:15:54.666Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -451,7 +451,7 @@
       "description": "Modifier les clients",
       "category": "clients",
       "created_at": "2025-11-24T22:15:54.665Z",
-      "updated_at": "2025-11-24T22:15:54.665Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -462,7 +462,7 @@
       "description": "Voir les clients",
       "category": "clients",
       "created_at": "2025-11-24T22:15:54.664Z",
-      "updated_at": "2025-11-24T22:15:54.664Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -473,7 +473,7 @@
       "description": "Permission pour create clients",
       "category": "clients",
       "created_at": "2025-11-24T22:15:54.578Z",
-      "updated_at": "2025-11-24T22:15:54.578Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -484,7 +484,7 @@
       "description": "Permission pour delete clients",
       "category": "clients",
       "created_at": "2025-11-24T22:15:54.579Z",
-      "updated_at": "2025-11-24T22:15:54.579Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -495,7 +495,7 @@
       "description": "Permission pour read clients",
       "category": "clients",
       "created_at": "2025-11-24T22:15:54.578Z",
-      "updated_at": "2025-11-24T22:15:54.578Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -506,7 +506,7 @@
       "description": "Permission pour update clients",
       "category": "clients",
       "created_at": "2025-11-24T22:15:54.579Z",
-      "updated_at": "2025-11-24T22:15:54.579Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -517,7 +517,7 @@
       "description": "Permission pour create collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.580Z",
-      "updated_at": "2025-11-24T22:15:54.580Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -528,7 +528,7 @@
       "description": "Permission pour delete collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.582Z",
-      "updated_at": "2025-11-24T22:15:54.582Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -539,7 +539,7 @@
       "description": "Permission pour read collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.580Z",
-      "updated_at": "2025-11-24T22:15:54.580Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -550,7 +550,7 @@
       "description": "Permission pour update collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.581Z",
-      "updated_at": "2025-11-24T22:15:54.581Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -561,7 +561,7 @@
       "description": "Administrer la configuration",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.676Z",
-      "updated_at": "2025-11-24T22:15:54.676Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -572,7 +572,7 @@
       "description": "Modifier la configuration",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.675Z",
-      "updated_at": "2025-11-24T22:15:54.675Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -583,7 +583,7 @@
       "description": "Gérer les permissions",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.676Z",
-      "updated_at": "2025-11-24T22:15:54.676Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -594,7 +594,7 @@
       "description": "Voir la configuration",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.675Z",
-      "updated_at": "2025-11-24T22:15:54.675Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -605,7 +605,7 @@
       "description": "Permission pour créer contacts",
       "category": "clients",
       "created_at": "2025-11-24T22:15:54.583Z",
-      "updated_at": "2025-11-24T22:15:54.583Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -616,7 +616,7 @@
       "description": "Permission pour voir contacts",
       "category": "clients",
       "created_at": "2025-11-24T22:15:54.582Z",
-      "updated_at": "2025-11-24T22:15:54.582Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -627,7 +627,7 @@
       "description": "Dashboard Chargeabilité",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.680Z",
-      "updated_at": "2025-11-24T22:15:54.680Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -638,7 +638,7 @@
       "description": "Dashboard Direction",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.679Z",
-      "updated_at": "2025-11-24T22:15:54.679Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -649,7 +649,7 @@
       "description": "Dashboard Équipe",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.678Z",
-      "updated_at": "2025-11-24T22:15:54.678Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -660,7 +660,7 @@
       "description": "Dashboard Optimisé",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.681Z",
-      "updated_at": "2025-11-24T22:15:54.681Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -671,7 +671,7 @@
       "description": "Dashboard Personnel",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.678Z",
-      "updated_at": "2025-11-24T22:15:54.678Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -682,7 +682,7 @@
       "description": "Dashboard Recouvrement",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.679Z",
-      "updated_at": "2025-11-24T22:15:54.679Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -693,7 +693,7 @@
       "description": "Dashboard Rentabilité",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.679Z",
-      "updated_at": "2025-11-24T22:15:54.679Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -704,7 +704,7 @@
       "description": "Voir le dashboard",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.677Z",
-      "updated_at": "2025-11-24T22:15:54.677Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -715,7 +715,7 @@
       "description": "Voir dashboard",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.677Z",
-      "updated_at": "2025-11-24T22:15:54.677Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -726,7 +726,7 @@
       "description": "Permission pour read dashboard",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.584Z",
-      "updated_at": "2025-11-24T22:15:54.584Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -737,7 +737,7 @@
       "description": "Permission pour create divisions",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.585Z",
-      "updated_at": "2025-11-24T22:15:54.585Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -748,7 +748,7 @@
       "description": "Permission pour delete divisions",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.587Z",
-      "updated_at": "2025-11-24T22:15:54.587Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -759,7 +759,7 @@
       "description": "Permission pour read divisions",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.584Z",
-      "updated_at": "2025-11-24T22:15:54.584Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -770,7 +770,7 @@
       "description": "Permission pour update divisions",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.586Z",
-      "updated_at": "2025-11-24T22:15:54.586Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -781,7 +781,7 @@
       "description": "Permission pour create évolution grades",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.589Z",
-      "updated_at": "2025-11-24T22:15:54.589Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -792,7 +792,7 @@
       "description": "Permission pour delete évolution grades",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.590Z",
-      "updated_at": "2025-11-24T22:15:54.590Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -803,7 +803,7 @@
       "description": "Permission pour read évolution grades",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.588Z",
-      "updated_at": "2025-11-24T22:15:54.588Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -814,7 +814,7 @@
       "description": "Permission pour update évolution grades",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.589Z",
-      "updated_at": "2025-11-24T22:15:54.589Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -825,7 +825,7 @@
       "description": "Permission pour create évolution organisations",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.591Z",
-      "updated_at": "2025-11-24T22:15:54.591Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -836,7 +836,7 @@
       "description": "Permission pour delete évolution organisations",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.593Z",
-      "updated_at": "2025-11-24T22:15:54.593Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -847,7 +847,7 @@
       "description": "Permission pour read évolution organisations",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.591Z",
-      "updated_at": "2025-11-24T22:15:54.591Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -858,7 +858,7 @@
       "description": "Permission pour update évolution organisations",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.592Z",
-      "updated_at": "2025-11-24T22:15:54.592Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -869,7 +869,7 @@
       "description": "Permission pour create évolution postes",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.594Z",
-      "updated_at": "2025-11-24T22:15:54.594Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -880,7 +880,7 @@
       "description": "Permission pour delete évolution postes",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.595Z",
-      "updated_at": "2025-11-24T22:15:54.595Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -891,7 +891,7 @@
       "description": "Permission pour read évolution postes",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.593Z",
-      "updated_at": "2025-11-24T22:15:54.593Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -902,7 +902,7 @@
       "description": "Permission pour update évolution postes",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.594Z",
-      "updated_at": "2025-11-24T22:15:54.594Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -913,7 +913,7 @@
       "description": "Permission pour create feuilles de temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.596Z",
-      "updated_at": "2025-11-24T22:15:54.596Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -924,7 +924,7 @@
       "description": "Permission pour delete feuilles de temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.597Z",
-      "updated_at": "2025-11-24T22:15:54.597Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -935,7 +935,7 @@
       "description": "Permission pour read feuilles de temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.595Z",
-      "updated_at": "2025-11-24T22:15:54.595Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -946,7 +946,7 @@
       "description": "Permission pour update feuilles de temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.596Z",
-      "updated_at": "2025-11-24T22:15:54.596Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -957,7 +957,7 @@
       "description": "Permission pour créer années fiscales",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.597Z",
-      "updated_at": "2025-11-24T22:15:54.597Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -968,7 +968,7 @@
       "description": "Permission pour supprimer années fiscales",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.598Z",
-      "updated_at": "2025-11-24T22:15:54.598Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -979,7 +979,7 @@
       "description": "Permission pour read années fiscales",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.598Z",
-      "updated_at": "2025-11-24T22:15:54.598Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -990,7 +990,7 @@
       "description": "Permission pour update années fiscales",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.599Z",
-      "updated_at": "2025-11-24T22:15:54.599Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1001,7 +1001,7 @@
       "description": "Permission pour create grades",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.600Z",
-      "updated_at": "2025-11-24T22:15:54.600Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1012,7 +1012,7 @@
       "description": "Permission pour delete grades",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.602Z",
-      "updated_at": "2025-11-24T22:15:54.602Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1023,7 +1023,7 @@
       "description": "Permission pour read grades",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.600Z",
-      "updated_at": "2025-11-24T22:15:54.600Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1034,7 +1034,7 @@
       "description": "Permission pour update grades",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.601Z",
-      "updated_at": "2025-11-24T22:15:54.601Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1045,7 +1045,7 @@
       "description": "Permission pour read santé",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.602Z",
-      "updated_at": "2025-11-24T22:15:54.602Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1056,7 +1056,7 @@
       "description": "Permission pour create activités internes",
       "category": "activities",
       "created_at": "2025-11-24T22:15:54.603Z",
-      "updated_at": "2025-11-24T22:15:54.603Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1067,7 +1067,7 @@
       "description": "Permission pour delete activités internes",
       "category": "activities",
       "created_at": "2025-11-24T22:15:54.605Z",
-      "updated_at": "2025-11-24T22:15:54.605Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1078,7 +1078,7 @@
       "description": "Permission pour read activités internes",
       "category": "activities",
       "created_at": "2025-11-24T22:15:54.603Z",
-      "updated_at": "2025-11-24T22:15:54.603Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1089,7 +1089,7 @@
       "description": "Permission pour update activités internes",
       "category": "activities",
       "created_at": "2025-11-24T22:15:54.604Z",
-      "updated_at": "2025-11-24T22:15:54.604Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1100,7 +1100,7 @@
       "description": "Permission pour create factures",
       "category": "invoices",
       "created_at": "2025-11-24T22:15:54.606Z",
-      "updated_at": "2025-11-24T22:15:54.606Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1111,7 +1111,7 @@
       "description": "Permission pour delete factures",
       "category": "invoices",
       "created_at": "2025-11-24T22:15:54.607Z",
-      "updated_at": "2025-11-24T22:15:54.607Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1122,7 +1122,7 @@
       "description": "Permission pour read factures",
       "category": "invoices",
       "created_at": "2025-11-24T22:15:54.605Z",
-      "updated_at": "2025-11-24T22:15:54.605Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1133,7 +1133,7 @@
       "description": "Permission pour update factures",
       "category": "invoices",
       "created_at": "2025-11-24T22:15:54.607Z",
-      "updated_at": "2025-11-24T22:15:54.607Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1144,7 +1144,7 @@
       "description": "Permission pour create managers",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.608Z",
-      "updated_at": "2025-11-24T22:15:54.608Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1155,7 +1155,7 @@
       "description": "Permission pour read managers",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.608Z",
-      "updated_at": "2025-11-24T22:15:54.608Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1166,7 +1166,7 @@
       "description": "Permission pour update managers",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.609Z",
-      "updated_at": "2025-11-24T22:15:54.609Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1177,7 +1177,7 @@
       "description": "Permission d'accès au menu menu.business_unit.activites_internes",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.750Z",
-      "updated_at": "2025-11-24T22:15:54.750Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1188,7 +1188,7 @@
       "description": "Permission d'accès au menu menu.business_unit.divisions",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.750Z",
-      "updated_at": "2025-11-24T22:15:54.750Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1199,7 +1199,7 @@
       "description": "Permission d'accès au menu menu.business_unit.secteurs_d_activite",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.751Z",
-      "updated_at": "2025-11-24T22:15:54.751Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1210,7 +1210,7 @@
       "description": "Permission d'accès au menu menu.business_unit.unites_d_affaires",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.749Z",
-      "updated_at": "2025-11-24T22:15:54.749Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1221,7 +1221,7 @@
       "description": "Permission d'accès au menu menu.configurations.annees_fiscales",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.746Z",
-      "updated_at": "2025-11-24T22:15:54.746Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1232,7 +1232,7 @@
       "description": "Permission d'accès au menu menu.configurations.configuration_types_d_opportunite",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.747Z",
-      "updated_at": "2025-11-24T22:15:54.747Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1243,7 +1243,7 @@
       "description": "Permission d'accès au menu menu.configurations.modeles_de_prospection",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.748Z",
-      "updated_at": "2025-11-24T22:15:54.748Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1254,7 +1254,7 @@
       "description": "Permission d'accès au menu menu.configurations.pays",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.747Z",
-      "updated_at": "2025-11-24T22:15:54.747Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1265,7 +1265,7 @@
       "description": "Permission d'accès au menu menu.configurations.sources_entreprises",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.748Z",
-      "updated_at": "2025-11-24T22:15:54.748Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1276,7 +1276,7 @@
       "description": "Permission d'accès au menu menu.dashboard.analytics_indicateurs",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.733Z",
-      "updated_at": "2025-11-24T22:15:54.733Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1287,7 +1287,7 @@
       "description": "Permission d'accès au menu menu.dashboard.dashboard_chargeabilite",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.732Z",
-      "updated_at": "2025-11-24T22:15:54.732Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1298,7 +1298,7 @@
       "description": "Permission d'accès au menu menu.dashboard.dashboard_direction",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.730Z",
-      "updated_at": "2025-11-24T22:15:54.730Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1309,7 +1309,7 @@
       "description": "Permission d'accès au menu menu.dashboard.dashboard_equipe",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.729Z",
-      "updated_at": "2025-11-24T22:15:54.729Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1320,7 +1320,7 @@
       "description": "Permission d'accès au menu menu.dashboard.dashboard_optimise",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.734Z",
-      "updated_at": "2025-11-24T22:15:54.734Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1331,7 +1331,7 @@
       "description": "Permission d'accès au menu menu.dashboard.dashboard_personnel",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.728Z",
-      "updated_at": "2025-11-24T22:15:54.728Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1342,7 +1342,7 @@
       "description": "Permission d'accès au menu menu.dashboard.dashboard_recouvrement",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.731Z",
-      "updated_at": "2025-11-24T22:15:54.731Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1353,7 +1353,7 @@
       "description": "Permission d'accès au menu menu.dashboard.dashboard_rentabilite",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.731Z",
-      "updated_at": "2025-11-24T22:15:54.731Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1364,7 +1364,7 @@
       "description": "Permission d'accès au menu menu.dashboard.tableau_de_bord_principal",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.728Z",
-      "updated_at": "2025-11-24T22:15:54.728Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1375,7 +1375,7 @@
       "description": "Permission d'accès au menu menu.gestion_des_temps.saisie_des_temps",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.737Z",
-      "updated_at": "2025-11-24T22:15:54.737Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1386,7 +1386,7 @@
       "description": "Permission d'accès au menu menu.gestion_des_temps.validation_des_temps",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.737Z",
-      "updated_at": "2025-11-24T22:15:54.737Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1397,7 +1397,7 @@
       "description": "Permission d'accès au menu menu.gestion_mission.factures_et_paiements",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.739Z",
-      "updated_at": "2025-11-24T22:15:54.739Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1408,7 +1408,7 @@
       "description": "Permission d'accès au menu menu.gestion_mission.missions",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.738Z",
-      "updated_at": "2025-11-24T22:15:54.738Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1419,7 +1419,7 @@
       "description": "Permission d'accès au menu menu.gestion_mission.taches",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.739Z",
-      "updated_at": "2025-11-24T22:15:54.739Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1430,7 +1430,7 @@
       "description": "Permission d'accès au menu menu.gestion_mission.types_de_mission",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.738Z",
-      "updated_at": "2025-11-24T22:15:54.738Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1441,7 +1441,7 @@
       "description": "Permission d'accès au menu menu.gestion_rh.collaborateurs",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.742Z",
-      "updated_at": "2025-11-24T22:15:54.742Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1452,7 +1452,7 @@
       "description": "Permission d'accès au menu menu.gestion_rh.grades",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.743Z",
-      "updated_at": "2025-11-24T22:15:54.743Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1463,7 +1463,7 @@
       "description": "Permission d'accès au menu menu.gestion_rh.postes",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.744Z",
-      "updated_at": "2025-11-24T22:15:54.744Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1474,7 +1474,7 @@
       "description": "Permission d'accès au menu menu.gestion_rh.taux_horaires",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.745Z",
-      "updated_at": "2025-11-24T22:15:54.745Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1485,7 +1485,7 @@
       "description": "Permission d'accès au menu menu.gestion_rh.types_collaborateurs",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.743Z",
-      "updated_at": "2025-11-24T22:15:54.743Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1496,7 +1496,7 @@
       "description": "Permission d'accès au menu menu.market_pipeline.campagnes_de_prospection",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.741Z",
-      "updated_at": "2025-11-24T22:15:54.741Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1507,7 +1507,7 @@
       "description": "Permission d'accès au menu menu.market_pipeline.clients_et_prospects",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.740Z",
-      "updated_at": "2025-11-24T22:15:54.740Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1518,7 +1518,7 @@
       "description": "Permission d'accès au menu menu.market_pipeline.opportunites",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.740Z",
-      "updated_at": "2025-11-24T22:15:54.740Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1529,7 +1529,7 @@
       "description": "Permission d'accès au menu menu.market_pipeline.types_d_opportunite",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.741Z",
-      "updated_at": "2025-11-24T22:15:54.741Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1540,7 +1540,7 @@
       "description": "Permission d'accès au menu menu.market_pipeline.validation_des_campagnes",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.742Z",
-      "updated_at": "2025-11-24T22:15:54.742Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1551,7 +1551,7 @@
       "description": "Permission d'accès au menu menu.parametres_administration.administration_des_permissions",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.752Z",
-      "updated_at": "2025-11-24T22:15:54.752Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1562,7 +1562,7 @@
       "description": "Permission d'accès au menu menu.parametres_administration.configuration_notifications",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.751Z",
-      "updated_at": "2025-11-24T22:15:54.751Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1573,7 +1573,7 @@
       "description": "Permission d'accès au menu menu.parametres_administration.utilisateurs",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.752Z",
-      "updated_at": "2025-11-24T22:15:54.752Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1584,7 +1584,7 @@
       "description": "Permission d'accès au menu menu.rapports.rapports_de_prospection",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.736Z",
-      "updated_at": "2025-11-24T22:15:54.736Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1595,7 +1595,7 @@
       "description": "Permission d'accès au menu menu.rapports.rapports_generaux",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.734Z",
-      "updated_at": "2025-11-24T22:15:54.734Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1606,7 +1606,7 @@
       "description": "Permission d'accès au menu menu.rapports.rapports_missions",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.735Z",
-      "updated_at": "2025-11-24T22:15:54.735Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1617,7 +1617,7 @@
       "description": "Permission d'accès au menu menu.rapports.rapports_opportunites",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.736Z",
-      "updated_at": "2025-11-24T22:15:54.736Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1628,7 +1628,7 @@
       "description": "Permission d'accès au menu menu.rapports.rapports_rh",
       "category": "menu",
       "created_at": "2025-11-24T22:15:54.736Z",
-      "updated_at": "2025-11-24T22:15:54.736Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1639,7 +1639,7 @@
       "description": "Permission pour create types de missions",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.610Z",
-      "updated_at": "2025-11-24T22:15:54.610Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1650,7 +1650,7 @@
       "description": "Permission pour delete types de missions",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.611Z",
-      "updated_at": "2025-11-24T22:15:54.611Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1661,7 +1661,7 @@
       "description": "Permission pour read types de missions",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.609Z",
-      "updated_at": "2025-11-24T22:15:54.609Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1672,7 +1672,7 @@
       "description": "Permission pour update types de missions",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.611Z",
-      "updated_at": "2025-11-24T22:15:54.611Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1683,7 +1683,7 @@
       "description": "Créer des missions",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.668Z",
-      "updated_at": "2025-11-24T22:15:54.668Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1694,7 +1694,7 @@
       "description": "Supprimer les missions",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.669Z",
-      "updated_at": "2025-11-24T22:15:54.669Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1705,7 +1705,7 @@
       "description": "Modifier les missions",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.669Z",
-      "updated_at": "2025-11-24T22:15:54.669Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1716,7 +1716,7 @@
       "description": "Voir les missions",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.667Z",
-      "updated_at": "2025-11-24T22:15:54.667Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1727,7 +1727,7 @@
       "description": "Permission pour create missions",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.612Z",
-      "updated_at": "2025-11-24T22:15:54.612Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1738,7 +1738,7 @@
       "description": "Permission pour delete missions",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.614Z",
-      "updated_at": "2025-11-24T22:15:54.614Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1749,7 +1749,7 @@
       "description": "Permission pour read missions",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.612Z",
-      "updated_at": "2025-11-24T22:15:54.612Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1760,7 +1760,7 @@
       "description": "Permission pour update missions",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.613Z",
-      "updated_at": "2025-11-24T22:15:54.613Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1771,7 +1771,7 @@
       "description": "Permission pour create paramètres de notifications",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.615Z",
-      "updated_at": "2025-11-24T22:15:54.615Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1782,7 +1782,7 @@
       "description": "Permission pour delete paramètres de notifications",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.616Z",
-      "updated_at": "2025-11-24T22:15:54.616Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1793,7 +1793,7 @@
       "description": "Permission pour read paramètres de notifications",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.614Z",
-      "updated_at": "2025-11-24T22:15:54.614Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1804,7 +1804,7 @@
       "description": "Permission pour update paramètres de notifications",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.615Z",
-      "updated_at": "2025-11-24T22:15:54.615Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1815,7 +1815,7 @@
       "description": "Permission pour delete notifications",
       "category": "notifications",
       "created_at": "2025-11-24T22:15:54.618Z",
-      "updated_at": "2025-11-24T22:15:54.618Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1826,7 +1826,7 @@
       "description": "Permission pour read notifications",
       "category": "notifications",
       "created_at": "2025-11-24T22:15:54.617Z",
-      "updated_at": "2025-11-24T22:15:54.617Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1837,7 +1837,7 @@
       "description": "Permission pour update notifications",
       "category": "notifications",
       "created_at": "2025-11-24T22:15:54.617Z",
-      "updated_at": "2025-11-24T22:15:54.617Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1848,7 +1848,7 @@
       "description": "Créer des opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.670Z",
-      "updated_at": "2025-11-24T22:15:54.670Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1859,7 +1859,7 @@
       "description": "Supprimer les opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.671Z",
-      "updated_at": "2025-11-24T22:15:54.671Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1870,7 +1870,7 @@
       "description": "Modifier les opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.671Z",
-      "updated_at": "2025-11-24T22:15:54.671Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1881,7 +1881,7 @@
       "description": "Voir les opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.670Z",
-      "updated_at": "2025-11-24T22:15:54.670Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1892,7 +1892,7 @@
       "description": "Permission pour create opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.619Z",
-      "updated_at": "2025-11-24T22:15:54.619Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1903,7 +1903,7 @@
       "description": "Permission pour delete opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.620Z",
-      "updated_at": "2025-11-24T22:15:54.620Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1914,7 +1914,7 @@
       "description": "Permission pour read opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.619Z",
-      "updated_at": "2025-11-24T22:15:54.619Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1925,7 +1925,7 @@
       "description": "Permission pour update opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.619Z",
-      "updated_at": "2025-11-24T22:15:54.619Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1936,7 +1936,7 @@
       "description": "Permission pour create étapes d'opportunités",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.621Z",
-      "updated_at": "2025-11-24T22:15:54.621Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1947,7 +1947,7 @@
       "description": "Permission pour delete étapes d'opportunités",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.623Z",
-      "updated_at": "2025-11-24T22:15:54.623Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1958,7 +1958,7 @@
       "description": "Permission pour read étapes d'opportunités",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.620Z",
-      "updated_at": "2025-11-24T22:15:54.620Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1969,7 +1969,7 @@
       "description": "Permission pour update étapes d'opportunités",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.622Z",
-      "updated_at": "2025-11-24T22:15:54.622Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1980,7 +1980,7 @@
       "description": "Permission pour create types d'opportunités",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.624Z",
-      "updated_at": "2025-11-24T22:15:54.624Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -1991,7 +1991,7 @@
       "description": "Permission pour delete types d'opportunités",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.625Z",
-      "updated_at": "2025-11-24T22:15:54.625Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2002,7 +2002,7 @@
       "description": "Permission pour read types d'opportunités",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.623Z",
-      "updated_at": "2025-11-24T22:15:54.623Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2013,7 +2013,7 @@
       "description": "Permission pour update types d'opportunités",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.625Z",
-      "updated_at": "2025-11-24T22:15:54.625Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2024,7 +2024,7 @@
       "description": "Permission d'accès à la page Gestion des Activités Internes",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.684Z",
-      "updated_at": "2025-11-24T22:15:54.684Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2035,7 +2035,7 @@
       "description": "Permission d'accès à la page Analytics & Indicateurs",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.685Z",
-      "updated_at": "2025-11-24T22:15:54.685Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2046,7 +2046,7 @@
       "description": "Permission d'accès à la page Gestion des Business Units",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.685Z",
-      "updated_at": "2025-11-24T22:15:54.685Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2057,7 +2057,7 @@
       "description": "Permission d'accès à la page Exécution de Campagne - V4",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.686Z",
-      "updated_at": "2025-11-24T22:15:54.686Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2068,7 +2068,7 @@
       "description": "Permission d'accès à la page Validation des Campagnes",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.687Z",
-      "updated_at": "2025-11-24T22:15:54.687Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2079,7 +2079,7 @@
       "description": "Permission d'accès à la page Nettoyage du Cache",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.687Z",
-      "updated_at": "2025-11-24T22:15:54.687Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2090,7 +2090,7 @@
       "description": "Permission d'accès à la page Gestion des Clients",
       "category": "clients",
       "created_at": "2025-11-24T22:15:54.688Z",
-      "updated_at": "2025-11-24T22:15:54.688Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2101,7 +2101,7 @@
       "description": "Permission d'accès à la page Gestion des Collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.688Z",
-      "updated_at": "2025-11-24T22:15:54.688Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2112,7 +2112,7 @@
       "description": "Permission d'accès à la page Gestion des Collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.693Z",
-      "updated_at": "2025-11-24T22:15:54.693Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2123,7 +2123,7 @@
       "description": "Permission d'accès à la page Gestion des Collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.694Z",
-      "updated_at": "2025-11-24T22:15:54.694Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2134,7 +2134,7 @@
       "description": "Permission d'accès à la page Gestion des Collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.689Z",
-      "updated_at": "2025-11-24T22:15:54.689Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2145,7 +2145,7 @@
       "description": "Permission d'accès à la page Gestion des Collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.689Z",
-      "updated_at": "2025-11-24T22:15:54.689Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2156,7 +2156,7 @@
       "description": "Permission d'accès à la page Gestion des Collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.690Z",
-      "updated_at": "2025-11-24T22:15:54.690Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2167,7 +2167,7 @@
       "description": "Permission d'accès à la page Gestion des Collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.691Z",
-      "updated_at": "2025-11-24T22:15:54.691Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2178,7 +2178,7 @@
       "description": "Permission d'accès à la page Gestion des Collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.691Z",
-      "updated_at": "2025-11-24T22:15:54.691Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2189,7 +2189,7 @@
       "description": "Permission d'accès à la page Gestion des Collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.692Z",
-      "updated_at": "2025-11-24T22:15:54.692Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2200,7 +2200,7 @@
       "description": "Permission d'accès à la page Gestion des Collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.692Z",
-      "updated_at": "2025-11-24T22:15:54.692Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2211,7 +2211,7 @@
       "description": "Permission d'accès à la page Gestion des Collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.693Z",
-      "updated_at": "2025-11-24T22:15:54.693Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2222,7 +2222,7 @@
       "description": "Permission d'accès à la page Création de Mission - Étape 1",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.694Z",
-      "updated_at": "2025-11-24T22:15:54.694Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2233,7 +2233,7 @@
       "description": "Permission d'accès à la page Création de Mission - Étape 2",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.695Z",
-      "updated_at": "2025-11-24T22:15:54.695Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2244,7 +2244,7 @@
       "description": "Permission d'accès à la page Création de Mission - Étape 3",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.695Z",
-      "updated_at": "2025-11-24T22:15:54.695Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2255,7 +2255,7 @@
       "description": "Permission d'accès à la page Création de Mission - Étape 4",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.696Z",
-      "updated_at": "2025-11-24T22:15:54.696Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2266,7 +2266,7 @@
       "description": "Permission d'accès à la page Gestion des Temps",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.701Z",
-      "updated_at": "2025-11-24T22:15:54.701Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2277,7 +2277,7 @@
       "description": "Permission d'accès à la page Dashboard Chargeabilité",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.696Z",
-      "updated_at": "2025-11-24T22:15:54.696Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2288,7 +2288,7 @@
       "description": "Permission d'accès à la page Dashboard Direction",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.697Z",
-      "updated_at": "2025-11-24T22:15:54.697Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2299,7 +2299,7 @@
       "description": "Permission d'accès à la page Dashboard Équipe",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.698Z",
-      "updated_at": "2025-11-24T22:15:54.698Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2310,7 +2310,7 @@
       "description": "Permission d'accès à la page Dashboard Consolidé",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.698Z",
-      "updated_at": "2025-11-24T22:15:54.698Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2321,7 +2321,7 @@
       "description": "Permission d'accès à la page Dashboard Personnel",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.699Z",
-      "updated_at": "2025-11-24T22:15:54.699Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2332,7 +2332,7 @@
       "description": "Permission d'accès à la page Dashboard Recouvrement",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.699Z",
-      "updated_at": "2025-11-24T22:15:54.699Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2343,7 +2343,7 @@
       "description": "Permission d'accès à la page Dashboard Rentabilité",
       "category": "dashboard",
       "created_at": "2025-11-24T22:15:54.700Z",
-      "updated_at": "2025-11-24T22:15:54.700Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2354,7 +2354,7 @@
       "description": "Permission d'accès à la page Debug Clicks",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.702Z",
-      "updated_at": "2025-11-24T22:15:54.702Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2365,7 +2365,7 @@
       "description": "Permission d'accès à la page Gestion des Divisions",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.702Z",
-      "updated_at": "2025-11-24T22:15:54.702Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2376,7 +2376,7 @@
       "description": "Permission d'accès à la page Modifier le Planning",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.703Z",
-      "updated_at": "2025-11-24T22:15:54.703Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2387,7 +2387,7 @@
       "description": "Permission d'accès à la page Gestion des Exercices Fiscaux",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.703Z",
-      "updated_at": "2025-11-24T22:15:54.703Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2398,7 +2398,7 @@
       "description": "Permission d'accès à la page Force Reload",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.704Z",
-      "updated_at": "2025-11-24T22:15:54.704Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2409,7 +2409,7 @@
       "description": "Permission d'accès à la page Gestion des Grades",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.705Z",
-      "updated_at": "2025-11-24T22:15:54.705Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2420,7 +2420,7 @@
       "description": "Permission d'accès à la page Redirection",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.705Z",
-      "updated_at": "2025-11-24T22:15:54.705Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2431,7 +2431,7 @@
       "description": "Permission d'accès à la page Détails Facture",
       "category": "invoices",
       "created_at": "2025-11-24T22:15:54.706Z",
-      "updated_at": "2025-11-24T22:15:54.706Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2442,7 +2442,7 @@
       "description": "Permission d'accès à la page Facturation",
       "category": "invoices",
       "created_at": "2025-11-24T22:15:54.706Z",
-      "updated_at": "2025-11-24T22:15:54.706Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2453,7 +2453,7 @@
       "description": "Permission d'accès à la page login",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.707Z",
-      "updated_at": "2025-11-24T22:15:54.707Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2464,7 +2464,7 @@
       "description": "Permission d'accès à la page logout",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.707Z",
-      "updated_at": "2025-11-24T22:15:54.707Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2475,7 +2475,7 @@
       "description": "Permission d'accès à la page Maintenance en cours",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.708Z",
-      "updated_at": "2025-11-24T22:15:54.708Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2486,7 +2486,7 @@
       "description": "Permission d'accès à la page Détails Mission",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.708Z",
-      "updated_at": "2025-11-24T22:15:54.708Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2497,7 +2497,7 @@
       "description": "Permission d'accès à la page Types de Mission - TRS Affichage",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.709Z",
-      "updated_at": "2025-11-24T22:15:54.709Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2508,7 +2508,7 @@
       "description": "Permission d'accès à la page Gestion des Missions",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.709Z",
-      "updated_at": "2025-11-24T22:15:54.709Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2519,7 +2519,7 @@
       "description": "Permission d'accès à la page Configuration des Notifications",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.710Z",
-      "updated_at": "2025-11-24T22:15:54.710Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2530,7 +2530,7 @@
       "description": "Permission d'accès à la page Gestion des Opportunites",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.712Z",
-      "updated_at": "2025-11-24T22:15:54.712Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2541,7 +2541,7 @@
       "description": "Permission d'accès à la page Gestion des Opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.710Z",
-      "updated_at": "2025-11-24T22:15:54.710Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2552,7 +2552,7 @@
       "description": "Permission d'accès à la page Opportunities New",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.711Z",
-      "updated_at": "2025-11-24T22:15:54.711Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2563,7 +2563,7 @@
       "description": "Permission d'accès à la page Opportunities Test",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.711Z",
-      "updated_at": "2025-11-24T22:15:54.711Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2574,7 +2574,7 @@
       "description": "Permission d'accès à la page Gestion des Opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.712Z",
-      "updated_at": "2025-11-24T22:15:54.712Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2585,7 +2585,7 @@
       "description": "Permission d'accès à la page Gestion des OpportunitÃ©s",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.713Z",
-      "updated_at": "2025-11-24T22:15:54.713Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2596,7 +2596,7 @@
       "description": "Permission d'accès à la page Gestion des Opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.713Z",
-      "updated_at": "2025-11-24T22:15:54.713Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2607,7 +2607,7 @@
       "description": "Permission d'accès à la page Opportunities_simple",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.714Z",
-      "updated_at": "2025-11-24T22:15:54.714Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2618,7 +2618,7 @@
       "description": "Permission d'accès à la page Détails de l'Opportunité",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.714Z",
-      "updated_at": "2025-11-24T22:15:54.714Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2629,7 +2629,7 @@
       "description": "Permission d'accès à la page Étapes d'une Opportunité",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.714Z",
-      "updated_at": "2025-11-24T22:15:54.714Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2640,7 +2640,7 @@
       "description": "Permission d'accès à la page Configuration Types d'Opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.715Z",
-      "updated_at": "2025-11-24T22:15:54.715Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2651,7 +2651,7 @@
       "description": "Permission d'accès à la page Types d'Opportunités",
       "category": "opportunities",
       "created_at": "2025-11-24T22:15:54.716Z",
-      "updated_at": "2025-11-24T22:15:54.716Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2662,7 +2662,7 @@
       "description": "Permission d'accès à la page Gestion des Pays",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.716Z",
-      "updated_at": "2025-11-24T22:15:54.716Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2673,7 +2673,7 @@
       "description": "Permission d'accès à la page Administration des Permissions",
       "category": "missions",
       "created_at": "2025-11-24T22:15:54.717Z",
-      "updated_at": "2025-11-24T22:15:54.717Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2684,7 +2684,7 @@
       "description": "Permission d'accès à la page Gestion des Postes",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.718Z",
-      "updated_at": "2025-11-24T22:15:54.718Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2695,7 +2695,7 @@
       "description": "Permission d'accès à la page Détails de Campagne",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.718Z",
-      "updated_at": "2025-11-24T22:15:54.718Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2706,7 +2706,7 @@
       "description": "Permission d'accès à la page Prospection - Campagnes",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.719Z",
-      "updated_at": "2025-11-24T22:15:54.719Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2717,7 +2717,7 @@
       "description": "Permission d'accès à la page Rapports de Prospection",
       "category": "reports",
       "created_at": "2025-11-24T22:15:54.719Z",
-      "updated_at": "2025-11-24T22:15:54.719Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2728,7 +2728,7 @@
       "description": "Permission d'accès à la page Prospection - Sources & Entreprises",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.720Z",
-      "updated_at": "2025-11-24T22:15:54.720Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2739,7 +2739,7 @@
       "description": "Permission d'accès à la page Validations de Campagnes - Prospection - V7",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.720Z",
-      "updated_at": "2025-11-24T22:15:54.720Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2750,7 +2750,7 @@
       "description": "Permission d'accès à la page Rapports et Analyses",
       "category": "reports",
       "created_at": "2025-11-24T22:15:54.723Z",
-      "updated_at": "2025-11-24T22:15:54.723Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2761,7 +2761,7 @@
       "description": "Permission d'accès à la page Rapports Missions",
       "category": "reports",
       "created_at": "2025-11-24T22:15:54.721Z",
-      "updated_at": "2025-11-24T22:15:54.721Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2772,7 +2772,7 @@
       "description": "Permission d'accès à la page Rapports Opportunités",
       "category": "reports",
       "created_at": "2025-11-24T22:15:54.721Z",
-      "updated_at": "2025-11-24T22:15:54.721Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2783,7 +2783,7 @@
       "description": "Permission d'accès à la page Rapport RH",
       "category": "reports",
       "created_at": "2025-11-24T22:15:54.722Z",
-      "updated_at": "2025-11-24T22:15:54.722Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2794,7 +2794,7 @@
       "description": "Permission d'accès à la page Rapports Temps",
       "category": "reports",
       "created_at": "2025-11-24T22:15:54.722Z",
-      "updated_at": "2025-11-24T22:15:54.722Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2805,7 +2805,7 @@
       "description": "Permission d'accès à la page Gestion des Secteurs d'Activité",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.723Z",
-      "updated_at": "2025-11-24T22:15:54.723Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2816,7 +2816,7 @@
       "description": "Permission d'accès à la page Gestion des Taux Horaires",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.724Z",
-      "updated_at": "2025-11-24T22:15:54.724Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2827,7 +2827,7 @@
       "description": "Permission d'accès à la page Test Rh",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.724Z",
-      "updated_at": "2025-11-24T22:15:54.724Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2838,7 +2838,7 @@
       "description": "Permission d'accès à la page Test Simple",
       "category": "pages",
       "created_at": "2025-11-24T22:15:54.724Z",
-      "updated_at": "2025-11-24T22:15:54.724Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2849,7 +2849,7 @@
       "description": "Permission d'accès à la page Saisie de Temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.725Z",
-      "updated_at": "2025-11-24T22:15:54.725Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2860,7 +2860,7 @@
       "description": "Permission d'accès à la page Validation des Feuilles de Temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.725Z",
-      "updated_at": "2025-11-24T22:15:54.725Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2871,7 +2871,7 @@
       "description": "Permission d'accès à la page Feuilles de Temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.726Z",
-      "updated_at": "2025-11-24T22:15:54.726Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2882,7 +2882,7 @@
       "description": "Permission d'accès à la page Configuration des Superviseurs - Feuilles de Temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.726Z",
-      "updated_at": "2025-11-24T22:15:54.726Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2893,7 +2893,7 @@
       "description": "Permission d'accès à la page Gestion des Types de Collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.727Z",
-      "updated_at": "2025-11-24T22:15:54.727Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2904,7 +2904,7 @@
       "description": "Permission d'accès à la page Gestion des Utilisateurs",
       "category": "users",
       "created_at": "2025-11-24T22:15:54.727Z",
-      "updated_at": "2025-11-24T22:15:54.727Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2915,7 +2915,7 @@
       "description": "Permission pour create permissions de pages",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.626Z",
-      "updated_at": "2025-11-24T22:15:54.626Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2926,7 +2926,7 @@
       "description": "Permission pour create pays",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.627Z",
-      "updated_at": "2025-11-24T22:15:54.627Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2937,7 +2937,7 @@
       "description": "Permission pour delete pays",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.628Z",
-      "updated_at": "2025-11-24T22:15:54.628Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2948,7 +2948,7 @@
       "description": "Permission pour read pays",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.626Z",
-      "updated_at": "2025-11-24T22:15:54.626Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2959,7 +2959,7 @@
       "description": "Permission pour update pays",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.628Z",
-      "updated_at": "2025-11-24T22:15:54.628Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2970,7 +2970,7 @@
       "description": "API - Assigner des permissions",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.753Z",
-      "updated_at": "2025-11-24T22:15:54.753Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2981,7 +2981,7 @@
       "description": "API - Gestion des permissions",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.753Z",
-      "updated_at": "2025-11-24T22:15:54.753Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -2992,7 +2992,7 @@
       "description": "API - Révoquer des permissions",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.754Z",
-      "updated_at": "2025-11-24T22:15:54.754Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3003,7 +3003,7 @@
       "description": "Permission pour create permissions",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.629Z",
-      "updated_at": "2025-11-24T22:15:54.629Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3014,7 +3014,7 @@
       "description": "Permission pour delete permissions",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.631Z",
-      "updated_at": "2025-11-24T22:15:54.631Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3025,7 +3025,7 @@
       "description": "Permission pour read permissions",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.629Z",
-      "updated_at": "2025-11-24T22:15:54.629Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3036,7 +3036,7 @@
       "description": "Permission pour update permissions",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.630Z",
-      "updated_at": "2025-11-24T22:15:54.630Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3047,7 +3047,7 @@
       "description": "Permission pour create postes",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.632Z",
-      "updated_at": "2025-11-24T22:15:54.632Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3058,7 +3058,7 @@
       "description": "Permission pour delete postes",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.634Z",
-      "updated_at": "2025-11-24T22:15:54.634Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3069,7 +3069,7 @@
       "description": "Permission pour read postes",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.632Z",
-      "updated_at": "2025-11-24T22:15:54.632Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3080,7 +3080,7 @@
       "description": "Permission pour update postes",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.633Z",
-      "updated_at": "2025-11-24T22:15:54.633Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3091,7 +3091,7 @@
       "description": "Permission pour create prospection",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.636Z",
-      "updated_at": "2025-11-24T22:15:54.636Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3102,7 +3102,7 @@
       "description": "Permission pour delete prospection",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.637Z",
-      "updated_at": "2025-11-24T22:15:54.637Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3113,7 +3113,7 @@
       "description": "Permission pour read prospection",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.635Z",
-      "updated_at": "2025-11-24T22:15:54.635Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3124,7 +3124,7 @@
       "description": "Permission pour update prospection",
       "category": "campaigns",
       "created_at": "2025-11-24T22:15:54.636Z",
-      "updated_at": "2025-11-24T22:15:54.636Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3135,7 +3135,7 @@
       "description": "Créer des rapports",
       "category": "reports",
       "created_at": "2025-11-24T22:15:54.683Z",
-      "updated_at": "2025-11-24T22:15:54.683Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3146,7 +3146,7 @@
       "description": "Voir les rapports",
       "category": "reports",
       "created_at": "2025-11-24T22:15:54.682Z",
-      "updated_at": "2025-11-24T22:15:54.682Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3157,7 +3157,7 @@
       "description": "Permission pour read rapports",
       "category": "reports",
       "created_at": "2025-11-24T22:15:54.637Z",
-      "updated_at": "2025-11-24T22:15:54.637Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3168,7 +3168,7 @@
       "description": "API - Gestion des rôles",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.754Z",
-      "updated_at": "2025-11-24T22:15:54.754Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3179,7 +3179,7 @@
       "description": "Permission pour create secteurs d'activité",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.639Z",
-      "updated_at": "2025-11-24T22:15:54.639Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3190,7 +3190,7 @@
       "description": "Permission pour delete secteurs d'activité",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.640Z",
-      "updated_at": "2025-11-24T22:15:54.640Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3201,7 +3201,7 @@
       "description": "Permission pour read secteurs d'activité",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.638Z",
-      "updated_at": "2025-11-24T22:15:54.638Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3212,7 +3212,7 @@
       "description": "Permission pour update secteurs d'activité",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.639Z",
-      "updated_at": "2025-11-24T22:15:54.639Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3223,7 +3223,7 @@
       "description": "Permission pour create actions d'étapes",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.641Z",
-      "updated_at": "2025-11-24T22:15:54.641Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3234,7 +3234,7 @@
       "description": "Permission pour delete actions d'étapes",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.642Z",
-      "updated_at": "2025-11-24T22:15:54.642Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3245,7 +3245,7 @@
       "description": "Permission pour read actions d'étapes",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.641Z",
-      "updated_at": "2025-11-24T22:15:54.641Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3256,7 +3256,7 @@
       "description": "Permission pour update actions d'étapes",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.642Z",
-      "updated_at": "2025-11-24T22:15:54.642Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3267,7 +3267,7 @@
       "description": "Permission pour create superviseurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.643Z",
-      "updated_at": "2025-11-24T22:15:54.643Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3278,7 +3278,7 @@
       "description": "Permission pour delete superviseurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.644Z",
-      "updated_at": "2025-11-24T22:15:54.644Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3289,7 +3289,7 @@
       "description": "Permission pour read superviseurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.643Z",
-      "updated_at": "2025-11-24T22:15:54.643Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3300,7 +3300,7 @@
       "description": "Permission pour create synchronisation des permissions",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.644Z",
-      "updated_at": "2025-11-24T22:15:54.644Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3311,7 +3311,7 @@
       "description": "Permission pour delete synchronisation des permissions",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.645Z",
-      "updated_at": "2025-11-24T22:15:54.645Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3322,7 +3322,7 @@
       "description": "Permission pour create tâches",
       "category": "tasks",
       "created_at": "2025-11-24T22:15:54.646Z",
-      "updated_at": "2025-11-24T22:15:54.646Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3333,7 +3333,7 @@
       "description": "Permission pour delete tâches",
       "category": "tasks",
       "created_at": "2025-11-24T22:15:54.647Z",
-      "updated_at": "2025-11-24T22:15:54.647Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3344,7 +3344,7 @@
       "description": "Permission pour read tâches",
       "category": "tasks",
       "created_at": "2025-11-24T22:15:54.645Z",
-      "updated_at": "2025-11-24T22:15:54.645Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3355,7 +3355,7 @@
       "description": "Permission pour update tâches",
       "category": "tasks",
       "created_at": "2025-11-24T22:15:54.646Z",
-      "updated_at": "2025-11-24T22:15:54.646Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3366,7 +3366,7 @@
       "description": "Permission pour create taux horaires",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.647Z",
-      "updated_at": "2025-11-24T22:15:54.647Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3377,7 +3377,7 @@
       "description": "Permission pour delete taux horaires",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.649Z",
-      "updated_at": "2025-11-24T22:15:54.649Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3388,7 +3388,7 @@
       "description": "Permission pour read taux horaires",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.647Z",
-      "updated_at": "2025-11-24T22:15:54.647Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3399,7 +3399,7 @@
       "description": "Permission pour update taux horaires",
       "category": "config",
       "created_at": "2025-11-24T22:15:54.648Z",
-      "updated_at": "2025-11-24T22:15:54.648Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3410,7 +3410,7 @@
       "description": "Permission pour create saisies de temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.650Z",
-      "updated_at": "2025-11-24T22:15:54.650Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3421,7 +3421,7 @@
       "description": "Permission pour delete saisies de temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.652Z",
-      "updated_at": "2025-11-24T22:15:54.652Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3432,7 +3432,7 @@
       "description": "Permission pour read saisies de temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.649Z",
-      "updated_at": "2025-11-24T22:15:54.649Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3443,7 +3443,7 @@
       "description": "Permission pour update saisies de temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.651Z",
-      "updated_at": "2025-11-24T22:15:54.651Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3454,7 +3454,7 @@
       "description": "Permission pour create time_sheet_approvals",
       "category": "time_sheet_approvals",
       "created_at": "2025-11-24T22:15:54.653Z",
-      "updated_at": "2025-11-24T22:15:54.653Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3465,7 +3465,7 @@
       "description": "Permission pour read time_sheet_approvals",
       "category": "time_sheet_approvals",
       "created_at": "2025-11-24T22:15:54.652Z",
-      "updated_at": "2025-11-24T22:15:54.652Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3476,7 +3476,7 @@
       "description": "Permission pour create time_sheet_supervisors",
       "category": "time_sheet_supervisors",
       "created_at": "2025-11-24T22:15:54.654Z",
-      "updated_at": "2025-11-24T22:15:54.654Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3487,7 +3487,7 @@
       "description": "Permission pour delete time_sheet_supervisors",
       "category": "time_sheet_supervisors",
       "created_at": "2025-11-24T22:15:54.654Z",
-      "updated_at": "2025-11-24T22:15:54.654Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3498,7 +3498,7 @@
       "description": "Permission pour read time_sheet_supervisors",
       "category": "time_sheet_supervisors",
       "created_at": "2025-11-24T22:15:54.653Z",
-      "updated_at": "2025-11-24T22:15:54.653Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3509,7 +3509,7 @@
       "description": "Permission pour create feuilles de temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.656Z",
-      "updated_at": "2025-11-24T22:15:54.656Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3520,7 +3520,7 @@
       "description": "Permission pour delete feuilles de temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.656Z",
-      "updated_at": "2025-11-24T22:15:54.656Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3531,7 +3531,7 @@
       "description": "Permission pour read feuilles de temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.655Z",
-      "updated_at": "2025-11-24T22:15:54.655Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3542,7 +3542,7 @@
       "description": "Permission pour update feuilles de temps",
       "category": "time",
       "created_at": "2025-11-24T22:15:54.656Z",
-      "updated_at": "2025-11-24T22:15:54.656Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3553,7 +3553,7 @@
       "description": "Permission pour create authentification à deux facteurs",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.657Z",
-      "updated_at": "2025-11-24T22:15:54.657Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3564,7 +3564,7 @@
       "description": "Permission pour read authentification à deux facteurs",
       "category": "api",
       "created_at": "2025-11-24T22:15:54.657Z",
-      "updated_at": "2025-11-24T22:15:54.657Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3575,7 +3575,7 @@
       "description": "Permission pour create types de collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.658Z",
-      "updated_at": "2025-11-24T22:15:54.658Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3586,7 +3586,7 @@
       "description": "Permission pour delete types de collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.659Z",
-      "updated_at": "2025-11-24T22:15:54.659Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3597,7 +3597,7 @@
       "description": "Permission pour read types de collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.658Z",
-      "updated_at": "2025-11-24T22:15:54.658Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3608,7 +3608,7 @@
       "description": "Permission pour update types de collaborateurs",
       "category": "hr",
       "created_at": "2025-11-24T22:15:54.659Z",
-      "updated_at": "2025-11-24T22:15:54.659Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3619,7 +3619,7 @@
       "description": "Permission pour créer utilisateurs",
       "category": "users",
       "created_at": "2025-11-24T22:15:54.660Z",
-      "updated_at": "2025-11-24T22:15:54.660Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3630,7 +3630,7 @@
       "description": "Permission pour supprimer utilisateurs",
       "category": "users",
       "created_at": "2025-11-24T22:15:54.661Z",
-      "updated_at": "2025-11-24T22:15:54.661Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3641,7 +3641,7 @@
       "description": "Permission pour voir utilisateurs",
       "category": "users",
       "created_at": "2025-11-24T22:15:54.660Z",
-      "updated_at": "2025-11-24T22:15:54.660Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3652,7 +3652,7 @@
       "description": "Permission pour modifier utilisateurs",
       "category": "users",
       "created_at": "2025-11-24T22:15:54.661Z",
-      "updated_at": "2025-11-24T22:15:54.661Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3663,7 +3663,7 @@
       "description": "Permission pour create workflow",
       "category": "workflow",
       "created_at": "2025-11-24T22:15:54.662Z",
-      "updated_at": "2025-11-24T22:15:54.662Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3674,7 +3674,7 @@
       "description": "Permission pour delete workflow",
       "category": "workflow",
       "created_at": "2025-11-24T22:15:54.663Z",
-      "updated_at": "2025-11-24T22:15:54.663Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3685,7 +3685,7 @@
       "description": "Permission pour read workflow",
       "category": "workflow",
       "created_at": "2025-11-24T22:15:54.662Z",
-      "updated_at": "2025-11-24T22:15:54.662Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     },
@@ -3696,12 +3696,116 @@
       "description": "Permission pour update workflow",
       "category": "workflow",
       "created_at": "2025-11-24T22:15:54.663Z",
-      "updated_at": "2025-11-24T22:15:54.663Z",
+      "updated_at": "2025-11-25T00:00:34.035Z",
       "nom": null,
       "module": null
     }
   ],
   "rolePermissions": [
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "activities:create"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "activities:delete"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "activities:read"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "activities:update"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "internalActivities:create"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "internalActivities:delete"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "internalActivities:read"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "internalActivities:update"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "menu.dashboard.analytics_indicateurs"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "menu.dashboard.dashboard_chargeabilite"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "menu.dashboard.dashboard_direction"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "menu.dashboard.dashboard_equipe"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "menu.dashboard.dashboard_optimise"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "menu.dashboard.dashboard_personnel"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "menu.dashboard.dashboard_recouvrement"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "menu.dashboard.dashboard_rentabilite"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "menu.dashboard.tableau_de_bord_principal"
+    },
+    {
+      "role_name": "COLLABORATEUR",
+      "permission_code": "page.dashboard"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "activities:create"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "activities:delete"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "activities:read"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "activities:update"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "internalActivities:create"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "internalActivities:delete"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "internalActivities:read"
+    },
+    {
+      "role_name": "CONSULTANT",
+      "permission_code": "internalActivities:update"
+    },
     {
       "role_name": "CONSULTANT",
       "permission_code": "menu.dashboard.analytics_indicateurs"

@@ -165,18 +165,29 @@ router.post('/roles', requireAdminPermission, async (req, res) => {
             client.release();
             return res.status(400).json({ error: 'Le système de permissions n\'est pas encore configuré. Veuillez exécuter la migration des permissions.' });
         }
+
+        const userRolesResult = await client.query(`
+            SELECT r.name
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = $1
+        `, [req.user.id]);
+        const userRoles = userRolesResult.rows.map(r => r.name);
+        const isSuperAdmin = userRoles.includes('SUPER_ADMIN') || req.user.role === 'SUPER_ADMIN';
+
+        const finalIsSystemRole = isSuperAdmin ? !!is_system_role : false;
         
         const result = await client.query(`
             INSERT INTO roles (name, description, is_system_role)
             VALUES ($1, $2, $3)
             RETURNING id, name, description, is_system_role, created_at
-        `, [name, description, is_system_role || false]);
+        `, [name, description, finalIsSystemRole]);
         
         // Audit
         await client.query(`
             INSERT INTO permission_audit_log (user_id, action, target_type, target_id, details)
             VALUES ($1, 'GRANT', 'ROLE', $2, $3)
-        `, [req.user.id, result.rows[0].id, { name, description, is_system_role }]);
+        `, [req.user.id, result.rows[0].id, { name, description, is_system_role: finalIsSystemRole }]);
         
         client.release();
         
@@ -1045,15 +1056,20 @@ router.put('/roles/:id', requireAdminPermission, async (req, res) => {
             return res.status(404).json({ error: 'Rôle non trouvé' });
         }
         
-        // Vérifier si c'est un rôle système et si on essaie de modifier son statut
         const existingRole = roleResult.rows[0];
-        if (existingRole.is_system_role && is_system_role === false) {
-            client.release();
-            return res.status(403).json({ 
-                error: 'Impossible de retirer le statut système d\'un rôle système',
-                reason: 'Les rôles système sont protégés pour assurer le bon fonctionnement de l\'application.'
-            });
-        }
+
+        const userRolesResult = await client.query(`
+            SELECT r.name
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = $1
+        `, [req.user.id]);
+        const userRoles = userRolesResult.rows.map(r => r.name);
+        const isSuperAdmin = userRoles.includes('SUPER_ADMIN') || req.user.role === 'SUPER_ADMIN';
+
+        const finalIsSystemRole = isSuperAdmin && typeof is_system_role === 'boolean'
+            ? is_system_role
+            : existingRole.is_system_role;
         
         // Mettre à jour le rôle
         const result = await client.query(`
@@ -1061,7 +1077,7 @@ router.put('/roles/:id', requireAdminPermission, async (req, res) => {
             SET name = $1, description = $2, is_system_role = $3, updated_at = CURRENT_TIMESTAMP
             WHERE id = $4
             RETURNING id, name, description, is_system_role, created_at, updated_at
-        `, [name, description, is_system_role, id]);
+        `, [name, description, finalIsSystemRole, id]);
         
         // Audit
         await client.query(`

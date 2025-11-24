@@ -6,6 +6,7 @@ class PermissionsAdmin {
         this.currentBusinessUnit = null;
         this.currentUserForRoles = null;
         this.currentRoleForUsers = null;
+        this.currentUserRole = this.getCurrentUserRole();
         this.init();
     }
 
@@ -60,6 +61,8 @@ class PermissionsAdmin {
         const container = document.getElementById('roles-list');
         if (!container) return;
 
+        const isSuperAdmin = this.currentUserRole === 'SUPER_ADMIN';
+
         container.innerHTML = roles.map(role => `
             <div class="role-item mb-2 p-2 border rounded ${this.currentRole === role.id ? 'bg-primary text-white' : 'bg-light'}">
                 <div class="d-flex justify-content-between align-items-start">
@@ -72,11 +75,11 @@ class PermissionsAdmin {
                     </div>
                     <div class="btn-group btn-group-sm ms-2" role="group">
                         <button class="btn btn-sm ${this.currentRole === role.id ? 'btn-light' : 'btn-outline-primary'}" 
-                                onclick="event.stopPropagation(); showEditRoleModal('${role.id}', '${role.name.replace(/'/g, "\\'")}', '${(role.description || '').replace(/'/g, "\\'")}');"
+                                onclick="event.stopPropagation(); showEditRoleModal('${role.id}', '${role.name.replace(/'/g, "\\'")}', '${(role.description || '').replace(/'/g, "\\'")}', ${role.is_system_role ? 'true' : 'false'});"
                                 title="Modifier">
                             <i class="fas fa-edit"></i>
                         </button>
-                        ${!role.is_system_role ? `
+                        ${isSuperAdmin && !role.is_system_role ? `
                             <button class="btn btn-sm ${this.currentRole === role.id ? 'btn-danger' : 'btn-outline-danger'}" 
                                     onclick="event.stopPropagation(); confirmDeleteRole('${role.id}', '${role.name.replace(/'/g, "\\'")}')"
                                     title="Supprimer">
@@ -1365,6 +1368,12 @@ class PermissionsAdmin {
 // Fonctions globales pour les événements
 function showCreateRoleModal() {
     const modal = new bootstrap.Modal(document.getElementById('createRoleModal'));
+    const roleSystemCheckbox = document.getElementById('role-system');
+    if (roleSystemCheckbox) {
+        const isSuperAdmin = permissionsAdmin.currentUserRole === 'SUPER_ADMIN';
+        roleSystemCheckbox.checked = false;
+        roleSystemCheckbox.disabled = !isSuperAdmin;
+    }
     modal.show();
 }
 
@@ -1405,10 +1414,16 @@ async function createRole() {
     }
 }
 
-function showEditRoleModal(roleId, roleName, roleDescription) {
+function showEditRoleModal(roleId, roleName, roleDescription, isSystemRole) {
     document.getElementById('edit-role-id').value = roleId;
     document.getElementById('edit-role-name').value = roleName;
     document.getElementById('edit-role-description').value = roleDescription;
+    const systemCheckbox = document.getElementById('edit-role-system');
+    if (systemCheckbox) {
+        const isSuperAdmin = permissionsAdmin.currentUserRole === 'SUPER_ADMIN';
+        systemCheckbox.checked = !!isSystemRole;
+        systemCheckbox.disabled = !isSuperAdmin;
+    }
     
     const modal = new bootstrap.Modal(document.getElementById('editRoleModal'));
     modal.show();
@@ -1418,6 +1433,8 @@ async function updateRole() {
     const roleId = document.getElementById('edit-role-id').value;
     const name = document.getElementById('edit-role-name').value;
     const description = document.getElementById('edit-role-description').value;
+    const systemCheckbox = document.getElementById('edit-role-system');
+    const isSystem = systemCheckbox ? systemCheckbox.checked : undefined;
 
     if (!name) {
         permissionsAdmin.showAlert('Le nom du rôle est requis', 'danger');
@@ -1432,7 +1449,10 @@ async function updateRole() {
             },
             body: JSON.stringify({
                 name,
-                description
+                description,
+                // is_system_role est interprété côté backend : pour les non SUPER_ADMIN,
+                // il sera ignoré pour éviter les modifications non autorisées.
+                is_system_role: isSystem
             })
         });
 
