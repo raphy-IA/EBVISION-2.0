@@ -1,6 +1,7 @@
 // Variables globales
 let currentSettings = {};
 let notificationHistory = [];
+let emailReadOnly = false;
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
@@ -18,6 +19,107 @@ function checkAuthentication() {
         window.location.href = 'login.html';
         return;
     }
+}
+
+// Sauvegarde de la configuration centrale des délais d'alertes automatiques
+async function saveAutomaticAlertSettings() {
+    try {
+        const getInt = (id, fallback = 0) => {
+            const el = document.getElementById(id);
+            if (!el) return fallback;
+            const v = parseInt(el.value, 10);
+            return isNaN(v) ? fallback : v;
+        };
+
+        const settings = {
+            // Opportunités
+            opportunity_stage_overdue: {
+                userDelayDays: getInt('aa_opportunity_stage_overdue_user', 3),
+                managementDelayDays: getInt('aa_opportunity_stage_overdue_management', 7)
+            },
+            opportunity_inactive: {
+                userDelayDays: getInt('aa_opportunity_inactive_user', 14),
+                managementDelayDays: getInt('aa_opportunity_inactive_management', 30)
+            },
+
+            // Missions
+            mission_inactive: {
+                userDelayDays: getInt('aa_mission_inactive_user', 7),
+                managementDelayDays: getInt('aa_mission_inactive_management', 14)
+            },
+
+            // Feuilles de temps
+            timesheet_not_submitted: {
+                userDelayDays: getInt('aa_timesheet_not_submitted_user', 2),
+                managementDelayDays: getInt('aa_timesheet_not_submitted_management', 5)
+            },
+            timesheet_not_validated_superv: {
+                userDelayDays: getInt('aa_timesheet_not_validated_superv_user', 2),
+                managementDelayDays: getInt('aa_timesheet_not_validated_superv_management', 5)
+            },
+
+            // Facturation missions
+            mission_fee_billing_overdue: {
+                userDelayDays: getInt('aa_mission_fee_billing_overdue_user', 3),
+                managementDelayDays: getInt('aa_mission_fee_billing_overdue_management', 7)
+            },
+            mission_expense_billing_overdue: {
+                userDelayDays: getInt('aa_mission_expense_billing_overdue_user', 3),
+                managementDelayDays: getInt('aa_mission_expense_billing_overdue_management', 7)
+            },
+
+            // Campagnes de prospection
+            campaign_validation_pending: {
+                userDelayDays: getInt('aa_campaign_validation_pending_user', 3),
+                managementDelayDays: getInt('aa_campaign_validation_pending_management', 7)
+            },
+            campaign_not_launched: {
+                userDelayDays: getInt('aa_campaign_not_launched_user', 5),
+                managementDelayDays: getInt('aa_campaign_not_launched_management', 10)
+            }
+        };
+
+        const response = await fetchNotificationApi('/api/notification-settings/automatic-alerts', {
+            method: 'PUT',
+            body: JSON.stringify(settings)
+        });
+
+        if (response.success) {
+            showAlert('Délais d\'alertes automatiques sauvegardés avec succès', 'success');
+            currentSettings.automaticAlerts = settings;
+        } else {
+            showAlert('Erreur lors de la sauvegarde des délais d\'alertes automatiques', 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde des délais d\'alertes automatiques:', error);
+        showAlert('Erreur lors de la sauvegarde des délais d\'alertes automatiques', 'danger');
+    }
+}
+
+// Gestion du mode lecture seule pour la configuration email
+function setEmailFormReadOnly(readOnly) {
+    emailReadOnly = readOnly;
+
+    const fieldIds = ['smtpHost', 'smtpPort', 'smtpUser', 'smtpPassword', 'smtpFrom', 'enableSSL', 'enableDebug'];
+    fieldIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.disabled = readOnly;
+        }
+    });
+
+    const saveBtn = document.getElementById('saveEmailSettingsBtn');
+    const resetBtn = document.getElementById('resetEmailSettingsBtn');
+    const editBtn = document.getElementById('editEmailSettingsBtn');
+
+    if (saveBtn) saveBtn.style.display = readOnly ? 'none' : '';
+    if (resetBtn) resetBtn.style.display = readOnly ? 'none' : '';
+    if (editBtn) editBtn.style.display = readOnly ? '' : 'none';
+}
+
+// Passer en mode édition manuellement (bouton "Modifier la configuration")
+function enterEmailEditMode() {
+    setEmailFormReadOnly(false);
 }
 
 // Chargement des informations utilisateur
@@ -119,6 +221,11 @@ function applySettings() {
             passwordField.style.color = '#28a745';
         }
     }
+
+    // Si une configuration email existe, afficher par défaut en lecture seule
+    if (currentSettings.email) {
+        setEmailFormReadOnly(true);
+    }
     
     // Paramètres des alertes
     if (currentSettings.alerts) {
@@ -127,6 +234,57 @@ function applySettings() {
         document.getElementById('notificationRetention').value = currentSettings.alerts.notificationRetention || 30;
         document.getElementById('timezone').value = currentSettings.alerts.timezone || 'Europe/Paris';
     }
+
+    // Configuration centrale des délais d'alertes automatiques (tableau 3 colonnes)
+    const automaticAlerts = currentSettings.automaticAlerts || {};
+
+    const aaDefaults = {
+        // Opportunités
+        opportunity_stage_overdue:      { userDelayDays: 3, managementDelayDays: 7 },
+        opportunity_inactive:           { userDelayDays: 14, managementDelayDays: 30 },
+
+        // Missions
+        mission_inactive:               { userDelayDays: 7, managementDelayDays: 14 },
+
+        // Feuilles de temps
+        timesheet_not_submitted:        { userDelayDays: 2, managementDelayDays: 5 },
+        timesheet_not_validated_superv: { userDelayDays: 2, managementDelayDays: 5 },
+
+        // Facturation missions
+        mission_fee_billing_overdue:     { userDelayDays: 3, managementDelayDays: 7 },
+        mission_expense_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },
+
+        // Campagnes de prospection
+        campaign_validation_pending:    { userDelayDays: 3, managementDelayDays: 7 },
+        campaign_not_launched:          { userDelayDays: 5, managementDelayDays: 10 }
+    };
+
+    function setAaField(key, userId, mgmtId) {
+        const cfg = automaticAlerts[key] || aaDefaults[key] || { userDelayDays: 0, managementDelayDays: 0 };
+        const userEl = document.getElementById(userId);
+        const mgmtEl = document.getElementById(mgmtId);
+        if (userEl) userEl.value = typeof cfg.userDelayDays === 'number' ? cfg.userDelayDays : 0;
+        if (mgmtEl) mgmtEl.value = typeof cfg.managementDelayDays === 'number' ? cfg.managementDelayDays : 0;
+    }
+
+    // Campagnes
+    setAaField('campaign_validation_pending', 'aa_campaign_validation_pending_user', 'aa_campaign_validation_pending_management');
+    setAaField('campaign_not_launched', 'aa_campaign_not_launched_user', 'aa_campaign_not_launched_management');
+
+    // Opportunités
+    setAaField('opportunity_stage_overdue', 'aa_opportunity_stage_overdue_user', 'aa_opportunity_stage_overdue_management');
+    setAaField('opportunity_inactive', 'aa_opportunity_inactive_user', 'aa_opportunity_inactive_management');
+
+    // Missions
+    setAaField('mission_inactive', 'aa_mission_inactive_user', 'aa_mission_inactive_management');
+
+    // Feuilles de temps
+    setAaField('timesheet_not_submitted', 'aa_timesheet_not_submitted_user', 'aa_timesheet_not_submitted_management');
+    setAaField('timesheet_not_validated_superv', 'aa_timesheet_not_validated_superv_user', 'aa_timesheet_not_validated_superv_management');
+
+    // Facturation missions
+    setAaField('mission_fee_billing_overdue', 'aa_mission_fee_billing_overdue_user', 'aa_mission_fee_billing_overdue_management');
+    setAaField('mission_expense_billing_overdue', 'aa_mission_expense_billing_overdue_user', 'aa_mission_expense_billing_overdue_management');
     
     // Types de notifications
     if (currentSettings.notificationTypes) {
@@ -200,6 +358,8 @@ async function saveEmailSettings() {
         if (response.success) {
             showAlert('Configuration email sauvegardée avec succès', 'success');
             currentSettings.email = settings;
+            // Repasser en mode lecture seule après sauvegarde
+            setEmailFormReadOnly(true);
         } else {
             showAlert('Erreur lors de la sauvegarde de la configuration email', 'danger');
         }
@@ -666,6 +826,18 @@ function resetAlertSettings() {
         document.getElementById('notificationRetention').value = '30';
         document.getElementById('timezone').value = 'Europe/Paris';
     }
+}
+
+function resetAutomaticAlertSettings() {
+    if (!confirm('Voulez-vous réinitialiser les délais d\'alertes automatiques aux valeurs par défaut ?')) {
+        return;
+    }
+
+    // Recharger les valeurs à partir des valeurs par défaut définies dans applySettings
+    if (!currentSettings.automaticAlerts) {
+        currentSettings.automaticAlerts = {};
+    }
+    applySettings();
 }
 
 // Mise à jour du statut d'un type de notification

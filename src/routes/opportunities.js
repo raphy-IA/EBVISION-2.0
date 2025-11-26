@@ -6,6 +6,7 @@ const Client = require('../models/Client');
 const Collaborateur = require('../models/Collaborateur');
 const BusinessUnit = require('../models/BusinessUnit');
 const OpportunityType = require('../models/OpportunityType');
+const NotificationService = require('../services/notificationService');
 const { authenticateToken } = require('../middleware/auth');
 const OpportunityWorkflowService = require('../services/opportunityWorkflowService');
 const multer = require('multer');
@@ -459,6 +460,15 @@ router.post('/', authenticateToken, async (req, res) => {
             }
         } catch (e) {
             console.warn('⚠️ Impossible d\'instancier les étapes depuis les templates:', e.message);
+        }
+
+        // Notifications de création d'opportunité (création directe)
+        try {
+            await NotificationService.sendOpportunityCreatedNotification(opportunity.id, {
+                fromCampaign: false
+            });
+        } catch (notifErr) {
+            console.warn('⚠️ Erreur lors de l\'envoi des notifications de création d\'opportunité:', notifErr.message);
         }
 
         res.status(201).json({

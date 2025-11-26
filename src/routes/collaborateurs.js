@@ -211,6 +211,17 @@ router.post('/', authenticateToken, requireRole(['MANAGER']), async (req, res) =
         });
     } catch (error) {
         console.error('❌ Erreur lors de la création du collaborateur:', error);
+
+        // Gestion spécifique du doublon d'email sur la table collaborateurs
+        if (error.code === '23505' && error.constraint === 'collaborateurs_email_key') {
+            return res.status(400).json({
+                success: false,
+                error: 'EMAIL_DUPLICATE',
+                message: 'Cet email est déjà utilisé par un autre collaborateur.',
+                details: error.detail || error.message
+            });
+        }
+
         res.status(400).json({
             success: false,
             error: 'Erreur lors de la création du collaborateur',

@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const { pool } = require('../utils/database');
 
 class EmailService {
     
@@ -6,35 +7,94 @@ class EmailService {
         this.transporter = null;
         this.isConfigured = false;
         this.warningLogged = false; // Pour éviter les répétitions d'avertissements
+        // Initialisation asynchrone (non bloquante)
         this.initTransporter();
     }
     
     /**
      * Initialiser le transporteur email
+     * - Priorité 1 : variables d'environnement (déjà positionnées)
+     * - Priorité 2 : configuration globale en base (notification_settings, user_id IS NULL)
      */
-    initTransporter() {
+    async initTransporter() {
         try {
-            // Vérifier si les paramètres email sont configurés
-            const emailUser = process.env.EMAIL_USER;
-            const emailPassword = process.env.EMAIL_PASSWORD;
-            
+            let emailUser = process.env.EMAIL_USER;
+            let emailPassword = process.env.EMAIL_PASSWORD;
+
+            // Si les variables d'environnement ne sont pas définies, tenter de les recharger depuis la configuration globale
+            if (!emailUser || !emailPassword) {
+                try {
+                    const result = await pool.query(
+                        `SELECT email FROM notification_settings WHERE user_id IS NULL ORDER BY updated_at DESC NULLS LAST LIMIT 1`
+                    );
+
+                    if (result.rows[0] && result.rows[0].email) {
+                        let settingsRaw = result.rows[0].email;
+                        let settings;
+
+                        // La colonne peut être json/jsonb (objet) ou texte JSON (string)
+                        if (typeof settingsRaw === 'string') {
+                            try {
+                                settings = JSON.parse(settingsRaw);
+                            } catch (parseError) {
+                                console.warn('⚠️ Impossible de parser la configuration email globale (string):', parseError.message);
+                                settings = {};
+                            }
+                        } else {
+                            settings = settingsRaw || {};
+                        }
+
+                        emailUser = settings.smtpUser || '';
+                        emailPassword = settings.smtpPassword || '';
+
+                        process.env.EMAIL_USER = emailUser;
+                        if (emailPassword) {
+                            process.env.EMAIL_PASSWORD = emailPassword;
+                        }
+                        process.env.EMAIL_FROM = settings.smtpFrom || process.env.EMAIL_FROM || '';
+                        process.env.SMTP_HOST = settings.smtpHost || process.env.SMTP_HOST || 'smtp.gmail.com';
+                        process.env.SMTP_PORT = String(settings.smtpPort || process.env.SMTP_PORT || '587');
+                        process.env.SMTP_SECURE = settings.enableSSL ? 'true' : (process.env.SMTP_SECURE || 'false');
+                        process.env.SMTP_DEBUG = settings.enableDebug ? 'true' : (process.env.SMTP_DEBUG || 'false');
+
+                        console.log('✅ Configuration email rechargée depuis notification_settings (global)', {
+                            smtpHost: process.env.SMTP_HOST,
+                            smtpPort: process.env.SMTP_PORT,
+                            smtpUser: emailUser,
+                            hasPassword: !!emailPassword
+                        });
+                    }
+                } catch (dbError) {
+                    console.warn('⚠️ Impossible de recharger la configuration email depuis la base:', dbError.message);
+                }
+            }
+
+            // Vérifier à nouveau après tentative de rechargement
             if (!emailUser || !emailPassword) {
                 if (!this.warningLogged) {
                     console.warn('⚠️ Service email non configuré: paramètres manquants (EMAIL_USER, EMAIL_PASSWORD)');
-                    console.warn('   Les emails ne seront pas envoyés. Pour activer, configurez les variables d\'environnement.');
+                    console.warn('   Configurez l\'onglet "Configuration email" pour activer l\'envoi des notifications.');
                     this.warningLogged = true;
                 }
                 this.isConfigured = false;
                 return;
             }
-            
-            // Configuration pour le développement (Gmail avec app password)
+
+            // Paramètres SMTP issus de la configuration notifications (notification-settings)
+            const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+            const port = parseInt(process.env.SMTP_PORT || '587', 10);
+            const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+            const debug = process.env.SMTP_DEBUG === 'true';
+
             this.transporter = nodemailer.createTransport({
-                service: 'gmail',
+                host,
+                port,
+                secure,
                 auth: {
                     user: emailUser,
                     pass: emailPassword
-                }
+                },
+                debug
             });
             
             this.isConfigured = true;
@@ -53,7 +113,12 @@ class EmailService {
      */
     async sendNotificationEmail(to, subject, htmlContent, textContent = null) {
         if (!this.isConfigured) {
-            // Ne pas logger à chaque tentative d'envoi pour éviter le spam de logs
+            // Service non configuré : retourner false et loguer une seule fois au besoin
+            if (!this.warningLogged) {
+                console.warn('⚠️ Tentative d\'envoi d\'email alors que le service email n\'est pas configuré.');
+                console.warn('   Vérifiez la configuration dans l\'onglet "Configuration email" (EMAIL_USER / EMAIL_PASSWORD / SMTP_HOST / SMTP_PORT).');
+                this.warningLogged = true;
+            }
             return false;
         }
         

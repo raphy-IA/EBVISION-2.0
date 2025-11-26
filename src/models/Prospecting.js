@@ -828,10 +828,11 @@ class ProspectingCampaign {
             // Envoyer une notification de décision de validation
             try {
                 await NotificationService.sendCampaignValidationDecisionNotification(
-                    validation.rows[0].campaign_id, 
-                    decision, 
-                    validateurId, 
-                    comment
+                    validation.rows[0].campaign_id,
+                    decision,
+                    validateurId,
+                    comment,
+                    validationId
                 );
                 console.log(`📢 Notification de décision envoyée pour la campagne ${validation.rows[0].campaign_id}`);
             } catch (error) {
@@ -1239,7 +1240,14 @@ class ProspectingCampaign {
                         }
                     }
                 }
-                
+
+                // 5. Notifications globales de création d'opportunité (création depuis prospection)
+                await NotificationService.sendOpportunityCreatedNotification(opportunityId, {
+                    fromCampaign: true,
+                    campaignId,
+                    companyName: company.company_name
+                });
+
                 console.log('✅ Notifications de conversion envoyées avec succès');
             } catch (notificationError) {
                 console.warn('⚠️ Erreur lors de l\'envoi des notifications de conversion:', notificationError);

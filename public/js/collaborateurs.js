@@ -799,7 +799,15 @@
                     bootstrap.Modal.getInstance(document.getElementById('newCollaborateurModal')).hide();
                     loadCollaborateurs(currentPage);
                 } else {
-                    showAlert(`Erreur lors de la création: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
+                    let message = data.message || data.error || 'Erreur inconnue';
+
+                    // Cas spécifique: doublon d'email collaborateur
+                    if (data.error === 'EMAIL_DUPLICATE' ||
+                        (data.details && typeof data.details === 'string' && data.details.includes('collaborateurs_email_key'))) {
+                        message = 'Cet email est déjà utilisé par un autre collaborateur. Veuillez saisir un email unique.';
+                    }
+
+                    showAlert(`Erreur lors de la création: ${message}`, 'danger');
                 }
             } catch (error) {
                 console.error('Erreur lors de la soumission:', error);
@@ -2989,25 +2997,51 @@
             }
         }
 
-        // Charger les collaborateurs pour la sélection
+        // Charger tous les collaborateurs ACTIFS pour la sélection (ignorer la pagination)
         async function loadCollaborateursForSupervision() {
             try {
-                const response = await authenticatedFetch('/api/collaborateurs');
-                const data = await response.json();
-                
                 const select = document.getElementById('collaborateurs-select');
+                if (!select) return;
+
                 select.innerHTML = '';
-                
-                if (data.success && data.data) {
-                    data.data.forEach(collaborateur => {
-                        const option = document.createElement('option');
-                        option.value = collaborateur.id;
-                        option.textContent = `${collaborateur.nom} ${collaborateur.prenom} - ${collaborateur.business_unit_nom || 'Sans BU'}`;
-                        select.appendChild(option);
-                    });
-                }
+
+                let page = 1;
+                const limit = 200; // limite élevée pour réduire le nombre d'appels
+                let totalPages = 1;
+
+                const allCollaborateurs = [];
+
+                do {
+                    const url = `/api/collaborateurs?page=${page}&limit=${limit}&statut=ACTIF`;
+                    const response = await authenticatedFetch(url);
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        console.error('❌ Erreur API lors du chargement des collaborateurs pour supervision:', data.error || data.message);
+                        break;
+                    }
+
+                    if (Array.isArray(data.data)) {
+                        allCollaborateurs.push(...data.data);
+                    }
+
+                    if (data.pagination && typeof data.pagination.totalPages === 'number') {
+                        totalPages = data.pagination.totalPages;
+                    } else {
+                        totalPages = 1;
+                    }
+
+                    page += 1;
+                } while (page <= totalPages);
+
+                allCollaborateurs.forEach(collaborateur => {
+                    const option = document.createElement('option');
+                    option.value = collaborateur.id;
+                    option.textContent = `${collaborateur.nom} ${collaborateur.prenom} - ${collaborateur.business_unit_nom || 'Sans BU'}`;
+                    select.appendChild(option);
+                });
             } catch (error) {
-                console.error('❌ Erreur lors du chargement des collaborateurs:', error);
+                console.error('❌ Erreur lors du chargement des collaborateurs pour supervision:', error);
             }
         }
 
