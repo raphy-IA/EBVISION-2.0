@@ -8,7 +8,7 @@ let sidebarCache = {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Initialisation du chargement de la sidebar...');
     const sidebarContainer = document.querySelector('.sidebar-container');
-    const sidebarPath = '/template-modern-sidebar.html'; // Chemin vers le template de la sidebar
+    const sidebarPath = '/template-modern-sidebar.html'; // Chemin vers le template de la sidebar moderne
 
     if (sidebarContainer) {
         console.log('✅ Container sidebar trouvé, chargement en cours...');

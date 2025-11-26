@@ -231,6 +231,14 @@ router.post('/test-email', authenticateToken, async (req, res) => {
     try {
         const { emailSettings, testEmail } = req.body;
         
+        console.log('Test email settings:', {
+            host: emailSettings.smtpHost,
+            port: emailSettings.smtpPort,
+            secure: emailSettings.enableSSL,
+            user: emailSettings.smtpUser,
+            hasPassword: !!emailSettings.smtpPassword,
+            passwordLength: emailSettings.smtpPassword ? emailSettings.smtpPassword.length : 0
+        });
         // Créer un transporteur temporaire pour le test
         const testTransporter = require('nodemailer').createTransport({
             host: emailSettings.smtpHost,

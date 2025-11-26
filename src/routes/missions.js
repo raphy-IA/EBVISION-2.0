@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
+const NotificationService = require('../services/notificationService');
 
 /**
  * GET /api/missions
@@ -289,6 +290,14 @@ router.post('/', authenticateToken, async (req, res) => {
         }
         
         await client.query('COMMIT');
+
+        try {
+            if (mission && mission.id) {
+                await NotificationService.sendMissionCreatedNotification(mission.id);
+            }
+        } catch (notifError) {
+            console.error('Erreur lors de l\'envoi de la notification de création de mission:', notifError);
+        }
         
         res.status(201).json({
             success: true,
@@ -373,6 +382,13 @@ router.put('/:id', authenticateToken, async (req, res) => {
             });
         }
 
+        const selectOldQuery = `
+            SELECT statut FROM missions WHERE id = $1
+        `;
+
+        const oldResult = await pool.query(selectOldQuery, [req.params.id]);
+        const oldStatus = oldResult.rows.length > 0 ? oldResult.rows[0].statut : null;
+
         const updateQuery = `
             UPDATE missions
             SET ${setClauses.join(', ')}
@@ -391,9 +407,19 @@ router.put('/:id', authenticateToken, async (req, res) => {
             });
         }
 
+        const updatedMission = result.rows[0];
+
+        try {
+            if (oldStatus && updatedMission.statut && oldStatus !== updatedMission.statut) {
+                await NotificationService.sendMissionStatusChangedNotification(updatedMission.id, oldStatus, updatedMission.statut);
+            }
+        } catch (notifError) {
+            console.error('Erreur lors de l\'envoi de la notification de changement de statut de mission:', notifError);
+        }
+
         res.json({
             success: true,
-            data: result.rows[0],
+            data: updatedMission,
             message: 'Mission mise à jour avec succès'
         });
     } catch (error) {

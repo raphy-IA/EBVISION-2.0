@@ -200,13 +200,6 @@ async function saveEmailSettings() {
         if (response.success) {
             showAlert('Configuration email sauvegardée avec succès', 'success');
             currentSettings.email = settings;
-            // Masquer le mot de passe avec des astérisques pour indiquer qu'il est sauvegardé
-            const passwordField = document.getElementById('smtpPassword');
-            if (passwordField.value) {
-                passwordField.value = '••••••••';
-                passwordField.setAttribute('data-saved', 'true');
-                passwordField.style.color = '#28a745';
-            }
         } else {
             showAlert('Erreur lors de la sauvegarde de la configuration email', 'danger');
         }
@@ -283,11 +276,20 @@ async function testEmailConfiguration() {
     }
     
     try {
+        const passwordField = document.getElementById('smtpPassword');
+        const passwordValue = passwordField.value;
+
+        // Empêcher l'utilisation de la valeur masquée comme vrai mot de passe
+        if (passwordValue === '••••••••' && passwordField.getAttribute('data-saved') === 'true') {
+            showAlert('Veuillez ressaisir le mot de passe d\'application avant de tester la configuration.', 'warning');
+            return;
+        }
+
         const emailSettings = {
             smtpHost: document.getElementById('smtpHost').value,
             smtpPort: parseInt(document.getElementById('smtpPort').value),
             smtpUser: document.getElementById('smtpUser').value,
-            smtpPassword: document.getElementById('smtpPassword').value,
+            smtpPassword: passwordValue,
             smtpFrom: document.getElementById('smtpFrom').value,
             enableSSL: document.getElementById('enableSSL').checked,
             enableDebug: document.getElementById('enableDebug').checked

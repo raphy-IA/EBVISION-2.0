@@ -387,6 +387,7 @@ class NotificationService {
                     u.id as user_id,
                     u.nom as user_name,
                     u.email as user_email,
+                    resp.id as responsible_id,
                     resp.nom as responsible_name,
                     resp.prenom as responsible_prenom,
                     bu.nom as business_unit_name,
@@ -397,8 +398,10 @@ class NotificationService {
                 LEFT JOIN business_units bu ON pc.business_unit_id = bu.id
                 LEFT JOIN prospecting_campaign_companies pcc ON pc.id = pcc.campaign_id
                 WHERE pc.id = $1
-                GROUP BY pc.id, pc.name, pc.channel, pc.created_at, u.id, u.nom, u.email, resp.nom, resp.prenom, bu.nom
+                GROUP BY pc.id, pc.name, pc.channel, pc.created_at, u.id, u.nom, u.email, resp.id, resp.nom, resp.prenom, bu.nom
             `;
+
+            console.log('📢 [Notifications] Préparation notification création campagne', { campaignId, createdByUserId });
 
             const result = await pool.query(query, [campaignId]);
             const data = result.rows[0];
@@ -423,19 +426,22 @@ class NotificationService {
                 }
             });
 
-            // Notification pour le responsable (si différent du créateur)
-            if (data.responsible_name && data.user_id !== createdByUserId) {
+            // Notification + email pour le responsable (s'il existe)
+            if (data.responsible_id) {
                 const responsibleUser = await pool.query(
-                    'SELECT u.id, u.email FROM users u JOIN collaborateurs c ON u.collaborateur_id = c.id WHERE c.id = $1',
+                    'SELECT u.id, u.email, u.nom, u.prenom FROM users u JOIN collaborateurs c ON u.collaborateur_id = c.id WHERE c.id = $1',
                     [data.responsible_id]
                 );
 
                 if (responsibleUser.rows[0]) {
+                    const respUser = responsibleUser.rows[0];
+
+                    // Notification interne
                     await this.createNotification({
                         type: 'CAMPAIGN_ASSIGNED',
                         title: 'Nouvelle campagne assignée',
                         message: `Vous avez été assigné à la campagne "${data.campaign_name}" avec ${data.companies_count} entreprises à traiter.`,
-                        user_id: responsibleUser.rows[0].id,
+                        user_id: respUser.id,
                         priority: 'NORMAL',
                         metadata: {
                             campaign_id: data.campaign_id,
@@ -445,6 +451,32 @@ class NotificationService {
                             business_unit: data.business_unit_name
                         }
                     });
+
+                    // Notification email si une adresse est disponible
+                    if (respUser.email) {
+                        const subject = `Nouvelle campagne de prospection assignée - ${data.campaign_name}`;
+                        const htmlContent = `
+                            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                                <div style="background-color: #007bff; color: white; padding: 20px; text-align: center;">
+                                    <h1>Nouvelle campagne assignée</h1>
+                                </div>
+                                <div style="padding: 20px; background-color: #f8f9fa;">
+                                    <p>Bonjour ${respUser.prenom || ''} ${respUser.nom || ''},</p>
+                                    <p>Vous avez été désigné responsable de la campagne de prospection <strong>${data.campaign_name}</strong>.</p>
+                                    <p><strong>Détails de la campagne :</strong></p>
+                                    <ul>
+                                        <li>Canal : <strong>${data.channel}</strong></li>
+                                        <li>Nombre d'entreprises : <strong>${data.companies_count}</strong></li>
+                                        <li>Business Unit : <strong>${data.business_unit_name || 'N/A'}</strong></li>
+                                    </ul>
+                                    <p>Merci de planifier et piloter l'exécution de cette campagne dans EB-Vision.</p>
+                                    <p>Cordialement,<br>L'équipe EB-Vision</p>
+                                </div>
+                            </div>
+                        `;
+
+                        await EmailService.sendNotificationEmail(respUser.email, subject, htmlContent);
+                    }
                 }
             }
 
