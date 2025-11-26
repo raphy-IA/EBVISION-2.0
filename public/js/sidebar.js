@@ -32,8 +32,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadSidebar(container, path) {
         try {
-            // Désactivation temporaire du cache : toujours charger la sidebar depuis le serveur
-            console.log('🔄 Chargement de la sidebar depuis le serveur (cache désactivé)');
+            // Vérifier le cache en premier
+            const cachedSidebar = getCachedSidebar();
+            if (cachedSidebar) {
+                console.log('📋 Utilisation de la sidebar en cache');
+                injectSidebarContent(container, cachedSidebar);
+                return;
+            }
+
+            console.log('🔄 Chargement de la sidebar depuis le serveur');
             const response = await fetch(path);
             
             if (!response.ok) {
