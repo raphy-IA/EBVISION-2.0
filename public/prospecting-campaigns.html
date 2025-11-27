@@ -1,13 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prospection - Campagnes</title>
+    <title>EBVISION 2.0 - Prospection - Campagnes</title>
     
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
@@ -22,7 +22,7 @@
     <!-- Scripts de zone utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
-    <!-- <script src="js/user-modals.js"></script> -->
+    <script src="js/user-modals.js"></script>
     
     <style>
         :root {
@@ -37,7 +37,7 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
-            overflow-x: hidden; /* Emp├¬che le d├®filement horizontal */
+            overflow-x: hidden; /* Empêche le défilement horizontal */
         }
         
         /* Le conteneur principal de la page qui contient la sidebar et le contenu */
@@ -84,7 +84,7 @@
             font-weight: 600 !important;
         }
 
-        /* Ajustements pour les petits ├®crans */
+        /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
                 flex-direction: column; /* Empile la sidebar et le contenu */
@@ -101,13 +101,6 @@
     
     
     
-
-    <!-- CSS des variables de branding dynamiques -->
-    <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
-    <!-- Scripts de branding -->
-    <script src="js/branding-loader.js"></script>
-    <script src="js/sidebar-branding.js"></script>
 </head>
 <body>
     <!-- Bouton toggle sidebar mobile -->
@@ -117,7 +110,7 @@
     <div class="page-wrapper">
         <!-- Sidebar Container -->
         <div class="sidebar-container">
-            <!-- La sidebar sera g├®n├®r├®e par JavaScript -->
+            <!-- La sidebar sera générée par JavaScript -->
         </div>
 
         <!-- Main Content Area -->
@@ -130,6 +123,23 @@
                         <i class="fas fa-calendar me-1"></i>
                         <span id="current-date"></span>
                     </div>
+                    <!-- Notification Dropdown -->
+                    <div class="dropdown ms-3">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false" onclick="openNotificationsModal()">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge bg-danger rounded-pill" id="notificationBadge">0</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                            <li><h6 class="dropdown-header">Notifications</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <div id="notificationsContainer" class="list-group list-group-flush">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-center" href="#" onclick="markAllAsRead()">Marquer tout comme lu</a></li>
+                            <li><a class="dropdown-item text-center text-danger" href="#" onclick="clearReadNotifications()">Supprimer les lues</a></li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- Action Buttons -->
@@ -140,7 +150,7 @@
                         </button>
                     </div>
                     <div class="text-muted">
-                        <small>G├®rez vos campagnes de prospection</small>
+                        <small>Gérez vos campagnes de prospection</small>
                     </div>
                 </div>
 
@@ -162,9 +172,9 @@
                                         <th>Type de contenu</th>
                                         <th>BU</th>
                                         <th>Responsable</th>
-                                        <th>Planifi├®e</th>
+                                        <th>Planifiée</th>
                                         <th>Entreprises</th>
-                                        <th>Cr├®├®e le</th>
+                                        <th>Créée le</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -192,26 +202,26 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="campName" class="form-label required-field">Nom de la campagne *</label>
-                                <input id="campName" class="form-control" placeholder="G├®n├®r├® automatiquement" readonly>
-                                <div class="form-text">Le nom est g├®n├®r├® automatiquement selon le format : NomMod├¿le-YY-MM-QNumeroSemaine-NumeroOrdre</div>
+                                <input id="campName" class="form-control" placeholder="Généré automatiquement" readonly>
+                                <div class="form-text">Le nom est généré automatiquement selon le format : NomModèle-YY-MM-QNumeroSemaine-NumeroOrdre</div>
                     </div>
                             <div class="col-md-6">
                                 <label for="campResponsible" class="form-label required-field">Responsable de la campagne *</label>
                                 <select id="campResponsible" class="form-select" required>
-                                    <option value="">S├®lectionnez un responsable</option>
+                                    <option value="">Sélectionnez un responsable</option>
                         </select>
                     </div>
                     </div>
 
-                        <!-- S├®lection du mod├¿le -->
+                        <!-- Sélection du modèle -->
                         <div class="mb-3">
-                            <label for="campTemplate" class="form-label required-field">Mod├¿le de prospection *</label>
+                            <label for="campTemplate" class="form-label required-field">Modèle de prospection *</label>
                             <select id="campTemplate" class="form-select" required onchange="updateAutoConfig()">
-                                <option value="">S├®lectionnez un mod├¿le</option>
+                                <option value="">Sélectionnez un modèle</option>
                             </select>
                             <div class="form-text">
                                 <i class="fas fa-info-circle me-1"></i>
-                                Le mod├¿le d├®termine automatiquement le canal, la Business Unit et la division
+                                Le modèle détermine automatiquement le canal, la Business Unit et la division
                             </div>
                         </div>
 
@@ -258,15 +268,15 @@
                         <!-- Planification -->
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="campDate" class="form-label">Date de lancement planifi├®e</label>
+                                <label for="campDate" class="form-label">Date de lancement planifiée</label>
                         <input id="campDate" type="date" class="form-control">
-                                <div class="form-text">Laissez vide pour lancer imm├®diatement</div>
+                                <div class="form-text">Laissez vide pour lancer immédiatement</div>
                     </div>
                             <div class="col-md-6">
-                                <label for="campPriority" class="form-label">Priorit├®</label>
+                                <label for="campPriority" class="form-label">Priorité</label>
                                 <select id="campPriority" class="form-select">
                                     <option value="NORMAL">Normale</option>
-                                    <option value="HIGH">├ëlev├®e</option>
+                                    <option value="HIGH">Élevée</option>
                                     <option value="URGENT">Urgente</option>
                                 </select>
                             </div>
@@ -276,14 +286,14 @@
                         <div class="mb-3">
                             <label for="campDescription" class="form-label">Description de la campagne</label>
                             <textarea id="campDescription" class="form-control" rows="3" 
-                                      placeholder="D├®crivez l'objectif et le contexte de cette campagne..."></textarea>
+                                      placeholder="Décrivez l'objectif et le contexte de cette campagne..."></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button class="btn btn-primary" onclick="createCampaign()">
-                        <i class="fas fa-save me-2"></i>Cr├®er la campagne
+                        <i class="fas fa-save me-2"></i>Créer la campagne
                     </button>
                 </div>
             </div>
@@ -296,32 +306,32 @@
             <div class="modal-content" style="height: 90vh;">
                 <div class="modal-header">
                     <h5 class="modal-title" id="assignModalLabel">
-                        <i class="fas fa-users me-2"></i>Affecter des entreprises ├á la campagne
+                        <i class="fas fa-users me-2"></i>Affecter des entreprises à la campagne
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" style="height: calc(90vh - 140px); overflow-y: auto;">
                     <div class="row h-100">
-                        <!-- Section gauche : S├®lection et ajout d'entreprises -->
+                        <!-- Section gauche : Sélection et ajout d'entreprises -->
                         <div class="col-md-7">
                             <div class="card h-100">
                                 <div class="card-header">
                                     <h6 class="mb-0"><i class="fas fa-plus me-2"></i>Ajouter des entreprises</h6>
                                 </div>
                                 <div class="card-body d-flex flex-column">
-                                    <!-- S├®lection de source -->
+                                    <!-- Sélection de source -->
                                     <div class="mb-3">
                                         <label class="form-label">Source d'entreprises :</label>
                                         <select id="sourceSelect" class="form-select" onchange="loadSourceCompanies()">
-                                            <option value="">S├®lectionnez une source...</option>
+                                            <option value="">Sélectionnez une source...</option>
                                         </select>
                                     </div>
 
-                                    <!-- Filtres avanc├®s -->
+                                    <!-- Filtres avancés -->
                                     <div class="mb-3" id="filtersSection" style="display: none;">
                                         <div class="row">
                                             <div class="col-md-4">
-                                                <label class="form-label">Secteur d'activit├®</label>
+                                                <label class="form-label">Secteur d'activité</label>
                                                 <select id="filterIndustry" class="form-select form-select-sm" onchange="applyFilters()">
                                                     <option value="">Tous les secteurs</option>
                                                 </select>
@@ -361,13 +371,13 @@
                                             </small>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="selectAllSource" onchange="toggleSelectAllSource()">
-                                                <label class="form-check-label" for="selectAllSource">Tout s├®lectionner</label>
+                                                <label class="form-check-label" for="selectAllSource">Tout sélectionner</label>
                                             </div>
                                         </div>
                                         <div id="sourceCompaniesList" style="height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem;">
                                             <div class="text-center py-4">
                                                 <i class="fas fa-database fa-2x text-muted"></i>
-                                                <p class="text-muted mt-2">S├®lectionnez une source pour voir les entreprises</p>
+                                                <p class="text-muted mt-2">Sélectionnez une source pour voir les entreprises</p>
                                             </div>
                                         </div>
                                         
@@ -392,7 +402,7 @@
 
                                     <!-- Bouton d'ajout -->
                                     <button class="btn btn-primary w-100" onclick="addSelectedCompanies()" id="addCompaniesBtn" disabled>
-                                        <i class="fas fa-plus me-2"></i>Ajouter les entreprises s├®lectionn├®es
+                                        <i class="fas fa-plus me-2"></i>Ajouter les entreprises sélectionnées
                                     </button>
                                 </div>
                             </div>
@@ -401,28 +411,28 @@
                         <!-- Section droite : Entreprises de la campagne -->
                         <div class="col-md-5">
                             <div class="row h-100">
-                                <!-- Entreprises s├®lectionn├®es pour ajout -->
+                                <!-- Entreprises sélectionnées pour ajout -->
                                 <div class="col-12 mb-3">
                                     <div class="card">
                                         <div class="card-header">
-                                            <h6 class="mb-0"><i class="fas fa-clock me-2"></i>├Ç ajouter (<span id="selectedCount">0</span>)</h6>
+                                            <h6 class="mb-0"><i class="fas fa-clock me-2"></i>À ajouter (<span id="selectedCount">0</span>)</h6>
                                         </div>
                                         <div class="card-body">
                                             <div id="selectedCompaniesList" style="max-height: 200px; overflow-y: auto;">
                                                 <div class="text-center py-3">
                                                     <i class="fas fa-list fa-2x text-muted"></i>
-                                                    <p class="text-muted mt-2">Aucune entreprise s├®lectionn├®e</p>
+                                                    <p class="text-muted mt-2">Aucune entreprise sélectionnée</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Entreprises d├®j├á affect├®es -->
+                                <!-- Entreprises déjà affectées -->
                                 <div class="col-12 flex-grow-1">
                                     <div class="card h-100">
                                         <div class="card-header">
-                                            <h6 class="mb-0"><i class="fas fa-check me-2"></i>D├®j├á affect├®es (<span id="assignedCount">0</span>)</h6>
+                                            <h6 class="mb-0"><i class="fas fa-check me-2"></i>Déjà affectées (<span id="assignedCount">0</span>)</h6>
                                         </div>
                                         <div class="card-body">
                                             <div id="assignedCompaniesList" style="height: 300px; overflow-y: auto;">
@@ -460,35 +470,35 @@
 
         function getAuthHeader() {
             const token = localStorage.getItem('authToken');
-            console.log('­ƒöì [DEBUG] Token d\'authentification:', token ? 'Pr├®sent' : 'Absent');
+            console.log('🔍 [DEBUG] Token d\'authentification:', token ? 'Présent' : 'Absent');
             return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
         }
 
         async function loadCampaigns() {
             try {
-            console.log('­ƒöì [DEBUG] Chargement des campagnes...');
+            console.log('🔍 [DEBUG] Chargement des campagnes...');
             const res = await fetch(`${API}/campaigns`, { headers: getAuthHeader() });
-            console.log('­ƒöì [DEBUG] R├®ponse API:', res.status, res.statusText);
+            console.log('🔍 [DEBUG] Réponse API:', res.status, res.statusText);
             
-            // V├®rifier si le token est invalide
+            // Vérifier si le token est invalide
             if (res.status === 401) {
-                console.log('ÔØî [DEBUG] Token invalide, redirection vers la page de connexion');
+                console.log('❌ [DEBUG] Token invalide, redirection vers la page de connexion');
                 localStorage.removeItem('authToken');
                 window.location.href = '/login.html';
                 return;
             }
             
-            // V├®rifier si il y a une erreur serveur
+            // Vérifier si il y a une erreur serveur
             if (res.status === 500) {
-                console.log('ÔØî [DEBUG] Erreur serveur 500');
+                console.log('❌ [DEBUG] Erreur serveur 500');
                 const errorData = await res.json();
-                console.log('ÔØî [DEBUG] D├®tails de l\'erreur:', errorData);
+                console.log('❌ [DEBUG] Détails de l\'erreur:', errorData);
                 alert('Erreur serveur: ' + (errorData.message || 'Erreur inconnue'));
                 return;
             }
             
             const data = await res.json();
-            console.log('­ƒöì [DEBUG] Donn├®es re├ºues:', data);
+            console.log('🔍 [DEBUG] Données reçues:', data);
             const tbody = document.getElementById('campaignsTable');
             if (tbody) tbody.innerHTML = '';
                 
@@ -498,7 +508,7 @@
                             <tr>
                                 <td colspan="10" class="text-center py-4">
                                     <i class="fas fa-bullhorn fa-2x text-muted mb-3"></i>
-                                    <p class="text-muted">Aucune campagne cr├®├®e pour le moment</p>
+                                    <p class="text-muted">Aucune campagne créée pour le moment</p>
                                 </td>
                             </tr>
                         `;
@@ -506,7 +516,7 @@
                     return;
                 }
                 
-            console.log('­ƒöì [DEBUG] Traitement de', (data.data || []).length, 'campagnes');
+            console.log('🔍 [DEBUG] Traitement de', (data.data || []).length, 'campagnes');
             (data.data || []).forEach(c => {
                 const tr = document.createElement('tr');
                     // Utiliser validation_statut au lieu de status
@@ -517,8 +527,8 @@
                     const scheduledDate = c.scheduled_date ? new Date(c.scheduled_date).toLocaleDateString('fr-FR') : '-';
                     
                     // Type de contenu du template
-                    const templateType = c.template_type === 'PRESENTATION_GENERALE' ? 'Pr├®sentation g├®n├®rale' : 
-                                       c.template_type === 'SERVICE_SPECIFIQUE' ? 'Service sp├®cifique' : '-';
+                    const templateType = c.template_type === 'PRESENTATION_GENERALE' ? 'Présentation générale' : 
+                                       c.template_type === 'SERVICE_SPECIFIQUE' ? 'Service spécifique' : '-';
                     
                     // BU
                     const businessUnit = c.business_unit_name || '-';
@@ -540,25 +550,25 @@
                     <td>
                         <div class="btn-group btn-group-sm">
                                 ${validationStatus === 'EN_VALIDATION' ? 
-                                    `<button class="btn btn-outline-secondary" disabled title="Affectation non autoris├®e - Campagne en validation">
+                                    `<button class="btn btn-outline-secondary" disabled title="Affectation non autorisée - Campagne en validation">
                                         <i class="fas fa-users"></i> Affecter
                                     </button>` :
                                     validationStatus === 'VALIDE' ?
-                                    `<button class="btn btn-outline-success" onclick="executeCampaign('${c.id}')" title="Ex├®cuter la campagne">
-                                        <i class="fas fa-play"></i> Ex├®cuter
+                                    `<button class="btn btn-outline-success" onclick="executeCampaign('${c.id}')" title="Exécuter la campagne">
+                                        <i class="fas fa-play"></i> Exécuter
                                     </button>` :
                                     `<button class="btn btn-outline-primary" onclick="assignCompanies('${c.id}')" title="Affecter des entreprises">
                                         <i class="fas fa-users"></i> Affecter
                                     </button>`
                                 }
-                                <a class="btn btn-outline-info" href="prospecting-campaign-summary.html?id=${c.id}" title="Voir r├®capitulatif">
-                                    <i class="fas fa-eye"></i> R├®cap
+                                <a class="btn btn-outline-info" href="prospecting-campaign-summary.html?id=${c.id}" title="Voir récapitulatif">
+                                    <i class="fas fa-eye"></i> Récap
                                 </a>
                                 ${validationStatus === 'EN_VALIDATION' || validationStatus === 'VALIDE' ? 
-                                    `<button class="btn btn-outline-secondary" disabled title="Modification non autoris├®e - Campagne en validation">
+                                    `<button class="btn btn-outline-secondary" disabled title="Modification non autorisée - Campagne en validation">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-outline-secondary" disabled title="Suppression non autoris├®e - Campagne en validation">
+                                    <button class="btn btn-outline-secondary" disabled title="Suppression non autorisée - Campagne en validation">
                                         <i class="fas fa-trash"></i>
                                     </button>` :
                                     `<button class="btn btn-outline-warning" onclick="editCampaign('${c.id}')" title="Modifier">
@@ -604,9 +614,9 @@
         function getStatusText(status) {
             switch (status) {
                 case 'DRAFT': return 'Brouillon';
-                case 'READY': return 'Pr├¬te';
-                case 'SENT': return 'Envoy├®e';
-                case 'ARCHIVED': return 'Archiv├®e';
+                case 'READY': return 'Prête';
+                case 'SENT': return 'Envoyée';
+                case 'ARCHIVED': return 'Archivée';
                 default: return status;
             }
         }
@@ -615,8 +625,8 @@
             switch(validationStatus) {
                 case 'BROUILLON': return 'Brouillon';
                 case 'EN_VALIDATION': return 'En attente de validation';
-                case 'VALIDE': return 'Valid├®e';
-                case 'REJETE': return 'Rejet├®e';
+                case 'VALIDE': return 'Validée';
+                case 'REJETE': return 'Rejetée';
                 default: return validationStatus || 'Brouillon';
             }
         }
@@ -631,7 +641,7 @@
             }
         }
 
-        // Variable globale pour stocker les mod├¿les
+        // Variable globale pour stocker les modèles
         let templates = [];
 
         async function loadTemplates() {
@@ -639,12 +649,12 @@
                 const res = await fetch(`${API}/templates`, { headers: getAuthHeader() });
             const data = await res.json();
                 
-                // Stocker les mod├¿les globalement
+                // Stocker les modèles globalement
                 templates = data.data || [];
                 
             const sel = document.getElementById('campTemplate');
                 if (sel) {
-                    sel.innerHTML = '<option value="">S├®lectionnez un mod├¿le</option>';
+                    sel.innerHTML = '<option value="">Sélectionnez un modèle</option>';
                     
                     templates.forEach(t => {
                 const opt = document.createElement('option');
@@ -655,11 +665,11 @@
             });
                 }
             } catch (error) {
-                console.error('Erreur chargement mod├¿les:', error);
+                console.error('Erreur chargement modèles:', error);
             }
         }
 
-        // Fonction pour g├®n├®rer automatiquement le nom de la campagne
+        // Fonction pour générer automatiquement le nom de la campagne
         async function updateCampaignName() {
             const templateSelect = document.getElementById('campTemplate');
             const dateInput = document.getElementById('campDate');
@@ -676,25 +686,25 @@
             }
             
             try {
-                // R├®cup├®rer le nom du mod├¿le
+                // Récupérer le nom du modèle
                 const templateRes = await fetch(`${API}/templates/${selectedTemplateId}`, { headers: getAuthHeader() });
                 const templateData = await templateRes.json();
                 
                 if (!templateRes.ok || !templateData.data) {
-                    console.error('Erreur lors de la r├®cup├®ration du mod├¿le');
+                    console.error('Erreur lors de la récupération du modèle');
                     return;
                 }
                 
                 const templateName = templateData.data.name;
                 
-                // Utiliser la date s├®lectionn├®e ou la date actuelle
+                // Utiliser la date sélectionnée ou la date actuelle
                 const launchDate = selectedDate ? new Date(selectedDate) : new Date();
                 
                 // Extraire YY et MM
                 const year = launchDate.getFullYear().toString().slice(-2); // YY
                 const month = (launchDate.getMonth() + 1).toString().padStart(2, '0'); // MM
                 
-                // Calculer le num├®ro de semaine dans le mois
+                // Calculer le numéro de semaine dans le mois
                 const firstDayOfMonth = new Date(launchDate.getFullYear(), launchDate.getMonth(), 1);
                 const dayOfWeek = firstDayOfMonth.getDay();
                 const weekNumber = Math.ceil((launchDate.getDate() + dayOfWeek) / 7);
@@ -702,47 +712,47 @@
                 // Construire le nom de base
                 const baseName = `${templateName}-${year}-${month}-Q${weekNumber}`;
                 
-                // Trouver le prochain num├®ro d'ordre
+                // Trouver le prochain numéro d'ordre
                 const orderNumber = await findNextCampaignOrderNumber(baseName);
                 
-                // G├®n├®rer le nom final
+                // Générer le nom final
                 const finalName = `${baseName}-${orderNumber.toString().padStart(2, '0')}`;
                 
                 nameInput.value = finalName;
                 
             } catch (error) {
-                console.error('Erreur lors de la g├®n├®ration du nom:', error);
+                console.error('Erreur lors de la génération du nom:', error);
             }
         }
         
-        // Fonction pour trouver le prochain num├®ro d'ordre
+        // Fonction pour trouver le prochain numéro d'ordre
         async function findNextCampaignOrderNumber(baseName) {
             try {
                 const response = await fetch(`${API}/campaigns`, { headers: getAuthHeader() });
                 const data = await response.json();
                 const campaigns = data.data || data || [];
                 
-                // Filtrer les campagnes qui commencent par le m├¬me nom de base
+                // Filtrer les campagnes qui commencent par le même nom de base
                 const matchingCampaigns = campaigns.filter(campaign => 
                     campaign.name && campaign.name.startsWith(baseName)
                 );
                 
                 if (matchingCampaigns.length === 0) {
-                    return 1; // Premier num├®ro
+                    return 1; // Premier numéro
                 }
                 
-                // Extraire les num├®ros d'ordre existants
+                // Extraire les numéros d'ordre existants
                 const orderNumbers = matchingCampaigns.map(campaign => {
                     const match = campaign.name.match(/-(\d{2})$/);
                     return match ? parseInt(match[1]) : 0;
                 });
                 
-                // Trouver le prochain num├®ro disponible
+                // Trouver le prochain numéro disponible
                 const maxOrder = Math.max(...orderNumbers, 0);
                 return maxOrder + 1;
                 
             } catch (error) {
-                console.error('Erreur lors de la recherche du num├®ro d\'ordre:', error);
+                console.error('Erreur lors de la recherche du numéro d\'ordre:', error);
                 return 1; // Retourner 1 en cas d'erreur
             }
         }
@@ -753,17 +763,17 @@
             if (!responsibleSelect) return;
             
             // Vider la liste actuelle
-            responsibleSelect.innerHTML = '<option value="">S├®lectionnez un responsable</option>';
+            responsibleSelect.innerHTML = '<option value="">Sélectionnez un responsable</option>';
             
             if (!businessUnitId) {
-                console.log('­ƒöì [DEBUG] Aucune BU s├®lectionn├®e, pas de filtrage des responsables');
+                console.log('🔍 [DEBUG] Aucune BU sélectionnée, pas de filtrage des responsables');
                 return;
             }
             
             try {
-                console.log('­ƒöì [DEBUG] Filtrage des responsables pour BU:', businessUnitId);
+                console.log('🔍 [DEBUG] Filtrage des responsables pour BU:', businessUnitId);
                 
-                // R├®cup├®rer tous les collaborateurs
+                // Récupérer tous les collaborateurs
                 const response = await fetch('/api/collaborateurs', { headers: getAuthHeader() });
                 const data = await response.json();
                 const collaborateurs = data.data || data || [];
@@ -773,9 +783,9 @@
                     collab.business_unit_id === businessUnitId
                 );
                 
-                console.log('­ƒöì [DEBUG] Collaborateurs filtr├®s:', filteredCollaborateurs.length);
+                console.log('🔍 [DEBUG] Collaborateurs filtrés:', filteredCollaborateurs.length);
                 
-                // Ajouter les options filtr├®es
+                // Ajouter les options filtrées
                 filteredCollaborateurs.forEach(collab => {
                     const option = document.createElement('option');
                     option.value = collab.id;
@@ -792,15 +802,15 @@
                 }
                 
             } catch (error) {
-                console.error('ÔØî Erreur lors du filtrage des responsables:', error);
+                console.error('❌ Erreur lors du filtrage des responsables:', error);
             }
         }
         
-        // Fonction pour r├®initialiser la liste des responsables
+        // Fonction pour réinitialiser la liste des responsables
         function resetResponsiblesList() {
             const responsibleSelect = document.getElementById('campResponsible');
             if (responsibleSelect) {
-                responsibleSelect.innerHTML = '<option value="">S├®lectionnez un responsable</option>';
+                responsibleSelect.innerHTML = '<option value="">Sélectionnez un responsable</option>';
             }
         }
 
@@ -811,7 +821,7 @@
         }
 
         function resetCreateModal() {
-            // R├®initialiser le formulaire
+            // Réinitialiser le formulaire
             const campName = document.getElementById('campName');
             const campResponsible = document.getElementById('campResponsible');
             const campTemplate = document.getElementById('campTemplate');
@@ -826,7 +836,7 @@
             if (campPriority) campPriority.value = 'NORMAL';
             if (campDescription) campDescription.value = '';
             
-            // R├®initialiser l'affichage automatique
+            // Réinitialiser l'affichage automatique
             const autoChannel = document.getElementById('autoChannel');
             const autoBU = document.getElementById('autoBU');
             const autoDivision = document.getElementById('autoDivision');
@@ -835,17 +845,17 @@
             if (autoBU) autoBU.textContent = '-';
             if (autoDivision) autoDivision.textContent = '-';
             
-            // Remettre le titre et le bouton en mode cr├®ation
+            // Remettre le titre et le bouton en mode création
             const modalTitle = document.querySelector('#campaignModal .modal-title');
             const saveBtn = document.querySelector('#campaignModal .btn-primary');
             
             if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>Nouvelle campagne';
             if (saveBtn) {
-                saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Cr├®er la campagne';
+                saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Créer la campagne';
                 saveBtn.onclick = createCampaign;
             }
             
-            // R├®initialiser la liste des responsables
+            // Réinitialiser la liste des responsables
             resetResponsiblesList();
         }
 
@@ -864,32 +874,32 @@
                 return;
             }
             if (!template_id) {
-                alert('Veuillez s├®lectionner un mod├¿le de prospection');
+                alert('Veuillez sélectionner un modèle de prospection');
                 return;
             }
             if (!responsible_id) {
-                alert('Veuillez s├®lectionner un responsable de la campagne');
+                alert('Veuillez sélectionner un responsable de la campagne');
                 return;
             }
 
             try {
-                // R├®cup├®rer les informations du mod├¿le s├®lectionn├®
+                // Récupérer les informations du modèle sélectionné
                 const templateRes = await fetch(`${API}/templates/${template_id}`, { headers: getAuthHeader() });
                 const templateData = await templateRes.json();
                 
                 if (!templateRes.ok || !templateData.data) {
-                    alert('Erreur lors de la r├®cup├®ration du mod├¿le');
+                    alert('Erreur lors de la récupération du modèle');
                     return;
                 }
 
                 const template = templateData.data;
                 
-                // R├®cup├®rer les informations de l'utilisateur connect├®
+                // Récupérer les informations de l'utilisateur connecté
                 const userRes = await fetch('/api/auth/me', { headers: getAuthHeader() });
                 const userData = await userRes.json();
                 
                 if (!userRes.ok || !userData.data) {
-                    alert('Erreur lors de la r├®cup├®ration des informations utilisateur');
+                    alert('Erreur lors de la récupération des informations utilisateur');
                     return;
                 }
                 
@@ -903,11 +913,11 @@
                     scheduled_date,
                     priority,
                     description,
-                    // R├®cup├®rer automatiquement depuis le mod├¿le
+                    // Récupérer automatiquement depuis le modèle
                     channel: template.channel,
                     business_unit_id: template.business_unit_id,
                     division_id: template.division_id,
-                    // Ajouter automatiquement le cr├®ateur et la date de cr├®ation
+                    // Ajouter automatiquement le créateur et la date de création
                     created_by: currentUser.id,
                     created_at: currentDate
                 };
@@ -919,7 +929,7 @@
                 });
 
                 if (res.ok) {
-                    alert('Campagne cr├®├®e avec succ├¿s !');
+                    alert('Campagne créée avec succès !');
                     campaignModal.hide();
                     await loadCampaigns();
                 } else {
@@ -927,18 +937,18 @@
                     alert('Erreur: ' + (error.message || error.error || res.status));
                 }
             } catch (error) {
-                console.error('Erreur cr├®ation campagne:', error);
-                alert('Erreur lors de la cr├®ation de la campagne');
+                console.error('Erreur création campagne:', error);
+                alert('Erreur lors de la création de la campagne');
             }
         }
 
-        // Fonction pour affecter des entreprises ├á une campagne
+        // Fonction pour affecter des entreprises à une campagne
         function assignCompanies(campaignId) {
             // Ouvrir le modal d'affectation d'entreprises
             openAssignModal(campaignId);
         }
 
-        // Fonction pour ├®diter une campagne
+        // Fonction pour éditer une campagne
         async function editCampaign(campaignId) {
             try {
                 const res = await fetch(`${API}/campaigns/${campaignId}`, { headers: getAuthHeader() });
@@ -947,7 +957,7 @@
                 if (res.ok && data.data) {
                     const campaign = data.data;
                     
-                    // Remplir le formulaire avec les donn├®es existantes
+                    // Remplir le formulaire avec les données existantes
                     document.getElementById('campName').value = campaign.name;
                     document.getElementById('campResponsible').value = campaign.responsible_id || '';
                     document.getElementById('campTemplate').value = campaign.template_id || '';
@@ -955,7 +965,7 @@
                     document.getElementById('campPriority').value = campaign.priority || 'NORMAL';
                     document.getElementById('campDescription').value = campaign.description || '';
                     
-                    // Mettre ├á jour l'affichage automatique
+                    // Mettre à jour l'affichage automatique
                     updateAutoConfig();
                     
                     // Changer le titre du modal
@@ -963,7 +973,7 @@
                     
                     // Changer le bouton
                     const saveBtn = document.querySelector('#campaignModal .btn-primary');
-                    saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Mettre ├á jour';
+                    saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Mettre à jour';
                     saveBtn.onclick = () => updateCampaign(campaignId);
                     
                     // Afficher le modal
@@ -978,7 +988,7 @@
             }
         }
 
-        // Fonction pour mettre ├á jour une campagne
+        // Fonction pour mettre à jour une campagne
         async function updateCampaign(campaignId) {
             // Validation des champs obligatoires
             const name = document.getElementById('campName').value.trim();
@@ -994,21 +1004,21 @@
                 return;
             }
             if (!template_id) {
-                alert('Veuillez s├®lectionner un mod├¿le de prospection');
+                alert('Veuillez sélectionner un modèle de prospection');
                 return;
             }
             if (!responsible_id) {
-                alert('Veuillez s├®lectionner un responsable de la campagne');
+                alert('Veuillez sélectionner un responsable de la campagne');
                 return;
             }
 
             try {
-                // R├®cup├®rer les informations du mod├¿le s├®lectionn├®
+                // Récupérer les informations du modèle sélectionné
                 const templateRes = await fetch(`${API}/templates/${template_id}`, { headers: getAuthHeader() });
                 const templateData = await templateRes.json();
                 
                 if (!templateRes.ok || !templateData.data) {
-                    alert('Erreur lors de la r├®cup├®ration du mod├¿le');
+                    alert('Erreur lors de la récupération du modèle');
                     return;
                 }
 
@@ -1021,7 +1031,7 @@
                     scheduled_date,
                     priority,
                     description,
-                    // R├®cup├®rer automatiquement depuis le mod├¿le
+                    // Récupérer automatiquement depuis le modèle
                     channel: template.channel,
                     business_unit_id: template.business_unit_id,
                     division_id: template.division_id
@@ -1036,20 +1046,20 @@
                 if (res.ok) {
                     campaignModal.hide();
                     await loadCampaigns();
-                    alert('Campagne mise ├á jour avec succ├¿s !');
+                    alert('Campagne mise à jour avec succès !');
                 } else {
                     const error = await res.json().catch(() => ({}));
                     alert('Erreur: ' + (error.message || error.error || res.status));
                 }
             } catch (error) {
                 console.error('Erreur:', error);
-                alert('Erreur lors de la mise ├á jour');
+                alert('Erreur lors de la mise à jour');
             }
         }
 
         // Fonction pour supprimer une campagne
         async function deleteCampaign(campaignId) {
-            if (!confirm('├ètes-vous s├╗r de vouloir supprimer cette campagne ? Cette action est irr├®versible.')) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette campagne ? Cette action est irréversible.')) {
                 return;
             }
             
@@ -1061,7 +1071,7 @@
                 
                 if (res.ok) {
                     await loadCampaigns();
-                    alert('Campagne supprim├®e avec succ├¿s !');
+                    alert('Campagne supprimée avec succès !');
                 } else {
                     const d = await res.json().catch(() => ({}));
                     alert('Erreur: ' + (d.message || d.error || res.status));
@@ -1088,10 +1098,10 @@
             selectedCompanies.clear();
             assignedCompanies.clear();
             
-            // R├®initialiser l'interface
+            // Réinitialiser l'interface
             resetAssignModal();
             
-            // Charger les sources et les entreprises d├®j├á affect├®es
+            // Charger les sources et les entreprises déjà affectées
             await Promise.all([
                 loadSources(),
                 loadAssignedCompanies()
@@ -1104,20 +1114,20 @@
             assignModal.show();
         }
 
-        // R├®initialiser le modal
+        // Réinitialiser le modal
         function resetAssignModal() {
             document.getElementById('sourceSelect').value = '';
             document.getElementById('companySearch').value = '';
             document.getElementById('selectAllSource').checked = false;
             document.getElementById('addCompaniesBtn').disabled = true;
             
-            // R├®initialiser les filtres
+            // Réinitialiser les filtres
             document.getElementById('filterIndustry').value = '';
             document.getElementById('filterCity').value = '';
             document.getElementById('filterSize').value = '';
             document.getElementById('filtersSection').style.display = 'none';
             
-            // R├®initialiser la pagination
+            // Réinitialiser la pagination
             currentPage = 1;
             allSourceCompanies = [];
             filteredCompanies = [];
@@ -1126,7 +1136,7 @@
             document.getElementById('sourceCompaniesList').innerHTML = `
                 <div class="text-center py-4">
                     <i class="fas fa-database fa-2x text-muted"></i>
-                    <p class="text-muted mt-2">S├®lectionnez une source pour voir les entreprises</p>
+                    <p class="text-muted mt-2">Sélectionnez une source pour voir les entreprises</p>
                 </div>
             `;
             
@@ -1140,26 +1150,26 @@
         // Charger les sources
         async function loadSources() {
             try {
-                console.log('­ƒöì [DEBUG] Chargement des sources...');
+                console.log('🔍 [DEBUG] Chargement des sources...');
                 const res = await fetch(`${API}/sources`, { headers: getAuthHeader() });
-                console.log('­ƒöì [DEBUG] R├®ponse sources:', res.status, res.statusText);
+                console.log('🔍 [DEBUG] Réponse sources:', res.status, res.statusText);
                 
                 const data = await res.json();
-                console.log('­ƒöì [DEBUG] Donn├®es sources:', data);
+                console.log('🔍 [DEBUG] Données sources:', data);
                 
                 const select = document.getElementById('sourceSelect');
                 
-                // Garder l'option par d├®faut et ajouter "Toutes les sources"
-                select.innerHTML = '<option value="">S├®lectionnez une source...</option>';
+                // Garder l'option par défaut et ajouter "Toutes les sources"
+                select.innerHTML = '<option value="">Sélectionnez une source...</option>';
                 
                 // Ajouter l'option "Toutes les sources"
                 const allSourcesOption = document.createElement('option');
                 allSourcesOption.value = 'all';
-                allSourcesOption.textContent = '­ƒôï Toutes les sources';
+                allSourcesOption.textContent = '📋 Toutes les sources';
                 select.appendChild(allSourcesOption);
                 
                 if (data.data && data.data.length > 0) {
-                    console.log('­ƒöì [DEBUG] Sources trouv├®es:', data.data.length);
+                    console.log('🔍 [DEBUG] Sources trouvées:', data.data.length);
                     data.data.forEach(source => {
                         const option = document.createElement('option');
                         option.value = source.id;
@@ -1167,20 +1177,20 @@
                         select.appendChild(option);
                     });
                 } else {
-                    console.log('­ƒöì [DEBUG] Aucune source trouv├®e');
+                    console.log('🔍 [DEBUG] Aucune source trouvée');
                 }
             } catch (error) {
-                console.error('ÔØî [DEBUG] Erreur chargement sources:', error);
+                console.error('❌ [DEBUG] Erreur chargement sources:', error);
             }
         }
 
         // Charger les entreprises d'une source ou de toutes les sources
         async function loadSourceCompanies() {
             const sourceId = document.getElementById('sourceSelect').value;
-            console.log('­ƒöì [DEBUG] Chargement entreprises pour source:', sourceId);
+            console.log('🔍 [DEBUG] Chargement entreprises pour source:', sourceId);
             
             if (!sourceId) {
-                console.log('­ƒöì [DEBUG] Aucune source s├®lectionn├®e');
+                console.log('🔍 [DEBUG] Aucune source sélectionnée');
                 resetSourceCompaniesList();
                 return;
             }
@@ -1189,36 +1199,36 @@
                 let apiUrl;
                 if (sourceId === 'all') {
                     // Charger toutes les entreprises de toutes les sources
-                    console.log('­ƒöì [DEBUG] Chargement de toutes les entreprises');
+                    console.log('🔍 [DEBUG] Chargement de toutes les entreprises');
                     apiUrl = `${API}/companies`;
                 } else {
-                    // Charger les entreprises d'une source sp├®cifique
-                    console.log('­ƒöì [DEBUG] Appel API:', `${API}/sources/${sourceId}/companies`);
+                    // Charger les entreprises d'une source spécifique
+                    console.log('🔍 [DEBUG] Appel API:', `${API}/sources/${sourceId}/companies`);
                     apiUrl = `${API}/sources/${sourceId}/companies`;
                 }
                 
                 const res = await fetch(apiUrl, { headers: getAuthHeader() });
-                console.log('­ƒöì [DEBUG] R├®ponse entreprises:', res.status, res.statusText);
+                console.log('🔍 [DEBUG] Réponse entreprises:', res.status, res.statusText);
                 
                 const data = await res.json();
-                console.log('­ƒöì [DEBUG] Donn├®es entreprises:', data);
-                console.log('­ƒöì [DEBUG] Structure data:', Object.keys(data));
-                console.log('­ƒöì [DEBUG] data.data type:', typeof data.data);
-                console.log('­ƒöì [DEBUG] data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
+                console.log('🔍 [DEBUG] Données entreprises:', data);
+                console.log('🔍 [DEBUG] Structure data:', Object.keys(data));
+                console.log('🔍 [DEBUG] data.data type:', typeof data.data);
+                console.log('🔍 [DEBUG] data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
                 
-                // Adapter selon l'API utilis├®e
+                // Adapter selon l'API utilisée
                 if (sourceId === 'all') {
                     allSourceCompanies = data.data || [];
-                    console.log('­ƒöì [DEBUG] Mode "all" - entreprises trouv├®es:', allSourceCompanies.length);
+                    console.log('🔍 [DEBUG] Mode "all" - entreprises trouvées:', allSourceCompanies.length);
                 } else {
                     allSourceCompanies = data.data || [];
-                    console.log('­ƒöì [DEBUG] Mode source sp├®cifique - entreprises trouv├®es:', allSourceCompanies.length);
+                    console.log('🔍 [DEBUG] Mode source spécifique - entreprises trouvées:', allSourceCompanies.length);
                 }
                 
                 currentSourceCompanies = allSourceCompanies;
-                console.log('­ƒöì [DEBUG] Nombre d\'entreprises trouv├®es:', allSourceCompanies.length);
+                console.log('🔍 [DEBUG] Nombre d\'entreprises trouvées:', allSourceCompanies.length);
                 
-                // R├®initialiser la pagination
+                // Réinitialiser la pagination
                 currentPage = 1;
                 
                 // Charger les filtres
@@ -1232,7 +1242,7 @@
                     document.getElementById('filtersSection').style.display = 'block';
                 }
             } catch (error) {
-                console.error('ÔØî [DEBUG] Erreur chargement entreprises source:', error);
+                console.error('❌ [DEBUG] Erreur chargement entreprises source:', error);
                 resetSourceCompaniesList();
             }
         }
@@ -1252,7 +1262,7 @@
                     <div class="text-center py-4">
                         <i class="fas fa-building fa-2x text-muted"></i>
                         <p class="text-muted mt-2">Aucune entreprise dans cette source</p>
-                        <small class="text-muted">Essayez de s├®lectionner une autre source ou importez des entreprises via la page "Sources d'entreprises"</small>
+                        <small class="text-muted">Essayez de sélectionner une autre source ou importez des entreprises via la page "Sources d'entreprises"</small>
                     </div>
                 `;
                 return;
@@ -1283,25 +1293,25 @@
                                         <div class="row text-muted small">
                                             <div class="col-md-4">
                                                 <i class="fas fa-industry me-1"></i>
-                                                <strong>Secteur:</strong> ${company.industry || 'Non renseign├®'}
+                                                <strong>Secteur:</strong> ${company.industry || 'Non renseigné'}
                                             </div>
                                             <div class="col-md-4">
                                                 <i class="fas fa-map-marker-alt me-1"></i>
-                                                <strong>Ville:</strong> ${company.city || 'Non renseign├®'}
+                                                <strong>Ville:</strong> ${company.city || 'Non renseigné'}
                                             </div>
                                             <div class="col-md-4">
                                                 <i class="fas fa-tag me-1"></i>
-                                                <strong>Sigle:</strong> ${company.sigle ? `<span class="badge bg-primary">${company.sigle}</span>` : 'Non renseign├®'}
+                                                <strong>Sigle:</strong> ${company.sigle ? `<span class="badge bg-primary">${company.sigle}</span>` : 'Non renseigné'}
                                             </div>
                                         </div>
                                         <div class="row text-muted small mt-1">
                                             <div class="col-md-6">
                                                 <i class="fas fa-envelope me-1"></i>
-                                                <strong>Email:</strong> ${company.email || 'Non renseign├®'}
+                                                <strong>Email:</strong> ${company.email || 'Non renseigné'}
                                             </div>
                                             <div class="col-md-6">
                                                 <i class="fas fa-phone me-1"></i>
-                                                <strong>T├®l├®phone:</strong> ${company.phone || 'Non renseign├®'}
+                                                <strong>Téléphone:</strong> ${company.phone || 'Non renseigné'}
                                             </div>
                                         </div>
                                         ${company.website ? `
@@ -1328,16 +1338,16 @@
                 </div>
             `).join('');
 
-            // Mettre ├á jour la pagination
+            // Mettre à jour la pagination
             updatePagination(companies.length);
         }
 
-        // R├®initialiser la liste des entreprises de la source
+        // Réinitialiser la liste des entreprises de la source
         function resetSourceCompaniesList() {
             document.getElementById('sourceCompaniesList').innerHTML = `
                 <div class="text-center py-4">
                     <i class="fas fa-database fa-2x text-muted"></i>
-                    <p class="text-muted mt-2">S├®lectionnez une source pour voir les entreprises</p>
+                    <p class="text-muted mt-2">Sélectionnez une source pour voir les entreprises</p>
                 </div>
             `;
         }
@@ -1405,7 +1415,7 @@
             renderSourceCompanies(currentSourceCompanies);
         }
 
-        // Filtrer les entreprises (recherche en temps r├®el)
+        // Filtrer les entreprises (recherche en temps réel)
         function filterCompanies() {
             applyFilters();
         }
@@ -1422,7 +1432,7 @@
             renderSourceCompanies(currentSourceCompanies);
         }
 
-        // Mettre ├á jour la pagination
+        // Mettre à jour la pagination
         function updatePagination(totalCompanies) {
             const totalPages = Math.ceil(totalCompanies / companiesPerPage);
             const paginationSection = document.getElementById('paginationSection');
@@ -1439,7 +1449,7 @@
             paginationSection.style.display = 'flex';
             totalPagesSpan.textContent = totalPages;
 
-            // Mettre ├á jour le s├®lecteur de page
+            // Mettre à jour le sélecteur de page
             pageSelect.innerHTML = '';
             for (let i = 1; i <= totalPages; i++) {
                 const option = document.createElement('option');
@@ -1449,22 +1459,22 @@
                 pageSelect.appendChild(option);
             }
 
-            // Mettre ├á jour les boutons
+            // Mettre à jour les boutons
             prevBtn.disabled = currentPage === 1;
             nextBtn.disabled = currentPage === totalPages;
 
-            // Mettre ├á jour le compteur
+            // Mettre à jour le compteur
             document.getElementById('companiesCount').textContent = totalCompanies;
         }
 
-        // Aller ├á une page sp├®cifique
+        // Aller à une page spécifique
         function goToPage() {
             const pageSelect = document.getElementById('pageSelect');
             currentPage = parseInt(pageSelect.value);
             renderSourceCompanies(currentSourceCompanies);
         }
 
-        // Page pr├®c├®dente
+        // Page précédente
         function previousPage() {
             if (currentPage > 1) {
                 currentPage--;
@@ -1481,7 +1491,7 @@
             }
         }
 
-        // S├®lectionner/d├®s├®lectionner tout
+        // Sélectionner/désélectionner tout
         function toggleSelectAllSource() {
             const selectAll = document.getElementById('selectAllSource');
             const checkboxes = document.querySelectorAll('#sourceCompaniesList input[type="checkbox"]:not([style*="display: none"])');
@@ -1500,7 +1510,7 @@
             updateAddButton();
         }
 
-        // Basculer la s├®lection d'une entreprise
+        // Basculer la sélection d'une entreprise
         function toggleCompanySelection(companyId) {
             if (selectedCompanies.has(companyId)) {
                 selectedCompanies.delete(companyId);
@@ -1513,7 +1523,7 @@
             updateAddButton();
         }
 
-        // Mettre ├á jour la liste des entreprises s├®lectionn├®es
+        // Mettre à jour la liste des entreprises sélectionnées
         function updateSelectedCompaniesList() {
             const container = document.getElementById('selectedCompaniesList');
             
@@ -1521,7 +1531,7 @@
                 container.innerHTML = `
                     <div class="text-center py-3">
                         <i class="fas fa-list fa-2x text-muted"></i>
-                        <p class="text-muted mt-2">Aucune entreprise s├®lectionn├®e</p>
+                        <p class="text-muted mt-2">Aucune entreprise sélectionnée</p>
                     </div>
                 `;
                 return;
@@ -1535,7 +1545,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
                         <div>
                             <strong>${company.name}</strong><br>
-                            <small class="text-muted">${company.industry || 'N/A'} ÔÇó ${company.city || 'N/A'}</small>
+                            <small class="text-muted">${company.industry || 'N/A'} • ${company.city || 'N/A'}</small>
                         </div>
                         <button class="btn btn-sm btn-outline-danger" onclick="removeSelectedCompany('${companyId}')">
                             <i class="fas fa-times"></i>
@@ -1545,11 +1555,11 @@
             }).join('');
         }
 
-        // Supprimer une entreprise de la s├®lection
+        // Supprimer une entreprise de la sélection
         function removeSelectedCompany(companyId) {
             selectedCompanies.delete(companyId);
             
-            // D├®cocher la checkbox correspondante
+            // Décocher la checkbox correspondante
             const checkbox = document.getElementById(`company_${companyId}`);
             if (checkbox) checkbox.checked = false;
             
@@ -1558,11 +1568,11 @@
             updateAddButton();
         }
 
-        // Ajouter les entreprises s├®lectionn├®es
+        // Ajouter les entreprises sélectionnées
         function addSelectedCompanies() {
             if (selectedCompanies.size === 0) return;
             
-            // Ajouter aux entreprises assign├®es et stocker leurs d├®tails
+            // Ajouter aux entreprises assignées et stocker leurs détails
             selectedCompanies.forEach(companyId => {
                 assignedCompanies.add(companyId);
                 
@@ -1570,13 +1580,13 @@
                 if (!originalAssignedCompanies.has(companyId)) {
                     addedCompanies.add(companyId);
                 }
-                // Si l'entreprise ├®tait marqu├®e comme supprim├®e, la retirer de cette liste
+                // Si l'entreprise était marquée comme supprimée, la retirer de cette liste
                 removedCompanies.delete(companyId);
                 
-                // Trouver les d├®tails de l'entreprise dans currentSourceCompanies
+                // Trouver les détails de l'entreprise dans currentSourceCompanies
                 const companyDetails = currentSourceCompanies.find(c => c.id === companyId);
                 if (companyDetails) {
-                    // Ajouter aux d├®tails des entreprises assign├®es
+                    // Ajouter aux détails des entreprises assignées
                     if (!window.assignedCompaniesDetails) {
                         window.assignedCompaniesDetails = [];
                     }
@@ -1584,23 +1594,23 @@
                 }
             });
             
-            // Vider la s├®lection
+            // Vider la sélection
             selectedCompanies.clear();
             
-            // Mettre ├á jour l'interface
+            // Mettre à jour l'interface
             updateSelectedCompaniesList();
             updateAssignedCompaniesList();
             updateCounts();
             updateAddButton();
             
-            // D├®cocher toutes les checkboxes
+            // Décocher toutes les checkboxes
             document.querySelectorAll('#sourceCompaniesList input[type="checkbox"]').forEach(cb => {
                 cb.checked = false;
             });
             document.getElementById('selectAllSource').checked = false;
         }
 
-        // Charger les entreprises d├®j├á affect├®es
+        // Charger les entreprises déjà affectées
         async function loadAssignedCompanies() {
             try {
                 const res = await fetch(`${API}/campaigns/${currentCampaignId}/companies`, { headers: getAuthHeader() });
@@ -1611,7 +1621,7 @@
                 addedCompanies.clear();
                 removedCompanies.clear();
                 
-                // Stocker les d├®tails complets des entreprises assign├®es
+                // Stocker les détails complets des entreprises assignées
                 window.assignedCompaniesDetails = data.data || [];
                 
                 (data.data || []).forEach(company => {
@@ -1622,11 +1632,11 @@
                 updateAssignedCompaniesList();
                 updateCounts();
             } catch (error) {
-                console.error('Erreur chargement entreprises assign├®es:', error);
+                console.error('Erreur chargement entreprises assignées:', error);
             }
         }
 
-        // Mettre ├á jour la liste des entreprises assign├®es
+        // Mettre à jour la liste des entreprises assignées
         function updateAssignedCompaniesList() {
             const container = document.getElementById('assignedCompaniesList');
             
@@ -1634,20 +1644,20 @@
                 container.innerHTML = `
                     <div class="text-center py-3">
                         <i class="fas fa-check fa-2x text-muted"></i>
-                        <p class="text-muted mt-2">Aucune entreprise affect├®e</p>
+                        <p class="text-muted mt-2">Aucune entreprise affectée</p>
                     </div>
                 `;
                 return;
             }
 
-            // Afficher les vraies informations des entreprises assign├®es
+            // Afficher les vraies informations des entreprises assignées
             container.innerHTML = (window.assignedCompaniesDetails || []).map(company => `
                 <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
                     <div>
                         <strong>${company.name}</strong><br>
                         <small class="text-muted">
-                            ${company.industry || 'N/A'} ÔÇó ${company.city || 'N/A'}
-                            ${company.email ? ` ÔÇó ${company.email}` : ''}
+                            ${company.industry || 'N/A'} • ${company.city || 'N/A'}
+                            ${company.email ? ` • ${company.email}` : ''}
                         </small>
                     </div>
                     <button class="btn btn-sm btn-outline-danger" onclick="removeAssignedCompany('${company.id}')">
@@ -1657,7 +1667,7 @@
             `).join('');
         }
 
-        // Supprimer une entreprise assign├®e
+        // Supprimer une entreprise assignée
         function removeAssignedCompany(companyId) {
             assignedCompanies.delete(companyId);
             
@@ -1665,10 +1675,10 @@
             if (originalAssignedCompanies.has(companyId)) {
                 removedCompanies.add(companyId);
             }
-            // Si l'entreprise ├®tait marqu├®e comme ajout├®e, la retirer de cette liste
+            // Si l'entreprise était marquée comme ajoutée, la retirer de cette liste
             addedCompanies.delete(companyId);
             
-            // Supprimer aussi des d├®tails
+            // Supprimer aussi des détails
             if (window.assignedCompaniesDetails) {
                 window.assignedCompaniesDetails = window.assignedCompaniesDetails.filter(c => c.id !== companyId);
             }
@@ -1677,13 +1687,13 @@
             updateCounts();
         }
 
-        // Mettre ├á jour les compteurs
+        // Mettre à jour les compteurs
         function updateCounts() {
             document.getElementById('selectedCount').textContent = selectedCompanies.size;
             document.getElementById('assignedCount').textContent = assignedCompanies.size;
         }
 
-        // Mettre ├á jour l'├®tat du bouton d'ajout
+        // Mettre à jour l'état du bouton d'ajout
         function updateAddButton() {
             const btn = document.getElementById('addCompaniesBtn');
             btn.disabled = selectedCompanies.size === 0;
@@ -1703,7 +1713,7 @@
                 
                 const responsibleSel = document.getElementById('campResponsible');
                 if (responsibleSel) {
-                    responsibleSel.innerHTML = '<option value="">S├®lectionnez un responsable</option>';
+                    responsibleSel.innerHTML = '<option value="">Sélectionnez un responsable</option>';
                     
                     collaborateurs.forEach(collab => {
                         const opt = document.createElement('option');
@@ -1717,18 +1727,18 @@
             }
         }
 
-        // Mise ├á jour de l'affichage automatique lors de la s├®lection d'un mod├¿le
+        // Mise à jour de l'affichage automatique lors de la sélection d'un modèle
         async function updateAutoConfig() {
             const templateSel = document.getElementById('campTemplate');
             const selectedTemplateId = templateSel.value;
             
-            console.log('­ƒöì [DEBUG] updateAutoConfig - Template ID s├®lectionn├®:', selectedTemplateId);
-            console.log('­ƒöì [DEBUG] updateAutoConfig - Templates disponibles:', templates);
+            console.log('🔍 [DEBUG] updateAutoConfig - Template ID sélectionné:', selectedTemplateId);
+            console.log('🔍 [DEBUG] updateAutoConfig - Templates disponibles:', templates);
             
             if (selectedTemplateId) {
-                // Trouver le mod├¿le s├®lectionn├® dans la liste des mod├¿les
+                // Trouver le modèle sélectionné dans la liste des modèles
                 const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
-                console.log('­ƒöì [DEBUG] updateAutoConfig - Mod├¿le trouv├®:', selectedTemplate);
+                console.log('🔍 [DEBUG] updateAutoConfig - Modèle trouvé:', selectedTemplate);
                 
                 if (selectedTemplate) {
                     const autoChannel = document.getElementById('autoChannel');
@@ -1739,7 +1749,7 @@
                     if (autoBU) autoBU.textContent = selectedTemplate.business_unit_name || '-';
                     if (autoDivision) autoDivision.textContent = selectedTemplate.division_name || '-';
                     
-                    console.log('­ƒöì [DEBUG] updateAutoConfig - Valeurs mises ├á jour:', {
+                    console.log('🔍 [DEBUG] updateAutoConfig - Valeurs mises à jour:', {
                         channel: selectedTemplate.channel === 'EMAIL' ? 'Email' : 'Courrier physique',
                         business_unit: selectedTemplate.business_unit_name || '-',
                         division: selectedTemplate.division_name || '-'
@@ -1749,7 +1759,7 @@
                     await filterResponsiblesByBU(selectedTemplate.business_unit_id);
                 }
                 
-                // Mettre ├á jour le nom de la campagne automatiquement
+                // Mettre à jour le nom de la campagne automatiquement
                 await updateCampaignName();
             } else {
                 const autoChannel = document.getElementById('autoChannel');
@@ -1764,7 +1774,7 @@
                 const nameInput = document.getElementById('campName');
                 if (nameInput) nameInput.value = '';
                 
-                // R├®initialiser la liste des responsables
+                // Réinitialiser la liste des responsables
                 resetResponsiblesList();
             }
         }
@@ -1772,25 +1782,25 @@
         // Sauvegarder les affectations
         async function saveAssignments() {
             try {
-                console.log('­ƒöì [DEBUG] Sauvegarde des affectations...');
-                console.log('­ƒöì [DEBUG] Entreprises originales:', originalAssignedCompanies.size);
-                console.log('­ƒöì [DEBUG] Entreprises ajout├®es:', addedCompanies.size);
-                console.log('­ƒöì [DEBUG] Entreprises supprim├®es:', removedCompanies.size);
-                console.log('­ƒöì [DEBUG] Entreprises finales:', assignedCompanies.size);
+                console.log('🔍 [DEBUG] Sauvegarde des affectations...');
+                console.log('🔍 [DEBUG] Entreprises originales:', originalAssignedCompanies.size);
+                console.log('🔍 [DEBUG] Entreprises ajoutées:', addedCompanies.size);
+                console.log('🔍 [DEBUG] Entreprises supprimées:', removedCompanies.size);
+                console.log('🔍 [DEBUG] Entreprises finales:', assignedCompanies.size);
 
                 // Si aucune modification, ne rien faire
                 if (addedCompanies.size === 0 && removedCompanies.size === 0) {
-                    alert('Aucune modification ├á sauvegarder');
+                    alert('Aucune modification à sauvegarder');
                     return;
                 }
 
-                // Pr├®parer les donn├®es pour l'API
+                // Préparer les données pour l'API
                 const data = {
                     added_company_ids: Array.from(addedCompanies),
                     removed_company_ids: Array.from(removedCompanies)
                 };
 
-                console.log('­ƒöì [DEBUG] Donn├®es ├á envoyer:', data);
+                console.log('🔍 [DEBUG] Données à envoyer:', data);
 
                 const res = await fetch(`${API}/campaigns/${currentCampaignId}/companies/batch`, {
                     method: 'PUT',
@@ -1801,10 +1811,10 @@
             if (res.ok) {
                     const result = await res.json();
                     const message = [];
-                    if (addedCompanies.size > 0) message.push(`${addedCompanies.size} entreprise(s) ajout├®e(s)`);
-                    if (removedCompanies.size > 0) message.push(`${removedCompanies.size} entreprise(s) supprim├®e(s)`);
+                    if (addedCompanies.size > 0) message.push(`${addedCompanies.size} entreprise(s) ajoutée(s)`);
+                    if (removedCompanies.size > 0) message.push(`${removedCompanies.size} entreprise(s) supprimée(s)`);
                     
-                    alert(`Modifications sauvegard├®es avec succ├¿s !\n${message.join('\n')}`);
+                    alert(`Modifications sauvegardées avec succès !\n${message.join('\n')}`);
                     assignModal.hide();
                     await loadCampaigns(); // Recharger la liste des campagnes
                 } else {
@@ -1812,7 +1822,7 @@
                     alert('Erreur lors de la sauvegarde : ' + (error.error || 'Erreur inconnue'));
                 }
             } catch (error) {
-                console.error('ÔØî [DEBUG] Erreur sauvegarde affectations:', error);
+                console.error('❌ [DEBUG] Erreur sauvegarde affectations:', error);
                 alert('Erreur lors de la sauvegarde des affectations');
             }
         }
@@ -1827,7 +1837,7 @@
             });
             document.getElementById('current-date').textContent = currentDate;
             
-            // Charger les donn├®es
+            // Charger les données
             await loadCampaigns();
             await loadTemplates();
             await loadCollaborateurs();
@@ -1862,7 +1872,7 @@
         }
 
         function showComingSoon(feature) {
-            showAlert(`La fonctionnalit├® "${feature}" est en cours de d├®veloppement.`, 'warning');
+            showAlert(`La fonctionnalité "${feature}" est en cours de développement.`, 'warning');
         }
 
         function executeCampaign(campaignId) {
@@ -1874,7 +1884,7 @@
             return new Date(dateString).toLocaleDateString('fr-FR');
         }
 
-        // Fonctions pour les notifications (compatibilit├® avec dashboard.html)
+        // Fonctions pour les notifications (compatibilité avec dashboard.html)
         function openNotificationsModal() {
             showComingSoon('Notifications');
         }
