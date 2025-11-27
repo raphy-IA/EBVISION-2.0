@@ -504,18 +504,26 @@
             window.location.href = '/login.html';
         }
         
-        // Initialize user info
+        // Initialize user info (sans casser la page si le header n'est pas présent)
         function initUserInfo() {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const nameEl = document.getElementById('userName');
+            const initialsEl = document.getElementById('userInitials');
+            const roleEl = document.getElementById('userRole');
+
+            // Si la page n'a pas ces éléments (layout différent), on sort silencieusement
+            if (!nameEl || !initialsEl || !roleEl) {
+                return;
+            }
+
             if (user.nom && user.prenom) {
-                document.getElementById('userName').textContent = `${user.prenom} ${user.nom}`;
-                document.getElementById('userInitials').textContent = 
-                    (user.prenom[0] + user.nom[0]).toUpperCase();
+                nameEl.textContent = `${user.prenom} ${user.nom}`;
+                initialsEl.textContent = (user.prenom[0] + user.nom[0]).toUpperCase();
                 
                 if (user.roles && user.roles.length > 0) {
-                    document.getElementById('userRole').textContent = user.roles.join(', ');
+                    roleEl.textContent = user.roles.join(', ');
                 } else if (user.role) {
-                    document.getElementById('userRole').textContent = user.role;
+                    roleEl.textContent = user.role;
                 }
             }
         }
@@ -538,25 +546,54 @@
                     fetch(`${API_BASE_URL}/divisions`, { headers: getAuthHeader() }),
                     fetch(`${API_BASE_URL}/grades`, { headers: getAuthHeader() })
                 ]);
-                
+
                 if (buResponse.ok) {
                     const buData = await buResponse.json();
-                    allBusinessUnits = buData.data || buData.business_units || [];
+                    let buArray = [];
+                    if (buData && buData.data) {
+                        if (Array.isArray(buData.data)) {
+                            buArray = buData.data;
+                        } else if (Array.isArray(buData.data.businessUnits)) {
+                            buArray = buData.data.businessUnits;
+                        } else if (Array.isArray(buData.data.business_units)) {
+                            buArray = buData.data.business_units;
+                        }
+                    }
+                    allBusinessUnits = buArray;
+                    console.log('✅ Business Units RH chargées:', allBusinessUnits.length, buData);
                     populateBusinessUnits();
                 }
-                
+
                 if (divResponse.ok) {
                     const divData = await divResponse.json();
-                    allDivisions = divData.data || divData.divisions || [];
+                    let divArray = [];
+                    if (divData && divData.data) {
+                        if (Array.isArray(divData.data)) {
+                            divArray = divData.data;
+                        } else if (Array.isArray(divData.data.divisions)) {
+                            divArray = divData.data.divisions;
+                        }
+                    }
+                    allDivisions = divArray;
+                    console.log('✅ Divisions RH chargées:', allDivisions.length, divData);
                     populateDivisions();
                 }
-                
+
                 if (gradeResponse.ok) {
                     const gradeData = await gradeResponse.json();
-                    allGrades = gradeData.data || gradeData.grades || [];
+                    let gradeArray = [];
+                    if (gradeData && gradeData.data) {
+                        if (Array.isArray(gradeData.data)) {
+                            gradeArray = gradeData.data;
+                        } else if (Array.isArray(gradeData.data.grades)) {
+                            gradeArray = gradeData.data.grades;
+                        }
+                    }
+                    allGrades = gradeArray;
+                    console.log('✅ Grades RH chargés:', allGrades.length, gradeData);
                     populateGrades();
                 }
-                
+
                 setupFilterListeners();
                 console.log('✅ Filtres RH initialisés:', {
                     businessUnits: allBusinessUnits.length,

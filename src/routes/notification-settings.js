@@ -4,6 +4,7 @@ const { authenticateToken } = require('../middleware/auth');
 const { pool } = require('../utils/database');
 const EmailService = require('../services/emailService');
 const CronService = require('../services/cronService');
+const nodemailer = require('nodemailer');
 
 // Table pour stocker les paramètres de configuration
 const NOTIFICATION_SETTINGS_TABLE = 'notification_settings';
@@ -27,23 +28,30 @@ router.get('/', authenticateToken, async (req, res) => {
         // Valeurs par défaut pour la configuration des alertes automatiques (globales)
         const defaultAutomaticAlerts = {
             // Opportunités
-            opportunity_stage_overdue:      { userDelayDays: 3, managementDelayDays: 7 },
+            opportunity_stage_overdue:      { userDelayDays: 3,  managementDelayDays: 7  },
             opportunity_inactive:           { userDelayDays: 14, managementDelayDays: 30 },
 
-            // Missions
-            mission_inactive:               { userDelayDays: 7, managementDelayDays: 14 },
+            // Missions (niveau mission global)
+            mission_inactive:               { userDelayDays: 7,  managementDelayDays: 14 },
+
+            // Missions - niveau tâches
+            mission_task_end_approaching:   { userDelayDays: 3,  managementDelayDays: 7  },
+            mission_task_overdue_not_closed:{ userDelayDays: 2,  managementDelayDays: 5  },
 
             // Feuilles de temps
-            timesheet_not_submitted:        { userDelayDays: 2, managementDelayDays: 5 },   // user = collaborateur
-            timesheet_not_validated_superv: { userDelayDays: 2, managementDelayDays: 5 },   // user = superviseur
+            timesheet_not_submitted:        { userDelayDays: 2,  managementDelayDays: 5  },   // user = collaborateur
+            timesheet_not_validated_superv: { userDelayDays: 2,  managementDelayDays: 5  },   // user = superviseur
 
             // Facturation missions
-            mission_fee_billing_overdue:     { userDelayDays: 3, managementDelayDays: 7 },  // user = manager mission
-            mission_expense_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },  // user = manager mission
+            mission_fee_billing_overdue:     { userDelayDays: 3,  managementDelayDays: 7  },  // user = manager mission
+            mission_expense_billing_overdue: { userDelayDays: 3,  managementDelayDays: 7  },  // user = manager mission
 
-            // Campagnes de prospection
-            campaign_validation_pending:    { userDelayDays: 3, managementDelayDays: 7 },
-            campaign_not_launched:          { userDelayDays: 5, managementDelayDays: 10 }
+            // Campagnes de prospection (global campagne)
+            campaign_validation_pending:    { userDelayDays: 3,  managementDelayDays: 7  },
+            campaign_not_launched:          { userDelayDays: 5,  managementDelayDays: 10 },
+
+            // Campagnes de prospection - relance par entreprise
+            campaign_company_followup_due:  { userDelayDays: 7,  managementDelayDays: 14 }
         };
 
         // Les paramètres sont stockés en snake_case dans la base (automatic_alerts)
@@ -107,6 +115,43 @@ router.get('/', authenticateToken, async (req, res) => {
                     enabled: userSettings.notificationTypes?.timesheet_rejected?.enabled ?? globalSettings.notificationTypes?.timesheet_rejected?.enabled ?? true,
                     email: true,
                     notification: true
+                },
+
+                // Familles d'alertes automatiques (crons)
+                opportunity_cron_alerts: {
+                    enabled: userSettings.notificationTypes?.opportunity_cron_alerts?.enabled ?? globalSettings.notificationTypes?.opportunity_cron_alerts?.enabled ?? true,
+                    email: true,
+                    notification: true
+                },
+                campaign_cron_alerts: {
+                    enabled: userSettings.notificationTypes?.campaign_cron_alerts?.enabled ?? globalSettings.notificationTypes?.campaign_cron_alerts?.enabled ?? true,
+                    email: true,
+                    notification: true
+                },
+                campaign_company_followup_cron_alerts: {
+                    enabled: userSettings.notificationTypes?.campaign_company_followup_cron_alerts?.enabled ?? globalSettings.notificationTypes?.campaign_company_followup_cron_alerts?.enabled ?? true,
+                    email: true,
+                    notification: true
+                },
+                mission_inactive_cron_alerts: {
+                    enabled: userSettings.notificationTypes?.mission_inactive_cron_alerts?.enabled ?? globalSettings.notificationTypes?.mission_inactive_cron_alerts?.enabled ?? true,
+                    email: true,
+                    notification: true
+                },
+                mission_task_cron_alerts: {
+                    enabled: userSettings.notificationTypes?.mission_task_cron_alerts?.enabled ?? globalSettings.notificationTypes?.mission_task_cron_alerts?.enabled ?? true,
+                    email: true,
+                    notification: true
+                },
+                timesheet_cron_alerts: {
+                    enabled: userSettings.notificationTypes?.timesheet_cron_alerts?.enabled ?? globalSettings.notificationTypes?.timesheet_cron_alerts?.enabled ?? true,
+                    email: true,
+                    notification: true
+                },
+                mission_billing_cron_alerts: {
+                    enabled: userSettings.notificationTypes?.mission_billing_cron_alerts?.enabled ?? globalSettings.notificationTypes?.mission_billing_cron_alerts?.enabled ?? true,
+                    email: true,
+                    notification: true
                 }
             },
             alerts: {
@@ -132,6 +177,76 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
+// Tester la configuration email et envoyer un email de test
+router.post('/test-email', authenticateToken, async (req, res) => {
+    try {
+        const { emailSettings, testEmail } = req.body || {};
+
+        if (!emailSettings || !testEmail) {
+            return res.status(400).json({
+                success: false,
+                error: 'Paramètres emailSettings et testEmail requis'
+            });
+        }
+
+        const {
+            smtpHost,
+            smtpPort,
+            smtpUser,
+            smtpPassword,
+            smtpFrom,
+            enableSSL,
+            enableDebug
+        } = emailSettings;
+
+        if (!smtpHost || !smtpPort || !smtpUser || !smtpPassword) {
+            return res.status(400).json({
+                success: false,
+                error: 'SMTP_HOST, SMTP_PORT, SMTP_USER et SMTP_PASSWORD sont requis pour le test'
+            });
+        }
+
+        const port = parseInt(smtpPort, 10) || 587;
+        const secure = enableSSL === true || port === 465;
+
+        const transporter = nodemailer.createTransport({
+            host: smtpHost,
+            port,
+            secure,
+            auth: {
+                user: smtpUser,
+                pass: smtpPassword
+            },
+            debug: !!enableDebug
+        });
+
+        // Vérifier la connexion SMTP
+        await transporter.verify();
+
+        // Envoyer un email de test simple
+        const fromAddress = smtpFrom || smtpUser;
+
+        await transporter.sendMail({
+            from: fromAddress,
+            to: testEmail,
+            subject: 'Test configuration email - EB-Vision 2.0',
+            text: 'Ceci est un email de test envoyé depuis la page de configuration des notifications EB-Vision 2.0.',
+            html: '<p>Ceci est un <strong>email de test</strong> envoyé depuis la page de configuration des notifications EB-Vision 2.0.</p>'
+        });
+
+        return res.json({
+            success: true,
+            message: `Email de test envoyé avec succès à ${testEmail}`
+        });
+    } catch (error) {
+        console.error('Erreur lors du test de configuration email:', error);
+        return res.status(500).json({
+            success: false,
+            error: error.message || 'Erreur lors du test de configuration email'
+        });
+    }
+});
+
 // Sauvegarder les paramètres généraux
 router.put('/general', authenticateToken, async (req, res) => {
     try {
@@ -147,6 +262,21 @@ router.put('/general', authenticateToken, async (req, res) => {
                 general = $2,
                 updated_at = CURRENT_TIMESTAMP
         `, [req.user.id, JSON.stringify({
+            enableNotifications,
+            enableEmailNotifications,
+            enableCronJobs
+        })]);
+
+        // Sauvegarder également une configuration GLOBALE (user_id NULL)
+        // qui pourra être utilisée par les services backend (ex: CronService)
+        await pool.query(`
+            INSERT INTO ${NOTIFICATION_SETTINGS_TABLE} (user_id, general, updated_at)
+            VALUES (NULL, $1, CURRENT_TIMESTAMP)
+            ON CONFLICT (user_id)
+            DO UPDATE SET
+                general = $1,
+                updated_at = CURRENT_TIMESTAMP
+        `, [JSON.stringify({
             enableNotifications,
             enableEmailNotifications,
             enableCronJobs
@@ -308,6 +438,132 @@ router.put('/automatic-alerts', authenticateToken, async (req, res) => {
     }
 });
 
+// =========================
+// Historique des notifications (utilisé par notification-settings.js)
+// =========================
+
+// Récupérer l'historique des notifications de l'utilisateur courant (ou globale en mode admin)
+router.get('/history', authenticateToken, async (req, res) => {
+    try {
+        const isAdmin = (req.user && (
+            req.user.role === 'SUPER_ADMIN' ||
+            (Array.isArray(req.user.roles) && req.user.roles.includes('SUPER_ADMIN'))
+        )) || false;
+
+        const baseQuery = `
+            SELECT 
+                n.id,
+                n.type,
+                n.title,
+                n.message,
+                n.priority,
+                n.created_at,
+                n.read_at,
+                u.id   AS user_id,
+                u.nom  AS user_nom,
+                u.prenom AS user_prenom,
+                u.login  AS user_login,
+                o.nom  AS opportunity_name,
+                (n.metadata->>'campaign_name') AS campaign_name
+            FROM notifications n
+            LEFT JOIN users u ON n.user_id = u.id
+            LEFT JOIN opportunities o ON n.opportunity_id = o.id
+        `;
+
+        let whereClause = 'WHERE n.user_id = $1';
+        const params = [req.user.id];
+
+        // En mode admin, on peut filtrer sur un utilisateur précis via ?user_id=...
+        if (isAdmin && req.query.user_id) {
+            whereClause = 'WHERE n.user_id = $1';
+            params[0] = req.query.user_id;
+        }
+
+        const query = `
+            ${baseQuery}
+            ${whereClause}
+            ORDER BY n.created_at DESC
+            LIMIT 200
+        `;
+
+        const result = await pool.query(query, params);
+
+        res.json({
+            success: true,
+            data: result.rows,
+            isAdmin
+        });
+    } catch (error) {
+        console.error('Erreur lors du chargement de l\'historique de notifications:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors du chargement de l\'historique de notifications'
+        });
+    }
+});
+
+// Vider l'historique des notifications
+router.delete('/clear-history', authenticateToken, async (req, res) => {
+    try {
+        const isAdmin = (req.user && (
+            req.user.role === 'SUPER_ADMIN' ||
+            (Array.isArray(req.user.roles) && req.user.roles.includes('SUPER_ADMIN'))
+        )) || false;
+
+        const { user_id: targetUserId, confirm_all } = req.query;
+
+        if (isAdmin && confirm_all === 'true') {
+            // Purge complète (admin only)
+            await pool.query('DELETE FROM notifications');
+            return res.json({
+                success: true,
+                message: 'Historique des notifications vidé pour tous les utilisateurs'
+            });
+        }
+
+        if (isAdmin && targetUserId) {
+            // Purge ciblée sur un utilisateur (admin only)
+            await pool.query('DELETE FROM notifications WHERE user_id = $1', [targetUserId]);
+            return res.json({
+                success: true,
+                message: `Historique des notifications vidé pour l\'utilisateur ${targetUserId}`
+            });
+        }
+
+        // Cas par défaut : vider l'historique de l'utilisateur courant uniquement
+        await pool.query('DELETE FROM notifications WHERE user_id = $1', [req.user.id]);
+
+        res.json({
+            success: true,
+            message: 'Historique des notifications vidé pour l\'utilisateur courant'
+        });
+    } catch (error) {
+        console.error('Erreur lors du vidage de l\'historique de notifications:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors du vidage de l\'historique de notifications'
+        });
+    }
+});
+
+// Endpoint de test des tâches cron (appelé depuis le bouton "Tester les tâches")
+router.post('/test-cron', authenticateToken, async (req, res) => {
+    try {
+        // On ne lance pas réellement les crons depuis ce bouton en prod, on renvoie juste un succès.
+        // Si besoin, on pourrait déclencher ici certaines vérifications ciblées.
+        res.json({
+            success: true,
+            message: 'Test des tâches cron déclenché (simulation)'
+        });
+    } catch (error) {
+        console.error('Erreur lors du test des tâches cron:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors du test des tâches cron'
+        });
+    }
+});
+
 // Créer la table de paramètres si elle n'existe pas
 async function createSettingsTableIfNotExists() {
     try {
@@ -356,7 +612,16 @@ async function createSettingsTableIfNotExists() {
                     opportunity_inactive: { enabled: true, email: true, notification: true },
                     timesheet_overdue: { enabled: true, email: true, notification: true },
                     timesheet_approved: { enabled: true, email: true, notification: true },
-                    timesheet_rejected: { enabled: true, email: true, notification: true }
+                    timesheet_rejected: { enabled: true, email: true, notification: true },
+
+                    // Familles d'alertes automatiques (crons)
+                    opportunity_cron_alerts: { enabled: true, email: true, notification: true },
+                    campaign_cron_alerts: { enabled: true, email: true, notification: true },
+                    campaign_company_followup_cron_alerts: { enabled: true, email: true, notification: true },
+                    mission_inactive_cron_alerts: { enabled: true, email: true, notification: true },
+                    mission_task_cron_alerts: { enabled: true, email: true, notification: true },
+                    timesheet_cron_alerts: { enabled: true, email: true, notification: true },
+                    mission_billing_cron_alerts: { enabled: true, email: true, notification: true }
                 }),
                 JSON.stringify({
                     overdueThreshold: 1,
@@ -366,23 +631,30 @@ async function createSettingsTableIfNotExists() {
                 }),
                 JSON.stringify({
                     // Opportunités
-                    opportunity_stage_overdue:      { userDelayDays: 3, managementDelayDays: 7 },
-                    opportunity_inactive:           { userDelayDays: 14, managementDelayDays: 30 },
+                    opportunity_stage_overdue:       { userDelayDays: 3,  managementDelayDays: 7  },
+                    opportunity_inactive:            { userDelayDays: 14, managementDelayDays: 30 },
 
-                    // Missions
-                    mission_inactive:               { userDelayDays: 7, managementDelayDays: 14 },
+                    // Missions (niveau mission global)
+                    mission_inactive:                { userDelayDays: 7,  managementDelayDays: 14 },
+
+                    // Missions - niveau tâches
+                    mission_task_end_approaching:    { userDelayDays: 3,  managementDelayDays: 7  },
+                    mission_task_overdue_not_closed: { userDelayDays: 2,  managementDelayDays: 5  },
 
                     // Feuilles de temps
-                    timesheet_not_submitted:        { userDelayDays: 2, managementDelayDays: 5 },
-                    timesheet_not_validated_superv: { userDelayDays: 2, managementDelayDays: 5 },
+                    timesheet_not_submitted:         { userDelayDays: 2,  managementDelayDays: 5  },
+                    timesheet_not_validated_superv:  { userDelayDays: 2,  managementDelayDays: 5  },
 
                     // Facturation missions
-                    mission_fee_billing_overdue:     { userDelayDays: 3, managementDelayDays: 7 },
-                    mission_expense_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },
+                    mission_fee_billing_overdue:     { userDelayDays: 3,  managementDelayDays: 7  },
+                    mission_expense_billing_overdue: { userDelayDays: 3,  managementDelayDays: 7  },
 
-                    // Campagnes de prospection
-                    campaign_validation_pending:    { userDelayDays: 3, managementDelayDays: 7 },
-                    campaign_not_launched:          { userDelayDays: 5, managementDelayDays: 10 }
+                    // Campagnes de prospection (global campagne)
+                    campaign_validation_pending:     { userDelayDays: 3,  managementDelayDays: 7  },
+                    campaign_not_launched:           { userDelayDays: 5,  managementDelayDays: 10 },
+
+                    // Campagnes de prospection - relance par entreprise
+                    campaign_company_followup_due:   { userDelayDays: 7,  managementDelayDays: 14 }
                 })
             ]);
         }

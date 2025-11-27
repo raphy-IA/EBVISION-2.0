@@ -11,7 +11,7 @@ class NotificationService {
             const query = `
                 SELECT 
                     os.id as stage_id,
-                    os.nom as stage_name,
+                    os.stage_name as stage_name,
                     os.due_date,
                     o.id as opportunity_id,
                     o.nom as opportunity_name,

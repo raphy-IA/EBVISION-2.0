@@ -292,7 +292,9 @@
                                 </div>
                             </div>
                         </div>
-                        
+
+                        <hr class="my-4">
+
                         <div class="mt-4">
                             <button class="btn btn-primary" onclick="saveGeneralSettings()">
                                 <i class="bi bi-save me-2"></i>Sauvegarder les paramètres
@@ -530,7 +532,103 @@
                                 </div>
                             </div>
                         </div>
-                        
+
+                        <hr class="my-4">
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Alertes automatiques (Opportunités & Campagnes)</h5>
+
+                                <div class="notification-type active" data-type="opportunity_cron_alerts">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Alertes opportunités (crons)</h6>
+                                            <small class="text-muted">Étapes en retard, opportunités inactives (tâches automatiques)</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="notification-type active" data-type="campaign_cron_alerts">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Alertes campagnes de prospection</h6>
+                                            <small class="text-muted">Campagnes en validation ou non lancées (tâches automatiques)</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="notification-type active" data-type="campaign_company_followup_cron_alerts">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Relances entreprises campagnes</h6>
+                                            <small class="text-muted">Relances entreprises sans conversion / décision</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h5>Alertes automatiques (Missions, tâches, facturation)</h5>
+
+                                <div class="notification-type active" data-type="mission_inactive_cron_alerts">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Alertes missions inactives</h6>
+                                            <small class="text-muted">Missions sans activité depuis trop longtemps</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="notification-type active" data-type="mission_task_cron_alerts">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Alertes tâches de missions</h6>
+                                            <small class="text-muted">Tâches approchant de la fin ou en retard non clôturées</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="notification-type active" data-type="timesheet_cron_alerts">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Alertes feuilles de temps (crons)</h6>
+                                            <small class="text-muted">Rappels automatiques de feuilles non soumises / non validées</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="notification-type active" data-type="mission_billing_cron_alerts">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Alertes facturation missions</h6>
+                                            <small class="text-muted">Honoraires et débours en retard de facturation</small>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="mt-4">
                             <button class="btn btn-primary" onclick="saveNotificationSettings()">
                                 <i class="bi bi-save me-2"></i>Sauvegarder les types de notifications
@@ -638,99 +736,133 @@
                                         <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
                                     </select>
                                 </div>
+                            </div>
+                        </div>
 
-                                <h5 class="mt-4">Délais par fonctionnalité</h5>
-                                <div class="table-responsive">
-                                    <table class="table table-sm align-middle">
-                                        <thead>
-                                            <tr>
-                                                <th style="width: 45%">Règle</th>
-                                                <th style="width: 20%">Délai utilisateur (jours)</th>
-                                                <th style="width: 20%">Délai management (jours)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr class="table-light">
-                                                <th colspan="3">Campagnes de prospection</th>
-                                            </tr>
-                                            <tr>
-                                                <td>Campagne en validation trop longtemps</td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_campaign_validation_pending_user" min="0"></td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_campaign_validation_pending_management" min="0"></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Campagne validée mais non lancée</td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_campaign_not_launched_user" min="0"></td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_campaign_not_launched_management" min="0"></td>
-                                            </tr>
+                        <!-- Bloc pleine largeur : Délais par fonctionnalité -->
+                        <hr class="my-4">
 
-                                            <tr class="table-light">
-                                                <th colspan="3">Opportunités</th>
-                                            </tr>
-                                            <tr>
-                                                <td>Étapes d'opportunité en retard</td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_opportunity_stage_overdue_user" min="0"></td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_opportunity_stage_overdue_management" min="0"></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Opportunité inactive depuis trop longtemps</td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_opportunity_inactive_user" min="0"></td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_opportunity_inactive_management" min="0"></td>
-                                            </tr>
+                        <div class="automatic-delays-section">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-clock-history me-2 text-primary"></i>
+                                <h5 class="mb-0">Délais par fonctionnalité</h5>
+                            </div>
 
-                                            <tr class="table-light">
-                                                <th colspan="3">Missions</th>
-                                            </tr>
-                                            <tr>
-                                                <td>Mission inactive / sans activité</td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_mission_inactive_user" min="0"></td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_mission_inactive_management" min="0"></td>
-                                            </tr>
+                            <div class="small text-muted mb-3">
+                                <i class="bi bi-info-circle me-1"></i>
+                                <span>
+                                    Le <strong>délai utilisateur</strong> contrôle les rappels envoyés aux acteurs opérationnels
+                                    (collaborateurs, responsables de mission, etc.). Le <strong>délai management</strong> contrôle les
+                                    escalades vers le management (DIRECTOR / PARTNER / SENIOR_PARTNER).
+                                    Mettre une valeur à <code>0</code> désactive l'alerte correspondante.
+                                </span>
+                            </div>
 
-                                            <tr class="table-light">
-                                                <th colspan="3">Feuilles de temps</th>
-                                            </tr>
-                                            <tr>
-                                                <td>Feuille de temps non soumise par le collaborateur</td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_timesheet_not_submitted_user" min="0"></td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_timesheet_not_submitted_management" min="0"></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Feuille de temps soumise mais non validée par le superviseur</td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_timesheet_not_validated_superv_user" min="0"></td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_timesheet_not_validated_superv_management" min="0"></td>
-                                            </tr>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 45%">Règle</th>
+                                            <th style="width: 20%"><i class="bi bi-person me-1"></i>Utilisateur (jours)</th>
+                                            <th style="width: 20%"><i class="bi bi-people me-1"></i>Management (jours)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="table-light">
+                                            <th colspan="3"><i class="bi bi-bullseye me-1"></i>Campagnes de prospection</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Campagne en validation trop longtemps</td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_campaign_validation_pending_user" min="0"></td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_campaign_validation_pending_management" min="0"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Campagne validée mais non lancée</td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_campaign_not_launched_user" min="0"></td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_campaign_not_launched_management" min="0"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Relance entreprises (aucune conversion / abandon après envoi)</td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_campaign_company_followup_due_user" min="0"></td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_campaign_company_followup_due_management" min="0"></td>
+                                        </tr>
 
-                                            <tr class="table-light">
-                                                <th colspan="3">Facturation des missions</th>
-                                            </tr>
-                                            <tr>
-                                                <td>Échéance de facturation d'honoraires dépassée</td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_mission_fee_billing_overdue_user" min="0"></td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_mission_fee_billing_overdue_management" min="0"></td>
-                                            </tr>
-                                            <tr>
-                                                <td>Échéance de facturation de débours dépassée</td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_mission_expense_billing_overdue_user" min="0"></td>
-                                                <td><input type="number" class="form-control form-control-sm" id="aa_mission_expense_billing_overdue_management" min="0"></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        <tr class="table-light">
+                                            <th colspan="3"><i class="bi bi-graph-up-arrow me-1"></i>Opportunités</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Étapes d'opportunité en retard</td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_opportunity_stage_overdue_user" min="0"></td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_opportunity_stage_overdue_management" min="0"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Opportunité inactive depuis trop longtemps</td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_opportunity_inactive_user" min="0"></td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_opportunity_inactive_management" min="0"></td>
+                                        </tr>
 
-                                <div class="mt-3">
-                                    <button class="btn btn-primary btn-sm" onclick="saveAutomaticAlertSettings()">
-                                        <i class="bi bi-save me-2"></i>Sauvegarder les délais d'alertes automatiques
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-sm ms-2" onclick="resetAutomaticAlertSettings()">
-                                        <i class="bi bi-arrow-clockwise me-2"></i>Réinitialiser les délais
-                                    </button>
-                                </div>
+                                        <tr class="table-light">
+                                            <th colspan="3"><i class="bi bi-briefcase me-1"></i>Missions & tâches</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Mission inactive / sans activité</td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_mission_inactive_user" min="0"></td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_mission_inactive_management" min="0"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Tâche de mission approchant de sa date de fin</td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_mission_task_end_approaching_user" min="0"></td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_mission_task_end_approaching_management" min="0"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Tâche de mission en retard et non clôturée (heures non totalement chargées)</td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_mission_task_overdue_not_closed_user" min="0"></td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_mission_task_overdue_not_closed_management" min="0"></td>
+                                        </tr>
 
-                                <div class="alert alert-info mt-3">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    Les tâches cron utilisent ces paramètres pour déterminer les retards et la périodicité des vérifications.
-                                </div>
+                                        <tr class="table-light">
+                                            <th colspan="3"><i class="bi bi-calendar-check me-1"></i>Feuilles de temps</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Feuille de temps non soumise par le collaborateur</td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_timesheet_not_submitted_user" min="0"></td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_timesheet_not_submitted_management" min="0"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Feuille de temps soumise mais non validée par le superviseur</td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_timesheet_not_validated_superv_user" min="0"></td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_timesheet_not_validated_superv_management" min="0"></td>
+                                        </tr>
+
+                                        <tr class="table-light">
+                                            <th colspan="3"><i class="bi bi-file-earmark-text me-1"></i>Facturation des missions</th>
+                                        </tr>
+                                        <tr>
+                                            <td>Honoraires non totalement facturés après la fin de mission</td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_mission_fee_billing_overdue_user" min="0"></td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_mission_fee_billing_overdue_management" min="0"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Débours / frais non facturés après la fin de mission</td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_mission_expense_billing_overdue_user" min="0"></td>
+                                            <td><input type="number" class="form-control form-control-sm" id="aa_mission_expense_billing_overdue_management" min="0"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="mt-3 d-flex flex-wrap align-items-center">
+                                <button class="btn btn-primary btn-sm me-2 mb-2" onclick="saveAutomaticAlertSettings()">
+                                    <i class="bi bi-save me-2"></i>Sauvegarder les délais d'alertes automatiques
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm mb-2" onclick="resetAutomaticAlertSettings()">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>Réinitialiser les délais
+                                </button>
+                            </div>
+
+                            <div class="alert alert-info mt-3 mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Les tâches cron utilisent ces paramètres pour déterminer les retards et la périodicité des vérifications.
                             </div>
                         </div>
                         
@@ -766,17 +898,38 @@
                             <div class="col-md-3">
                                 <select class="form-select" id="historyFilter">
                                     <option value="">Tous les types</option>
-                                    <option value="STAGE_OVERDUE">Étapes en retard</option>
-                                    <option value="OPPORTUNITY_WON">Opportunités gagnées</option>
-                                    <option value="OPPORTUNITY_LOST">Opportunités perdues</option>
-                                    <option value="TIMESHEET_OVERDUE">Feuilles de temps en retard</option>
-                                    <option value="CAMPAIGN_CREATED">Campagne créée</option>
-                                    <option value="CAMPAIGN_SUBMITTED">Campagne soumise</option>
-                                    <option value="CAMPAIGN_VALIDATION_DECISION">Validation campagne</option>
-                                    <option value="CAMPAIGN_STARTED">Campagne démarrée</option>
-                                    <option value="CAMPAIGN_PROGRESS">Progression campagne</option>
-                                    <option value="CAMPAIGN_CONVERSION">Conversion campagne</option>
-                                    <option value="CAMPAIGN_OVERDUE">Campagne en retard</option>
+                                    <optgroup label="Opportunités">
+                                        <option value="STAGE_OVERDUE">Étapes en retard</option>
+                                        <option value="OPPORTUNITY_INACTIVE">Opportunités inactives</option>
+                                        <option value="OPPORTUNITY_WON">Opportunités gagnées</option>
+                                        <option value="OPPORTUNITY_LOST">Opportunités perdues</option>
+                                    </optgroup>
+                                    <optgroup label="Campagnes de prospection">
+                                        <option value="CAMPAIGN_CREATED">Campagne créée</option>
+                                        <option value="CAMPAIGN_ASSIGNED">Campagne assignée</option>
+                                        <option value="CAMPAIGN_SUBMITTED">Campagne soumise</option>
+                                        <option value="CAMPAIGN_VALIDATION_DECISION">Validation campagne</option>
+                                        <option value="CAMPAIGN_STARTED">Campagne démarrée</option>
+                                        <option value="CAMPAIGN_PROGRESS">Progression campagne</option>
+                                        <option value="CAMPAIGN_CONVERSION">Conversion campagne</option>
+                                        <option value="CAMPAIGN_OVERDUE">Campagne en retard</option>
+                                        <option value="CAMPAIGN_COMPANY_FOLLOWUP">Relance entreprise (campagne)</option>
+                                        <option value="CAMPAIGN_COMPANY_FOLLOWUP_MGMT">Relance entreprise (management)</option>
+                                    </optgroup>
+                                    <optgroup label="Missions & tâches">
+                                        <option value="MISSION_TASK_END_APPROACHING">Tâche proche de l'échéance</option>
+                                        <option value="MISSION_TASK_END_APPROACHING_MGMT">Tâche proche (management)</option>
+                                        <option value="MISSION_TASK_OVERDUE_NOT_CLOSED">Tâche en retard non clôturée</option>
+                                        <option value="MISSION_TASK_OVERDUE_NOT_CLOSED_MGMT">Tâche en retard (management)</option>
+                                        <option value="MISSION_FEE_BILLING_OVERDUE">Honoraires en retard de facturation</option>
+                                        <option value="MISSION_FEE_BILLING_OVERDUE_MGMT">Honoraires en retard (management)</option>
+                                        <option value="MISSION_EXPENSE_BILLING_OVERDUE">Débours en retard de facturation</option>
+                                        <option value="MISSION_EXPENSE_BILLING_OVERDUE_MGMT">Débours en retard (management)</option>
+                                    </optgroup>
+                                    <optgroup label="Feuilles de temps / Divers">
+                                        <option value="TIMESHEET_OVERDUE">Feuilles de temps en retard</option>
+                                        <!-- Autres types spécifiques peuvent être ajoutés ici si nécessaire -->
+                                    </optgroup>
                                 </select>
                             </div>
                             <div class="col-md-3" id="userFilterContainer" style="display: none;">

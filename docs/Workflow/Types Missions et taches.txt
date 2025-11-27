@@ -1,0 +1,205 @@
+1. Audit & Commissariat aux Comptes (CAC)
+Le CAC est très réglementé (normes NEP). L'Audit contractuel est plus libre mais suit souvent les normes ISA.
+
+1. Acceptation et Maintien de la mission [Obligatoire]
+
+Vérification de l'indépendance et absence de conflits d'intérêts.
+
+Lutte anti-blanchiment (KYC - Know Your Customer).
+
+Signature de la Lettre de mission.
+
+2. Prise de connaissance et Orientation [Obligatoire]
+
+Analyse de l'environnement et des risques.
+
+Note d'orientation générale (Stratégie d'audit).
+
+3. Appréciation du Contrôle Interne [Obligatoire]
+
+Revue des processus (Achats, Ventes, Trésorerie, RH...).
+
+Tests de procédures.
+
+4. Contrôle des comptes (Substantif) [Obligatoire]
+
+Circularisation (demande de confirmation aux tiers).
+
+Audit analytique et tests de détails.
+
+Inventaire physique (Optionnel selon l'activité, ex: services vs industrie).
+
+5. Vérifications Spécifiques [Obligatoire - CAC uniquement]
+
+Conventions réglementées, égalité entre actionnaires, documents juridiques.
+
+6. Travaux de fin de mission et Rapports [Obligatoire]
+
+Synthèse des travaux.
+
+Émission des rapports (Général et Spécial).
+
+Présentation aux instances dirigeantes (Optionnel mais recommandé).
+
+2. Expertise Comptable & Financière
+Il faut distinguer la mission récurrente (tenue/révision) de la mission ponctuelle (conseil).
+
+A. Mission Récurrente (Comptes Annuels)
+
+1. Collecte et Traitement [Obligatoire]
+
+Récupération des pièces (automatique ou manuelle).
+
+Saisie comptable ou imputation.
+
+2. Révision des comptes [Obligatoire]
+
+Justification des comptes de bilan.
+
+Contrôle de cohérence (TVA, Charges sociales).
+
+3. Situations intermédiaires [Optionnel]
+
+Reporting mensuel ou trimestriel.
+
+4. Clôture Annuelle [Obligatoire]
+
+Écritures d'inventaire (Amortissements, Stocks, Provisions).
+
+Calcul de l'impôt (IS).
+
+5. Établissement des États Financiers [Obligatoire]
+
+Bilan, Compte de résultat, Annexe.
+
+Liasse fiscale.
+
+6. Entretien de bilan / Restitution [Optionnel mais crucial]
+
+Présentation pédagogique des comptes au client.
+
+3. Conseil Juridique & Fiscal (Avocats / Fiscalistes)
+Vous n'aviez pas détaillé cette partie, mais elle est centrale dans votre cible.
+
+1. Prise de contact et Analyse préliminaire [Obligatoire]
+
+Qualification des faits.
+
+Détection des conflits d'intérêts.
+
+2. Convention d'honoraires [Obligatoire]
+
+Définition du périmètre et du mode de facturation.
+
+3. Recherches et Analyse juridique [Obligatoire]
+
+Veille jurisprudentielle.
+
+Analyse des textes applicables.
+
+4. Rédaction d'actes ou de consultations [Obligatoire]
+
+Rédaction (Statuts, Contrats, Mémos).
+
+Relecture / Revue contradictoire (Optionnel - interne).
+
+5. Formalités et Dépôts [Optionnel selon mission]
+
+Greffe, Enregistrement fiscal, INPI...
+
+6. Suivi / Contentieux [Optionnel]
+
+Audiences, Plaidoiries (si phase contentieuse).
+
+4. Consulting & Conseil en Management
+J'ai fusionné "Conseil" et "Consulting" de votre liste car la structure est similaire, mais j'ai affiné les étapes.
+
+1. Cadrage et Lancement (Kick-off) [Obligatoire]
+
+Définition des objectifs SMART.
+
+Constitution de l'équipe projet.
+
+2. Diagnostic (As-Is) [Obligatoire]
+
+Interviews / Ateliers.
+
+Analyse de données.
+
+Identification des "Pain points" (points de douleur).
+
+3. Conception de la cible (To-Be) [Obligatoire]
+
+Scénarios et recommandations.
+
+Business Case / ROI.
+
+4. Planification de la mise en œuvre [Obligatoire]
+
+Roadmap (Feuille de route).
+
+5. Pilotage du déploiement / Accompagnement [Optionnel]
+
+PMO (Project Management Office).
+
+Conduite du changement (Communication, Formation).
+
+6. Bilan de fin de mission [Optionnel]
+
+Retour d'expérience (REX).
+
+5. Douane & Commerce International
+Secteur très technique basé sur la conformité et le flux.
+
+1. Audit des flux existants [Optionnel mais recommandé]
+
+Analyse des nomenclatures douanières utilisées (HS Code).
+
+Analyse de l'origine des produits.
+
+2. Classement et Sécurisation [Obligatoire]
+
+Détermination de la valeur en douane.
+
+Demande de RTC (Renseignement Tarifaire Contraignant).
+
+3. Gestion des formalités déclaratives [Obligatoire]
+
+Établissement des déclarations d'import/export.
+
+4. Gestion des contentieux ou contrôles [Optionnel]
+
+Réponse à l'administration des douanes.
+
+6. Formation
+Votre base était bonne, j'ajoute la couche administrative (très lourde avec Qualiopi en France par exemple).
+
+1. Ingénierie de formation (Cadrage) [Obligatoire]
+
+Analyse des besoins.
+
+Définition des objectifs pédagogiques.
+
+2. Administratif & Convention [Obligatoire]
+
+Envoi des convocations.
+
+Signature convention de formation.
+
+3. Conception pédagogique [Obligatoire]
+
+Création des supports.
+
+4. Animation / Dispense [Obligatoire]
+
+Présentiel ou E-learning.
+
+Émargements (Preuve de présence - Obligatoire).
+
+5. Évaluation [Obligatoire]
+
+Évaluation à chaud (satisfaction).
+
+Évaluation à froid (acquis - Optionnel).
+
+Remise des certificats/attestations.

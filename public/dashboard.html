@@ -345,9 +345,21 @@
     <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="notificationsModalLabel">Toutes les Notifications</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="modal-title" id="notificationsModalLabel">Toutes les Notifications</h5>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Filtre notifications">
+                            <button type="button" id="notificationsFilterAll" class="btn btn-outline-secondary active" onclick="setNotificationFilter('all')">
+                                Toutes
+                            </button>
+                            <button type="button" id="notificationsFilterManagement" class="btn btn-outline-dark" onclick="setNotificationFilter('management')">
+                                Management
+                            </button>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
                 </div>
                 <div class="modal-body">
                     <div id="notificationsContainerFull" class="list-group">

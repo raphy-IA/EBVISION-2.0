@@ -17,6 +17,7 @@ function debounce(func, wait) {
 let isLoadingNotifications = false;
 let notifications = [];
 let notificationStats = {};
+let notificationFilter = 'all'; // 'all' | 'management'
 
 // Fonction pour vérifier si l'utilisateur est authentifié
 function isNotificationsAuthenticated() {
@@ -244,10 +245,42 @@ function updateNotificationBadge() {
     }
 }
 
+function isManagementNotification(notification) {
+    if (!notification || !notification.type) return false;
+    return notification.type.endsWith('_MGMT');
+}
+
+function setNotificationFilter(mode) {
+    if (mode !== 'all' && mode !== 'management') {
+        mode = 'all';
+    }
+    notificationFilter = mode;
+
+    // Mettre à jour l'état visuel des boutons si présents
+    try {
+        const allBtn = document.getElementById('notificationsFilterAll');
+        const mgmtBtn = document.getElementById('notificationsFilterManagement');
+        if (allBtn && mgmtBtn) {
+            if (mode === 'management') {
+                allBtn.classList.remove('active');
+                mgmtBtn.classList.add('active');
+            } else {
+                mgmtBtn.classList.remove('active');
+                allBtn.classList.add('active');
+            }
+        }
+    } catch (e) {
+        console.warn('Erreur lors de la mise à jour du filtre de notifications:', e);
+    }
+
+    // Rafraîchir l'affichage avec le nouveau filtre
+    displayNotifications();
+}
+
 // Affichage des notifications
 function displayNotifications() {
     console.log('📋 Affichage des notifications');
-    console.log('📊 Notifications à afficher:', notifications.length);
+    console.log('📊 Notifications chargées:', notifications.length, ' | filtre:', notificationFilter);
     
     // Essayer d'abord le container du modal (priorité)
     let container = document.getElementById('notificationsContainerFull');
@@ -278,18 +311,25 @@ function displayNotifications() {
     
     console.log('✅ Container trouvé, affichage des notifications...');
     
-    if (notifications.length === 0) {
+    const filteredNotifications = notifications.filter(n => {
+        if (notificationFilter === 'management') {
+            return isManagementNotification(n);
+        }
+        return true;
+    });
+
+    if (filteredNotifications.length === 0) {
         container.innerHTML = `
             <div class="text-center text-muted py-5">
                 <i class="fas fa-bell-slash fa-3x mb-3"></i>
                 <h5>Aucune notification</h5>
-                <p class="text-muted">Vous n'avez aucune notification pour le moment.</p>
+                <p class="text-muted">Vous n'avez aucune notification pour le moment${notificationFilter === 'management' ? ' pour le management' : ''}.</p>
             </div>
         `;
         return;
     }
     
-    container.innerHTML = notifications.map(notification => `
+    container.innerHTML = filteredNotifications.map(notification => `
         <div class="notification-item ${!notification.read_at ? 'unread' : ''}" data-id="${notification.id}">
             <div class="d-flex align-items-start">
                 <div class="notification-icon me-3">
@@ -324,7 +364,8 @@ function displayNotifications() {
                         </small>
                         <div class="d-flex gap-1">
                             ${getPriorityBadge(notification.priority)}
-                            ${!notification.read_at ? '<span class="badge bg-primary">Nouveau</span>' : ''}
+                            ${isManagementNotification(notification) ? '<span class="badge bg-dark ms-1">Management</span>' : ''}
+                            ${!notification.read_at ? '<span class="badge bg-primary ms-1">Nouveau</span>' : ''}
                         </div>
                     </div>
                 </div>
@@ -560,8 +601,28 @@ function getNotificationIcon(type) {
             return '<i class="fas fa-trophy text-warning"></i>';
         case 'CAMPAIGN_OVERDUE':
             return '<i class="fas fa-clock text-danger"></i>';
+        case 'CAMPAIGN_COMPANY_FOLLOWUP':
+            return '<i class="fas fa-phone text-info"></i>';
+        case 'CAMPAIGN_COMPANY_FOLLOWUP_MGMT':
+            return '<i class="fas fa-user-tie text-danger"></i>';
+        case 'MISSION_TASK_END_APPROACHING':
+            return '<i class="fas fa-tasks text-warning"></i>';
+        case 'MISSION_TASK_END_APPROACHING_MGMT':
+            return '<i class="fas fa-briefcase text-warning"></i>';
+        case 'MISSION_TASK_OVERDUE_NOT_CLOSED':
+            return '<i class="fas fa-exclamation-circle text-danger"></i>';
+        case 'MISSION_TASK_OVERDUE_NOT_CLOSED_MGMT':
+            return '<i class="fas fa-user-tie text-danger"></i>';
         case 'STAGE_OVERDUE':
             return '<i class="fas fa-exclamation-triangle text-danger"></i>';
+        case 'MISSION_FEE_BILLING_OVERDUE':
+            return '<i class="fas fa-file-invoice-dollar text-warning"></i>';
+        case 'MISSION_FEE_BILLING_OVERDUE_MGMT':
+            return '<i class="fas fa-user-tie text-warning"></i>';
+        case 'MISSION_EXPENSE_BILLING_OVERDUE':
+            return '<i class="fas fa-receipt text-warning"></i>';
+        case 'MISSION_EXPENSE_BILLING_OVERDUE_MGMT':
+            return '<i class="fas fa-user-tie text-warning"></i>';
         case 'OPPORTUNITY_WON':
             return '<i class="fas fa-trophy text-success"></i>';
         case 'OPPORTUNITY_LOST':
@@ -593,4 +654,5 @@ window.openNotificationsModal = openNotificationsModal;
 window.markAsRead = markAsRead;
 window.deleteNotification = deleteNotification;
 window.markAllAsRead = markAllAsRead;
-window.clearReadNotifications = clearReadNotifications; 
+window.clearReadNotifications = clearReadNotifications;
+window.setNotificationFilter = setNotificationFilter;

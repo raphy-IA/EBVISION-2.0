@@ -48,6 +48,16 @@ async function saveAutomaticAlertSettings() {
                 managementDelayDays: getInt('aa_mission_inactive_management', 14)
             },
 
+            // Missions - tâches
+            mission_task_end_approaching: {
+                userDelayDays: getInt('aa_mission_task_end_approaching_user', 3),
+                managementDelayDays: getInt('aa_mission_task_end_approaching_management', 7)
+            },
+            mission_task_overdue_not_closed: {
+                userDelayDays: getInt('aa_mission_task_overdue_not_closed_user', 2),
+                managementDelayDays: getInt('aa_mission_task_overdue_not_closed_management', 5)
+            },
+
             // Feuilles de temps
             timesheet_not_submitted: {
                 userDelayDays: getInt('aa_timesheet_not_submitted_user', 2),
@@ -76,6 +86,12 @@ async function saveAutomaticAlertSettings() {
             campaign_not_launched: {
                 userDelayDays: getInt('aa_campaign_not_launched_user', 5),
                 managementDelayDays: getInt('aa_campaign_not_launched_management', 10)
+            },
+
+            // Campagnes de prospection - relance entreprises
+            campaign_company_followup_due: {
+                userDelayDays: getInt('aa_campaign_company_followup_due_user', 7),
+                managementDelayDays: getInt('aa_campaign_company_followup_due_management', 14)
             }
         };
 
@@ -243,8 +259,12 @@ function applySettings() {
         opportunity_stage_overdue:      { userDelayDays: 3, managementDelayDays: 7 },
         opportunity_inactive:           { userDelayDays: 14, managementDelayDays: 30 },
 
-        // Missions
-        mission_inactive:               { userDelayDays: 7, managementDelayDays: 14 },
+        // Missions (global)
+        mission_inactive:               { userDelayDays: 7,  managementDelayDays: 14 },
+
+        // Missions - tâches
+        mission_task_end_approaching:    { userDelayDays: 3,  managementDelayDays: 7  },
+        mission_task_overdue_not_closed: { userDelayDays: 2,  managementDelayDays: 5  },
 
         // Feuilles de temps
         timesheet_not_submitted:        { userDelayDays: 2, managementDelayDays: 5 },
@@ -254,9 +274,12 @@ function applySettings() {
         mission_fee_billing_overdue:     { userDelayDays: 3, managementDelayDays: 7 },
         mission_expense_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },
 
-        // Campagnes de prospection
-        campaign_validation_pending:    { userDelayDays: 3, managementDelayDays: 7 },
-        campaign_not_launched:          { userDelayDays: 5, managementDelayDays: 10 }
+        // Campagnes de prospection (global)
+        campaign_validation_pending:     { userDelayDays: 3,  managementDelayDays: 7  },
+        campaign_not_launched:           { userDelayDays: 5,  managementDelayDays: 10 },
+
+        // Campagnes de prospection - relance entreprises
+        campaign_company_followup_due:   { userDelayDays: 7,  managementDelayDays: 14 }
     };
 
     function setAaField(key, userId, mgmtId) {
@@ -270,6 +293,7 @@ function applySettings() {
     // Campagnes
     setAaField('campaign_validation_pending', 'aa_campaign_validation_pending_user', 'aa_campaign_validation_pending_management');
     setAaField('campaign_not_launched', 'aa_campaign_not_launched_user', 'aa_campaign_not_launched_management');
+    setAaField('campaign_company_followup_due', 'aa_campaign_company_followup_due_user', 'aa_campaign_company_followup_due_management');
 
     // Opportunités
     setAaField('opportunity_stage_overdue', 'aa_opportunity_stage_overdue_user', 'aa_opportunity_stage_overdue_management');
@@ -277,6 +301,8 @@ function applySettings() {
 
     // Missions
     setAaField('mission_inactive', 'aa_mission_inactive_user', 'aa_mission_inactive_management');
+    setAaField('mission_task_end_approaching', 'aa_mission_task_end_approaching_user', 'aa_mission_task_end_approaching_management');
+    setAaField('mission_task_overdue_not_closed', 'aa_mission_task_overdue_not_closed_user', 'aa_mission_task_overdue_not_closed_management');
 
     // Feuilles de temps
     setAaField('timesheet_not_submitted', 'aa_timesheet_not_submitted_user', 'aa_timesheet_not_submitted_management');
