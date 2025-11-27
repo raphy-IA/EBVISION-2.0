@@ -69,4 +69,7 @@ nohup.out
 Old_files/
 
 # Dossier des scripts de production (modifiés localement)
-production-scripts/
+
+# Allow SQL files in migrations
+!migrations/*.sql
+

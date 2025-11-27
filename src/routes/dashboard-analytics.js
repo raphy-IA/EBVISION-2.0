@@ -6,15 +6,15 @@ const { pool } = require('../utils/database');
 // GET /api/analytics/dashboard-kpis - KPIs principaux du dashboard
 router.get('/dashboard-kpis', authenticateToken, async (req, res) => {
     try {
-        const { 
-            period = 30, 
-            businessUnit, 
-            division, 
-            collaborateur, 
-            dateDebut, 
-            dateFin 
+        const {
+            period = 30,
+            businessUnit,
+            division,
+            collaborateur,
+            dateDebut,
+            dateFin
         } = req.query;
-        
+
         // Calculer les dates
         let startDate, endDate;
         if (dateDebut && dateFin) {
@@ -25,29 +25,29 @@ router.get('/dashboard-kpis', authenticateToken, async (req, res) => {
             startDate = new Date();
             startDate.setDate(startDate.getDate() - parseInt(period));
         }
-        
+
         // Construire les conditions WHERE
         let whereConditions = ['te.date_saisie >= $1 AND te.date_saisie <= $2'];
         let params = [startDate.toISOString(), endDate.toISOString()];
         let paramIndex = 3;
-        
+
         if (businessUnit) {
             whereConditions.push(`bu.id = $${paramIndex++}`);
             params.push(businessUnit);
         }
-        
+
         if (division) {
             whereConditions.push(`d.id = $${paramIndex++}`);
             params.push(division);
         }
-        
+
         if (collaborateur) {
             whereConditions.push(`c.id = $${paramIndex++}`);
             params.push(collaborateur);
         }
-        
+
         const whereClause = whereConditions.join(' AND ');
-        
+
         // KPIs des heures avec données de rentabilité
         const hoursQuery = `
             SELECT 
@@ -68,10 +68,10 @@ router.get('/dashboard-kpis', authenticateToken, async (req, res) => {
             LEFT JOIN missions m ON te.mission_id = m.id
             WHERE ${whereClause}
         `;
-        
+
         const hoursResult = await pool.query(hoursQuery, params);
         const hoursData = hoursResult.rows[0];
-        
+
         // KPIs des missions
         const missionsQuery = `
             SELECT 
@@ -82,14 +82,14 @@ router.get('/dashboard-kpis', authenticateToken, async (req, res) => {
             FROM missions m
             WHERE m.created_at >= $1
         `;
-        
+
         const missionsResult = await pool.query(missionsQuery, [startDate.toISOString()]);
         const missionsData = missionsResult.rows[0];
-        
+
         // Calcul du taux de rentabilité (simulation basée sur les heures validées)
-        const tauxRentabilite = hoursData.heures_validees > 0 ? 
+        const tauxRentabilite = hoursData.heures_validees > 0 ?
             (hoursData.heures_validees / hoursData.total_heures) * 100 : 0;
-        
+
         // Encours de facturation (simulation)
         const encoursQuery = `
             SELECT 
@@ -98,14 +98,14 @@ router.get('/dashboard-kpis', authenticateToken, async (req, res) => {
             WHERE m.statut = 'EN_COURS' 
             AND m.date_fin < CURRENT_DATE
         `;
-        
+
         const encoursResult = await pool.query(encoursQuery);
         const encoursData = encoursResult.rows[0];
-        
+
         // Calcul des tendances (simulation)
         const previousStartDate = new Date(startDate);
         previousStartDate.setDate(previousStartDate.getDate() - parseInt(period));
-        
+
         const previousHoursQuery = `
             SELECT 
                 SUM(te.heures) as total_heures,
@@ -116,17 +116,17 @@ router.get('/dashboard-kpis', authenticateToken, async (req, res) => {
             LEFT JOIN divisions d ON c.division_id = d.id
             WHERE te.created_at >= $1 AND te.created_at < $2
         `;
-        
+
         const previousHoursResult = await pool.query(previousHoursQuery, [previousStartDate.toISOString(), startDate.toISOString()]);
         const previousHoursData = previousHoursResult.rows[0];
-        
+
         // Calcul des tendances
-        const heuresTrend = previousHoursData.total_heures > 0 ? 
+        const heuresTrend = previousHoursData.total_heures > 0 ?
             ((hoursData.total_heures - previousHoursData.total_heures) / previousHoursData.total_heures) * 100 : 0;
-        
-        const valideesTrend = previousHoursData.heures_validees > 0 ? 
+
+        const valideesTrend = previousHoursData.heures_validees > 0 ?
             ((hoursData.heures_validees - previousHoursData.heures_validees) / previousHoursData.heures_validees) * 100 : 0;
-        
+
         const kpisData = {
             total_heures: hoursData.total_heures || 0,
             heures_validees: hoursData.heures_validees || 0,
@@ -148,7 +148,7 @@ router.get('/dashboard-kpis', authenticateToken, async (req, res) => {
             rentabilite_trend: 2.1, // Simulation
             encours_trend: 15.8 // Simulation
         };
-        
+
         res.json({
             success: true,
             data: kpisData
@@ -166,10 +166,10 @@ router.get('/dashboard-kpis', authenticateToken, async (req, res) => {
 router.get('/top-collaborateurs', authenticateToken, async (req, res) => {
     try {
         const { period = 30, limit = 10 } = req.query;
-        
+
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(period));
-        
+
         const query = `
             SELECT 
                 c.id,
@@ -189,9 +189,9 @@ router.get('/top-collaborateurs', authenticateToken, async (req, res) => {
             ORDER BY heures_total DESC
             LIMIT $2
         `;
-        
+
         const result = await pool.query(query, [startDate.toISOString(), parseInt(limit)]);
-        
+
         res.json({
             success: true,
             data: result.rows
@@ -209,10 +209,10 @@ router.get('/top-collaborateurs', authenticateToken, async (req, res) => {
 router.get('/encours-facturation', authenticateToken, async (req, res) => {
     try {
         const { period = 30 } = req.query;
-        
+
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(period));
-        
+
         const query = `
             SELECT 
                 m.id,
@@ -230,9 +230,9 @@ router.get('/encours-facturation', authenticateToken, async (req, res) => {
             ORDER BY m.date_fin ASC
             LIMIT 10
         `;
-        
+
         const result = await pool.query(query);
-        
+
         res.json({
             success: true,
             data: result.rows
@@ -250,10 +250,10 @@ router.get('/encours-facturation', authenticateToken, async (req, res) => {
 router.get('/performance-business-units', authenticateToken, async (req, res) => {
     try {
         const { period = 30 } = req.query;
-        
+
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(period));
-        
+
         const query = `
             SELECT 
                 bu.id,
@@ -272,9 +272,9 @@ router.get('/performance-business-units', authenticateToken, async (req, res) =>
             GROUP BY bu.id, bu.nom
             ORDER BY heures_total DESC
         `;
-        
+
         const result = await pool.query(query, [startDate.toISOString()]);
-        
+
         res.json({
             success: true,
             data: result.rows
@@ -292,21 +292,21 @@ router.get('/performance-business-units', authenticateToken, async (req, res) =>
 router.get('/evolution-heures', authenticateToken, async (req, res) => {
     try {
         const { period = 30, collaborateur_id } = req.query;
-        
+
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(period));
-        
+
         let whereConditions = ['te.created_at >= $1'];
         let params = [startDate.toISOString()];
         let paramIndex = 2;
-        
+
         if (collaborateur_id) {
             whereConditions.push(`te.user_id = $${paramIndex++}`);
             params.push(collaborateur_id);
         }
-        
+
         const whereClause = whereConditions.join(' AND ');
-        
+
         const query = `
             SELECT 
                 DATE(te.created_at) as date,
@@ -318,9 +318,9 @@ router.get('/evolution-heures', authenticateToken, async (req, res) => {
             GROUP BY DATE(te.created_at)
             ORDER BY date
         `;
-        
+
         const result = await pool.query(query, params);
-        
+
         res.json({
             success: true,
             data: result.rows
@@ -338,7 +338,7 @@ router.get('/evolution-heures', authenticateToken, async (req, res) => {
 router.get('/alerts', authenticateToken, async (req, res) => {
     try {
         const alerts = [];
-        
+
         // Alerte 1: Missions en retard
         const missionsEnRetardQuery = `
             SELECT COUNT(*) as count
@@ -348,7 +348,7 @@ router.get('/alerts', authenticateToken, async (req, res) => {
         `;
         const missionsEnRetardResult = await pool.query(missionsEnRetardQuery);
         const missionsEnRetard = missionsEnRetardResult.rows[0].count;
-        
+
         if (missionsEnRetard > 0) {
             alerts.push({
                 id: 1,
@@ -359,7 +359,7 @@ router.get('/alerts', authenticateToken, async (req, res) => {
                 created_at: new Date().toISOString()
             });
         }
-        
+
         // Alerte 2: Heures non validées > 7 jours
         const heuresNonValideesQuery = `
             SELECT COUNT(*) as count
@@ -369,7 +369,7 @@ router.get('/alerts', authenticateToken, async (req, res) => {
         `;
         const heuresNonValideesResult = await pool.query(heuresNonValideesQuery);
         const heuresNonValidees = heuresNonValideesResult.rows[0].count;
-        
+
         if (heuresNonValidees > 0) {
             alerts.push({
                 id: 2,
@@ -380,7 +380,7 @@ router.get('/alerts', authenticateToken, async (req, res) => {
                 created_at: new Date().toISOString()
             });
         }
-        
+
         // Alerte 3: Dépassement budget (simulation)
         const budgetQuery = `
             SELECT 
@@ -395,7 +395,7 @@ router.get('/alerts', authenticateToken, async (req, res) => {
         `;
         const budgetResult = await pool.query(budgetQuery);
         const budgetData = budgetResult.rows[0];
-        
+
         if (budgetData.cout_reel > budgetData.budget_estime * 1.1) {
             alerts.push({
                 id: 3,
@@ -406,7 +406,7 @@ router.get('/alerts', authenticateToken, async (req, res) => {
                 created_at: new Date().toISOString()
             });
         }
-        
+
         // Alerte 4: Anomalie de saisie (simulation)
         const anomalieQuery = `
             SELECT COUNT(*) as count
@@ -416,7 +416,7 @@ router.get('/alerts', authenticateToken, async (req, res) => {
         `;
         const anomalieResult = await pool.query(anomalieQuery);
         const anomalies = anomalieResult.rows[0].count;
-        
+
         if (anomalies > 0) {
             alerts.push({
                 id: 4,
@@ -427,7 +427,7 @@ router.get('/alerts', authenticateToken, async (req, res) => {
                 created_at: new Date().toISOString()
             });
         }
-        
+
         // Alerte 5: Performance faible (simulation)
         const performanceQuery = `
             SELECT AVG(te.heures) as moyenne_heures
@@ -436,7 +436,7 @@ router.get('/alerts', authenticateToken, async (req, res) => {
         `;
         const performanceResult = await pool.query(performanceQuery);
         const moyenneHeures = performanceResult.rows[0].moyenne_heures || 0;
-        
+
         if (moyenneHeures && moyenneHeures < 6) {
             alerts.push({
                 id: 5,
@@ -447,12 +447,12 @@ router.get('/alerts', authenticateToken, async (req, res) => {
                 created_at: new Date().toISOString()
             });
         }
-        
+
         res.json({
             success: true,
             data: alerts
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de la récupération des alertes:', error);
         res.status(500).json({
@@ -868,35 +868,134 @@ router.get('/strategic-objectives', authenticateToken, async (req, res) => {
     try {
         const { period = 90, business_unit = '', year = 2024 } = req.query;
 
-        // Objectifs stratégiques (simulation)
+        // 1. Récupérer les objectifs depuis la base de données
+        let targetsQuery = `
+            SELECT type, target_value, unit
+            FROM strategic_objectives
+            WHERE year = $1
+        `;
+        const targetsParams = [year];
+
+        if (business_unit) {
+            targetsQuery += ` AND business_unit_id = $2`;
+            targetsParams.push(business_unit);
+        } else {
+            targetsQuery += ` AND business_unit_id IS NULL`;
+        }
+
+        const targetsResult = await pool.query(targetsQuery, targetsParams);
+        const targetsMap = {};
+        targetsResult.rows.forEach(row => {
+            targetsMap[row.type] = {
+                target: parseFloat(row.target_value),
+                unit: row.unit
+            };
+        });
+
+        // Si aucun objectif défini, utiliser des valeurs par défaut (fallback)
+        if (Object.keys(targetsMap).length === 0) {
+            targetsMap['CA'] = { target: 2500000, unit: '€' };
+            targetsMap['MARGE'] = { target: 25, unit: '%' };
+            targetsMap['SATISFACTION'] = { target: 95, unit: '%' };
+            targetsMap['CONVERSION'] = { target: 80, unit: '%' };
+        }
+
+        // 2. Calculer les valeurs actuelles (Réalisé)
+
+        // Dates pour le calcul (depuis le début de l'année fiscale)
+        const startDate = new Date(year, 0, 1); // 1er Janvier de l'année demandée
+        const endDate = new Date(year, 11, 31); // 31 Décembre
+
+        // Filtres pour les requêtes
+        let whereConditions = ['m.created_at >= $1 AND m.created_at <= $2'];
+        let params = [startDate.toISOString(), endDate.toISOString()];
+        let paramIndex = 3;
+
+        if (business_unit) {
+            whereConditions.push(`bu.id = $${paramIndex++}`);
+            params.push(business_unit);
+        }
+
+        const whereClause = whereConditions.join(' AND ');
+
+        // A. CA et Marge
+        const financialQuery = `
+            SELECT 
+                COALESCE(SUM(m.montant_honoraires), 0) as ca,
+                COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0) as cout
+            FROM missions m
+            LEFT JOIN time_entries te ON te.mission_id = m.id
+            LEFT JOIN users u ON te.user_id = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN grades g ON c.grade_actuel_id = g.id
+            LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+            WHERE ${whereClause}
+        `;
+
+        const financialResult = await pool.query(financialQuery, params);
+        const ca = parseFloat(financialResult.rows[0].ca);
+        const cout = parseFloat(financialResult.rows[0].cout);
+        const marge = ca > 0 ? ((ca - cout) / ca) * 100 : 0;
+
+        // B. Taux de conversion (Opportunités gagnées / (Gagnées + Perdues))
+        // Note: On utilise les mêmes filtres de date/BU mais sur la table opportunities
+        // On filtre sur la date de fermeture réelle pour les opportunités closes
+        let oppWhereConditions = ['o.date_fermeture_reelle >= $1 AND o.date_fermeture_reelle <= $2'];
+        let oppParams = [startDate.toISOString(), endDate.toISOString()];
+        let oppParamIndex = 3;
+
+        if (business_unit) {
+            oppWhereConditions.push(`o.business_unit_id = $${oppParamIndex++}`);
+            oppParams.push(business_unit);
+        }
+
+        const conversionQuery = `
+            SELECT 
+                COUNT(CASE WHEN o.statut = 'GAGNEE' THEN 1 END) as gagnees,
+                COUNT(CASE WHEN o.statut IN ('GAGNEE', 'PERDUE') THEN 1 END) as total_closes
+            FROM opportunities o
+            WHERE ${oppWhereConditions.join(' AND ')}
+        `;
+
+        const conversionResult = await pool.query(conversionQuery, oppParams);
+        const gagnees = parseInt(conversionResult.rows[0].gagnees);
+        const totalCloses = parseInt(conversionResult.rows[0].total_closes);
+        const conversion = totalCloses > 0 ? (gagnees / totalCloses) * 100 : 0;
+
+        // C. Satisfaction Client (Simulation ou moyenne des notes si table reviews existe)
+        // Pour l'instant, on simule une valeur réaliste basée sur le taux de rétention ou autre, 
+        // ou on garde une valeur fixe si pas de données.
+        const satisfaction = 92.5; // Valeur simulée pour le moment
+
+        // 3. Construire la réponse
         const objectifs = [
             {
                 objectif: 'Croissance CA',
-                cible: 2500000,
-                actuel: 2100000,
-                unite: '€',
-                progression: 84
+                cible: targetsMap['CA']?.target || 0,
+                actuel: ca,
+                unite: targetsMap['CA']?.unit || '€',
+                progression: (targetsMap['CA']?.target > 0) ? (ca / targetsMap['CA'].target) * 100 : 0
             },
             {
                 objectif: 'Marge brute',
-                cible: 25,
-                actuel: 22.5,
-                unite: '%',
-                progression: 90
+                cible: targetsMap['MARGE']?.target || 0,
+                actuel: marge,
+                unite: targetsMap['MARGE']?.unit || '%',
+                progression: (targetsMap['MARGE']?.target > 0) ? (marge / targetsMap['MARGE'].target) * 100 : 0
             },
             {
                 objectif: 'Satisfaction client',
-                cible: 95,
-                actuel: 92.3,
-                unite: '%',
-                progression: 97
+                cible: targetsMap['SATISFACTION']?.target || 0,
+                actuel: satisfaction,
+                unite: targetsMap['SATISFACTION']?.unit || '%',
+                progression: (targetsMap['SATISFACTION']?.target > 0) ? (satisfaction / targetsMap['SATISFACTION'].target) * 100 : 0
             },
             {
                 objectif: 'Taux de conversion',
-                cible: 80,
-                actuel: 75.5,
-                unite: '%',
-                progression: 94
+                cible: targetsMap['CONVERSION']?.target || 0,
+                actuel: conversion,
+                unite: targetsMap['CONVERSION']?.unit || '%',
+                progression: (targetsMap['CONVERSION']?.target > 0) ? (conversion / targetsMap['CONVERSION'].target) * 100 : 0
             }
         ];
 
@@ -919,7 +1018,7 @@ router.get('/financial-indicators', authenticateToken, async (req, res) => {
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(period));
-        
+
         const prevEndDate = new Date(startDate);
         const prevStartDate = new Date(prevEndDate);
         prevStartDate.setDate(prevStartDate.getDate() - parseInt(period));
@@ -955,17 +1054,17 @@ router.get('/financial-indicators', authenticateToken, async (req, res) => {
         params.push(startDate.toISOString(), prevStartDate.toISOString());
         const ebitdaResult = await pool.query(ebitdaQuery, params);
         const ebitdaData = ebitdaResult.rows[0];
-        
+
         const ebitda_actuel = parseFloat(ebitdaData.ca_actuel) - parseFloat(ebitdaData.cout_actuel);
         const ebitda_precedent = parseFloat(ebitdaData.ca_precedent) - parseFloat(ebitdaData.cout_precedent);
         const ebitda_tendance = ebitda_precedent > 0 ? ((ebitda_actuel - ebitda_precedent) / ebitda_precedent) * 100 : 0;
 
         // 2. ROI (Retour sur investissement)
-        const roi_actuel = parseFloat(ebitdaData.cout_actuel) > 0 
-            ? (ebitda_actuel / parseFloat(ebitdaData.cout_actuel)) * 100 
+        const roi_actuel = parseFloat(ebitdaData.cout_actuel) > 0
+            ? (ebitda_actuel / parseFloat(ebitdaData.cout_actuel)) * 100
             : 0;
-        const roi_precedent = parseFloat(ebitdaData.cout_precedent) > 0 
-            ? (ebitda_precedent / parseFloat(ebitdaData.cout_precedent)) * 100 
+        const roi_precedent = parseFloat(ebitdaData.cout_precedent) > 0
+            ? (ebitda_precedent / parseFloat(ebitdaData.cout_precedent)) * 100
             : 0;
         const roi_tendance = roi_precedent > 0 ? ((roi_actuel - roi_precedent) / roi_precedent) * 100 : 0;
 
@@ -981,7 +1080,7 @@ router.get('/financial-indicators', authenticateToken, async (req, res) => {
 
         const tresoResult = await pool.query(tresoQuery, [startDate.toISOString(), prevStartDate.toISOString()].concat(business_unit ? [business_unit] : []));
         const tresoData = tresoResult.rows[0];
-        
+
         const treso_actuel = parseFloat(tresoData.encaisse_actuel) - parseFloat(tresoData.en_attente);
         const treso_precedent = parseFloat(tresoData.encaisse_precedent);
         const treso_tendance = treso_precedent !== 0 ? ((treso_actuel - treso_precedent) / Math.abs(treso_precedent)) * 100 : 0;
@@ -998,7 +1097,7 @@ router.get('/financial-indicators', authenticateToken, async (req, res) => {
 
         const dsoResult = await pool.query(dsoQuery, [startDate.toISOString(), prevStartDate.toISOString()].concat(business_unit ? [business_unit] : []));
         const dsoData = dsoResult.rows[0];
-        
+
         const dso_actuel = Math.round(parseFloat(dsoData.dso_actuel));
         const dso_precedent = Math.round(parseFloat(dsoData.dso_precedent));
         const dso_tendance = dso_precedent > 0 ? ((dso_actuel - dso_precedent) / dso_precedent) * 100 : 0;
@@ -1050,7 +1149,7 @@ router.get('/strategic-alerts', authenticateToken, async (req, res) => {
         const { business_unit = '', year = 2024 } = req.query;
 
         const alertes = [];
-        
+
         // Construire les conditions WHERE si business_unit est spécifié
         const whereClause = business_unit ? 'WHERE bu.id = $1' : '';
         const params = business_unit ? [business_unit] : [];
@@ -1290,20 +1389,20 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
         const { period = 90, businessUnit, division } = req.query;
-        
+
         // 1. Récupérer le collaborateur_id de l'utilisateur
         const collaborateurQuery = `SELECT id FROM collaborateurs WHERE user_id = $1`;
         const collabResult = await pool.query(collaborateurQuery, [userId]);
-        
+
         if (collabResult.rows.length === 0) {
             return res.status(403).json({
                 success: false,
                 error: 'Vous devez être un collaborateur pour accéder à ce dashboard'
             });
         }
-        
+
         const collaborateurId = collabResult.rows[0].id;
-        
+
         // 2. Vérifier les rôles de l'utilisateur (SUPER_ADMIN, ADMIN, etc. ont accès total)
         const rolesQuery = `
             SELECT r.name
@@ -1313,19 +1412,19 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
         `;
         const rolesResult = await pool.query(rolesQuery, [userId]);
         const userRoles = rolesResult.rows.map(r => r.name);
-        
-        const isAdmin = userRoles.includes('SUPER_ADMIN') || 
-                        userRoles.includes('ADMIN') || 
-                        userRoles.includes('DIRECTEUR') || 
-                        userRoles.includes('ASSOCIE');
-        
+
+        const isAdmin = userRoles.includes('SUPER_ADMIN') ||
+            userRoles.includes('ADMIN') ||
+            userRoles.includes('DIRECTEUR') ||
+            userRoles.includes('ASSOCIE');
+
         // 3. Si pas admin, vérifier les autorisations managériales
         let authorizedBusinessUnit = businessUnit;
         let authorizedDivision = division;
-        
+
         if (!isAdmin) {
             const Manager = require('../models/Manager');
-            
+
             // Vérifier autorisation pour Business Unit demandée
             if (businessUnit) {
                 const isAuthorizedBU = await Manager.isBusinessUnitManager(collaborateurId, businessUnit);
@@ -1336,7 +1435,7 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
                     });
                 }
             }
-            
+
             // Vérifier autorisation pour Division demandée
             if (division) {
                 const isAuthorizedDiv = await Manager.isDivisionManager(collaborateurId, division);
@@ -1347,7 +1446,7 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
                     });
                 }
             }
-            
+
             // Si aucun filtre spécifié, charger la première équipe gérée
             if (!businessUnit && !division) {
                 // Récupérer les BU gérées
@@ -1358,7 +1457,7 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
                     LIMIT 1
                 `;
                 const managedBUs = await pool.query(managedBUsQuery, [collaborateurId]);
-                
+
                 // Récupérer les Divisions gérées
                 const managedDivsQuery = `
                     SELECT id FROM divisions
@@ -1367,7 +1466,7 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
                     LIMIT 1
                 `;
                 const managedDivs = await pool.query(managedDivsQuery, [collaborateurId]);
-                
+
                 // Priorité aux divisions
                 if (managedDivs.rows.length > 0) {
                     authorizedDivision = managedDivs.rows[0].id;
@@ -1381,29 +1480,29 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
                 }
             }
         }
-        
+
         // 4. Calculer les dates
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(period));
-        
+
         // 5. Construire les conditions WHERE (en utilisant authorizedBusinessUnit et authorizedDivision)
         let whereConditions = ['te.date_saisie >= $1 AND te.date_saisie <= $2'];
         let params = [startDate.toISOString(), endDate.toISOString()];
         let paramIndex = 3;
-        
+
         if (authorizedBusinessUnit) {
             whereConditions.push(`bu.id = $${paramIndex++}`);
             params.push(authorizedBusinessUnit);
         }
-        
+
         if (authorizedDivision) {
             whereConditions.push(`d.id = $${paramIndex++}`);
             params.push(authorizedDivision);
         }
-        
+
         const whereClause = whereConditions.join(' AND ');
-        
+
         // KPIs de l'équipe
         const teamQuery = `
             SELECT 
@@ -1421,14 +1520,14 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
             LEFT JOIN missions m ON te.mission_id = m.id
             WHERE ${whereClause}
         `;
-        
+
         const teamResult = await pool.query(teamQuery, params);
         const teamData = teamResult.rows[0];
-        
+
         // Taux de chargeabilité de l'équipe
-        const tauxChargeabilite = teamData.total_heures > 0 ? 
+        const tauxChargeabilite = teamData.total_heures > 0 ?
             (teamData.heures_facturables / teamData.total_heures) * 100 : 0;
-        
+
         // Performance par collaborateur
         const collabQuery = `
             SELECT 
@@ -1455,9 +1554,9 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
             GROUP BY c.id, c.nom, c.prenom, g.nom
             ORDER BY total_heures DESC
         `;
-        
+
         const collabQueryResult = await pool.query(collabQuery, params);
-        
+
         // Distribution par grade
         const gradeQuery = `
             SELECT 
@@ -1475,9 +1574,9 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
             GROUP BY g.nom
             ORDER BY total_heures DESC
         `;
-        
+
         const gradeResult = await pool.query(gradeQuery, params);
-        
+
         const responseData = {
             kpis: {
                 total_membres: teamData.total_membres || 0,
@@ -1491,12 +1590,12 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
             collaborateurs: collabQueryResult.rows,
             distribution_grades: gradeResult.rows
         };
-        
+
         res.json({
             success: true,
             data: responseData
         });
-        
+
     } catch (error) {
         console.error('Erreur team-performance:', error);
         res.status(500).json({
@@ -1510,11 +1609,11 @@ router.get('/team-performance', authenticateToken, async (req, res) => {
 router.get('/managed-teams', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
-        
+
         // Récupérer le collaborateur_id
         const collabQuery = `SELECT id FROM collaborateurs WHERE user_id = $1`;
         const collabResult = await pool.query(collabQuery, [userId]);
-        
+
         if (collabResult.rows.length === 0) {
             return res.json({
                 success: true,
@@ -1525,9 +1624,9 @@ router.get('/managed-teams', authenticateToken, async (req, res) => {
                 }
             });
         }
-        
+
         const collaborateurId = collabResult.rows[0].id;
-        
+
         // Récupérer les BU gérées
         const busQuery = `
             SELECT id, nom, code, description
@@ -1536,7 +1635,7 @@ router.get('/managed-teams', authenticateToken, async (req, res) => {
             ORDER BY nom
         `;
         const busResult = await pool.query(busQuery, [collaborateurId]);
-        
+
         // Récupérer les Divisions gérées
         const divsQuery = `
             SELECT id, nom, code, description, business_unit_id
@@ -1545,7 +1644,7 @@ router.get('/managed-teams', authenticateToken, async (req, res) => {
             ORDER BY name
         `;
         const divsResult = await pool.query(divsQuery, [collaborateurId]);
-        
+
         res.json({
             success: true,
             data: {
@@ -1554,7 +1653,7 @@ router.get('/managed-teams', authenticateToken, async (req, res) => {
                 is_manager: busResult.rows.length > 0 || divsResult.rows.length > 0
             }
         });
-        
+
     } catch (error) {
         console.error('Erreur managed-teams:', error);
         res.status(500).json({
@@ -1571,12 +1670,12 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
         const { period = 30 } = req.query;
-        
+
         // Calculer les dates
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(period));
-        
+
         // KPIs personnels
         const personalQuery = `
             SELECT 
@@ -1603,14 +1702,14 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
             AND te.date_saisie <= $3
             GROUP BY u.nom, u.prenom, c.nom, c.prenom, g.nom, d.nom, bu.nom
         `;
-        
+
         const personalResult = await pool.query(personalQuery, [userId, startDate.toISOString(), endDate.toISOString()]);
         const personalData = personalResult.rows[0] || {};
-        
+
         // Taux de chargeabilité personnel
-        const tauxChargeabilite = personalData.total_heures > 0 ? 
+        const tauxChargeabilite = personalData.total_heures > 0 ?
             (personalData.heures_facturables / personalData.total_heures) * 100 : 0;
-        
+
         // Missions actives
         const missionsQuery = `
             SELECT 
@@ -1634,9 +1733,9 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
             ORDER BY m.date_debut DESC
             LIMIT 10
         `;
-        
+
         const missionsResult = await pool.query(missionsQuery, [userId]);
-        
+
         // Évolution temporelle (par jour)
         const timelineQuery = `
             SELECT 
@@ -1650,9 +1749,9 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
             GROUP BY DATE(te.date_saisie)
             ORDER BY jour ASC
         `;
-        
+
         const timelineResult = await pool.query(timelineQuery, [userId, startDate.toISOString(), endDate.toISOString()]);
-        
+
         const responseData = {
             profil: {
                 nom: personalData.collaborateur_nom || '',
@@ -1673,12 +1772,12 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
             missions_actives: missionsResult.rows,
             evolution_temporelle: timelineResult.rows
         };
-        
+
         res.json({
             success: true,
             data: responseData
         });
-        
+
     } catch (error) {
         console.error('Erreur personal-performance:', error);
         res.status(500).json({
@@ -1694,12 +1793,12 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
 router.get('/collections', authenticateToken, async (req, res) => {
     try {
         const { period = 90 } = req.query;
-        
+
         // Calculer les dates
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(period));
-        
+
         // KPIs de recouvrement
         const kpisQuery = `
             SELECT 
@@ -1719,10 +1818,10 @@ router.get('/collections', authenticateToken, async (req, res) => {
             FROM invoices f
             WHERE f.date_emission >= $1
         `;
-        
+
         const kpisResult = await pool.query(kpisQuery, [startDate.toISOString()]);
         const kpisData = kpisResult.rows[0];
-        
+
         // Calcul DSO (Days Sales Outstanding)
         const dsoQuery = `
             SELECT 
@@ -1731,10 +1830,10 @@ router.get('/collections', authenticateToken, async (req, res) => {
             WHERE f.statut = 'PAYEE'
             AND f.date_dernier_paiement >= $1::TIMESTAMP
         `;
-        
+
         const dsoResult = await pool.query(dsoQuery, [startDate.toISOString()]);
         const dsoData = dsoResult.rows[0];
-        
+
         // Aging analysis (répartition par tranches d'âge)
         const agingQuery = `
             SELECT 
@@ -1758,9 +1857,9 @@ router.get('/collections', authenticateToken, async (req, res) => {
                     ELSE 4
                 END
         `;
-        
+
         const agingResult = await pool.query(agingQuery);
-        
+
         // Liste des factures en retard
         const invoicesQuery = `
             SELECT 
@@ -1778,9 +1877,9 @@ router.get('/collections', authenticateToken, async (req, res) => {
             ORDER BY jours_retard DESC
             LIMIT 50
         `;
-        
+
         const invoicesResult = await pool.query(invoicesQuery);
-        
+
         // Évolution mensuelle (facturé vs encaissé)
         const monthlyQuery = `
             SELECT 
@@ -1792,9 +1891,9 @@ router.get('/collections', authenticateToken, async (req, res) => {
             GROUP BY mois
             ORDER BY mois ASC
         `;
-        
+
         const monthlyResult = await pool.query(monthlyQuery, [startDate.toISOString()]);
-        
+
         const responseData = {
             kpis: {
                 facture_periode: kpisData.facture_periode || 0,
@@ -1807,12 +1906,12 @@ router.get('/collections', authenticateToken, async (req, res) => {
             factures_retard: invoicesResult.rows,
             evolution_mensuelle: monthlyResult.rows
         };
-        
+
         res.json({
             success: true,
             data: responseData
         });
-        
+
     } catch (error) {
         console.error('Erreur collections:', error);
         res.status(500).json({
