@@ -12,7 +12,7 @@ class MenuPermissionsManager {
             console.log('✅ SUPER_ADMIN détecté - Bypass complet du filtrage des menus');
             return; // Ne pas appliquer de filtrage pour SUPER_ADMIN
         }
-        
+
         await this.loadUserPermissions();
         this.applyMenuPermissions();
     }
@@ -46,7 +46,7 @@ class MenuPermissionsManager {
             }
 
             console.log('🔍 Chargement des permissions utilisateur...');
-            
+
             // Récupérer les permissions de l'utilisateur connecté
             const response = await authenticatedFetch('/api/permissions/users/me/permissions');
             if (response.ok) {
@@ -63,18 +63,18 @@ class MenuPermissionsManager {
     }
 
     hasPermission(permissionCode) {
-        return this.userPermissions.some(perm => 
+        return this.userPermissions.some(perm =>
             perm.code === permissionCode && perm.granted === true
         );
     }
 
     applyMenuPermissions() {
         console.log('🎯 Application des permissions de menu granulaires...');
-        
+
         // Appliquer les permissions par section (mode granulaire)
         // Une section est visible si l'utilisateur a AU MOINS UNE permission commençant par le préfixe de la section
         this.applySectionPermissions();
-        
+
         // Appliquer les permissions granulaires pour les liens individuels
         // Utilise les attributs data-permission présents dans le HTML
         this.applyDataPermissionBasedPermissions();
@@ -82,7 +82,7 @@ class MenuPermissionsManager {
 
     applySectionPermissions() {
         console.log('🎯 Application des permissions de section (mode granulaire)...');
-        
+
         // Mappings préfixe de permission -> texte de la section
         const sectionMappings = {
             'menu.dashboard': 'DASHBOARD',
@@ -93,34 +93,36 @@ class MenuPermissionsManager {
             'menu.gestion_rh': 'GESTION RH',
             'menu.configurations': 'CONFIGURATIONS',
             'menu.business_unit': 'BUSINESS UNIT',
-            'menu.parametres_administration': 'PARAMÈTRES ADMINISTRATION'
+            'menu.parametres_administration': 'PARAMÈTRES ADMINISTRATION',
+            'menu.objectifs': 'OBJECTIFS',
+            'menu.evaluations': 'ÉVALUATIONS'
         };
 
         // Parcourir toutes les sections de la sidebar
         const sections = document.querySelectorAll('.sidebar-section');
         console.log(`📊 Nombre de sections trouvées: ${sections.length}`);
-        
+
         sections.forEach((section, index) => {
             const titleElement = section.querySelector('.sidebar-section-title');
             if (titleElement) {
                 const sectionText = titleElement.textContent.trim();
                 console.log(`🔍 Section ${index + 1}: "${sectionText}"`);
-                
+
                 // Trouver le préfixe de permission correspondant
-                const permissionEntry = Object.entries(sectionMappings).find(([prefix, text]) => 
+                const permissionEntry = Object.entries(sectionMappings).find(([prefix, text]) =>
                     sectionText.includes(text)
                 );
-                
+
                 if (permissionEntry) {
                     const [permissionPrefix, sectionName] = permissionEntry;
-                    
+
                     // Vérifier si l'utilisateur a AU MOINS UNE permission commençant par ce préfixe
-                    const hasAnyPermission = this.userPermissions.some(perm => 
+                    const hasAnyPermission = this.userPermissions.some(perm =>
                         perm.code.startsWith(permissionPrefix + '.')
                     );
-                    
+
                     console.log(`  - Préfixe: ${permissionPrefix}.* (${hasAnyPermission ? '✅ accordé' : '❌ refusé'})`);
-                    
+
                     if (!hasAnyPermission) {
                         section.style.display = 'none';
                         console.log(`🚫 Section masquée: ${sectionText} (aucune permission ${permissionPrefix}.*)`);
@@ -141,20 +143,20 @@ class MenuPermissionsManager {
      */
     applyDataPermissionBasedPermissions() {
         console.log('🔗 Application des permissions basées sur data-permission...');
-        
+
         // Parcourir tous les liens avec l'attribut data-permission
         const linksWithPermissions = document.querySelectorAll('.sidebar-nav-link[data-permission]');
         console.log(`📊 Nombre de liens avec permissions trouvés: ${linksWithPermissions.length}`);
-        
+
         linksWithPermissions.forEach((link, index) => {
             const permissionCode = link.getAttribute('data-permission');
             const linkText = link.textContent.trim();
-            
+
             console.log(`🔍 Lien ${index + 1}: "${linkText}" (permission: ${permissionCode})`);
-            
+
             // Vérifier si l'utilisateur a cette permission
             const hasPermission = this.hasPermission(permissionCode);
-            
+
             if (!hasPermission) {
                 link.style.display = 'none';
                 console.log(`🚫 Lien masqué: ${linkText} (permission: ${permissionCode})`);
@@ -163,7 +165,7 @@ class MenuPermissionsManager {
                 console.log(`✅ Lien visible: ${linkText} (permission: ${permissionCode})`);
             }
         });
-        
+
         // Vérifier s'il reste des liens visibles dans chaque section
         this.checkEmptySections();
     }
@@ -173,12 +175,12 @@ class MenuPermissionsManager {
      */
     checkEmptySections() {
         console.log('🔍 Vérification des sections vides...');
-        
+
         const sections = document.querySelectorAll('.sidebar-section');
         sections.forEach((section, index) => {
             const visibleLinks = section.querySelectorAll('.sidebar-nav-link:not([style*="display: none"])');
             const sectionTitle = section.querySelector('.sidebar-section-title')?.textContent.trim();
-            
+
             if (visibleLinks.length === 0 && sectionTitle) {
                 console.log(`🚫 Section masquée car vide: ${sectionTitle}`);
                 section.style.display = 'none';

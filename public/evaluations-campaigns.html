@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campagnes d'Évaluation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+
+    <!-- Scripts de zone utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+
+        .badge-status {
+            font-size: 0.8rem;
+            padding: 0.4em 0.8em;
+        }
+
+        .badge-status.planned {
+            background-color: var(--secondary-color);
+        }
+
+        .badge-status.active {
+            background-color: var(--success-color);
+        }
+
+        .badge-status.closed {
+            background-color: #6c757d;
+        }
+
+        .table-responsive {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+
+    <!-- CSS des variables de branding dynamiques -->
+    <link rel="stylesheet" href="/config/themes/brand-variables.css">
+
+    <!-- Scripts de branding -->
+    <script src="js/branding-loader.js"></script>
+    <script src="js/sidebar-branding.js"></script>
+</head>
+
+<body>
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <div class="sidebar-container"></div>
+
+        <div class="main-content-area">
+            <div class="container-fluid">
+                <!-- En-tête -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h1 class="h3 mb-0">
+                                    <i class="fas fa-calendar-check text-primary me-2"></i>
+                                    Campagnes d'Évaluation
+                                </h1>
+                                <p class="text-muted mb-0">Gérez les périodes d'évaluation des collaborateurs</p>
+                            </div>
+                            <button class="btn btn-primary" onclick="openCreateCampaignModal()">
+                                <i class="fas fa-plus me-2"></i>Nouvelle Campagne
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste des Campagnes -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Nom</th>
+                                                <th>Période</th>
+                                                <th>Exercice Fiscal</th>
+                                                <th>Statut</th>
+                                                <th>Participants</th>
+                                                <th>Progression</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="campaignsList">
+                                            <tr>
+                                                <td colspan="7" class="text-center py-5">
+                                                    <i class="fas fa-spinner fa-spin me-2"></i>Chargement des
+                                                    campagnes...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de création/édition -->
+    <div class="modal fade" id="campaignModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="campaignModalTitle">Nouvelle Campagne</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="campaignForm">
+                        <input type="hidden" id="campaignId">
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="campaignName" class="form-label">Nom de la campagne *</label>
+                                <input type="text" class="form-control" id="campaignName" required
+                                    placeholder="ex: Évaluation Annuelle 2025">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="campaignFiscalYear" class="form-label">Exercice Fiscal *</label>
+                                <select class="form-select" id="campaignFiscalYear" required>
+                                    <option value="">Chargement...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="campaignStatus" class="form-label">Statut</label>
+                                <select class="form-select" id="campaignStatus">
+                                    <option value="PLANNED">Planifiée</option>
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="CLOSED">Clôturée</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="campaignStartDate" class="form-label">Date de début *</label>
+                                <input type="date" class="form-control" id="campaignStartDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="campaignEndDate" class="form-label">Date de fin *</label>
+                                <input type="date" class="form-control" id="campaignEndDate" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" id="campaignDescription" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveCampaign()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/session-manager.js"></script>
+    <script src="js/evaluations-campaigns.js"></script>
+</body>
+
+</html>

@@ -6,17 +6,16 @@ class FiscalYear {
         const {
             annee,
             date_debut,
-            date_fin,
-            budget_global
+            date_fin
         } = fiscalYearData;
 
         const sql = `
             INSERT INTO fiscal_years (annee, date_debut, date_fin, budget_global)
-            VALUES ($1, $2, $3, $4)
+            VALUES ($1, $2, $3, NULL)
             RETURNING id, annee, date_debut, date_fin, budget_global, statut, created_at
         `;
 
-        const result = await query(sql, [annee, date_debut, date_fin, budget_global]);
+        const result = await query(sql, [annee, date_debut, date_fin]);
         return result.rows[0];
     }
 
@@ -364,12 +363,12 @@ class FiscalYear {
     // Créer automatiquement les années fiscales pour une plage d'années
     static async createRange(startYear, endYear) {
         const fiscalYears = [];
-        
+
         for (let year = startYear; year <= endYear; year++) {
             const dateDebut = `${year}-01-01`;
             const dateFin = `${year}-12-31`;
             const budgetGlobal = 2500000; // Budget par défaut
-            
+
             try {
                 const fiscalYear = await this.create({
                     annee: year,
@@ -377,7 +376,7 @@ class FiscalYear {
                     date_fin: dateFin,
                     budget_global: budgetGlobal
                 });
-                
+
                 fiscalYears.push(fiscalYear);
             } catch (error) {
                 // Ignorer les erreurs de doublon
@@ -386,8 +385,26 @@ class FiscalYear {
                 }
             }
         }
-        
+
         return fiscalYears;
+    }
+    // Calculer et mettre à jour le budget global basé sur les objectifs
+    static async calculateGlobalBudget(id) {
+        // Calculer le budget via la fonction SQL
+        const sqlCalc = `SELECT calculate_global_budget($1) as calculated_budget`;
+        const resultCalc = await query(sqlCalc, [id]);
+        const calculatedBudget = resultCalc.rows[0].calculated_budget;
+
+        // Mettre à jour le champ budget_global pour la performance
+        const sqlUpdate = `
+            UPDATE fiscal_years 
+            SET budget_global = $2, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $1
+            RETURNING budget_global
+        `;
+        await query(sqlUpdate, [id, calculatedBudget]);
+
+        return calculatedBudget;
     }
 }
 

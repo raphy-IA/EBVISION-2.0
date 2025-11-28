@@ -9,7 +9,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-sidebar.css">
 
-
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -19,7 +18,7 @@
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
-    <!-- <script src="js/user-modals.js"></script> -->
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -36,13 +35,11 @@
             overflow-x: hidden;
         }
 
-        /* Le conteneur principal de la page qui contient la sidebar et le contenu */
         .page-wrapper {
             display: flex;
             min-height: 100vh;
         }
 
-        /* Styles pour le contenu principal */
         .main-content-area {
             flex-grow: 1;
             padding: 2rem;
@@ -79,14 +76,12 @@
             transform: translateY(-2px);
         }
 
-        /* Styles pour les champs non modifiables */
         .form-control.bg-light {
             background-color: #e9ecef !important;
             border-color: #adb5bd;
             color: #495057;
             cursor: not-allowed;
             font-weight: 500;
-            position: relative;
         }
 
         .form-control.bg-light:focus {
@@ -95,64 +90,6 @@
             background-color: #e9ecef !important;
         }
 
-        .form-control.bg-light::before {
-            content: "🔒";
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 1;
-        }
-
-        .form-control.bg-light {
-            padding-left: 35px;
-        }
-
-        .form-label i.fa-lock {
-            color: #dc3545;
-            font-weight: bold;
-        }
-
-        /* Bordure distinctive pour les champs non modifiables */
-        .form-control.bg-light {
-            border-width: 2px;
-            border-style: solid;
-            border-color: #dc3545;
-        }
-
-        /* Effet de survol pour les champs non modifiables */
-        .form-control.bg-light:hover {
-            background-color: #f8d7da !important;
-            border-color: #dc3545;
-        }
-
-        /* Style pour les textes d'aide des champs non modifiables */
-        .form-text.text-muted {
-            color: #dc3545 !important;
-            font-weight: 500;
-            font-size: 0.875rem;
-        }
-
-        /* Animation subtile pour attirer l'attention */
-        @keyframes pulse-lock {
-            0% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.7;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-
-        .form-control.bg-light {
-            animation: pulse-lock 2s infinite;
-        }
-
-        /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
                 flex-direction: column;
@@ -163,10 +100,6 @@
             }
         }
     </style>
-    <!-- Scripts pour la top bar EBVISION 2.0 -->
-
-
-
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
@@ -177,20 +110,14 @@
 </head>
 
 <body>
-    <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
         <i class="fas fa-bars"></i>
     </button>
     <div class="page-wrapper">
-        <!-- Sidebar Container -->
-        <div class="sidebar-container">
-            <!-- La sidebar sera générée par JavaScript -->
-        </div>
+        <div class="sidebar-container"></div>
 
-        <!-- Main Content Area -->
         <div class="main-content-area">
             <div class="container-fluid">
-                <!-- En-tête -->
                 <div class="row mb-4">
                     <div class="col-12">
                         <div class="d-flex justify-content-between align-items-center">
@@ -208,7 +135,6 @@
                     </div>
                 </div>
 
-                <!-- Statistiques -->
                 <div class="row mb-4" id="statsContainer">
                     <div class="col-md-3">
                         <div class="card stats-card bg-primary text-white">
@@ -256,21 +182,6 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card stats-card bg-secondary text-white">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <h6 class="card-title">Fermés</h6>
-                                        <h3 class="mb-0" id="fermes">-</h3>
-                                    </div>
-                                    <div class="align-self-center">
-                                        <i class="fas fa-lock fa-2x opacity-75"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
                         <div class="card stats-card bg-warning text-white">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -287,7 +198,6 @@
                     </div>
                 </div>
 
-                <!-- Filtres -->
                 <div class="row mb-3">
                     <div class="col-12">
                         <div class="card">
@@ -324,7 +234,6 @@
                     </div>
                 </div>
 
-                <!-- Tableau des exercices fiscaux -->
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
@@ -348,7 +257,7 @@
                                         </thead>
                                         <tbody id="fiscalYearsTableBody">
                                             <tr>
-                                                <td colspan="5" class="text-center text-muted">
+                                                <td colspan="6" class="text-center text-muted">
                                                     <i class="fas fa-spinner fa-spin me-2"></i>Chargement...
                                                 </td>
                                             </tr>
@@ -386,30 +295,7 @@
                                     <div class="mb-3">
                                         <label for="createAnnee" class="form-label">Année *</label>
                                         <input type="number" class="form-control" id="createAnnee" required min="2020"
-                                            max="2030">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="createBudget" class="form-label">Budget Global *</label>
-                                        <div class="input-group">
-                                            <input type="number" class="form-control" id="createBudget" required min="0"
-                                                step="0.01">
-                                            <span class="input-group-text">€</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="createStatut" class="form-label">Statut *</label>
-                                        <select class="form-control" id="createStatut" required>
-                                            <option value="">Sélectionner...</option>
-                                            <option value="OUVERTE">Ouverte</option>
-                                            <option value="EN_COURS">En cours</option>
-                                            <option value="FERMEE">Fermée</option>
-                                        </select>
+                                            max="2100">
                                     </div>
                                 </div>
                             </div>
@@ -424,6 +310,18 @@
                                     <div class="mb-3">
                                         <label for="createDateFin" class="form-label">Date de fin *</label>
                                         <input type="date" class="form-control" id="createDateFin" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="createStatut" class="form-label">Statut *</label>
+                                        <select class="form-select" id="createStatut" required>
+                                            <option value="OUVERTE">Ouvert</option>
+                                            <option value="EN_COURS">En cours</option>
+                                            <option value="FERMEE">Fermé</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -455,24 +353,14 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="editAnnee" class="form-label">
-                                            <i class="fas fa-lock text-muted me-1"></i>Année
-                                        </label>
+                                        <label for="editAnnee" class="form-label">Année</label>
                                         <input type="number" class="form-control bg-light" id="editAnnee" readonly>
-                                        <small class="form-text text-muted">
-                                            <i class="fas fa-info-circle me-1"></i>
-                                            L'année ne peut pas être modifiée
-                                        </small>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="editBudget" class="form-label">Budget Global *</label>
-                                        <div class="input-group">
-                                            <input type="number" class="form-control" id="editBudget" required min="0"
-                                                step="0.01">
-                                            <span class="input-group-text">€</span>
-                                        </div>
+                                        <label for="editLibelle" class="form-label">Libellé *</label>
+                                        <input type="text" class="form-control" id="editLibelle" required>
                                     </div>
                                 </div>
                             </div>
@@ -493,15 +381,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="editLibelle" class="form-label">Libellé *</label>
-                                        <input type="text" class="form-control" id="editLibelle" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="editStatut" class="form-label">
-                                            <i class="fas fa-lock text-muted me-1"></i>Statut
-                                        </label>
+                                        <label for="editStatut" class="form-label">Statut</label>
                                         <input type="text" class="form-control bg-light" id="editStatut" readonly>
                                         <small class="form-text text-muted">
                                             <i class="fas fa-info-circle me-1"></i>
@@ -522,9 +402,9 @@
             </div>
         </div>
 
-        <!-- Modal de visualisation avec onglets -->
+        <!-- Modal de visualisation -->
         <div class="modal fade" id="viewModal" tabindex="-1">
-            <div class="modal-dialog modal-xl">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
@@ -533,133 +413,31 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <!-- Onglets Bootstrap -->
-                        <ul class="nav nav-tabs mb-3" id="viewModalTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="info-tab" data-bs-toggle="tab"
-                                    data-bs-target="#info-pane" type="button" role="tab">
-                                    <i class="fas fa-info-circle me-1"></i>Informations
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="objectives-tab" data-bs-toggle="tab"
-                                    data-bs-target="#objectives-pane" type="button" role="tab">
-                                    <i class="fas fa-bullseye me-1"></i>Objectifs Stratégiques
-                                </button>
-                            </li>
-                        </ul>
-
-                        <!-- Contenu des onglets -->
-                        <div class="tab-content" id="viewModalTabContent">
-                            <!-- Onglet Informations -->
-                            <div class="tab-pane fade show active" id="info-pane" role="tabpanel">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <p><strong>Année :</strong> <span id="viewAnnee"></span></p>
-                                        <p><strong>Budget Global :</strong> <span id="viewBudget"></span></p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <p><strong>Date de début :</strong> <span id="viewDateDebut"></span></p>
-                                        <p><strong>Date de fin :</strong> <span id="viewDateFin"></span></p>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <p><strong>Statut :</strong> <span id="viewStatut"></span></p>
-                                        <p><strong>Date de création :</strong> <span id="viewCreatedAt"></span></p>
-                                        <p><strong>Dernière modification :</strong> <span id="viewUpdatedAt"></span></p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Onglet Objectifs Stratégiques -->
-                            <div class="tab-pane fade" id="objectives-pane" role="tabpanel">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="mb-0"><i class="fas fa-target me-2"></i>Objectifs configurés</h6>
-                                    <button class="btn btn-sm btn-primary" onclick="openCreateObjectiveModal()">
-                                        <i class="fas fa-plus me-1"></i>Ajouter un objectif
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Année :</strong> <span id="viewAnnee"></span></p>
+                                <p><strong>Budget Global :</strong> <span id="viewBudget"></span>
+                                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="recalculateBudget()"
+                                        title="Recalculer le budget à partir des objectifs">
+                                        <i class="fas fa-sync-alt"></i>
                                     </button>
-                                </div>
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-hover">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Type</th>
-                                                <th>Business Unit</th>
-                                                <th>Cible</th>
-                                                <th>Unité</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="objectivesTableBody">
-                                            <tr>
-                                                <td colspan="5" class="text-center">
-                                                    <i class="fas fa-spinner fa-spin me-2"></i>Chargement...
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Date de début :</strong> <span id="viewDateDebut"></span></p>
+                                <p><strong>Date de fin :</strong> <span id="viewDateFin"></span></p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <p><strong>Statut :</strong> <span id="viewStatut"></span></p>
+                                <p><strong>Date de création :</strong> <span id="viewCreatedAt"></span></p>
+                                <p><strong>Dernière modification :</strong> <span id="viewUpdatedAt"></span></p>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal de gestion des objectifs (Créer/Modifier) -->
-        <div class="modal fade" id="objectiveModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="objectiveModalTitle">
-                            <i class="fas fa-bullseye text-primary me-2"></i>Nouvel Objectif
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="objectiveForm">
-                            <input type="hidden" id="objectiveId">
-                            <input type="hidden" id="objectiveFiscalYearId">
-
-                            <div class="mb-3">
-                                <label for="objectiveType" class="form-label">Type d'objectif *</label>
-                                <select class="form-select" id="objectiveType" required>
-                                    <option value="">Sélectionner...</option>
-                                    <option value="CA">Croissance CA</option>
-                                    <option value="MARGE">Marge Brute</option>
-                                    <option value="SATISFACTION">Satisfaction Client</option>
-                                    <option value="CONVERSION">Taux de Conversion</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="objectiveBusinessUnit" class="form-label">Business Unit</label>
-                                <select class="form-select" id="objectiveBusinessUnit">
-                                    <option value="">Global (toutes les BU)</option>
-                                </select>
-                                <small class="text-muted">Laissez "Global" pour un objectif applicable à toutes les
-                                    BU</small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="objectiveTargetValue" class="form-label">Valeur cible *</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" id="objectiveTargetValue" required min="0"
-                                        step="0.01" placeholder="Ex: 1000000">
-                                    <span class="input-group-text" id="objectiveUnit"></span>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="button" class="btn btn-primary" onclick="saveObjective()">
-                            <i class="fas fa-save me-2"></i>Enregistrer
-                        </button>
                     </div>
                 </div>
             </div>
@@ -739,27 +517,26 @@
 
         <!-- Scripts -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="js/fiscal-years-crud.js"></script>
+        <script src="js/fiscal-years-objectives.js"></script>
         <script>
             let currentDeleteId = null;
             let currentChangeStatusId = null;
             let currentChangeStatusData = null;
             let fiscalYears = [];
 
-            // Initialisation
             document.addEventListener('DOMContentLoaded', function () {
                 loadFiscalYears();
                 loadStats();
                 setupEventListeners();
             });
 
-            // Configuration des événements
             function setupEventListeners() {
                 document.getElementById('searchInput').addEventListener('input', filterFiscalYears);
                 document.getElementById('statutFilter').addEventListener('change', filterFiscalYears);
                 document.getElementById('anneeFilter').addEventListener('change', filterFiscalYears);
             }
 
-            // Charger les exercices fiscaux
             async function loadFiscalYears() {
                 try {
                     const response = await fetch('/api/fiscal-years', {
@@ -771,7 +548,6 @@
                         const result = await response.json();
                         console.log('Réponse API fiscal-years:', result);
 
-                        // Gérer les différents formats de réponse
                         let data = [];
                         if (Array.isArray(result)) {
                             data = result;
@@ -797,14 +573,13 @@
                 }
             }
 
-            // Afficher les exercices fiscaux
             function displayFiscalYears(data) {
                 const tbody = document.getElementById('fiscalYearsTableBody');
 
                 if (data.length === 0) {
                     tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="text-center text-muted">
+                        <td colspan="6" class="text-center text-muted">
                             <i class="fas fa-inbox fa-2x mb-2"></i><br>
                             Aucun exercice fiscal trouvé
                         </td>
@@ -844,7 +619,6 @@
             `).join('');
             }
 
-            // Charger les statistiques
             async function loadStats() {
                 try {
                     const response = await fetch('/api/fiscal-years/stats', {
@@ -854,20 +628,11 @@
                     });
                     if (response.ok) {
                         const result = await response.json();
-                        console.log('Réponse API stats:', result);
-
-                        // Gérer les différents formats de réponse
-                        let stats = {};
-                        if (result.data) {
-                            stats = result.data;
-                        } else {
-                            stats = result;
-                        }
+                        const stats = result.data || result;
 
                         document.getElementById('totalExercices').textContent = stats.total || stats.total_exercices || 0;
                         document.getElementById('enCours').textContent = stats.en_cours || 0;
                         document.getElementById('ouverts').textContent = stats.ouverts || 0;
-                        document.getElementById('fermes').textContent = stats.fermes || 0;
                         document.getElementById('budgetTotal').textContent = formatCurrency(stats.budget_total || 0);
                     }
                 } catch (error) {
@@ -875,206 +640,6 @@
                 }
             }
 
-            // Ouvrir le modal de création
-            function openCreateModal() {
-                document.getElementById('createForm').reset();
-                const modal = new bootstrap.Modal(document.getElementById('createModal'));
-                modal.show();
-            }
-
-            // Créer un exercice fiscal
-            async function createFiscalYear() {
-                const form = document.getElementById('createForm');
-                if (!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
-                }
-
-                const data = {
-                    libelle: document.getElementById('createLibelle').value,
-                    annee: parseInt(document.getElementById('createAnnee').value),
-                    date_debut: document.getElementById('createDateDebut').value,
-                    date_fin: document.getElementById('createDateFin').value,
-                    budget_global: parseFloat(document.getElementById('createBudget').value),
-                    statut: document.getElementById('createStatut').value
-                };
-
-                try {
-                    const response = await fetch('/api/fiscal-years', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                        },
-                        body: JSON.stringify(data)
-                    });
-
-                    if (response.ok) {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('createModal'));
-                        modal.hide();
-                        showAlert('Exercice fiscal créé avec succès', 'success');
-                        loadFiscalYears();
-                        loadStats();
-                    } else {
-                        const error = await response.json();
-                        showAlert('Erreur lors de la création: ' + error.message, 'danger');
-                    }
-                } catch (error) {
-                    console.error('Erreur:', error);
-                    showAlert('Erreur de connexion', 'danger');
-                }
-            }
-
-            // Modifier un exercice fiscal
-            async function editFiscalYear(id) {
-                try {
-                    const response = await fetch(`/api/fiscal-years/${id}`, {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                        }
-                    });
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log('Réponse API fiscal-year pour édition:', result);
-
-                        // Gérer la structure de réponse
-                        let fiscalYear = null;
-                        if (result.data) {
-                            fiscalYear = result.data;
-                        } else {
-                            fiscalYear = result;
-                        }
-
-                        if (!fiscalYear) {
-                            showAlert('Données de l\'exercice fiscal non trouvées', 'danger');
-                            return;
-                        }
-
-                        document.getElementById('editId').value = fiscalYear.id;
-                        document.getElementById('editAnnee').value = fiscalYear.annee;
-                        document.getElementById('editLibelle').value = fiscalYear.libelle;
-                        document.getElementById('editBudget').value = fiscalYear.budget_global;
-
-                        // Convertir les dates au format YYYY-MM-DD pour les champs input[type="date"]
-                        const dateDebut = new Date(fiscalYear.date_debut);
-                        const dateFin = new Date(fiscalYear.date_fin);
-
-                        // Formatage manuel pour éviter les problèmes de timezone
-                        const formatDateForInput = (date) => {
-                            const year = date.getFullYear();
-                            const month = String(date.getMonth() + 1).padStart(2, '0');
-                            const day = String(date.getDate()).padStart(2, '0');
-                            return `${year}-${month}-${day}`;
-                        };
-
-                        document.getElementById('editDateDebut').value = formatDateForInput(dateDebut);
-                        document.getElementById('editDateFin').value = formatDateForInput(dateFin);
-
-                        document.getElementById('editStatut').value = fiscalYear.statut;
-
-                        const modal = new bootstrap.Modal(document.getElementById('editModal'));
-                        modal.show();
-                    } else {
-                        showAlert('Erreur lors du chargement de l\'exercice fiscal', 'danger');
-                    }
-                } catch (error) {
-                    console.error('Erreur:', error);
-                    showAlert('Erreur de connexion', 'danger');
-                }
-            }
-
-            // Mettre à jour un exercice fiscal
-            async function updateFiscalYear() {
-                const form = document.getElementById('editForm');
-                if (!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
-                }
-
-                const id = document.getElementById('editId').value;
-                const data = {
-                    libelle: document.getElementById('editLibelle').value,
-                    date_debut: document.getElementById('editDateDebut').value,
-                    date_fin: document.getElementById('editDateFin').value,
-                    budget_global: parseFloat(document.getElementById('editBudget').value)
-                };
-
-                try {
-                    const response = await fetch(`/api/fiscal-years/${id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                        },
-                        body: JSON.stringify(data)
-                    });
-
-                    if (response.ok) {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
-                        modal.hide();
-                        showAlert('Exercice fiscal mis à jour avec succès', 'success');
-                        loadFiscalYears();
-                        loadStats();
-                    } else {
-                        const error = await response.json();
-                        showAlert('Erreur lors de la mise à jour: ' + error.message, 'danger');
-                    }
-                } catch (error) {
-                    console.error('Erreur:', error);
-                    showAlert('Erreur de connexion', 'danger');
-                }
-            }
-
-            // Voir un exercice fiscal
-            async function viewFiscalYear(id) {
-                try {
-                    const response = await fetch(`/api/fiscal-years/${id}`, {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                        }
-                    });
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log('Réponse API fiscal-year individuel:', result);
-
-                        // Gérer la structure de réponse
-                        let fiscalYear = null;
-                        if (result.data) {
-                            fiscalYear = result.data;
-                        } else {
-                            fiscalYear = result;
-                        }
-
-                        if (!fiscalYear) {
-                            showAlert('Données de l\'exercice fiscal non trouvées', 'danger');
-                            return;
-                        }
-
-                        document.getElementById('viewAnnee').textContent = fiscalYear.annee;
-                        document.getElementById('viewBudget').textContent = formatCurrency(fiscalYear.budget_global);
-                        document.getElementById('viewDateDebut').textContent = formatDate(fiscalYear.date_debut);
-                        document.getElementById('viewDateFin').textContent = formatDate(fiscalYear.date_fin);
-                        document.getElementById('viewStatut').innerHTML = `<span class="badge badge-statut ${fiscalYear.statut.toLowerCase()}">${getStatutLabel(fiscalYear.statut)}</span>`;
-                        document.getElementById('viewCreatedAt').textContent = formatDateTime(fiscalYear.created_at);
-                        document.getElementById('viewUpdatedAt').textContent = formatDateTime(fiscalYear.updated_at);
-
-                        // Charger les objectifs quand l'onglet est affiché
-                        document.getElementById('objectives-tab').addEventListener('shown.bs.tab', function () {
-                            loadObjectivesForYear(id);
-                        }, { once: true });
-
-                        const modal = new bootstrap.Modal(document.getElementById('viewModal'));
-                        modal.show();
-                    } else {
-                        showAlert('Erreur lors du chargement de l\'exercice fiscal', 'danger');
-                    }
-                } catch (error) {
-                    console.error('Erreur:', error);
-                    showAlert('Erreur de connexion', 'danger');
-                }
-            }
-
-            // Supprimer un exercice fiscal
             function deleteFiscalYear(id, annee) {
                 currentDeleteId = id;
                 document.getElementById('deleteAnnee').textContent = annee;
@@ -1082,7 +647,6 @@
                 modal.show();
             }
 
-            // Confirmer la suppression
             async function confirmDelete() {
                 try {
                     const response = await fetch(`/api/fiscal-years/${currentDeleteId}`, {
@@ -1108,7 +672,6 @@
                 }
             }
 
-            // Filtrer les exercices fiscaux
             function filterFiscalYears() {
                 const search = document.getElementById('searchInput').value.toLowerCase();
                 const statut = document.getElementById('statutFilter').value;
@@ -1125,7 +688,6 @@
                 displayFiscalYears(filtered);
             }
 
-            // Effacer les filtres
             function clearFilters() {
                 document.getElementById('searchInput').value = '';
                 document.getElementById('statutFilter').value = '';
@@ -1133,7 +695,6 @@
                 displayFiscalYears(fiscalYears);
             }
 
-            // Remplir le filtre d'année
             function populateAnneeFilter() {
                 const select = document.getElementById('anneeFilter');
                 const annees = [...new Set(fiscalYears.map(fy => fy.annee))].sort((a, b) => b - a);
@@ -1144,7 +705,6 @@
                 });
             }
 
-            // Utilitaires
             function formatDate(dateString) {
                 if (!dateString) return '-';
                 return new Date(dateString).toLocaleDateString('fr-FR');
@@ -1172,6 +732,10 @@
                 return labels[statut] || statut;
             }
 
+            function getStatutBadge(statut) {
+                return `<span class="badge badge-statut ${statut.toLowerCase()}">${getStatutLabel(statut)}</span>`;
+            }
+
             function showAlert(message, type) {
                 const alertDiv = document.createElement('div');
                 alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
@@ -1189,7 +753,6 @@
                 }, 5000);
             }
 
-            // Ouvrir le modal de changement de statut
             function changeStatusFiscalYear(id, libelle, currentStatus) {
                 currentChangeStatusId = id;
                 currentChangeStatusData = { libelle, currentStatus };
@@ -1203,7 +766,6 @@
                 modal.show();
             }
 
-            // Confirmer le changement de statut
             async function confirmChangeStatus() {
                 const newStatus = document.getElementById('newStatus').value;
 
@@ -1219,26 +781,19 @@
 
                 try {
                     let endpoint = '';
-                    let method = 'PUT';
-                    let data = {};
-
-                    // Utiliser les endpoints spécifiques selon le nouveau statut
                     if (newStatus === 'EN_COURS') {
                         endpoint = `/api/fiscal-years/${currentChangeStatusId}/set-as-current`;
-                        method = 'PUT';
                     } else if (newStatus === 'OUVERTE') {
                         endpoint = `/api/fiscal-years/${currentChangeStatusId}/open`;
-                        method = 'PUT';
                     } else if (newStatus === 'FERMEE') {
                         endpoint = `/api/fiscal-years/${currentChangeStatusId}/close`;
-                        method = 'PUT';
                     } else {
                         showAlert('Statut non reconnu', 'danger');
                         return;
                     }
 
                     const response = await fetch(endpoint, {
-                        method: method,
+                        method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -1262,12 +817,8 @@
             }
         </script>
 
-        <!-- Script de la sidebar -->
         <script src="js/sidebar.js"></script>
-        <!-- SessionManager pour la gestion centralisée des sessions -->
         <script src="js/session-manager.js"></script>
-        <!-- Gestion des objectifs stratégiques -->
-        <script src="js/fiscal-years-objectives.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord Évaluations</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+
+    <!-- Scripts de zone utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+
+        .dashboard-card {
+            transition: transform 0.2s;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--primary-color);
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--secondary-color);
+            border-bottom-color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+
+    <!-- CSS des variables de branding dynamiques -->
+    <link rel="stylesheet" href="/config/themes/brand-variables.css">
+
+    <!-- Scripts de branding -->
+    <script src="js/branding-loader.js"></script>
+    <script src="js/sidebar-branding.js"></script>
+</head>
+
+<body>
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <div class="sidebar-container"></div>
+
+        <div class="main-content-area">
+            <div class="container-fluid">
+                <!-- En-tête -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h1 class="h3 mb-0">
+                            <i class="fas fa-chart-pie text-primary me-2"></i>
+                            Tableau de Bord Évaluations
+                        </h1>
+                        <p class="text-muted mb-0">Vue d'ensemble de vos évaluations et de celles de votre équipe</p>
+                    </div>
+                </div>
+
+                <!-- Stats Rapides -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card dashboard-card bg-white h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Mes Évaluations (Année en cours)</h6>
+                                        <h3 class="mb-0" id="myEvaluationsCount">-</h3>
+                                    </div>
+                                    <div class="text-primary opacity-50">
+                                        <i class="fas fa-user-check fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card dashboard-card bg-white h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">À Réaliser (Manager)</h6>
+                                        <h3 class="mb-0" id="toEvaluateCount">-</h3>
+                                    </div>
+                                    <div class="text-warning opacity-50">
+                                        <i class="fas fa-clipboard-list fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card dashboard-card bg-white h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Moyenne Équipe</h6>
+                                        <h3 class="mb-0" id="teamAverage">-</h3>
+                                    </div>
+                                    <div class="text-success opacity-50">
+                                        <i class="fas fa-chart-line fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenu Principal -->
+                <div class="card dashboard-card">
+                    <div class="card-header bg-white border-bottom-0 pb-0">
+                        <ul class="nav nav-tabs" id="evaluationTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="my-evaluations-tab" data-bs-toggle="tab"
+                                    data-bs-target="#my-evaluations" type="button" role="tab">
+                                    <i class="fas fa-user me-2"></i>Mes Évaluations
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="to-evaluate-tab" data-bs-toggle="tab"
+                                    data-bs-target="#to-evaluate" type="button" role="tab">
+                                    <i class="fas fa-pen-fancy me-2"></i>À Évaluer <span
+                                        class="badge bg-danger rounded-pill ms-1" id="pendingBadge"
+                                        style="display:none">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="team-overview-tab" data-bs-toggle="tab"
+                                    data-bs-target="#team-overview" type="button" role="tab">
+                                    <i class="fas fa-users me-2"></i>Vue d'Ensemble Équipe
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="evaluationTabsContent">
+                            <!-- Onglet Mes Évaluations -->
+                            <div class="tab-pane fade show active" id="my-evaluations" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Campagne</th>
+                                                <th>Période</th>
+                                                <th>Date Évaluation</th>
+                                                <th>Statut</th>
+                                                <th>Score</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="myEvaluationsList">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4">Chargement...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Onglet À Évaluer -->
+                            <div class="tab-pane fade" id="to-evaluate" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Collaborateur</th>
+                                                <th>Campagne</th>
+                                                <th>Date Limite</th>
+                                                <th>Statut</th>
+                                                <th>Progression</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="toEvaluateList">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4">Chargement...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Onglet Vue Équipe -->
+                            <div class="tab-pane fade" id="team-overview" role="tabpanel">
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <select class="form-select" id="teamCampaignSelect">
+                                            <option value="">Toutes les campagnes</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Collaborateur</th>
+                                                <th>Campagne</th>
+                                                <th>Statut</th>
+                                                <th>Score Global</th>
+                                                <th>Dernière MAJ</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="teamOverviewList">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4">Chargement...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/session-manager.js"></script>
+    <script src="js/evaluations-dashboard.js"></script>
+</body>
+
+</html>

@@ -40,7 +40,8 @@ async function loadObjectivesForYear(fiscalYearId) {
     currentFiscalYearId = fiscalYearId;
 
     try {
-        const response = await fetch(`/api/fiscal-years/${fiscalYearId}/objectives`, {
+        // Nouvelle route : /api/objectives?fiscal_year_id=...
+        const response = await fetch(`/api/objectives?fiscal_year_id=${fiscalYearId}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
@@ -76,13 +77,21 @@ function displayObjectives(objectives) {
         return;
     }
 
-    tbody.innerHTML = objectives.map(obj => `
+    tbody.innerHTML = objectives.map(obj => {
+        // Trouver le nom de la BU si elle existe
+        let buName = 'Global';
+        if (obj.business_unit_id) {
+            const bu = businessUnits.find(b => b.id === obj.business_unit_id);
+            buName = bu ? `${bu.nom} (${bu.code})` : 'BU Inconnue';
+        }
+
+        return `
         <tr>
             <td>
                 <i class="fas ${getObjectiveIcon(obj.type)} me-2"></i>
                 ${getObjectiveLabel(obj.type)}
             </td>
-            <td>${obj.business_unit_nom || '<span class="badge bg-secondary">Global</span>'}</td>
+            <td>${obj.business_unit_id ? buName : '<span class="badge bg-secondary">Global</span>'}</td>
             <td><strong>${formatNumber(obj.target_value)}</strong></td>
             <td>${obj.unit}</td>
             <td>
@@ -96,7 +105,7 @@ function displayObjectives(objectives) {
                 </div>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
 // Ouvrir le modal de création d'objectif
@@ -110,6 +119,9 @@ function openCreateObjectiveModal() {
     document.getElementById('objectiveId').value = '';
     document.getElementById('objectiveFiscalYearId').value = currentFiscalYearId;
     document.getElementById('objectiveModalTitle').textContent = 'Nouvel Objectif';
+
+    // Reset unit display
+    document.getElementById('objectiveUnit').textContent = '';
 
     const modal = new bootstrap.Modal(document.getElementById('objectiveModal'));
     modal.show();
@@ -146,10 +158,23 @@ async function saveObjective() {
     const isEdit = !!objectiveId;
 
     const data = {
+        fiscal_year_id: fiscalYearId,
         type: document.getElementById('objectiveType').value,
         target_value: parseFloat(document.getElementById('objectiveTargetValue').value),
-        business_unit_id: document.getElementById('objectiveBusinessUnit').value || null
+        business_unit_id: document.getElementById('objectiveBusinessUnit').value || null,
+        unit: document.getElementById('objectiveUnit').textContent // Optionnel, le backend peut le déduire
     };
+
+    // Si l'unité est vide, on essaie de la déduire du type
+    if (!data.unit) {
+        const units = {
+            'CA': '€',
+            'MARGE': '%',
+            'SATISFACTION': '%',
+            'CONVERSION': '%'
+        };
+        data.unit = units[data.type] || '';
+    }
 
     try {
         let response;
@@ -160,10 +185,14 @@ async function saveObjective() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 },
-                body: JSON.stringify({ target_value: data.target_value })
+                body: JSON.stringify({
+                    target_value: data.target_value,
+                    business_unit_id: data.business_unit_id
+                    // On ne permet généralement pas de changer le type ou l'année fiscale en édition simple
+                })
             });
         } else {
-            response = await fetch(`/api/fiscal-years/${fiscalYearId}/objectives`, {
+            response = await fetch(`/api/objectives`, { // Nouvelle route POST /api/objectives
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -178,6 +207,12 @@ async function saveObjective() {
             modal.hide();
             showAlert(`Objectif ${isEdit ? 'modifié' : 'créé'} avec succès`, 'success');
             loadObjectivesForYear(fiscalYearId);
+
+            // Si on a ajouté/modifié un objectif CA, on devrait peut-être proposer de recalculer le budget
+            if (data.type === 'CA') {
+                // Optionnel : déclencher un recalcul automatique ou suggérer à l'utilisateur
+                // recalculateBudget(); // On pourrait le faire automatiquement
+            }
         } else {
             const error = await response.json();
             showAlert('Erreur: ' + error.message, 'danger');
@@ -212,6 +247,45 @@ async function deleteObjective(objectiveId) {
     } catch (error) {
         console.error('Erreur:', error);
         showAlert('Erreur de connexion', 'danger');
+    }
+}
+
+// Recalculer le budget global
+async function recalculateBudget() {
+    if (!currentFiscalYearId) return;
+
+    const btn = document.querySelector('button[onclick="recalculateBudget()"]');
+    const originalIcon = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(`/api/fiscal-years/${currentFiscalYearId}/recalculate-budget`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            showAlert('Budget recalculé avec succès', 'success');
+
+            // Mettre à jour l'affichage du budget
+            document.getElementById('viewBudget').textContent = formatCurrency(result.data.budget_global);
+
+            // Rafraîchir la liste principale si nécessaire (optionnel)
+            loadFiscalYears();
+        } else {
+            const error = await response.json();
+            showAlert('Erreur lors du recalcul: ' + error.message, 'danger');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showAlert('Erreur de connexion', 'danger');
+    } finally {
+        btn.innerHTML = originalIcon;
+        btn.disabled = false;
     }
 }
 

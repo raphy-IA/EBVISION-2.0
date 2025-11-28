@@ -197,10 +197,10 @@ class PermissionsAdmin {
 
     groupPermissionsByCategory(allPermissions, grantedPermissions) {
         const categories = {};
-        
+
         // Créer un Set des IDs accordés pour une recherche plus rapide
         const grantedIds = new Set(grantedPermissions.map(gp => String(gp.id)));
-        
+
         allPermissions.forEach(perm => {
             if (!categories[perm.category]) {
                 categories[perm.category] = {
@@ -208,10 +208,10 @@ class PermissionsAdmin {
                     permissions: []
                 };
             }
-            
+
             // Comparer les IDs en les convertissant en string pour éviter les problèmes de type
             const granted = grantedIds.has(String(perm.id));
-            
+
             categories[perm.category].permissions.push({
                 ...perm,
                 granted
@@ -251,7 +251,7 @@ class PermissionsAdmin {
         try {
             // Trouver toutes les checkboxes de cette catégorie
             const checkboxes = document.querySelectorAll(`input[type="checkbox"][data-category="${categoryName}"]`);
-            
+
             if (checkboxes.length === 0) {
                 console.warn(`Aucune permission trouvée pour la catégorie: ${categoryName}`);
                 return;
@@ -259,30 +259,30 @@ class PermissionsAdmin {
 
             // Afficher un indicateur de chargement
             this.showAlert(
-                `${selectAll ? 'Sélection' : 'Désélection'} de ${checkboxes.length} permission(s) en cours...`, 
+                `${selectAll ? 'Sélection' : 'Désélection'} de ${checkboxes.length} permission(s) en cours...`,
                 'info'
             );
 
             // Créer un tableau de promesses pour toutes les modifications
             const promises = [];
-            
+
             checkboxes.forEach(checkbox => {
                 const permissionId = checkbox.getAttribute('data-perm-id');
                 const isChecked = checkbox.checked;
-                
+
                 // Si l'état doit changer
                 if (isChecked !== selectAll) {
                     // Cocher/décocher visuellement la case
                     checkbox.checked = selectAll;
-                    
+
                     // Ajouter la requête API
                     const promise = authenticatedFetch(
-                        `/api/permissions/roles/${roleId}/permissions/${permissionId}`, 
+                        `/api/permissions/roles/${roleId}/permissions/${permissionId}`,
                         {
                             method: selectAll ? 'POST' : 'DELETE'
                         }
                     );
-                    
+
                     promises.push(promise);
                 }
             });
@@ -290,25 +290,25 @@ class PermissionsAdmin {
             // Attendre que toutes les requêtes soient terminées
             if (promises.length > 0) {
                 const results = await Promise.allSettled(promises);
-                
+
                 // Vérifier s'il y a eu des erreurs
                 const errors = results.filter(r => r.status === 'rejected' || !r.value.ok);
-                
+
                 if (errors.length === 0) {
                     this.showAlert(
-                        `${promises.length} permission(s) ${selectAll ? 'accordée(s)' : 'révoquée(s)'} avec succès`, 
+                        `${promises.length} permission(s) ${selectAll ? 'accordée(s)' : 'révoquée(s)'} avec succès`,
                         'success'
                     );
                 } else if (errors.length < promises.length) {
                     this.showAlert(
-                        `${promises.length - errors.length} permission(s) modifiée(s), ${errors.length} erreur(s)`, 
+                        `${promises.length - errors.length} permission(s) modifiée(s), ${errors.length} erreur(s)`,
                         'warning'
                     );
                     // Recharger pour synchroniser l'affichage
                     await this.loadRolePermissions(roleId);
                 } else {
                     this.showAlert(
-                        'Erreur lors de la modification des permissions', 
+                        'Erreur lors de la modification des permissions',
                         'danger'
                     );
                     // Recharger pour annuler les changements visuels
@@ -316,11 +316,11 @@ class PermissionsAdmin {
                 }
             } else {
                 this.showAlert(
-                    `Toutes les permissions de cette catégorie sont déjà ${selectAll ? 'sélectionnées' : 'désélectionnées'}`, 
+                    `Toutes les permissions de cette catégorie sont déjà ${selectAll ? 'sélectionnées' : 'désélectionnées'}`,
                     'info'
                 );
             }
-            
+
         } catch (error) {
             console.error('Erreur lors de la sélection en masse:', error);
             this.showAlert('Erreur lors de la modification des permissions', 'danger');
@@ -369,8 +369,8 @@ class PermissionsAdmin {
         userItems.forEach(item => {
             const userName = item.querySelector('strong').textContent.toLowerCase();
             const email = item.querySelector('small').textContent.toLowerCase();
-            const matches = userName.includes(searchTerm.toLowerCase()) || 
-                           email.includes(searchTerm.toLowerCase());
+            const matches = userName.includes(searchTerm.toLowerCase()) ||
+                email.includes(searchTerm.toLowerCase());
             item.style.display = matches ? 'block' : 'none';
         });
     }
@@ -515,7 +515,7 @@ class PermissionsAdmin {
         this.currentBusinessUnit = { id: buId, name: buName };
         await this.loadBusinessUnitAccess(buId);
         this.loadBusinessUnits(); // Recharger pour mettre à jour la sélection
-        
+
         // Activer le bouton "Ajouter un utilisateur"
         const addBtn = document.getElementById('add-user-to-bu-btn');
         if (addBtn) {
@@ -583,62 +583,63 @@ class PermissionsAdmin {
                     </thead>
                     <tbody>
                         ${userAccess.map(access => {
-                            const userBUs = busMap[access.user_id] || [];
-                            const otherBUs = userBUs.filter(bu => bu.business_unit_id !== businessUnit.id);
-                            
-                            return `
+            const userBUs = busMap[access.user_id] || [];
+            const otherBUs = userBUs.filter(bu => bu.business_unit_id !== businessUnit.id);
+
+            return `
                             <tr>
                                 <td>
                                     <div>
                                         <strong>${access.nom} ${access.prenom}</strong>
-                                        ${access.access_type === 'COLLABORATEUR' ? 
-                                            `<br><small class="text-info">
+                                        ${access.access_type === 'COLLABORATEUR' ?
+                    `<br><small class="text-info">
                                                 <i class="fas fa-user-tie"></i> Collaborateur principal
                                                 ${access.collaborateur_nom ? `(${access.collaborateur_nom} ${access.collaborateur_prenom})` : ''}
-                                            </small>` : 
-                                            `<br><small class="text-warning">
+                                            </small>` :
+                    `<br><small class="text-warning">
                                                 <i class="fas fa-key"></i> Accès explicite
                                             </small>`
-                                        }
+                }
                                     </div>
                                 </td>
                                 <td>
-                                    ${access.access_type === 'COLLABORATEUR' ? 
-                                        `<span class="badge bg-success">ADMIN (Principal)</span>` :
-                                        `<select class="form-select form-select-sm" 
+                                    ${access.access_type === 'COLLABORATEUR' ?
+                    `<span class="badge bg-success">ADMIN (Principal)</span>` :
+                    `<select class="form-select form-select-sm" 
                                                 onchange="permissionsAdmin.updateBusinessUnitAccess('${businessUnit.id}', '${access.user_id}', this.value)">
                                             <option value="READ" ${access.access_level === 'READ' ? 'selected' : ''}>Lecture</option>
                                             <option value="WRITE" ${access.access_level === 'WRITE' ? 'selected' : ''}>Écriture</option>
                                             <option value="ADMIN" ${access.access_level === 'ADMIN' ? 'selected' : ''}>Administration</option>
                                         </select>`
-                                    }
+                }
                                 </td>
                                 <td>
-                                    ${otherBUs.length > 0 ? 
-                                        otherBUs.map(bu => `
+                                    ${otherBUs.length > 0 ?
+                    otherBUs.map(bu => `
                                             <span class="badge bg-${bu.access_type === 'COLLABORATEUR' ? 'info' : 'secondary'} me-1 mb-1" 
                                                   title="${bu.access_type === 'COLLABORATEUR' ? 'BU Principale' : 'Accès ' + bu.access_level}">
                                                 ${bu.business_unit_nom} 
-                                                ${bu.access_type === 'COLLABORATEUR' ? 
-                                                    '<i class="fas fa-star"></i>' : 
-                                                    `<small>(${bu.access_level})</small>`
-                                                }
+                                                ${bu.access_type === 'COLLABORATEUR' ?
+                            '<i class="fas fa-star"></i>' :
+                            `<small>(${bu.access_level})</small>`
+                        }
                                             </span>
                                         `).join('') :
-                                        `<span class="text-muted">Aucune autre BU</span>`
-                                    }
+                    `<span class="text-muted">Aucune autre BU</span>`
+                }
                                 </td>
                                 <td>
-                                    ${access.access_type === 'EXPLICIT' ? 
-                                        `<button class="btn btn-danger btn-sm" 
+                                    ${access.access_type === 'EXPLICIT' ?
+                    `<button class="btn btn-danger btn-sm" 
                                                 onclick="permissionsAdmin.removeBusinessUnitAccess('${businessUnit.id}', '${access.user_id}')">
                                             <i class="fas fa-trash"></i>
                                         </button>` :
-                                        `<span class="text-muted">Accès principal</span>`
-                                    }
+                    `<span class="text-muted">Accès principal</span>`
+                }
                                 </td>
                             </tr>
-                        `;}).join('')}
+                        `;
+        }).join('')}
                     </tbody>
                 </table>
             </div>
@@ -740,7 +741,7 @@ class PermissionsAdmin {
 
             if (response.ok) {
                 this.showAlert('Utilisateur ajouté avec succès', 'success');
-                
+
                 // Fermer le modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addUserToBUModal'));
                 modal.hide();
@@ -885,7 +886,7 @@ class PermissionsAdmin {
             if (response.ok) {
                 const data = await response.json();
                 this.displayUsersForRole(data);
-                
+
                 // Activer le bouton "Ajouter un Utilisateur"
                 const addBtn = document.getElementById('add-user-to-role-btn');
                 if (addBtn) {
@@ -1027,11 +1028,11 @@ class PermissionsAdmin {
         if (!container) return;
 
         const { role, permissions, allPermissions } = data;
-        
+
         // Filtrer seulement les permissions de menu
         const menuPermissions = allPermissions.filter(p => p.code.startsWith('menu.'));
         const userMenuPermissions = permissions.filter(p => p.code.startsWith('menu.'));
-        
+
         // Grouper par section
         const menuSections = this.groupMenuPermissionsBySection(menuPermissions, userMenuPermissions);
 
@@ -1086,67 +1087,109 @@ class PermissionsAdmin {
             'menu.business_unit.responsables_bu_division'
         ];
 
-        const sections = {
-            'dashboard': { name: 'DASHBOARD', icon: 'fas fa-tachometer-alt', permissions: [] },
-            'rapports': { name: 'RAPPORTS', icon: 'fas fa-chart-bar', permissions: [] },
-            'gestion_des_temps': { name: 'GESTION DES TEMPS', icon: 'fas fa-clock', permissions: [] },
-            'gestion_mission': { name: 'GESTION MISSION', icon: 'fas fa-tasks', permissions: [] },
-            'market_pipeline': { name: 'MARKET PIPELINE', icon: 'fas fa-chart-line', permissions: [] },
-            'gestion_rh': { name: 'GESTION RH', icon: 'fas fa-users', permissions: [] },
-            'configurations': { name: 'CONFIGURATIONS', icon: 'fas fa-cog', permissions: [] },
-            'business_unit': { name: 'BUSINESS UNIT', icon: 'fas fa-building', permissions: [] },
-            'parametres_administration': { name: 'PARAMÈTRES ADMINISTRATION', icon: 'fas fa-user-cog', permissions: [] }
+        // Configuration pour les icônes et noms connus
+        const sectionConfig = {
+            'dashboard': { name: 'DASHBOARD', icon: 'fas fa-tachometer-alt' },
+            'objectifs': { name: 'OBJECTIFS', icon: 'fas fa-bullseye' },
+            'evaluations': { name: 'ÉVALUATIONS', icon: 'fas fa-clipboard-check' },
+            'rapports': { name: 'RAPPORTS', icon: 'fas fa-chart-bar' },
+            'gestion_des_temps': { name: 'GESTION DES TEMPS', icon: 'fas fa-clock' },
+            'gestion_mission': { name: 'GESTION MISSION', icon: 'fas fa-tasks' },
+            'market_pipeline': { name: 'MARKET PIPELINE', icon: 'fas fa-chart-line' },
+            'gestion_rh': { name: 'GESTION RH', icon: 'fas fa-users' },
+            'configurations': { name: 'CONFIGURATIONS', icon: 'fas fa-cog' },
+            'business_unit': { name: 'BUSINESS UNIT', icon: 'fas fa-building' },
+            'parametres_administration': { name: 'PARAMÈTRES ADMINISTRATION', icon: 'fas fa-user-cog' }
         };
+
+        const sectionsMap = {};
 
         // Grouper les permissions par section
         allPermissions.forEach(permission => {
             if (excludedPermissions.includes(permission.code)) {
                 return;
             }
-            const sectionKey = permission.code.split('.')[1];
-            if (sections[sectionKey]) {
-                const isGranted = userPermissions.some(p => p.code === permission.code);
-                sections[sectionKey].permissions.push({
-                    ...permission,
-                    granted: isGranted
-                });
+
+            // Extraire la clé de section (ex: 'dashboard' depuis 'menu.dashboard.view')
+            const parts = permission.code.split('.');
+            if (parts.length < 3) return; // Ignorer si format incorrect
+
+            const sectionKey = parts[1];
+
+            if (!sectionsMap[sectionKey]) {
+                // Utiliser la config connue ou des valeurs par défaut
+                const config = sectionConfig[sectionKey] || {
+                    name: sectionKey.toUpperCase().replace(/_/g, ' '),
+                    icon: 'fas fa-folder' // Icône par défaut
+                };
+
+                sectionsMap[sectionKey] = {
+                    key: sectionKey, // Stocker la clé pour usage futur
+                    name: config.name,
+                    icon: config.icon,
+                    permissions: []
+                };
             }
+
+            const isGranted = userPermissions.some(p => p.code === permission.code);
+            sectionsMap[sectionKey].permissions.push({
+                ...permission,
+                granted: isGranted
+            });
         });
 
-        return Object.values(sections).filter(section => section.permissions.length > 0);
+        // Ordre d'affichage des sections (correspondant à la sidebar)
+        const sectionOrder = [
+            'dashboard',
+            'objectifs',
+            'evaluations',
+            'rapports',
+            'gestion_des_temps',
+            'gestion_mission',
+            'market_pipeline',
+            'gestion_rh',
+            'configurations',
+            'business_unit',
+            'parametres_administration'
+        ];
+
+        return Object.values(sectionsMap).sort((a, b) => {
+            const indexA = sectionOrder.indexOf(a.key);
+            const indexB = sectionOrder.indexOf(b.key);
+
+            // Si les deux sont dans l'ordre défini
+            if (indexA !== -1 && indexB !== -1) {
+                return indexA - indexB;
+            }
+
+            // Si seulement a est dans l'ordre, il vient avant
+            if (indexA !== -1) return -1;
+
+            // Si seulement b est dans l'ordre, il vient avant
+            if (indexB !== -1) return 1;
+
+            // Sinon, tri alphabétique
+            return a.name.localeCompare(b.name);
+        });
     }
 
     renderMenuSection(section) {
         const grantedCount = section.permissions.filter(p => p.granted).length;
         const totalCount = section.permissions.length;
-        
-        // Mapping des noms de sections vers les codes de permissions
-        const sectionMapping = {
-            'DASHBOARD': 'dashboard',
-            'RAPPORTS': 'rapports',
-            'GESTION DES TEMPS': 'gestion_des_temps',
-            'GESTION MISSION': 'gestion_mission',
-            'MARKET PIPELINE': 'market_pipeline',
-            'GESTION RH': 'gestion_rh',
-            'CONFIGURATIONS': 'configurations',
-            'BUSINESS UNIT': 'business_unit',
-            'PARAMÈTRES ADMINISTRATION': 'paramètres_administration'
-        };
-        
-        // Obtenir la clé de section pour les actions
-        const sectionKey = section.name.replace(/\s+/g, '_').toUpperCase();
-        
+
+        // Utiliser la clé de section stockée
+        const sectionKey = section.key;
+
         // Trouver la permission de section principale
         const sectionMainPermission = this.menuPermissionsData.allPermissions.find(p => {
-            const mappedCode = sectionMapping[section.name];
-            return mappedCode && p.code === `menu.${mappedCode}`;
+            return p.code === `menu.${sectionKey}`;
         });
-        
+
         // Vérifier si la section principale est accordée
-        const sectionMainGranted = sectionMainPermission ? 
-            this.menuPermissionsData.permissions.some(p => p.code === sectionMainPermission.code) : 
+        const sectionMainGranted = sectionMainPermission ?
+            this.menuPermissionsData.permissions.some(p => p.code === sectionMainPermission.code) :
             false;
-        
+
         return `
             <div class="menu-section-card">
                 <div class="menu-section-header">
@@ -1202,7 +1245,7 @@ class PermissionsAdmin {
     renderMenuPermission(permission) {
         const permissionName = permission.code.split('.').slice(2).join('.');
         const displayName = permissionName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        
+
         return `
             <div class="menu-link-item">
                 <div class="menu-link-info">
@@ -1239,7 +1282,7 @@ class PermissionsAdmin {
         const sectionCard = button.closest('.menu-section-card');
         const content = sectionCard.querySelector('.menu-section-content');
         const icon = button.querySelector('i');
-        
+
         if (content.classList.contains('collapsed')) {
             content.classList.remove('collapsed');
             icon.className = 'fas fa-chevron-down';
@@ -1282,27 +1325,14 @@ class PermissionsAdmin {
         }
 
         try {
-            // Mapping des noms de sections vers les codes de permissions
-            const sectionMapping = {
-                'DASHBOARD': 'dashboard',
-                'RAPPORTS': 'rapports',
-                'GESTION_DES_TEMPS': 'gestion_des_temps',
-                'GESTION_MISSION': 'gestion_mission',
-                'MARKET_PIPELINE': 'market_pipeline',
-                'GESTION_RH': 'gestion_rh',
-                'CONFIGURATIONS': 'configurations',
-                'BUSINESS_UNIT': 'business_unit',
-                'PARAMÈTRES_ADMINISTRATION': 'paramètres_administration'
-            };
-            
             // Trouver toutes les permissions de la section
             const sectionPermissions = this.menuPermissionsData.allPermissions.filter(p => {
-                const mappedCode = sectionMapping[sectionKey];
-                return mappedCode && p.code.split('.')[1] === mappedCode;
+                // sectionKey est maintenant la clé brute (ex: 'dashboard', 'objectifs')
+                return p.code.split('.')[1] === sectionKey;
             });
 
             // Effectuer les modifications en parallèle
-            const promises = sectionPermissions.map(permission => 
+            const promises = sectionPermissions.map(permission =>
                 authenticatedFetch(`/api/permissions/roles/${this.currentMenuRole.id}/permissions/${permission.id}`, {
                     method: grant ? 'POST' : 'DELETE'
                 })
@@ -1339,7 +1369,7 @@ class PermissionsAdmin {
             const menuPermissions = this.menuPermissionsData.allPermissions.filter(p => p.code.startsWith('menu.'));
 
             // Effectuer les modifications en parallèle
-            const promises = menuPermissions.map(permission => 
+            const promises = menuPermissions.map(permission =>
                 authenticatedFetch(`/api/permissions/roles/${this.currentMenuRole.id}/permissions/${permission.id}`, {
                     method: grant ? 'POST' : 'DELETE'
                 })
@@ -1445,7 +1475,7 @@ function showEditRoleModal(roleId, roleName, roleDescription, isSystemRole) {
         systemCheckbox.checked = !!isSystemRole;
         systemCheckbox.disabled = !isSuperAdmin;
     }
-    
+
     const modal = new bootstrap.Modal(document.getElementById('editRoleModal'));
     modal.show();
 }
@@ -1507,7 +1537,7 @@ async function deleteRole(roleId) {
             permissionsAdmin.showAlert('Rôle supprimé avec succès', 'success');
             permissionsAdmin.currentRole = null;
             await permissionsAdmin.loadRoles();
-            
+
             // Réinitialiser l'affichage des permissions
             const container = document.getElementById('role-permissions');
             if (container) {
@@ -1515,18 +1545,18 @@ async function deleteRole(roleId) {
             }
         } else {
             const error = await response.json();
-            
+
             // Afficher un message détaillé avec la raison si disponible
             let errorMessage = error.error || 'Erreur lors de la suppression du rôle';
-            
+
             if (error.reason) {
                 errorMessage += `\n\n${error.reason}`;
             }
-            
+
             // Si des utilisateurs sont affectés, afficher un message spécifique
             if (error.userCount) {
                 permissionsAdmin.showAlert(
-                    `❌ ${errorMessage}`, 
+                    `❌ ${errorMessage}`,
                     'warning'
                 );
             } else {
@@ -1584,7 +1614,7 @@ function displayUsersForRoles(users) {
 // Sélectionner un utilisateur pour gérer ses rôles
 async function selectUserForRoles(userId, userName) {
     console.log(`🔄 Sélection de l'utilisateur: ${userName} (${userId})`);
-    
+
     // Mettre à jour l'interface
     document.querySelectorAll('.user-item').forEach(item => {
         item.classList.remove('active');
@@ -1612,7 +1642,7 @@ async function loadUserRoles(userId, userName) {
         if (response.ok) {
             const userRolesData = await response.json();
             console.log('📋 Réponse API:', userRolesData);
-            
+
             // Extraire les rôles du format { success: true, data: [...] }
             let userRoles = [];
             if (userRolesData && userRolesData.data && Array.isArray(userRolesData.data)) {
@@ -1621,7 +1651,7 @@ async function loadUserRoles(userId, userName) {
                 // Si c'est directement un tableau
                 userRoles = userRolesData;
             }
-            
+
             console.log(`✅ ${userRoles.length} rôle(s) trouvé(s):`, userRoles);
             displayUserRoles(userId, userName, userRoles);
         } else {
@@ -1650,8 +1680,8 @@ function displayUserRoles(userId, userName, userRoles) {
             <p class="text-muted">Gérez les rôles assignés à cet utilisateur</p>
         </div>
         <div id="user-roles-list-container">
-            ${userRoles.length > 0 ? 
-                userRoles.map(role => `
+            ${userRoles.length > 0 ?
+            userRoles.map(role => `
                     <div class="card mb-2">
                         <div class="card-body py-2">
                             <div class="d-flex justify-content-between align-items-center">
@@ -1666,9 +1696,9 @@ function displayUserRoles(userId, userName, userRoles) {
                             </div>
                         </div>
                     </div>
-                `).join('') : 
-                '<p class="text-muted">Aucun rôle assigné</p>'
-            }
+                `).join('') :
+            '<p class="text-muted">Aucun rôle assigné</p>'
+        }
         </div>
     `;
 
@@ -1698,7 +1728,7 @@ async function showAddRoleModal() {
 async function loadAvailableRoles() {
     try {
         console.log('🔄 Chargement des rôles disponibles...');
-        
+
         // Récupérer tous les rôles depuis /api/users/roles
         const response = await authenticatedFetch('/api/users/roles');
         if (!response.ok) {
@@ -1706,19 +1736,19 @@ async function loadAvailableRoles() {
             permissionsAdmin.showAlert('Erreur lors du chargement des rôles', 'danger');
             return;
         }
-        
+
         const allRoles = await response.json();
         console.log('📋 Tous les rôles:', allRoles);
-        
+
         // Récupérer les rôles actuels de l'utilisateur
         console.log(`🔄 Chargement des rôles de l'utilisateur ${permissionsAdmin.currentUserForRoles.id}...`);
         const userRolesResponse = await authenticatedFetch(`/api/users/${permissionsAdmin.currentUserForRoles.id}/roles`);
-        
+
         let userRoles = [];
         if (userRolesResponse.ok) {
             const userRolesData = await userRolesResponse.json();
             console.log('📋 Réponse des rôles utilisateur:', userRolesData);
-            
+
             // Vérifier si la réponse a une propriété 'data' (structure { success: true, data: [...] })
             if (userRolesData && userRolesData.data && Array.isArray(userRolesData.data)) {
                 userRoles = userRolesData.data;
@@ -1727,14 +1757,14 @@ async function loadAvailableRoles() {
                 userRoles = userRolesData;
             }
         }
-        
+
         console.log('📊 Rôles actuels de l\'utilisateur:', userRoles);
-        
+
         // Filtrer les rôles déjà assignés
-        const availableRoles = allRoles.filter(role => 
+        const availableRoles = allRoles.filter(role =>
             !userRoles.some(userRole => userRole.id === role.id)
         );
-        
+
         console.log('✅ Rôles disponibles pour ajout:', availableRoles);
 
         const select = document.getElementById('roleToAdd');
@@ -1745,7 +1775,7 @@ async function loadAvailableRoles() {
             option.textContent = `${role.name} - ${role.description || 'Pas de description'}`;
             select.appendChild(option);
         });
-        
+
         console.log(`✅ ${availableRoles.length} rôle(s) disponible(s) chargé(s)`);
     } catch (error) {
         console.error('❌ Erreur lors du chargement des rôles:', error);
@@ -1773,11 +1803,11 @@ async function addRoleToUser() {
 
         if (response.ok) {
             permissionsAdmin.showAlert('Rôle ajouté avec succès', 'success');
-            
+
             // Fermer le modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('addRoleModal'));
             modal.hide();
-            
+
             // Recharger les rôles de l'utilisateur
             await loadUserRoles(permissionsAdmin.currentUserForRoles.id, permissionsAdmin.currentUserForRoles.name);
         } else {
@@ -1803,7 +1833,7 @@ async function removeRoleFromUser(userId, roleId, roleName) {
 
         if (response.ok) {
             permissionsAdmin.showAlert('Rôle retiré avec succès', 'success');
-            
+
             // Recharger les rôles de l'utilisateur
             await loadUserRoles(userId, permissionsAdmin.currentUserForRoles.name);
         } else {
@@ -1834,7 +1864,7 @@ function filterUsersForRoles(searchTerm) {
 async function syncPermissionsAndMenus() {
     const btn = document.getElementById('syncPermissionsBtn');
     const originalText = btn.innerHTML;
-    
+
     try {
         // Désactiver le bouton et afficher le chargement
         btn.disabled = true;
@@ -1860,7 +1890,7 @@ async function syncPermissionsAndMenus() {
                     <strong>Permissions:</strong> ${result.stats.permissions.added} ajoutées, ${result.stats.permissions.updated} mises à jour, ${result.stats.permissions.deleted || 0} supprimées, ${result.stats.permissions.skipped} inchangées
                 </small>
             `;
-            
+
             permissionsAdmin.showAlert(statsMessage, 'success', 10000);
 
             // Recharger les données
@@ -1886,14 +1916,14 @@ async function syncPermissionsAndMenus() {
 async function checkSuperAdminAndShowSyncButton() {
     try {
         console.log('🔍 Vérification du rôle SUPER_ADMIN...');
-        
+
         // D'abord, vérifier le rôle depuis le cache local (plus fiable et rapide)
         const cachedUser = JSON.parse(localStorage.getItem('user') || '{}');
         const cachedRole = cachedUser.role || cachedUser.principal_role;
-        
+
         console.log('👤 Données utilisateur en cache:', cachedUser);
         console.log('👤 Rôle en cache:', cachedRole);
-        
+
         if (cachedRole === 'SUPER_ADMIN') {
             console.log('✅ SUPER_ADMIN détecté via cache');
             const syncBtn = document.getElementById('syncPermissionsBtn');
@@ -1908,10 +1938,10 @@ async function checkSuperAdminAndShowSyncButton() {
             }
             return;
         }
-        
+
         // Fallback: vérifier via l'API si le cache ne contient pas SUPER_ADMIN
         console.log('🔍 Vérification via API...');
-        
+
         const authResponse = await authenticatedFetch('/api/auth/verify');
         if (!authResponse.ok) {
             console.log('⚠️ Utilisateur non authentifié');
@@ -1935,7 +1965,7 @@ async function checkSuperAdminAndShowSyncButton() {
         // Essayer de récupérer les rôles via l'API
         console.log(`🔍 Récupération des rôles pour l'utilisateur ${userData.id}...`);
         const rolesResponse = await authenticatedFetch(`/api/users/${userData.id}/roles`);
-        
+
         if (!rolesResponse.ok) {
             console.warn('⚠️ Erreur API rôles:', rolesResponse.status, '- Utilisation du rôle en cache');
             // Si l'API échoue, utiliser le rôle du userData
@@ -1952,10 +1982,10 @@ async function checkSuperAdminAndShowSyncButton() {
 
         const rolesData = await rolesResponse.json();
         const roles = rolesData.data || rolesData;
-        
+
         const isSuperAdmin = Array.isArray(roles) && roles.some(role => role.name === 'SUPER_ADMIN');
         console.log('🔒 Est SUPER_ADMIN (API)?', isSuperAdmin);
-        
+
         if (isSuperAdmin) {
             const syncBtn = document.getElementById('syncPermissionsBtn');
             if (syncBtn) {
@@ -1986,7 +2016,7 @@ async function showAddUserToRoleModal() {
         }
 
         const allUsers = await response.json();
-        
+
         // Récupérer les utilisateurs qui ont déjà ce rôle
         const roleUsersResponse = await authenticatedFetch(`/api/permissions/roles/${permissionsAdmin.currentRoleForUsers}/users`);
         let roleUsers = [];
@@ -1996,7 +2026,7 @@ async function showAddUserToRoleModal() {
         }
 
         // Filtrer les utilisateurs qui n'ont pas déjà ce rôle
-        const availableUsers = allUsers.filter(user => 
+        const availableUsers = allUsers.filter(user =>
             !roleUsers.some(roleUser => roleUser.id === user.id)
         );
 
@@ -2071,11 +2101,11 @@ async function addUserToRole() {
 
         if (response.ok) {
             permissionsAdmin.showAlert('Utilisateur ajouté au rôle avec succès', 'success');
-            
+
             // Fermer le modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('addUserToRoleModal'));
             modal.hide();
-            
+
             // Recharger les utilisateurs du rôle
             await permissionsAdmin.loadUsersForRole(permissionsAdmin.currentRoleForUsers);
         } else {
@@ -2092,7 +2122,7 @@ async function addUserToRole() {
 let permissionsAdmin;
 document.addEventListener('DOMContentLoaded', () => {
     permissionsAdmin = new PermissionsAdmin();
-    
+
     // Attendre un peu que le DOM soit complètement rendu avant de chercher le bouton
     setTimeout(() => {
         checkSuperAdminAndShowSyncButton();

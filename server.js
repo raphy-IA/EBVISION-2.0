@@ -18,6 +18,8 @@ const divisionRoutes = require('./src/routes/divisions');
 const clientRoutes = require('./src/routes/clients');
 const contactRoutes = require('./src/routes/contacts');
 const fiscalYearRoutes = require('./src/routes/fiscal-years');
+const objectivesRoutes = require('./src/routes/objectives');
+const evaluationsRoutes = require('./src/routes/evaluations');
 const missionRoutes = require('./src/routes/missions');
 const gradeRoutes = require('./src/routes/grades');
 const collaborateurRoutes = require('./src/routes/collaborateurs');
@@ -144,8 +146,8 @@ app.use(compression());
 app.use(morgan('combined'));
 app.use(cookieParser()); // Support des cookies
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
-        ? ['https://yourdomain.com'] 
+    origin: process.env.NODE_ENV === 'production'
+        ? ['https://yourdomain.com']
         : ['http://localhost:3000', 'http://localhost:8080'],
     credentials: true
 }));
@@ -216,6 +218,8 @@ app.use('/api/divisions', divisionRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/fiscal-years', fiscalYearRoutes);
+app.use('/api/objectives', objectivesRoutes);
+app.use('/api/evaluations', evaluationsRoutes);
 app.use('/api/grades', gradeRoutes);
 app.use('/api/collaborateurs', collaborateurRoutes);
 app.use('/api/missions', missionRoutes);
@@ -254,7 +258,7 @@ app.use('/api/auth', pagePermissionsRoutes);
 app.use('/api/branding', brandingRoutes);
 
 // Route de synchronisation des permissions et menus
-const syncPermissionsRoutes = require('./src/routes/sync-permissions');
+const { router: syncPermissionsRoutes } = require('./src/routes/sync-permissions');
 app.use(syncPermissionsRoutes);
 
 // Import et utilisation des routes managers
@@ -275,10 +279,10 @@ async function startServer() {
         // Connexion à la base de données
         await connectDatabase();
         console.log('✅ Connexion à PostgreSQL réussie');
-        
+
         // Initialiser les tâches cron
         CronService.initCronJobs();
-        
+
         // Démarrage du serveur
         app.listen(PORT, () => {
             console.log('🚀 Serveur démarré sur le port', PORT);

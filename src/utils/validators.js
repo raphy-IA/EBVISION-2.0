@@ -382,6 +382,11 @@ const contactValidation = {
 // Schémas de validation pour les années fiscales
 const fiscalYearValidation = {
     create: Joi.object({
+        libelle: Joi.string().min(2).max(50).optional()
+            .messages({
+                'string.min': 'Le libellé doit contenir au moins 2 caractères',
+                'string.max': 'Le libellé ne peut pas dépasser 50 caractères'
+            }),
         annee: Joi.number().integer().min(2020).max(2030).required()
             .messages({
                 'number.integer': 'L\'année doit être un nombre entier',
@@ -398,10 +403,9 @@ const fiscalYearValidation = {
                 'date.greater': 'La date de fin doit être postérieure à la date de début',
                 'any.required': 'La date de fin est requise'
             }),
-        budget_global: Joi.number().positive().required()
+        statut: Joi.string().valid('OUVERTE', 'EN_COURS', 'FERMEE').default('OUVERTE')
             .messages({
-                'number.positive': 'Le budget global doit être positif',
-                'any.required': 'Le budget global est requis'
+                'any.only': 'Statut invalide'
             })
     }),
 
@@ -419,9 +423,9 @@ const fiscalYearValidation = {
             .messages({
                 'date.greater': 'La date de fin doit être postérieure à la date de début'
             }),
-        budget_global: Joi.number().positive()
+        statut: Joi.string().valid('OUVERTE', 'EN_COURS', 'FERMEE')
             .messages({
-                'number.positive': 'Le budget global doit être positif'
+                'any.only': 'Statut invalide'
             })
     })
 };

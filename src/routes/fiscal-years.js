@@ -288,17 +288,12 @@ router.put('/:id/close', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================
-// STRATEGIC OBJECTIVES ENDPOINTS
-// ============================================
-
-// GET /api/fiscal-years/:id/objectives - Récupérer les objectifs d'une année fiscale
-router.get('/:id/objectives', authenticateToken, async (req, res) => {
+// Recalculer le budget global
+router.post('/:id/recalculate-budget', authenticateToken, requirePermission('fiscal_years:update'), async (req, res) => {
     try {
         const { id } = req.params;
-        const { pool } = require('../utils/database');
-
         const fiscalYear = await FiscalYear.findById(id);
+
         if (!fiscalYear) {
             return res.status(404).json({
                 success: false,
@@ -306,187 +301,16 @@ router.get('/:id/objectives', authenticateToken, async (req, res) => {
             });
         }
 
-        const query = `
-            SELECT 
-                so.id,
-                so.business_unit_id,
-                so.year,
-                so.type,
-                so.target_value,
-                so.unit,
-                so.created_at,
-                so.updated_at,
-                bu.nom as business_unit_nom,
-                bu.code as business_unit_code
-            FROM strategic_objectives so
-            LEFT JOIN business_units bu ON so.business_unit_id = bu.id
-            WHERE so.year = $1
-            ORDER BY 
-                CASE WHEN so.business_unit_id IS NULL THEN 0 ELSE 1 END,
-                bu.nom,
-                so.type
-        `;
-
-        const result = await pool.query(query, [fiscalYear.annee]);
+        const newBudget = await FiscalYear.calculateGlobalBudget(id);
 
         res.json({
             success: true,
-            message: 'Objectifs récupérés avec succès',
-            data: result.rows
+            message: 'Budget global recalculé avec succès',
+            data: { budget_global: newBudget }
         });
 
     } catch (error) {
-        console.error('Erreur lors de la récupération des objectifs:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur interne du serveur',
-            error: error.message
-        });
-    }
-});
-
-// POST /api/fiscal-years/:id/objectives - Créer un objectif
-router.post('/:id/objectives', authenticateToken, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { type, target_value, business_unit_id } = req.body;
-        const { pool } = require('../utils/database');
-
-        if (!type || !target_value) {
-            return res.status(400).json({
-                success: false,
-                message: 'Type et valeur cible sont requis'
-            });
-        }
-
-        const validTypes = ['CA', 'MARGE', 'SATISFACTION', 'CONVERSION'];
-        if (!validTypes.includes(type)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Type invalide'
-            });
-        }
-
-        const fiscalYear = await FiscalYear.findById(id);
-        if (!fiscalYear) {
-            return res.status(404).json({
-                success: false,
-                message: 'Année fiscale non trouvée'
-            });
-        }
-
-        const units = {
-            'CA': '€',
-            'MARGE': '%',
-            'SATISFACTION': '%',
-            'CONVERSION': '%'
-        };
-
-        const query = `
-            INSERT INTO strategic_objectives (year, type, target_value, unit, business_unit_id)
-            VALUES ($1, $2, $3, $4, $5)
-            RETURNING *
-        `;
-
-        const result = await pool.query(query, [
-            fiscalYear.annee,
-            type,
-            target_value,
-            units[type],
-            business_unit_id || null
-        ]);
-
-        res.status(201).json({
-            success: true,
-            message: 'Objectif créé avec succès',
-            data: result.rows[0]
-        });
-
-    } catch (error) {
-        console.error('Erreur création objectif:', error);
-
-        if (error.code === '23505') {
-            return res.status(409).json({
-                success: false,
-                message: 'Objectif déjà existant pour ce type et cette BU'
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            message: 'Erreur interne du serveur'
-        });
-    }
-});
-
-// PUT /api/objectives/:id - Modifier un objectif
-router.put('/objectives/:id', authenticateToken, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { target_value } = req.body;
-        const { pool } = require('../utils/database');
-
-        if (!target_value) {
-            return res.status(400).json({
-                success: false,
-                message: 'Valeur cible requise'
-            });
-        }
-
-        const query = `
-            UPDATE strategic_objectives
-            SET target_value = $1, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $2
-            RETURNING *
-        `;
-
-        const result = await pool.query(query, [target_value, id]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Objectif non trouvé'
-            });
-        }
-
-        res.json({
-            success: true,
-            message: 'Objectif mis à jour avec succès',
-            data: result.rows[0]
-        });
-
-    } catch (error) {
-        console.error('Erreur mise à jour objectif:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur interne du serveur'
-        });
-    }
-});
-
-// DELETE /api/objectives/:id - Supprimer un objectif
-router.delete('/objectives/:id', authenticateToken, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { pool } = require('../utils/database');
-
-        const query = 'DELETE FROM strategic_objectives WHERE id = $1 RETURNING *';
-        const result = await pool.query(query, [id]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Objectif non trouvé'
-            });
-        }
-
-        res.json({
-            success: true,
-            message: 'Objectif supprimé avec succès'
-        });
-
-    } catch (error) {
-        console.error('Erreur suppression objectif:', error);
+        console.error('Erreur lors du recalcul du budget:', error);
         res.status(500).json({
             success: false,
             message: 'Erreur interne du serveur'

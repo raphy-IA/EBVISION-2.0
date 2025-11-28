@@ -33,7 +33,7 @@ router.post('/api/sync/permissions-menus', authenticateToken, async (req, res) =
         // 1. Scanner les fichiers HTML dans le dossier public
         const publicDir = path.join(__dirname, '../../public');
         const htmlFiles = await scanHtmlFiles(publicDir);
-        
+
         // 2. Scanner le template de sidebar pour extraire les menus
         const sidebarPath = path.join(publicDir, 'template-modern-sidebar.html');
         const menuStructure = await extractMenuStructure(sidebarPath);
@@ -87,7 +87,7 @@ async function scanHtmlFiles(dir, fileList = []) {
         } else if (file.endsWith('.html') && !file.includes('template') && !file.includes('backup')) {
             const relativePath = path.relative(path.join(__dirname, '../../public'), filePath);
             const urlPath = '/' + relativePath.replace(/\\/g, '/');
-            
+
             // Extraire le titre de la page
             const content = await fs.readFile(filePath, 'utf-8');
             const titleMatch = content.match(/<title>(.*?)<\/title>/i);
@@ -112,34 +112,37 @@ async function extractMenuStructure(sidebarPath) {
     const content = await fs.readFile(sidebarPath, 'utf-8');
     const menuStructure = [];
 
-    // Regex pour extraire les sections de menu
-    const sectionRegex = /<div class="sidebar-section">[\s\S]*?<div class="sidebar-section-title">[\s\S]*?<i class="[^"]*"><\/i>\s*([^<]+)[\s\S]*?<\/div>([\s\S]*?)(?=<div class="sidebar-section">|<\/nav>)/g;
-    
+    // Nouvelle approche : extraire les sections et leurs liens avec data-permission
+    const sectionRegex = /<div class="sidebar-section">\s*<div class="sidebar-section-title">\s*<i[^>]*><\/i>\s*([^<]+)<\/div>([\s\S]*?)(?=<div class="sidebar-section">|<\/nav>|$)/g;
+
     let match;
     while ((match = sectionRegex.exec(content)) !== null) {
         const sectionName = match[1].trim();
         const sectionContent = match[2];
 
-        // Extraire les liens du menu
-        const linkRegex = /<a href="([^"]+)"[^>]*>[\s\S]*?<i class="[^"]*"><\/i>\s*([^<]+)/g;
+        // Extraire les liens avec data-permission
+        const linkRegex = /<a\s+href="([^"]+)"[^>]*data-permission="([^"]+)"[^>]*>\s*<i[^>]*><\/i>\s*([^<]+)/g;
         const links = [];
-        
+
         let linkMatch;
         while ((linkMatch = linkRegex.exec(sectionContent)) !== null) {
             links.push({
                 url: linkMatch[1].trim(),
-                label: linkMatch[2].trim()
+                permission: linkMatch[2].trim(),
+                label: linkMatch[3].trim()
             });
         }
 
         if (links.length > 0) {
             menuStructure.push({
                 section: sectionName,
-                code: sectionName.toUpperCase().replace(/\s+/g, '_'),
+                code: sectionName.toUpperCase().replace(/\s+/g, '_').normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
                 items: links
             });
         }
     }
+
+    console.log(`📋 ${menuStructure.length} sections de menu détectées:`, menuStructure.map(s => s.section).join(', '));
 
     return menuStructure;
 }
@@ -208,7 +211,7 @@ async function syncPages(htmlFiles) {
                             AND column_name = 'url'
                         )
                     `);
-                    
+
                     if (columnCheck.rows[0].exists) {
                         // Ajouter la nouvelle page
                         await pool.query(
@@ -256,7 +259,7 @@ async function syncMenus(menuStructure) {
     // Vérifier si les tables de menu existent
     const menuSectionsExists = await tableExists('menu_sections');
     const menuItemsExists = await tableExists('menu_items');
-    
+
     if (!menuSectionsExists || !menuItemsExists) {
         console.log('⚠️  Tables "menu_sections" ou "menu_items" n\'existent pas, synchronisation des menus ignorée');
         return {
@@ -375,7 +378,7 @@ async function syncPermissions(htmlFiles, menuStructure) {
 
     // ===== ÉTAPE 1: NETTOYER LES ANCIENNES PERMISSIONS DE MENU OBSOLÈTES =====
     console.log('🧹 Nettoyage des anciennes permissions de menu...');
-    
+
     // Liste des anciennes clés de section à supprimer
     const obsoleteMenuPatterns = [
         'menu.business_units.%',
@@ -386,7 +389,9 @@ async function syncPermissions(htmlFiles, menuStructure) {
         'menu.reports.%',
         'menu.settings.%',
         'menu.time_entries.%',
-        'menu.users.%'
+        'menu.users.%',
+        'menu.paramètres_administration.%',
+        'menu.évaluations.%'
     ];
 
     for (const pattern of obsoleteMenuPatterns) {
@@ -405,7 +410,7 @@ async function syncPermissions(htmlFiles, menuStructure) {
 
     // ===== ÉTAPE 2: CRÉER/METTRE À JOUR LES PERMISSIONS DE PAGES =====
     console.log('📄 Synchronisation des permissions de pages...');
-    
+
     for (const file of htmlFiles) {
         try {
             const permCode = `page.${file.filename.replace('.html', '').replace(/-/g, '_')}`;
@@ -440,10 +445,10 @@ async function syncPermissions(htmlFiles, menuStructure) {
 
     // ===== ÉTAPE 3: CRÉER/METTRE À JOUR LES PERMISSIONS DE MENU =====
     console.log('📋 Synchronisation des permissions de menu...');
-    
+
     let menuAdded = 0;
     let menuUpdated = 0;
-    
+
     for (const section of menuStructure) {
         for (const item of section.items) {
             try {
@@ -494,13 +499,13 @@ async function syncPermissions(htmlFiles, menuStructure) {
 
     console.log(`✅ ${menuAdded} permissions de menu ajoutées, ${menuUpdated} mises à jour, ${skipped} inchangées`);
 
-    return { 
-        added: added + menuAdded, 
-        updated: updated + menuUpdated, 
-        skipped, 
-        deleted 
+    return {
+        added: added + menuAdded,
+        updated: updated + menuUpdated,
+        skipped,
+        deleted
     };
 }
 
-module.exports = router;
+module.exports = { router, syncPermissions, scanHtmlFiles, extractMenuStructure };
 

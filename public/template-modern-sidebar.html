@@ -1,31 +1,34 @@
-<!DOCTYPE html><html lang="fr"><head>
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Template Moderne</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome (PRIORITÉ pour les icônes) -->
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css?v=2.0">
-    
+
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Script d'authentification (différé) -->
     <script src="js/auth.js" defer></script>
-    
+
     <!-- Script de chargement du branding (différé) -->
     <script src="js/branding-loader.js" defer></script>
     <script src="js/sidebar-branding.js" defer></script>
-                
-                <!-- Scripts de zone utilisateur -->
-                <!-- <script src="js/user-header.js"></script> -->
-                <!-- <script src="js/user-modals.js"></script> -->
-    
+
+    <!-- Scripts de zone utilisateur -->
+    <!-- <script src="js/user-header.js"></script> -->
+    <!-- <script src="js/user-modals.js"></script> -->
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -36,33 +39,33 @@
             --light-bg: #f8f9fa;
             --dark-bg: #343a40;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
             margin: 0;
             padding: 0;
         }
-        
+
         .main-content {
             margin-left: 300px;
             padding: 2rem;
             min-height: 100vh;
             transition: margin-left 0.3s ease;
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
-        
+
         .page-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -70,24 +73,24 @@
             border-radius: 15px;
             margin-bottom: 2rem;
         }
-        
+
         .page-header h1 {
             margin: 0;
             font-weight: 700;
         }
-        
+
         .page-header p {
             margin: 0.5rem 0 0 0;
             opacity: 0.9;
         }
-        
+
         @media (max-width: 768px) {
             .main-content {
                 margin-left: 0;
                 padding-top: 5rem;
             }
         }
-        
+
         /* Styles pour les notifications dans la sidebar */
         .sidebar-notifications {
             display: flex;
@@ -95,7 +98,7 @@
             margin-bottom: 1rem;
             padding: 0.5rem;
         }
-        
+
         .notification-item {
             position: relative;
             display: flex;
@@ -104,11 +107,11 @@
             color: #fff;
             font-size: 0.9rem;
         }
-        
+
         .notification-item i {
             font-size: 1.1rem;
         }
-        
+
         .notification-count,
         .task-count {
             background: #e74c3c;
@@ -122,7 +125,7 @@
             font-size: 0.7rem;
             font-weight: bold;
         }
-        
+
         .task-count {
             background: #f39c12;
         }
@@ -142,6 +145,7 @@
     <!-- Script pour le moniteur de performance -->
     <script src="js/performance-monitor.js" defer></script>
 </head>
+
 <body>
     <!-- Bouton toggle pour mobile -->
     <button class="sidebar-toggle" id="sidebarToggle">
@@ -180,7 +184,7 @@
                     <i class="fas fa-chevron-right" id="profileToggleIcon"></i>
                 </div>
             </div>
-            
+
             <!-- Menu déroulant du profil -->
             <div class="user-profile-menu" id="userProfileMenu" style="display: none;">
                 <div class="menu-item" id="profileMenuItem" onclick="openProfileModal(); return false;">
@@ -213,41 +217,86 @@
                     <i class="fas fa-tachometer-alt"></i>
                     DASHBOARD
                 </div>
-                <a href="dashboard.html" class="sidebar-nav-link" data-permission="menu.dashboard.tableau_de_bord_principal">
+                <a href="dashboard.html" class="sidebar-nav-link"
+                    data-permission="menu.dashboard.tableau_de_bord_principal">
                     <i class="fas fa-chart-line"></i>
                     Tableau de bord principal
                 </a>
-                <a href="dashboard-personnel.html" class="sidebar-nav-link" data-permission="menu.dashboard.dashboard_personnel">
+                <a href="dashboard-personnel.html" class="sidebar-nav-link"
+                    data-permission="menu.dashboard.dashboard_personnel">
                     <i class="fas fa-user-tie"></i>
                     Dashboard Personnel
                 </a>
-                <a href="dashboard-equipe.html" class="sidebar-nav-link" data-permission="menu.dashboard.dashboard_equipe">
+                <a href="dashboard-equipe.html" class="sidebar-nav-link"
+                    data-permission="menu.dashboard.dashboard_equipe">
                     <i class="fas fa-users"></i>
                     Dashboard Équipe
                 </a>
-                <a href="dashboard-direction.html" class="sidebar-nav-link" data-permission="menu.dashboard.dashboard_direction">
+                <a href="dashboard-direction.html" class="sidebar-nav-link"
+                    data-permission="menu.dashboard.dashboard_direction">
                     <i class="fas fa-chart-line"></i>
                     Dashboard Direction
                 </a>
-                <a href="dashboard-recouvrement.html" class="sidebar-nav-link" data-permission="menu.dashboard.dashboard_recouvrement">
+                <a href="dashboard-recouvrement.html" class="sidebar-nav-link"
+                    data-permission="menu.dashboard.dashboard_recouvrement">
                     <i class="fas fa-hand-holding-usd"></i>
                     Dashboard Recouvrement
                 </a>
-                <a href="dashboard-rentabilite.html" class="sidebar-nav-link" data-permission="menu.dashboard.dashboard_rentabilite">
+                <a href="dashboard-rentabilite.html" class="sidebar-nav-link"
+                    data-permission="menu.dashboard.dashboard_rentabilite">
                     <i class="fas fa-scale-balanced"></i>
                     Dashboard Rentabilité
                 </a>
-                <a href="dashboard-chargeabilite.html" class="sidebar-nav-link" data-permission="menu.dashboard.dashboard_chargeabilite">
+                <a href="dashboard-chargeabilite.html" class="sidebar-nav-link"
+                    data-permission="menu.dashboard.dashboard_chargeabilite">
                     <i class="fas fa-user-clock"></i>
                     Dashboard Chargeabilité
                 </a>
-                <a href="analytics.html" class="sidebar-nav-link" data-permission="menu.dashboard.analytics_indicateurs">
+                <a href="analytics.html" class="sidebar-nav-link"
+                    data-permission="menu.dashboard.analytics_indicateurs">
                     <i class="fas fa-chart-bar"></i>
                     Analytics &amp; Indicateurs
                 </a>
-                <a href="dashboard-optimise.html" class="sidebar-nav-link" data-permission="menu.dashboard.dashboard_optimise">
+                <a href="dashboard-optimise.html" class="sidebar-nav-link"
+                    data-permission="menu.dashboard.dashboard_optimise">
                     <i class="fas fa-rocket"></i>
                     Dashboard Optimisé
+                </a>
+            </div>
+
+            <!-- Section Objectifs -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">
+                    <i class="fas fa-bullseye"></i>
+                    OBJECTIFS
+                </div>
+                <a href="objectives-individual.html" class="sidebar-nav-link"
+                    data-permission="menu.objectifs.mes_objectifs">
+                    <i class="fas fa-user-target"></i>
+                    Mes Objectifs
+                </a>
+                <a href="objectives-management.html" class="sidebar-nav-link"
+                    data-permission="menu.objectifs.gestion_des_objectifs">
+                    <i class="fas fa-sitemap"></i>
+                    Gestion des Objectifs
+                </a>
+            </div>
+
+            <!-- Section Évaluations -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">
+                    <i class="fas fa-clipboard-check"></i>
+                    ÉVALUATIONS
+                </div>
+                <a href="evaluations-dashboard.html" class="sidebar-nav-link"
+                    data-permission="menu.evaluations.tableau_de_bord">
+                    <i class="fas fa-chart-pie"></i>
+                    Tableau de Bord
+                </a>
+                <a href="evaluations-campaigns.html" class="sidebar-nav-link"
+                    data-permission="menu.evaluations.campagnes">
+                    <i class="fas fa-calendar-check"></i>
+                    Campagnes
                 </a>
             </div>
 
@@ -261,11 +310,13 @@
                     <i class="fas fa-clock"></i>
                     Rapports de temps
                 </a>
-                <a href="reports-missions.html" class="sidebar-nav-link" data-permission="menu.rapports.rapports_missions">
+                <a href="reports-missions.html" class="sidebar-nav-link"
+                    data-permission="menu.rapports.rapports_missions">
                     <i class="fas fa-briefcase"></i>
                     Rapports missions
                 </a>
-                <a href="reports-opportunities.html" class="sidebar-nav-link" data-permission="menu.rapports.rapports_opportunites">
+                <a href="reports-opportunities.html" class="sidebar-nav-link"
+                    data-permission="menu.rapports.rapports_opportunites">
                     <i class="fas fa-lightbulb"></i>
                     Rapports opportunités
                 </a>
@@ -273,7 +324,8 @@
                     <i class="fas fa-users"></i>
                     Rapports RH
                 </a>
-                <a href="prospecting-reports.html" class="sidebar-nav-link" data-permission="menu.rapports.rapports_de_prospection">
+                <a href="prospecting-reports.html" class="sidebar-nav-link"
+                    data-permission="menu.rapports.rapports_de_prospection">
                     <i class="fas fa-chart-line"></i>
                     Rapports de prospection
                 </a>
@@ -285,11 +337,13 @@
                     <i class="fas fa-clock"></i>
                     GESTION DES TEMPS
                 </div>
-                <a href="time-sheet-modern.html" class="sidebar-nav-link" data-permission="menu.gestion_des_temps.saisie_des_temps">
+                <a href="time-sheet-modern.html" class="sidebar-nav-link"
+                    data-permission="menu.gestion_des_temps.saisie_des_temps">
                     <i class="fas fa-calendar-alt"></i>
                     Saisie des temps
                 </a>
-                <a href="time-sheet-approvals.html" class="sidebar-nav-link" data-permission="menu.gestion_des_temps.validation_des_temps">
+                <a href="time-sheet-approvals.html" class="sidebar-nav-link"
+                    data-permission="menu.gestion_des_temps.validation_des_temps">
                     <i class="fas fa-check-circle"></i>
                     Validation des temps
                 </a>
@@ -305,7 +359,8 @@
                     <i class="fas fa-tasks"></i>
                     Missions
                 </a>
-                <a href="mission-types.html" class="sidebar-nav-link" data-permission="menu.gestion_mission.types_de_mission">
+                <a href="mission-types.html" class="sidebar-nav-link"
+                    data-permission="menu.gestion_mission.types_de_mission">
                     <i class="fas fa-tag"></i>
                     Types de mission
                 </a>
@@ -313,7 +368,8 @@
                     <i class="fas fa-clipboard-list"></i>
                     Tâches
                 </a>
-                <a href="invoices.html" class="sidebar-nav-link" data-permission="menu.gestion_mission.factures_et_paiements">
+                <a href="invoices.html" class="sidebar-nav-link"
+                    data-permission="menu.gestion_mission.factures_et_paiements">
                     <i class="fas fa-file-invoice"></i>
                     Factures et paiements
                 </a>
@@ -325,23 +381,28 @@
                     <i class="fas fa-funnel-dollar"></i>
                     MARKET PIPELINE
                 </div>
-                <a href="clients.html" class="sidebar-nav-link" data-permission="menu.market_pipeline.clients_et_prospects">
+                <a href="clients.html" class="sidebar-nav-link"
+                    data-permission="menu.market_pipeline.clients_et_prospects">
                     <i class="fas fa-users"></i>
                     Clients et prospects
                 </a>
-                <a href="opportunities.html" class="sidebar-nav-link" data-permission="menu.market_pipeline.opportunites">
+                <a href="opportunities.html" class="sidebar-nav-link"
+                    data-permission="menu.market_pipeline.opportunites">
                     <i class="fas fa-lightbulb"></i>
                     Opportunités
                 </a>
-                <a href="opportunity-types.html" class="sidebar-nav-link" data-permission="menu.market_pipeline.types_d_opportunite">
+                <a href="opportunity-types.html" class="sidebar-nav-link"
+                    data-permission="menu.market_pipeline.types_d_opportunite">
                     <i class="fas fa-tags"></i>
                     Types d'opportunité
                 </a>
-                <a href="prospecting-campaigns.html" class="sidebar-nav-link" data-permission="menu.market_pipeline.campagnes_de_prospection">
+                <a href="prospecting-campaigns.html" class="sidebar-nav-link"
+                    data-permission="menu.market_pipeline.campagnes_de_prospection">
                     <i class="fas fa-bullhorn"></i>
                     Campagnes de prospection
                 </a>
-                <a href="prospecting-validations.html" class="sidebar-nav-link" data-permission="menu.market_pipeline.validation_des_campagnes">
+                <a href="prospecting-validations.html" class="sidebar-nav-link"
+                    data-permission="menu.market_pipeline.validation_des_campagnes">
                     <i class="fas fa-clipboard-check"></i>
                     Validation des campagnes
                 </a>
@@ -357,7 +418,8 @@
                     <i class="fas fa-user-tie"></i>
                     Collaborateurs
                 </a>
-                <a href="types-collaborateurs.html" class="sidebar-nav-link" data-permission="menu.gestion_rh.types_collaborateurs">
+                <a href="types-collaborateurs.html" class="sidebar-nav-link"
+                    data-permission="menu.gestion_rh.types_collaborateurs">
                     <i class="fas fa-user-tag"></i>
                     Types de Collaborateurs
                 </a>
@@ -381,7 +443,8 @@
                     <i class="fas fa-cogs"></i>
                     CONFIGURATIONS
                 </div>
-                <a href="fiscal-years.html" class="sidebar-nav-link" data-permission="menu.configurations.annees_fiscales">
+                <a href="fiscal-years.html" class="sidebar-nav-link"
+                    data-permission="menu.configurations.annees_fiscales">
                     <i class="fas fa-calendar"></i>
                     Années fiscales
                 </a>
@@ -389,19 +452,23 @@
                     <i class="fas fa-globe"></i>
                     Pays
                 </a>
-                <a href="opportunity-type-configuration.html" class="sidebar-nav-link" data-permission="menu.configurations.configuration_types_d_opportunite">
+                <a href="opportunity-type-configuration.html" class="sidebar-nav-link"
+                    data-permission="menu.configurations.configuration_types_d_opportunite">
                     <i class="fas fa-cog"></i>
                     Configuration types d'opportunité
                 </a>
-                <a href="prospecting-sources.html" class="sidebar-nav-link" data-permission="menu.configurations.sources_entreprises">
+                <a href="prospecting-sources.html" class="sidebar-nav-link"
+                    data-permission="menu.configurations.sources_entreprises">
                     <i class="fas fa-database"></i>
                     Sources &amp; Entreprises
                 </a>
-                <a href="prospecting-templates.html" class="sidebar-nav-link" data-permission="menu.configurations.modeles_de_prospection">
+                <a href="prospecting-templates.html" class="sidebar-nav-link"
+                    data-permission="menu.configurations.modeles_de_prospection">
                     <i class="fas fa-envelope-open-text"></i>
                     Modèles de prospection
                 </a>
-                <a href="financial-settings.html" class="sidebar-nav-link" data-permission="menu.configurations.parametres_financiers">
+                <a href="financial-settings.html" class="sidebar-nav-link"
+                    data-permission="menu.configurations.parametres_financiers">
                     <i class="fas fa-coins"></i>
                     Paramètres financiers
                 </a>
@@ -413,7 +480,8 @@
                     <i class="fas fa-building"></i>
                     BUSINESS UNIT
                 </div>
-                <a href="business-units.html" class="sidebar-nav-link" data-permission="menu.business_unit.unites_d_affaires">
+                <a href="business-units.html" class="sidebar-nav-link"
+                    data-permission="menu.business_unit.unites_d_affaires">
                     <i class="fas fa-building"></i>
                     Unités d'affaires
                 </a>
@@ -421,11 +489,13 @@
                     <i class="fas fa-sitemap"></i>
                     Divisions
                 </a>
-                <a href="activites-internes.html" class="sidebar-nav-link" data-permission="menu.business_unit.activites_internes">
+                <a href="activites-internes.html" class="sidebar-nav-link"
+                    data-permission="menu.business_unit.activites_internes">
                     <i class="fas fa-list-check"></i>
                     Activités internes
                 </a>
-                <a href="secteurs-activite.html" class="sidebar-nav-link" data-permission="menu.business_unit.secteurs_d_activite">
+                <a href="secteurs-activite.html" class="sidebar-nav-link"
+                    data-permission="menu.business_unit.secteurs_d_activite">
                     <i class="fas fa-industry"></i>
                     Secteurs d'activité
                 </a>
@@ -437,15 +507,18 @@
                     <i class="fas fa-user-cog"></i>
                     PARAMÈTRES ADMINISTRATION
                 </div>
-                <a href="notification-settings.html" class="sidebar-nav-link" data-permission="menu.parametres_administration.configuration_notifications">
+                <a href="notification-settings.html" class="sidebar-nav-link"
+                    data-permission="menu.parametres_administration.configuration_notifications">
                     <i class="fas fa-bell"></i>
                     Configuration notifications
                 </a>
-                <a href="users.html" class="sidebar-nav-link" data-permission="menu.parametres_administration.utilisateurs">
+                <a href="users.html" class="sidebar-nav-link"
+                    data-permission="menu.parametres_administration.utilisateurs">
                     <i class="fas fa-users"></i>
                     Utilisateurs
                 </a>
-                <a href="permissions-admin.html" class="sidebar-nav-link" data-permission="menu.parametres_administration.administration_des_permissions">
+                <a href="permissions-admin.html" class="sidebar-nav-link"
+                    data-permission="menu.parametres_administration.administration_des_permissions">
                     <i class="fas fa-shield-alt"></i>
                     Administration des Permissions
                 </a>
@@ -459,16 +532,18 @@
                 <p id="footer-text">© 2024 EWM</p>
                 <small id="footer-subtitle">Management System</small>
             </div>
-        </div></div>
+        </div>
+    </div>
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/modern-sidebar.js"></script>
     <script src="js/menu-permissions.js"></script>
     <script src="js/sidebar-branding.js"></script>
-    
+
     <!-- Notifications Modal -->
-    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
+    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header d-flex justify-content-between align-items-center">
@@ -479,10 +554,12 @@
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <div class="btn-group btn-group-sm" role="group" aria-label="Filtre notifications">
-                            <button type="button" id="notificationsFilterAll" class="btn btn-outline-secondary active" onclick="setNotificationFilter('all')">
+                            <button type="button" id="notificationsFilterAll" class="btn btn-outline-secondary active"
+                                onclick="setNotificationFilter('all')">
                                 Toutes
                             </button>
-                            <button type="button" id="notificationsFilterManagement" class="btn btn-outline-dark" onclick="setNotificationFilter('management')">
+                            <button type="button" id="notificationsFilterManagement" class="btn btn-outline-dark"
+                                onclick="setNotificationFilter('management')">
                                 Management
                             </button>
                         </div>
@@ -545,7 +622,8 @@
                         <i class="fas fa-user-circle me-2"></i>
                         Mon Profil
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <!-- Loading State -->
@@ -694,7 +772,8 @@
     </div>
 
     <!-- Modal Changement de Mot de Passe -->
-    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-warning text-dark">
@@ -740,4 +819,6 @@
         console.log('📋 Template sidebar chargé');
     </script>
 
- </body></html>
+</body>
+
+</html>

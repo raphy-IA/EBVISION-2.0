@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détail de l'Évaluation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+
+    <!-- Scripts de zone utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+
+        .score-badge {
+            font-size: 1.2rem;
+            padding: 0.5em 1em;
+            border-radius: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+
+        @media print {
+
+            .sidebar-container,
+            .sidebar-toggle,
+            .no-print {
+                display: none !important;
+            }
+
+            .main-content-area {
+                padding: 0;
+                background: white;
+            }
+
+            .card {
+                border: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+
+    <!-- CSS des variables de branding dynamiques -->
+    <link rel="stylesheet" href="/config/themes/brand-variables.css">
+
+    <!-- Scripts de branding -->
+    <script src="js/branding-loader.js"></script>
+    <script src="js/sidebar-branding.js"></script>
+</head>
+
+<body>
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <div class="sidebar-container"></div>
+
+        <div class="main-content-area">
+            <div class="container-fluid">
+                <!-- En-tête -->
+                <div class="row mb-4 no-print">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h1 class="h3 mb-0">
+                                    <i class="fas fa-file-contract text-primary me-2"></i>
+                                    Détail de l'Évaluation
+                                </h1>
+                                <p class="text-muted mb-0">Consultation des résultats</p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-secondary" onclick="window.print()">
+                                    <i class="fas fa-print me-2"></i>Imprimer
+                                </button>
+                                <button class="btn btn-primary" id="signButton" style="display: none;"
+                                    onclick="signEvaluation()">
+                                    <i class="fas fa-signature me-2"></i>Signer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="evaluationContent">
+                    <!-- En-tête Rapport -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h4 class="mb-1" id="collabName">-</h4>
+                                    <p class="text-muted mb-0" id="collabRole">-</p>
+                                    <hr class="my-3">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Campagne</small>
+                                            <span class="fw-bold" id="campaignName">-</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Date d'évaluation</small>
+                                            <span class="fw-bold" id="evaluationDate">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center border-start">
+                                    <small class="text-muted d-block mb-2">Score Global</small>
+                                    <div class="score-badge bg-primary text-white d-inline-block" id="globalScore">
+                                        -%
+                                    </div>
+                                    <div class="mt-2 text-muted small" id="evaluationStatus">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Détail Objectifs -->
+                    <h5 class="mb-3">Détail des Objectifs</h5>
+                    <div class="card mb-4">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Objectif</th>
+                                            <th class="text-center">Poids</th>
+                                            <th class="text-center">Cible</th>
+                                            <th class="text-center">Réalisé</th>
+                                            <th class="text-center">Atteinte</th>
+                                            <th>Commentaire</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="objectivesTableBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center py-3">Chargement...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feedback -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0"><i class="fas fa-thumbs-up me-2"></i>Points Forts</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text" id="strengthsText">-</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Axes d'Amélioration</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text" id="improvementText">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Commentaire Global</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text fst-italic" id="generalCommentText">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/session-manager.js"></script>
+    <script src="js/evaluation-view.js"></script>
+</body>
+
+</html>

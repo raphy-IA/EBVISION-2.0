@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Objectifs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+
+    <!-- Scripts de zone utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+
+        .badge-statut {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .stats-card {
+            transition: transform 0.2s;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .objective-card {
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .objective-card.global {
+            border-left-color: var(--primary-color);
+        }
+
+        .objective-card.bu {
+            border-left-color: var(--secondary-color);
+        }
+
+        .objective-card.division {
+            border-left-color: var(--success-color);
+        }
+
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+
+            .main-content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+
+    <!-- CSS des variables de branding dynamiques -->
+    <link rel="stylesheet" href="/config/themes/brand-variables.css">
+
+    <!-- Scripts de branding -->
+    <script src="js/branding-loader.js"></script>
+    <script src="js/sidebar-branding.js"></script>
+</head>
+
+<body>
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <div class="sidebar-container"></div>
+
+        <div class="main-content-area">
+            <div class="container-fluid">
+                <!-- En-tête -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h1 class="h3 mb-0">
+                                    <i class="fas fa-bullseye text-primary me-2"></i>
+                                    Gestion des Objectifs
+                                </h1>
+                                <p class="text-muted mb-0">Définissez et suivez les objectifs stratégiques</p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <select class="form-select" id="fiscalYearSelect" style="width: 200px;">
+                                    <option value="">Chargement...</option>
+                                </select>
+                                <button class="btn btn-primary" onclick="openCreateObjectiveModal()">
+                                    <i class="fas fa-plus me-2"></i>Nouvel Objectif
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistiques Globales -->
+                <div class="row mb-4" id="statsContainer">
+                    <div class="col-md-3">
+                        <div class="card stats-card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="card-title">Budget Global</h6>
+                                        <h3 class="mb-0" id="globalBudget">-</h3>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-euro-sign fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="card-title">Objectifs Atteints</h6>
+                                        <h3 class="mb-0" id="achievedObjectives">-</h3>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="card-title">Progression Globale</h6>
+                                        <h3 class="mb-0" id="globalProgress">-</h3>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="card-title">Objectifs en Retard</h6>
+                                        <h3 class="mb-0" id="delayedObjectives">-</h3>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenu Principal -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <ul class="nav nav-tabs card-header-tabs" id="objectivesTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="global-tab" data-bs-toggle="tab"
+                                            data-bs-target="#global" type="button" role="tab">
+                                            <i class="fas fa-globe me-2"></i>Objectifs Globaux
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="bu-tab" data-bs-toggle="tab" data-bs-target="#bu"
+                                            type="button" role="tab">
+                                            <i class="fas fa-building me-2"></i>Par Business Unit
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="division-tab" data-bs-toggle="tab"
+                                            data-bs-target="#division" type="button" role="tab">
+                                            <i class="fas fa-sitemap me-2"></i>Par Division
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card-body">
+                                <div class="tab-content" id="objectivesTabContent">
+                                    <!-- Onglet Objectifs Globaux -->
+                                    <div class="tab-pane fade show active" id="global" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="card-title">Objectifs Stratégiques de l'Entreprise</h5>
+                                            <div class="btn-group">
+                                                <button class="btn btn-outline-secondary btn-sm"
+                                                    onclick="refreshObjectives()">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div id="globalObjectivesList">
+                                            <div class="text-center text-muted py-5">
+                                                <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                                                <p>Chargement des objectifs...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Onglet Business Units -->
+                                    <div class="tab-pane fade" id="bu" role="tabpanel">
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <select class="form-select" id="buSelect" onchange="loadBuObjectives()">
+                                                    <option value="">Toutes les Business Units</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div id="buObjectivesList">
+                                            <div class="text-center text-muted py-5">
+                                                <p>Sélectionnez une Business Unit pour voir ses objectifs</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Onglet Divisions -->
+                                    <div class="tab-pane fade" id="division" role="tabpanel">
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <select class="form-select" id="divisionSelect"
+                                                    onchange="loadDivisionObjectives()">
+                                                    <option value="">Toutes les Divisions</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div id="divisionObjectivesList">
+                                            <div class="text-center text-muted py-5">
+                                                <p>Sélectionnez une Division pour voir ses objectifs</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de création/édition d'objectif -->
+    <div class="modal fade" id="objectiveModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="objectiveModalTitle">Nouvel Objectif</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="objectiveForm">
+                        <input type="hidden" id="objectiveId">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="objectiveTitle" class="form-label">Titre de l'objectif *</label>
+                                <input type="text" class="form-control" id="objectiveTitle" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="objectiveDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="objectiveDescription" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="objectiveType" class="form-label">Type *</label>
+                                <select class="form-select" id="objectiveType" required>
+                                    <option value="FINANCIER">Financier</option>
+                                    <option value="OPERATIONNEL">Opérationnel</option>
+                                    <option value="QUALITE">Qualité</option>
+                                    <option value="RH">Ressources Humaines</option>
+                                    <option value="RSE">RSE</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="objectiveWeight" class="form-label">Poids (%)</label>
+                                <input type="number" class="form-control" id="objectiveWeight" min="0" max="100">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="objectiveTarget" class="form-label">Cible / Montant (€)</label>
+                                <input type="number" class="form-control" id="objectiveTarget" step="0.01">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="objectiveDeadline" class="form-label">Date limite</label>
+                                <input type="date" class="form-control" id="objectiveDeadline">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="objectiveScope" class="form-label">Portée *</label>
+                                <select class="form-select" id="objectiveScope" required
+                                    onchange="toggleScopeSelects()">
+                                    <option value="GLOBAL">Global (Entreprise)</option>
+                                    <option value="BU">Business Unit</option>
+                                    <option value="DIVISION">Division</option>
+                                    <option value="GRADE">Grade (Groupe de collaborateurs)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row" id="scopeSelects" style="display: none;">
+                            <div class="col-md-12 mb-3" id="buSelectContainer" style="display: none;">
+                                <label for="objectiveBu" class="form-label">Business Unit</label>
+                                <select class="form-select" id="objectiveBu">
+                                    <option value="">Sélectionner une BU...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12 mb-3" id="divisionSelectContainer" style="display: none;">
+                                <label for="objectiveDivision" class="form-label">Division</label>
+                                <select class="form-select" id="objectiveDivision">
+                                    <option value="">Sélectionner une Division...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12 mb-3" id="gradeSelectContainer" style="display: none;">
+                                <label for="objectiveGrade" class="form-label">Grade Cible</label>
+                                <select class="form-select" id="objectiveGrade">
+                                    <option value="">Sélectionner un Grade...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h6 class="mb-3">Type d'objectif</h6>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="objectiveNature"
+                                        id="objectiveAutonomous" value="AUTONOMOUS" checked
+                                        onchange="toggleParentObjective()">
+                                    <label class="form-check-label" for="objectiveAutonomous">
+                                        ⭐ Objectif Autonome (nouveau)
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="objectiveNature"
+                                        id="objectiveCascaded" value="CASCADED" onchange="toggleParentObjective()">
+                                    <label class="form-check-label" for="objectiveCascaded">
+                                        🔗 Distribution d'un objectif parent
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" id="parentObjectiveContainer" style="display: none;">
+                            <div class="col-md-8 mb-3">
+                                <label for="parentObjective" class="form-label">Objectif Parent</label>
+                                <select class="form-select" id="parentObjective" onchange="updateRemainingAmount()">
+                                    <option value="">Sélectionner un objectif parent...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Montant Restant</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="remainingAmount" readonly>
+                                    <span class="input-group-text">€</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h6 class="mb-3">Suivi de l'objectif</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="trackingType" class="form-label">Type de suivi</label>
+                                <select class="form-select" id="trackingType" onchange="toggleTrackingFields()">
+                                    <option value="MANUAL">Manuel</option>
+                                    <option value="AUTOMATIC">Automatique (Système)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3" id="metricCodeContainer" style="display: none;">
+                                <label for="metricCode" class="form-label">Métrique Système</label>
+                                <select class="form-select" id="metricCode">
+                                    <option value="">Sélectionner une métrique...</option>
+                                    <option value="CAMPAIGNS_COUNT">Nombre de Campagnes</option>
+                                    <option value="CONVERSION_RATE">Taux de Conversion (%)</option>
+                                    <option value="OPPORTUNITIES_WON">Opportunités Gagnées</option>
+                                    <option value="MISSIONS_COUNT">Missions Actives</option>
+                                    <option value="REVENUE_GENERATED">Chiffre d'Affaires (€)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveObjective()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/session-manager.js"></script>
+    <script src="js/objectives-management.js"></script>
+</body>
+
+</html>
