@@ -478,8 +478,17 @@ async function submitAutonomousObjective() {
     const { level, entityId, selectedCollaborators } = wizardState.autonomous;
 
     // Récupérer les données du formulaire
+    const typeSelect = document.getElementById('autonomousObjectiveType');
+    const typeId = parseInt(typeSelect.value);
+
+    console.log('🔍 [submitAutonomousObjective] Type sélectionné:', {
+        value: typeSelect.value,
+        parsed: typeId,
+        text: typeSelect.options[typeSelect.selectedIndex]?.text
+    });
+
     const data = {
-        objective_type_id: parseInt(document.getElementById('autonomousObjectiveType').value),
+        objective_type_id: typeId,
         title: document.getElementById('autonomousTitle').value,
         description: document.getElementById('autonomousDescription').value,
         target_value: parseFloat(document.getElementById('autonomousTarget').value),
@@ -489,8 +498,14 @@ async function submitAutonomousObjective() {
         fiscal_year_id: currentFiscalYearId
     };
 
-    // Validation
-    if (!data.objective_type_id || !data.title || !data.target_value) {
+    // Validation stricte
+    if (!data.objective_type_id || isNaN(data.objective_type_id)) {
+        console.error('❌ [submitAutonomousObjective] Type d\'objectif invalide:', data.objective_type_id);
+        showAlert('Veuillez sélectionner un type d\'objectif valide', 'warning');
+        return;
+    }
+
+    if (!data.title || !data.target_value) {
         showAlert('Veuillez remplir tous les champs obligatoires', 'warning');
         return;
     }

@@ -89,8 +89,10 @@ async function loadMyObjectives() {
             const result = await response.json();
             myObjectives = result || [];
             renderObjectives();
-            // Attendre que le DOM soit mis à jour
-            setTimeout(() => updateStats(), 200);
+            // Utiliser requestAnimationFrame pour garantir que le DOM est rendu
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => updateStats());
+            });
         } else {
             const errorText = await response.text();
             console.error('Erreur API:', errorText);
@@ -122,28 +124,34 @@ function renderObjectives() {
 function createObjectiveCard(obj) {
     const progress = calculateProgress(obj);
     const isCompleted = progress >= 100;
-    const isDelayed = new Date(obj.end_date) < new Date() && !isCompleted;
+    const isDelayed = obj.end_date && new Date(obj.end_date) < new Date() && !isCompleted;
 
     const statusClass = isCompleted ? 'completed' : (isDelayed ? 'delayed' : '');
     const progressBarColor = isCompleted ? 'bg-success' : (isDelayed ? 'bg-danger' : 'bg-primary');
+
+    // Utiliser description comme titre si label est null
+    const displayTitle = obj.label || obj.description || 'Objectif';
+    const displayDescription = obj.label ? (obj.description || 'Pas de description') : '';
 
     return `
     <div class="card objective-card ${statusClass}">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                    <h5 class="card-title mb-1">${obj.label || 'Objectif'}</h5>
+                <div class="flex-grow-1">
+                    <h5 class="card-title mb-1">${displayTitle}</h5>
                     <div class="text-muted small">
-                        <span class="badge bg-light text-dark border me-2">${obj.code}</span>
-                        ${obj.end_date ? `<i class="far fa-calendar-alt me-1"></i>Date limite : ${new Date(obj.end_date).toLocaleDateString()}` : ''}
+                        ${obj.code ? `<span class="badge bg-light text-dark border me-2"><i class="fas fa-tag me-1"></i>${obj.code}</span>` : ''}
+                        ${obj.unit ? `<span class="badge bg-info text-white me-2"><i class="fas fa-ruler me-1"></i>${obj.unit}</span>` : ''}
+                        ${obj.start_date ? `<i class="far fa-calendar me-1"></i>Début: ${new Date(obj.start_date).toLocaleDateString()} ` : ''}
+                        ${obj.end_date ? `<i class="far fa-calendar-alt me-1"></i>Fin: ${new Date(obj.end_date).toLocaleDateString()}` : ''}
                     </div>
                 </div>
-                <button class="btn btn-outline-primary btn-sm" onclick="openUpdateModal('${obj.id}')">
+                ${!obj.is_cascaded ? `<button class="btn btn-outline-primary btn-sm" onclick="openUpdateModal('${obj.id}')">
                     <i class="fas fa-edit me-1"></i>Mettre à jour
-                </button>
+                </button>` : ''}
             </div>
             
-            <p class="card-text text-secondary mb-4">${obj.description || 'Pas de description'}</p>
+            ${displayDescription ? `<p class="card-text text-secondary mb-4">${displayDescription}</p>` : ''}
             
             <div class="row align-items-end">
                 <div class="col-md-6 mb-3 mb-md-0">
@@ -177,11 +185,32 @@ function calculateProgress(obj) {
 }
 
 function updateStats() {
+    console.log('🔍 [updateStats] Début - myObjectives:', myObjectives);
     const total = myObjectives.length;
+
+    const totalEl = document.getElementById('totalObjectives');
+    const avgEl = document.getElementById('avgProgress');
+    const completedEl = document.getElementById('completedObjectives');
+
+    console.log('🔍 [updateStats] Éléments DOM:', {
+        totalEl: totalEl,
+        avgEl: avgEl,
+        completedEl: completedEl,
+        totalEl_exists: !!totalEl,
+        avgEl_exists: !!avgEl,
+        completedEl_exists: !!completedEl
+    });
+
+    if (!totalEl || !avgEl || !completedEl) {
+        console.error('❌ [updateStats] Éléments manquants!');
+        return;
+    }
+
     if (total === 0) {
-        document.getElementById('totalObjectives').textContent = '0';
-        document.getElementById('avgProgress').textContent = '0%';
-        document.getElementById('completedObjectives').textContent = '0';
+        totalEl.textContent = '0';
+        avgEl.textContent = '0%';
+        completedEl.textContent = '0';
+        console.log('📊 [updateStats] Aucun objectif, stats à 0');
         return;
     }
 
@@ -190,15 +219,24 @@ function updateStats() {
 
     myObjectives.forEach(obj => {
         const p = calculateProgress(obj);
-        totalProgress += Math.min(p, 100); // Plafonner à 100 pour la moyenne
+        console.log(`📊 [updateStats] Objectif ${obj.id}: progress = ${p}%`);
+        totalProgress += Math.min(p, 100);
         if (p >= 100) completed++;
     });
 
     const avg = Math.round(totalProgress / total);
 
-    document.getElementById('totalObjectives').textContent = total;
-    document.getElementById('avgProgress').textContent = `${avg}%`;
-    document.getElementById('completedObjectives').textContent = `${completed} / ${total}`;
+    console.log('📊 [updateStats] Calculs:', { total, avg, completed, totalProgress });
+
+    totalEl.textContent = total;
+    avgEl.textContent = `${avg}%`;
+    completedEl.textContent = `${completed} / ${total}`;
+
+    console.log('✅ [updateStats] Stats mises à jour:', {
+        total: totalEl.textContent,
+        avg: avgEl.textContent,
+        completed: completedEl.textContent
+    });
 }
 
 function openUpdateModal(id) {
@@ -208,7 +246,7 @@ function openUpdateModal(id) {
     currentObjectiveId = id;
     document.getElementById('updateObjectiveId').value = id;
     document.getElementById('updateObjectiveType').value = 'INDIVIDUAL';
-    document.getElementById('updateObjectiveTitle').value = obj.label || obj.code;
+    document.getElementById('updateObjectiveTitle').value = obj.label || obj.code || obj.description;
     document.getElementById('updateValue').value = obj.current_value || 0;
     document.getElementById('updateNotes').value = '';
 
