@@ -56,18 +56,18 @@ class Collaborateur {
         // Ne permettre que les champs de base lors de la création
         const allowedFields = ['nom', 'prenom', 'initiales', 'email', 'telephone', 'business_unit_id', 'division_id', 'type_collaborateur_id', 'poste_actuel_id', 'grade_actuel_id', 'date_embauche', 'notes', 'photo_url'];
         const filteredData = {};
-        
+
         for (const field of allowedFields) {
             if (data.hasOwnProperty(field)) {
                 filteredData[field] = data[field];
             }
         }
-        
+
         // Préserver le paramètre createUserAccess pour la route
         if (data.hasOwnProperty('createUserAccess')) {
             filteredData.createUserAccess = data.createUserAccess;
         }
-        
+
         const collaborateur = new Collaborateur(filteredData);
         const errors = collaborateur.validate();
         if (errors.length > 0) {
@@ -117,7 +117,7 @@ class Collaborateur {
             LEFT JOIN postes p ON c.poste_actuel_id = p.id
             WHERE c.id = $1
         `;
-        
+
         const result = await pool.query(query, [id]);
         return result.rows.length > 0 ? new Collaborateur(result.rows[0]) : null;
     }
@@ -130,12 +130,36 @@ class Collaborateur {
             statut,
             division_id,
             business_unit_id,
-            search
+            search,
+            filterByUserAccess = false,
+            userId = null
         } = options;
 
         let whereConditions = [];
         let queryParams = [];
         let paramIndex = 1;
+
+        // Filtrer par BU access de l'utilisateur si demandé
+        if (filterByUserAccess && userId) {
+            // Récupérer les BU autorisées pour l'utilisateur
+            const buAccessQuery = `
+                SELECT business_unit_id 
+                FROM user_business_unit_access 
+                WHERE user_id = $${paramIndex++} AND granted = true
+            `;
+            queryParams.push(userId);
+
+            const buAccessResult = await pool.query(buAccessQuery, [userId]);
+
+            if (buAccessResult.rows.length > 0) {
+                // L'utilisateur a des BU spécifiques autorisées
+                const authorizedBUs = buAccessResult.rows.map(row => row.business_unit_id);
+                whereConditions.push(`c.business_unit_id = ANY($${paramIndex++})`)
+                    ;
+                queryParams.push(authorizedBUs);
+            }
+            // Si aucune BU spécifique, l'utilisateur a accès à toutes (pas de filtre)
+        }
 
         if (grade) {
             whereConditions.push(`g.nom = $${paramIndex++}`);
@@ -181,7 +205,7 @@ class Collaborateur {
             FROM collaborateurs c
             ${whereClause}
         `;
-        
+
         const countResult = await pool.query(countQuery, queryParams);
         const total = parseInt(countResult.rows[0].total);
 
@@ -231,15 +255,15 @@ class Collaborateur {
         // Ne mettre à jour que les champs de base (pas les champs RH ni les champs gérés par d'autres modules)
         const allowedFields = ['nom', 'prenom', 'initiales', 'email', 'telephone', 'date_embauche', 'notes'];
         const filteredData = {};
-        
+
         for (const field of allowedFields) {
             if (updateData.hasOwnProperty(field)) {
                 filteredData[field] = updateData[field];
             }
         }
-        
+
         Object.assign(this, filteredData);
-        
+
         const errors = this.validate();
         if (errors.length > 0) {
             throw new Error(`Validation échouée: ${errors.join(', ')}`);
@@ -356,11 +380,11 @@ class Collaborateur {
             DELETE FROM collaborateurs WHERE id = $1
         `;
         const result = await pool.query(query, [id]);
-        
+
         if (result.rowCount === 0) {
             throw new Error('Collaborateur non trouvé');
         }
-        
+
         return true;
     }
 
@@ -391,7 +415,7 @@ class Collaborateur {
             FROM collaborateurs c
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
         `;
-        
+
         const result = await pool.query(query);
         return result.rows[0];
     }
@@ -399,7 +423,7 @@ class Collaborateur {
     static async updateCurrentInfoFromEvolutions(collaborateurId) {
         try {
             console.log(`🔄 DEBUG: Mise à jour des informations actuelles pour le collaborateur ${collaborateurId}`);
-            
+
             // Récupérer l'évolution de grade la plus récente
             const gradeQuery = `
                 SELECT grade_id, date_debut
@@ -410,7 +434,7 @@ class Collaborateur {
             `;
             const gradeResult = await pool.query(gradeQuery, [collaborateurId]);
             console.log(`📊 DEBUG: ${gradeResult.rows.length} évolutions de grade trouvées`);
-            
+
             // Récupérer l'évolution de poste la plus récente
             const posteQuery = `
                 SELECT poste_id, date_debut
@@ -421,7 +445,7 @@ class Collaborateur {
             `;
             const posteResult = await pool.query(posteQuery, [collaborateurId]);
             console.log(`📊 DEBUG: ${posteResult.rows.length} évolutions de poste trouvées`);
-            
+
             // Récupérer l'évolution organisationnelle la plus récente
             const orgQuery = `
                 SELECT business_unit_id, division_id, date_debut
@@ -432,24 +456,24 @@ class Collaborateur {
             `;
             const orgResult = await pool.query(orgQuery, [collaborateurId]);
             console.log(`📊 DEBUG: ${orgResult.rows.length} évolutions organisationnelles trouvées`);
-            
+
             // Préparer les mises à jour
             const updates = [];
             const values = [];
             let paramIndex = 1;
-            
+
             if (gradeResult.rows.length > 0) {
                 updates.push(`grade_actuel_id = $${paramIndex++}`);
                 values.push(gradeResult.rows[0].grade_id);
                 console.log(`📊 DEBUG: Grade mis à jour: ${gradeResult.rows[0].grade_id}`);
             }
-            
+
             if (posteResult.rows.length > 0) {
                 updates.push(`poste_actuel_id = $${paramIndex++}`);
                 values.push(posteResult.rows[0].poste_id);
                 console.log(`📊 DEBUG: Poste mis à jour: ${posteResult.rows[0].poste_id}`);
             }
-            
+
             if (orgResult.rows.length > 0) {
                 updates.push(`business_unit_id = $${paramIndex++}`);
                 values.push(orgResult.rows[0].business_unit_id);
@@ -457,9 +481,9 @@ class Collaborateur {
                 values.push(orgResult.rows[0].division_id);
                 console.log(`📊 DEBUG: Organisation mise à jour: BU=${orgResult.rows[0].business_unit_id}, DIV=${orgResult.rows[0].division_id}`);
             }
-            
+
             console.log(`📊 DEBUG: ${updates.length} mises à jour à effectuer`);
-            
+
             if (updates.length > 0) {
                 values.push(collaborateurId);
                 const updateQuery = `
@@ -468,17 +492,17 @@ class Collaborateur {
                     WHERE id = $${paramIndex}
                     RETURNING *
                 `;
-                
+
                 console.log(`📊 DEBUG: Query: ${updateQuery}`);
                 console.log(`📊 DEBUG: Values: ${JSON.stringify(values)}`);
-                
+
                 const updateResult = await pool.query(updateQuery, values);
                 console.log(`✅ DEBUG: ${updateResult.rowCount} lignes mises à jour`);
                 console.log(`✅ DEBUG: Données mises à jour: ${JSON.stringify(updateResult.rows[0])}`);
             } else {
                 console.log(`ℹ️ DEBUG: Aucune mise à jour nécessaire pour le collaborateur ${collaborateurId}`);
             }
-            
+
             return true;
         } catch (error) {
             console.error('❌ DEBUG: Erreur lors de la mise à jour des informations actuelles:', error);

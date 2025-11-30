@@ -432,6 +432,50 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Onglet Business Units -->
+    <div class="tab-pane fade" id="bu" role="tabpanel">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <select class="form-select" id="buSelect" onchange="loadBuObjectives()">
+                    <option value="">Toutes les Business Units</option>
+                </select>
+            </div>
+        </div>
+        <div id="buObjectivesList">
+            <div class="text-center text-muted py-5">
+                <p>Sélectionnez une Business Unit pour voir ses objectifs</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onglet Divisions -->
+    <div class="tab-pane fade" id="division" role="tabpanel">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <select class="form-select" id="divisionSelect" onchange="loadDivisionObjectives()">
+                    <option value="">Toutes les Divisions</option>
+                </select>
+            </div>
+        </div>
+        <div id="divisionObjectivesList">
+            <div class="text-center text-muted py-5">
+                <p>Sélectionnez une Division pour voir ses objectifs</p>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <!-- Modal de création/édition d'objectif -->
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/sidebar.js"></script>
     <script src="js/session-manager.js"></script>
@@ -439,6 +483,8 @@
     <!-- Wizards pour création d'objectifs -->
     <script src="js/objectives-wizards.js"></script>
     <script src="js/objectives-wizards-inject.js"></script>
+    <!-- Enhancement: Support mode dual (MÉTRIQUE vs TYPE) -->
+    <script src="js/objectives-wizard-dual-mode.js"></script>
 </body>
 
 </html>

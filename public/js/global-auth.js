@@ -1,17 +1,17 @@
 
 // Script de vérification d'authentification global
-(function() {
+(function () {
     'use strict';
-    
+
     // Vérifier l'authentification au chargement de la page
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Si on est sur la page de login ou d'accueil, ne rien faire
-        if (window.location.pathname === '/login.html' || 
-            window.location.pathname === '/' || 
+        if (window.location.pathname === '/login.html' ||
+            window.location.pathname === '/' ||
             window.location.pathname.includes('login')) {
             return;
         }
-        
+
         // Vérifier si un token existe
         const token = localStorage.getItem('authToken');
         if (!token) {
@@ -19,7 +19,7 @@
             window.location.href = '/login.html';
             return;
         }
-        
+
         // Vérifier la validité du token
         fetch('/api/auth/verify', {
             method: 'GET',
@@ -28,21 +28,42 @@
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => {
-            if (!response.ok) {
-                console.log('🔒 Token invalide, redirection vers la page de connexion');
+            .then(response => {
+                if (!response.ok) {
+                    console.log('🔒 Token invalide, redirection vers la page de connexion');
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login.html';
+                } else {
+                    console.log('✅ Token valide, utilisateur authentifié');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Erreur lors de la vérification du token:', error);
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('user');
                 window.location.href = '/login.html';
-            } else {
-                console.log('✅ Token valide, utilisateur authentifié');
-            }
-        })
-        .catch(error => {
-            console.error('❌ Erreur lors de la vérification du token:', error);
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('user');
-            window.location.href = '/login.html';
-        });
+            });
     });
 })();
+
+// Fonction utilitaire pour faire des requêtes authentifiées
+async function authenticatedFetch(url, options = {}) {
+    const token = localStorage.getItem('authToken');
+
+    if (!token) {
+        console.warn('⚠️ Aucun token d\'authentification trouvé');
+        throw new Error('Non authentifié');
+    }
+
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        ...options.headers
+    };
+
+    return fetch(url, {
+        ...options,
+        headers
+    });
+}

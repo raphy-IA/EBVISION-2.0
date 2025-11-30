@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Objective = require('../models/Objective');
+const ObjectiveUnit = require('../models/ObjectiveUnit');
+const ObjectiveMetric = require('../models/ObjectiveMetric');
 const { authenticateToken, requirePermission, requireRole } = require('../middleware/auth');
 const ObjectiveTrackingService = require('../services/ObjectiveTrackingService');
 
@@ -14,6 +16,82 @@ router.get('/types', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Erreur lors de la récupération des types d\'objectifs:', error);
         res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// === UNITÉS DE MESURE ===
+
+// GET /api/objectives/units - Récupérer toutes les unités
+router.get('/units', authenticateToken, async (req, res) => {
+    try {
+        const units = await ObjectiveUnit.getAll();
+        res.json(units);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des unités:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// === MÉTRIQUES ===
+
+// GET /api/objectives/metrics - Récupérer toutes les métriques
+router.get('/metrics', authenticateToken, async (req, res) => {
+    try {
+        const metrics = await ObjectiveMetric.getAll();
+        res.json(metrics);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des métriques:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// GET /api/objectives/metrics/:id - Récupérer une métrique par ID
+router.get('/metrics/:id', authenticateToken, async (req, res) => {
+    try {
+        const metric = await ObjectiveMetric.getById(req.params.id);
+        if (!metric) {
+            return res.status(404).json({ message: 'Métrique non trouvée' });
+        }
+        res.json(metric);
+    } catch (error) {
+        console.error('Erreur lors de la récupération de la métrique:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// GET /api/objectives/metrics/:id/sources - Récupérer les sources d'une métrique
+router.get('/metrics/:id/sources', authenticateToken, async (req, res) => {
+    try {
+        const sources = await ObjectiveMetric.getSources(req.params.id);
+        res.json(sources);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des sources:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// GET /api/objectives/types/:typeId/impacted-metrics - Métriques impactées par un type
+router.get('/types/:typeId/impacted-metrics', authenticateToken, async (req, res) => {
+    try {
+        const { unitId } = req.query;
+        const metrics = await ObjectiveMetric.getImpactedByType(req.params.typeId, unitId);
+        res.json(metrics);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des métriques impactées:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// === TOUS LES OBJECTIFS ===
+
+// GET /api/objectives/all/:fiscalYearId - Récupérer tous les objectifs (Global, BU, Division)
+router.get('/all/:fiscalYearId', authenticateToken, async (req, res) => {
+    try {
+        const objectives = await Objective.getAllObjectives(req.params.fiscalYearId);
+        res.json(objectives);
+    } catch (error) {
+        console.error('Erreur lors de la récupération de tous les objectifs:', error);
+        res.status(500).json({ message: 'Erreur serveur', error: error.message, stack: error.stack });
     }
 });
 
@@ -263,6 +341,18 @@ router.get('/available-parents/:type', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/objectives/grades - Récupérer la liste des grades (pour sélection par grade)
+router.get('/grades', authenticateToken, async (req, res) => {
+    try {
+        const { pool } = require('../utils/database');
+        const result = await pool.query('SELECT id, name FROM grades ORDER BY name');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des grades:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
 // POST /api/objectives/track - Déclencher la mise à jour automatique (Test/Cron)
 router.post('/track', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']), async (req, res) => {
     try {
@@ -291,8 +381,8 @@ router.get('/:parentId/distribution-summary', authenticateToken, async (req, res
 // GET /api/objectives/:parentId/available-children - Entités disponibles pour distribution
 router.get('/:parentId/available-children', authenticateToken, async (req, res) => {
     try {
-        const { childType } = req.query;
-        const children = await Objective.getAvailableChildren(req.params.parentId, childType);
+        const { childType, gradeId } = req.query;
+        const children = await Objective.getAvailableChildren(req.params.parentId, childType, gradeId);
         res.json(children);
     } catch (error) {
         console.error('Erreur lors de la récupération des enfants disponibles:', error);

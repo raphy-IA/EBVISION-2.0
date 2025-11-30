@@ -25,11 +25,13 @@ router.get('/', authenticateToken, async (req, res) => {
             statut: req.query.statut,
             division_id: req.query.division_id,
             business_unit_id: req.query.business_unit_id,
-            search: req.query.search
+            search: req.query.search,
+            filterByUserAccess: req.query.filterByUserAccess === 'true',
+            userId: req.user.id
         };
 
         const result = await Collaborateur.findAll(options);
-        
+
         res.json({
             success: true,
             data: result.data,
@@ -120,7 +122,7 @@ router.get('/:id/departs-historique', authenticateToken, async (req, res) => {
 router.get('/statistics', authenticateToken, async (req, res) => {
     try {
         const statistics = await Collaborateur.getStatistics();
-        
+
         res.json({
             success: true,
             data: statistics
@@ -143,14 +145,14 @@ router.post('/', authenticateToken, requireRole(['MANAGER']), async (req, res) =
     try {
         console.log('📥 Données reçues pour création:', req.body);
         console.log('🔍 createUserAccess dans req.body:', req.body.createUserAccess);
-        
+
         // Créer le collaborateur
         const collaborateur = new Collaborateur(req.body);
         const created = await Collaborateur.create(collaborateur);
         console.log('🔍 createUserAccess après création:', created.createUserAccess);
-        
+
         console.log('✅ Collaborateur créé:', created.id);
-        
+
         // Créer automatiquement les entrées d'historique RH initiales
         if (created.id) {
             try {
@@ -166,7 +168,7 @@ router.post('/', authenticateToken, requireRole(['MANAGER']), async (req, res) =
                     await EvolutionPoste.create(evolutionPoste);
                     console.log('✅ Évolution poste créée');
                 }
-                
+
                 // Créer l'entrée d'évolution d'organisation
                 if (req.body.business_unit_id || req.body.division_id) {
                     const evolutionOrganisation = new EvolutionOrganisation({
@@ -180,7 +182,7 @@ router.post('/', authenticateToken, requireRole(['MANAGER']), async (req, res) =
                     await EvolutionOrganisation.create(evolutionOrganisation);
                     console.log('✅ Évolution organisation créée');
                 }
-                
+
                 // Créer l'entrée d'évolution de grade
                 if (req.body.grade_actuel_id) {
                     const evolutionGrade = new EvolutionGrade({
@@ -193,17 +195,17 @@ router.post('/', authenticateToken, requireRole(['MANAGER']), async (req, res) =
                     await EvolutionGrade.create(evolutionGrade);
                     console.log('✅ Évolution grade créée');
                 }
-                
+
                 // Mettre à jour les informations actuelles depuis l'historique RH
                 await Collaborateur.updateCurrentInfoFromEvolutions(created.id);
                 console.log('✅ Informations actuelles mises à jour');
-                
+
             } catch (error) {
                 console.error('⚠️ Erreur lors de la création de l\'historique RH:', error);
                 // On continue même si l'historique RH échoue
             }
         }
-        
+
         res.status(201).json({
             success: true,
             data: created,
@@ -237,7 +239,7 @@ router.post('/', authenticateToken, requireRole(['MANAGER']), async (req, res) =
 router.post('/:id/depart', authenticateToken, requireRole(['MANAGER', 'ADMIN', 'ADMIN_IT']), async (req, res) => {
     try {
         const collaborateur = await Collaborateur.findById(req.params.id);
-        
+
         if (!collaborateur) {
             return res.status(404).json({
                 success: false,
@@ -324,7 +326,7 @@ router.post('/:id/depart', authenticateToken, requireRole(['MANAGER', 'ADMIN', '
 router.post('/:id/reembaucher', authenticateToken, requireRole(['MANAGER', 'ADMIN', 'ADMIN_IT']), async (req, res) => {
     try {
         const collaborateur = await Collaborateur.findById(req.params.id);
-        
+
         if (!collaborateur) {
             return res.status(404).json({
                 success: false,
@@ -397,7 +399,7 @@ router.post('/:id/reembaucher', authenticateToken, requireRole(['MANAGER', 'ADMI
 router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const collaborateur = await Collaborateur.findById(req.params.id);
-        
+
         if (!collaborateur) {
             return res.status(404).json({
                 success: false,
@@ -426,7 +428,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, requireRole(['MANAGER']), async (req, res) => {
     try {
         const collaborateur = await Collaborateur.findById(req.params.id);
-        
+
         if (!collaborateur) {
             return res.status(404).json({
                 success: false,
@@ -482,7 +484,7 @@ router.put('/:id', authenticateToken, requireRole(['MANAGER']), async (req, res)
         } catch (linkErr) {
             console.warn('⚠️ Échec de synchronisation utilisateur lié:', linkErr.message);
         }
-        
+
         res.json({
             success: true,
             data: updatedCollaborateur,
@@ -505,7 +507,7 @@ router.put('/:id', authenticateToken, requireRole(['MANAGER']), async (req, res)
 router.put('/:id/type', async (req, res) => {
     try {
         const collaborateur = await Collaborateur.findById(req.params.id);
-        
+
         if (!collaborateur) {
             return res.status(404).json({
                 success: false,
@@ -521,10 +523,10 @@ router.put('/:id/type', async (req, res) => {
         }
 
         const updatedCollaborateur = await collaborateur.updateTypeCollaborateur(req.body.type_collaborateur_id);
-        
+
         // Mettre à jour les informations actuelles depuis l'historique RH
         await Collaborateur.updateCurrentInfoFromEvolutions(collaborateur.id);
-        
+
         res.json({
             success: true,
             data: updatedCollaborateur,
@@ -548,10 +550,10 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
     try {
         const { id } = req.params;
         const { login, email, nom, prenom, roles, password } = req.body;
-        
+
         console.log('📥 Génération de compte utilisateur pour collaborateur:', id);
         console.log('📋 Données reçues:', { login, email, nom, prenom, roles });
-        
+
         // Vérifier que le collaborateur existe
         const collaborateur = await Collaborateur.findById(id);
         if (!collaborateur) {
@@ -560,7 +562,7 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
                 message: 'Collaborateur non trouvé'
             });
         }
-        
+
         // Vérifier que le collaborateur n'a pas déjà un compte utilisateur
         if (collaborateur.user_id) {
             return res.status(400).json({
@@ -568,7 +570,7 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
                 message: 'Ce collaborateur a déjà un compte utilisateur'
             });
         }
-        
+
         // Validation: au moins un rôle doit être fourni
         if (!roles || !Array.isArray(roles) || roles.length === 0) {
             return res.status(400).json({
@@ -576,7 +578,7 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
                 message: 'Au moins un rôle doit être sélectionné'
             });
         }
-        
+
         // Créer le compte utilisateur avec rôles multiples
         const userData = {
             login,
@@ -586,10 +588,10 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
             roles: roles, // Tableau d'IDs de rôles
             password: password || 'TempPass123!'
         };
-        
+
         // Utiliser User.create() qui gère les rôles multiples
         const newUser = await User.create(userData);
-        
+
         // Lier l'utilisateur au collaborateur (dans les deux sens)
         // 1) côté collaborateurs: renseigner user_id
         await pool.query(`
@@ -604,7 +606,7 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
             SET collaborateur_id = $1, updated_at = CURRENT_TIMESTAMP
             WHERE id = $2
         `, [id, newUser.id]);
-        
+
         console.log('✅ Compte utilisateur créé:', {
             collaborateur_id: id,
             user_id: newUser.id,
@@ -612,7 +614,7 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
             login: login,
             roles: roles
         });
-        
+
         res.json({
             success: true,
             message: 'Compte utilisateur créé avec succès',
@@ -622,7 +624,7 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
                 roles: roles
             }
         });
-        
+
     } catch (error) {
         // Récupération sécurisée des données pour le logging
         const safeParams = req?.params || {};
@@ -664,7 +666,7 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
 router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req, res) => {
     try {
         await Collaborateur.delete(req.params.id);
-        
+
         res.json({
             success: true,
             message: 'Collaborateur supprimé avec succès'
@@ -686,14 +688,14 @@ router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req, res
 router.post('/:id/upload-photo', authenticateToken, deleteExistingPhoto, upload, processImage, async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         if (!req.file) {
             return res.status(400).json({
                 success: false,
                 error: 'Aucune photo fournie'
             });
         }
-        
+
         // Vérifier que le collaborateur existe
         const collaborateur = await Collaborateur.findById(id);
         if (!collaborateur) {
@@ -702,7 +704,7 @@ router.post('/:id/upload-photo', authenticateToken, deleteExistingPhoto, upload,
                 error: 'Collaborateur non trouvé'
             });
         }
-        
+
         // Mettre à jour le collaborateur avec le chemin de la photo
         const photoUrl = req.file.path;
         const updateQuery = `
@@ -711,18 +713,18 @@ router.post('/:id/upload-photo', authenticateToken, deleteExistingPhoto, upload,
             WHERE id = $2 
             RETURNING *
         `;
-        
+
         const result = await pool.query(updateQuery, [photoUrl, id]);
-        
+
         if (result.rows.length === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'Collaborateur non trouvé'
             });
         }
-        
+
         const updatedCollaborateur = new Collaborateur(result.rows[0]);
-        
+
         res.json({
             success: true,
             message: 'Photo uploadée avec succès',
@@ -732,10 +734,10 @@ router.post('/:id/upload-photo', authenticateToken, deleteExistingPhoto, upload,
                 avatar_url: req.file.avatarPath
             }
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de l\'upload de la photo:', error);
-        
+
         // Supprimer le fichier en cas d'erreur
         if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
@@ -743,7 +745,7 @@ router.post('/:id/upload-photo', authenticateToken, deleteExistingPhoto, upload,
         if (req.file && req.file.avatarPath && fs.existsSync(req.file.avatarPath)) {
             fs.unlinkSync(req.file.avatarPath);
         }
-        
+
         res.status(500).json({
             success: false,
             error: 'Erreur lors de l\'upload de la photo',
@@ -759,22 +761,22 @@ router.post('/:id/upload-photo', authenticateToken, deleteExistingPhoto, upload,
 router.delete('/:id/photo', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         // Vérifier que le collaborateur existe et récupérer sa photo
         const result = await pool.query(
             'SELECT photo_url FROM collaborateurs WHERE id = $1',
             [id]
         );
-        
+
         if (result.rows.length === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'Collaborateur non trouvé'
             });
         }
-        
+
         const collaborateur = result.rows[0];
-        
+
         // Supprimer les fichiers de photo s'ils existent
         if (collaborateur.photo_url) {
             const filesToDelete = [
@@ -782,7 +784,7 @@ router.delete('/:id/photo', authenticateToken, async (req, res) => {
                 collaborateur.photo_url.replace('thumb_', 'avatar_'),
                 collaborateur.photo_url.replace('avatar_', 'thumb_')
             ];
-            
+
             filesToDelete.forEach(filePath => {
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
@@ -790,18 +792,18 @@ router.delete('/:id/photo', authenticateToken, async (req, res) => {
                 }
             });
         }
-        
+
         // Mettre à jour la base de données
         await pool.query(
             'UPDATE collaborateurs SET photo_url = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
             [id]
         );
-        
+
         res.json({
             success: true,
             message: 'Photo supprimée avec succès'
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de la suppression de la photo:', error);
         res.status(500).json({
@@ -820,35 +822,35 @@ router.get('/:id/photo', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { size = 'thumb' } = req.query; // thumb ou avatar
-        
+
         // Récupérer le chemin de la photo
         const result = await pool.query(
             'SELECT photo_url FROM collaborateurs WHERE id = $1',
             [id]
         );
-        
+
         if (result.rows.length === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'Collaborateur non trouvé'
             });
         }
-        
+
         const collaborateur = result.rows[0];
-        
+
         if (!collaborateur.photo_url) {
             return res.status(404).json({
                 success: false,
                 error: 'Aucune photo trouvée pour ce collaborateur'
             });
         }
-        
+
         // Déterminer le chemin du fichier selon la taille demandée
         let filePath = collaborateur.photo_url;
         if (size === 'avatar' && collaborateur.photo_url.includes('thumb_')) {
             filePath = collaborateur.photo_url.replace('thumb_', 'avatar_');
         }
-        
+
         // Vérifier que le fichier existe
         if (!fs.existsSync(filePath)) {
             return res.status(404).json({
@@ -856,10 +858,10 @@ router.get('/:id/photo', authenticateToken, async (req, res) => {
                 error: 'Fichier photo non trouvé'
             });
         }
-        
+
         // Envoyer le fichier
         res.sendFile(path.resolve(filePath));
-        
+
     } catch (error) {
         console.error('Erreur lors de la récupération de la photo:', error);
         res.status(500).json({

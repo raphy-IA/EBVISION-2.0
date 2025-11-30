@@ -92,7 +92,7 @@ router.get('/statistics', authenticateToken, requirePermission('users:read'), as
 router.get('/roles', authenticateToken, async (req, res) => {
     try {
         console.log('🔄 Récupération des rôles...');
-        
+
         // Vérifier l'existence de la table roles
         const tableExistsQuery = `
             SELECT EXISTS (
@@ -101,12 +101,12 @@ router.get('/roles', authenticateToken, async (req, res) => {
                 AND table_name = 'roles'
             );
         `;
-        
+
         const tableExistsResult = await pool.query(tableExistsQuery);
         const tableExists = tableExistsResult.rows[0].exists;
-        
+
         console.log('📊 Table roles existe:', tableExists);
-        
+
         if (!tableExists) {
             console.log('❌ Table roles non trouvée');
             return res.status(404).json({
@@ -114,30 +114,30 @@ router.get('/roles', authenticateToken, async (req, res) => {
                 message: 'Table des rôles non trouvée'
             });
         }
-        
+
         console.log('📋 Récupération des rôles depuis la table roles...');
         console.log('👤 Utilisateur connecté:', req.user.id, req.user.role);
-        
+
         // Simplification : récupérer tous les rôles sans filtrage pour l'instant
         console.log('📋 Récupération de tous les rôles...');
-        
+
         const rolesQuery = `
             SELECT id, name, description
             FROM roles
             ORDER BY name
         `;
-        
+
         console.log('🔍 Exécution de la requête SQL...');
         const rolesResult = await pool.query(rolesQuery);
         const roles = rolesResult.rows;
-        
+
         console.log(`✅ ${roles.length} rôles récupérés`);
-        
+
         res.json({
             success: true,
             data: roles
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de la récupération des rôles:', error);
         res.status(500).json({
@@ -250,7 +250,7 @@ router.put('/:id', superAdminActionLimiter, authenticateToken, requirePermission
                 { reason: canModify.reason },
                 req
             );
-            
+
             return res.status(403).json({
                 success: false,
                 message: 'Accès refusé',
@@ -260,12 +260,12 @@ router.put('/:id', superAdminActionLimiter, authenticateToken, requirePermission
 
         // Validation des données
         console.log('🔍 Données reçues pour mise à jour:', req.body);
-        
+
         // Validation dynamique du rôle
         if (req.body.role) {
             const rolesResult = await pool.query('SELECT name FROM roles ORDER BY name');
             const validRoles = rolesResult.rows.map(row => row.name);
-            
+
             if (!validRoles.includes(req.body.role)) {
                 return res.status(400).json({
                     success: false,
@@ -274,7 +274,7 @@ router.put('/:id', superAdminActionLimiter, authenticateToken, requirePermission
                 });
             }
         }
-        
+
         const { error, value } = userValidation.update.validate(req.body);
         if (error) {
             console.log('❌ Erreur de validation:', error.details);
@@ -315,22 +315,22 @@ router.put('/:id', superAdminActionLimiter, authenticateToken, requirePermission
         // Gérer la mise à jour des rôles multiples si fournis
         if (req.body.roles && Array.isArray(req.body.roles)) {
             console.log('📋 Mise à jour des rôles multiples:', req.body.roles);
-            
+
             try {
                 // Supprimer tous les rôles existants
                 await pool.query('DELETE FROM user_roles WHERE user_id = $1', [id]);
-                
+
                 // Ajouter les nouveaux rôles
                 if (req.body.roles.length > 0) {
-                    const insertValues = req.body.roles.map((roleId, index) => 
+                    const insertValues = req.body.roles.map((roleId, index) =>
                         `($1, $${index + 2}, NOW())`
                     ).join(', ');
-                    
+
                     const insertQuery = `
                         INSERT INTO user_roles (user_id, role_id, created_at)
                         VALUES ${insertValues}
                     `;
-                    
+
                     await pool.query(insertQuery, [id, ...req.body.roles]);
                     console.log(`✅ ${req.body.roles.length} rôle(s) assigné(s) à l'utilisateur ${id}`);
                 } else {
@@ -412,7 +412,7 @@ router.delete('/:id', superAdminActionLimiter, authenticateToken, requirePermiss
                 { reason: canModify.reason, user: `${existingUser.nom} ${existingUser.prenom}` },
                 req
             );
-            
+
             return res.status(403).json({
                 success: false,
                 message: 'Accès refusé',
@@ -430,7 +430,7 @@ router.delete('/:id', superAdminActionLimiter, authenticateToken, requirePermiss
                 { reason: canRemove.reason },
                 req
             );
-            
+
             return res.status(400).json({
                 success: false,
                 message: 'Opération interdite',
@@ -502,12 +502,12 @@ router.get('/stats/overview', authenticateToken, requirePermission('users:read')
 router.get('/objectives/:userId', authenticateToken, async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         // Vérifier que l'utilisateur demande ses propres objectifs
         if (userId !== req.user.id) {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Accès non autorisé' 
+            return res.status(403).json({
+                success: false,
+                message: 'Accès non autorisé'
             });
         }
 
@@ -535,18 +535,18 @@ router.get('/objectives/:userId', authenticateToken, async (req, res) => {
                 progression: 60
             }
         };
-        
+
         res.json({
             success: true,
             data: data
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de la récupération des objectifs:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Erreur lors de la récupération des objectifs',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -555,17 +555,17 @@ router.get('/objectives/:userId', authenticateToken, async (req, res) => {
 router.get('/alerts/:userId', authenticateToken, async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         // Vérifier que l'utilisateur demande ses propres alertes
         if (userId !== req.user.id) {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Accès non autorisé' 
+            return res.status(403).json({
+                success: false,
+                message: 'Accès non autorisé'
             });
         }
 
         const pool = require('../utils/database');
-        
+
         // Récupérer les alertes personnelles
         const alertsQuery = `
             SELECT 
@@ -609,9 +609,9 @@ router.get('/alerts/:userId', authenticateToken, async (req, res) => {
             )
             LIMIT 5
         `;
-        
+
         const alertsResult = await pool.query(alertsQuery, [userId]);
-        
+
         // Si pas d'alertes réelles, retourner des alertes simulées
         let alerts = alertsResult.rows;
         if (alerts.length === 0) {
@@ -632,18 +632,18 @@ router.get('/alerts/:userId', authenticateToken, async (req, res) => {
                 }
             ];
         }
-        
+
         res.json({
             success: true,
             data: alerts
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de la récupération des alertes:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Erreur lors de la récupération des alertes',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -658,12 +658,12 @@ router.get('/:id/roles', authenticateToken, async (req, res) => {
         const userId = req.params.id;
         console.log(`📋 User ID: ${userId}`);
         console.log(`👤 Utilisateur authentifié: ${req.user?.nom} ${req.user?.prenom} (${req.user?.id})`);
-        
+
         console.log('🔄 Appel de User.getRoles()...');
         const roles = await User.getRoles(userId);
         console.log(`✅ Rôles récupérés: ${roles.length}`);
         console.log('📊 Rôles:', JSON.stringify(roles, null, 2));
-        
+
         res.json({
             success: true,
             data: roles
@@ -690,22 +690,22 @@ router.post('/:id/roles', superAdminActionLimiter, authenticateToken, async (req
     try {
         const userId = req.params.id;
         const { roleId } = req.body;
-        
+
         if (!roleId) {
             return res.status(400).json({
                 success: false,
                 message: 'ID du rôle requis'
             });
         }
-        
+
         // Récupérer le nom du rôle
         const roleResult = await pool.query('SELECT name FROM roles WHERE id = $1', [roleId]);
         const roleName = roleResult.rows[0]?.name;
-        
+
         // 🔒 PROTECTION: Empêcher l'attribution du rôle SUPER_ADMIN par des non-SUPER_ADMIN
         if (roleName === 'SUPER_ADMIN') {
             const isCurrentSuperAdmin = await isSuperAdmin(req.user.id);
-            
+
             if (!isCurrentSuperAdmin) {
                 await logSuperAdminAction(
                     req.user.id,
@@ -714,14 +714,14 @@ router.post('/:id/roles', superAdminActionLimiter, authenticateToken, async (req
                     { role: 'SUPER_ADMIN' },
                     req
                 );
-                
+
                 return res.status(403).json({
                     success: false,
                     message: 'Accès refusé',
                     reason: 'Seul un SUPER_ADMIN peut attribuer le rôle SUPER_ADMIN'
                 });
             }
-            
+
             // 📝 AUDIT: Enregistrer l'attribution du rôle SUPER_ADMIN
             await logSuperAdminAction(
                 req.user.id,
@@ -731,9 +731,9 @@ router.post('/:id/roles', superAdminActionLimiter, authenticateToken, async (req
                 req
             );
         }
-        
+
         const result = await User.addRole(userId, roleId);
-        
+
         if (result) {
             res.json({
                 success: true,
@@ -764,15 +764,15 @@ router.delete('/:id/roles/:roleId', superAdminActionLimiter, authenticateToken, 
     try {
         const userId = req.params.id;
         const roleId = req.params.roleId;
-        
+
         // Récupérer le nom du rôle
         const roleResult = await pool.query('SELECT name FROM roles WHERE id = $1', [roleId]);
         const roleName = roleResult.rows[0]?.name;
-        
+
         // 🔒 PROTECTION: Empêcher la révocation du rôle SUPER_ADMIN par des non-SUPER_ADMIN
         if (roleName === 'SUPER_ADMIN') {
             const isCurrentSuperAdmin = await isSuperAdmin(req.user.id);
-            
+
             if (!isCurrentSuperAdmin) {
                 await logSuperAdminAction(
                     req.user.id,
@@ -781,14 +781,14 @@ router.delete('/:id/roles/:roleId', superAdminActionLimiter, authenticateToken, 
                     { role: 'SUPER_ADMIN' },
                     req
                 );
-                
+
                 return res.status(403).json({
                     success: false,
                     message: 'Accès refusé',
                     reason: 'Seul un SUPER_ADMIN peut retirer le rôle SUPER_ADMIN'
                 });
             }
-            
+
             // 🔒 PROTECTION: Empêcher la révocation du dernier SUPER_ADMIN
             const canRemove = await canRemoveLastSuperAdmin(userId);
             if (!canRemove.allowed) {
@@ -799,14 +799,14 @@ router.delete('/:id/roles/:roleId', superAdminActionLimiter, authenticateToken, 
                     { reason: canRemove.reason },
                     req
                 );
-                
+
                 return res.status(400).json({
                     success: false,
                     message: 'Opération interdite',
                     reason: canRemove.reason
                 });
             }
-            
+
             // 📝 AUDIT: Enregistrer la révocation du rôle SUPER_ADMIN
             await logSuperAdminAction(
                 req.user.id,
@@ -816,9 +816,9 @@ router.delete('/:id/roles/:roleId', superAdminActionLimiter, authenticateToken, 
                 req
             );
         }
-        
+
         const result = await User.removeRole(userId, roleId);
-        
+
         if (result) {
             res.json({
                 success: true,
@@ -836,6 +836,47 @@ router.delete('/:id/roles/:roleId', superAdminActionLimiter, authenticateToken, 
         res.status(500).json({
             success: false,
             message: 'Erreur lors de la suppression du rôle',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/users/me/bu-access
+ * Récupérer les Business Units auxquelles l'utilisateur connecté a accès
+ */
+router.get('/me/bu-access', authenticateToken, async (req, res) => {
+    try {
+        console.log('🔍 [GET /api/users/me/bu-access] Utilisateur:', req.user.id);
+
+        // Récupérer les BU autorisées depuis user_business_unit_access
+        const sql = `
+            SELECT DISTINCT bu.id, bu.nom
+            FROM user_business_unit_access ubua
+            JOIN business_units bu ON bu.id = ubua.business_unit_id
+            WHERE ubua.user_id = $1 AND ubua.granted = true
+            ORDER BY bu.nom
+        `;
+        const result = await pool.query(sql, [req.user.id]);
+
+        // Si aucune BU spécifique, l'utilisateur a accès à toutes
+        const hasAllAccess = result.rows.length === 0;
+
+        console.log(`✅ BU Access: ${hasAllAccess ? 'ALL' : result.rows.length + ' BU'}`);
+
+        res.json({
+            success: true,
+            data: {
+                hasAllAccess,
+                businessUnits: result.rows
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Erreur lors de la récupération des BU access:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur serveur',
             error: error.message
         });
     }

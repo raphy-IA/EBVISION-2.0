@@ -4,12 +4,6 @@ let myObjectives = [];
 let currentObjectiveId = null;
 
 document.addEventListener('DOMContentLoaded', async function () {
-    // Vérifier l'authentification
-    if (!isAuthenticated()) {
-        window.location.href = '/login.html';
-        return;
-    }
-
     await loadFiscalYears();
     setupEventListeners();
 });
@@ -66,31 +60,27 @@ async function loadFiscalYears() {
 async function loadMyObjectives() {
     if (!currentFiscalYearId) return;
 
-    // Récupérer les informations utilisateur depuis sessionStorage
-    const userDataStr = sessionStorage.getItem('userData');
-    if (!userDataStr) {
-        showAlert('Session expirée, veuillez vous reconnecter', 'warning');
-        return;
-    }
-
-    const userData = JSON.parse(userDataStr);
-    const collaboratorId = userData.collaborateur?.collaborateur_id;
-
-    if (!collaboratorId) {
-        // L'utilisateur n'est pas un collaborateur (ex: SUPER_ADMIN)
-        const container = document.getElementById('objectivesList');
-        container.innerHTML = `
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                <strong>Information :</strong> Votre compte n'est pas associé à un profil collaborateur.
-                Les objectifs individuels sont uniquement disponibles pour les collaborateurs.
-            </div>
-        `;
-        updateStats(); // Mettre les stats à 0
-        return;
-    }
-
     try {
+        // Utiliser le SessionManager pour récupérer les données utilisateur
+        const sessionManager = window.sessionManager || new SessionManager();
+        await sessionManager.initialize();
+
+        const collaboratorId = sessionManager.user?.collaborateur_id;
+
+        if (!collaboratorId) {
+            // L'utilisateur n'est pas un collaborateur (ex: SUPER_ADMIN)
+            const container = document.getElementById('objectivesList');
+            container.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Information :</strong> Votre compte n'est pas associé à un profil collaborateur.
+                    Les objectifs individuels sont uniquement disponibles pour les collaborateurs.
+                </div>
+            `;
+            updateStats(); // Mettre les stats à 0
+            return;
+        }
+
         const response = await fetch(`/api/objectives/individual/${collaboratorId}/${currentFiscalYearId}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
@@ -99,7 +89,8 @@ async function loadMyObjectives() {
             const result = await response.json();
             myObjectives = result || [];
             renderObjectives();
-            updateStats();
+            // Attendre que le DOM soit mis à jour
+            setTimeout(() => updateStats(), 200);
         } else {
             const errorText = await response.text();
             console.error('Erreur API:', errorText);

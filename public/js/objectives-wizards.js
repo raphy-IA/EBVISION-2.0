@@ -112,11 +112,250 @@ function selectAutonomousLevel(level) {
         wizardState.autonomous.entityName = 'Entreprise';
         showAutonomousStep(3);
         loadAutonomousForm();
+    } else if (level === 'INDIVIDUAL') {
+        // Pour INDIVIDUAL, vérifier les BU access et afficher l'interface de sélection
+        checkBUAccessAndShowCollaboratorSelection();
     } else {
         // Sinon, passer à l'étape 2 pour sélectionner l'entité
         showAutonomousStep(2);
         loadEntitiesForLevel(level);
     }
+}
+
+async function checkBUAccessAndShowCollaboratorSelection() {
+    try {
+        const response = await fetch('/api/users/me/bu-access', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            wizardState.autonomous.buAccess = result.data;
+
+            if (result.data.hasAllAccess || result.data.businessUnits.length === 1) {
+                // Une seule BU ou accès total → passer direct à sélection collaborateurs
+                // Si une seule BU, on la pré-sélectionne
+                if (result.data.businessUnits.length === 1) {
+                    wizardState.autonomous.selectedBU = result.data.businessUnits[0].id;
+                }
+                showCollaboratorSelectionInterface();
+            } else {
+                // Plusieurs BU → afficher dropdown BU
+                showBUSelectionStep(result.data.businessUnits);
+            }
+        } else {
+            // Fallback si l'API échoue (ex: ancienne version)
+            showCollaboratorSelectionInterface();
+        }
+    } catch (error) {
+        console.error('Erreur BU access:', error);
+        // Fallback
+        showCollaboratorSelectionInterface();
+    }
+}
+
+function showBUSelectionStep(businessUnits) {
+    const modalBody = document.querySelector('#autonomousWizardModal .modal-body');
+    // Masquer les autres étapes
+    document.querySelectorAll('[id^="autonomousStep"]').forEach(el => el.style.display = 'none');
+
+    let step = document.getElementById('autonomousBUStep');
+    if (!step) {
+        step = document.createElement('div');
+        step.id = 'autonomousBUStep';
+        modalBody.appendChild(step);
+    }
+
+    step.innerHTML = `
+        <h6 class="mb-3">Sélectionner la Business Unit</h6>
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Veuillez sélectionner la Business Unit pour laquelle vous souhaitez créer des objectifs.
+        </div>
+        <select class="form-select" id="selectedBUDropdown">
+            <option value="">-- Sélectionnez une BU --</option>
+            ${businessUnits.map(bu => `<option value="${bu.id}">${bu.nom}</option>`).join('')}
+        </select>
+        <div class="mt-3 text-end">
+            <button class="btn btn-secondary me-2" onclick="showAutonomousStep(1)">Retour</button>
+            <button class="btn btn-primary" onclick="selectBU()">Continuer</button>
+        </div>
+    `;
+
+    step.style.display = 'block';
+}
+
+function selectBU() {
+    const buId = document.getElementById('selectedBUDropdown').value;
+    if (buId) {
+        wizardState.autonomous.selectedBU = buId;
+        showCollaboratorSelectionInterface();
+    } else {
+        showAlert('Veuillez sélectionner une Business Unit', 'warning');
+    }
+}
+
+async function showCollaboratorSelectionInterface() {
+    const modalBody = document.querySelector('#autonomousWizardModal .modal-body');
+    document.querySelectorAll('[id^="autonomousStep"]').forEach(el => el.style.display = 'none');
+
+    // Masquer aussi l'étape BU si elle existe
+    const buStep = document.getElementById('autonomousBUStep');
+    if (buStep) buStep.style.display = 'none';
+
+    let step = document.getElementById('autonomousCollabSelectionStep');
+    if (!step) {
+        step = document.createElement('div');
+        step.id = 'autonomousCollabSelectionStep';
+        modalBody.appendChild(step);
+    }
+
+    step.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Chargement des collaborateurs...</div>';
+    step.style.display = 'block';
+
+    try {
+        // Charger les grades ET les collaborateurs en parallèle
+        const [grades, collaborators] = await Promise.all([
+            fetchGrades(),
+            fetchCollaborators()
+        ]);
+
+        step.innerHTML = `
+            <h6 class="mb-3">Sélectionner les Collaborateurs</h6>
+            
+            <div class="row">
+                <!-- Filtres par Grades -->
+                <div class="col-md-4">
+                    <label class="fw-bold mb-2">Filtrer par Grades</label>
+                    <div id="gradesCheckboxes" class="border p-2 rounded bg-light" style="max-height: 300px; overflow-y: auto;">
+                        ${grades.length > 0 ? grades.map(grade => `
+                            <div class="form-check">
+                                <input class="form-check-input grade-filter" type="checkbox" 
+                                       id="grade_${grade.id}" value="${grade.id}" 
+                                       onchange="filterCollaboratorsByGrade()">
+                                <label class="form-check-label small" for="grade_${grade.id}">
+                                    ${grade.nom}
+                                </label>
+                            </div>
+                        `).join('') : '<div class="text-muted small">Aucun grade disponible</div>'}
+                    </div>
+                </div>
+                
+                <!-- Liste des collaborateurs -->
+                <div class="col-md-8">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="fw-bold">Collaborateurs</label>
+                        <span class="badge bg-secondary" id="collabCount">${collaborators.length}</span>
+                    </div>
+                    <div id="collaboratorsCheckboxes" class="border p-2 rounded" style="max-height: 300px; overflow-y: auto;">
+                        ${collaborators.length > 0 ? collaborators.map(collab => `
+                            <div class="form-check collab-item" data-grade="${collab.grade_actuel_id || ''}">
+                                <input class="form-check-input collab-select" type="checkbox" 
+                                       id="collab_${collab.id}" value="${collab.id}">
+                                <label class="form-check-label" for="collab_${collab.id}">
+                                    ${collab.nom} ${collab.prenom}
+                                </label>
+                            </div>
+                        `).join('') : '<div class="alert alert-warning small">Aucun collaborateur trouvé</div>'}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-end">
+                <button class="btn btn-secondary me-2" onclick="showAutonomousStep(1)">Retour</button>
+                <button class="btn btn-primary" onclick="proceedWithSelectedCollaborators()">
+                    Continuer
+                </button>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Erreur chargement interface:', error);
+        step.innerHTML = `
+            <div class="alert alert-danger">
+                Erreur lors du chargement des données. Veuillez réessayer.
+                <br><small>${error.message}</small>
+            </div>
+            <button class="btn btn-secondary" onclick="showAutonomousStep(1)">Retour</button>
+        `;
+    }
+}
+
+async function fetchGrades() {
+    try {
+        const response = await fetch('/api/grades?filterByUserAccess=true', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        if (response.ok) {
+            const result = await response.json();
+            return result.data || result;
+        }
+        return [];
+    } catch (error) {
+        console.error('Erreur fetch grades:', error);
+        return [];
+    }
+}
+
+async function fetchCollaborators() {
+    try {
+        const buParam = wizardState.autonomous.selectedBU ? `&business_unit_id=${wizardState.autonomous.selectedBU}` : '';
+        const response = await fetch(`/api/collaborateurs?filterByUserAccess=true${buParam}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        if (response.ok) {
+            const result = await response.json();
+            return result.data || result;
+        }
+        return [];
+    } catch (error) {
+        console.error('Erreur fetch collaborators:', error);
+        return [];
+    }
+}
+
+function filterCollaboratorsByGrade() {
+    const selectedGrades = Array.from(document.querySelectorAll('.grade-filter:checked'))
+        .map(cb => cb.value);
+
+    const items = document.querySelectorAll('.collab-item');
+    let visibleCount = 0;
+
+    items.forEach(item => {
+        const itemGrade = item.dataset.grade;
+        // Si aucun grade sélectionné OU grade correspond (attention aux types string/int)
+        if (selectedGrades.length === 0 || selectedGrades.includes(itemGrade) || selectedGrades.includes(String(itemGrade))) {
+            item.style.display = 'block';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+            // Décocher les masqués pour éviter les erreurs
+            const checkbox = item.querySelector('.collab-select');
+            if (checkbox) checkbox.checked = false;
+        }
+    });
+
+    document.getElementById('collabCount').textContent = visibleCount;
+}
+
+function proceedWithSelectedCollaborators() {
+    const selectedCollabs = Array.from(document.querySelectorAll('.collab-select:checked'))
+        .map(cb => cb.value);
+
+    if (selectedCollabs.length === 0) {
+        showAlert('Veuillez sélectionner au moins un collaborateur', 'warning');
+        return;
+    }
+
+    wizardState.autonomous.selectedCollaborators = selectedCollabs;
+    // Pour compatibilité avec le reste du code (titre etc)
+    wizardState.autonomous.entityId = selectedCollabs[0];
+    wizardState.autonomous.entityName = selectedCollabs.length > 1
+        ? `${selectedCollabs.length} collaborateurs`
+        : document.querySelector(`label[for="collab_${selectedCollabs[0]}"]`).textContent.trim();
+
+    // Passer à l'étape 3 (Formulaire)
+    showAutonomousStep(3);
+    loadAutonomousForm();
 }
 
 async function loadEntitiesForLevel(level) {
@@ -135,6 +374,7 @@ async function loadEntitiesForLevel(level) {
             case 'GRADE':
                 url = '/api/grades';
                 break;
+            // INDIVIDUAL est géré à part maintenant, mais on le garde au cas où
             case 'INDIVIDUAL':
                 url = '/api/collaborateurs';
                 break;
@@ -145,7 +385,9 @@ async function loadEntitiesForLevel(level) {
         });
 
         if (response.ok) {
-            const entities = await response.json();
+            const result = await response.json();
+            // FIX: Gérer le format {success: true, data: [...]} ou tableau direct
+            const entities = Array.isArray(result) ? result : (result.data || []);
             renderEntityList(entities, level);
         } else {
             container.innerHTML = '<div class="alert alert-danger">Erreur de chargement</div>';
@@ -159,19 +401,22 @@ async function loadEntitiesForLevel(level) {
 function renderEntityList(entities, level) {
     const container = document.getElementById('autonomousEntityList');
 
-    if (entities.length === 0) {
+    if (!entities || entities.length === 0) {
         container.innerHTML = '<div class="alert alert-info">Aucune entité disponible</div>';
         return;
     }
 
     let html = '<div class="list-group">';
     entities.forEach(entity => {
-        const name = entity.nom || entity.name || entity.label;
+        // Gestion des différents formats de nom
+        let displayName = entity.nom || entity.name || entity.label;
+        if (entity.prenom) displayName = `${entity.nom} ${entity.prenom}`;
+
         html += `
             <button type="button" class="list-group-item list-group-item-action" 
-                    onclick="selectAutonomousEntity('${entity.id}', '${name}')">
+                    onclick="selectAutonomousEntity('${entity.id}', '${displayName.replace(/'/g, "\\'")}')">
                 <i class="fas fa-check-circle text-success me-2"></i>
-                ${name}
+                ${displayName}
             </button>
         `;
     });
@@ -201,7 +446,8 @@ function loadAutonomousForm() {
         'INDIVIDUAL': `Collaborateur - ${entityName}`
     };
 
-    document.getElementById('autonomousFormTitle').textContent = levelLabels[level];
+    const titleEl = document.getElementById('autonomousFormTitle');
+    if (titleEl) titleEl.textContent = levelLabels[level] || level;
 
     // Charger les types d'objectifs
     loadObjectiveTypesForAutonomous();
@@ -209,42 +455,27 @@ function loadAutonomousForm() {
 
 async function loadObjectiveTypesForAutonomous() {
     try {
-        console.log('🔄 Chargement des types d\'objectifs...');
         const response = await fetch('/api/objectives/types', {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
 
-        console.log('📡 Réponse API types:', response.status, response.statusText);
-
         if (response.ok) {
             const types = await response.json();
-            console.log('📊 Types reçus:', types);
-            console.log('📊 Nombre de types:', types.length);
-
             const select = document.getElementById('autonomousObjectiveType');
-            if (!select) {
-                console.error('❌ Element #autonomousObjectiveType non trouvé!');
-                return;
-            }
+            if (!select) return;
 
             select.innerHTML = '<option value="">Sélectionner un type...</option>';
             types.forEach(type => {
-                console.log(`  ➕ Ajout type: ${type.label} (ID: ${type.id})`);
                 select.innerHTML += `<option value="${type.id}">${type.label}</option>`;
             });
-            console.log('✅ Types d\'objectifs chargés avec succès');
-        } else {
-            console.error('❌ Erreur API:', response.status);
-            const errorText = await response.text();
-            console.error('❌ Détails:', errorText);
         }
     } catch (error) {
-        console.error('❌ Erreur chargement types:', error);
+        console.error('Erreur chargement types:', error);
     }
 }
 
 async function submitAutonomousObjective() {
-    const { level, entityId } = wizardState.autonomous;
+    const { level, entityId, selectedCollaborators } = wizardState.autonomous;
 
     // Récupérer les données du formulaire
     const data = {
@@ -264,6 +495,9 @@ async function submitAutonomousObjective() {
         return;
     }
 
+    const submitBtn = document.getElementById('autonomousSubmitBtn');
+    if (submitBtn) submitBtn.disabled = true;
+
     try {
         let url = '';
         if (level === 'GLOBAL') {
@@ -278,8 +512,45 @@ async function submitAutonomousObjective() {
             url = '/api/objectives/grade';
             data.grade_id = entityId;
         } else if (level === 'INDIVIDUAL') {
-            url = '/api/objectives/individual';
-            data.collaborator_id = entityId;
+            // Gestion de la création multiple pour INDIVIDUAL
+            if (selectedCollaborators && selectedCollaborators.length > 0) {
+                let successCount = 0;
+                let errorCount = 0;
+
+                for (const collabId of selectedCollaborators) {
+                    const collabData = { ...data, collaborator_id: collabId };
+                    try {
+                        const res = await fetch('/api/objectives/individual', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                            },
+                            body: JSON.stringify(collabData)
+                        });
+                        if (res.ok) successCount++;
+                        else errorCount++;
+                    } catch (e) {
+                        errorCount++;
+                    }
+                }
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('autonomousWizardModal'));
+                modal.hide();
+
+                if (errorCount === 0) {
+                    showAlert(`${successCount} objectif(s) créé(s) avec succès`, 'success');
+                } else {
+                    showAlert(`${successCount} créé(s), ${errorCount} erreur(s)`, 'warning');
+                }
+                loadObjectives();
+                if (submitBtn) submitBtn.disabled = false;
+                return;
+            } else {
+                // Fallback cas simple (ne devrait pas arriver avec la nouvelle interface)
+                url = '/api/objectives/individual';
+                data.collaborator_id = entityId;
+            }
         }
 
         const response = await fetch(url, {
@@ -303,6 +574,8 @@ async function submitAutonomousObjective() {
     } catch (error) {
         console.error('Erreur:', error);
         showAlert('Erreur de connexion', 'danger');
+    } finally {
+        if (submitBtn) submitBtn.disabled = false;
     }
 }
 

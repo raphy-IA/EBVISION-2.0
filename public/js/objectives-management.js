@@ -186,36 +186,41 @@ async function loadObjectives() {
     if (!currentFiscalYearId) return;
 
     try {
-        // Charger les objectifs globaux
-        const response = await fetch(`/api/objectives/global/${currentFiscalYearId}`, {
+        // Charger TOUS les objectifs (Global, BU, Division)
+        const response = await fetch(`/api/objectives/all/${currentFiscalYearId}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
 
         if (response.ok) {
-            const globalObjs = await response.json();
-            currentGlobalObjectives = globalObjs; // Store raw global objectives
+            const allObjs = await response.json();
+            currentGlobalObjectives = allObjs.filter(o => o.scope === 'GLOBAL'); // Store global for compatibility
 
             // Transformer les données pour correspondre au format attendu
-            objectives = (globalObjs || []).map(obj => ({
+            objectives = (allObjs || []).map(obj => ({
                 id: obj.id,
-                title: obj.label || obj.code,
+                title: obj.title || obj.label || obj.code, // Use title if available
                 description: obj.description,
-                type: obj.code,
-                scope: 'GLOBAL',
+                type: obj.type_code || obj.code,
+                scope: obj.scope,
                 target_amount: obj.target_value,
                 weight: obj.weight,
+                objective_mode: obj.objective_mode, // METRIC ou TYPE
                 progress: obj.current_value && obj.target_value ? (obj.current_value / obj.target_value) * 100 : 0,
-                deadline: null, // Pas de deadline dans le modèle hiérarchique
-                business_unit_id: null,
-                division_id: null
+                deadline: null,
+                business_unit_id: obj.business_unit_id,
+                division_id: obj.division_id,
+                business_unit_name: obj.business_unit_name,
+                division_name: obj.division_name
             }));
 
             renderObjectives();
             updateStats();
+        } else {
+            const errorData = await response.json().catch(() => ({ message: response.statusText }));
+            console.error('Erreur chargement objectifs:', errorData);
         }
     } catch (error) {
-        console.error('Erreur chargement objectifs:', error);
-        showAlert('Erreur lors du chargement des objectifs', 'danger');
+        console.error('Erreur lors du chargement des objectifs:', error);
     }
 }
 
@@ -279,10 +284,20 @@ function createObjectiveCard(obj) {
     let scopeBadge = '';
     if (obj.scope === 'BU') {
         const bu = businessUnits.find(b => b.id == obj.business_unit_id);
-        scopeBadge = `<span class="badge bg-info me-2"><i class="fas fa-building me-1"></i>${bu ? bu.name : 'BU Inconnue'}</span>`;
+        const buName = bu ? (bu.name || bu.nom) : 'BU Inconnue';
+        scopeBadge = `<span class="badge bg-info me-2"><i class="fas fa-building me-1"></i>${buName}</span>`;
     } else if (obj.scope === 'DIVISION') {
         const div = divisions.find(d => d.id == obj.division_id);
-        scopeBadge = `<span class="badge bg-warning text-dark me-2"><i class="fas fa-sitemap me-1"></i>${div ? div.name : 'Division Inconnue'}</span>`;
+        const divName = div ? (div.name || div.nom) : 'Division Inconnue';
+        scopeBadge = `<span class="badge bg-warning text-dark me-2"><i class="fas fa-sitemap me-1"></i>${divName}</span>`;
+    }
+
+    // Badge pour le mode d'objectif
+    let modeBadge = '';
+    if (obj.objective_mode === 'METRIC') {
+        modeBadge = `<span class="badge bg-primary me-1"><i class="fas fa-chart-line me-1"></i>MÉTRIQUE</span>`;
+    } else if (obj.objective_mode === 'TYPE') {
+        modeBadge = `<span class="badge bg-success me-1"><i class="fas fa-tasks me-1"></i>TYPE</span>`;
     }
 
     return `
@@ -295,6 +310,7 @@ function createObjectiveCard(obj) {
                         ${obj.title}
                     </h5>
                     <p class="text-muted small mb-2">
+                        ${modeBadge}
                         <span class="badge bg-secondary me-1">${obj.type}</span>
                         ${obj.deadline ? `<i class="far fa-calendar-alt me-1"></i>${new Date(obj.deadline).toLocaleDateString()}` : ''}
                     </p>
