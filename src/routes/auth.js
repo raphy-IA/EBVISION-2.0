@@ -32,7 +32,7 @@ router.post('/login', async (req, res) => {
             // Essayer par login
             user = await User.findByLogin(email);
         }
-        
+
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -63,13 +63,13 @@ router.post('/login', async (req, res) => {
         // Récupérer les rôles multiples de l'utilisateur
         const userRolesData = await User.getRoles(user.id);
         const userRoles = userRolesData.map(r => r.name); // Extraire juste les noms des rôles
-        
+
         console.log(`👤 Connexion de ${user.email} avec les rôles:`, userRoles);
 
         // Générer le token JWT avec les rôles multiples
         const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
         const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
-        
+
         const token = jwt.sign(
             {
                 id: user.id,
@@ -85,7 +85,7 @@ router.post('/login', async (req, res) => {
 
         // Vérifier si l'utilisateur a le 2FA activé
         const is2FAEnabled = await TwoFactorAuthService.is2FAEnabled(user.id);
-        
+
         if (is2FAEnabled) {
             // Si 2FA activé, ne pas connecter immédiatement
             // Retourner l'ID utilisateur pour la vérification 2FA
@@ -231,7 +231,7 @@ router.get('/me', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
         const user = await User.findById(userId);
-        
+
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -242,7 +242,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         // Récupérer les informations du collaborateur associé si elles existent
         let collaborateurInfo = null;
         console.log('🔍 Recherche collaborateur pour utilisateur:', user.id, 'collaborateur_id:', user.collaborateur_id);
-        
+
         if (user.collaborateur_id) {
             try {
                 const Collaborateur = require('../models/Collaborateur');
@@ -269,9 +269,21 @@ router.get('/me', authenticateToken, async (req, res) => {
             WHERE ur.user_id = $1
             ORDER BY r.name
         `, [user.id]);
-        
+
         const userRoles = rolesResult.rows.map(r => r.name);
         console.log(`🔐 Rôles de l'utilisateur: ${userRoles.join(', ') || 'aucun'}`);
+
+        // Récupérer toutes les permissions de l'utilisateur via ses rôles
+        const permissionsResult = await pool.query(`
+            SELECT DISTINCT p.code
+            FROM permissions p
+            JOIN role_permissions rp ON p.id = rp.permission_id
+            JOIN user_roles ur ON rp.role_id = ur.role_id
+            WHERE ur.user_id = $1
+        `, [user.id]);
+
+        const userPermissions = permissionsResult.rows.map(p => p.code);
+        console.log(`🔑 Permissions de l'utilisateur: ${userPermissions.length} permissions trouvées`);
 
         res.json({
             success: true,
@@ -285,6 +297,7 @@ router.get('/me', authenticateToken, async (req, res) => {
                     login: user.login,
                     role: user.role, // Rôle legacy (pour compatibilité)
                     roles: userRoles, // Rôles multiples (nouveau système)
+                    permissions: userPermissions, // Permissions calculées
                     statut: user.statut,
                     collaborateur_id: user.collaborateur_id,
                     business_unit_id: user.business_unit_id || null,
@@ -312,7 +325,7 @@ router.get('/me', authenticateToken, async (req, res) => {
 router.post('/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
-        
+
         if (!email) {
             return res.status(400).json({
                 success: false,
@@ -359,7 +372,7 @@ router.post('/forgot-password', async (req, res) => {
 router.post('/reset-password', async (req, res) => {
     try {
         const { token, newPassword } = req.body;
-        
+
         if (!token || !newPassword) {
             return res.status(400).json({
                 success: false,
@@ -369,7 +382,7 @@ router.post('/reset-password', async (req, res) => {
 
         // Vérifier le token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
+
         // Hasher le nouveau mot de passe
         const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
         const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
@@ -401,16 +414,16 @@ router.post('/reset-password', async (req, res) => {
 router.post('/logout', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
-        
+
         // Log de déconnexion
         console.log(`🔒 Déconnexion de l'utilisateur ${userId}`);
-        
+
         // En production, on pourrait ajouter le token à une blacklist
         // Pour le développement, on se contente de logger
-        
+
         // Mettre à jour la dernière déconnexion
         await User.updateLastLogout(userId);
-        
+
         res.json({
             success: true,
             message: 'Déconnexion réussie',
@@ -419,7 +432,7 @@ router.post('/logout', authenticateToken, async (req, res) => {
                 userId: userId
             }
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de la déconnexion:', error);
         res.status(500).json({
@@ -434,7 +447,7 @@ router.post('/logout', (req, res) => {
     try {
         // Supprimer les cookies d'authentification
         clearAuthCookies(res);
-        
+
         res.json({
             success: true,
             message: 'Déconnexion réussie'
@@ -468,14 +481,14 @@ router.post('/change-password', authenticateToken, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
         const userId = req.user.id;
-        
+
         if (!currentPassword || !newPassword) {
             return res.status(400).json({
                 success: false,
                 message: 'Mot de passe actuel et nouveau mot de passe requis'
             });
         }
-        
+
         // Récupérer l'utilisateur
         const user = await User.findById(userId);
         if (!user) {
@@ -484,7 +497,7 @@ router.post('/change-password', authenticateToken, async (req, res) => {
                 message: 'Utilisateur non trouvé'
             });
         }
-        
+
         // Vérifier le mot de passe actuel
         const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
         if (!isCurrentPasswordValid) {
@@ -493,7 +506,7 @@ router.post('/change-password', authenticateToken, async (req, res) => {
                 message: 'Mot de passe actuel incorrect'
             });
         }
-        
+
         // Vérifier que le nouveau mot de passe est différent
         if (currentPassword === newPassword) {
             return res.status(400).json({
@@ -501,14 +514,14 @@ router.post('/change-password', authenticateToken, async (req, res) => {
                 message: 'Le nouveau mot de passe doit être différent de l\'actuel'
             });
         }
-        
+
         // Valider le nouveau mot de passe selon la politique
         const validation = await PasswordPolicyService.validatePasswordComplete(newPassword, {
             nom: user.nom,
             prenom: user.prenom,
             email: user.email
         });
-        
+
         if (!validation.isValid) {
             return res.status(400).json({
                 success: false,
@@ -517,24 +530,24 @@ router.post('/change-password', authenticateToken, async (req, res) => {
                 suggestions: PasswordPolicyService.getPasswordSuggestions(validation)
             });
         }
-        
+
         // Hasher le nouveau mot de passe
         const saltRounds = 12;
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-        
+
         // Mettre à jour le mot de passe en base
         await pool.query(
             'UPDATE users SET password = $1, password_changed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
             [hashedPassword, userId]
         );
-        
+
         res.json({
             success: true,
             message: 'Mot de passe modifié avec succès',
             securityScore: validation.securityScore,
             strength: validation.strength
         });
-        
+
     } catch (error) {
         console.error('Erreur lors du changement de mot de passe:', error);
         res.status(500).json({
@@ -548,17 +561,17 @@ router.post('/change-password', authenticateToken, async (req, res) => {
 router.get('/generate-password', authenticateToken, (req, res) => {
     try {
         const length = parseInt(req.query.length) || 16;
-        
+
         if (length < 8 || length > 128) {
             return res.status(400).json({
                 success: false,
                 message: 'La longueur doit être entre 8 et 128 caractères'
             });
         }
-        
+
         const password = PasswordPolicyService.generateSecurePassword(length);
         const validation = PasswordPolicyService.validatePassword(password);
-        
+
         res.json({
             success: true,
             data: {
@@ -567,7 +580,7 @@ router.get('/generate-password', authenticateToken, (req, res) => {
                 strength: validation.strength
             }
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de la génération du mot de passe:', error);
         res.status(500).json({
@@ -581,20 +594,20 @@ router.get('/generate-password', authenticateToken, (req, res) => {
 router.post('/validate-password', authenticateToken, (req, res) => {
     try {
         const { password } = req.body;
-        
+
         if (!password) {
             return res.status(400).json({
                 success: false,
                 message: 'Mot de passe requis'
             });
         }
-        
+
         const validation = PasswordPolicyService.validatePassword(password, {
             nom: req.user.nom,
             prenom: req.user.prenom,
             email: req.user.email
         });
-        
+
         res.json({
             success: true,
             data: {
@@ -606,7 +619,7 @@ router.post('/validate-password', authenticateToken, (req, res) => {
                 suggestions: PasswordPolicyService.getPasswordSuggestions(validation)
             }
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de la validation du mot de passe:', error);
         res.status(500).json({
@@ -620,16 +633,16 @@ router.post('/validate-password', authenticateToken, (req, res) => {
 router.post('/login-2fa', async (req, res) => {
     try {
         const { userId, token, backupCode } = req.body;
-        
+
         if (!userId || (!token && !backupCode)) {
             return res.status(400).json({
                 success: false,
                 message: 'ID utilisateur et code 2FA ou code de récupération requis'
             });
         }
-        
+
         let isValid = false;
-        
+
         if (token) {
             // Vérifier le code 2FA normal
             const result = await TwoFactorAuthService.verifyToken(userId, token);
@@ -638,7 +651,7 @@ router.post('/login-2fa', async (req, res) => {
             // Vérifier le code de récupération
             isValid = await TwoFactorAuthService.verifyBackupCode(userId, backupCode);
         }
-        
+
         if (isValid) {
             // Récupérer les informations utilisateur
             const user = await User.findById(userId);
@@ -648,17 +661,17 @@ router.post('/login-2fa', async (req, res) => {
                     message: 'Utilisateur non trouvé'
                 });
             }
-            
+
             // Récupérer les rôles multiples de l'utilisateur
             const userRolesData = await User.getRoles(user.id);
             const userRoles = userRolesData.map(r => r.name); // Extraire juste les noms des rôles
-            
+
             console.log(`👤 Connexion 2FA de ${user.email} avec les rôles:`, userRoles);
-            
+
             // Générer le token JWT final
             const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
             const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
-            
+
             const finalToken = jwt.sign(
                 {
                     id: user.id,
@@ -671,10 +684,10 @@ router.post('/login-2fa', async (req, res) => {
                 JWT_SECRET,
                 { expiresIn: JWT_EXPIRES_IN }
             );
-            
+
             // Définir les cookies sécurisés
             setAuthCookie(res, finalToken, user);
-            
+
             res.json({
                 success: true,
                 message: 'Connexion 2FA réussie',
@@ -696,7 +709,7 @@ router.post('/login-2fa', async (req, res) => {
                 message: 'Code 2FA ou code de récupération invalide'
             });
         }
-        
+
     } catch (error) {
         console.error('Erreur lors de la connexion 2FA:', error);
         res.status(500).json({

@@ -26,7 +26,7 @@ function isNotificationsAuthenticated() {
 }
 
 // Initialisation
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('🔔 Initialisation du système de notifications (DOMContentLoaded)');
     if (isNotificationsAuthenticated()) {
         initializeNotifications();
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialisation immédiate si le DOM est déjà chargé
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         console.log('🔔 Initialisation différée du système de notifications');
         if (isNotificationsAuthenticated()) {
             initializeNotifications();
@@ -56,7 +56,7 @@ if (document.readyState === 'loading') {
 
 function initializeNotifications() {
     console.log('🔔 Démarrage de l\'initialisation des notifications');
-    
+
     // Charger d'abord les statistiques pour mettre à jour le badge
     loadNotificationStats().then(() => {
         console.log('✅ Statistiques chargées, chargement des notifications...');
@@ -66,9 +66,9 @@ function initializeNotifications() {
         // Charger quand même les notifications
         loadNotifications();
     });
-    
+
     setupNotificationPolling();
-    
+
     // S'assurer que la fonction est exposée globalement
     if (typeof window.openNotificationsModal === 'undefined') {
         console.log('📤 Exposition de openNotificationsModal globalement');
@@ -91,39 +91,39 @@ async function loadNotifications(limit = 10, offset = 0) {
         console.log('🔑 Utilisateur non authentifié, chargement des notifications ignoré');
         return;
     }
-    
+
     try {
         console.log(`📥 Chargement des notifications (limit: ${limit}, offset: ${offset})`);
-        
+
         const token = localStorage.getItem('authToken');
         console.log('🔑 Token présent:', !!token);
-        
+
         const response = await fetch(`/api/notifications?limit=${limit}&offset=${offset}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
-        
+
         console.log('📡 Réponse API notifications:', response.status, response.statusText);
-        
+
         if (response.ok) {
             const result = await response.json();
             console.log('📊 Données reçues:', result);
-            
+
             notifications = result.data || [];
             console.log(`✅ ${notifications.length} notifications chargées`);
-            
+
             if (notifications.length > 0) {
                 console.log('📋 Première notification:', notifications[0]);
             }
-            
+
             updateNotificationBadge();
             displayNotifications();
         } else {
             console.error('❌ Erreur API:', response.status, response.statusText);
             const errorText = await response.text();
             console.error('❌ Détails erreur:', errorText);
-            
+
             // Afficher un message d'erreur dans le modal
             const container = document.getElementById('notificationsContainerFull');
             if (container) {
@@ -157,10 +157,10 @@ async function loadNotificationStats() {
         console.log('🔄 Notifications déjà en cours de chargement, ignoré');
         return;
     }
-    
+
     isLoadingNotifications = true;
     console.log('📊 Chargement des statistiques de notifications...');
-    
+
     try {
         const token = localStorage.getItem('authToken');
         if (!token) {
@@ -168,22 +168,22 @@ async function loadNotificationStats() {
             return;
         }
         console.log('🔑 Token présent: true');
-        
+
         const response = await fetch('/api/notifications/stats', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
-        
+
         console.log('📡 Réponse API stats:', response.status, response.statusText);
-        
+
         if (response.ok) {
             const result = await response.json();
             console.log('📊 Données reçues:', result);
-            
+
             notificationStats = result.data || {};
             console.log('📊 Stats mises à jour:', notificationStats);
-            
+
             updateNotificationBadge();
         } else {
             console.error('❌ Erreur API stats:', response.status, response.statusText);
@@ -201,19 +201,19 @@ async function loadNotificationStats() {
 function updateNotificationBadge() {
     console.log('🔔 Mise à jour du badge de notifications');
     console.log('📊 Stats actuelles:', notificationStats);
-    
+
     // Cibler uniquement les badges explicites
     const badges = [
         document.getElementById('notificationBadge'),
         document.getElementById('menuNotificationCount'),
         document.querySelector('.notification-count')
     ].filter(Boolean);
-    
+
     console.log('🎯 Badges trouvés:', badges.length);
-    
+
     const unreadCount = notificationStats.unread_notifications || notificationStats.unread || 0;
     console.log('📊 Nombre de notifications non lues:', unreadCount);
-    
+
     badges.forEach(badge => {
         if (unreadCount > 0) {
             badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
@@ -281,23 +281,23 @@ function setNotificationFilter(mode) {
 function displayNotifications() {
     console.log('📋 Affichage des notifications');
     console.log('📊 Notifications chargées:', notifications.length, ' | filtre:', notificationFilter);
-    
+
     // Essayer d'abord le container du modal (priorité)
     let container = document.getElementById('notificationsContainerFull');
     console.log('🔍 Container modal trouvé:', !!container);
-    
+
     // Si pas trouvé, essayer le container principal
     if (!container) {
         container = document.getElementById('notificationsContainer');
         console.log('🔄 Container principal trouvé:', !!container);
     }
-    
+
     // Essayer d'autres sélecteurs possibles
-    if (!container) {
-        container = document.querySelector('.modal-body .list-group');
-        console.log('🔄 Container list-group trouvé:', !!container);
-    }
-    
+    // if (!container) {
+    //     container = document.querySelector('.modal-body .list-group');
+    //     console.log('🔄 Container list-group trouvé:', !!container);
+    // }
+
     if (!container) {
         console.error('❌ Aucun container de notifications trouvé');
         console.log('🔍 Containers disponibles:', {
@@ -308,9 +308,9 @@ function displayNotifications() {
         });
         return;
     }
-    
+
     console.log('✅ Container trouvé, affichage des notifications...');
-    
+
     const filteredNotifications = notifications.filter(n => {
         if (notificationFilter === 'management') {
             return isManagementNotification(n);
@@ -328,7 +328,7 @@ function displayNotifications() {
         `;
         return;
     }
-    
+
     container.innerHTML = filteredNotifications.map(notification => `
         <div class="notification-item ${!notification.read_at ? 'unread' : ''}" data-id="${notification.id}">
             <div class="d-flex align-items-start">
@@ -383,14 +383,14 @@ async function markAsRead(notificationId) {
                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
         });
-        
+
         if (response.ok) {
             // Mettre à jour l'affichage
             const notification = notifications.find(n => n.id === notificationId);
             if (notification) {
                 notification.read_at = new Date().toISOString();
             }
-            
+
             loadNotificationStats();
             displayNotifications();
         }
@@ -404,7 +404,7 @@ async function deleteNotification(notificationId) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette notification ?')) {
         return;
     }
-    
+
     try {
         const response = await fetch(`/api/notifications/${notificationId}`, {
             method: 'DELETE',
@@ -412,11 +412,11 @@ async function deleteNotification(notificationId) {
                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
         });
-        
+
         if (response.ok) {
             // Retirer de la liste
             notifications = notifications.filter(n => n.id !== notificationId);
-            
+
             loadNotificationStats();
             displayNotifications();
         }
@@ -434,11 +434,11 @@ async function markAllAsRead() {
                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
         });
-        
+
         if (response.ok) {
             // Marquer toutes les notifications comme lues
             notifications.forEach(n => n.read_at = new Date().toISOString());
-            
+
             loadNotificationStats();
             displayNotifications();
         }
@@ -452,33 +452,33 @@ async function clearReadNotifications() {
     if (!confirm('Êtes-vous sûr de vouloir supprimer toutes les notifications lues ?')) {
         return;
     }
-    
+
     try {
         console.log('🗑️ Suppression des notifications lues...');
-        
+
         const response = await fetch('/api/notifications/clear-read', {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
         });
-        
+
         console.log('📡 Réponse suppression:', response.status, response.statusText);
-        
+
         if (response.ok) {
             console.log('✅ Notifications lues supprimées avec succès');
-            
+
             // Retirer les notifications lues de la liste
             const beforeCount = notifications.length;
             notifications = notifications.filter(n => !n.read_at);
             const afterCount = notifications.length;
-            
+
             console.log(`📊 Notifications: ${beforeCount} → ${afterCount}`);
-            
+
             // Recharger les statistiques et l'affichage
             await loadNotificationStats();
             displayNotifications();
-            
+
             // Afficher un message de confirmation
             const container = document.getElementById('notificationsContainerFull');
             if (container) {
@@ -490,7 +490,7 @@ async function clearReadNotifications() {
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 `;
                 container.insertBefore(alertDiv, container.firstChild);
-                
+
                 // Supprimer l'alerte après 3 secondes
                 setTimeout(() => {
                     if (alertDiv.parentNode) {
@@ -502,7 +502,7 @@ async function clearReadNotifications() {
             console.error('❌ Erreur lors de la suppression:', response.status, response.statusText);
             const errorText = await response.text();
             console.error('❌ Détails erreur:', errorText);
-            
+
             alert('Erreur lors de la suppression des notifications lues');
         }
     } catch (error) {
@@ -514,14 +514,14 @@ async function clearReadNotifications() {
 // Ouvrir le modal des notifications
 function openNotificationsModal() {
     console.log('🔔 Ouverture du modal des notifications');
-    
+
     // Vérifier que Bootstrap est disponible
     if (typeof bootstrap === 'undefined') {
         console.error('❌ Bootstrap non disponible');
         alert('Erreur: Bootstrap non chargé');
         return;
     }
-    
+
     // Vérifier que le modal existe
     const modalElement = document.getElementById('notificationsModal');
     if (!modalElement) {
@@ -529,7 +529,7 @@ function openNotificationsModal() {
         alert('Erreur: Modal des notifications non trouvé');
         return;
     }
-    
+
     try {
         // Afficher un indicateur de chargement
         const container = document.getElementById('notificationsContainerFull');
@@ -543,17 +543,17 @@ function openNotificationsModal() {
                 </div>
             `;
         }
-        
+
         // Ouvrir le modal
         const modal = new bootstrap.Modal(modalElement);
         modal.show();
-        
+
         // Charger les notifications après l'ouverture du modal
         setTimeout(() => {
             console.log('🔄 Chargement des notifications après ouverture du modal...');
             loadNotifications(50, 0); // Charger plus de notifications
         }, 100);
-        
+
         console.log('✅ Modal des notifications ouvert avec succès');
     } catch (error) {
         console.error('❌ Erreur lors de l\'ouverture du modal:', error);
@@ -575,9 +575,9 @@ function getPriorityBadge(priority) {
         'HIGH': 'Élevée',
         'URGENT': 'Urgente'
     };
-    
+
     if (priority === 'NORMAL') return '';
-    
+
     return `<span class="badge ${classes[priority]} ms-2">${labels[priority]}</span>`;
 }
 
@@ -637,7 +637,7 @@ function formatDateTime(dateString) {
     const now = new Date();
     const diffMs = now - date;
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) {
         return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     } else if (diffDays === 1) {

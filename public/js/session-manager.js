@@ -6,6 +6,7 @@ class SessionManager {
     constructor() {
         this.user = null;
         this.collaborateur = null;
+        this.permissions = [];
         this.isLoaded = false;
         this.loadingPromise = null;
     }
@@ -32,7 +33,7 @@ class SessionManager {
     async _loadUserData() {
         try {
             console.log('🔍 SessionManager: Chargement des données utilisateur...');
-            
+
             const token = localStorage.getItem('authToken');
             if (!token) {
                 throw new Error('Aucun token d\'authentification trouvé');
@@ -50,12 +51,13 @@ class SessionManager {
             }
 
             const data = await response.json();
-            
+
             if (!data.success) {
                 throw new Error(data.message || 'Erreur lors du chargement du profil');
             }
 
             this.user = data.data.user;
+            this.permissions = this.user.permissions || [];
             this.collaborateur = this._extractCollaborateurInfo(data.data.user);
             this.isLoaded = true;
 
@@ -101,7 +103,7 @@ class SessionManager {
             grade_nom: userData.grade_nom,
             poste_nom: userData.poste_nom
         });
-        
+
         if (!userData.collaborateur_id) {
             console.log('❌ SessionManager: Aucun collaborateur_id trouvé');
             return null;
@@ -119,7 +121,7 @@ class SessionManager {
             grade_nom: userData.grade_nom,
             poste_nom: userData.poste_nom
         };
-        
+
         console.log('✅ SessionManager: Informations collaborateur extraites:', collaborateurInfo);
         return collaborateurInfo;
     }
@@ -149,7 +151,22 @@ class SessionManager {
      */
     isAdmin() {
         const user = this.getUser();
-        return user && user.role === 'ADMIN';
+        // Vérifier le rôle ADMIN ou SUPER_ADMIN
+        return user && (user.role === 'ADMIN' || user.roles.includes('ADMIN') || user.roles.includes('SUPER_ADMIN'));
+    }
+
+    /**
+     * Vérifie si l'utilisateur a une permission spécifique
+     */
+    hasPermission(permissionCode) {
+        if (!this.isLoaded) return false;
+
+        // Les SUPER_ADMIN ont toutes les permissions
+        if (this.isAdmin() && (this.user.role === 'SUPER_ADMIN' || this.user.roles.includes('SUPER_ADMIN'))) {
+            return true;
+        }
+
+        return this.permissions.includes(permissionCode);
     }
 
     /**

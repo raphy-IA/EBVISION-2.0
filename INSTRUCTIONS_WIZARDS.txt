@@ -1,0 +1,38 @@
+INSTRUCTIONS POUR ACTIVER LES WIZARDS D'OBJECTIFS
+==================================================
+
+Ouvrez le fichier : public/objectives-management.html
+
+Trouvez la ligne 438 qui contient :
+    <script src="js/objectives-management.js"></script>
+</body>
+
+Remplacez-la par :
+    <script src="js/objectives-management.js"></script>
+    
+    <!-- Wizards pour création d'objectifs -->
+    <script src="js/objectives-wizards.js"></script>
+    <script src="js/objectives-wizards-inject.js"></script>
+</body>
+
+C'EST TOUT ! Le système sera 100% opérationnel.
+
+FICHIERS CRÉÉS
+===============
+✅ public/js/objectives-wizards.js (logique des wizards)
+✅ public/objectives-wizards-modals.html (HTML des modaux)
+✅ public/js/objectives-wizards-inject.js (injection automatique)
+✅ src/routes/objectives.js (routes backend ajoutées)
+✅ src/models/Objective.js (méthodes backend ajoutées)
+
+FONCTIONNALITÉS
+================
+- Wizard Objectif Autonome (3 étapes)
+- Wizard Distribution Multi-Enfants (4 étapes)
+- Génération automatique de titres
+- Validation temps réel
+- Calcul montants distribués/restants
+
+TESTS
+=====
+Voir le fichier walkthrough.md pour les scénarios de test détaillés.

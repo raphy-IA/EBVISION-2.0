@@ -58,6 +58,8 @@ class PermissionsAdmin {
                 this.loadAuditLog();
             } else if (target === '#menu-permissions') {
                 this.loadMenuRoles();
+            } else if (target === '#objective-permissions') {
+                this.loadObjectiveRoles();
             }
         });
     }
@@ -1414,6 +1416,142 @@ class PermissionsAdmin {
             }
         }, 5000);
     }
+
+    // ===== GESTION DES PERMISSIONS OBJECTIFS =====
+    async loadObjectiveRoles() {
+        try {
+            const response = await authenticatedFetch('/api/permissions/roles');
+            if (response.ok) {
+                const roles = await response.json();
+                this.displayObjectiveRoles(roles);
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+        }
+    }
+
+    displayObjectiveRoles(roles) {
+        const container = document.getElementById('objective-roles-list');
+        if (!container) return;
+
+        container.innerHTML = roles.map(role => `
+            <div class="role-item mb-2 p-2 border rounded ${this.currentObjectiveRole === role.id ? 'bg-primary text-white' : 'bg-light'} cursor-pointer"
+                 onclick="permissionsAdmin.selectObjectiveRole('${role.id}')">
+                <div class="d-flex align-items-center mb-1">
+                    <strong>${role.name}</strong>
+                    ${role.is_system_role ? '<span class="badge bg-warning ms-2">Système</span>' : ''}
+                </div>
+                <small class="${this.currentObjectiveRole === role.id ? 'text-white-50' : 'text-muted'}">${role.description || 'Aucune description'}</small>
+            </div>
+        `).join('');
+    }
+
+    async selectObjectiveRole(roleId) {
+        this.currentObjectiveRole = roleId;
+        await this.loadObjectiveRoles(); // Refresh UI
+        await this.loadObjectivePermissionsForMatrix(roleId);
+    }
+
+    async loadObjectivePermissionsForMatrix(roleId) {
+        try {
+            const response = await authenticatedFetch(`/api/permissions/roles/${roleId}/permissions`);
+            if (response.ok) {
+                const data = await response.json();
+                this.displayObjectivePermissionsMatrix(data, roleId);
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            this.showAlert('Erreur lors du chargement des permissions', 'danger');
+        }
+    }
+
+    displayObjectivePermissionsMatrix(data, roleId) {
+        const container = document.getElementById('objective-permissions-matrix');
+        if (!container) return;
+
+        const { allPermissions, permissions } = data;
+
+        // Filtrer uniquement les permissions de catégorie 'objectives'
+        const objPermissions = allPermissions.filter(p => p.category === 'objectives');
+        const grantedIds = new Set(permissions.map(p => p.id));
+
+        if (objPermissions.length === 0) {
+            container.innerHTML = '<div class="alert alert-warning">Aucune permission d\'objectif définie dans le système.</div>';
+            return;
+        }
+
+        // Organiser par niveau (Global, BU, Division, Grade, Individual)
+        const levels = ['GLOBAL', 'BU', 'DIVISION', 'GRADE', 'INDIVIDUAL'];
+        const actions = ['VIEW', 'CREATE', 'EDIT', 'DELETE', 'DISTRIBUTE'];
+
+        const levelLabels = {
+            'GLOBAL': 'Global (Entreprise)',
+            'BU': 'Business Unit',
+            'DIVISION': 'Division',
+            'GRADE': 'Grade',
+            'INDIVIDUAL': 'Individuel'
+        };
+
+        const actionLabels = {
+            'VIEW': 'Voir',
+            'CREATE': 'Créer',
+            'EDIT': 'Modifier',
+            'DELETE': 'Supprimer',
+            'DISTRIBUTE': 'Distribuer'
+        };
+
+        let html = `
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Niveau</th>
+                            ${actions.map(a => `<th class="text-center">${actionLabels[a]}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        levels.forEach(level => {
+            html += `<tr><td><strong>${levelLabels[level]}</strong></td>`;
+
+            actions.forEach(action => {
+                // Chercher la permission correspondante
+                // Code pattern: OBJECTIVES_{LEVEL}_{ACTION}
+                const expectedCode = `OBJECTIVES_${level}_${action}`;
+                const perm = objPermissions.find(p => p.code === expectedCode);
+
+                html += '<td class="text-center">';
+                if (perm) {
+                    const isGranted = grantedIds.has(perm.id);
+                    html += `
+                        <div class="form-check d-flex justify-content-center">
+                            <input class="form-check-input" type="checkbox" 
+                                   ${isGranted ? 'checked' : ''}
+                                   onchange="permissionsAdmin.toggleRolePermission('${roleId}', '${perm.id}', this.checked)">
+                        </div>
+                    `;
+                } else {
+                    html += '<span class="text-muted">-</span>';
+                }
+                html += '</td>';
+            });
+
+            html += '</tr>';
+        });
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle me-2"></i>
+                Les modifications sont enregistrées automatiquement.
+            </div>
+        `;
+
+        container.innerHTML = html;
+    }
 }
 
 // Fonctions globales pour les événements
@@ -2127,4 +2265,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         checkSuperAdminAndShowSyncButton();
     }, 500);
+
+
 });

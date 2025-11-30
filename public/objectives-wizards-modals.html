@@ -1,0 +1,201 @@
+<!-- ============================================ -->
+<!-- MODAL WIZARD : OBJECTIF AUTONOME -->
+<!-- ============================================ -->
+<div class="modal fade" id="autonomousWizardModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle me-2"></i>Créer un Objectif Autonome
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Étape 1 : Sélection du niveau -->
+                <div id="autonomousStep1">
+                    <h6 class="mb-3">Étape 1/3 : Pour quel niveau créez-vous cet objectif ?</h6>
+                    <div class="list-group">
+                        <button type="button" class="list-group-item list-group-item-action"
+                            onclick="selectAutonomousLevel('GLOBAL')">
+                            <i class="fas fa-globe me-2"></i> 🌍 Global (Entreprise)
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action"
+                            onclick="selectAutonomousLevel('BU')">
+                            <i class="fas fa-building me-2"></i> 🏢 Business Unit
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action"
+                            onclick="selectAutonomousLevel('DIVISION')">
+                            <i class="fas fa-sitemap me-2"></i> 🏛️ Division
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action"
+                            onclick="selectAutonomousLevel('GRADE')">
+                            <i class="fas fa-users me-2"></i> 👥 Grade
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action"
+                            onclick="selectAutonomousLevel('INDIVIDUAL')">
+                            <i class="fas fa-user me-2"></i> 👤 Collaborateur
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Étape 2 : Sélection de l'entité -->
+                <div id="autonomousStep2" style="display: none;">
+                    <h6 class="mb-3">Étape 2/3 : Sélectionnez l'entité</h6>
+                    <div id="autonomousEntityList"></div>
+                </div>
+
+                <!-- Étape 3 : Formulaire de création -->
+                <div id="autonomousStep3" style="display: none;">
+                    <h6 class="mb-3">Étape 3/3 : <span id="autonomousFormTitle"></span></h6>
+                    <form id="autonomousObjectiveForm">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Type d'Objectif *</label>
+                                <select class="form-select" id="autonomousObjectiveType" required>
+                                    <option value="">Sélectionner...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Titre *</label>
+                                <input type="text" class="form-control" id="autonomousTitle" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" id="autonomousDescription" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Montant Cible * (€)</label>
+                                <input type="number" class="form-control" id="autonomousTarget" step="0.01" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Poids (%)</label>
+                                <input type="number" class="form-control" id="autonomousWeight" min="0" max="100">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Type de Suivi *</label>
+                                <select class="form-select" id="autonomousTrackingType"
+                                    onchange="toggleAutonomousTrackingFields()" required>
+                                    <option value="MANUAL">Manuel</option>
+                                    <option value="AUTOMATIC">Automatique</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3" id="autonomousMetricCodeContainer" style="display: none;">
+                                <label class="form-label">Métrique Système</label>
+                                <select class="form-select" id="autonomousMetricCode">
+                                    <option value="">Sélectionner...</option>
+                                    <option value="CA_TOTAL">Chiffre d'Affaires Total</option>
+                                    <option value="NB_OPPORTUNITES">Nombre d'Opportunités</option>
+                                    <option value="NB_CONTRATS">Nombre de Contrats</option>
+                                    <option value="MARGE_BRUTE">Marge Brute</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-outline-primary" id="autonomousPrevBtn"
+                    onclick="previousAutonomousStep()" style="display: none;">
+                    <i class="fas fa-arrow-left me-1"></i> Retour
+                </button>
+                <button type="button" class="btn btn-success" id="autonomousSubmitBtn"
+                    onclick="submitAutonomousObjective()" style="display: none;">
+                    <i class="fas fa-check me-1"></i> Créer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL WIZARD : DISTRIBUTION AUX ENFANTS -->
+<!-- ============================================ -->
+<div class="modal fade" id="distributeWizardModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-share-nodes me-2"></i>Distribuer un Objectif aux Enfants
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Étape 1 : Sélection du niveau enfant -->
+                <div id="distributeStep1">
+                    <h6 class="mb-3">Étape 1/4 : À quel niveau voulez-vous distribuer ?</h6>
+                    <div class="list-group">
+                        <button type="button" class="list-group-item list-group-item-action"
+                            onclick="selectChildLevel('BUSINESS_UNIT')">
+                            <i class="fas fa-building me-2"></i> 🏢 Business Units (depuis Global)
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action"
+                            onclick="selectChildLevel('DIVISION')">
+                            <i class="fas fa-sitemap me-2"></i> 🏛️ Divisions (depuis BU)
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action"
+                            onclick="selectChildLevel('GRADE')">
+                            <i class="fas fa-users me-2"></i> 👥 Grades (depuis Division)
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action"
+                            onclick="selectChildLevel('INDIVIDUAL')">
+                            <i class="fas fa-user me-2"></i> 👤 Collaborateurs (depuis Grade)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Étape 2 : Sélection de l'objectif parent -->
+                <div id="distributeStep2" style="display: none;">
+                    <h6 class="mb-3">Étape 2/4 : Sélectionnez l'objectif parent à distribuer</h6>
+                    <div id="parentObjectivesList"></div>
+                </div>
+
+                <!-- Étape 3 : Sélection des enfants -->
+                <div id="distributeStep3" style="display: none;">
+                    <h6 class="mb-3">Étape 3/4 : Sélectionnez les enfants</h6>
+                    <div id="availableChildrenList"></div>
+                    <div class="mt-3">
+                        <span id="selectedChildrenCount" class="badge bg-primary">0 enfant(s) sélectionné(s)</span>
+                    </div>
+                </div>
+
+                <!-- Étape 4 : Configuration des enfants -->
+                <div id="distributeStep4" style="display: none;">
+                    <h6 class="mb-3">Étape 4/4 : Configuration de la distribution</h6>
+
+                    <!-- Infos du parent -->
+                    <div id="parentInfoDisplay" class="mb-3"></div>
+
+                    <!-- Configuration pour chaque enfant -->
+                    <div id="childrenConfigContainer" class="mb-3"></div>
+
+                    <!-- Récapitulatif -->
+                    <div id="distributionSummary"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-outline-primary" id="distributePrevBtn"
+                    onclick="previousDistributeStep()" style="display: none;">
+                    <i class="fas fa-arrow-left me-1"></i> Retour
+                </button>
+                <button type="button" class="btn btn-primary" id="distributeNextBtn" onclick="nextDistributeStep()"
+                    style="display: none;">
+                    Suivant <i class="fas fa-arrow-right ms-1"></i>
+                </button>
+                <button type="button" class="btn btn-success" id="distributeSubmitBtn" onclick="submitDistribution()"
+                    style="display: none;">
+                    <i class="fas fa-check me-1"></i> Distribuer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

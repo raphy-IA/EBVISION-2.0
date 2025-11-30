@@ -4,13 +4,15 @@ let objectives = [];
 let businessUnits = [];
 let divisions = [];
 let currentObjectiveId = null;
+let objectiveTypes = []; // Store objective types
 
 document.addEventListener('DOMContentLoaded', async function () {
     await Promise.all([
         loadFiscalYears(),
         loadBusinessUnits(),
         loadDivisions(),
-        loadGrades()
+        loadGrades(),
+        loadObjectiveTypes() // Load objective types
     ]);
 
     setupEventListeners();
@@ -88,9 +90,18 @@ async function loadBusinessUnits() {
             const filterSelect = document.getElementById('buSelect');
             const modalSelect = document.getElementById('objectiveBu');
 
+            // Vider les options existantes sauf la première
+            if (modalSelect) {
+                while (modalSelect.options.length > 1) {
+                    modalSelect.remove(1);
+                }
+            }
+
             businessUnits.forEach(bu => {
-                filterSelect.add(new Option(bu.name, bu.id));
-                modalSelect.add(new Option(bu.name, bu.id));
+                // Support pour 'name' et 'nom'
+                const buName = bu.name || bu.nom;
+                if (filterSelect) filterSelect.add(new Option(buName, bu.id));
+                if (modalSelect) modalSelect.add(new Option(buName, bu.id));
             });
         }
     } catch (error) {
@@ -142,6 +153,35 @@ async function loadGrades() {
     }
 }
 
+async function loadObjectiveTypes() {
+    try {
+        const response = await fetch('/api/objectives/types', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        if (response.ok) {
+            objectiveTypes = await response.json();
+
+            // Populate the objective type select
+            const typeSelect = document.getElementById('objectiveType');
+            if (typeSelect) {
+                typeSelect.innerHTML = '<option value="">Sélectionner un type...</option>';
+                objectiveTypes.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type.id;
+                    option.textContent = type.label;
+                    option.dataset.category = type.category;
+                    option.dataset.unit = type.unit;
+                    typeSelect.add(option);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Erreur chargement types d\'objectifs:', error);
+    }
+}
+
+let currentGlobalObjectives = [];
+
 async function loadObjectives() {
     if (!currentFiscalYearId) return;
 
@@ -153,6 +193,7 @@ async function loadObjectives() {
 
         if (response.ok) {
             const globalObjs = await response.json();
+            currentGlobalObjectives = globalObjs; // Store raw global objectives
 
             // Transformer les données pour correspondre au format attendu
             objectives = (globalObjs || []).map(obj => ({
@@ -346,6 +387,30 @@ function openCreateObjectiveModal() {
     document.getElementById('objectiveModalTitle').textContent = 'Nouvel Objectif';
     document.getElementById('objectiveId').value = '';
 
+    // Filter objective types based on existing global objectives
+    const typeSelect = document.getElementById('objectiveType');
+    if (typeSelect && objectiveTypes.length > 0) {
+        typeSelect.innerHTML = '<option value="">Sélectionner un type...</option>';
+        // Get IDs of types that are already used in global objectives
+        const usedTypeIds = currentGlobalObjectives.map(obj => obj.objective_type_id);
+
+        objectiveTypes.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type.id;
+            option.textContent = type.label;
+            option.dataset.category = type.category;
+            option.dataset.unit = type.unit;
+
+            // Disable if already used (only for creation, not editing - though editing usually doesn't change type)
+            if (usedTypeIds.includes(type.id)) {
+                option.disabled = true;
+                option.textContent += ' (Déjà défini)';
+            }
+
+            typeSelect.add(option);
+        });
+    }
+
     // Reset scope visibility
     toggleScopeSelects();
 
@@ -362,7 +427,38 @@ function editObjective(id) {
     document.getElementById('objectiveId').value = obj.id;
     document.getElementById('objectiveTitle').value = obj.title;
     document.getElementById('objectiveDescription').value = obj.description || '';
-    document.getElementById('objectiveType').value = obj.type;
+
+    // Handle type selection with disabled options
+    const typeSelect = document.getElementById('objectiveType');
+    if (typeSelect && objectiveTypes.length > 0) {
+        typeSelect.innerHTML = '<option value="">Sélectionner un type...</option>';
+
+        // Find the raw global objective to get the ID
+        const rawObj = currentGlobalObjectives.find(o => o.id == id);
+        const currentTypeId = rawObj ? rawObj.objective_type_id : null;
+        const usedTypeIds = currentGlobalObjectives.map(o => o.objective_type_id);
+
+        objectiveTypes.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type.id;
+            option.textContent = type.label;
+            option.dataset.category = type.category;
+            option.dataset.unit = type.unit;
+
+            // Disable if used AND not the current one
+            if (usedTypeIds.includes(type.id) && type.id !== currentTypeId) {
+                option.disabled = true;
+                option.textContent += ' (Déjà défini)';
+            }
+
+            typeSelect.add(option);
+        });
+
+        if (currentTypeId) {
+            typeSelect.value = currentTypeId;
+        }
+    }
+
     document.getElementById('objectiveWeight').value = obj.weight || '';
     document.getElementById('objectiveTarget').value = obj.target_amount || '';
     document.getElementById('objectiveDeadline').value = obj.deadline ? obj.deadline.split('T')[0] : '';
@@ -394,10 +490,17 @@ async function saveObjective() {
     }
 
     const scope = document.getElementById('objectiveScope').value;
+    const objectiveTypeId = document.getElementById('objectiveType').value;
+
+    if (!objectiveTypeId) {
+        showAlert('Veuillez sélectionner un type d\'objectif', 'warning');
+        return;
+    }
+
     const data = {
         title: document.getElementById('objectiveTitle').value,
         description: document.getElementById('objectiveDescription').value,
-        objective_type_id: 1, // TODO: Mapper le type sélectionné vers l'ID du type d'objectif
+        objective_type_id: parseInt(objectiveTypeId),
         weight: parseFloat(document.getElementById('objectiveWeight').value) || 0,
         target_value: parseFloat(document.getElementById('objectiveTarget').value) || 0,
         deadline: document.getElementById('objectiveDeadline').value,
@@ -463,17 +566,13 @@ async function saveObjective() {
 
 
     try {
-        let url = currentObjectiveId
-            ? `/api/objectives/${currentObjectiveId}`
-            : '/api/objectives';
+        let baseUrl = '/api/objectives';
+        if (scope === 'GLOBAL') baseUrl = '/api/objectives/global';
+        else if (scope === 'BU') baseUrl = '/api/objectives/business-unit';
+        else if (scope === 'DIVISION') baseUrl = '/api/objectives/division';
+        else if (scope === 'GRADE') baseUrl = '/api/objectives/grade';
 
-        // Ajuster l'URL selon le scope pour la création
-        if (!currentObjectiveId) {
-            if (scope === 'GLOBAL') url = '/api/objectives/global';
-            else if (scope === 'BU') url = '/api/objectives/business-unit';
-            else if (scope === 'DIVISION') url = '/api/objectives/division';
-            else if (scope === 'GRADE') url = '/api/objectives/grade';
-        }
+        const url = currentObjectiveId ? `${baseUrl}/${currentObjectiveId}` : baseUrl;
 
         const method = currentObjectiveId ? 'PUT' : 'POST';
 
@@ -510,8 +609,36 @@ async function saveObjective() {
 async function deleteObjective(id) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?')) return;
 
+    const obj = objectives.find(o => o.id == id);
+    if (!obj) {
+        showAlert('Objectif non trouvé', 'danger');
+        return;
+    }
+
+    let url = '';
+    switch (obj.scope) {
+        case 'GLOBAL':
+            url = `/api/objectives/global/${id}`;
+            break;
+        case 'BU':
+            url = `/api/objectives/business-unit/${id}`;
+            break;
+        case 'DIVISION':
+            url = `/api/objectives/division/${id}`;
+            break;
+        case 'GRADE':
+            url = `/api/objectives/grade/${id}`;
+            break;
+        case 'INDIVIDUAL':
+            url = `/api/objectives/individual/${id}`;
+            break;
+        default:
+            showAlert('Type d\'objectif inconnu', 'danger');
+            return;
+    }
+
     try {
-        const response = await fetch(`/api/objectives/${id}`, {
+        const response = await fetch(url, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
@@ -520,7 +647,8 @@ async function deleteObjective(id) {
             showAlert('Objectif supprimé', 'success');
             loadObjectives();
         } else {
-            showAlert('Erreur lors de la suppression', 'danger');
+            const error = await response.json();
+            showAlert(error.message || 'Erreur lors de la suppression', 'danger');
         }
     } catch (error) {
         console.error('Erreur:', error);
@@ -591,6 +719,11 @@ function toggleParentObjective() {
 
     if (nature === 'CASCADED') {
         loadAvailableParents();
+    } else {
+        // Reset and unlock fields if switching back to Autonomous
+        unlockObjectiveFields();
+        document.getElementById('parentObjective').value = '';
+        document.getElementById('remainingAmount').value = '';
     }
 }
 
@@ -638,6 +771,13 @@ async function loadAvailableParents() {
                 option.value = parent.id;
                 option.textContent = `${parent.description} (${formatCurrency(parent.target_value)})`;
                 option.dataset.remaining = parent.remaining_amount || parent.target_value;
+
+                // Store inherited data
+                option.dataset.typeId = parent.objective_type_id;
+                option.dataset.trackingType = parent.tracking_type;
+                option.dataset.metricCode = parent.metric_code;
+                option.dataset.description = parent.description;
+
                 select.add(option);
             });
         }
@@ -647,16 +787,66 @@ async function loadAvailableParents() {
     }
 }
 
-function updateRemainingAmount() {
+function handleParentSelection() {
     const select = document.getElementById('parentObjective');
     const remainingInput = document.getElementById('remainingAmount');
 
     if (select.value) {
         const selectedOption = select.options[select.selectedIndex];
+
+        // 1. Update Remaining Amount
         const remaining = selectedOption.dataset.remaining || 0;
         remainingInput.value = formatCurrency(remaining);
+
+        // 2. Inherit and Lock Parameters
+        const typeId = selectedOption.dataset.typeId;
+        const description = selectedOption.dataset.description;
+        const trackingType = selectedOption.dataset.trackingType;
+        const metricCode = selectedOption.dataset.metricCode;
+
+        if (typeId) {
+            const typeSelect = document.getElementById('objectiveType');
+            typeSelect.value = typeId;
+            typeSelect.disabled = true;
+        }
+
+        if (description) {
+            const descInput = document.getElementById('objectiveDescription');
+            descInput.value = description;
+            descInput.readOnly = true;
+
+            // Also set title as it is required and should match parent
+            const titleInput = document.getElementById('objectiveTitle');
+            titleInput.value = description; // Use description as title
+            titleInput.readOnly = true;
+        }
+
+        if (trackingType) {
+            const trackingSelect = document.getElementById('trackingType');
+            trackingSelect.value = trackingType;
+            trackingSelect.disabled = true; // Lock tracking type
+
+            toggleTrackingFields(); // Show/Hide metric code field
+
+            if (trackingType === 'AUTOMATIC' && metricCode) {
+                const metricInput = document.getElementById('metricCode');
+                metricInput.value = metricCode;
+                metricInput.readOnly = true; // Lock metric code
+            }
+        }
+
     } else {
         remainingInput.value = '';
+        unlockObjectiveFields();
     }
 }
 
+function unlockObjectiveFields() {
+    document.getElementById('objectiveType').disabled = false;
+    document.getElementById('objectiveDescription').readOnly = false;
+    document.getElementById('objectiveTitle').readOnly = false;
+    document.getElementById('trackingType').disabled = false;
+    document.getElementById('metricCode').readOnly = false;
+    // Clear values? Maybe not, user might want to keep them as starting point. 
+    // But for strict correctness, if we unlocked, we assume user defines them.
+}

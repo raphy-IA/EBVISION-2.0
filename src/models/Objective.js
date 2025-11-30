@@ -20,6 +20,31 @@ class Objective {
         return result.rows[0];
     }
 
+    // Helper pour trouver le type d'un objectif par son ID
+    static async getObjectiveTypeById(id) {
+        // Vérifier Global
+        const globalRes = await query('SELECT id FROM global_objectives WHERE id = $1', [id]);
+        if (globalRes.rows.length > 0) return 'GLOBAL';
+
+        // Vérifier BU
+        const buRes = await query('SELECT id FROM business_unit_objectives WHERE id = $1', [id]);
+        if (buRes.rows.length > 0) return 'BUSINESS_UNIT';
+
+        // Vérifier Division
+        const divRes = await query('SELECT id FROM division_objectives WHERE id = $1', [id]);
+        if (divRes.rows.length > 0) return 'DIVISION';
+
+        // Vérifier Grade
+        const gradeRes = await query('SELECT id FROM grade_objectives WHERE id = $1', [id]);
+        if (gradeRes.rows.length > 0) return 'GRADE';
+
+        // Vérifier Individuel
+        const indRes = await query('SELECT id FROM individual_objectives WHERE id = $1', [id]);
+        if (indRes.rows.length > 0) return 'INDIVIDUAL';
+
+        return null;
+    }
+
     // === OBJECTIFS GLOBAUX ===
 
     static async getGlobalObjectives(fiscalYearId) {
@@ -55,13 +80,13 @@ class Objective {
     }
 
     static async createGlobalObjective(data) {
-        const { fiscal_year_id, objective_type_id, target_value, description, created_by, tracking_type, metric_code } = data;
+        const { fiscal_year_id, objective_type_id, target_value, description, created_by, tracking_type, metric_code, weight } = data;
         const sql = `
-            INSERT INTO global_objectives (fiscal_year_id, objective_type_id, target_value, description, created_by, tracking_type, metric_code)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO global_objectives (fiscal_year_id, objective_type_id, target_value, description, created_by, tracking_type, metric_code, weight)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *
         `;
-        const result = await query(sql, [fiscal_year_id, objective_type_id, target_value, description, created_by, tracking_type || 'MANUAL', metric_code]);
+        const result = await query(sql, [fiscal_year_id, objective_type_id, target_value, description, created_by, tracking_type || 'MANUAL', metric_code, weight]);
 
         await this.initProgress('GLOBAL', result.rows[0].id, target_value, created_by);
 
@@ -69,14 +94,14 @@ class Objective {
     }
 
     static async updateGlobalObjective(id, data) {
-        const { target_value, description } = data;
+        const { target_value, description, weight, tracking_type, metric_code, objective_type_id } = data;
         const sql = `
             UPDATE global_objectives
-            SET target_value = $1, description = $2, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $3
+            SET target_value = $1, description = $2, weight = $3, tracking_type = $4, metric_code = $5, objective_type_id = $6, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $7
             RETURNING *
         `;
-        const result = await query(sql, [target_value, description, id]);
+        const result = await query(sql, [target_value, description, weight, tracking_type, metric_code, objective_type_id, id]);
 
         if (result.rows[0]) {
             await this.updateProgressTarget('GLOBAL', id, target_value);
@@ -87,6 +112,30 @@ class Objective {
 
     static async deleteGlobalObjective(id) {
         const sql = `DELETE FROM global_objectives WHERE id = $1 RETURNING id`;
+        const result = await query(sql, [id]);
+        return result.rows[0];
+    }
+
+    static async deleteBusinessUnitObjective(id) {
+        const sql = `DELETE FROM business_unit_objectives WHERE id = $1 RETURNING id`;
+        const result = await query(sql, [id]);
+        return result.rows[0];
+    }
+
+    static async deleteDivisionObjective(id) {
+        const sql = `DELETE FROM division_objectives WHERE id = $1 RETURNING id`;
+        const result = await query(sql, [id]);
+        return result.rows[0];
+    }
+
+    static async deleteGradeObjective(id) {
+        const sql = `DELETE FROM grade_objectives WHERE id = $1 RETURNING id`;
+        const result = await query(sql, [id]);
+        return result.rows[0];
+    }
+
+    static async deleteIndividualObjective(id) {
+        const sql = `DELETE FROM individual_objectives WHERE id = $1 RETURNING id`;
         const result = await query(sql, [id]);
         return result.rows[0];
     }
@@ -369,7 +418,7 @@ class Objective {
         const config = tableMap[type];
         if (!config) return [];
 
-        let sql = `SELECT id, description, target_value FROM ${config.table} WHERE 1=1`;
+        let sql = `SELECT id, description, target_value, objective_type_id, tracking_type, metric_code FROM ${config.table} WHERE 1=1`;
         const params = [];
 
         if (config.filter && filters[config.filter]) {
@@ -417,6 +466,280 @@ class Objective {
         const result = await query(sql, [currentValue, notes, userId, objectiveType, objectiveId]);
         return result.rows[0];
     }
+
+    // === DISTRIBUTION MULTI-ENFANTS ===
+
+    /**
+     * Générer le titre d'un objectif enfant
+     */
+    static generateChildTitle(parentTitle, childType, childName) {
+        const typeLabels = {
+            'BUSINESS_UNIT': 'BU',
+            'DIVISION': 'Division',
+            'GRADE': 'Grade',
+            'INDIVIDUAL': ''
+        };
+
+        const typeLabel = typeLabels[childType] || childType;
+        return typeLabel ? `${parentTitle} - ${typeLabel} ${childName}` : `${parentTitle} - ${childName}`;
+    }
+
+    /**
+     * Récupérer le résumé de distribution d'un objectif parent
+     */
+    static async getDistributionSummary(parentId) {
+        // Déterminer le type de l'objectif parent
+        const parentInfo = await this.getObjectiveInfo(parentId);
+        if (!parentInfo) {
+            throw new Error('Objectif parent introuvable');
+        }
+
+        const { type: parentType, table: parentTable } = parentInfo;
+
+        // Calculer le montant distribué
+        const childTableMap = {
+            'GLOBAL': 'business_unit_objectives',
+            'BUSINESS_UNIT': 'division_objectives',
+            'DIVISION': 'grade_objectives',
+            'GRADE': 'individual_objectives'
+        };
+
+        const childTable = childTableMap[parentType];
+        if (!childTable) {
+            return {
+                total_target: parentInfo.target_value,
+                distributed: 0,
+                remaining: parentInfo.target_value,
+                distribution_percentage: 0,
+                children_count: 0
+            };
+        }
+
+        const parentColumnMap = {
+            'GLOBAL': 'global_objective_id',
+            'BUSINESS_UNIT': 'parent_bu_objective_id',
+            'DIVISION': 'parent_division_objective_id',
+            'GRADE': 'parent_grade_objective_id'
+        };
+
+        const parentColumn = parentColumnMap[parentType];
+
+        const sql = `
+            SELECT 
+                COUNT(*) as children_count,
+                COALESCE(SUM(target_value), 0) as distributed
+            FROM ${childTable}
+            WHERE ${parentColumn} = $1
+        `;
+
+        const result = await query(sql, [parentId]);
+        const { children_count, distributed } = result.rows[0];
+
+        const remaining = parentInfo.target_value - parseFloat(distributed);
+        const distribution_percentage = parentInfo.target_value > 0
+            ? (parseFloat(distributed) / parentInfo.target_value) * 100
+            : 0;
+
+        return {
+            parent_id: parentId,
+            parent_type: parentType,
+            parent_title: parentInfo.title || parentInfo.description,
+            total_target: parseFloat(parentInfo.target_value),
+            weight: parseFloat(parentInfo.weight),
+            distributed: parseFloat(distributed),
+            remaining: remaining,
+            distribution_percentage: Math.round(distribution_percentage * 100) / 100,
+            children_count: parseInt(children_count),
+            objective_type_id: parentInfo.objective_type_id,
+            tracking_type: parentInfo.tracking_type,
+            metric_code: parentInfo.metric_code
+        };
+    }
+
+    /**
+     * Récupérer les informations d'un objectif (type, table, données)
+     */
+    static async getObjectiveInfo(objectiveId) {
+        const tables = [
+            { type: 'GLOBAL', table: 'global_objectives' },
+            { type: 'BUSINESS_UNIT', table: 'business_unit_objectives' },
+            { type: 'DIVISION', table: 'division_objectives' },
+            { type: 'GRADE', table: 'grade_objectives' },
+            { type: 'INDIVIDUAL', table: 'individual_objectives' }
+        ];
+
+        for (const { type, table } of tables) {
+            const sql = `SELECT * FROM ${table} WHERE id = $1`;
+            const result = await query(sql, [objectiveId]);
+            if (result.rows.length > 0) {
+                return { ...result.rows[0], type, table };
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Récupérer les entités disponibles pour distribution
+     */
+    static async getAvailableChildren(parentId, childType) {
+        const parentInfo = await this.getObjectiveInfo(parentId);
+        if (!parentInfo) {
+            throw new Error('Objectif parent introuvable');
+        }
+
+        // Déterminer la table des entités et la table des objectifs enfants
+        const entityTableMap = {
+            'BUSINESS_UNIT': { entityTable: 'business_units', entityIdColumn: 'id', entityNameColumn: 'nom' },
+            'DIVISION': { entityTable: 'divisions', entityIdColumn: 'id', entityNameColumn: 'name' },
+            'GRADE': { entityTable: 'grades', entityIdColumn: 'id', entityNameColumn: 'name' },
+            'INDIVIDUAL': { entityTable: 'collaborateurs', entityIdColumn: 'id', entityNameColumn: 'nom' }
+        };
+
+        const config = entityTableMap[childType];
+        if (!config) {
+            throw new Error('Type d\'enfant invalide');
+        }
+
+        const childTableMap = {
+            'BUSINESS_UNIT': 'business_unit_objectives',
+            'DIVISION': 'division_objectives',
+            'GRADE': 'grade_objectives',
+            'INDIVIDUAL': 'individual_objectives'
+        };
+
+        const childTable = childTableMap[childType];
+        const parentColumnMap = {
+            'BUSINESS_UNIT': 'global_objective_id',
+            'DIVISION': 'parent_bu_objective_id',
+            'GRADE': 'parent_division_objective_id',
+            'INDIVIDUAL': 'parent_grade_objective_id'
+        };
+
+        const parentColumn = parentColumnMap[childType];
+
+        // Récupérer toutes les entités
+        const entitiesSql = `SELECT ${config.entityIdColumn} as id, ${config.entityNameColumn} as name FROM ${config.entityTable}`;
+        const entitiesResult = await query(entitiesSql);
+
+        // Récupérer les entités qui ont déjà un objectif lié à ce parent
+        const existingSql = `
+            SELECT DISTINCT ${childType === 'BUSINESS_UNIT' ? 'business_unit_id' : childType === 'DIVISION' ? 'division_id' : childType === 'GRADE' ? 'grade_id' : 'collaborator_id'} as entity_id
+            FROM ${childTable}
+            WHERE ${parentColumn} = $1
+        `;
+        const existingResult = await query(existingSql, [parentId]);
+        const existingIds = new Set(existingResult.rows.map(r => r.entity_id));
+
+        // Filtrer les entités disponibles
+        const availableChildren = entitiesResult.rows
+            .filter(entity => !existingIds.has(entity.id))
+            .map(entity => ({
+                id: entity.id,
+                name: entity.name,
+                suggested_title: this.generateChildTitle(
+                    parentInfo.description || 'Objectif',
+                    childType,
+                    entity.name
+                )
+            }));
+
+        return availableChildren;
+    }
+
+    /**
+     * Distribuer un objectif à plusieurs enfants
+     */
+    static async distributeToMultipleChildren(parentObjectiveId, children, userId) {
+        const parentInfo = await this.getObjectiveInfo(parentObjectiveId);
+        if (!parentInfo) {
+            throw new Error('Objectif parent introuvable');
+        }
+
+        // Calculer le montant total demandé
+        const totalRequested = children.reduce((sum, child) => sum + parseFloat(child.target_value || 0), 0);
+
+        // Récupérer le résumé de distribution
+        const summary = await this.getDistributionSummary(parentObjectiveId);
+
+        // Valider que le montant total ne dépasse pas le montant restant
+        if (totalRequested > summary.remaining) {
+            throw new Error(`Le montant total demandé (${totalRequested}) dépasse le montant restant (${summary.remaining})`);
+        }
+
+        // Déterminer le type d'enfant et la table cible
+        const childTypeMap = {
+            'GLOBAL': { type: 'BUSINESS_UNIT', table: 'business_unit_objectives', entityColumn: 'business_unit_id', parentColumn: 'global_objective_id' },
+            'BUSINESS_UNIT': { type: 'DIVISION', table: 'division_objectives', entityColumn: 'division_id', parentColumn: 'parent_bu_objective_id' },
+            'DIVISION': { type: 'GRADE', table: 'grade_objectives', entityColumn: 'grade_id', parentColumn: 'parent_division_objective_id' },
+            'GRADE': { type: 'INDIVIDUAL', table: 'individual_objectives', entityColumn: 'collaborator_id', parentColumn: 'parent_grade_objective_id' }
+        };
+
+        const childConfig = childTypeMap[parentInfo.type];
+        if (!childConfig) {
+            throw new Error('Type de parent invalide pour distribution');
+        }
+
+        // Créer les objectifs enfants
+        const createdObjectives = [];
+
+        for (const child of children) {
+            const title = this.generateChildTitle(
+                parentInfo.description || 'Objectif',
+                childConfig.type,
+                child.entity_name || child.name || 'Entité'
+            );
+
+            const sql = `
+                INSERT INTO ${childConfig.table} (
+                    ${childConfig.entityColumn},
+                    ${childConfig.parentColumn},
+                    objective_type_id,
+                    target_value,
+                    description,
+                    weight,
+                    tracking_type,
+                    metric_code,
+                    assigned_by,
+                    is_cascaded
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                RETURNING *
+            `;
+
+            const result = await query(sql, [
+                child.entity_id,
+                parentObjectiveId,
+                parentInfo.objective_type_id,
+                child.target_value,
+                child.description || parentInfo.description,
+                child.weight || 0,
+                parentInfo.tracking_type,
+                parentInfo.metric_code,
+                userId,
+                true
+            ]);
+
+            const createdObjective = result.rows[0];
+
+            // Initialiser la progression
+            await this.initProgress(childConfig.type, createdObjective.id, child.target_value, userId);
+
+            createdObjectives.push({
+                ...createdObjective,
+                title: title
+            });
+        }
+
+        return {
+            success: true,
+            parent_id: parentObjectiveId,
+            created_count: createdObjectives.length,
+            objectives: createdObjectives,
+            summary: await this.getDistributionSummary(parentObjectiveId)
+        };
+    }
 }
+
 
 module.exports = Objective;

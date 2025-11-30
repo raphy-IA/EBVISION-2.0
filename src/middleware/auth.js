@@ -60,7 +60,7 @@ const authenticateToken = (req, res, next) => {
 
 // Middleware de vérification des permissions
 const requirePermission = (permission) => {
-    return (req, res, next) => {
+    return async (req, res, next) => {
         if (!req.user) {
             return res.status(401).json({
                 success: false,
@@ -68,18 +68,47 @@ const requirePermission = (permission) => {
             });
         }
 
-        // Vérifier si l'utilisateur a des permissions
-        const userPermissions = req.user.permissions || [];
-        const userRoles = req.user.roles || []; // Rôles multiples
-        
-        // Pour le développement, permettre l'accès à tous les utilisateurs connectés
-        // Vérifier si l'utilisateur est connecté (a un ID)
-        if (req.user.id || req.user.userId) {
-            next();
-        } else {
-            res.status(403).json({
+        try {
+            const { pool } = require('../utils/database');
+
+            // 1. Vérifier si SUPER_ADMIN (accès total)
+            const userRolesQuery = `
+                SELECT r.name
+                FROM user_roles ur
+                JOIN roles r ON ur.role_id = r.id
+                WHERE ur.user_id = $1
+            `;
+            const rolesResult = await pool.query(userRolesQuery, [req.user.id]);
+            const userRoles = rolesResult.rows.map(r => r.name);
+
+            if (userRoles.includes('SUPER_ADMIN')) {
+                return next();
+            }
+
+            // 2. Vérifier la permission spécifique
+            const permissionQuery = `
+                SELECT 1
+                FROM permissions p
+                JOIN role_permissions rp ON p.id = rp.permission_id
+                JOIN user_roles ur ON rp.role_id = ur.role_id
+                WHERE ur.user_id = $1 AND p.code = $2
+            `;
+
+            const permissionResult = await pool.query(permissionQuery, [req.user.id, permission]);
+
+            if (permissionResult.rows.length > 0) {
+                next();
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: `Permission requise: ${permission}`
+                });
+            }
+        } catch (error) {
+            console.error('Erreur lors de la vérification de permission:', error);
+            res.status(500).json({
                 success: false,
-                message: 'Permission insuffisante'
+                message: 'Erreur serveur lors de la vérification des droits'
             });
         }
     };
@@ -142,10 +171,10 @@ const requireRole = (roles) => {
         try {
             // Convertir roles en array si c'est une string
             const requiredRoles = Array.isArray(roles) ? roles : [roles];
-            
+
             console.log(`🔍 [requireRole] Vérification des rôles pour l'utilisateur ${req.user.id}`);
             console.log(`   Rôles requis:`, requiredRoles);
-            
+
             // Récupérer TOUS les rôles de l'utilisateur depuis user_roles
             const { pool } = require('../utils/database');
             const userRolesQuery = `
@@ -154,38 +183,38 @@ const requireRole = (roles) => {
                 JOIN roles r ON ur.role_id = r.id
                 WHERE ur.user_id = $1
             `;
-            
+
             const userRolesResult = await pool.query(userRolesQuery, [req.user.id]);
             const userRoles = userRolesResult.rows.map(row => row.name);
-            
+
             console.log(`   Rôles de l'utilisateur:`, userRoles);
-            
+
             // SUPER_ADMIN a accès à tout
             if (userRoles.includes('SUPER_ADMIN')) {
                 console.log(`   ✅ Accès accordé (SUPER_ADMIN)`);
                 return next();
             }
-            
+
             // Vérifier si l'utilisateur a au moins un des rôles requis
             // On utilise la hiérarchie: si l'utilisateur a un rôle de niveau supérieur, il a accès
             let hasAccess = false;
-            
+
             for (const userRole of userRoles) {
                 const userRoleLevel = ROLE_HIERARCHY[userRole] || 0;
-                
+
                 for (const requiredRole of requiredRoles) {
                     const requiredRoleLevel = ROLE_HIERARCHY[requiredRole] || 0;
-                    
+
                     if (userRoleLevel >= requiredRoleLevel) {
                         hasAccess = true;
                         console.log(`   ✅ Accès accordé (${userRole} >= ${requiredRole})`);
                         break;
                     }
                 }
-                
+
                 if (hasAccess) break;
             }
-            
+
             if (hasAccess) {
                 next();
             } else {
