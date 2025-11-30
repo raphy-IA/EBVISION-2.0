@@ -15,7 +15,16 @@ class ObjectiveMetric {
                 m.target_unit_id,
                 u.label as unit_label,
                 u.symbol as unit_symbol,
-                m.is_active
+                m.is_active,
+                (
+                    SELECT json_agg(json_build_object(
+                        'id', s.id,
+                        'opportunity_type', s.filter_conditions->>'opportunity_type_id',
+                        'value_field', s.data_source_value_column
+                    ))
+                    FROM objective_metric_sources s
+                    WHERE s.metric_id = m.id
+                ) as sources
             FROM objective_metrics m
             LEFT JOIN objective_units u ON m.target_unit_id = u.id
             WHERE m.is_active = TRUE

@@ -3,6 +3,7 @@ const router = express.Router();
 const Objective = require('../models/Objective');
 const ObjectiveUnit = require('../models/ObjectiveUnit');
 const ObjectiveMetric = require('../models/ObjectiveMetric');
+const ObjectiveType = require('../models/ObjectiveType');
 const { authenticateToken, requirePermission, requireRole } = require('../middleware/auth');
 const ObjectiveTrackingService = require('../services/ObjectiveTrackingService');
 
@@ -11,10 +12,43 @@ const ObjectiveTrackingService = require('../services/ObjectiveTrackingService')
 // GET /api/objectives/types - Récupérer tous les types d'objectifs
 router.get('/types', authenticateToken, async (req, res) => {
     try {
-        const types = await Objective.getAllTypes();
+        const types = await ObjectiveType.getAll();
         res.json(types);
     } catch (error) {
         console.error('Erreur lors de la récupération des types d\'objectifs:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// POST /api/objectives/types - Créer un type d'objectif
+router.post('/types', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+    try {
+        const type = await ObjectiveType.create(req.body);
+        res.status(201).json(type);
+    } catch (error) {
+        console.error('Erreur lors de la création du type d\'objectif:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// PUT /api/objectives/types/:id - Modifier un type d'objectif
+router.put('/types/:id', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+    try {
+        const type = await ObjectiveType.update(req.params.id, req.body);
+        res.json(type);
+    } catch (error) {
+        console.error('Erreur lors de la modification du type d\'objectif:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// DELETE /api/objectives/types/:id - Supprimer (désactiver) un type d'objectif
+router.delete('/types/:id', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+    try {
+        await ObjectiveType.delete(req.params.id);
+        res.json({ message: 'Type supprimé avec succès' });
+    } catch (error) {
+        console.error('Erreur lors de la suppression du type d\'objectif:', error);
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
@@ -28,6 +62,39 @@ router.get('/units', authenticateToken, async (req, res) => {
         res.json(units);
     } catch (error) {
         console.error('Erreur lors de la récupération des unités:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// POST /api/objectives/units - Créer une unité
+router.post('/units', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+    try {
+        const unit = await ObjectiveUnit.create(req.body);
+        res.status(201).json(unit);
+    } catch (error) {
+        console.error('Erreur lors de la création de l\'unité:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// PUT /api/objectives/units/:id - Modifier une unité
+router.put('/units/:id', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+    try {
+        const unit = await ObjectiveUnit.update(req.params.id, req.body);
+        res.json(unit);
+    } catch (error) {
+        console.error('Erreur lors de la modification de l\'unité:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// DELETE /api/objectives/units/:id - Supprimer (désactiver) une unité
+router.delete('/units/:id', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+    try {
+        await ObjectiveUnit.deactivate(req.params.id);
+        res.json({ message: 'Unité supprimée avec succès' });
+    } catch (error) {
+        console.error('Erreur lors de la suppression de l\'unité:', error);
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
@@ -66,6 +133,85 @@ router.get('/metrics/:id/sources', authenticateToken, async (req, res) => {
         res.json(sources);
     } catch (error) {
         console.error('Erreur lors de la récupération des sources:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// POST /api/objectives/metrics - Créer une métrique
+router.post('/metrics', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+    try {
+        const { code, label, description, sources } = req.body;
+
+        // 1. Créer la métrique
+        const metric = await ObjectiveMetric.create({
+            code,
+            label,
+            description,
+            calculation_type: 'SUM', // Par défaut pour l'instant
+            target_unit_id: null // À gérer si besoin
+        });
+
+        // 2. Ajouter les sources
+        if (sources && Array.isArray(sources)) {
+            for (const source of sources) {
+                await ObjectiveMetric.addSource({
+                    metric_id: metric.id,
+                    data_source_table: 'opportunities',
+                    data_source_value_column: source.value_field,
+                    filter_conditions: { opportunity_type_id: source.opportunity_type },
+                    weight: 1.0,
+                    objective_type_id: null, // Pas lié à un type d'objectif mais à une opportunité
+                    unit_id: null
+                });
+            }
+        }
+
+        res.status(201).json(metric);
+    } catch (error) {
+        console.error('Erreur lors de la création de la métrique:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// PUT /api/objectives/metrics/:id - Modifier une métrique
+router.put('/metrics/:id', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+    try {
+        const { label, description, sources } = req.body;
+        const id = req.params.id;
+
+        // 1. Mettre à jour la métrique
+        const metric = await ObjectiveMetric.update(id, {
+            label,
+            description,
+            calculation_type: 'SUM',
+            target_unit_id: null,
+            is_active: true
+        });
+
+        // 2. Gérer les sources (Supprimer existantes et recréer - méthode simple)
+        // Note: Idéalement on devrait faire un diff, mais pour l'instant on simplifie
+        const existingSources = await ObjectiveMetric.getSources(id);
+        for (const s of existingSources) {
+            await ObjectiveMetric.deleteSource(s.id);
+        }
+
+        if (sources && Array.isArray(sources)) {
+            for (const source of sources) {
+                await ObjectiveMetric.addSource({
+                    metric_id: id,
+                    data_source_table: 'opportunities',
+                    data_source_value_column: source.value_field,
+                    filter_conditions: { opportunity_type_id: source.opportunity_type },
+                    weight: 1.0,
+                    objective_type_id: null,
+                    unit_id: null
+                });
+            }
+        }
+
+        res.json(metric);
+    } catch (error) {
+        console.error('Erreur lors de la modification de la métrique:', error);
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });

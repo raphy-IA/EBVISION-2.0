@@ -210,7 +210,9 @@ async function loadObjectives() {
                 business_unit_id: obj.business_unit_id,
                 division_id: obj.division_id,
                 business_unit_name: obj.business_unit_name,
-                division_name: obj.division_name
+                division_name: obj.division_name,
+                is_financial: obj.is_financial,
+                category: obj.type_category
             }));
 
             renderObjectives();
@@ -369,7 +371,7 @@ function updateStats() {
 
     // Budget global calculé (somme des cibles financières)
     const budget = objectives
-        .filter(o => o.type === 'FINANCIER' || o.type === 'CA') // Adapter selon les types réels
+        .filter(o => o.is_financial === true || o.category === 'FINANCIAL' || o.type === 'FINANCIER' || o.type === 'CA')
         .reduce((sum, o) => sum + (parseFloat(o.target_amount) || 0), 0);
 
     // Progression moyenne pondérée (si poids dispo) ou simple
@@ -709,10 +711,7 @@ function clearObjectivesDisplay() {
     updateStats();
 }
 
-function formatCurrency(amount) {
-    if (amount === undefined || amount === null) return '-';
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
-}
+
 
 function showAlert(message, type) {
     const alertDiv = document.createElement('div');

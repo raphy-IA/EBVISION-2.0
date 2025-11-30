@@ -92,7 +92,9 @@ class Objective {
                 go.*, 
                 'GLOBAL' as scope,
                 COALESCE(ot.code, om.code) as type_code,
-                COALESCE(ot.label, om.label) as type_label
+                COALESCE(ot.label, om.label) as type_label,
+                ot.category as type_category,
+                ot.is_financial as is_financial
             FROM global_objectives go
             LEFT JOIN objective_types ot ON go.objective_type_id = ot.id
             LEFT JOIN objective_metrics om ON go.metric_id = om.id
@@ -107,6 +109,8 @@ class Objective {
                 'BU' as scope,
                 COALESCE(ot.code, om.code) as type_code,
                 COALESCE(ot.label, om.label) as type_label,
+                ot.category as type_category,
+                ot.is_financial as is_financial,
                 bu.nom as business_unit_name
             FROM business_unit_objectives buo
             JOIN global_objectives go ON buo.global_objective_id = go.id
@@ -124,6 +128,8 @@ class Objective {
                 'DIVISION' as scope,
                 COALESCE(ot.code, om.code) as type_code,
                 COALESCE(ot.label, om.label) as type_label,
+                ot.category as type_category,
+                ot.is_financial as is_financial,
                 d.nom as division_name
             FROM division_objectives div_obj
             JOIN business_unit_objectives buo ON div_obj.parent_bu_objective_id = buo.id

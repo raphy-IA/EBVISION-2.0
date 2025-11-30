@@ -6,7 +6,7 @@
 const CURRENCY_CONFIG = {
     // Devise par défaut
     defaultCurrency: 'XAF',
-    
+
     // Configuration des devises supportées
     currencies: {
         'XAF': {
@@ -17,7 +17,8 @@ const CURRENCY_CONFIG = {
             symbolPosition: 'after', // 'before' ou 'after'
             thousandsSeparator: ' ',
             decimalSeparator: ',',
-            format: '{amount} {symbol}' // {amount} sera remplacé par le montant, {symbol} par le symbole
+            format: '{amount} {symbol}', // {amount} sera remplacé par le montant, {symbol} par le symbole
+            iconClass: 'fas fa-coins'
         },
         'EUR': {
             code: 'EUR',
@@ -27,7 +28,8 @@ const CURRENCY_CONFIG = {
             symbolPosition: 'after',
             thousandsSeparator: ' ',
             decimalSeparator: ',',
-            format: '{amount} {symbol}'
+            format: '{amount} {symbol}',
+            iconClass: 'fas fa-euro-sign'
         },
         'USD': {
             code: 'USD',
@@ -37,7 +39,8 @@ const CURRENCY_CONFIG = {
             symbolPosition: 'before',
             thousandsSeparator: ',',
             decimalSeparator: '.',
-            format: '{symbol}{amount}'
+            format: '{symbol}{amount}',
+            iconClass: 'fas fa-dollar-sign'
         },
         'GBP': {
             code: 'GBP',
@@ -47,7 +50,8 @@ const CURRENCY_CONFIG = {
             symbolPosition: 'before',
             thousandsSeparator: ',',
             decimalSeparator: '.',
-            format: '{symbol}{amount}'
+            format: '{symbol}{amount}',
+            iconClass: 'fas fa-pound-sign'
         },
         'CHF': {
             code: 'CHF',
@@ -57,120 +61,121 @@ const CURRENCY_CONFIG = {
             symbolPosition: 'after',
             thousandsSeparator: ' ',
             decimalSeparator: '.',
-            format: '{amount} {symbol}'
+            format: '{amount} {symbol}',
+            iconClass: 'fas fa-money-bill-wave'
         }
     },
-    
+
     /**
      * Formate un montant selon la devise spécifiée
      * @param {number} amount - Le montant à formater
      * @param {string} currencyCode - Le code de la devise (XAF, EUR, USD, etc.)
      * @returns {string} Le montant formaté
      */
-    format: function(amount, currencyCode = null) {
+    format: function (amount, currencyCode = null) {
         if (amount === null || amount === undefined || isNaN(amount)) {
             return '-';
         }
-        
-        const currency = currencyCode 
+
+        const currency = currencyCode
             ? this.currencies[currencyCode] || this.currencies[this.defaultCurrency]
             : this.currencies[this.defaultCurrency];
-        
+
         // Arrondir selon le nombre de décimales
         const roundedAmount = Math.round(amount * Math.pow(10, currency.decimals)) / Math.pow(10, currency.decimals);
-        
+
         // Séparer partie entière et décimale
         const parts = roundedAmount.toFixed(currency.decimals).split('.');
         const integerPart = parts[0];
         const decimalPart = parts[1];
-        
+
         // Ajouter les séparateurs de milliers
         const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, currency.thousandsSeparator);
-        
+
         // Construire le montant formaté
         let formattedAmount = formattedInteger;
         if (currency.decimals > 0 && decimalPart) {
             formattedAmount += currency.decimalSeparator + decimalPart;
         }
-        
+
         // Appliquer le format
         return currency.format
             .replace('{amount}', formattedAmount)
             .replace('{symbol}', currency.symbol);
     },
-    
+
     /**
      * Parse un montant formaté en nombre
      * @param {string} formattedAmount - Le montant formaté
      * @param {string} currencyCode - Le code de la devise
      * @returns {number} Le montant en nombre
      */
-    parse: function(formattedAmount, currencyCode = null) {
+    parse: function (formattedAmount, currencyCode = null) {
         if (!formattedAmount) return 0;
-        
-        const currency = currencyCode 
+
+        const currency = currencyCode
             ? this.currencies[currencyCode] || this.currencies[this.defaultCurrency]
             : this.currencies[this.defaultCurrency];
-        
+
         // Retirer le symbole
         let cleanAmount = formattedAmount.replace(currency.symbol, '').trim();
-        
+
         // Remplacer les séparateurs
         cleanAmount = cleanAmount
             .replace(new RegExp('\\' + currency.thousandsSeparator, 'g'), '')
             .replace(currency.decimalSeparator, '.');
-        
+
         return parseFloat(cleanAmount) || 0;
     },
-    
+
     /**
      * Obtient le symbole d'une devise
      * @param {string} currencyCode - Le code de la devise
      * @returns {string} Le symbole de la devise
      */
-    getSymbol: function(currencyCode = null) {
-        const currency = currencyCode 
+    getSymbol: function (currencyCode = null) {
+        const currency = currencyCode
             ? this.currencies[currencyCode] || this.currencies[this.defaultCurrency]
             : this.currencies[this.defaultCurrency];
-        
+
         return currency.symbol;
     },
-    
+
     /**
      * Obtient le nom d'une devise
      * @param {string} currencyCode - Le code de la devise
      * @returns {string} Le nom de la devise
      */
-    getName: function(currencyCode = null) {
-        const currency = currencyCode 
+    getName: function (currencyCode = null) {
+        const currency = currencyCode
             ? this.currencies[currencyCode] || this.currencies[this.defaultCurrency]
             : this.currencies[this.defaultCurrency];
-        
+
         return currency.name;
     },
-    
+
     /**
      * Vérifie si une devise est supportée
      * @param {string} currencyCode - Le code de la devise
      * @returns {boolean} True si la devise est supportée
      */
-    isSupported: function(currencyCode) {
+    isSupported: function (currencyCode) {
         return !!this.currencies[currencyCode];
     },
-    
+
     /**
      * Obtient la liste des devises supportées
      * @returns {Array} Liste des codes de devises
      */
-    getSupportedCurrencies: function() {
+    getSupportedCurrencies: function () {
         return Object.keys(this.currencies);
     },
-    
+
     /**
      * Génère les options HTML pour un <select> de devises
      * @returns {string} Chaîne HTML d'options
      */
-    getCurrencyOptions: function() {
+    getCurrencyOptions: function () {
         let options = '<option value="">Sélectionner une devise</option>';
         const codes = this.getSupportedCurrencies();
         codes.forEach(code => {

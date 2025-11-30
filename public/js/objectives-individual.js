@@ -4,6 +4,22 @@ let myObjectives = [];
 let currentObjectiveId = null;
 
 document.addEventListener('DOMContentLoaded', async function () {
+    // Initialiser les stats à 0 ou - par défaut
+    updateStats();
+
+    // Ajouter un bouton de rafraîchissement manuel pour le débogage
+    const header = document.querySelector('h3'); // "Mes Objectifs"
+    if (header) {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-sm btn-outline-secondary ms-3';
+        btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Rafraîchir';
+        btn.onclick = () => {
+            console.log('🔄 Rafraîchissement manuel...');
+            loadMyObjectives();
+        };
+        header.appendChild(btn);
+    }
+
     await loadFiscalYears();
     setupEventListeners();
 });

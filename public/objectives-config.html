@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration des Objectifs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/modern-sidebar.css">
+
+    <!-- Script d'authentification -->
+    <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+
+    <!-- Scripts de zone utilisateur -->
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
+        }
+
+        .card-header-tabs {
+            margin-bottom: -1rem;
+        }
+
+        .source-row {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+
+    <!-- CSS des variables de branding dynamiques -->
+    <link rel="stylesheet" href="/config/themes/brand-variables.css">
+
+    <!-- Scripts de branding -->
+    <script src="js/branding-loader.js"></script>
+    <script src="js/sidebar-branding.js"></script>
+</head>
+
+<body>
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="page-wrapper">
+        <div class="sidebar-container"></div>
+
+        <div class="main-content-area">
+            <div class="container-fluid">
+                <!-- En-tête -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h1 class="h3 mb-0">
+                                    <i class="fas fa-cogs text-primary me-2"></i>
+                                    Configuration des Objectifs
+                                </h1>
+                                <p class="text-muted mb-0">Gérez les métriques, types et unités</p>
+                            </div>
+                            <div>
+                                <a href="objectives-management.html" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Retour aux Objectifs
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenu Principal -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <ul class="nav nav-tabs card-header-tabs" id="configTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="metrics-tab" data-bs-toggle="tab"
+                                            data-bs-target="#metrics" type="button" role="tab">
+                                            <i class="fas fa-chart-line me-2"></i>Métriques
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="types-tab" data-bs-toggle="tab"
+                                            data-bs-target="#types" type="button" role="tab">
+                                            <i class="fas fa-tags me-2"></i>Types d'Objectifs
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="units-tab" data-bs-toggle="tab"
+                                            data-bs-target="#units" type="button" role="tab">
+                                            <i class="fas fa-ruler me-2"></i>Unités
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card-body">
+                                <div class="tab-content" id="configTabContent">
+
+                                    <!-- Onglet Métriques -->
+                                    <div class="tab-pane fade show active" id="metrics" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="card-title">Métriques de Performance</h5>
+                                            <button class="btn btn-primary btn-sm" onclick="openMetricModal()">
+                                                <i class="fas fa-plus me-2"></i>Nouvelle Métrique
+                                            </button>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="metricsTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Code</th>
+                                                        <th>Libellé</th>
+                                                        <th>Description</th>
+                                                        <th>Sources</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center py-4">Chargement...</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Onglet Types -->
+                                    <div class="tab-pane fade" id="types" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="card-title">Types d'Objectifs</h5>
+                                            <button class="btn btn-primary btn-sm" onclick="openTypeModal()">
+                                                <i class="fas fa-plus me-2"></i>Nouveau Type
+                                            </button>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="typesTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Libellé</th>
+                                                        <th>Code</th>
+                                                        <th>Catégorie</th>
+                                                        <th>Unité par défaut</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center py-4">Chargement...</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Onglet Unités -->
+                                    <div class="tab-pane fade" id="units" role="tabpanel">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="card-title">Unités de Mesure</h5>
+                                            <button class="btn btn-primary btn-sm" onclick="openUnitModal()">
+                                                <i class="fas fa-plus me-2"></i>Nouvelle Unité
+                                            </button>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="unitsTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Code</th>
+                                                        <th>Libellé</th>
+                                                        <th>Symbole</th>
+                                                        <th>Type</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center py-4">Chargement...</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Métrique -->
+    <div class="modal fade" id="metricModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="metricModalTitle">Nouvelle Métrique</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="metricForm">
+                        <input type="hidden" id="metricId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="metricCode" class="form-label">Code *</label>
+                                <input type="text" class="form-control" id="metricCode" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="metricLabel" class="form-label">Libellé *</label>
+                                <input type="text" class="form-control" id="metricLabel" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="metricDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="metricDescription" rows="2"></textarea>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">Sources de Données</h6>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addSourceRow()">
+                                <i class="fas fa-plus me-1"></i>Ajouter une source
+                            </button>
+                        </div>
+                        <div id="metricSourcesContainer"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveMetric()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Type d'Objectif -->
+    <div class="modal fade" id="typeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="typeModalTitle">Nouveau Type d'Objectif</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="typeForm">
+                        <input type="hidden" id="typeId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="typeCode" class="form-label">Code *</label>
+                                <input type="text" class="form-control" id="typeCode" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="typeLabel" class="form-label">Libellé *</label>
+                                <input type="text" class="form-control" id="typeLabel" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="typeCategory" class="form-label">Catégorie *</label>
+                                <select class="form-select" id="typeCategory" required>
+                                    <option value="FINANCIAL">Financier</option>
+                                    <option value="OPERATIONAL">Opérationnel</option>
+                                    <option value="QUALITY">Qualité</option>
+                                    <option value="HR">Ressources Humaines</option>
+                                    <option value="CSR">RSE</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="typeUnit" class="form-label">Unité par défaut</label>
+                                <input type="text" class="form-control" id="typeUnit" placeholder="Ex: EUR, %, pcs">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="typeFinancial">
+                                <label class="form-check-label" for="typeFinancial">
+                                    Type financier (comptabilisé dans le budget global)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="typeDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="typeDescription" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveType()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Unité -->
+    <div class="modal fade" id="unitModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="unitModalTitle">Nouvelle Unité</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="unitForm">
+                        <input type="hidden" id="unitId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="unitCode" class="form-label">Code *</label>
+                                <input type="text" class="form-control" id="unitCode" required
+                                    placeholder="Ex: EUR, PCT">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="unitLabel" class="form-label">Libellé *</label>
+                                <input type="text" class="form-control" id="unitLabel" required
+                                    placeholder="Ex: Euro, Pourcentage">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="unitSymbol" class="form-label">Symbole</label>
+                                <input type="text" class="form-control" id="unitSymbol" placeholder="Ex: €, %">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="unitType" class="form-label">Type *</label>
+                                <select class="form-select" id="unitType" required>
+                                    <option value="CURRENCY">Devise</option>
+                                    <option value="PERCENTAGE">Pourcentage</option>
+                                    <option value="COUNT">Nombre</option>
+                                    <option value="OTHER">Autre</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveUnit()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/session-manager.js"></script>
+    <script src="js/objectives-config.js"></script>
+</body>
+
+</html>

@@ -119,6 +119,10 @@
                                 <select class="form-select" id="fiscalYearSelect" style="width: 200px;">
                                     <option value="">Chargement...</option>
                                 </select>
+                                <a href="objectives-config.html" class="btn btn-outline-secondary"
+                                    title="Configurer métriques et types">
+                                    <i class="fas fa-cog"></i>
+                                </a>
                                 <button class="btn btn-primary" onclick="openCreateObjectiveModal()">
                                     <i class="fas fa-plus me-2"></i>Nouvel Objectif
                                 </button>
@@ -126,31 +130,30 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Statistiques Globales -->
                 <div class="row mb-4" id="statsContainer">
                     <div class="col-md-3">
-                        <div class="card stats-card bg-primary text-white">
-                            <div class="card-body">
+                        <div class="card stats-card border-primary">
+                            <div class="card-body text-primary">
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <h6 class="card-title">Budget Global</h6>
-                                        <h3 class="mb-0" id="globalBudget">-</h3>
+                                        <h3 class="mb-0 fw-bold" id="globalBudget">-</h3>
                                     </div>
                                     <div class="align-self-center">
-                                        <i class="fas fa-euro-sign fa-2x opacity-75"></i>
+                                        <i class="fas fa-euro-sign currency-icon fa-2x opacity-75"></i>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card stats-card bg-success text-white">
-                            <div class="card-body">
+                        <div class="card stats-card border-success">
+                            <div class="card-body text-success">
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <h6 class="card-title">Objectifs Atteints</h6>
-                                        <h3 class="mb-0" id="achievedObjectives">-</h3>
+                                        <h3 class="mb-0 fw-bold" id="achievedObjectives">-</h3>
                                     </div>
                                     <div class="align-self-center">
                                         <i class="fas fa-check-circle fa-2x opacity-75"></i>
@@ -160,12 +163,12 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card stats-card bg-info text-white">
-                            <div class="card-body">
+                        <div class="card stats-card border-info">
+                            <div class="card-body text-info">
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <h6 class="card-title">Progression Globale</h6>
-                                        <h3 class="mb-0" id="globalProgress">-</h3>
+                                        <h3 class="mb-0 fw-bold" id="globalProgress">-</h3>
                                     </div>
                                     <div class="align-self-center">
                                         <i class="fas fa-chart-line fa-2x opacity-75"></i>
@@ -175,12 +178,12 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card stats-card bg-warning text-white">
-                            <div class="card-body">
+                        <div class="card stats-card border-warning">
+                            <div class="card-body text-warning">
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <h6 class="card-title">Objectifs en Retard</h6>
-                                        <h3 class="mb-0" id="delayedObjectives">-</h3>
+                                        <h3 class="mb-0 fw-bold" id="delayedObjectives">-</h3>
                                     </div>
                                     <div class="align-self-center">
                                         <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
@@ -222,7 +225,8 @@
                                     <!-- Onglet Objectifs Globaux -->
                                     <div class="tab-pane fade show active" id="global" role="tabpanel">
                                         <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <h5 class="card-title">Objectifs Stratégiques de l'Entreprise</h5>
+                                            <h5 class="card-title">Objectifs Stratégiques de
+                                                l'Entreprise</h5>
                                             <div class="btn-group">
                                                 <button class="btn btn-outline-secondary btn-sm"
                                                     onclick="refreshObjectives()">
@@ -249,7 +253,8 @@
                                         </div>
                                         <div id="buObjectivesList">
                                             <div class="text-center text-muted py-5">
-                                                <p>Sélectionnez une Business Unit pour voir ses objectifs</p>
+                                                <p>Sélectionnez une Business Unit pour voir ses
+                                                    objectifs</p>
                                             </div>
                                         </div>
                                     </div>
@@ -292,7 +297,8 @@
                         <input type="hidden" id="objectiveId">
                         <div class="row">
                             <div class="col-md-12 mb-3">
-                                <label for="objectiveTitle" class="form-label">Titre de l'objectif *</label>
+                                <label for="objectiveTitle" class="form-label">Titre de l'objectif
+                                    *</label>
                                 <input type="text" class="form-control" id="objectiveTitle" required>
                             </div>
                         </div>
@@ -320,7 +326,8 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="objectiveTarget" class="form-label">Cible / Montant (€)</label>
+                                <label for="objectiveTarget" class="form-label">Cible / Montant (<span
+                                        class="currency-symbol">€</span>)</label>
                                 <input type="number" class="form-control" id="objectiveTarget" step="0.01">
                             </div>
                             <div class="col-md-6 mb-3">
@@ -393,7 +400,7 @@
                                 <label class="form-label">Montant Restant</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control" id="remainingAmount" readonly>
-                                    <span class="input-group-text">€</span>
+                                    <span class="input-group-text currency-symbol">€</span>
                                 </div>
                             </div>
                         </div>
@@ -432,53 +439,14 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Onglet Business Units -->
-    <div class="tab-pane fade" id="bu" role="tabpanel">
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <select class="form-select" id="buSelect" onchange="loadBuObjectives()">
-                    <option value="">Toutes les Business Units</option>
-                </select>
-            </div>
-        </div>
-        <div id="buObjectivesList">
-            <div class="text-center text-muted py-5">
-                <p>Sélectionnez une Business Unit pour voir ses objectifs</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Onglet Divisions -->
-    <div class="tab-pane fade" id="division" role="tabpanel">
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <select class="form-select" id="divisionSelect" onchange="loadDivisionObjectives()">
-                    <option value="">Toutes les Divisions</option>
-                </select>
-            </div>
-        </div>
-        <div id="divisionObjectivesList">
-            <div class="text-center text-muted py-5">
-                <p>Sélectionnez une Division pour voir ses objectifs</p>
-            </div>
-        </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-
-    <!-- Modal de création/édition d'objectif -->
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/sidebar.js"></script>
     <script src="js/session-manager.js"></script>
+
+    <!-- Gestion des devises -->
+    <script src="js/currency-config.js"></script>
+    <script src="js/currency-context.js"></script>
+
     <script src="js/objectives-management.js"></script>
     <!-- Wizards pour création d'objectifs -->
     <script src="js/objectives-wizards.js"></script>
