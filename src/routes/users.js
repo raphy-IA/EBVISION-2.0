@@ -200,6 +200,48 @@ router.post('/', authenticateToken, requirePermission('users:create'), async (re
             });
         }
 
+        // 🔒 PROTECTION SUPER_ADMIN: Vérifier si tentative d'attribution du rôle SUPER_ADMIN
+        const rolesToAssign = value.roles || [value.role];
+
+        // Récupérer les noms des rôles à partir des IDs
+        if (value.roles && Array.isArray(value.roles)) {
+            const rolesCheckResult = await pool.query(
+                'SELECT id, name FROM roles WHERE id = ANY($1)',
+                [value.roles]
+            );
+
+            const roleNames = rolesCheckResult.rows.map(r => r.name);
+
+            if (roleNames.includes('SUPER_ADMIN')) {
+                const isCurrentSuperAdmin = await isSuperAdmin(req.user.id);
+
+                if (!isCurrentSuperAdmin) {
+                    await logSuperAdminAction(
+                        req.user.id,
+                        'SUPER_ADMIN_UNAUTHORIZED_CREATE_ATTEMPT',
+                        null,
+                        { requestedRoles: roleNames, email: value.email },
+                        req
+                    );
+
+                    return res.status(403).json({
+                        success: false,
+                        message: 'Accès refusé',
+                        reason: 'Seul un SUPER_ADMIN peut créer un utilisateur avec le rôle SUPER_ADMIN'
+                    });
+                }
+
+                // 📝 AUDIT: Enregistrer la création d'un utilisateur SUPER_ADMIN
+                await logSuperAdminAction(
+                    req.user.id,
+                    'SUPER_ADMIN_USER_CREATED',
+                    null,
+                    { email: value.email, roles: roleNames },
+                    req
+                );
+            }
+        }
+
         // Vérifier si l'email existe déjà
         const existingUser = await User.findByEmail(value.email);
         if (existingUser) {
@@ -208,8 +250,6 @@ router.post('/', authenticateToken, requirePermission('users:create'), async (re
                 message: 'Un utilisateur avec cet email existe déjà'
             });
         }
-
-
 
         // Créer l'utilisateur (le modèle User.create fait le hashage et gère les rôles multiples)
         const newUser = await User.create(value);
@@ -315,6 +355,43 @@ router.put('/:id', superAdminActionLimiter, authenticateToken, requirePermission
         // Gérer la mise à jour des rôles multiples si fournis
         if (req.body.roles && Array.isArray(req.body.roles)) {
             console.log('📋 Mise à jour des rôles multiples:', req.body.roles);
+
+            // 🔒 PROTECTION SUPER_ADMIN: Vérifier si tentative d'attribution du rôle SUPER_ADMIN
+            const rolesCheckResult = await pool.query(
+                'SELECT id, name FROM roles WHERE id = ANY($1)',
+                [req.body.roles]
+            );
+
+            const roleNames = rolesCheckResult.rows.map(r => r.name);
+
+            if (roleNames.includes('SUPER_ADMIN')) {
+                const isCurrentSuperAdmin = await isSuperAdmin(req.user.id);
+
+                if (!isCurrentSuperAdmin) {
+                    await logSuperAdminAction(
+                        req.user.id,
+                        'SUPER_ADMIN_UNAUTHORIZED_UPDATE_ATTEMPT',
+                        id,
+                        { requestedRoles: roleNames, targetUser: `${existingUser.nom} ${existingUser.prenom}` },
+                        req
+                    );
+
+                    return res.status(403).json({
+                        success: false,
+                        message: 'Accès refusé',
+                        reason: 'Seul un SUPER_ADMIN peut attribuer le rôle SUPER_ADMIN'
+                    });
+                }
+
+                // 📝 AUDIT: Enregistrer l'attribution du rôle SUPER_ADMIN
+                await logSuperAdminAction(
+                    req.user.id,
+                    'SUPER_ADMIN_ROLE_UPDATED',
+                    id,
+                    { targetUser: `${existingUser.nom} ${existingUser.prenom}`, roles: roleNames },
+                    req
+                );
+            }
 
             try {
                 // Supprimer tous les rôles existants
@@ -660,9 +737,19 @@ router.get('/:id/roles', authenticateToken, async (req, res) => {
         console.log(`👤 Utilisateur authentifié: ${req.user?.nom} ${req.user?.prenom} (${req.user?.id})`);
 
         console.log('🔄 Appel de User.getRoles()...');
-        const roles = await User.getRoles(userId);
+        let roles = await User.getRoles(userId);
         console.log(`✅ Rôles récupérés: ${roles.length}`);
         console.log('📊 Rôles:', JSON.stringify(roles, null, 2));
+
+        // 🔒 PROTECTION SUPER_ADMIN: Filtrer le rôle SUPER_ADMIN pour les non-SUPER_ADMIN
+        const isCurrentSuperAdmin = await isSuperAdmin(req.user.id);
+        if (!isCurrentSuperAdmin) {
+            const originalLength = roles.length;
+            roles = roles.filter(r => r.name !== 'SUPER_ADMIN');
+            if (originalLength > roles.length) {
+                console.log('🔒 SUPER_ADMIN filtré de la liste des rôles');
+            }
+        }
 
         res.json({
             success: true,

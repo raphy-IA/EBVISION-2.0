@@ -989,9 +989,24 @@
             }
         }
 
-        function displayUsers(users) {
+        async function displayUsers(users) {
             const tbody = document.getElementById('users-table');
             tbody.innerHTML = '';
+
+            // 🔒 PROTECTION SUPER_ADMIN: Filtrer les utilisateurs SUPER_ADMIN pour les non-SUPER_ADMIN
+            const isSuperAdmin = await isCurrentUserSuperAdmin();
+            if (!isSuperAdmin) {
+                const originalLength = users.length;
+                users = users.filter(user => {
+                    // Vérifier si l'utilisateur a le rôle SUPER_ADMIN
+                    const hasSuperAdminRole = user.roles_details && user.roles_details.some(role => role.name === 'SUPER_ADMIN');
+                    return !hasSuperAdminRole;
+                });
+                if (originalLength > users.length) {
+                    console.log(`🔒 ${originalLength - users.length} utilisateur(s) SUPER_ADMIN filtré(s)`);
+                }
+            }
+
             if (users.length === 0) {
                 tbody.innerHTML = `
                     <tr>

@@ -9,6 +9,10 @@ const { authenticateToken, requireRole, requirePermission } = require('../middle
 const User = require('../models/User');
 const { pool } = require('../utils/database');
 const { upload, processImage, deleteExistingPhoto } = require('../middleware/upload');
+const {
+    isSuperAdmin,
+    logSuperAdminAction
+} = require('../utils/superAdminHelper');
 const fs = require('fs');
 const path = require('path');
 
@@ -577,6 +581,53 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
                 success: false,
                 message: 'Au moins un rôle doit être sélectionné'
             });
+        }
+
+        // 🔒 PROTECTION SUPER_ADMIN: Vérifier si tentative d'attribution du rôle SUPER_ADMIN
+        const rolesCheckResult = await pool.query(
+            'SELECT id, name FROM roles WHERE id = ANY($1)',
+            [roles]
+        );
+
+        const roleNames = rolesCheckResult.rows.map(r => r.name);
+
+        if (roleNames.includes('SUPER_ADMIN')) {
+            const isCurrentSuperAdmin = await isSuperAdmin(req.user.id);
+
+            if (!isCurrentSuperAdmin) {
+                await logSuperAdminAction(
+                    req.user.id,
+                    'SUPER_ADMIN_UNAUTHORIZED_COLLAB_ACCOUNT_CREATE_ATTEMPT',
+                    null,
+                    {
+                        collaborateur: `${nom} ${prenom}`,
+                        collaborateurId: id,
+                        requestedRoles: roleNames,
+                        email
+                    },
+                    req
+                );
+
+                return res.status(403).json({
+                    success: false,
+                    message: 'Accès refusé',
+                    reason: 'Seul un SUPER_ADMIN peut créer un compte utilisateur avec le rôle SUPER_ADMIN'
+                });
+            }
+
+            // 📝 AUDIT: Enregistrer la création d'un compte SUPER_ADMIN pour un collaborateur
+            await logSuperAdminAction(
+                req.user.id,
+                'SUPER_ADMIN_COLLAB_ACCOUNT_CREATED',
+                null,
+                {
+                    collaborateur: `${nom} ${prenom}`,
+                    collaborateurId: id,
+                    email,
+                    roles: roleNames
+                },
+                req
+            );
         }
 
         // Créer le compte utilisateur avec rôles multiples
