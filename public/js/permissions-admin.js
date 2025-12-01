@@ -1491,15 +1491,14 @@ class PermissionsAdmin {
             return;
         }
 
-        // Organiser par niveau (Global, BU, Division, Grade, Individual)
-        const levels = ['GLOBAL', 'BU', 'DIVISION', 'GRADE', 'INDIVIDUAL'];
+        // Organiser par niveau (Global, BU, Division, Individual)
+        const levels = ['GLOBAL', 'BU', 'DIVISION', 'INDIVIDUAL'];
         const actions = ['VIEW', 'CREATE', 'EDIT', 'DELETE', 'DISTRIBUTE'];
 
         const levelLabels = {
             'GLOBAL': 'Global (Entreprise)',
             'BU': 'Business Unit',
             'DIVISION': 'Division',
-            'GRADE': 'Grade',
             'INDIVIDUAL': 'Individuel'
         };
 

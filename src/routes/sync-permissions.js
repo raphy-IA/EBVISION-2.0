@@ -499,6 +499,80 @@ async function syncPermissions(htmlFiles, menuStructure) {
 
     console.log(`✅ ${menuAdded} permissions de menu ajoutées, ${menuUpdated} mises à jour, ${skipped} inchangées`);
 
+    // ===== ÉTAPE 4: CRÉER/METTRE À JOUR LES PERMISSIONS SYSTÈME (OBJECTIFS, ETC.) =====
+    console.log('⚙️ Synchronisation des permissions système (Objectifs)...');
+
+    const objectivePermissions = [
+        // GLOBAL
+        { name: 'objectives.global.view', code: 'OBJECTIVES_GLOBAL_VIEW', description: 'Voir les objectifs globaux', category: 'objectives' },
+        { name: 'objectives.global.create', code: 'OBJECTIVES_GLOBAL_CREATE', description: 'Créer des objectifs globaux', category: 'objectives' },
+        { name: 'objectives.global.edit', code: 'OBJECTIVES_GLOBAL_EDIT', description: 'Modifier les objectifs globaux', category: 'objectives' },
+        { name: 'objectives.global.delete', code: 'OBJECTIVES_GLOBAL_DELETE', description: 'Supprimer les objectifs globaux', category: 'objectives' },
+        { name: 'objectives.global.distribute', code: 'OBJECTIVES_GLOBAL_DISTRIBUTE', description: 'Distribuer les objectifs globaux', category: 'objectives' },
+
+        // BUSINESS UNIT
+        { name: 'objectives.bu.view', code: 'OBJECTIVES_BU_VIEW', description: 'Voir les objectifs BU', category: 'objectives' },
+        { name: 'objectives.bu.create', code: 'OBJECTIVES_BU_CREATE', description: 'Créer des objectifs BU', category: 'objectives' },
+        { name: 'objectives.bu.edit', code: 'OBJECTIVES_BU_EDIT', description: 'Modifier les objectifs BU', category: 'objectives' },
+        { name: 'objectives.bu.delete', code: 'OBJECTIVES_BU_DELETE', description: 'Supprimer les objectifs BU', category: 'objectives' },
+        { name: 'objectives.bu.distribute', code: 'OBJECTIVES_BU_DISTRIBUTE', description: 'Distribuer les objectifs BU', category: 'objectives' },
+
+        // DIVISION
+        { name: 'objectives.division.view', code: 'OBJECTIVES_DIVISION_VIEW', description: 'Voir les objectifs Division', category: 'objectives' },
+        { name: 'objectives.division.create', code: 'OBJECTIVES_DIVISION_CREATE', description: 'Créer des objectifs Division', category: 'objectives' },
+        { name: 'objectives.division.edit', code: 'OBJECTIVES_DIVISION_EDIT', description: 'Modifier les objectifs Division', category: 'objectives' },
+        { name: 'objectives.division.delete', code: 'OBJECTIVES_DIVISION_DELETE', description: 'Supprimer les objectifs Division', category: 'objectives' },
+        { name: 'objectives.division.distribute', code: 'OBJECTIVES_DIVISION_DISTRIBUTE', description: 'Distribuer les objectifs Division', category: 'objectives' },
+
+        // INDIVIDUAL
+        { name: 'objectives.individual.view', code: 'OBJECTIVES_INDIVIDUAL_VIEW', description: 'Voir les objectifs Individuels', category: 'objectives' },
+        { name: 'objectives.individual.create', code: 'OBJECTIVES_INDIVIDUAL_CREATE', description: 'Créer des objectifs Individuels', category: 'objectives' },
+        { name: 'objectives.individual.edit', code: 'OBJECTIVES_INDIVIDUAL_EDIT', description: 'Modifier les objectifs Individuels', category: 'objectives' },
+        { name: 'objectives.individual.delete', code: 'OBJECTIVES_INDIVIDUAL_DELETE', description: 'Supprimer les objectifs Individuels', category: 'objectives' },
+
+        // CONFIGURATION
+        { name: 'objectives.config.edit', code: 'OBJECTIVES_CONFIG_EDIT', description: 'Configurer les types et métriques d\'objectifs', category: 'objectives' }
+    ];
+
+    let systemAdded = 0;
+    let systemUpdated = 0;
+
+    for (const perm of objectivePermissions) {
+        try {
+            const existing = await pool.query(
+                'SELECT id, name, description, category FROM permissions WHERE code = $1',
+                [perm.code]
+            );
+
+            if (existing.rows.length > 0) {
+                // Mettre à jour si nécessaire
+                if (existing.rows[0].name !== perm.name ||
+                    existing.rows[0].description !== perm.description ||
+                    existing.rows[0].category !== perm.category) {
+
+                    await pool.query(
+                        'UPDATE permissions SET name = $1, description = $2, category = $3, updated_at = NOW() WHERE id = $4',
+                        [perm.name, perm.description, perm.category, existing.rows[0].id]
+                    );
+                    systemUpdated++;
+                } else {
+                    skipped++;
+                }
+            } else {
+                await pool.query(
+                    `INSERT INTO permissions (code, name, description, category, created_at, updated_at)
+                     VALUES ($1, $2, $3, $4, NOW(), NOW())`,
+                    [perm.code, perm.name, perm.description, perm.category]
+                );
+                systemAdded++;
+            }
+        } catch (error) {
+            console.error(`Erreur pour la permission système ${perm.code}:`, error.message);
+        }
+    }
+
+    console.log(`✅ ${systemAdded} permissions système ajoutées, ${systemUpdated} mises à jour`);
+
     return {
         added: added + menuAdded,
         updated: updated + menuUpdated,
