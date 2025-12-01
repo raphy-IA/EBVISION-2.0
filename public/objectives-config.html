@@ -243,6 +243,13 @@
                             <label for="metricDescription" class="form-label">Description</label>
                             <textarea class="form-control" id="metricDescription" rows="2"></textarea>
                         </div>
+                        <div class="mb-3">
+                            <label for="metricUnit" class="form-label">Unité de la Métrique *</label>
+                            <select class="form-select" id="metricUnit" required onchange="onMetricUnitChange()">
+                                <option value="">Sélectionner une unité...</option>
+                            </select>
+                            <small class="text-muted">Tous les objectifs sources doivent partager cette unité.</small>
+                        </div>
                         <hr>
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h6 class="mb-0">Sources de Données</h6>

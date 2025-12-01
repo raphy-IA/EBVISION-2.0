@@ -13,6 +13,7 @@ class ObjectiveMetric {
                 m.description,
                 m.calculation_type,
                 m.target_unit_id,
+                u.code as unit_code,
                 u.label as unit_label,
                 u.symbol as unit_symbol,
                 m.is_active,
@@ -20,6 +21,7 @@ class ObjectiveMetric {
                     SELECT json_agg(json_build_object(
                         'id', s.id,
                         'opportunity_type', s.filter_conditions->>'opportunity_type_id',
+                        'objective_type_id', s.objective_type_id,
                         'value_field', s.data_source_value_column
                     ))
                     FROM objective_metric_sources s
@@ -46,6 +48,7 @@ class ObjectiveMetric {
                 m.description,
                 m.calculation_type,
                 m.target_unit_id,
+                u.code as unit_code,
                 u.label as unit_label,
                 u.symbol as unit_symbol,
                 m.is_active

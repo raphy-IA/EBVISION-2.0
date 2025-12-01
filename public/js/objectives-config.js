@@ -159,8 +159,18 @@ function openMetricModal() {
     document.getElementById('metricModalTitle').textContent = 'Nouvelle Métrique';
     document.getElementById('metricSourcesContainer').innerHTML = '';
 
-    // Ajouter une ligne de source vide par défaut
-    addSourceRow();
+    // Initialiser le sélecteur d'unité
+    const unitSelect = document.getElementById('metricUnit');
+    unitSelect.innerHTML = '<option value="">Sélectionner une unité...</option>';
+    units.forEach(u => {
+        const option = document.createElement('option');
+        option.value = u.code;
+        option.textContent = `${u.label} (${u.symbol || '-'})`;
+        unitSelect.appendChild(option);
+    });
+
+    // Ne pas ajouter de ligne de source par défaut tant que l'unité n'est pas choisie
+    // addSourceRow(); 
 
     new bootstrap.Modal(document.getElementById('metricModal')).show();
 }
@@ -175,45 +185,82 @@ function editMetric(id) {
     document.getElementById('metricDescription').value = metric.description || '';
     document.getElementById('metricModalTitle').textContent = 'Modifier la Métrique';
 
+    // Initialiser le sélecteur d'unité
+    const unitSelect = document.getElementById('metricUnit');
+    unitSelect.innerHTML = '<option value="">Sélectionner une unité...</option>';
+    units.forEach(u => {
+        const option = document.createElement('option');
+        option.value = u.code;
+        option.textContent = `${u.label} (${u.symbol || '-'})`;
+        unitSelect.appendChild(option);
+    });
+
+    // Sélectionner l'unité de la métrique (si elle existe)
+    // Note: Le backend doit renvoyer l'unité de la métrique. 
+    // Si l'objet metric n'a pas de champ unit_code, on essaie de le déduire des sources ou on laisse vide.
+    if (metric.unit_code) {
+        unitSelect.value = metric.unit_code;
+    } else if (metric.sources && metric.sources.length > 0) {
+        // Essayer de trouver l'unité via la première source (si disponible dans les données chargées)
+        // C'est un fallback
+    }
+
     const container = document.getElementById('metricSourcesContainer');
     container.innerHTML = '';
 
     if (metric.sources && metric.sources.length > 0) {
         metric.sources.forEach(source => addSourceRow(source));
-    } else {
-        addSourceRow();
     }
 
     new bootstrap.Modal(document.getElementById('metricModal')).show();
 }
 
-function addSourceRow(data = null) {
+function onMetricUnitChange() {
     const container = document.getElementById('metricSourcesContainer');
-    const rowId = Date.now();
+    if (container.children.length > 0) {
+        if (confirm('Changer l\'unité va supprimer les sources existantes. Continuer ?')) {
+            container.innerHTML = '';
+        } else {
+            // Rétablir l'ancienne valeur ? Difficile sans stocker l'état précédent.
+            // Pour l'instant on laisse l'utilisateur gérer.
+        }
+    }
+    // On pourrait ajouter une première ligne automatiquement ici
+    addSourceRow();
+}
 
+function addSourceRow(data = null) {
+    const unitCode = document.getElementById('metricUnit').value;
+    if (!unitCode) {
+        alert('Veuillez d\'abord sélectionner une unité pour la métrique.');
+        return;
+    }
+
+    // Filtrer les types d'objectifs compatibles avec l'unité sélectionnée
+    // On suppose que types[i].unit correspond au symbole ou au code.
+    // Il faut faire le lien entre unitCode (ex: 'EUR') et type.unit (ex: '€').
+    const selectedUnit = units.find(u => u.code === unitCode);
+    const compatibleTypes = types.filter(t => {
+        // Si le type n'a pas d'unité définie, on l'exclut ? Ou on l'inclut ?
+        // On suppose qu'on veut matcher strictement.
+        if (!t.unit) return false;
+        return t.unit === selectedUnit.symbol || t.unit === selectedUnit.code;
+    });
+
+    if (compatibleTypes.length === 0) {
+        alert('Aucun type d\'objectif trouvé pour cette unité.');
+        return;
+    }
+
+    const container = document.getElementById('metricSourcesContainer');
     const div = document.createElement('div');
     div.className = 'source-row d-flex gap-2 align-items-end';
     div.innerHTML = `
         <div class="flex-grow-1">
-            <label class="form-label small mb-1">Type d'Opportunité</label>
+            <label class="form-label small mb-1">Type d'Objectif Source</label>
             <select class="form-select form-select-sm source-type" required>
-                <option value="">Choisir...</option>
-                ${opportunityTypes.map(t => `<option value="${t.id}">${t.label}</option>`).join('')}
-            </select>
-        </div>
-        <div class="flex-grow-1">
-            <label class="form-label small mb-1">Champ Valeur</label>
-            <select class="form-select form-select-sm source-field" required>
-                <option value="amount">Montant (€)</option>
-                <option value="count">Nombre (Quantité)</option>
-                <option value="margin">Marge</option>
-            </select>
-        </div>
-        <div style="width: 100px;">
-            <label class="form-label small mb-1">Filtre Statut</label>
-            <select class="form-select form-select-sm source-status">
-                <option value="WON">Gagné</option>
-                <option value="ALL">Tous</option>
+                <option value="">Choisir un type...</option>
+                ${compatibleTypes.map(t => `<option value="${t.id}">${t.label} (${t.code})</option>`).join('')}
             </select>
         </div>
         <button type="button" class="btn btn-outline-danger btn-sm mb-1" onclick="this.closest('.source-row').remove()">
@@ -224,9 +271,13 @@ function addSourceRow(data = null) {
     container.appendChild(div);
 
     if (data) {
-        div.querySelector('.source-type').value = data.opportunity_type;
-        div.querySelector('.source-field').value = data.value_field;
-        // div.querySelector('.source-status').value = data.status_filter || 'WON'; // Si implémenté
+        // data.objective_type_id doit être présent
+        if (data.objective_type_id) {
+            div.querySelector('.source-type').value = data.objective_type_id;
+        } else if (data.opportunity_type) {
+            // Fallback pour compatibilité si on édite une vieille métrique (ne devrait pas arriver si on a migré)
+            console.warn('Old metric source format detected');
+        }
     }
 }
 
@@ -238,24 +289,28 @@ async function saveMetric() {
     }
 
     const id = document.getElementById('metricId').value;
+    const unitCode = document.getElementById('metricUnit').value;
     const sources = [];
 
     document.querySelectorAll('.source-row').forEach(row => {
-        const type = row.querySelector('.source-type').value;
-        const field = row.querySelector('.source-field').value;
-        if (type && field) {
+        const typeId = row.querySelector('.source-type').value;
+        if (typeId) {
             sources.push({
-                opportunity_type: type,
-                value_field: field,
-                metric_id: id // Sera ignoré en création, utile en update
+                objective_type_id: typeId
             });
         }
     });
+
+    if (sources.length === 0) {
+        alert('Veuillez ajouter au moins une source.');
+        return;
+    }
 
     const data = {
         code: document.getElementById('metricCode').value,
         label: document.getElementById('metricLabel').value,
         description: document.getElementById('metricDescription').value,
+        unit_code: unitCode,
         sources: sources
     };
 

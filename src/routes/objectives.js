@@ -140,29 +140,51 @@ router.get('/metrics/:id/sources', authenticateToken, async (req, res) => {
 // POST /api/objectives/metrics - Créer une métrique
 router.post('/metrics', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
     try {
-        const { code, label, description, sources } = req.body;
+        const { code, label, description, unit_code, sources } = req.body;
 
-        // 1. Créer la métrique
+        // 1. Récupérer l'unité
+        let target_unit_id = null;
+        if (unit_code) {
+            const unit = await ObjectiveUnit.getByCode(unit_code);
+            if (unit) target_unit_id = unit.id;
+        }
+
+        // 2. Créer la métrique
         const metric = await ObjectiveMetric.create({
             code,
             label,
             description,
             calculation_type: 'SUM', // Par défaut pour l'instant
-            target_unit_id: null // À gérer si besoin
+            target_unit_id
         });
 
-        // 2. Ajouter les sources
+        // 3. Ajouter les sources
         if (sources && Array.isArray(sources)) {
             for (const source of sources) {
-                await ObjectiveMetric.addSource({
-                    metric_id: metric.id,
-                    data_source_table: 'opportunities',
-                    data_source_value_column: source.value_field,
-                    filter_conditions: { opportunity_type_id: source.opportunity_type },
-                    weight: 1.0,
-                    objective_type_id: null, // Pas lié à un type d'objectif mais à une opportunité
-                    unit_id: null
-                });
+                // Si la source a un objective_type_id, on l'utilise
+                if (source.objective_type_id) {
+                    await ObjectiveMetric.addSource({
+                        metric_id: metric.id,
+                        objective_type_id: source.objective_type_id,
+                        unit_id: target_unit_id,
+                        weight: 1.0,
+                        filter_conditions: null,
+                        data_source_table: null,
+                        data_source_value_column: null
+                    });
+                }
+                // Fallback pour compatibilité (si nécessaire, mais on privilégie la nouvelle structure)
+                else if (source.opportunity_type) {
+                    await ObjectiveMetric.addSource({
+                        metric_id: metric.id,
+                        data_source_table: 'opportunities',
+                        data_source_value_column: source.value_field,
+                        filter_conditions: { opportunity_type_id: source.opportunity_type },
+                        weight: 1.0,
+                        objective_type_id: null,
+                        unit_id: null
+                    });
+                }
             }
         }
 
@@ -176,20 +198,26 @@ router.post('/metrics', authenticateToken, requirePermission('OBJECTIVES_CONFIG_
 // PUT /api/objectives/metrics/:id - Modifier une métrique
 router.put('/metrics/:id', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
     try {
-        const { label, description, sources } = req.body;
+        const { label, description, unit_code, sources } = req.body;
         const id = req.params.id;
 
-        // 1. Mettre à jour la métrique
+        // 1. Récupérer l'unité
+        let target_unit_id = null;
+        if (unit_code) {
+            const unit = await ObjectiveUnit.getByCode(unit_code);
+            if (unit) target_unit_id = unit.id;
+        }
+
+        // 2. Mettre à jour la métrique
         const metric = await ObjectiveMetric.update(id, {
             label,
             description,
             calculation_type: 'SUM',
-            target_unit_id: null,
+            target_unit_id,
             is_active: true
         });
 
-        // 2. Gérer les sources (Supprimer existantes et recréer - méthode simple)
-        // Note: Idéalement on devrait faire un diff, mais pour l'instant on simplifie
+        // 3. Gérer les sources (Supprimer existantes et recréer)
         const existingSources = await ObjectiveMetric.getSources(id);
         for (const s of existingSources) {
             await ObjectiveMetric.deleteSource(s.id);
@@ -197,15 +225,28 @@ router.put('/metrics/:id', authenticateToken, requirePermission('OBJECTIVES_CONF
 
         if (sources && Array.isArray(sources)) {
             for (const source of sources) {
-                await ObjectiveMetric.addSource({
-                    metric_id: id,
-                    data_source_table: 'opportunities',
-                    data_source_value_column: source.value_field,
-                    filter_conditions: { opportunity_type_id: source.opportunity_type },
-                    weight: 1.0,
-                    objective_type_id: null,
-                    unit_id: null
-                });
+                if (source.objective_type_id) {
+                    await ObjectiveMetric.addSource({
+                        metric_id: id,
+                        objective_type_id: source.objective_type_id,
+                        unit_id: target_unit_id,
+                        weight: 1.0,
+                        filter_conditions: null,
+                        data_source_table: null,
+                        data_source_value_column: null
+                    });
+                }
+                else if (source.opportunity_type) {
+                    await ObjectiveMetric.addSource({
+                        metric_id: id,
+                        data_source_table: 'opportunities',
+                        data_source_value_column: source.value_field,
+                        filter_conditions: { opportunity_type_id: source.opportunity_type },
+                        weight: 1.0,
+                        objective_type_id: null,
+                        unit_id: null
+                    });
+                }
             }
         }
 
