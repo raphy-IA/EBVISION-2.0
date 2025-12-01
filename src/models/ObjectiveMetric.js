@@ -121,9 +121,6 @@ class ObjectiveMetric {
         return result.rows[0];
     }
 
-    /**
-     * Ajouter une source à une métrique
-     */
     static async addSource(data) {
         const {
             metric_id,

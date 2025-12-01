@@ -85,16 +85,30 @@ const requirePermission = (permission) => {
                 return next();
             }
 
-            // 2. Vérifier la permission spécifique
+            // 2. Vérifier la permission spécifique (via rôles OU permissions directes)
             const permissionQuery = `
                 SELECT 1
                 FROM permissions p
-                JOIN role_permissions rp ON p.id = rp.permission_id
-                JOIN user_roles ur ON rp.role_id = ur.role_id
-                WHERE ur.user_id = $1 AND p.code = $2
+                WHERE p.code = $1
+                AND (
+                    -- Via rôles
+                    EXISTS (
+                        SELECT 1
+                        FROM role_permissions rp
+                        JOIN user_roles ur ON rp.role_id = ur.role_id
+                        WHERE ur.user_id = $2 AND p.id = rp.permission_id
+                    )
+                    OR
+                    -- Permissions directes utilisateur
+                    EXISTS (
+                        SELECT 1
+                        FROM user_permissions up
+                        WHERE up.user_id = $2 AND up.permission_id = p.id
+                    )
+                )
             `;
 
-            const permissionResult = await pool.query(permissionQuery, [req.user.id, permission]);
+            const permissionResult = await pool.query(permissionQuery, [permission, req.user.id]);
 
             if (permissionResult.rows.length > 0) {
                 next();
