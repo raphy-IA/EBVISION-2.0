@@ -64,7 +64,7 @@ router.post('/login', async (req, res) => {
         const userRolesData = await User.getRoles(user.id);
         const userRoles = userRolesData.map(r => r.name); // Extraire juste les noms des rôles
 
-        console.log(`👤 Connexion de ${user.email} avec les rôles:`, userRoles);
+
 
         // Générer le token JWT avec les rôles multiples
         const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
@@ -170,12 +170,7 @@ router.post('/change-password', authenticateToken, async (req, res) => {
         }
 
         // Debug: afficher les informations de l'utilisateur (sans le mot de passe)
-        console.log('🔍 Utilisateur pour changement de mot de passe:', {
-            id: user.id,
-            login: user.login,
-            hasPasswordHash: !!user.password_hash,
-            passwordHashLength: user.password_hash ? user.password_hash.length : 0
-        });
+
 
         // Vérifier si l'utilisateur a un mot de passe hashé
         if (!user.password_hash) {
@@ -241,24 +236,18 @@ router.get('/me', authenticateToken, async (req, res) => {
 
         // Récupérer les informations du collaborateur associé si elles existent
         let collaborateurInfo = null;
-        console.log('🔍 Recherche collaborateur pour utilisateur:', user.id, 'collaborateur_id:', user.collaborateur_id);
+
 
         if (user.collaborateur_id) {
             try {
                 const Collaborateur = require('../models/Collaborateur');
                 collaborateurInfo = await Collaborateur.findById(user.collaborateur_id);
-                console.log('✅ Collaborateur trouvé:', collaborateurInfo ? {
-                    id: collaborateurInfo.id,
-                    nom: collaborateurInfo.nom,
-                    prenom: collaborateurInfo.prenom,
-                    business_unit_id: collaborateurInfo.business_unit_id,
-                    business_unit_nom: collaborateurInfo.business_unit_nom
-                } : 'null');
+
             } catch (error) {
                 console.error('❌ Erreur lors de la récupération des informations collaborateur:', error);
             }
         } else {
-            console.log('⚠️ Aucun collaborateur_id pour cet utilisateur');
+
         }
 
         // Récupérer tous les rôles de l'utilisateur depuis user_roles
@@ -271,7 +260,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         `, [user.id]);
 
         const userRoles = rolesResult.rows.map(r => r.name);
-        console.log(`🔐 Rôles de l'utilisateur: ${userRoles.join(', ') || 'aucun'}`);
+
 
         // Récupérer toutes les permissions de l'utilisateur via ses rôles
         const permissionsResult = await pool.query(`
@@ -283,7 +272,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         `, [user.id]);
 
         const userPermissions = permissionsResult.rows.map(p => p.code);
-        console.log(`🔑 Permissions de l'utilisateur: ${userPermissions.length} permissions trouvées`);
+
 
         res.json({
             success: true,
@@ -352,7 +341,7 @@ router.post('/forgot-password', async (req, res) => {
 
         // En production, on enverrait un email ici
         // Pour le développement, on retourne juste le token
-        console.log('Token de réinitialisation généré:', resetToken);
+
 
         res.json({
             success: true,
@@ -416,7 +405,7 @@ router.post('/logout', authenticateToken, async (req, res) => {
         const userId = req.user.id;
 
         // Log de déconnexion
-        console.log(`🔒 Déconnexion de l'utilisateur ${userId}`);
+
 
         // En production, on pourrait ajouter le token à une blacklist
         // Pour le développement, on se contente de logger
@@ -666,7 +655,7 @@ router.post('/login-2fa', async (req, res) => {
             const userRolesData = await User.getRoles(user.id);
             const userRoles = userRolesData.map(r => r.name); // Extraire juste les noms des rôles
 
-            console.log(`👤 Connexion 2FA de ${user.email} avec les rôles:`, userRoles);
+
 
             // Générer le token JWT final
             const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';

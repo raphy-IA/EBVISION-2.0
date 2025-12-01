@@ -22,7 +22,7 @@ router.get('/', authenticateToken, requirePermission('users:read'), async (req, 
         const role = req.query.role || '';
         const statut = req.query.status || req.query.statut || ''; // Support both 'status' and 'statut'
 
-        console.log('🔍 [API] GET /users - Paramètres:', { page, limit, search, role, statut });
+
 
         const result = await User.findAll({
             page,
@@ -43,7 +43,7 @@ router.get('/', authenticateToken, requirePermission('users:read'), async (req, 
             };
         });
 
-        console.log(`📊 [API] ${usersWithCollaborateurInfo.length} utilisateurs retournés sur ${result.pagination.total} total`);
+
 
         res.json({
             success: true,
@@ -91,7 +91,7 @@ router.get('/statistics', authenticateToken, requirePermission('users:read'), as
  */
 router.get('/roles', authenticateToken, async (req, res) => {
     try {
-        console.log('🔄 Récupération des rôles...');
+
 
         // Vérifier l'existence de la table roles
         const tableExistsQuery = `
@@ -105,21 +105,20 @@ router.get('/roles', authenticateToken, async (req, res) => {
         const tableExistsResult = await pool.query(tableExistsQuery);
         const tableExists = tableExistsResult.rows[0].exists;
 
-        console.log('📊 Table roles existe:', tableExists);
+
 
         if (!tableExists) {
-            console.log('❌ Table roles non trouvée');
+
             return res.status(404).json({
                 success: false,
                 message: 'Table des rôles non trouvée'
             });
         }
 
-        console.log('📋 Récupération des rôles depuis la table roles...');
-        console.log('👤 Utilisateur connecté:', req.user.id, req.user.role);
+
 
         // Simplification : récupérer tous les rôles sans filtrage pour l'instant
-        console.log('📋 Récupération de tous les rôles...');
+
 
         const rolesQuery = `
             SELECT id, name, description
@@ -127,11 +126,11 @@ router.get('/roles', authenticateToken, async (req, res) => {
             ORDER BY name
         `;
 
-        console.log('🔍 Exécution de la requête SQL...');
+
         const rolesResult = await pool.query(rolesQuery);
         const roles = rolesResult.rows;
 
-        console.log(`✅ ${roles.length} rôles récupérés`);
+
 
         res.json({
             success: true,
@@ -180,7 +179,7 @@ router.get('/:id', authenticateToken, requirePermission('users:read'), async (re
 router.post('/', authenticateToken, requirePermission('users:create'), async (req, res) => {
     try {
         // Validation des données
-        console.log('🔍 Données reçues pour validation:', req.body);
+
         const { error, value } = userValidation.create.validate(req.body);
         if (error) {
             console.error('❌ Erreur de validation:', error.details);
@@ -190,7 +189,7 @@ router.post('/', authenticateToken, requirePermission('users:create'), async (re
                 errors: error.details.map(detail => detail.message)
             });
         }
-        console.log('✅ Validation réussie:', value);
+
 
         // Validation personnalisée : au moins un rôle doit être fourni
         if (!value.roles && !value.role) {

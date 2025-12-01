@@ -1186,14 +1186,14 @@ function updateCollaborateurInTable(collaborateur) {
                 cells[3].textContent = collaborateur.date_embauche ?
                     new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : 'N/A';
             }
-            console.log('✅ Ligne du collaborateur mise à jour dans le tableau');
+
         }
     });
 }
 
 // Fonction pour mettre à jour l'affichage du collaborateur dans le modal
 function updateCollaborateurDisplayInModal(collaborateur) {
-    console.log('🔄 Mise à jour de l\'affichage du collaborateur dans le modal:', collaborateur);
+
 
     // Mettre à jour le nom du collaborateur dans le titre du modal
     const modalTitle = document.querySelector('#rhModal .modal-title');
@@ -2397,7 +2397,7 @@ async function updateUser() {
         formData.password = newPassword;
     }
 
-    console.log('📤 Données envoyées:', formData);
+
 
     try {
         const token = localStorage.getItem('authToken');

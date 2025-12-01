@@ -1907,14 +1907,14 @@ async function loadAvailableRoles() {
             }
         }
 
-        console.log('📊 Rôles actuels de l\'utilisateur:', userRoles);
+
 
         // Filtrer les rôles déjà assignés
         const availableRoles = allRoles.filter(role =>
             !userRoles.some(userRole => userRole.id === role.id)
         );
 
-        console.log('✅ Rôles disponibles pour ajout:', availableRoles);
+
 
         const select = document.getElementById('roleToAdd');
         select.innerHTML = '<option value="">Sélectionner un rôle</option>';
@@ -1925,7 +1925,7 @@ async function loadAvailableRoles() {
             select.appendChild(option);
         });
 
-        console.log(`✅ ${availableRoles.length} rôle(s) disponible(s) chargé(s)`);
+
     } catch (error) {
         console.error('❌ Erreur lors du chargement des rôles:', error);
         console.error('Stack:', error.stack);
@@ -2064,42 +2064,41 @@ async function syncPermissionsAndMenus() {
  */
 async function checkSuperAdminAndShowSyncButton() {
     try {
-        console.log('🔍 Vérification du rôle SUPER_ADMIN...');
+
 
         // D'abord, vérifier le rôle depuis le cache local (plus fiable et rapide)
         const cachedUser = JSON.parse(localStorage.getItem('user') || '{}');
         const cachedRole = cachedUser.role || cachedUser.principal_role;
 
-        console.log('👤 Données utilisateur en cache:', cachedUser);
-        console.log('👤 Rôle en cache:', cachedRole);
+
 
         if (cachedRole === 'SUPER_ADMIN') {
-            console.log('✅ SUPER_ADMIN détecté via cache');
+
             const syncBtn = document.getElementById('syncPermissionsBtn');
             if (syncBtn) {
                 syncBtn.style.display = 'inline-block';
-                console.log('✅ Bouton de synchronisation affiché');
+
             } else {
                 console.error('❌ Bouton syncPermissionsBtn non trouvé dans le DOM');
                 // Lister tous les boutons pour debug
                 const allButtons = document.querySelectorAll('button');
-                console.log('📋 Boutons présents:', Array.from(allButtons).map(b => b.id || b.className));
+
             }
             return;
         }
 
         // Fallback: vérifier via l'API si le cache ne contient pas SUPER_ADMIN
-        console.log('🔍 Vérification via API...');
+
 
         const authResponse = await authenticatedFetch('/api/auth/verify');
         if (!authResponse.ok) {
-            console.log('⚠️ Utilisateur non authentifié');
+
             return;
         }
 
         const meResponse = await authenticatedFetch('/api/auth/me');
         if (!meResponse.ok) {
-            console.log('⚠️ Impossible de récupérer les informations utilisateur');
+
             return;
         }
 
@@ -2112,18 +2111,18 @@ async function checkSuperAdminAndShowSyncButton() {
         }
 
         // Essayer de récupérer les rôles via l'API
-        console.log(`🔍 Récupération des rôles pour l'utilisateur ${userData.id}...`);
+
         const rolesResponse = await authenticatedFetch(`/api/users/${userData.id}/roles`);
 
         if (!rolesResponse.ok) {
-            console.warn('⚠️ Erreur API rôles:', rolesResponse.status, '- Utilisation du rôle en cache');
+
             // Si l'API échoue, utiliser le rôle du userData
             const apiRole = userData.role || userData.principal_role;
             if (apiRole === 'SUPER_ADMIN') {
                 const syncBtn = document.getElementById('syncPermissionsBtn');
                 if (syncBtn) {
                     syncBtn.style.display = 'inline-block';
-                    console.log('✅ Bouton de synchronisation affiché (via userData)');
+
                 }
             }
             return;
@@ -2133,13 +2132,13 @@ async function checkSuperAdminAndShowSyncButton() {
         const roles = rolesData.data || rolesData;
 
         const isSuperAdmin = Array.isArray(roles) && roles.some(role => role.name === 'SUPER_ADMIN');
-        console.log('🔒 Est SUPER_ADMIN (API)?', isSuperAdmin);
+
 
         if (isSuperAdmin) {
             const syncBtn = document.getElementById('syncPermissionsBtn');
             if (syncBtn) {
                 syncBtn.style.display = 'inline-block';
-                console.log('✅ Bouton de synchronisation affiché');
+
             } else {
                 console.error('❌ Bouton syncPermissionsBtn non trouvé');
             }

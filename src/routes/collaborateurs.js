@@ -555,8 +555,8 @@ router.post('/:id/generate-user-account', authenticateToken, requireRole(['ADMIN
         const { id } = req.params;
         const { login, email, nom, prenom, roles, password } = req.body;
 
-        console.log('📥 Génération de compte utilisateur pour collaborateur:', id);
-        console.log('📋 Données reçues:', { login, email, nom, prenom, roles });
+
+
 
         // Vérifier que le collaborateur existe
         const collaborateur = await Collaborateur.findById(id);

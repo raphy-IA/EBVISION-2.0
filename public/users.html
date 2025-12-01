@@ -977,7 +977,7 @@
                     filteredUsers = [...allUsers];
                     displayUsers(filteredUsers);
                     updateFilteredCount();
-                    console.log(`📊 ${data.data.length} utilisateurs chargés sur ${data.pagination.total} total`);
+
                 } else {
                     showAlert('Erreur lors du chargement des utilisateurs', 'danger');
                 }
@@ -1003,7 +1003,7 @@
                     return !hasSuperAdminRole;
                 });
                 if (originalLength > users.length) {
-                    console.log(`🔒 ${originalLength - users.length} utilisateur(s) SUPER_ADMIN filtré(s)`);
+
                 }
             }
 
