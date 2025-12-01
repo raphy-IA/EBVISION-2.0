@@ -86,11 +86,13 @@ function renderMetricsTable() {
             <td class="fw-bold">${m.label}</td>
             <td>${m.description || '-'}</td>
             <td>
-                ${(m.sources || []).map(s =>
-        `<span class="badge bg-light text-dark border me-1" title="${s.opportunity_type} : ${s.value_field}">
-                        ${s.opportunity_type}
-                    </span>`
-    ).join('') || '<span class="text-muted small">Aucune source</span>'}
+                ${(m.sources || []).map(s => {
+        const label = s.objective_type_label || s.opportunity_type || 'Source';
+        const title = s.objective_type_label ? `Type: ${label}` : `${s.opportunity_type || ''}: ${s.value_field || ''}`;
+        return `<span class="badge bg-light text-dark border me-1" title="${title}">
+                        ${label}
+                    </span>`;
+    }).join('') || '<span class="text-muted small">Aucune source</span>'}
             </td>
             <td>
                 <button class="btn btn-sm btn-outline-primary" onclick="editMetric('${m.id}')">

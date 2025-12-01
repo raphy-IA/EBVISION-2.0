@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Utilisateurs</title>
-    
+
     <!-- Préconnexion CDN pour accélérer le chargement -->
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-    
+
     <!-- CSS Bootstrap et FontAwesome (FontAwesome en priorité pour les icônes) -->
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-    
+
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -28,13 +29,14 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
-            overflow-x: hidden; /* Empêche le défilement horizontal */
+            overflow-x: hidden;
+            /* Empêche le défilement horizontal */
         }
-        
+
         /* Le conteneur principal de la page qui contient la sidebar et le contenu */
         .page-wrapper {
             display: flex;
@@ -43,7 +45,8 @@
 
         /* Styles pour le contenu principal */
         .main-content-area {
-            flex-grow: 1; /* Prend l'espace restant */
+            flex-grow: 1;
+            /* Prend l'espace restant */
             padding: 2rem;
             background-color: var(--light-bg);
         }
@@ -51,79 +54,95 @@
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column; /* Empile la sidebar et le contenu */
+                flex-direction: column;
+                /* Empile la sidebar et le contenu */
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
         .stat-card.success {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
-        
+
         .stat-card.warning {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
-        
+
         .stat-card.info {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
-        
+
         .stat-number {
             font-size: 2.5rem;
             font-weight: bold;
         }
-        
+
         .table thead th {
             background-color: var(--primary-color);
             color: white;
         }
-        
+
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
         }
-        
+
         /* FIX: Empêcher les modals de bloquer les clics quand ils sont cachés */
         .modal {
             pointer-events: none !important;
         }
-        
+
         .modal.show {
             pointer-events: auto !important;
         }
-        
+
         .modal-dialog {
             pointer-events: auto !important;
         }
-        
-        .status-saisie { background-color: #e3f2fd; color: #1976d2; }
-        .status-soumise { background-color: #fff3e0; color: #f57c00; }
-        .status-validee { background-color: #e8f5e8; color: #388e3c; }
-        .status-rejetee { background-color: #ffebee; color: #d32f2f; }
-        
+
+        .status-saisie {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-soumise {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-validee {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .status-rejetee {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+
         .loading {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 200px;
         }
-        
+
         .chart-container {
             position: relative;
             height: 300px;
@@ -132,9 +151,10 @@
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column; /* Empile la sidebar et le contenu */
+                flex-direction: column;
+                /* Empile la sidebar et le contenu */
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
@@ -144,7 +164,7 @@
             font-size: 0.8rem;
             padding: 0.3rem 0.6rem;
         }
-    
+
         /* Styles pour la sidebar unifiée */
         .main-content-wrapper {
             margin-left: 300px;
@@ -152,11 +172,11 @@
             min-height: 100vh;
             padding: 0;
         }
-        
+
         .main-content {
             padding: 2rem;
         }
-        
+
         @media (max-width: 768px) {
             .main-content-wrapper {
                 margin-left: 0;
@@ -165,7 +185,7 @@
             .sidebar-container.open {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 padding: 1rem;
             }
@@ -176,11 +196,12 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -207,7 +228,8 @@
                                 <button class="btn btn-warning btn-sm" onclick="debugClickIssues()" title="Debug Clics">
                                     <i class="fas fa-bug"></i>
                                 </button>
-                                <button class="btn btn-success btn-sm" onclick="forceEnableClicks()" title="Forcer Clics">
+                                <button class="btn btn-success btn-sm" onclick="forceEnableClicks()"
+                                    title="Forcer Clics">
                                     <i class="fas fa-mouse-pointer"></i>
                                 </button>
                             </div>
@@ -265,7 +287,8 @@
                                         <label for="search-input" class="form-label">Recherche</label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                            <input type="text" class="form-control" id="search-input" placeholder="Nom, prénom, email, login...">
+                                            <input type="text" class="form-control" id="search-input"
+                                                placeholder="Nom, prénom, email, login...">
                                         </div>
                                     </div>
                                     <div class="col-md-3">
@@ -376,14 +399,18 @@
                 <div class="modal-body">
                     <form id="addUserForm">
                         <div class="mb-3">
-                            <label for="userLogin" class="form-label">Login (optionnel - généré automatiquement si vide)</label>
-                            <input type="text" class="form-control" id="userLogin" maxlength="50" placeholder="Ex: jdupont" autocomplete="off">
+                            <label for="userLogin" class="form-label">Login (optionnel - généré automatiquement si
+                                vide)</label>
+                            <input type="text" class="form-control" id="userLogin" maxlength="50"
+                                placeholder="Ex: jdupont" autocomplete="off">
                         </div>
                         <div class="mb-3">
                             <label for="userPassword" class="form-label">Mot de passe *</label>
-                            <input type="password" class="form-control" id="userPassword" required autocomplete="new-password">
+                            <input type="password" class="form-control" id="userPassword" required
+                                autocomplete="new-password">
                             <div class="form-text">
-                                Le mot de passe doit contenir au moins 8 caractères, une minuscule, une majuscule, un chiffre et un caractère spécial.
+                                Le mot de passe doit contenir au moins 8 caractères, une minuscule, une majuscule, un
+                                chiffre et un caractère spécial.
                             </div>
                         </div>
                         <div class="mb-3">
@@ -439,15 +466,18 @@
                         <input type="hidden" id="editUserId">
                         <div class="mb-3">
                             <label for="editUserLogin" class="form-label">Login</label>
-                            <input type="text" class="form-control" id="editUserLogin" maxlength="50" placeholder="Ex: jdupont ou jdupont2">
+                            <input type="text" class="form-control" id="editUserLogin" maxlength="50"
+                                placeholder="Ex: jdupont ou jdupont2">
                             <div class="form-text">
                                 <i class="fas fa-info-circle text-info"></i>
                                 Le login doit être unique. S'il existe déjà, un numéro sera ajouté automatiquement.
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="editUserPassword" class="form-label">Nouveau Mot de passe (laisser vide pour ne pas changer)</label>
-                            <input type="password" class="form-control" id="editUserPassword" placeholder="Ex: MonMotDePasse123!">
+                            <label for="editUserPassword" class="form-label">Nouveau Mot de passe (laisser vide pour ne
+                                pas changer)</label>
+                            <input type="password" class="form-control" id="editUserPassword"
+                                placeholder="Ex: MonMotDePasse123!">
                             <div class="form-text">
                                 <i class="fas fa-info-circle text-info"></i>
                                 <strong>Règles de sécurité :</strong>
@@ -475,18 +505,20 @@
                         <!-- Section Rôles Multiples -->
                         <div class="mb-3">
                             <label class="form-label">
-                                <i class="fas fa-user-shield me-2"></i>Rôles * 
+                                <i class="fas fa-user-shield me-2"></i>Rôles *
                                 <small class="text-muted">(au moins un requis)</small>
                             </label>
                             <div class="card" style="border: 1px solid #dee2e6;">
-                                <div class="card-body p-2" style="max-height: 280px; overflow-y: auto; background-color: #f8f9fa;">
+                                <div class="card-body p-2"
+                                    style="max-height: 280px; overflow-y: auto; background-color: #f8f9fa;">
                                     <div id="editUserRolesContainer" class="row g-1">
                                         <!-- Les checkboxes des rôles seront chargées ici -->
                                         <div class="col-12 text-center py-3">
                                             <div class="spinner-border spinner-border-sm text-primary" role="status">
                                                 <span class="visually-hidden">Chargement...</span>
                                             </div>
-                                            <span class="ms-2 text-muted" style="font-size: 0.85rem;">Chargement...</span>
+                                            <span class="ms-2 text-muted"
+                                                style="font-size: 0.85rem;">Chargement...</span>
                                         </div>
                                     </div>
                                 </div>
@@ -547,7 +579,8 @@
                 </div>
                 <div class="modal-body">
                     <p>Êtes-vous sûr de vouloir désactiver cet utilisateur ?</p>
-                    <p class="text-muted">L'utilisateur ne pourra plus se connecter mais ses données seront conservées.</p>
+                    <p class="text-muted">L'utilisateur ne pourra plus se connecter mais ses données seront conservées.
+                    </p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -586,7 +619,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -601,7 +634,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -616,7 +649,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -631,7 +664,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -664,16 +697,16 @@
     <script src="/js/auth.js" defer></script>
     <script src="/js/page-permissions.js" defer></script>
     <script src="/js/sidebar.js" defer></script>
-                
-                <!-- Scripts de zone utilisateur -->
-                <script src="js/user-header.js"></script>
+
+    <!-- Scripts de zone utilisateur -->
+    <script src="js/user-header.js"></script>
     <script src="js/menu-permissions.js"></script>
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
     <!-- SessionManager pour la gestion centralisée des sessions -->
     <script src="js/session-manager.js"></script>
-                <!-- <script src="js/user-modals.js"></script> -->
+    <!-- <script src="js/user-modals.js"></script> -->
     <script>
         const API_BASE_URL = '/api';
         // Fonction utilitaire pour les appels API authentifiés
@@ -683,7 +716,7 @@
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            
+
             return fetch(url, {
                 ...options,
                 headers: {
@@ -696,13 +729,38 @@
         let userToDelete = null;
         let userToDeactivate = null;
 
-        document.addEventListener('DOMContentLoaded', function() {
+        // Helper: Récupérer les rôles de l'utilisateur connecté
+        async function getCurrentUserRoles() {
+            try {
+                // Récupérer depuis SessionManager si disponible
+                if (typeof SessionManager !== 'undefined' && SessionManager.getUserData) {
+                    const userData = SessionManager.getUserData();
+                    return userData?.roles || [];
+                }
+
+                // Sinon, appeler l'API
+                const response = await authenticatedFetch(`${API_BASE_URL}/auth/me`);
+                const data = await response.json();
+                return data?.data?.roles || data?.roles || [];
+            } catch (error) {
+                console.error('Erreur récupération rôles utilisateur:', error);
+                return [];
+            }
+        }
+
+        // Helper: Vérifier si l'utilisateur est SUPER_ADMIN
+        async function isCurrentUserSuperAdmin() {
+            const roles = await getCurrentUserRoles();
+            return roles.some(r => r.name === 'SUPER_ADMIN' || r === 'SUPER_ADMIN');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
             console.log('🚀 DOM chargé, appel de loadRoles()...');
             loadRoles();
             loadUsers();
             loadStatistics();
             setupEventListeners();
-            
+
             // Debug: Vérifier les problèmes de clics
             debugClickIssues();
         });
@@ -725,7 +783,7 @@
                 console.log('🔄 Chargement des rôles...');
                 const token = localStorage.getItem('authToken');
                 console.log('🔑 Token présent:', !!token);
-                
+
                 const response = await authenticatedFetch(`${API_BASE_URL}/users/roles`, {
                     method: 'GET',
                     headers: {
@@ -734,10 +792,10 @@
                     }
                 });
                 console.log('📡 Réponse API:', response.status, response.statusText);
-                
+
                 const responseData = await response.json();
                 console.log('📋 Réponse API rôles:', responseData);
-                
+
                 // Gérer le format de réponse
                 let roles;
                 if (Array.isArray(responseData)) {
@@ -747,9 +805,9 @@
                 } else {
                     throw new Error('Format de réponse inattendu');
                 }
-                
+
                 console.log('📋 Rôles extraits:', roles);
-                
+
                 // Mettre à jour le filtre de rôles
                 const roleFilter = document.getElementById('role-filter');
                 roleFilter.innerHTML = '<option value="">Tous les rôles</option>';
@@ -757,18 +815,18 @@
                     const displayText = role.description ? `${role.name} - ${role.description}` : role.name;
                     roleFilter.innerHTML += `<option value="${role.name}">${displayText}</option>`;
                 });
-                
+
                 // Note: Les rôles dans le modal d'ajout sont maintenant chargés dynamiquement
                 // via loadRolesForModal() avec des checkboxes multiples
                 // Les rôles dans le modal de modification sont chargés dynamiquement
                 // via loadUserRolesForEdit() avec des checkboxes multiples
-                
+
                 console.log(`✅ ${roles.length} rôles chargés avec succès`);
-                
-                    } catch (error) {
-            console.error('❌ Erreur lors du chargement des rôles:', error);
-            showAlert('Erreur lors du chargement des rôles. Veuillez recharger la page.', 'danger');
-        }
+
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des rôles:', error);
+                showAlert('Erreur lors du chargement des rôles. Veuillez recharger la page.', 'danger');
+            }
         }
 
         function updateRoleSelectors(roles) {
@@ -779,10 +837,10 @@
                 const displayText = role.description ? `${role.name} - ${role.description}` : role.name;
                 roleFilter.innerHTML += `<option value="${role.name}">${displayText}</option>`;
             });
-            
+
             // Note: Le modal d'ajout utilise maintenant des checkboxes multiples
             // chargées dynamiquement via loadRolesForModal()
-            
+
             // Mettre à jour le sélecteur de rôle dans le modal de modification
             const editUserRole = document.getElementById('editUserRole');
             editUserRole.innerHTML = '<option value="">Sélectionner un rôle</option>';
@@ -797,7 +855,7 @@
                 const token = localStorage.getItem('authToken');
                 const response = await authenticatedFetch(`${API_BASE_URL}/users/statistics`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     updateStatistics(data.data);
                 }
@@ -820,15 +878,15 @@
 
             filteredUsers = allUsers.filter(user => {
                 const isLinked = user.collaborateur_id || user.linked_to_collaborateur;
-                
-                const matchesSearch = !searchTerm || 
+
+                const matchesSearch = !searchTerm ||
                     user.nom.toLowerCase().includes(searchTerm) ||
                     user.prenom.toLowerCase().includes(searchTerm) ||
                     user.email.toLowerCase().includes(searchTerm) ||
                     (user.login && user.login.toLowerCase().includes(searchTerm));
-                
+
                 const matchesRole = !roleFilter || (user.roles && user.roles.includes(roleFilter));
-                const matchesType = !typeFilter || 
+                const matchesType = !typeFilter ||
                     (typeFilter === 'linked' && isLinked) ||
                     (typeFilter === 'free' && !isLinked);
 
@@ -842,7 +900,7 @@
         function updateFilteredCount() {
             const totalCount = allUsers.length;
             const filteredCount = filteredUsers.length;
-            
+
             // Mettre à jour le titre du tableau
             const tableTitle = document.querySelector('.card-title');
             if (tableTitle) {
@@ -883,8 +941,8 @@
                 user.statut || '',
                 user.last_login || ''
             ]);
-            
-            return [headers, ...rows].map(row => 
+
+            return [headers, ...rows].map(row =>
                 row.map(field => `"${field}"`).join(',')
             ).join('\n');
         }
@@ -895,9 +953,9 @@
                 const token = localStorage.getItem('authToken');
                 const statusFilter = document.getElementById('status-filter').value;
                 const showDeleted = document.getElementById('show-deleted').value;
-                
+
                 let url = `${API_BASE_URL}/users?limit=100`;
-                
+
                 // Priorité au filtre status-filter, sinon utiliser show-deleted
                 if (statusFilter) {
                     url += `&status=${statusFilter}`;
@@ -906,7 +964,7 @@
                 } else if (showDeleted === 'active') {
                     url += '&status=ACTIF';
                 }
-                
+
                 const response = await authenticatedFetch(url, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -950,10 +1008,10 @@
                 const isLinked = user.collaborateur_id || user.linked_to_collaborateur;
                 const isDeleted = user.statut === 'INACTIF';
                 const row = document.createElement('tr');
-                
+
                 if (isLinked) row.className = 'table-info';
                 if (isDeleted) row.className = 'table-danger';
-                
+
                 row.innerHTML = `
                     <td>
                         <code>${user.login || '-'}</code>
@@ -973,14 +1031,14 @@
                         ${isLinked ? '<br><small class="text-muted">(via collaborateur)</small>' : ''}
                     </td>
                     <td>
-                        ${user.roles_details && user.roles_details.length > 0 
-                            ? user.roles_details.map(role => {
-                                const bgColor = role.badge_hex_color || '#6c757d';
-                                const textColor = role.badge_text_class || '#ffffff';
-                                return `<span class="badge me-1" style="background-color: ${bgColor}; color: ${textColor};">${role.name}</span>`;
-                            }).join('')
-                            : '<span class="badge bg-secondary">Aucun rôle</span>'
-                        }
+                        ${user.roles_details && user.roles_details.length > 0
+                        ? user.roles_details.map(role => {
+                            const bgColor = role.badge_hex_color || '#6c757d';
+                            const textColor = role.badge_text_class || '#ffffff';
+                            return `<span class="badge me-1" style="background-color: ${bgColor}; color: ${textColor};">${role.name}</span>`;
+                        }).join('')
+                        : '<span class="badge bg-secondary">Aucun rôle</span>'
+                    }
                     </td>
                     <td>
                         <span class="badge ${isLinked ? 'bg-info' : 'bg-secondary'}">
@@ -1026,35 +1084,35 @@
 
         async function showNewUserModal() {
             console.log('🔄 Ouverture du modal "Ajouter un Utilisateur"...');
-            
+
             // Réinitialiser le formulaire AVANT de charger les rôles
             const form = document.getElementById('addUserForm');
             if (form) {
                 form.reset();
-                
+
                 // Vider explicitement tous les champs pour éviter l'autofill
                 const loginField = document.getElementById('userLogin');
                 const passwordField = document.getElementById('userPassword');
                 const nameField = document.getElementById('addUserName');
                 const firstNameField = document.getElementById('userFirstName');
                 const emailField = document.getElementById('userEmail');
-                
+
                 if (loginField) loginField.value = '';
                 if (passwordField) passwordField.value = '';
                 if (nameField) nameField.value = '';
                 if (firstNameField) firstNameField.value = '';
                 if (emailField) emailField.value = '';
-                
+
                 console.log('✅ Formulaire réinitialisé');
             }
-            
+
             // Charger les rôles
             await loadRolesForModal();
-            
+
             // Ouvrir le modal
             const modal = new bootstrap.Modal(document.getElementById('addUserModal'));
             modal.show();
-            
+
             console.log('✅ Modal "Ajouter un Utilisateur" ouvert');
         }
 
@@ -1063,7 +1121,7 @@
                 console.log('🔄 Chargement des rôles pour le modal...');
                 const token = localStorage.getItem('authToken');
                 console.log('🔑 Token présent:', !!token);
-                
+
                 // Utiliser le même endpoint que loadRoles() qui fonctionne
                 const response = await authenticatedFetch(`${API_BASE_URL}/users/roles`, {
                     headers: {
@@ -1072,16 +1130,16 @@
                         'Pragma': 'no-cache'
                     }
                 });
-                
+
                 console.log('📡 Réponse API rôles modal:', response.status, response.statusText);
-                
+
                 if (!response.ok) {
                     throw new Error(`Erreur HTTP: ${response.status}`);
                 }
-                
+
                 const responseData = await response.json();
                 console.log('📋 Réponse API complète:', responseData);
-                
+
                 // Gérer les deux formats de réponse possibles
                 let roles;
                 if (Array.isArray(responseData)) {
@@ -1093,22 +1151,29 @@
                 } else {
                     throw new Error('Format de réponse inattendu');
                 }
-                
+
                 console.log('📋 Rôles extraits pour modal:', roles);
-                
+
+                // 🔒 PROTECTION SUPER_ADMIN: Filtrer si l'utilisateur n'est pas SUPER_ADMIN
+                const isSuperAdmin = await isCurrentUserSuperAdmin();
+                if (!isSuperAdmin) {
+                    roles = roles.filter(r => r.name !== 'SUPER_ADMIN');
+                    console.log('🔒 SUPER_ADMIN filtré - non visible pour cet utilisateur');
+                }
+
                 const rolesContainer = document.getElementById('userRolesCheckboxes');
                 if (!rolesContainer) {
                     console.error('❌ Container userRolesCheckboxes non trouvé');
                     return;
                 }
-                
+
                 rolesContainer.innerHTML = '';
-                
+
                 if (roles && roles.length > 0) {
                     roles.forEach(role => {
                         const colDiv = document.createElement('div');
                         colDiv.className = 'col-md-6 mb-2';
-                        
+
                         colDiv.innerHTML = `
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="${role.id}" id="role_${role.id}">
@@ -1118,7 +1183,7 @@
                                 </label>
                             </div>
                         `;
-                        
+
                         rolesContainer.appendChild(colDiv);
                     });
                     console.log(`✅ ${roles.length} rôles chargés dans le modal`);
@@ -1126,7 +1191,7 @@
                     console.warn('⚠️ Aucun rôle trouvé');
                     rolesContainer.innerHTML = '<div class="col-12"><p class="text-muted">Aucun rôle disponible</p></div>';
                 }
-                
+
             } catch (error) {
                 console.error('❌ Erreur lors du chargement des rôles pour le modal:', error);
                 const rolesContainer = document.getElementById('userRolesCheckboxes');
@@ -1178,7 +1243,7 @@
                 });
                 const data = await response.json();
                 console.log('📥 Réponse du serveur:', data);
-                
+
                 if (data.success) {
                     showAlert('Utilisateur ajouté avec succès', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
@@ -1221,15 +1286,15 @@
                     if (passwordField) {
                         passwordField.value = '';
                     }
-                    
+
                     // Charger les rôles de l'utilisateur
                     await loadUserRolesForEdit(user.id);
-                    
+
                     // Gérer les champs selon le type d'utilisateur
                     const nameField = document.getElementById('editUserName');
                     const firstNameField = document.getElementById('editUserFirstName');
                     const emailField = document.getElementById('editUserEmail');
-                    
+
                     if (isLinked) {
                         // Utilisateur lié : désactiver nom, prénom, email
                         nameField.disabled = true;
@@ -1238,12 +1303,12 @@
                         nameField.classList.add('form-control-plaintext');
                         firstNameField.classList.add('form-control-plaintext');
                         emailField.classList.add('form-control-plaintext');
-                        
+
                         // Ajouter des messages d'aide
                         nameField.title = 'Ce champ est géré via le collaborateur associé. Cliquez sur "Voir le collaborateur" pour le modifier.';
                         firstNameField.title = 'Ce champ est géré via le collaborateur associé. Cliquez sur "Voir le collaborateur" pour le modifier.';
                         emailField.title = 'Ce champ est géré via le collaborateur associé. Cliquez sur "Voir le collaborateur" pour le modifier.';
-                        
+
                         // Ajouter une note explicative
                         const noteDiv = document.createElement('div');
                         noteDiv.className = 'alert alert-info mb-3';
@@ -1255,13 +1320,13 @@
                                 Les informations de nom, prénom et email sont synchronisées avec le collaborateur associé.
                             </small>
                         `;
-                        
+
                         // Insérer la note au début du formulaire
                         const form = document.getElementById('editUserForm');
                         form.insertBefore(noteDiv, form.firstChild);
-                        
+
                         // Mettre à jour le titre du modal
-                        document.querySelector('#editUserModal .modal-title').innerHTML = 
+                        document.querySelector('#editUserModal .modal-title').innerHTML =
                             '<i class="fas fa-user-shield me-2"></i>Gérer le Compte Utilisateur (Lié à Collaborateur)';
                     } else {
                         // Utilisateur libre : activer tous les champs
@@ -1271,23 +1336,23 @@
                         nameField.classList.remove('form-control-plaintext');
                         firstNameField.classList.remove('form-control-plaintext');
                         emailField.classList.remove('form-control-plaintext');
-                        
+
                         // Retirer les messages d'aide
                         nameField.title = '';
                         firstNameField.title = '';
                         emailField.title = '';
-                        
+
                         // Supprimer la note explicative si elle existe
                         const existingNote = document.querySelector('#editUserForm .alert-info');
                         if (existingNote) {
                             existingNote.remove();
                         }
-                        
+
                         // Mettre à jour le titre du modal
-                        document.querySelector('#editUserModal .modal-title').innerHTML = 
+                        document.querySelector('#editUserModal .modal-title').innerHTML =
                             '<i class="fas fa-edit me-2"></i>Modifier Utilisateur (Libre)';
                     }
-                    
+
                     new bootstrap.Modal(document.getElementById('editUserModal')).show();
                 } else {
                     showAlert('Utilisateur non trouvé', 'danger');
@@ -1317,20 +1382,20 @@
             // Récupérer les rôles sélectionnés
             const selectedRoles = getSelectedRoles();
             console.log('📋 Rôles sélectionnés:', selectedRoles);
-            
+
             // Vérifier qu'au moins un rôle est sélectionné
             if (selectedRoles.length === 0) {
                 showAlert('Veuillez sélectionner au moins un rôle', 'warning');
                 return;
             }
-            
+
             formData.roles = selectedRoles;
 
             // Ajouter nom, prénom, email seulement si les champs ne sont pas désactivés et pas vides
             const nameField = document.getElementById('editUserName');
             const firstNameField = document.getElementById('editUserFirstName');
             const emailField = document.getElementById('editUserEmail');
-            
+
             if (!nameField.disabled && nameField.value.trim()) {
                 formData.nom = nameField.value.trim();
             }
@@ -1362,7 +1427,7 @@
                 if (!response.ok) {
                     const data = await response.json();
                     let errorMessage = 'Erreur lors de la mise à jour';
-                    
+
                     // Améliorer les messages d'erreur spécifiques
                     if (data.errors && Array.isArray(data.errors)) {
                         errorMessage = 'Erreurs de validation :\n' + data.errors.map(err => `• ${err}`).join('\n');
@@ -1373,11 +1438,11 @@
                     } else if (data.message) {
                         errorMessage = data.message;
                     }
-                    
+
                     showAlert(errorMessage, 'danger');
                     return;
                 }
-                
+
                 const data = await response.json();
                 if (data.success) {
                     showAlert('✅ Utilisateur mis à jour avec succès ! Les modifications ont été appliquées.', 'success');
@@ -1395,7 +1460,7 @@
         function deleteUser(id) {
             userToDelete = id;
             document.getElementById('deleteConfirmModal').querySelector('.modal-title').textContent = 'Supprimer définitivement';
-            document.getElementById('deleteConfirmModal').querySelector('.modal-body').innerHTML = 
+            document.getElementById('deleteConfirmModal').querySelector('.modal-body').innerHTML =
                 '<p class="text-danger"><i class="fas fa-exclamation-triangle"></i> Attention : Cette action est irréversible !</p>' +
                 '<p>L\'utilisateur sera définitivement supprimé de la base de données.</p>';
             new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
@@ -1496,10 +1561,10 @@
                 const token = localStorage.getItem('authToken');
                 const response = await authenticatedFetch(`${API_BASE_URL}/collaborateurs/${collaborateurId}`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     const collaborateur = data.data;
-                    
+
                     // Remplir le modal avec les informations du collaborateur
                     document.getElementById('collaborateur-nom').textContent = collaborateur.nom;
                     document.getElementById('collaborateur-prenom').textContent = collaborateur.prenom;
@@ -1511,7 +1576,7 @@
                     document.getElementById('collaborateur-grade').textContent = collaborateur.grade_nom || '-';
                     document.getElementById('collaborateur-statut').textContent = collaborateur.statut || '-';
                     document.getElementById('collaborateur-date-embauche').textContent = collaborateur.date_embauche ? new Date(collaborateur.date_embauche).toLocaleDateString('fr-FR') : '-';
-                    
+
                     // Afficher le modal
                     new bootstrap.Modal(document.getElementById('viewCollaborateurModal')).show();
                 } else {
@@ -1529,7 +1594,7 @@
         }
 
         // ===== GESTION DES RÔLES MULTIPLES =====
-        
+
         /**
          * Charger tous les rôles disponibles et les rôles de l'utilisateur
          * @param {string} userId - ID de l'utilisateur
@@ -1537,9 +1602,9 @@
         async function loadUserRolesForEdit(userId) {
             try {
                 console.log('🔄 Chargement des rôles pour l\'utilisateur:', userId);
-                
+
                 const container = document.getElementById('editUserRolesContainer');
-                
+
                 // Charger tous les rôles disponibles
                 const allRolesResponse = await authenticatedFetch(`${API_BASE_URL}/users/roles`);
                 if (!allRolesResponse.ok) {
@@ -1548,7 +1613,17 @@
                 const allRolesData = await allRolesResponse.json();
                 const allRoles = allRolesData.data || [];
                 console.log('📋 Tous les rôles:', allRoles);
-                
+
+                // 🔒 PROTECTION SUPER_ADMIN: Filtrer si l'utilisateur n'est pas SUPER_ADMIN
+                const isSuperAdmin = await isCurrentUserSuperAdmin();
+                const filteredRoles = isSuperAdmin
+                    ? allRoles
+                    : allRoles.filter(r => r.name !== 'SUPER_ADMIN');
+
+                if (!isSuperAdmin && allRoles.length > filteredRoles.length) {
+                    console.log('🔒 SUPER_ADMIN filtré - non visible pour cet utilisateur');
+                }
+
                 // Charger les rôles de l'utilisateur
                 const userRolesResponse = await authenticatedFetch(`${API_BASE_URL}/users/${userId}/roles`);
                 let userRoles = [];
@@ -1557,7 +1632,7 @@
                     userRoles = userRolesData.data || [];
                 }
                 console.log('📊 Rôles de l\'utilisateur:', userRoles);
-                
+
                 // Créer les checkboxes avec couleurs
                 const roleColors = {
                     'SUPER_ADMIN': 'danger',
@@ -1571,7 +1646,7 @@
                     'COLLABORATEUR': 'light',
                     'USER': 'light'
                 };
-                
+
                 // Trier les rôles par ordre de priorité (hiérarchie)
                 const rolePriority = {
                     'SUPER_ADMIN': 10,
@@ -1585,19 +1660,19 @@
                     'COLLABORATEUR': 2,
                     'USER': 1
                 };
-                
-                const sortedRoles = allRoles.sort((a, b) => {
+
+                const sortedRoles = filteredRoles.sort((a, b) => {
                     const priorityA = rolePriority[a.name] || 0;
                     const priorityB = rolePriority[b.name] || 0;
                     return priorityB - priorityA;
                 });
-                
+
                 // Générer le HTML des checkboxes (design compact)
                 const rolesHTML = sortedRoles.map(role => {
                     const isChecked = userRoles.some(ur => ur.id === role.id);
                     const colorClass = roleColors[role.name] || 'secondary';
                     const textColorClass = ['light', 'warning'].includes(colorClass) ? 'text-dark' : 'text-white';
-                    
+
                     return `
                         <div class="col-12">
                             <div class="form-check d-flex align-items-center py-1 px-2 role-check-item ${isChecked ? 'role-checked' : ''}" 
@@ -1619,32 +1694,32 @@
                         </div>
                     `;
                 }).join('');
-                
+
                 container.innerHTML = rolesHTML;
                 console.log('✅ Rôles chargés et affichés');
-                
+
                 // Ajouter les événements pour l'effet visuel au survol et à la sélection
                 const roleCheckItems = container.querySelectorAll('.role-check-item');
                 roleCheckItems.forEach(item => {
                     const checkbox = item.querySelector('input[type="checkbox"]');
-                    
+
                     // Effet au survol
-                    item.addEventListener('mouseenter', function() {
+                    item.addEventListener('mouseenter', function () {
                         if (!checkbox.checked) {
                             this.style.backgroundColor = '#e9ecef';
                             this.style.borderLeftColor = '#6c757d';
                         }
                     });
-                    
-                    item.addEventListener('mouseleave', function() {
+
+                    item.addEventListener('mouseleave', function () {
                         if (!checkbox.checked) {
                             this.style.backgroundColor = 'transparent';
                             this.style.borderLeftColor = 'transparent';
                         }
                     });
-                    
+
                     // Effet à la sélection
-                    checkbox.addEventListener('change', function() {
+                    checkbox.addEventListener('change', function () {
                         if (this.checked) {
                             item.classList.add('role-checked');
                             item.style.backgroundColor = '#e7f3ff';
@@ -1655,14 +1730,14 @@
                             item.style.borderLeftColor = 'transparent';
                         }
                     });
-                    
+
                     // Initialiser l'apparence pour les rôles déjà cochés
                     if (checkbox.checked) {
                         item.style.backgroundColor = '#e7f3ff';
                         item.style.borderLeftColor = '#0d6efd';
                     }
                 });
-                
+
             } catch (error) {
                 console.error('❌ Erreur lors du chargement des rôles:', error);
                 const container = document.getElementById('editUserRolesContainer');
@@ -1676,7 +1751,7 @@
                 `;
             }
         }
-        
+
         /**
          * Récupérer les rôles sélectionnés
          * @returns {Array<string>} IDs des rôles sélectionnés
@@ -1694,21 +1769,21 @@
         // Fonction de débogage pour les problèmes de clics
         function debugClickIssues() {
             console.log('🔍 Début du diagnostic des problèmes de clics...');
-            
+
             // Vérifier les modals actifs
             const activeModals = document.querySelectorAll('.modal.show');
             console.log('📋 Modals actifs:', activeModals.length);
             activeModals.forEach((modal, index) => {
                 console.log(`  Modal ${index + 1}:`, modal.id);
             });
-            
+
             // Vérifier les backdrops
             const backdrops = document.querySelectorAll('.modal-backdrop');
             console.log('🖼️ Backdrops trouvés:', backdrops.length);
             backdrops.forEach((backdrop, index) => {
                 console.log(`  Backdrop ${index + 1}:`, backdrop);
             });
-            
+
             // Vérifier les éléments avec pointer-events: none
             const allElements = document.querySelectorAll('*');
             let blockedElements = 0;
@@ -1722,7 +1797,7 @@
                 }
             });
             console.log(`🚫 Total éléments bloqués: ${blockedElements}`);
-            
+
             // Vérifier les z-index élevés
             let highZIndexElements = 0;
             allElements.forEach(el => {
@@ -1736,7 +1811,7 @@
                 }
             });
             console.log(`⬆️ Total éléments avec z-index > 1000: ${highZIndexElements}`);
-            
+
             // Test de clic sur le bouton principal
             const mainButton = document.querySelector('button[onclick="showNewUserModal()"]');
             if (mainButton) {
@@ -1751,24 +1826,24 @@
             } else {
                 console.log('❌ Bouton principal non trouvé');
             }
-            
+
             // Nettoyer les backdrops orphelins
             if (backdrops.length > 0) {
                 console.log('🧹 Nettoyage des backdrops orphelins...');
                 backdrops.forEach(backdrop => backdrop.remove());
             }
-            
+
             console.log('✅ Diagnostic terminé');
         }
 
         // Fonction pour forcer le nettoyage et permettre les clics
         function forceEnableClicks() {
             console.log('🔧 Forçage de l\'activation des clics...');
-            
+
             // Supprimer tous les backdrops
             const backdrops = document.querySelectorAll('.modal-backdrop');
             backdrops.forEach(backdrop => backdrop.remove());
-            
+
             // Fermer tous les modals
             const modals = document.querySelectorAll('.modal.show');
             modals.forEach(modal => {
@@ -1777,14 +1852,14 @@
                     bsModal.hide();
                 }
             });
-            
+
             // Forcer pointer-events sur les éléments interactifs
             const interactiveElements = document.querySelectorAll('button, a, input, select, textarea, [onclick]');
             interactiveElements.forEach(el => {
                 el.style.pointerEvents = 'auto';
                 el.style.cursor = 'pointer';
             });
-            
+
             // Supprimer les overlays invisibles
             const overlays = document.querySelectorAll('[style*="position: fixed"][style*="z-index"]');
             overlays.forEach(overlay => {
@@ -1793,7 +1868,7 @@
                     overlay.remove();
                 }
             });
-            
+
             console.log('✅ Clics forcés activés');
         }
 
@@ -1804,14 +1879,14 @@
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
+
             const container = document.querySelector('.main-content-area');
             if (container) {
                 container.insertBefore(alertDiv, container.firstChild);
             } else {
                 document.body.appendChild(alertDiv);
             }
-            
+
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
@@ -1821,7 +1896,8 @@
     </script>
 
     <!-- Notifications Modal -->
-    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
+    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1850,5 +1926,6 @@
         </div>
     </div>
 
-    </body>
+</body>
+
 </html>

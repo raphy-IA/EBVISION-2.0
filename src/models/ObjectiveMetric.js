@@ -1,9 +1,6 @@
 const { query } = require('../utils/database');
 
 class ObjectiveMetric {
-    /**
-     * Récupérer toutes les métriques actives
-     */
     static async getAll() {
         const sql = `
             SELECT 
@@ -20,11 +17,13 @@ class ObjectiveMetric {
                 (
                     SELECT json_agg(json_build_object(
                         'id', s.id,
-                        'opportunity_type', s.filter_conditions->>'opportunity_type_id',
                         'objective_type_id', s.objective_type_id,
+                        'objective_type_label', ot.label,
+                        'opportunity_type', s.filter_conditions->>'opportunity_type_id',
                         'value_field', s.data_source_value_column
                     ))
                     FROM objective_metric_sources s
+                    LEFT JOIN objective_types ot ON s.objective_type_id = ot.id
                     WHERE s.metric_id = m.id
                 ) as sources
             FROM objective_metrics m

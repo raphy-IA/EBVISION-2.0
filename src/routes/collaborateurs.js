@@ -5,7 +5,7 @@ const EvolutionPoste = require('../models/EvolutionPoste');
 const EvolutionOrganisation = require('../models/EvolutionOrganisation');
 const EvolutionGrade = require('../models/EvolutionGrade');
 const DepartCollaborateur = require('../models/DepartCollaborateur');
-const { authenticateToken, requireRole } = require('../middleware/auth');
+const { authenticateToken, requireRole, requirePermission } = require('../middleware/auth');
 const User = require('../models/User');
 const { pool } = require('../utils/database');
 const { upload, processImage, deleteExistingPhoto } = require('../middleware/upload');
@@ -141,7 +141,7 @@ router.get('/statistics', authenticateToken, async (req, res) => {
  * POST /api/collaborateurs
  * Créer un nouveau collaborateur
  */
-router.post('/', authenticateToken, requireRole(['MANAGER']), async (req, res) => {
+router.post('/', authenticateToken, requirePermission('COLLABORATEUR_CREATE'), async (req, res) => {
     try {
         console.log('📥 Données reçues pour création:', req.body);
         console.log('🔍 createUserAccess dans req.body:', req.body.createUserAccess);
@@ -425,7 +425,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
  * PUT /api/collaborateurs/:id
  * Mettre à jour un collaborateur
  */
-router.put('/:id', authenticateToken, requireRole(['MANAGER']), async (req, res) => {
+router.put('/:id', authenticateToken, requirePermission('COLLABORATEUR_EDIT'), async (req, res) => {
     try {
         const collaborateur = await Collaborateur.findById(req.params.id);
 
