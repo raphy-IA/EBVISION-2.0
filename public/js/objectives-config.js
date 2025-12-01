@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         loadUnits(),
         loadOpportunityTypes() // Nécessaire pour les sources
     ]);
+
+    // Initialiser les dropdowns de tracking automatique
+    initializeTypeModal();
 });
 
 // --- Chargement des données ---
@@ -289,6 +292,18 @@ function openTypeModal() {
     document.getElementById('typeForm').reset();
     document.getElementById('typeId').value = '';
     document.getElementById('typeModalTitle').textContent = 'Nouveau Type d\'Objectif';
+
+    // Reset tracking fields
+    if (document.getElementById('typeEntity')) document.getElementById('typeEntity').value = '';
+    if (document.getElementById('typeOperation')) {
+        document.getElementById('typeOperation').innerHTML = '<option value="">Sélectionner une entité d\'abord</option>';
+        document.getElementById('typeOperation').disabled = true;
+    }
+    if (document.getElementById('typeValueField')) {
+        document.getElementById('typeValueField').innerHTML = '<option value="">Sélectionner une unité d\'abord</option>';
+        document.getElementById('typeValueField').disabled = true;
+    }
+
     new bootstrap.Modal(document.getElementById('typeModal')).show();
 }
 
@@ -300,9 +315,41 @@ function editType(id) {
     document.getElementById('typeCode').value = type.code;
     document.getElementById('typeLabel').value = type.label;
     document.getElementById('typeCategory').value = type.category;
-    document.getElementById('typeUnit').value = type.unit || '';
-    document.getElementById('typeFinancial').checked = type.is_financial;
+
+    // Gestion de l'unité: DB stocke le symbole, Dropdown utilise le code
+    // On cherche l'unité qui a ce symbole (ou ce code, au cas où)
+    let unitCode = '';
+    if (type.unit) {
+        const unit = units.find(u => u.symbol === type.unit || u.code === type.unit);
+        if (unit) unitCode = unit.code;
+    }
+    document.getElementById('typeUnit').value = unitCode;
+
     document.getElementById('typeDescription').value = type.description || '';
+
+    // Remplir les champs de tracking automatique si disponibles
+    if (document.getElementById('typeEntity')) {
+        document.getElementById('typeEntity').value = type.entity_type || '';
+    }
+
+    // Important: Il faut d'abord charger les opérations pour pouvoir sélectionner la bonne
+    if (type.entity_type) {
+        onEntityChange(); // Charge les opérations
+
+        // Petit délai pour laisser le temps au DOM de se mettre à jour (même si synchrone ici, c'est plus sûr)
+        if (document.getElementById('typeOperation')) {
+            document.getElementById('typeOperation').value = type.operation || '';
+        }
+
+        // Idem pour le champ valeur
+        if (type.operation && unitCode) {
+            onUnitChange(); // Charge le champ valeur auto-détecté
+            if (document.getElementById('typeValueField')) {
+                document.getElementById('typeValueField').value = type.value_field || '';
+            }
+        }
+    }
+
     document.getElementById('typeModalTitle').textContent = 'Modifier le Type';
 
     new bootstrap.Modal(document.getElementById('typeModal')).show();
@@ -316,13 +363,35 @@ async function saveType() {
     }
 
     const id = document.getElementById('typeId').value;
+
+    // Récupérer les valeurs de tracking automatique (ou null si non configurées)
+    const entityType = document.getElementById('typeEntity')?.value || null;
+    const operation = document.getElementById('typeOperation')?.value || null;
+    const valueField = document.getElementById('typeValueField')?.value || null;
+
+    // Dériver is_financial de l'unité (si c'est une devise)
+    let isFinancial = false;
+    let unitSymbol = null;
+
+    const unitCode = document.getElementById('typeUnit').value;
+    if (unitCode) {
+        const unit = units.find(u => u.code === unitCode);
+        if (unit) {
+            isFinancial = unit.type === 'CURRENCY';
+            unitSymbol = unit.symbol; // On envoie le symbole au backend
+        }
+    }
+
     const data = {
         code: document.getElementById('typeCode').value,
         label: document.getElementById('typeLabel').value,
         category: document.getElementById('typeCategory').value,
-        unit: document.getElementById('typeUnit').value,
-        is_financial: document.getElementById('typeFinancial').checked,
-        description: document.getElementById('typeDescription').value
+        unit: unitSymbol, // Envoi du symbole
+        is_financial: isFinancial,
+        description: document.getElementById('typeDescription').value,
+        entity_type: entityType,
+        operation: operation,
+        value_field: valueField
     };
 
     try {
@@ -453,4 +522,94 @@ async function deleteUnit(id) {
     } catch (error) {
         console.error('Erreur:', error);
     }
+}
+
+// === FONCTIONS DE TRACKING AUTOMATIQUE ===
+
+function initializeTypeModal() {
+    // Initialiser le dropdown des entités
+    const entitySelect = document.getElementById('typeEntity');
+    if (entitySelect && typeof EntityOperationsConfig !== 'undefined') {
+        entitySelect.innerHTML = '<option value="">Aucune (tracking manuel)</option>';
+        const entities = EntityOperationsConfig.getEntities();
+        entities.forEach(entity => {
+            const option = document.createElement('option');
+            option.value = entity.code;
+            option.textContent = entity.label;
+            entitySelect.appendChild(option);
+        });
+    }
+
+    // Initialiser le dropdown des unités
+    const unitSelect = document.getElementById('typeUnit');
+    if (unitSelect && units.length > 0) {
+        unitSelect.innerHTML = '<option value="">Sélectionner...</option>';
+        units.forEach(u => {
+            const option = document.createElement('option');
+            option.value = u.code; // On utilise le CODE comme valeur interne
+            option.textContent = `${u.label} (${u.symbol || '-'})`;
+            unitSelect.appendChild(option);
+        });
+    }
+}
+
+function onEntityChange() {
+    const entityCode = document.getElementById('typeEntity').value;
+    const operationSelect = document.getElementById('typeOperation');
+    const valueFieldSelect = document.getElementById('typeValueField');
+
+    operationSelect.innerHTML = '<option value="">Sélectionner...</option>';
+    valueFieldSelect.innerHTML = '<option value="">Sélectionner une unité d\'abord</option>';
+    valueFieldSelect.disabled = true;
+
+    if (!entityCode || typeof EntityOperationsConfig === 'undefined') {
+        operationSelect.disabled = true;
+        return;
+    }
+
+    const operations = EntityOperationsConfig.getOperations(entityCode);
+    operations.forEach(op => {
+        const option = document.createElement('option');
+        option.value = op.code;
+        option.textContent = op.label;
+        operationSelect.appendChild(option);
+    });
+
+    operationSelect.disabled = false;
+    onUnitChange();
+}
+
+function onUnitChange() {
+    const entityCode = document.getElementById('typeEntity').value;
+    const unitCode = document.getElementById('typeUnit').value;
+    const valueFieldSelect = document.getElementById('typeValueField');
+
+    valueFieldSelect.innerHTML = '<option value="">Sélectionner...</option>';
+
+    if (!entityCode || !unitCode || typeof EntityOperationsConfig === 'undefined') {
+        valueFieldSelect.disabled = true;
+        return;
+    }
+
+    const unit = units.find(u => u.code === unitCode);
+    if (!unit) {
+        valueFieldSelect.disabled = true;
+        valueFieldSelect.innerHTML = '<option value="">Unité invalide</option>';
+        return;
+    }
+
+    const defaultField = EntityOperationsConfig.getDefaultValueField(entityCode, unit.type);
+
+    if (!defaultField) {
+        valueFieldSelect.innerHTML = '<option value="">Aucun champ disponible</option>';
+        valueFieldSelect.disabled = true;
+        return;
+    }
+
+    const option = document.createElement('option');
+    option.value = defaultField.code;
+    option.textContent = `${defaultField.label} (auto-détecté)`;
+    option.selected = true;
+    valueFieldSelect.appendChild(option);
+    valueFieldSelect.disabled = true;
 }

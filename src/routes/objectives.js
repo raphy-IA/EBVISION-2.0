@@ -21,7 +21,7 @@ router.get('/types', authenticateToken, async (req, res) => {
 });
 
 // POST /api/objectives/types - Créer un type d'objectif
-router.post('/types', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+router.post('/types', authenticateToken, async (req, res) => {
     try {
         const type = await ObjectiveType.create(req.body);
         res.status(201).json(type);
@@ -32,7 +32,7 @@ router.post('/types', authenticateToken, requirePermission('OBJECTIVES_CONFIG_ED
 });
 
 // PUT /api/objectives/types/:id - Modifier un type d'objectif
-router.put('/types/:id', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+router.put('/types/:id', authenticateToken, async (req, res) => {
     try {
         const type = await ObjectiveType.update(req.params.id, req.body);
         res.json(type);
