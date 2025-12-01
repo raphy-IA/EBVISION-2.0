@@ -86,7 +86,10 @@ class PermissionsAdmin {
 
         const isSuperAdmin = this.currentUserRole === 'SUPER_ADMIN';
 
-        container.innerHTML = roles.map(role => `
+        // 🔒 PROTECTION SUPER_ADMIN: Filtrer si l'utilisateur n'est pas SUPER_ADMIN
+        const filteredRoles = isSuperAdmin ? roles : roles.filter(r => r.name !== 'SUPER_ADMIN');
+
+        container.innerHTML = filteredRoles.map(role => `
             <div class="role-item mb-2 p-2 border rounded ${this.currentRole === role.id ? 'bg-primary text-white' : 'bg-light'}">
                 <div class="d-flex justify-content-between align-items-start">
                     <div class="flex-grow-1 cursor-pointer" onclick="permissionsAdmin.selectRole('${role.id}')">
@@ -988,7 +991,11 @@ class PermissionsAdmin {
         const container = document.getElementById('menu-roles-list');
         if (!container) return;
 
-        container.innerHTML = roles.map(role => `
+        // 🔒 PROTECTION SUPER_ADMIN: Filtrer si l'utilisateur n'est pas SUPER_ADMIN
+        const isSuperAdmin = this.currentUserRole === 'SUPER_ADMIN';
+        const filteredRoles = isSuperAdmin ? roles : roles.filter(r => r.name !== 'SUPER_ADMIN');
+
+        container.innerHTML = filteredRoles.map(role => `
             <div class="role-item mb-2 p-2 border rounded cursor-pointer ${this.currentMenuRole?.id === role.id ? 'bg-primary text-white' : 'bg-light'}" 
                  onclick="permissionsAdmin.selectMenuRole('${role.id}')">
                 <div class="d-flex justify-content-between align-items-center">
@@ -1434,7 +1441,11 @@ class PermissionsAdmin {
         const container = document.getElementById('objective-roles-list');
         if (!container) return;
 
-        container.innerHTML = roles.map(role => `
+        // 🔒 PROTECTION SUPER_ADMIN: Filtrer si l'utilisateur n'est pas SUPER_ADMIN
+        const isSuperAdmin = this.currentUserRole === 'SUPER_ADMIN';
+        const filteredRoles = isSuperAdmin ? roles : roles.filter(r => r.name !== 'SUPER_ADMIN');
+
+        container.innerHTML = filteredRoles.map(role => `
             <div class="role-item mb-2 p-2 border rounded ${this.currentObjectiveRole === role.id ? 'bg-primary text-white' : 'bg-light'} cursor-pointer"
                  onclick="permissionsAdmin.selectObjectiveRole('${role.id}')">
                 <div class="d-flex align-items-center mb-1">
