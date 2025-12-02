@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Taux Horaires</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-    
+
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -22,13 +23,14 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
-            overflow-x: hidden; /* Empêche le défilement horizontal */
+            overflow-x: hidden;
+            /* Empêche le défilement horizontal */
         }
-        
+
         .page-wrapper {
             display: flex;
             min-height: 100vh;
@@ -39,18 +41,18 @@
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .table thead th {
             background-color: var(--primary-color);
             color: white;
         }
-        
+
         .loading {
             display: flex;
             justify-content: center;
@@ -62,12 +64,12 @@
             .page-wrapper {
                 flex-direction: column;
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
         }
-    
+
         /* Styles pour la sidebar unifiée */
         .main-content-wrapper {
             margin-left: 300px;
@@ -75,11 +77,11 @@
             min-height: 100vh;
             padding: 0;
         }
-        
+
         .main-content {
             padding: 2rem;
         }
-        
+
         @media (max-width: 768px) {
             .main-content-wrapper {
                 margin-left: 0;
@@ -88,16 +90,16 @@
             .sidebar-container.open {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 padding: 1rem;
             }
         }
     </style>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -107,11 +109,12 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -127,53 +130,90 @@
         <div class="main-content-area">
             <div id="taux-horaires-section">
                 <!-- Header -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2><i class="fas fa-euro-sign me-2"></i>Gestion des Taux Horaires</h2>
-                        <button class="btn btn-primary" onclick="showNewTauxHoraireModal()">
-                            <i class="fas fa-plus me-1"></i>
-                            Nouveau Taux Horaire
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Taux Horaires Table -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Liste des Taux Horaires</h5>
-                </div>
-                <div class="card-body">
-                    <div id="taux-horaires-loading" class="loading">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Chargement...</span>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2><i class="fas fa-euro-sign me-2"></i>Gestion des Taux Horaires</h2>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-primary" onclick="showBulkCreateModal()">
+                                    <i class="fas fa-layer-group me-1"></i>
+                                    Création en Masse
+                                </button>
+                                <button class="btn btn-primary" onclick="showNewTauxHoraireModal()">
+                                    <i class="fas fa-plus me-1"></i>
+                                    Nouveau Taux Horaire
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <div id="taux-horaires-content">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Business Unit</th>
-                                        <th>Division</th>
-                                        <th>Grade</th>
-                                        <th>Taux Horaire</th>
-                                        <th>Salaire de Base</th>
-                                        <th>Date d'effet</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="taux-horaires-table">
-                                    <!-- Taux Horaires will be loaded here by JavaScript -->
-                                </tbody>
-                            </table>
+                </div>
+
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="filter-bu" class="form-label">Business Unit</label>
+                                <select class="form-select" id="filter-bu"
+                                    onchange="loadFilterDivisions(); loadTauxHoraires()">
+                                    <option value="">Toutes</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filter-division" class="form-label">Division</label>
+                                <select class="form-select" id="filter-division" onchange="loadTauxHoraires()">
+                                    <option value="">Toutes</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filter-grade" class="form-label">Grade</label>
+                                <select class="form-select" id="filter-grade" onchange="loadTauxHoraires()">
+                                    <option value="">Tous</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                                    <i class="fas fa-undo me-2"></i>Réinitialiser
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Taux Horaires Table -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Liste des Taux Horaires</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="taux-horaires-loading" class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                        <div id="taux-horaires-content">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Business Unit</th>
+                                            <th>Division</th>
+                                            <th>Grade</th>
+                                            <th>Taux Horaire</th>
+                                            <th>Date d'effet</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="taux-horaires-table">
+                                        <!-- Taux Horaires will be loaded here by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
     </div>
     <!-- Modals -->
@@ -189,15 +229,18 @@
                     <form id="newTauxHoraireForm">
                         <div class="mb-3">
                             <label for="bu-select" class="form-label">Business Unit *</label>
-                            <select class="form-select" id="bu-select" required onchange="loadDivisions('bu-select', 'division-select')">
+                            <select class="form-select" id="bu-select" required
+                                onchange="loadDivisions('bu-select', 'division-select')">
                                 <option value="">Sélectionner une Business Unit</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="division-select" class="form-label">Division *</label>
-                            <select class="form-select" id="division-select" required>
-                                <option value="">Sélectionner une division</option>
+                            <label for="division-select" class="form-label">Division</label>
+                            <select class="form-select" id="division-select">
+                                <option value="">Toutes les divisions de la BU</option>
                             </select>
+                            <small class="form-text text-muted">Laissez vide pour créer un taux pour toutes les
+                                divisions</small>
                         </div>
                         <div class="mb-3">
                             <label for="grade-select" class="form-label">Grade *</label>
@@ -208,10 +251,6 @@
                         <div class="mb-3">
                             <label for="taux-input" class="form-label">Taux Horaire *</label>
                             <input type="number" class="form-control" id="taux-input" step="0.01" min="0" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="salaire-base-input" class="form-label">Salaire de Base *</label>
-                            <input type="number" class="form-control" id="salaire-base-input" step="0.01" min="0" required>
                         </div>
                         <div class="mb-3">
                             <label for="date-effet-input" class="form-label">Date d'effet *</label>
@@ -242,7 +281,8 @@
                         <input type="hidden" id="edit-id-input">
                         <div class="mb-3">
                             <label for="edit-bu-select" class="form-label">Business Unit *</label>
-                            <select class="form-select" id="edit-bu-select" required onchange="loadDivisions('edit-bu-select', 'edit-division-select')">
+                            <select class="form-select" id="edit-bu-select" required
+                                onchange="loadDivisions('edit-bu-select', 'edit-division-select')">
                                 <option value="">Sélectionner une Business Unit</option>
                             </select>
                         </div>
@@ -261,10 +301,6 @@
                         <div class="mb-3">
                             <label for="edit-taux-input" class="form-label">Taux Horaire *</label>
                             <input type="number" class="form-control" id="edit-taux-input" step="0.01" min="0" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit-salaire-base-input" class="form-label">Salaire de Base *</label>
-                            <input type="number" class="form-control" id="edit-salaire-base-input" step="0.01" min="0" required>
                         </div>
                         <div class="mb-3">
                             <label for="edit-date-effet-input" class="form-label">Date d'effet *</label>
@@ -287,7 +323,8 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Confirmer la suppression</h5>
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Confirmer la
+                        suppression</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -297,6 +334,83 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="button" class="btn btn-danger" onclick="confirmDelete()">
                         <i class="fas fa-trash me-1"></i>Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Create Modal -->
+    <div class="modal fade" id="bulkCreateTauxHoraireModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-layer-group me-2"></i>Création en Masse de Taux Horaires
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bulkCreateForm">
+                        <!-- Taux et Date -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Taux Horaire *</label>
+                                <input type="number" class="form-control" id="bulk-taux-input" step="0.01" min="0"
+                                    required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date d'effet *</label>
+                                <input type="date" class="form-control" id="bulk-date-input" required>
+                            </div>
+                        </div>
+
+                        <!-- Sélection des Grades -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-user-tie me-1"></i>Grades *
+                            </label>
+                            <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="select-all-grades"
+                                        onchange="toggleAllGrades(this.checked)">
+                                    <label class="form-check-label fw-bold" for="select-all-grades">
+                                        Tout sélectionner
+                                    </label>
+                                </div>
+                                <hr>
+                                <div id="grades-checkboxes">
+                                    <!-- Généré dynamiquement -->
+                                </div>
+                            </div>
+                            <small class="text-muted">Sélectionnez les grades concernés</small>
+                        </div>
+
+                        <!-- Sélection BUs et Divisions -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-building me-1"></i>Business Units & Divisions *
+                            </label>
+                            <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                                <div id="bu-divisions-tree">
+                                    <!-- Généré dynamiquement -->
+                                </div>
+                            </div>
+                            <small class="text-muted">Cocher une BU sélectionne toutes ses divisions</small>
+                        </div>
+
+                        <!-- Résumé -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Résumé:</strong>
+                            <span id="bulk-summary">Sélectionnez des grades et divisions</span>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="submitBulkCreate()">
+                        <i class="fas fa-save me-1"></i>Créer les taux
                     </button>
                 </div>
             </div>
@@ -316,7 +430,7 @@
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            
+
             return fetch(url, {
                 ...options,
                 headers: {
@@ -329,7 +443,7 @@
         let tauxHoraires = [];
         let tauxHoraireToDelete = null;
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadTauxHoraires();
             loadGrades();
             loadBusinessUnits();
@@ -338,7 +452,16 @@
         async function loadTauxHoraires() {
             showLoading(true);
             try {
-                const response = await authenticatedFetch(`${API_BASE_URL}/taux-horaires`);
+                const buId = document.getElementById('filter-bu')?.value || '';
+                const divisionId = document.getElementById('filter-division')?.value || '';
+                const gradeId = document.getElementById('filter-grade')?.value || '';
+
+                const params = new URLSearchParams();
+                if (buId) params.append('business_unit_id', buId);
+                if (divisionId) params.append('division_id', divisionId);
+                if (gradeId) params.append('grade_id', gradeId);
+
+                const response = await authenticatedFetch(`${API_BASE_URL}/taux-horaires?${params.toString()}`);
                 const data = await response.json();
                 if (data.success) {
                     tauxHoraires = data.data;
@@ -376,7 +499,6 @@
                     <td>${taux.division_nom || 'N/A'}</td>
                     <td>${taux.grade_nom || 'N/A'}</td>
                     <td>${taux.taux_horaire} €</td>
-                    <td>${taux.salaire_base} €</td>
                     <td>${new Date(taux.date_effet).toLocaleDateString('fr-FR')}</td>
                     <td>
                         <div class="btn-group btn-group-sm">
@@ -397,11 +519,12 @@
             try {
                 const response = await authenticatedFetch(`${API_BASE_URL}/business-units`);
                 const data = await response.json();
-                const selects = ['bu-select', 'edit-bu-select'];
+                const selects = ['bu-select', 'edit-bu-select', 'filter-bu'];
                 selects.forEach(selectId => {
                     const select = document.getElementById(selectId);
                     if (select) {
-                        select.innerHTML = '<option value="">Sélectionner une Business Unit</option>';
+                        const defaultText = selectId === 'filter-bu' ? 'Toutes' : 'Sélectionner une Business Unit';
+                        select.innerHTML = `<option value="">${defaultText}</option>`;
                         if (data.success && data.data) {
                             data.data.forEach(bu => {
                                 const option = document.createElement('option');
@@ -415,6 +538,41 @@
             } catch (error) {
                 console.error('Erreur lors du chargement des business units:', error);
             }
+        }
+
+        async function loadFilterDivisions() {
+            const buId = document.getElementById('filter-bu').value;
+            const divisionSelect = document.getElementById('filter-division');
+            divisionSelect.innerHTML = '<option value="">Chargement...</option>';
+
+            if (!buId) {
+                divisionSelect.innerHTML = '<option value="">Toutes</option>';
+                return;
+            }
+
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions?business_unit_id=${buId}`);
+                const data = await response.json();
+                divisionSelect.innerHTML = '<option value="">Toutes</option>';
+                if (data.success && data.data) {
+                    data.data.forEach(division => {
+                        const option = document.createElement('option');
+                        option.value = division.id;
+                        option.textContent = division.nom;
+                        divisionSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des divisions:', error);
+                divisionSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-bu').value = '';
+            document.getElementById('filter-division').innerHTML = '<option value="">Toutes</option>';
+            document.getElementById('filter-grade').value = '';
+            loadTauxHoraires();
         }
 
         async function loadDivisions(buSelectId, divisionSelectId, selectedDivisionId = null) {
@@ -452,11 +610,12 @@
             try {
                 const response = await authenticatedFetch(`${API_BASE_URL}/grades`);
                 const data = await response.json();
-                const selects = ['grade-select', 'edit-grade-select'];
+                const selects = ['grade-select', 'edit-grade-select', 'filter-grade'];
                 selects.forEach(selectId => {
                     const select = document.getElementById(selectId);
                     if (select) {
-                        select.innerHTML = '<option value="">Sélectionner un grade</option>';
+                        const defaultText = selectId === 'filter-grade' ? 'Tous' : 'Sélectionner un grade';
+                        select.innerHTML = `<option value="">${defaultText}</option>`;
                         if (data.success && data.data) {
                             data.data.forEach(grade => {
                                 const option = document.createElement('option');
@@ -487,28 +646,80 @@
                 return;
             }
 
-            const formData = {
-                division_id: document.getElementById('division-select').value,
-                grade_id: document.getElementById('grade-select').value,
-                taux_horaire: parseFloat(document.getElementById('taux-input').value),
-                salaire_base: parseFloat(document.getElementById('salaire-base-input').value),
-                date_entree_vigueur: document.getElementById('date-effet-input').value
-            };
+            const buId = document.getElementById('bu-select').value;
+            const divisionId = document.getElementById('division-select').value;
+            const gradeId = document.getElementById('grade-select').value;
+            const tauxHoraire = parseFloat(document.getElementById('taux-input').value);
+            const dateEffet = document.getElementById('date-effet-input').value;
 
             try {
-                const response = await authenticatedFetch(`${API_BASE_URL}/taux-horaires`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                const data = await response.json();
-                if (data.success) {
-                    showAlert('Taux horaire créé avec succès', 'success');
-                    bootstrap.Modal.getInstance(document.getElementById('newTauxHoraireModal')).hide();
-                    loadTauxHoraires();
+                // Si aucune division n'est sélectionnée, créer pour toutes les divisions de la BU
+                if (!divisionId && buId) {
+                    const response = await authenticatedFetch(`${API_BASE_URL}/divisions?business_unit_id=${buId}`);
+                    const data = await response.json();
+
+                    if (data.success && data.data && data.data.length > 0) {
+                        // Créer un taux horaire pour chaque division
+                        const promises = data.data.map(division => {
+                            const formData = {
+                                division_id: division.id,
+                                grade_id: gradeId,
+                                taux_horaire: tauxHoraire,
+                                salaire_base: null,
+                                date_entree_vigueur: dateEffet
+                            };
+
+                            return authenticatedFetch(`${API_BASE_URL}/taux-horaires`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(formData)
+                            });
+                        });
+
+                        const results = await Promise.all(promises);
+
+                        // Vérifier si toutes les créations ont réussi
+                        const allSuccessful = results.every(r => r.ok);
+
+                        if (allSuccessful) {
+                            showAlert(`${data.data.length} taux horaires créés avec succès (un par division)`, 'success');
+                        } else {
+                            showAlert('Certains taux horaires n\'ont pas pu être créés', 'warning');
+                        }
+                    } else {
+                        showAlert('Aucune division trouvée pour cette BU', 'warning');
+                        return;
+                    }
+                } else if (divisionId) {
+                    // Créer un seul taux horaire pour la division sélectionnée
+                    const formData = {
+                        division_id: divisionId,
+                        grade_id: gradeId,
+                        taux_horaire: tauxHoraire,
+                        salaire_base: salaireBase,
+                        date_entree_vigueur: dateEffet
+                    };
+
+                    const response = await authenticatedFetch(`${API_BASE_URL}/taux-horaires`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        showAlert('Taux horaire créé avec succès', 'success');
+                    } else {
+                        showAlert(`Erreur lors de la création: ${result.message || result.error || 'Erreur inconnue'}`, 'danger');
+                        return;
+                    }
                 } else {
-                    showAlert(`Erreur lors de la création: ${data.message || data.error || 'Erreur inconnue'}`, 'danger');
+                    showAlert('Veuillez sélectionner une Business Unit', 'warning');
+                    return;
                 }
+
+                bootstrap.Modal.getInstance(document.getElementById('newTauxHoraireModal')).hide();
+                loadTauxHoraires();
             } catch (error) {
                 console.error('Erreur lors de la soumission:', error);
                 showAlert('Erreur lors de la soumission', 'danger');
@@ -523,14 +734,13 @@
                     const taux = data.data;
                     document.getElementById('edit-id-input').value = taux.id;
                     document.getElementById('edit-taux-input').value = taux.taux_horaire;
-                    document.getElementById('edit-salaire-base-input').value = taux.salaire_base;
                     document.getElementById('edit-date-effet-input').value = taux.date_effet.split('T')[0];
-                    
+
                     await loadBusinessUnits();
                     document.getElementById('edit-bu-select').value = taux.business_unit_id;
-                    
+
                     await loadDivisions('edit-bu-select', 'edit-division-select', taux.division_id);
-                    
+
                     await loadGrades();
                     document.getElementById('edit-grade-select').value = taux.grade_id;
 
@@ -556,7 +766,7 @@
                 division_id: document.getElementById('edit-division-select').value,
                 grade_id: document.getElementById('edit-grade-select').value,
                 taux_horaire: parseFloat(document.getElementById('edit-taux-input').value),
-                salaire_base: parseFloat(document.getElementById('edit-salaire-base-input').value),
+                salaire_base: null,
                 date_entree_vigueur: document.getElementById('edit-date-effet-input').value
             };
 
@@ -620,21 +830,221 @@
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
+
             const container = document.querySelector('.main-content-area');
             if (container) {
                 container.insertBefore(alertDiv, container.firstChild);
             }
-            
+
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
                 }
             }, 5000);
         }
+        // Variables pour la création en masse
+        let allGrades = [];
+        let allBUs = [];
+        let allDivisions = {};
+
+        async function showBulkCreateModal() {
+            // Charger les données
+            await loadGradesForBulk();
+            await loadBUsWithDivisions();
+
+            // Réinitialiser le formulaire
+            document.getElementById('bulkCreateForm').reset();
+            updateBulkSummary();
+
+            // Afficher le modal
+            new bootstrap.Modal(document.getElementById('bulkCreateTauxHoraireModal')).show();
+        }
+
+        async function loadGradesForBulk() {
+            const response = await authenticatedFetch(`${API_BASE_URL}/grades`);
+            const data = await response.json();
+
+            if (data.success) {
+                allGrades = data.data;
+                renderGradesCheckboxes();
+            }
+        }
+
+        function renderGradesCheckboxes() {
+            const container = document.getElementById('grades-checkboxes');
+            container.innerHTML = allGrades.map(grade => `
+                <div class="form-check mb-2">
+                    <input class="form-check-input grade-checkbox" type="checkbox" 
+                           id="grade-${grade.id}" value="${grade.id}"
+                           onchange="updateBulkSummary()">
+                    <label class="form-check-label" for="grade-${grade.id}">
+                        ${grade.nom} (${grade.code})
+                    </label>
+                </div>
+            `).join('');
+        }
+
+        async function loadBUsWithDivisions() {
+            const buResponse = await authenticatedFetch(`${API_BASE_URL}/business-units`);
+            const buData = await buResponse.json();
+
+            if (buData.success) {
+                allBUs = buData.data;
+
+                // Charger les divisions pour chaque BU
+                for (const bu of allBUs) {
+                    const divResponse = await authenticatedFetch(
+                        `${API_BASE_URL}/divisions?business_unit_id=${bu.id}`
+                    );
+                    const divData = await divResponse.json();
+                    if (divData.success) {
+                        allDivisions[bu.id] = divData.data;
+                    }
+                }
+
+                renderBUDivisionsTree();
+            }
+        }
+
+        function renderBUDivisionsTree() {
+            const container = document.getElementById('bu-divisions-tree');
+            container.innerHTML = allBUs.map(bu => {
+                const divisions = allDivisions[bu.id] || [];
+                return `
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input bu-checkbox" type="checkbox" 
+                                   id="bu-${bu.id}" value="${bu.id}"
+                                   onchange="toggleBUDivisions('${bu.id}', this.checked)">
+                            <label class="form-check-label fw-bold" for="bu-${bu.id}">
+                                <i class="fas fa-building me-1"></i>${bu.nom}
+                            </label>
+                        </div>
+                        <div class="ms-4 mt-2" id="divisions-${bu.id}">
+                            ${divisions.map(div => `
+                                <div class="form-check">
+                                    <input class="form-check-input division-checkbox" 
+                                           type="checkbox" 
+                                           id="div-${div.id}" 
+                                           value="${div.id}"
+                                           data-bu-id="${bu.id}"
+                                           onchange="updateBulkSummary()">
+                                    <label class="form-check-label" for="div-${div.id}">
+                                        ${div.nom}
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleAllGrades(checked) {
+            document.querySelectorAll('.grade-checkbox').forEach(cb => {
+                cb.checked = checked;
+            });
+            updateBulkSummary();
+        }
+
+        function toggleBUDivisions(buId, checked) {
+            // Cocher/décocher toutes les divisions de cette BU
+            document.querySelectorAll(`#divisions-${buId} .division-checkbox`).forEach(cb => {
+                cb.checked = checked;
+            });
+            updateBulkSummary();
+        }
+
+        function updateBulkSummary() {
+            const selectedGrades = document.querySelectorAll('.grade-checkbox:checked').length;
+            const selectedDivisions = document.querySelectorAll('.division-checkbox:checked').length;
+            const totalTaux = selectedGrades * selectedDivisions;
+
+            const summaryEl = document.getElementById('bulk-summary');
+            if (totalTaux > 0) {
+                summaryEl.innerHTML = `
+                    <strong>${selectedGrades}</strong> grades × 
+                    <strong>${selectedDivisions}</strong> divisions = 
+                    <strong class="text-primary">${totalTaux} taux horaires</strong> seront créés
+                `;
+            } else {
+                summaryEl.textContent = 'Sélectionnez des grades et divisions';
+            }
+        }
+
+        async function submitBulkCreate() {
+            const form = document.getElementById('bulkCreateForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const tauxHoraire = parseFloat(document.getElementById('bulk-taux-input').value);
+            const dateEffet = document.getElementById('bulk-date-input').value;
+
+            // Récupérer les grades sélectionnés
+            const selectedGrades = Array.from(document.querySelectorAll('.grade-checkbox:checked'))
+                .map(cb => cb.value);
+
+            // Récupérer les divisions sélectionnées
+            const selectedDivisions = Array.from(document.querySelectorAll('.division-checkbox:checked'))
+                .map(cb => cb.value);
+
+            if (selectedGrades.length === 0 || selectedDivisions.length === 0) {
+                showAlert('Veuillez sélectionner au moins un grade et une division', 'warning');
+                return;
+            }
+
+            try {
+                // Créer toutes les combinaisons grade × division
+                const promises = [];
+                for (const gradeId of selectedGrades) {
+                    for (const divisionId of selectedDivisions) {
+                        const formData = {
+                            division_id: divisionId,
+                            grade_id: gradeId,
+                            taux_horaire: tauxHoraire,
+                            salaire_base: null, // Salaire de base null par défaut
+                            date_entree_vigueur: dateEffet
+                        };
+
+                        promises.push(
+                            authenticatedFetch(`${API_BASE_URL}/taux-horaires`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(formData)
+                            })
+                        );
+                    }
+                }
+
+                // Exécuter toutes les créations
+                const results = await Promise.all(promises);
+
+                // Compter les succès
+                const successCount = results.filter(r => r.ok).length;
+                const totalCount = promises.length;
+
+                if (successCount === totalCount) {
+                    showAlert(`${successCount} taux horaires créés avec succès!`, 'success');
+                } else {
+                    showAlert(
+                        `${successCount}/${totalCount} taux horaires créés (${totalCount - successCount} erreurs)`,
+                        'warning'
+                    );
+                }
+
+                bootstrap.Modal.getInstance(document.getElementById('bulkCreateTauxHoraireModal')).hide();
+                loadTauxHoraires();
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur lors de la création en masse', 'danger');
+            }
+        }
     </script>
 
     <!-- SessionManager pour la gestion centralisée des sessions -->
     <script src="js/session-manager.js"></script>
-    </body>
+</body>
+
 </html>

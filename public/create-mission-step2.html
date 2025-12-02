@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Création de Mission - Étape 2</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-    
+
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -20,13 +21,13 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
             overflow-x: hidden;
         }
-        
+
         .page-wrapper {
             display: flex;
             min-height: 100vh;
@@ -37,25 +38,25 @@
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .step-indicator {
             display: flex;
             justify-content: center;
             margin-bottom: 2rem;
         }
-        
+
         .step {
             display: flex;
             align-items: center;
             margin: 0 1rem;
         }
-        
+
         .step-number {
             width: 40px;
             height: 40px;
@@ -68,15 +69,15 @@
             font-weight: bold;
             margin-right: 0.5rem;
         }
-        
+
         .step-number.active {
             background-color: var(--success-color);
         }
-        
+
         .step-number.completed {
             background-color: var(--success-color);
         }
-        
+
         .btn-next {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
@@ -86,19 +87,19 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-        
+
         .btn-next:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
             color: white;
         }
-        
+
         .btn-next:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
         }
-        
+
         .btn-prev {
             background: var(--secondary-color);
             border: none;
@@ -108,13 +109,13 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-        
+
         .btn-prev:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
             color: white;
         }
-        
+
         .info-badge {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -123,20 +124,20 @@
             font-size: 0.9rem;
             font-weight: 600;
         }
-        
+
         .form-section {
             background: #f8f9fa;
             border-radius: 10px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
         }
-        
+
         .form-section h6 {
             color: var(--primary-color);
             margin-bottom: 1rem;
             font-weight: 600;
         }
-        
+
         .file-upload-section {
             border: 2px dashed #dee2e6;
             border-radius: 10px;
@@ -144,23 +145,23 @@
             background-color: #f8f9fa;
             transition: all 0.3s ease;
         }
-        
+
         .file-upload-section:hover {
             border-color: var(--secondary-color);
             background-color: #e3f2fd;
         }
-        
+
         .file-upload-section.has-file {
             border-color: var(--success-color);
             background-color: #e8f5e8;
         }
-        
+
         .file-info {
             font-size: 0.875rem;
             color: #6c757d;
             margin-top: 0.5rem;
         }
-        
+
         .file-info.has-file {
             color: var(--success-color);
             font-weight: 500;
@@ -168,24 +169,31 @@
 
         /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
         .sidebar-container {
-            width: 300px; /* Largeur fixe pour la sidebar */
-            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
+            width: 300px;
+            /* Largeur fixe pour la sidebar */
+            flex-shrink: 0;
+            /* Empêche la sidebar de rétrécir */
         }
 
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column; /* Empile la sidebar et le contenu */
+                flex-direction: column;
+                /* Empile la sidebar et le contenu */
             }
+
             .sidebar-container {
-                width: 100%; /* La sidebar prend toute la largeur */
-                height: auto; /* Hauteur automatique */
+                width: 100%;
+                /* La sidebar prend toute la largeur */
+                height: auto;
+                /* Hauteur automatique */
             }
+
             .main-content-area {
                 padding: 1rem;
             }
         }
-    
+
         /* Styles pour la sidebar unifiée */
         .main-content-wrapper {
             margin-left: 300px;
@@ -193,34 +201,34 @@
             min-height: 100vh;
             padding: 0;
         }
-        
+
         .main-content {
             padding: 2rem;
         }
-        
+
         @media (max-width: 768px) {
             .main-content-wrapper {
                 margin-left: 0;
             }
-            
+
             .sidebar-container {
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
             }
-            
+
             .sidebar-container.open {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 padding: 1rem;
             }
         }
     </style>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -230,11 +238,12 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -342,7 +351,8 @@
                                         <input type="date" class="form-control" id="missionStartDate" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="missionEndDate" class="form-label">Date de Fin Prévisionnelle *</label>
+                                        <label for="missionEndDate" class="form-label">Date de Fin Prévisionnelle
+                                            *</label>
                                         <input type="date" class="form-control" id="missionEndDate" required>
                                     </div>
                                 </div>
@@ -354,7 +364,8 @@
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
                                         <label for="missionBudget" class="form-label">Budget Prévisionnel</label>
-                                        <input type="number" class="form-control" id="missionBudget" min="0" step="0.01">
+                                        <input type="number" class="form-control" id="missionBudget" min="0"
+                                            step="0.01">
                                         <div class="form-text">Montant prévisionnel de la mission</div>
                                     </div>
                                     <div class="col-md-4 mb-3">
@@ -362,7 +373,8 @@
                                         <select class="form-select" id="missionCurrency" required>
                                             <!-- Les options seront générées dynamiquement par currency-config.js -->
                                         </select>
-                                        <div class="form-text">Devise qui sera utilisée pour tous les montants de la mission</div>
+                                        <div class="form-text">Devise qui sera utilisée pour tous les montants de la
+                                            mission</div>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="missionPriority" class="form-label">Priorité</label>
@@ -385,7 +397,8 @@
                                             <i class="fas fa-file-upload me-1"></i>KYC (Know Your Customer) *
                                         </label>
                                         <div class="file-upload-section">
-                                            <input type="file" class="form-control" id="kycFile" accept=".pdf,.doc,.docx" required>
+                                            <input type="file" class="form-control" id="kycFile"
+                                                accept=".pdf,.doc,.docx" required>
                                             <div class="form-text">Document KYC du client</div>
                                         </div>
                                     </div>
@@ -402,7 +415,8 @@
                                             <i class="fas fa-file-contract me-1"></i>Contrat de la Mission *
                                         </label>
                                         <div class="file-upload-section">
-                                            <input type="file" class="form-control" id="contractFile" accept=".pdf,.doc,.docx" required>
+                                            <input type="file" class="form-control" id="contractFile"
+                                                accept=".pdf,.doc,.docx" required>
                                             <div class="form-text">Contrat de la mission</div>
                                         </div>
                                     </div>
@@ -427,12 +441,14 @@
                                     <div class="col-md-6 mb-3">
                                         <label for="missionDivision" class="form-label">Division</label>
                                         <input type="text" class="form-control" id="missionDivision" readonly>
-                                        <div class="form-text">Division automatiquement assignée selon le type de mission</div>
+                                        <div class="form-text">Division automatiquement assignée selon le type de
+                                            mission</div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label for="missionResponsible" class="form-label">Responsable de la Mission *</label>
+                                        <label for="missionResponsible" class="form-label">Responsable de la Mission
+                                            *</label>
                                         <select class="form-select" id="missionResponsible" required>
                                             <option value="">Sélectionner un responsable</option>
                                         </select>
@@ -454,7 +470,8 @@
                                 <div class="row">
                                     <div class="col-md-12 mb-3">
                                         <label for="missionNotes" class="form-label">Notes</label>
-                                        <textarea class="form-control" id="missionNotes" rows="3" placeholder="Notes additionnelles sur la mission..."></textarea>
+                                        <textarea class="form-control" id="missionNotes" rows="3"
+                                            placeholder="Notes additionnelles sur la mission..."></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -493,7 +510,7 @@
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            
+
             return fetch(url, {
                 ...options,
                 headers: {
@@ -504,17 +521,17 @@
         }
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             console.log('Page create-mission-step2.html chargée');
-            
+
             // Initialiser la devise
             initializeCurrencySelect();
-            
+
             await loadSelections();
             await loadCollaborateurs();
             setupEventListeners();
         });
-        
+
         // Fonction pour initialiser le select de devise
         function initializeCurrencySelect() {
             const currencySelect = document.getElementById('missionCurrency');
@@ -547,7 +564,7 @@
 
                 // Afficher les informations de sélection
                 displaySelectionInfo();
-                
+
                 // Pré-remplir le formulaire
                 populateForm();
 
@@ -562,7 +579,7 @@
                 console.log('👥 Chargement des collaborateurs...');
                 const response = await authenticatedFetch('/api/collaborateurs');
                 const data = await response.json();
-                
+
                 if (data.success) {
                     collaborateurs = data.data.collaborateurs || data.data;
                     console.log(`✅ ${collaborateurs.length} collaborateurs chargés`);
@@ -651,27 +668,38 @@
                 document.getElementById('missionResponsible').value = selectedOpportunity.collaborateur_id;
             }
 
-            // Dates (à définir par l'utilisateur)
+            // Dates - Utiliser les dates de l'opportunité si disponibles, sinon aujourd'hui
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('missionStartDate').value = today;
+
+            // Date de début
+            if (selectedOpportunity.date_debut_prevue) {
+                document.getElementById('missionStartDate').value = selectedOpportunity.date_debut_prevue;
+            } else {
+                document.getElementById('missionStartDate').value = today;
+            }
+
+            // Date de fin
+            if (selectedOpportunity.date_fin_prevue) {
+                document.getElementById('missionEndDate').value = selectedOpportunity.date_fin_prevue;
+            }
         }
 
         // Remplir le select des collaborateurs
         function populateCollaborateursSelect() {
             const responsibleSelect = document.getElementById('missionResponsible');
             const associateSelect = document.getElementById('missionAssociate');
-            
+
             // Remplir le select du responsable
             responsibleSelect.innerHTML = '<option value="">Sélectionner un responsable</option>';
             associateSelect.innerHTML = '<option value="">Sélectionner un associé</option>';
-            
+
             collaborateurs.forEach(collab => {
                 // Option pour le responsable
                 const responsibleOption = document.createElement('option');
                 responsibleOption.value = collab.id;
                 responsibleOption.textContent = `${collab.nom} ${collab.prenom}`;
                 responsibleSelect.appendChild(responsibleOption);
-                
+
                 // Option pour l'associé
                 const associateOption = document.createElement('option');
                 associateOption.value = collab.id;
@@ -692,19 +720,19 @@
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-            
+
             return `MIS-${year}${month}${day}-${random}`;
         }
 
         // Configuration des événements
         function setupEventListeners() {
             // Bouton retour
-            document.getElementById('btn-prev').addEventListener('click', function() {
+            document.getElementById('btn-prev').addEventListener('click', function () {
                 window.location.href = 'create-mission-step1.html';
             });
 
             // Bouton suivant
-            document.getElementById('btn-next').addEventListener('click', function() {
+            document.getElementById('btn-next').addEventListener('click', function () {
                 if (validateForm()) {
                     saveMissionData();
                     window.location.href = 'create-mission-step3.html';
@@ -712,25 +740,25 @@
             });
 
             // Événements pour les fichiers
-            document.getElementById('kycFile').addEventListener('change', function() {
+            document.getElementById('kycFile').addEventListener('change', function () {
                 updateFileInfo('kycFile', 'kycFileInfo');
             });
 
-            document.getElementById('contractFile').addEventListener('change', function() {
+            document.getElementById('contractFile').addEventListener('change', function () {
                 updateFileInfo('contractFile', 'contractFileInfo');
             });
 
             // Événements pour les dates
-            document.getElementById('kycDate').addEventListener('change', function() {
+            document.getElementById('kycDate').addEventListener('change', function () {
                 this.classList.remove('is-invalid');
             });
 
-            document.getElementById('contractDate').addEventListener('change', function() {
+            document.getElementById('contractDate').addEventListener('change', function () {
                 this.classList.remove('is-invalid');
             });
 
             // Événements pour les champs obligatoires
-            document.getElementById('missionAssociate').addEventListener('change', function() {
+            document.getElementById('missionAssociate').addEventListener('change', function () {
                 this.classList.remove('is-invalid');
             });
         }
@@ -739,11 +767,11 @@
         function updateFileInfo(fileInputId, infoElementId) {
             const fileInput = document.getElementById(fileInputId);
             const fileContainer = fileInput.closest('.col-md-6');
-            
+
             if (fileInput.files && fileInput.files.length > 0) {
                 const file = fileInput.files[0];
                 fileContainer.classList.add('has-file');
-                
+
                 // Créer ou mettre à jour l'élément d'information
                 let infoElement = document.getElementById(infoElementId);
                 if (!infoElement) {
@@ -752,12 +780,12 @@
                     infoElement.className = 'file-info has-file';
                     fileInput.parentNode.appendChild(infoElement);
                 }
-                
+
                 infoElement.innerHTML = `
                     <i class="fas fa-check-circle me-1"></i>
                     <strong>${file.name}</strong> (${formatFileSize(file.size)})
                 `;
-                
+
                 fileInput.classList.remove('is-invalid');
             } else {
                 fileContainer.classList.remove('has-file');
@@ -830,7 +858,7 @@
             // Validation des dates
             const startDate = new Date(document.getElementById('missionStartDate').value);
             const endDate = new Date(document.getElementById('missionEndDate').value);
-            
+
             if (endDate <= startDate) {
                 alert('La date de fin doit être postérieure à la date de début');
                 document.getElementById('missionEndDate').classList.add('is-invalid');
@@ -839,7 +867,7 @@
 
             if (!isValid) {
                 let missingFields = [];
-                
+
                 // Vérifier les champs manquants
                 if (!document.getElementById('missionCode').value.trim()) missingFields.push('Code Mission');
                 if (!document.getElementById('missionName').value.trim()) missingFields.push('Nom de la Mission');
@@ -852,7 +880,7 @@
                 if (!document.getElementById('kycDate').value) missingFields.push('Date du Document KYC');
                 if (!document.getElementById('contractFile').files || document.getElementById('contractFile').files.length === 0) missingFields.push('Contrat de la Mission');
                 if (!document.getElementById('contractDate').value) missingFields.push('Date du Contrat');
-                
+
                 alert(`Veuillez remplir tous les champs obligatoires et télécharger les documents requis.\n\nChamps manquants :\n${missingFields.join('\n')}`);
             }
 
@@ -863,7 +891,7 @@
         function calculateMissionStatus() {
             const today = new Date();
             const startDate = new Date(document.getElementById('missionStartDate').value);
-            
+
             // Si la date d'enregistrement est inférieure à la date de début : PLANIFIEE
             // Sinon : EN_COURS
             return today < startDate ? 'PLANIFIEE' : 'EN_COURS';
@@ -874,7 +902,7 @@
             // Préparer les fichiers pour le stockage
             const kycFile = document.getElementById('kycFile').files[0];
             const contractFile = document.getElementById('contractFile').files[0];
-            
+
             const missionData = {
                 code: document.getElementById('missionCode').value,
                 nom: document.getElementById('missionName').value,
@@ -913,4 +941,5 @@
         }
     </script>
 </body>
-</html> 
+
+</html>

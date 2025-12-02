@@ -5,24 +5,25 @@ const TauxHoraire = require('../models/TauxHoraire');
 // GET /api/taux-horaires - Liste des taux horaires
 router.get('/', async (req, res) => {
     try {
-        const { page = 1, limit = 10, grade_id, division_id, statut, date_reference } = req.query;
-        const result = await TauxHoraire.findAll({ 
-            page: parseInt(page), 
-            limit: parseInt(limit), 
+        const { page = 1, limit = 10, grade_id, division_id, business_unit_id, statut, date_reference } = req.query;
+        const result = await TauxHoraire.findAll({
+            page: parseInt(page),
+            limit: parseInt(limit),
             grade_id,
             division_id,
+            business_unit_id,
             statut,
             date_reference: date_reference ? new Date(date_reference) : null
         });
-        
+
         // Réponse formatée pour le frontend
         res.json({ success: true, data: result.taux_horaires, total: result.pagination.total, page: result.pagination.page, limit: result.pagination.limit });
     } catch (error) {
         console.error('Erreur lors de la récupération des taux horaires:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: 'Erreur lors de la récupération des taux horaires',
-            details: error.message 
+            details: error.message
         });
     }
 });
@@ -34,10 +35,10 @@ router.get('/statistics', async (req, res) => {
         res.json({ success: true, data: statistics });
     } catch (error) {
         console.error('Erreur lors de la récupération des statistiques:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: 'Erreur lors de la récupération des statistiques',
-            details: error.message 
+            details: error.message
         });
     }
 });
@@ -52,10 +53,10 @@ router.get('/current', async (req, res) => {
         res.json({ success: true, data: tauxHoraires });
     } catch (error) {
         console.error('Erreur lors de la récupération des taux horaires actuels:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: 'Erreur lors de la récupération des taux horaires actuels',
-            details: error.message 
+            details: error.message
         });
     }
 });
@@ -69,18 +70,18 @@ router.get('/grade/:gradeId/division/:divisionId', async (req, res) => {
             req.params.divisionId,
             date_reference ? new Date(date_reference) : new Date()
         );
-        
+
         if (!tauxHoraire) {
             return res.status(404).json({ success: false, error: 'Taux horaire non trouvé pour cette combinaison grade/division' });
         }
-        
+
         res.json({ success: true, data: tauxHoraire });
     } catch (error) {
         console.error('Erreur lors de la récupération du taux horaire:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: 'Erreur lors de la récupération du taux horaire',
-            details: error.message 
+            details: error.message
         });
     }
 });
@@ -95,10 +96,10 @@ router.get('/grade/:gradeId/division/:divisionId/history', async (req, res) => {
         res.json({ success: true, data: tauxHoraires });
     } catch (error) {
         console.error('Erreur lors de la récupération de l\'historique:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: 'Erreur lors de la récupération de l\'historique',
-            details: error.message 
+            details: error.message
         });
     }
 });
@@ -113,10 +114,10 @@ router.get('/:id', async (req, res) => {
         res.json({ success: true, data: tauxHoraire });
     } catch (error) {
         console.error('Erreur lors de la récupération du taux horaire:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: 'Erreur lors de la récupération du taux horaire',
-            details: error.message 
+            details: error.message
         });
     }
 });
@@ -135,10 +136,10 @@ router.post('/', async (req, res) => {
         res.status(201).json({ success: true, data: created });
     } catch (error) {
         console.error('Erreur lors de la création du taux horaire:', error);
-        res.status(400).json({ 
+        res.status(400).json({
             success: false,
             error: 'Erreur lors de la création du taux horaire',
-            details: error.message 
+            details: error.message
         });
     }
 });
@@ -158,14 +159,17 @@ router.put('/:id', async (req, res) => {
             date_effet: date_entree_vigueur
         };
 
-        const updated = await TauxHoraire.update(req.params.id, dataToUpdate);
+        // Mettre à jour les propriétés de l'instance
+        Object.assign(tauxHoraire, dataToUpdate);
+
+        const updated = await tauxHoraire.update();
         res.json({ success: true, data: updated });
     } catch (error) {
         console.error('Erreur lors de la modification du taux horaire:', error);
-        res.status(400).json({ 
+        res.status(400).json({
             success: false,
             error: 'Erreur lors de la modification du taux horaire',
-            details: error.message 
+            details: error.message
         });
     }
 });
@@ -177,13 +181,12 @@ router.delete('/:id', async (req, res) => {
         res.json({ success: true, message: 'Taux horaire supprimé avec succès' });
     } catch (error) {
         console.error('Erreur lors de la suppression du taux horaire:', error);
-        res.status(400).json({ 
+        res.status(400).json({
             success: false,
             error: 'Erreur lors de la suppression du taux horaire',
-            details: error.message 
+            details: error.message
         });
     }
 });
 
 module.exports = router;
- 

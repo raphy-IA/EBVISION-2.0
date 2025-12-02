@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Création de Mission - Étape 1</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-    
+
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -20,12 +21,12 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
         }
-        
+
         .page-wrapper {
             display: flex;
             min-height: 100vh;
@@ -36,25 +37,25 @@
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .step-indicator {
             display: flex;
             justify-content: center;
             margin-bottom: 2rem;
         }
-        
+
         .step {
             display: flex;
             align-items: center;
             margin: 0 1rem;
         }
-        
+
         .step-number {
             width: 40px;
             height: 40px;
@@ -67,15 +68,15 @@
             font-weight: bold;
             margin-right: 0.5rem;
         }
-        
+
         .step-number.active {
             background-color: var(--success-color);
         }
-        
+
         .step-number.completed {
             background-color: var(--success-color);
         }
-        
+
         .opportunity-card,
         .mission-type-card {
             cursor: pointer;
@@ -83,13 +84,13 @@
             border: 2px solid transparent;
             position: relative;
         }
-        
+
         .opportunity-card:hover,
         .mission-type-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
-        
+
         .opportunity-card.selected,
         .mission-type-card.selected {
             border-color: var(--success-color);
@@ -118,14 +119,14 @@
         .mission-type-card.selected .selection-badge {
             display: inline-flex;
         }
-        
+
         .loading {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 200px;
         }
-        
+
         .btn-next {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
@@ -135,13 +136,13 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-        
+
         .btn-next:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
             color: white;
         }
-        
+
         .btn-next:disabled {
             background: #ccc;
             cursor: not-allowed;
@@ -150,24 +151,31 @@
 
         /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
         .sidebar-container {
-            width: 300px; /* Largeur fixe pour la sidebar */
-            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
+            width: 300px;
+            /* Largeur fixe pour la sidebar */
+            flex-shrink: 0;
+            /* Empêche la sidebar de rétrécir */
         }
 
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column; /* Empile la sidebar et le contenu */
+                flex-direction: column;
+                /* Empile la sidebar et le contenu */
             }
+
             .sidebar-container {
-                width: 100%; /* La sidebar prend toute la largeur */
-                height: auto; /* Hauteur automatique */
+                width: 100%;
+                /* La sidebar prend toute la largeur */
+                height: auto;
+                /* Hauteur automatique */
             }
+
             .main-content-area {
                 padding: 1rem;
             }
         }
-    
+
         /* Styles pour la sidebar unifiée */
         .main-content-wrapper {
             margin-left: 300px;
@@ -175,34 +183,34 @@
             min-height: 100vh;
             padding: 0;
         }
-        
+
         .main-content {
             padding: 2rem;
         }
-        
+
         @media (max-width: 768px) {
             .main-content-wrapper {
                 margin-left: 0;
             }
-            
+
             .sidebar-container {
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
             }
-            
+
             .sidebar-container.open {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 padding: 1rem;
             }
         }
     </style>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -212,11 +220,12 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -233,10 +242,14 @@
             <div class="container-fluid">
 
                 <!-- Indicateur d'étapes -->
-                <div class="step-indicator">
+                <div class="step-indicator" id="stepIndicator">
+                    <div class="step" id="step0Indicator" style="display: none;">
+                        <div class="step-number completed">0</div>
+                        <span>Informations Initiales</span>
+                    </div>
                     <div class="step">
                         <div class="step-number active">1</div>
-                        <span>Sélection Opportunité & Type</span>
+                        <span id="step1Label">Sélection Opportunité & Type</span>
                     </div>
                     <div class="step">
                         <div class="step-number">2</div>
@@ -316,6 +329,7 @@
         let selectedMissionType = null;
         let opportunities = [];
         let missionTypes = [];
+        let isDirectMode = false;
 
         // Fonction utilitaire pour les appels API authentifiés
         async function authenticatedFetch(url, options = {}) {
@@ -324,7 +338,7 @@
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            
+
             return fetch(url, {
                 ...options,
                 headers: {
@@ -335,8 +349,23 @@
         }
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             console.log('Page create-mission-step1.html chargée');
+
+            // Détecter le mode direct
+            const urlParams = new URLSearchParams(window.location.search);
+            isDirectMode = urlParams.get('mode') === 'direct';
+
+            if (isDirectMode) {
+                console.log('🎯 Mode DIRECT détecté');
+                // Charger l'opportunité depuis sessionStorage
+                const storedOpp = sessionStorage.getItem('selectedOpportunity');
+                if (storedOpp) {
+                    selectedOpportunity = JSON.parse(storedOpp);
+                    console.log('✅ Opportunité chargée depuis sessionStorage:', selectedOpportunity);
+                }
+            }
+
             await loadData();
         });
 
@@ -344,17 +373,22 @@
         async function loadData() {
             try {
                 console.log('🔄 Chargement des données...');
-                
-                // Charger les opportunités gagnées
-                console.log('🏆 Chargement des opportunités gagnées...');
-                const oppResponse = await authenticatedFetch('/api/opportunities/won-for-mission');
-                const oppData = await oppResponse.json();
-                if (oppData.success) {
-                    opportunities = oppData.data.opportunities;
-                    console.log(`✅ ${opportunities.length} opportunités gagnées chargées`);
-                    displayOpportunities();
+
+                // Charger les opportunités gagnées (sauf en mode direct)
+                if (!isDirectMode) {
+                    console.log('🏆 Chargement des opportunités gagnées...');
+                    const oppResponse = await authenticatedFetch('/api/opportunities/won-for-mission');
+                    const oppData = await oppResponse.json();
+                    if (oppData.success) {
+                        opportunities = oppData.data.opportunities;
+                        console.log(`✅ ${opportunities.length} opportunités gagnées chargées`);
+                        displayOpportunities();
+                    } else {
+                        console.error('❌ Erreur lors du chargement des opportunités:', oppData.error);
+                    }
                 } else {
-                    console.error('❌ Erreur lors du chargement des opportunités:', oppData.error);
+                    // En mode direct, afficher le résumé de l'opportunité
+                    displayDirectOpportunitySummary();
                 }
 
                 // Charger les types de mission
@@ -378,7 +412,7 @@
         // Affichage des opportunités
         function displayOpportunities() {
             const container = document.getElementById('opportunities-container');
-            
+
             if (opportunities.length === 0) {
                 container.innerHTML = `
                     <div class="text-center text-muted">
@@ -432,10 +466,59 @@
             `;
         }
 
+        // Affichage du résumé de l'opportunité en mode direct
+        function displayDirectOpportunitySummary() {
+            const container = document.getElementById('opportunities-container');
+
+            if (!selectedOpportunity) {
+                container.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Aucune information de mission trouvée. Veuillez recommencer depuis le début.
+                    </div>
+                `;
+                return;
+            }
+
+            // Mettre à jour le label de l'étape 1
+            document.getElementById('step1Label').textContent = 'Sélection du Type de Mission';
+
+            // Afficher l'étape 0 dans l'indicateur
+            document.getElementById('step0Indicator').style.display = 'flex';
+
+            // Afficher le résumé de l'opportunité
+            container.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle me-2"></i>Informations de la mission</h6>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <strong>Nom :</strong> ${selectedOpportunity.nom}<br>
+                            <strong>Client :</strong> ${selectedOpportunity.client_nom}<br>
+                            <strong>Montant estimé :</strong> ${formatCurrency(selectedOpportunity.montant_estime)}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Business Unit :</strong> ${selectedOpportunity.business_unit_nom || 'N/A'}<br>
+                            <strong>Division :</strong> ${selectedOpportunity.division_nom || 'N/A'}<br>
+                            <strong>Responsable :</strong> ${selectedOpportunity.collaborateur_nom} ${selectedOpportunity.collaborateur_prenom}
+                        </div>
+                    </div>
+                    ${selectedOpportunity.description ? `<p class="mt-2 mb-0"><strong>Description :</strong> ${selectedOpportunity.description}</p>` : ''}
+                    <div class="mt-3">
+                        <a href="create-mission-step0.html" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-edit me-1"></i>Modifier ces informations
+                        </a>
+                    </div>
+                </div>
+            `;
+
+            // Mettre à jour le bouton suivant
+            updateNextButton();
+        }
+
         // Affichage des types de mission
         function displayMissionTypes() {
             const container = document.getElementById('mission-types-container');
-            
+
             if (missionTypes.length === 0) {
                 container.innerHTML = `
                     <div class="text-center text-muted">
@@ -566,4 +649,5 @@
         }
     </script>
 </body>
-</html> 
+
+</html>

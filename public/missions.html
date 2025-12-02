@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Missions</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-    
+
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -21,13 +22,14 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
-            overflow-x: hidden; /* Empêche le défilement horizontal */
+            overflow-x: hidden;
+            /* Empêche le défilement horizontal */
         }
-        
+
         /* Le conteneur principal de la page qui contient la sidebar et le contenu */
         .page-wrapper {
             display: flex;
@@ -36,63 +38,79 @@
 
         /* Styles pour le contenu principal */
         .main-content-area {
-            flex-grow: 1; /* Prend l'espace restant */
+            flex-grow: 1;
+            /* Prend l'espace restant */
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
         .stat-card.success {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
-        
+
         .stat-card.warning {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
-        
+
         .stat-card.info {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
-        
+
         .stat-number {
             font-size: 2.5rem;
             font-weight: bold;
         }
-        
+
         .table thead th {
             background-color: var(--primary-color);
             color: white;
         }
-        
+
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
         }
-        
-        .status-saisie { background-color: #e3f2fd; color: #1976d2; }
-        .status-soumise { background-color: #fff3e0; color: #f57c00; }
-        .status-validee { background-color: #e8f5e8; color: #388e3c; }
-        .status-rejetee { background-color: #ffebee; color: #d32f2f; }
-        
+
+        .status-saisie {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-soumise {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-validee {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .status-rejetee {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+
         .loading {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 200px;
         }
-        
+
         .chart-container {
             position: relative;
             height: 300px;
@@ -101,14 +119,15 @@
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column; /* Empile la sidebar et le contenu */
+                flex-direction: column;
+                /* Empile la sidebar et le contenu */
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
         }
-    
+
         /* Styles pour la sidebar unifiée */
         .main-content-wrapper {
             margin-left: 300px;
@@ -116,11 +135,11 @@
             min-height: 100vh;
             padding: 0;
         }
-        
+
         .main-content {
             padding: 2rem;
         }
-        
+
         @media (max-width: 768px) {
             .main-content-wrapper {
                 margin-left: 0;
@@ -129,14 +148,14 @@
             .sidebar-container.open {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 padding: 1rem;
             }
         }
     </style>
 
-        <script src="js/global-auth.js"></script>
+    <script src="js/global-auth.js"></script>
     <script src="js/menu-permissions.js"></script>
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
@@ -144,17 +163,18 @@
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -175,9 +195,9 @@
                         <a href="create-mission-step1.html" class="btn btn-success me-2">
                             <i class="fas fa-trophy me-2"></i>Créer Mission depuis Opportunité
                         </a>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMissionModal">
+                        <a href="create-mission-step0.html" class="btn btn-primary">
                             <i class="fas fa-plus me-2"></i>Nouvelle Mission
-                        </button>
+                        </a>
                     </div>
                 </div>
 
@@ -215,11 +235,13 @@
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label for="searchInput" class="form-label">Recherche</label>
-                                <input type="text" class="form-control" id="searchInput" placeholder="Rechercher une mission...">
+                                <input type="text" class="form-control" id="searchInput"
+                                    placeholder="Rechercher une mission...">
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label for="codeFilter" class="form-label">Code</label>
-                                <input type="text" class="form-control" id="codeFilter" placeholder="Code mission (ex: MIS-001)">
+                                <input type="text" class="form-control" id="codeFilter"
+                                    placeholder="Code mission (ex: MIS-001)">
                             </div>
                             <div class="col-md-3 mb-3 d-flex align-items-end">
                                 <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
@@ -373,7 +395,8 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button class="btn btn-primary" onclick="updateMissionBasic()"><i class="fas fa-save me-2"></i>Enregistrer</button>
+                    <button class="btn btn-primary" onclick="updateMissionBasic()"><i
+                            class="fas fa-save me-2"></i>Enregistrer</button>
                 </div>
             </div>
         </div>
@@ -397,7 +420,7 @@
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            
+
             return fetch(url, {
                 ...options,
                 headers: {
@@ -408,7 +431,7 @@
         }
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadMissions();
             loadClients();
             setupEventListeners();
@@ -491,7 +514,7 @@
         // Affichage des missions
         function displayMissions(missionsToShow) {
             const tbody = document.getElementById('missionsTableBody');
-            
+
             // Réinitialise le tableau pour éviter les doublons
             if (tbody) {
                 tbody.innerHTML = '';
@@ -555,17 +578,17 @@
         // Remplissage du sélecteur client du formulaire (tous les clients)
         function populateClientFilters() {
             const missionClient = document.getElementById('missionClient');
-            
+
             // Vérifier que clients est un tableau
             if (!Array.isArray(clients)) {
                 console.error('Erreur: clients n\'est pas un tableau:', clients);
                 clients = [];
             }
-            
-            const clientOptions = clients.map(client => 
+
+            const clientOptions = clients.map(client =>
                 `<option value="${client.id}">${client.nom || client.raison_sociale}</option>`
             ).join('');
-            
+
             missionClient.innerHTML = '<option value="">Sélectionner un client</option>' + clientOptions;
         }
 
@@ -591,17 +614,17 @@
 
             clientFilter.innerHTML = '<option value="">Tous les clients</option>' +
                 Array.from(clientsMap.entries())
-                    .sort((a,b) => a[1].localeCompare(b[1]))
+                    .sort((a, b) => a[1].localeCompare(b[1]))
                     .map(([id, nom]) => `<option value="${id}">${nom}</option>`)
                     .join('');
             buFilter.innerHTML = '<option value="">Toutes les unités</option>' +
                 Array.from(buMap.entries())
-                    .sort((a,b) => a[1].localeCompare(b[1]))
+                    .sort((a, b) => a[1].localeCompare(b[1]))
                     .map(([id, nom]) => `<option value="${id}">${nom}</option>`)
                     .join('');
             divisionFilter.innerHTML = '<option value="">Toutes les divisions</option>' +
                 Array.from(divMap.entries())
-                    .sort((a,b) => a[1].localeCompare(b[1]))
+                    .sort((a, b) => a[1].localeCompare(b[1]))
                     .map(([id, nom]) => `<option value="${id}">${nom}</option>`)
                     .join('');
 
@@ -674,7 +697,7 @@
                     try {
                         const text = await response.text();
                         console.error('Erreur MAJ mission:', text);
-                    } catch (_) {}
+                    } catch (_) { }
                     showAlert('Erreur lors de la mise à jour', 'danger');
                     return;
                 }
@@ -744,14 +767,14 @@
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
+
             const container = document.querySelector('.main-content-area');
             if (container) {
                 container.insertBefore(alertDiv, container.firstChild);
             } else {
                 document.body.appendChild(alertDiv);
             }
-            
+
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
@@ -759,5 +782,6 @@
             }, 5000);
         }
     </script>
-    </body>
+</body>
+
 </html>

@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Création de Mission - Étape 4</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-    
+
+
     <!-- Import de la configuration des devises -->
     <script src="/js/currency-config.js" defer></script>
-    
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -23,12 +24,12 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
         }
-        
+
         .page-wrapper {
             display: flex;
             min-height: 100vh;
@@ -39,25 +40,25 @@
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .step-indicator {
             display: flex;
             justify-content: center;
             margin-bottom: 2rem;
         }
-        
+
         .step {
             display: flex;
             align-items: center;
             margin: 0 1rem;
         }
-        
+
         .step-number {
             width: 40px;
             height: 40px;
@@ -70,15 +71,15 @@
             font-weight: bold;
             margin-right: 0.5rem;
         }
-        
+
         .step-number.active {
             background-color: var(--success-color);
         }
-        
+
         .step-number.completed {
             background-color: var(--success-color);
         }
-        
+
         .btn-next {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
@@ -88,19 +89,19 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-        
+
         .btn-next:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
             color: white;
         }
-        
+
         .btn-next:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
         }
-        
+
         .btn-prev {
             background: var(--secondary-color);
             border: none;
@@ -110,13 +111,13 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-        
+
         .btn-prev:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
             color: white;
         }
-        
+
         .info-badge {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -125,50 +126,50 @@
             font-size: 0.9rem;
             font-weight: 600;
         }
-        
+
         .form-section {
             background: #f8f9fa;
             border-radius: 10px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
         }
-        
+
         .form-section h6 {
             color: var(--primary-color);
             margin-bottom: 1rem;
             font-weight: 600;
         }
-        
+
         .task-card {
             border: 2px solid transparent;
             transition: all 0.3s ease;
             cursor: pointer;
             position: relative;
         }
-        
+
         .task-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
-        
+
         .task-card.selected {
             border-color: var(--success-color);
             border-width: 3px;
             background-color: #e8f5e8;
             box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.3);
         }
-        
+
         .task-card.obligatory {
             border-left: 4px solid var(--warning-color);
             background-color: #fff3cd;
         }
-        
+
         .task-card.obligatory.selected {
             border-color: #ffc107;
             background-color: #fff3cd;
             box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
         }
-        
+
         .task-card.optional {
             border-left: 4px solid var(--secondary-color);
         }
@@ -192,13 +193,13 @@
         .task-card.optional.selected .task-selection-badge {
             display: inline-flex;
         }
-        
+
         .alert-sm {
             padding: 0.25rem 0.5rem;
             font-size: 0.75rem;
             margin-bottom: 0.5rem;
         }
-        
+
         .collaborateurs-selection {
             max-height: 200px;
             overflow-y: auto;
@@ -207,66 +208,66 @@
             padding: 1rem;
             background-color: #f8f9fa;
         }
-        
+
         .collaborateur-heures {
             background-color: #f8f9fa;
             border-radius: 0.375rem;
             padding: 0.5rem;
             margin-bottom: 0.5rem;
         }
-        
+
         .collaborateur-heures .row {
             display: flex !important;
             flex-direction: row !important;
         }
-        
-                        .collaborateur-heures-row {
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;
-                    background-color: #f8f9fa;
-                    border-radius: 0.375rem;
-                    padding: 0.75rem;
-                    margin-bottom: 0.5rem;
-                    gap: 1rem;
-                }
-                
-                .collaborateur-heures-row.hidden {
-                    display: none !important;
-                }
-        
+
+        .collaborateur-heures-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            gap: 1rem;
+        }
+
+        .collaborateur-heures-row.hidden {
+            display: none !important;
+        }
+
         .collaborateur-info {
             flex: 0 0 25% !important;
             min-width: 200px;
         }
-        
+
         .collaborateur-taux {
             flex: 0 0 20% !important;
             min-width: 150px;
         }
-        
+
         .collaborateur-heures {
             flex: 0 0 20% !important;
             min-width: 120px;
         }
-        
+
         .collaborateur-cout {
             flex: 0 0 20% !important;
             min-width: 150px;
         }
-        
+
         .heures-par-collaborateur {
             max-height: 300px;
             overflow-y: auto;
         }
-        
+
         .assignment-row {
             background: #f8f9fa;
             border-radius: 8px;
             padding: 1rem;
             margin-bottom: 1rem;
         }
-        
+
         .budget-calculator {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -274,7 +275,7 @@
             padding: 2rem;
             margin-bottom: 2rem;
         }
-        
+
         .budget-item {
             display: flex;
             justify-content: space-between;
@@ -282,7 +283,7 @@
             padding: 0.5rem 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .budget-item:last-child {
             border-bottom: none;
             font-weight: bold;
@@ -291,24 +292,31 @@
 
         /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
         .sidebar-container {
-            width: 300px; /* Largeur fixe pour la sidebar */
-            flex-shrink: 0; /* Empêche la sidebar de rétrécir */
+            width: 300px;
+            /* Largeur fixe pour la sidebar */
+            flex-shrink: 0;
+            /* Empêche la sidebar de rétrécir */
         }
 
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column; /* Empile la sidebar et le contenu */
+                flex-direction: column;
+                /* Empile la sidebar et le contenu */
             }
+
             .sidebar-container {
-                width: 100%; /* La sidebar prend toute la largeur */
-                height: auto; /* Hauteur automatique */
+                width: 100%;
+                /* La sidebar prend toute la largeur */
+                height: auto;
+                /* Hauteur automatique */
             }
+
             .main-content-area {
                 padding: 1rem;
             }
         }
-    
+
         /* Styles pour la sidebar unifiée */
         .main-content-wrapper {
             margin-left: 300px;
@@ -316,34 +324,34 @@
             min-height: 100vh;
             padding: 0;
         }
-        
+
         .main-content {
             padding: 2rem;
         }
-        
+
         @media (max-width: 768px) {
             .main-content-wrapper {
                 margin-left: 0;
             }
-            
+
             .sidebar-container {
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
             }
-            
+
             .sidebar-container.open {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 padding: 1rem;
             }
         }
     </style>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -353,11 +361,12 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -462,7 +471,8 @@
                     </div>
                     <div class="card-body">
                         <div id="assignments-container">
-                            <p class="text-muted">Sélectionnez d'abord les tâches pour voir les affectations disponibles.</p>
+                            <p class="text-muted">Sélectionnez d'abord les tâches pour voir les affectations
+                                disponibles.</p>
                         </div>
                     </div>
                 </div>
@@ -533,7 +543,7 @@
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            
+
             return fetch(url, {
                 ...options,
                 headers: {
@@ -544,7 +554,7 @@
         }
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             console.log('Page create-mission-step4.html chargée');
             await loadData();
             setupEventListeners();
@@ -580,7 +590,7 @@
 
                 // Afficher les résumés
                 displaySummaries();
-                
+
                 // Charger les collaborateurs d'abord, puis les tâches
                 await loadCollaborateurs();
                 await loadTasks();
@@ -624,7 +634,7 @@
                 console.log('📋 Chargement des tâches...');
                 const response = await authenticatedFetch(`/api/tasks/by-mission-type/${selectedMissionType.id}`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     tasks = data.data.tasks;
                     console.log(`✅ ${tasks.length} tâches chargées`);
@@ -643,18 +653,18 @@
                 console.log('👥 Chargement des collaborateurs...');
                 const response = await authenticatedFetch('/api/collaborateurs');
                 const data = await response.json();
-                
+
                 if (data.success) {
                     // L'API retourne directement data.data (tableau de collaborateurs)
                     console.log('📊 Données brutes des collaborateurs:', data.data);
                     console.log('📊 Statuts des collaborateurs:', data.data.map(c => ({ nom: c.nom, statut: c.statut })));
-                    
+
                     // Filtrer seulement les collaborateurs actifs
                     collaborateurs = data.data.filter(collab => collab.statut === 'ACTIF');
                     console.log(`✅ ${collaborateurs.length} collaborateurs actifs chargés`);
                     console.log('Collaborateurs actifs:', collaborateurs);
-                    console.log('📊 Taux horaires des collaborateurs:', collaborateurs.map(c => ({ 
-                        nom: c.nom, 
+                    console.log('📊 Taux horaires des collaborateurs:', collaborateurs.map(c => ({
+                        nom: c.nom,
                         taux_horaire: c.taux_horaire,
                         grade: c.grade_nom,
                         business_unit: c.business_unit_nom
@@ -670,7 +680,7 @@
         // Afficher les tâches
         function displayTasks() {
             const container = document.getElementById('tasks-container');
-            
+
             if (tasks.length === 0) {
                 container.innerHTML = `
                     <div class="text-center text-muted">
@@ -734,7 +744,7 @@
                     ${tasksHtml}
                 </div>
             `;
-            
+
             // Mettre à jour l'affichage des affectations après avoir sélectionné les tâches obligatoires
             displayAssignments();
             updateBudgetCalculator();
@@ -744,13 +754,13 @@
         function toggleTask(taskId) {
             const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
             const task = tasks.find(t => t.id === taskId);
-            
+
             // Empêcher la désélection des tâches obligatoires
             if (task.obligatoire && selectedTasks.includes(taskId)) {
                 console.log('⚠️ Impossible de désélectionner une tâche obligatoire');
                 return;
             }
-            
+
             if (selectedTasks.includes(taskId)) {
                 // Désélectionner (seulement pour les tâches non obligatoires)
                 selectedTasks = selectedTasks.filter(id => id !== taskId);
@@ -766,7 +776,7 @@
                     totalHeures: 0
                 };
             }
-            
+
             displayAssignments();
             updateBudgetCalculator();
         }
@@ -774,13 +784,13 @@
         // Afficher les affectations
         function displayAssignments() {
             const container = document.getElementById('assignments-container');
-            
+
             console.log('🔍 Debug displayAssignments:');
             console.log('  - selectedTasks:', selectedTasks);
             console.log('  - collaborateurs:', collaborateurs);
             console.log('  - collaborateurs.length:', collaborateurs.length);
             console.log('  - assignments:', assignments);
-            
+
             if (selectedTasks.length === 0) {
                 container.innerHTML = '<p class="text-muted">Sélectionnez d\'abord les tâches pour voir les affectations disponibles.</p>';
                 return;
@@ -789,11 +799,11 @@
             const assignmentsHtml = selectedTasks.map(taskId => {
                 const assignment = assignments[taskId];
                 const task = assignment.task;
-                
+
                 console.log(`🔍 Debug taskId ${taskId}:`);
                 console.log(`  - assignment:`, assignment);
                 console.log(`  - assignment.collaborateurs:`, assignment ? assignment.collaborateurs : 'undefined');
-                
+
                 return `
                     <div class="assignment-row">
                         <h6 class="mb-3">
@@ -806,12 +816,12 @@
                             <div class="col-12">
                                 <label class="form-label">Collaborateurs assignés</label>
                                                                  <div class="collaborateurs-selection">
-                                     ${collaborateurs.length > 0 ? 
-                                         collaborateurs.map(collab => {
-                                             // Vérifier si ce collaborateur est déjà assigné à cette tâche
-                                             const isAssigned = assignment && assignment.collaborateurs && assignment.collaborateurs[collab.id] !== undefined;
-                                             console.log(`🔍 Debug collab ${collab.id} (${collab.nom}): isAssigned = ${isAssigned}`);
-                                             return `
+                                     ${collaborateurs.length > 0 ?
+                        collaborateurs.map(collab => {
+                            // Vérifier si ce collaborateur est déjà assigné à cette tâche
+                            const isAssigned = assignment && assignment.collaborateurs && assignment.collaborateurs[collab.id] !== undefined;
+                            console.log(`🔍 Debug collab ${collab.id} (${collab.nom}): isAssigned = ${isAssigned}`);
+                            return `
                                                  <div class="form-check form-check-inline mb-2">
                                                      <input class="form-check-input" type="checkbox" 
                                                             id="collab_${taskId}_${collab.id}" 
@@ -824,9 +834,9 @@
                                                      </label>
                                                  </div>
                                              `;
-                                         }).join('') : 
-                                         '<div class="alert alert-warning">Aucun collaborateur actif disponible</div>'
-                                     }
+                        }).join('') :
+                        '<div class="alert alert-warning">Aucun collaborateur actif disponible</div>'
+                    }
                                  </div>
                                 <div class="form-text">Cochez les collaborateurs à assigner à cette tâche</div>
                             </div>
@@ -838,10 +848,10 @@
                                 <label class="form-label">Heures et coûts par collaborateur</label>
                                 <div class="heures-par-collaborateur">
                                     ${collaborateurs.map(collab => {
-                                        // Vérifier si ce collaborateur est déjà assigné à cette tâche
-                                        const isAssigned = assignment && assignment.collaborateurs && assignment.collaborateurs[collab.id] !== undefined;
-                                        console.log(`🔍 Debug collab ${collab.id} (${collab.nom}) heures row: isAssigned = ${isAssigned}, hidden class = ${!isAssigned}`);
-                                        return `
+                        // Vérifier si ce collaborateur est déjà assigné à cette tâche
+                        const isAssigned = assignment && assignment.collaborateurs && assignment.collaborateurs[collab.id] !== undefined;
+                        console.log(`🔍 Debug collab ${collab.id} (${collab.nom}) heures row: isAssigned = ${isAssigned}, hidden class = ${!isAssigned}`);
+                        return `
                                             <div class="collaborateur-heures-row ${isAssigned ? '' : 'hidden'}" id="heures_${taskId}_${collab.id}">
                                                 <div class="collaborateur-info">
                                                     <strong>${collab.nom} ${collab.prenom}</strong><br>
@@ -873,7 +883,7 @@
                                                 </div>
                                             </div>
                                         `;
-                                    }).join('')}
+                    }).join('')}
                                 </div>
                             </div>
                         </div>
@@ -900,7 +910,7 @@
             }).join('');
 
             container.innerHTML = assignmentsHtml;
-            
+
             // Debug après génération du HTML
             console.log('🔍 Debug après génération HTML:');
             selectedTasks.forEach(taskId => {
@@ -927,7 +937,7 @@
             console.log(`  - collaborateurId: ${collaborateurId}`);
             console.log(`  - isChecked: ${isChecked}`);
             console.log(`  - assignments[${taskId}] before:`, assignments[taskId]);
-            
+
             if (!assignments[taskId]) {
                 assignments[taskId] = {
                     task: tasks.find(t => t.id === taskId),
@@ -937,7 +947,7 @@
                 };
                 console.log(`  - Created new assignment for taskId ${taskId}:`, assignments[taskId]);
             }
-            
+
             if (isChecked) {
                 // Ajouter le collaborateur
                 const collaborateur = collaborateurs.find(c => c.id === collaborateurId);
@@ -953,10 +963,10 @@
                 delete assignments[taskId].collaborateurs[collaborateurId];
                 console.log(`  - Removed collaborateur ${collaborateurId} from task ${taskId}`);
             }
-            
+
             console.log(`  - assignments[${taskId}] after:`, assignments[taskId]);
             console.log(`  - assignments[${taskId}].collaborateurs after:`, assignments[taskId].collaborateurs);
-            
+
             // Mettre à jour l'affichage basé sur l'état des assignments
             displayAssignments(); // Recréer les éléments DOM d'abord
             // Attendre un peu que les éléments DOM soient créés
@@ -965,56 +975,56 @@
                 updateBudgetCalculator();
             }, 100);
         }
-        
+
         // Mettre à jour les heures d'un collaborateur
         function updateCollaborateurHeures(taskId, collaborateurId, heures) {
             if (assignments[taskId] && assignments[taskId].collaborateurs[collaborateurId]) {
                 const heuresValue = parseFloat(heures) || 0;
                 const tauxHoraire = assignments[taskId].collaborateurs[collaborateurId].taux_horaire || 0;
                 const cout = heuresValue * tauxHoraire;
-                
+
                 assignments[taskId].collaborateurs[collaborateurId].heures = heuresValue;
                 assignments[taskId].collaborateurs[collaborateurId].cout = cout;
-                
+
                 // Mettre à jour l'affichage du coût en temps réel
                 const coutDiv = document.getElementById(`cout_${taskId}_${collaborateurId}`);
                 if (coutDiv) {
                     coutDiv.textContent = formatCurrency(cout);
                 }
-                
+
                 updateTaskTotalHeures(taskId);
                 updateBudgetCalculator();
             }
         }
-        
+
         // Mettre à jour l'affichage des heures par collaborateur
         function updateCollaborateurHeuresDisplay() {
             console.log('🔍 Debug updateCollaborateurHeuresDisplay:');
             console.log('  - selectedTasks:', selectedTasks);
             console.log('  - assignments:', assignments);
-            
+
             selectedTasks.forEach(taskId => {
                 console.log(`🔍 Debug taskId ${taskId}:`);
                 console.log(`  - assignments[${taskId}]:`, assignments[taskId]);
                 console.log(`  - assignments[${taskId}].collaborateurs:`, assignments[taskId] ? assignments[taskId].collaborateurs : 'undefined');
-                
+
                 collaborateurs.forEach(collab => {
                     const heuresDiv = document.getElementById(`heures_${taskId}_${collab.id}`);
                     const checkbox = document.getElementById(`collab_${taskId}_${collab.id}`);
                     const coutDiv = document.getElementById(`cout_${taskId}_${collab.id}`);
-                    
+
                     console.log(`🔍 Debug collab ${collab.id} (${collab.nom}):`);
                     console.log(`  - heuresDiv:`, heuresDiv);
                     console.log(`  - checkbox:`, checkbox);
                     console.log(`  - checkbox.checked:`, checkbox ? checkbox.checked : 'N/A');
-                    
+
                     if (heuresDiv && checkbox) {
                         // Vérifier si le collaborateur est assigné dans les assignments
                         const isAssigned = assignments[taskId] && assignments[taskId].collaborateurs && assignments[taskId].collaborateurs[collab.id] !== undefined;
-                        
+
                         console.log(`  - isAssigned:`, isAssigned);
                         console.log(`  - assignments[${taskId}].collaborateurs[${collab.id}]:`, assignments[taskId] && assignments[taskId].collaborateurs ? assignments[taskId].collaborateurs[collab.id] : 'undefined');
-                        
+
                         if (isAssigned) {
                             console.log(`  - Removing 'hidden' class for ${collab.nom}`);
                             heuresDiv.classList.remove('hidden');
@@ -1027,7 +1037,7 @@
                             console.log(`  - Adding 'hidden' class for ${collab.nom}`);
                             heuresDiv.classList.add('hidden');
                         }
-                        
+
                         console.log(`  - Has 'hidden' class:`, heuresDiv.classList.contains('hidden'));
                         console.log(`  - Computed display style:`, window.getComputedStyle(heuresDiv).display);
                     } else {
@@ -1036,24 +1046,24 @@
                 });
             });
         }
-        
+
         // Mettre à jour le total des heures et coût pour une tâche
         function updateTaskTotalHeures(taskId) {
             if (assignments[taskId]) {
                 let totalHeures = 0;
                 let totalCout = 0;
-                
+
                 Object.values(assignments[taskId].collaborateurs).forEach(collab => {
                     totalHeures += collab.heures || 0;
                     totalCout += collab.cout || 0;
                 });
-                
+
                 assignments[taskId].totalHeures = totalHeures;
                 assignments[taskId].totalCout = totalCout;
-                
+
                 const totalHeuresSpan = document.getElementById(`total_heures_${taskId}`);
                 const totalCoutSpan = document.getElementById(`total_cout_${taskId}`);
-                
+
                 if (totalHeuresSpan) {
                     totalHeuresSpan.textContent = totalHeures;
                 }
@@ -1068,7 +1078,7 @@
             let totalPersonnel = 0;
             let totalHeures = 0;
             let totalCoutCollaborateurs = 0;
-            
+
             // Calculer le coût personnel
             Object.values(assignments).forEach(assignment => {
                 if (assignment.collaborateurs) {
@@ -1081,19 +1091,19 @@
                     });
                 }
             });
-            
+
             // Calculer le taux horaire moyen
             const tauxHoraireMoyen = totalHeures > 0 ? totalCoutCollaborateurs / totalHeures : 0;
-            
+
             // Budget total honoraires (seulement les honoraires)
             const budgetTotalHonoraires = financialData.honoraires_montant;
-            
+
             // Marge basée sur les honoraires seulement
             const marge = budgetTotalHonoraires - totalPersonnel;
-            
+
             // Budget total (honoraires + débours)
             const budgetTotal = budgetTotalHonoraires + financialData.debours_montant;
-            
+
             document.getElementById('budget-total').textContent = formatCurrency(budgetTotal);
             document.getElementById('budget-honoraires').textContent = formatCurrency(budgetTotalHonoraires);
             document.getElementById('budget-personnel').textContent = formatCurrency(totalPersonnel);
@@ -1105,12 +1115,12 @@
         // Configuration des événements
         function setupEventListeners() {
             // Bouton retour
-            document.getElementById('btn-prev').addEventListener('click', function() {
+            document.getElementById('btn-prev').addEventListener('click', function () {
                 window.location.href = 'create-mission-step3.html';
             });
 
             // Bouton créer la mission
-            document.getElementById('btn-create').addEventListener('click', function() {
+            document.getElementById('btn-create').addEventListener('click', function () {
                 if (validateForm()) {
                     createMission();
                 }
@@ -1123,16 +1133,16 @@
                 alert('Veuillez sélectionner au moins une tâche');
                 return false;
             }
-            
+
             // Vérifier que toutes les tâches obligatoires sont sélectionnées
             const obligatoryTasks = tasks.filter(t => t.obligatoire).map(t => t.id);
             const selectedObligatoryTasks = obligatoryTasks.filter(id => selectedTasks.includes(id));
-            
+
             if (selectedObligatoryTasks.length !== obligatoryTasks.length) {
                 alert('Veuillez sélectionner toutes les tâches obligatoires');
                 return false;
             }
-            
+
             return true;
         }
 
@@ -1140,7 +1150,7 @@
         async function createMission() {
             try {
                 console.log('🚀 Création de la mission...');
-                
+
                 // Préparer les données de la mission
                 const missionPayload = {
                     // Données de base de la mission
@@ -1154,12 +1164,14 @@
                     date_fin_prevue: missionData.date_fin_prevue,
                     budget_prevue: missionData.budget_prevue,
                     taux_horaire_moyen: missionData.taux_horaire_moyen,
+                    business_unit_id: selectedOpportunity.business_unit_id || missionData.business_unit_id, // Business Unit de l'opportunité
                     division_id: missionData.division_id,
                     responsable_id: missionData.responsable_id,
+                    associe_id: missionData.associe_id, // Associé de la mission
                     priorite: missionData.priorite || 'MOYENNE', // Valeur par défaut en majuscules
                     statut: missionData.statut || 'PLANIFIEE',
                     notes: missionData.notes,
-                    
+
                     // Configuration financière
                     montant_honoraires: financialData.honoraires_montant,
                     devise: financialData.honoraires_devise, // Devise unifiée de la mission
@@ -1168,12 +1180,12 @@
                     description_debours: financialData.debours_description,
                     conditions_paiement: financialData.conditions_paiement,
                     pourcentage_avance: financialData.pourcentage_avance,
-                    
+
                     // Tâches et affectations
                     tasks: selectedTasks.map(taskId => {
                         const task = tasks.find(t => t.id === taskId);
                         const taskAssignment = assignments[taskId] || { collaborateurs: {} };
-                        
+
                         // Convertir les collaborateurs assignés en tableau
                         const assignmentsArray = Object.values(taskAssignment.collaborateurs || {}).map(collab => ({
                             collaborateur_id: collab.id,
@@ -1184,7 +1196,7 @@
                             date_fin: missionData.date_fin_prevue,
                             statut: 'planifie'
                         }));
-                        
+
                         return {
                             task_id: taskId,
                             nom: task.libelle,
@@ -1198,7 +1210,7 @@
                         };
                     })
                 };
-                
+
                 console.log('📦 Données de mission:', missionPayload);
                 console.log('🔍 Détails des données:', {
                     missionData: missionData,
@@ -1206,28 +1218,28 @@
                     selectedOpportunity: selectedOpportunity,
                     selectedMissionType: selectedMissionType
                 });
-                
+
                 // Appel API pour créer la mission
                 const response = await authenticatedFetch('/api/missions', {
                     method: 'POST',
                     body: JSON.stringify(missionPayload)
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     console.log('✅ Mission créée avec succès!', result.data);
-                    
+
                     // Afficher un message de succès
                     alert('Mission créée avec succès!');
-                    
+
                     // Rediriger vers la page des missions
                     window.location.href = 'missions.html';
                 } else {
                     console.error('❌ Erreur lors de la création de la mission:', result.error);
                     alert(`Erreur lors de la création de la mission: ${result.error}`);
                 }
-                
+
             } catch (error) {
                 console.error('❌ Erreur lors de la création de la mission:', error);
                 alert('Erreur lors de la création de la mission');
@@ -1242,12 +1254,12 @@
                 }
                 return CURRENCY_CONFIG.formatCurrency(0, 'XAF'); // Devise par défaut XAF
             }
-            
+
             // Si une devise spécifique est fournie, l'utiliser
             if (currencyCode) {
                 return CURRENCY_CONFIG.formatCurrency(amount, currencyCode);
             }
-            
+
             // Sinon, essayer de récupérer la devise depuis financialData
             try {
                 const financialDataStr = sessionStorage.getItem('financialData');
@@ -1259,7 +1271,7 @@
             } catch (error) {
                 console.warn('Erreur lors de la récupération de la devise:', error);
             }
-            
+
             // Fallback vers XAF par défaut
             return CURRENCY_CONFIG.formatCurrency(amount, 'XAF');
         }
@@ -1275,23 +1287,23 @@
         function openCreateTaskModal() {
             console.log('🔧 Ouverture du modal de création de tâche');
             console.log('🔧 selectedMissionType:', selectedMissionType);
-            
+
             if (!selectedMissionType || !selectedMissionType.id) {
                 alert('Erreur: Type de mission non sélectionné');
                 return;
             }
-            
+
             // Pré-remplir le type de mission
             document.getElementById('createMissionType').value = selectedMissionType.id;
             document.getElementById('createMissionTypeText').textContent = selectedMissionType.libelle;
             document.getElementById('createMissionTypeDisplay').value = selectedMissionType.libelle;
-            
+
             // Réinitialiser le formulaire
             document.getElementById('createTaskForm').reset();
             document.getElementById('createCode').value = '';
             document.getElementById('createDuree').value = '0';
             document.getElementById('createPriority').value = 'MOYENNE';
-            
+
             // Afficher le modal
             const modal = new bootstrap.Modal(document.getElementById('createTaskModal'));
             modal.show();
@@ -1305,16 +1317,16 @@
                     .toUpperCase()
                     .replace(/[^A-Z0-9]/g, '')
                     .substring(0, 8);
-                
+
                 // S'assurer qu'on a au moins 3 caractères
                 if (code.length < 3) {
                     code = code + 'TASK';
                 }
-                
+
                 // Ajouter un timestamp pour l'unicité
                 const timestamp = Date.now().toString().slice(-3);
                 code = code + timestamp;
-                
+
                 document.getElementById('createCode').value = code;
             }
         }
@@ -1325,25 +1337,25 @@
                 // Validation des champs requis
                 const code = document.getElementById('createCode').value.trim();
                 const libelle = document.getElementById('createLibelle').value.trim();
-                
+
                 if (!code) {
                     alert('Le code de la tâche est requis');
                     document.getElementById('createCode').focus();
                     return;
                 }
-                
+
                 if (!libelle) {
                     alert('Le libellé de la tâche est requis');
                     document.getElementById('createLibelle').focus();
                     return;
                 }
-                
+
                 if (!selectedMissionType || !selectedMissionType.id) {
                     console.error('❌ selectedMissionType manquant:', selectedMissionType);
                     alert('Erreur: Type de mission non sélectionné. Veuillez retourner à l\'étape 1.');
                     return;
                 }
-                
+
                 const formData = {
                     code: code,
                     libelle: libelle,
@@ -1391,14 +1403,14 @@
                 if ((result.success && result.data) || (result.id && result.code)) {
                     const taskData = result.data || result;
                     console.log('✅ Tâche créée avec succès:', taskData);
-                    
+
                     // Fermer le modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('createTaskModal'));
                     modal.hide();
-                    
+
                     // Recharger les tâches
                     await loadTasks();
-                    
+
                     // Afficher un message de succès
                     alert('Tâche créée avec succès! Elle est maintenant disponible pour sélection.');
                 } else {
@@ -1429,20 +1441,23 @@
                             <i class="fas fa-info-circle me-2"></i>
                             <strong>Division:</strong> <span id="createMissionTypeText">Chargement...</span>
                             <br>
-                            <small>Cette tâche sera créée pour la division de la mission et sera automatiquement optionnelle.</small>
+                            <small>Cette tâche sera créée pour la division de la mission et sera automatiquement
+                                optionnelle.</small>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="createCode" class="form-label">Code *</label>
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="createCode" required readonly>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="generateTaskCode()">
+                                        <button type="button" class="btn btn-outline-secondary"
+                                            onclick="generateTaskCode()">
                                             <i class="fas fa-magic"></i>
                                         </button>
                                     </div>
-                                    <small class="form-text text-muted">Généré automatiquement à partir du libellé</small>
+                                    <small class="form-text text-muted">Généré automatiquement à partir du
+                                        libellé</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -1457,32 +1472,35 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="createLibelle" class="form-label">Libellé *</label>
-                            <input type="text" class="form-control" id="createLibelle" required 
-                                   oninput="generateTaskCode()">
+                            <input type="text" class="form-control" id="createLibelle" required
+                                oninput="generateTaskCode()">
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="createDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="createDescription" rows="3" 
-                                      placeholder="Description détaillée de la tâche..."></textarea>
+                            <textarea class="form-control" id="createDescription" rows="3"
+                                placeholder="Description détaillée de la tâche..."></textarea>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="createDuree" class="form-label">Durée estimée (heures)</label>
-                                    <input type="number" class="form-control" id="createDuree" min="0" step="0.5" value="0">
+                                    <input type="number" class="form-control" id="createDuree" min="0" step="0.5"
+                                        value="0">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Type de mission</label>
                                     <input type="hidden" id="createMissionType" value="">
-                                    <input type="text" class="form-control" id="createMissionTypeDisplay" value="" readonly>
-                                    <small class="form-text text-muted">Associée automatiquement au type de mission de cette création</small>
+                                    <input type="text" class="form-control" id="createMissionTypeDisplay" value=""
+                                        readonly>
+                                    <small class="form-text text-muted">Associée automatiquement au type de mission de
+                                        cette création</small>
                                 </div>
                             </div>
                         </div>
@@ -1498,4 +1516,5 @@
         </div>
     </div>
 </body>
-</html> 
+
+</html>

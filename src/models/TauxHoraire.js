@@ -29,11 +29,8 @@ class TauxHoraire {
         const errors = [];
         if (!this.grade_id) { errors.push('Grade requis'); }
         if (!this.division_id) { errors.push('Division requise'); }
-        if (!this.taux_horaire || this.taux_horaire <= 0) { 
-            errors.push('Taux horaire doit être positif'); 
-        }
-        if (!this.salaire_base || this.salaire_base <= 0) { 
-            errors.push('Salaire de base doit être positif'); 
+        if (!this.taux_horaire || this.taux_horaire <= 0) {
+            errors.push('Taux horaire doit être positif');
         }
         if (!this.date_effet) { errors.push('Date d\'effet requise'); }
         if (this.date_fin_effet && this.date_fin_effet <= this.date_effet) {
@@ -56,6 +53,13 @@ class TauxHoraire {
             INSERT INTO taux_horaires (
                 grade_id, division_id, taux_horaire, salaire_base, date_effet, date_fin_effet, statut
             ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+            ON CONFLICT (grade_id, division_id, date_effet)
+            DO UPDATE SET
+                taux_horaire = EXCLUDED.taux_horaire,
+                salaire_base = EXCLUDED.salaire_base,
+                date_fin_effet = EXCLUDED.date_fin_effet,
+                statut = EXCLUDED.statut,
+                updated_at = CURRENT_TIMESTAMP
             RETURNING *
         `;
 
@@ -87,6 +91,10 @@ class TauxHoraire {
         if (division_id) {
             whereConditions.push(`th.division_id = $${paramIndex++}`);
             queryParams.push(division_id);
+        }
+        if (options.business_unit_id) {
+            whereConditions.push(`d.business_unit_id = $${paramIndex++}`);
+            queryParams.push(options.business_unit_id);
         }
         if (statut) {
             whereConditions.push(`th.statut = $${paramIndex++}`);
@@ -151,7 +159,7 @@ class TauxHoraire {
             LEFT JOIN business_units bu ON d.business_unit_id = bu.id
             WHERE th.id = $1
         `;
-        
+
         const result = await pool.query(query, [id]);
         return result.rows.length > 0 ? new TauxHoraire(result.rows[0]) : null;
     }
@@ -174,7 +182,7 @@ class TauxHoraire {
             ORDER BY th.date_effet DESC
             LIMIT 1
         `;
-        
+
         const result = await pool.query(query, [gradeId, divisionId, dateReference]);
         return result.rows.length > 0 ? new TauxHoraire(result.rows[0]) : null;
     }
@@ -192,7 +200,7 @@ class TauxHoraire {
             WHERE th.grade_id = $1 AND th.division_id = $2
             ORDER BY th.date_effet DESC
         `;
-        
+
         const result = await pool.query(query, [gradeId, divisionId]);
         return result.rows.map(row => new TauxHoraire(row));
     }
@@ -235,7 +243,7 @@ class TauxHoraire {
         const query = `
             DELETE FROM taux_horaires WHERE id = $1
         `;
-        
+
         await pool.query(query, [id]);
         return true;
     }
@@ -251,7 +259,7 @@ class TauxHoraire {
                 MAX(th.taux_horaire) as taux_max
             FROM taux_horaires th
         `;
-        
+
         const result = await pool.query(query);
         return result.rows[0];
     }
@@ -271,7 +279,7 @@ class TauxHoraire {
               AND (th.date_fin_effet IS NULL OR th.date_fin_effet >= $1)
             ORDER BY bu.nom, d.nom, g.niveau
         `;
-        
+
         const result = await pool.query(query, [dateReference]);
         return result.rows.map(row => new TauxHoraire(row));
     }
