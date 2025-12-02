@@ -366,6 +366,7 @@
 
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
+    <script src="js/session-manager.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
 
@@ -457,7 +458,7 @@
                                         <div class="currency-input">
                                             <input type="number" class="form-control" id="honorairesMontant" min="0"
                                                 step="0.01" required placeholder=" ">
-                                            <span class="currency-symbol" id="honoraires-symbol">FCFA</span>
+                                            <span class="currency-symbol" id="honoraires-symbol"></span>
                                         </div>
                                         <div class="form-text">Montant des honoraires convenus</div>
                                     </div>
@@ -473,7 +474,7 @@
                                         <div class="currency-input">
                                             <input type="number" class="form-control" id="deboursMontant" min="0"
                                                 step="0.01" value="0" placeholder=" ">
-                                            <span class="currency-symbol" id="debours-symbol">FCFA</span>
+                                            <span class="currency-symbol" id="debours-symbol"></span>
                                         </div>
                                         <div class="form-text">Frais de déplacement, hébergement, etc.</div>
                                     </div>
@@ -531,18 +532,15 @@
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <strong>Total Honoraires:</strong>
-                                                <span id="total-honoraires-payment"><span
-                                                        class="currency-symbol">€</span>0.00</span>
+                                                <span id="total-honoraires-payment">0.00</span>
                                             </div>
                                             <div class="col-md-3">
                                                 <strong>Total Débours:</strong>
-                                                <span id="total-debours-payment"><span
-                                                        class="currency-symbol">€</span>0.00</span>
+                                                <span id="total-debours-payment">0.00</span>
                                             </div>
                                             <div class="col-md-3">
                                                 <strong>Total Général:</strong>
-                                                <span id="total-general-payment"><span
-                                                        class="currency-symbol">€</span>0.00</span>
+                                                <span id="total-general-payment">0.00</span>
                                             </div>
                                             <div class="col-md-3">
                                                 <strong>Nombre de tranches:</strong>
@@ -574,19 +572,19 @@
                     <div id="budget-summary-content">
                         <div class="budget-item">
                             <span>Budget Prévisionnel:</span>
-                            <span id="budget-previsionnel"><span class="currency-symbol">€</span>0.00</span>
+                            <span id="budget-previsionnel">0.00</span>
                         </div>
                         <div class="budget-item">
                             <span>Honoraires:</span>
-                            <span id="budget-honoraires"><span class="currency-symbol">€</span>0.00</span>
+                            <span id="budget-honoraires">0.00</span>
                         </div>
                         <div class="budget-item">
                             <span>Débours:</span>
-                            <span id="budget-debours"><span class="currency-symbol">€</span>0.00</span>
+                            <span id="budget-debours">0.00</span>
                         </div>
                         <div class="budget-item">
                             <span>Total:</span>
-                            <span id="budget-total"><span class="currency-symbol">€</span>0.00</span>
+                            <span id="budget-total">0.00</span>
                         </div>
                     </div>
                 </div>

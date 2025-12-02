@@ -8,20 +8,20 @@ const { authenticateToken } = require('../middleware/auth');
 router.post('/', authenticateToken, async (req, res) => {
     try {
         const { user_id, week_start, week_end, status = 'saved' } = req.body;
-        
+
         if (!user_id || !week_start || !week_end) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Les paramètres user_id, week_start et week_end sont requis' 
+            return res.status(400).json({
+                success: false,
+                message: 'Les paramètres user_id, week_start et week_end sont requis'
             });
         }
 
         // Vérifier si une feuille de temps existe déjà pour cette semaine et cet utilisateur
         const existingTimeSheet = await TimeSheet.findByWeekStart(user_id, week_start);
-        
+
         if (existingTimeSheet) {
-            return res.status(409).json({ 
-                success: false, 
+            return res.status(409).json({
+                success: false,
                 message: 'Une feuille de temps existe déjà pour cette semaine et cet utilisateur',
                 data: existingTimeSheet
             });
@@ -36,18 +36,18 @@ router.post('/', authenticateToken, async (req, res) => {
         };
 
         const newTimeSheet = await TimeSheet.create(timeSheetData);
-        
-        res.status(201).json({ 
-            success: true, 
-            message: 'Feuille de temps créée avec succès', 
-            data: newTimeSheet 
+
+        res.status(201).json({
+            success: true,
+            message: 'Feuille de temps créée avec succès',
+            data: newTimeSheet
         });
     } catch (error) {
         console.error('Erreur lors de la création de la feuille de temps:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Erreur lors de la création de la feuille de temps', 
-            error: error.message 
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la création de la feuille de temps',
+            error: error.message
         });
     }
 });
@@ -72,7 +72,7 @@ router.get('/current', authenticateToken, async (req, res) => {
         weekEndDate.setDate(weekStartDate.getDate() + 6); // +6 pour aller du lundi au dimanche
 
         const weekEnd = weekEndDate.toISOString().split('T')[0];
-        
+
         console.log('📅 Calcul des dates de semaine:');
         console.log('  - Début (lundi):', week_start);
         console.log('  - Fin (dimanche):', weekEnd);
@@ -353,7 +353,9 @@ router.put('/:id', authenticateToken, async (req, res) => {
             return res.status(404).json({ error: 'Feuille de temps non trouvée' });
         }
 
-        if (timeSheet.user_id !== userId) {
+        // Comparaison avec conversion de type pour éviter les problèmes de string vs UUID
+        if (timeSheet.user_id.toString() !== userId.toString()) {
+            console.warn(`⚠️ Tentative de modification d'une feuille de temps d'un autre utilisateur: ${timeSheet.user_id} !== ${userId}`);
             return res.status(403).json({ error: 'Accès non autorisé' });
         }
 

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "e67c1c8b-bc4e-4f07-90c7-6bc4aadfcb0b",
+    "date_saisie": "2025-11-27T05:00:00.000Z",
+    "heures": "3.00",
+    "task_id": null,
+    "mission_id": null,
+    "type_heures": "HNC",
+    "internal_activity_id": "9389585d-5ec5-47ff-a2ce-08f3c88e4615",
+    "entry_status": "saved",
+    "sheet_status": "saved",
+    "user_id": "785c341e-0c3e-427c-8f33-294dd40e3fcf"
+  },
+  {
+    "id": "34e4271e-eab9-40eb-870a-af04f78bbd84",
+    "date_saisie": "2025-11-25T05:00:00.000Z",
+    "heures": "6.00",
+    "task_id": null,
+    "mission_id": null,
+    "type_heures": "HNC",
+    "internal_activity_id": "9389585d-5ec5-47ff-a2ce-08f3c88e4615",
+    "entry_status": "saved",
+    "sheet_status": "saved",
+    "user_id": "785c341e-0c3e-427c-8f33-294dd40e3fcf"
+  },
+  {
+    "id": "170711e4-283f-4239-a9e2-e7b13df208ed",
+    "date_saisie": "2025-11-24T05:00:00.000Z",
+    "heures": "2.00",
+    "task_id": null,
+    "mission_id": null,
+    "type_heures": "HNC",
+    "internal_activity_id": "9389585d-5ec5-47ff-a2ce-08f3c88e4615",
+    "entry_status": "saved",
+    "sheet_status": "saved",
+    "user_id": "785c341e-0c3e-427c-8f33-294dd40e3fcf"
+  },
+  {
+    "id": "2b8e5884-24b5-4a9c-8f25-d84587693462",
+    "date_saisie": "2025-11-28T05:00:00.000Z",
+    "heures": "8.00",
+    "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+    "mission_id": "88df136e-3dac-402b-843a-94822a3dea67",
+    "type_heures": "HC",
+    "internal_activity_id": null,
+    "entry_status": "saved",
+    "sheet_status": "saved",
+    "user_id": "785c341e-0c3e-427c-8f33-294dd40e3fcf"
+  },
+  {
+    "id": "d533fcc1-145d-4290-b309-aa2d58ee6180",
+    "date_saisie": "2025-11-27T05:00:00.000Z",
+    "heures": "3.00",
+    "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+    "mission_id": "88df136e-3dac-402b-843a-94822a3dea67",
+    "type_heures": "HC",
+    "internal_activity_id": null,
+    "entry_status": "saved",
+    "sheet_status": "saved",
+    "user_id": "785c341e-0c3e-427c-8f33-294dd40e3fcf"
+  }
+]

@@ -105,6 +105,7 @@
     <!-- CSS et Scripts de branding -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
     <script src="js/branding-loader.js"></script>
+    <script src="js/session-manager.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
 
@@ -199,10 +200,7 @@
                                 <div class="col-md-2 mb-3">
                                     <label for="devise" class="form-label">Devise</label>
                                     <select class="form-select" id="devise">
-                                        <option value="EUR">EUR</option>
-                                        <option value="USD">USD</option>
-                                        <option value="GBP">GBP</option>
-                                        <option value="CAD">CAD</option>
+                                        <!-- Les options seront générées dynamiquement -->
                                     </select>
                                 </div>
 
@@ -264,6 +262,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js" defer></script>
     <script src="/js/sidebar.js" defer></script>
+    <script src="/js/currency-config.js" defer></script>
     <script>
         // Variables globales
         let clients = [];
@@ -291,9 +290,19 @@
         // Initialisation
         document.addEventListener('DOMContentLoaded', async function () {
             console.log('Page create-mission-step0.html chargée');
+            initializeCurrencySelect(); // ← AJOUTER CETTE LIGNE
             await loadFormData();
         });
 
+        // Fonction pour initialiser le select de devise
+        function initializeCurrencySelect() {
+            const currencySelect = document.getElementById('devise');
+            if (currencySelect && typeof CURRENCY_CONFIG !== 'undefined') {
+                currencySelect.innerHTML = CURRENCY_CONFIG.getCurrencyOptions();
+                currencySelect.value = CURRENCY_CONFIG.DEFAULT_CURRENCY;
+                console.log('✅ Devise initialisée:', CURRENCY_CONFIG.DEFAULT_CURRENCY);
+            }
+        }
         // Chargement des données pour les sélecteurs
         async function loadFormData() {
             try {
@@ -401,7 +410,7 @@
 
             // Créer la pseudo-opportunité
             const pseudoOpportunity = {
-                id: 'DIRECT_' + Date.now(),
+                id: null,  // Pour les créations directes, pas d'opportunité dans la DB
                 nom: document.getElementById('missionName').value,
                 description: document.getElementById('description').value || '',
                 client_id: clientId,

@@ -10,7 +10,7 @@ const NotificationService = require('../services/notificationService');
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         const options = {
             page: parseInt(req.query.page) || 1,
             limit: parseInt(req.query.limit) || 20,
@@ -76,12 +76,12 @@ router.get('/', authenticateToken, async (req, res) => {
             LEFT JOIN clients c ON m.client_id = c.id
             ${whereClause}
         `;
-        
+
         // Debug: journaliser les filtres et la clause WHERE
         try {
             console.log('🔎 [GET /api/missions] filters', options);
             console.log('🔎 [GET /api/missions] where', whereClause, 'params=', queryParams);
-        } catch (_) {}
+        } catch (_) { }
 
         const countResult = await pool.query(countQuery, queryParams);
         const total = parseInt(countResult.rows[0].total);
@@ -107,7 +107,7 @@ router.get('/', authenticateToken, async (req, res) => {
         const result = await pool.query(dataQuery, queryParams);
         try {
             console.log('📄 [GET /api/missions] rows', result.rows.length);
-        } catch (_) {}
+        } catch (_) { }
 
         res.json({
             success: true,
@@ -136,7 +136,7 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         const query = `
             SELECT 
                 m.*,
@@ -162,9 +162,9 @@ router.get('/:id', authenticateToken, async (req, res) => {
             LEFT JOIN fiscal_years fy ON m.fiscal_year_id = fy.id
             WHERE m.id = $1
         `;
-        
+
         const result = await pool.query(query, [req.params.id]);
-        
+
         if (result.rows.length === 0) {
             return res.status(404).json({
                 success: false,
@@ -195,25 +195,25 @@ router.post('/', authenticateToken, async (req, res) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        
+
         const {
             // Données de base de la mission
             code, nom, description, client_id, opportunity_id, mission_type_id,
             date_debut, date_fin_prevue, budget_prevue, taux_horaire_moyen,
             division_id, responsable_id, associe_id, priorite, statut, notes,
-            
+
             // Configuration financière
             montant_honoraires, devise, description_honoraires,
             montant_debours, description_debours,
             conditions_paiement, pourcentage_avance,
-            
+
             // Business Unit et Division (viennent du type de mission)
             business_unit_id,
-            
+
             // Tâches et affectations
             tasks
         } = req.body;
-        
+
         // 1. Créer la mission
         const missionQuery = `
             INSERT INTO missions (
@@ -227,7 +227,7 @@ router.post('/', authenticateToken, async (req, res) => {
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
             ) RETURNING *
         `;
-        
+
         // Récupérer l'année fiscale en cours
         const fiscalYearQuery = `
             SELECT id FROM fiscal_years 
@@ -237,7 +237,7 @@ router.post('/', authenticateToken, async (req, res) => {
         `;
         const fiscalYearResult = await client.query(fiscalYearQuery);
         const fiscal_year_id = fiscalYearResult.rows.length > 0 ? fiscalYearResult.rows[0].id : null;
-        
+
         const missionResult = await client.query(missionQuery, [
             code, nom, description, client_id, responsable_id, statut || 'PLANIFIEE', 'MISSION',
             priorite, date_debut, date_fin_prevue, budget_prevue, devise || 'XAF', notes, req.user.id,
@@ -246,9 +246,9 @@ router.post('/', authenticateToken, async (req, res) => {
             conditions_paiement, pourcentage_avance, business_unit_id, associe_id,
             division_id
         ]);
-        
+
         const mission = missionResult.rows[0];
-        
+
         // 2. Créer les tâches de mission et les affectations
         if (tasks && Array.isArray(tasks)) {
             for (const task of tasks) {
@@ -260,15 +260,15 @@ router.post('/', authenticateToken, async (req, res) => {
                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                     RETURNING *
                 `;
-                
+
                 const missionTaskResult = await client.query(missionTaskQuery, [
                     mission.id, task.task_id, 'PLANIFIEE',
                     task.date_debut_prevue, task.date_fin_prevue, task.heures_prevues,
                     task.description || ''
                 ]);
-                
+
                 const missionTask = missionTaskResult.rows[0];
-                
+
                 // Créer les affectations de collaborateurs
                 if (task.assignments && Array.isArray(task.assignments)) {
                     for (const assignment of task.assignments) {
@@ -278,7 +278,7 @@ router.post('/', authenticateToken, async (req, res) => {
                                 taux_horaire, statut, created_at, updated_at
                             ) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                         `;
-                        
+
                         await client.query(assignmentQuery, [
                             missionTask.id, assignment.collaborateur_id,
                             assignment.heures_prevues, assignment.taux_horaire,
@@ -288,7 +288,7 @@ router.post('/', authenticateToken, async (req, res) => {
                 }
             }
         }
-        
+
         await client.query('COMMIT');
 
         try {
@@ -298,7 +298,7 @@ router.post('/', authenticateToken, async (req, res) => {
         } catch (notifError) {
             console.error('Erreur lors de l\'envoi de la notification de création de mission:', notifError);
         }
-        
+
         res.status(201).json({
             success: true,
             data: {
@@ -439,16 +439,16 @@ router.put('/:id', authenticateToken, async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         const result = await pool.query('DELETE FROM missions WHERE id = $1', [req.params.id]);
-        
+
         if (result.rowCount === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'Mission non trouvée'
             });
         }
-        
+
         res.json({
             success: true,
             message: 'Mission supprimée avec succès'
@@ -470,32 +470,32 @@ router.delete('/:id', async (req, res) => {
 router.get('/:id/available-tasks', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         // 1. Récupérer le type de mission de cette mission
         const missionQuery = `
             SELECT mission_type_id 
             FROM missions 
             WHERE id = $1
         `;
-        
+
         const missionResult = await pool.query(missionQuery, [req.params.id]);
-        
+
         if (missionResult.rows.length === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'Mission non trouvée'
             });
         }
-        
+
         const missionTypeId = missionResult.rows[0].mission_type_id;
-        
+
         if (!missionTypeId) {
             return res.json({
                 success: true,
                 data: []
             });
         }
-        
+
         // 2. Récupérer les tâches disponibles pour ce type de mission
         const tasksQuery = `
             SELECT 
@@ -512,9 +512,9 @@ router.get('/:id/available-tasks', authenticateToken, async (req, res) => {
             WHERE tmt.mission_type_id = $1 AND t.actif = true
             ORDER BY tmt.ordre, t.libelle
         `;
-        
+
         const tasksResult = await pool.query(tasksQuery, [missionTypeId]);
-        
+
         res.json({
             success: true,
             data: tasksResult.rows
@@ -536,7 +536,7 @@ router.get('/:id/available-tasks', authenticateToken, async (req, res) => {
 router.get('/:id/tasks', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         const query = `
             SELECT 
                 mt.id as mission_task_id,
@@ -544,8 +544,50 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                 mt.statut,
                 mt.date_debut,
                 mt.date_fin,
-                mt.duree_planifiee,
-                mt.duree_reelle,
+                mt.date_fin,
+                -- Calculer duree_planifiee comme la somme des heures planifiées des collaborateurs
+                COALESCE(
+                    (SELECT SUM(ta.heures_planifiees)
+                     FROM task_assignments ta
+                     WHERE ta.mission_task_id = mt.id),
+                    0
+                ) as duree_planifiee,
+                -- Heures saisies (submitted - en attente de validation)
+                COALESCE(
+                    (SELECT SUM(te.heures)
+                     FROM time_entries te
+                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                     AND te.mission_id = mt.mission_id
+                     AND ts.status ILIKE 'submitted'),
+                    0
+                ) as heures_saisies,
+                -- Heures validées (approved - réellement validées)
+                COALESCE(
+                    (SELECT SUM(te.heures)
+                     FROM time_entries te
+                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                     AND te.mission_id = mt.mission_id
+                     AND ts.status ILIKE 'approved'),
+                    0
+                ) as heures_validees,
+                -- Duree reelle = priorité aux validées, sinon saisies
+                COALESCE(
+                    (SELECT SUM(te.heures)
+                     FROM time_entries te
+                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                     AND te.mission_id = mt.mission_id
+                     AND ts.status ILIKE 'approved'),
+                    (SELECT SUM(te.heures)
+                     FROM time_entries te
+                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                     AND te.mission_id = mt.mission_id
+                     AND ts.status ILIKE 'submitted'),
+                    0
+                ) as duree_reelle,
                 mt.notes,
                 t.id,
                 t.code,
@@ -563,7 +605,43 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                             'email', c.email,
                             'grade_nom', g.nom,
                             'heures_planifiees', ta.heures_planifiees,
-                            'heures_effectuees', ta.heures_effectuees,
+                            'heures_saisies', COALESCE(
+                                (SELECT SUM(te.heures)
+                                 FROM time_entries te
+                                 JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                                 WHERE te.task_id = mt.task_id
+                                 AND te.mission_id = mt.mission_id
+                                 AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
+                                 AND ts.status = 'submitted'),
+                                0
+                            ),
+                            'heures_validees', COALESCE(
+                                (SELECT SUM(te.heures)
+                                 FROM time_entries te
+                                 JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                                 WHERE te.task_id = mt.task_id
+                                 AND te.mission_id = mt.mission_id
+                                 AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
+                                 AND ts.status = 'approved'),
+                                0
+                            ),
+                            'heures_effectuees', COALESCE(
+                                (SELECT SUM(te.heures)
+                                 FROM time_entries te
+                                 JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                                 WHERE te.task_id = mt.task_id
+                                 AND te.mission_id = mt.mission_id
+                                 AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
+                                 AND ts.status = 'approved'),
+                                (SELECT SUM(te.heures)
+                                 FROM time_entries te
+                                 JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                                 WHERE te.task_id = mt.task_id
+                                 AND te.mission_id = mt.mission_id
+                                 AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
+                                 AND ts.status = 'submitted'),
+                                0
+                            ),
                             'taux_horaire', ta.taux_horaire,
                             'statut', ta.statut
                         )
@@ -579,9 +657,9 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
             WHERE mt.mission_id = $1
             ORDER BY mt.date_debut, t.libelle
         `;
-        
+
         const result = await pool.query(query, [req.params.id]);
-        
+
         res.json({
             success: true,
             data: result.rows
@@ -603,7 +681,7 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
 router.get('/:id/assignments', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         const query = `
             SELECT 
                 ta.id,
@@ -623,9 +701,9 @@ router.get('/:id/assignments', authenticateToken, async (req, res) => {
             WHERE mt.mission_id = $1
             ORDER BY c.nom, t.libelle
         `;
-        
+
         const result = await pool.query(query, [req.params.id]);
-        
+
         res.json({
             success: true,
             data: result.rows
@@ -647,7 +725,7 @@ router.get('/:id/assignments', authenticateToken, async (req, res) => {
 router.get('/:id/team', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         const query = `
             SELECT DISTINCT
                 c.id,
@@ -667,9 +745,9 @@ router.get('/:id/team', authenticateToken, async (req, res) => {
             GROUP BY c.id, c.nom, c.prenom, c.email, c.telephone, g.nom
             ORDER BY c.nom, c.prenom
         `;
-        
+
         const result = await pool.query(query, [req.params.id]);
-        
+
         res.json({
             success: true,
             data: result.rows
@@ -691,7 +769,7 @@ router.get('/:id/team', authenticateToken, async (req, res) => {
 router.get('/:id/planning', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         // 1. Récupérer les tâches de la mission
         const tasksQuery = `
             SELECT 
@@ -709,12 +787,12 @@ router.get('/:id/planning', authenticateToken, async (req, res) => {
             WHERE mt.mission_id = $1
             ORDER BY mt.created_at
         `;
-        
+
         const tasksResult = await pool.query(tasksQuery, [req.params.id]);
-        
+
         // 2. Pour chaque tâche, récupérer les affectations
         const tasksWithAssignments = [];
-        
+
         for (const task of tasksResult.rows) {
             const assignmentsQuery = `
                 SELECT 
@@ -732,15 +810,15 @@ router.get('/:id/planning', authenticateToken, async (req, res) => {
                 LEFT JOIN grades g ON c.grade_actuel_id = g.id
                 WHERE ta.mission_task_id = $1
             `;
-            
+
             const assignmentsResult = await pool.query(assignmentsQuery, [task.mission_task_id]);
-            
+
             tasksWithAssignments.push({
                 ...task,
                 assignments: assignmentsResult.rows
             });
         }
-        
+
         // 3. Calculer les totaux
         const summaryQuery = `
             SELECT 
@@ -752,9 +830,9 @@ router.get('/:id/planning', authenticateToken, async (req, res) => {
             LEFT JOIN mission_tasks mt ON ta.mission_task_id = mt.id
             WHERE mt.mission_id = $1
         `;
-        
+
         const summaryResult = await pool.query(summaryQuery, [req.params.id]);
-        
+
         res.json({
             success: true,
             tasks: tasksWithAssignments,
@@ -779,13 +857,13 @@ router.get('/:id/planning', authenticateToken, async (req, res) => {
 router.put('/:id/planning', authenticateToken, async (req, res) => {
     const { pool } = require('../utils/database');
     const client = await pool.connect();
-    
+
     try {
         await client.query('BEGIN');
-        
+
         const { tasks } = req.body;
         const missionId = req.params.id;
-        
+
         // 1. Supprimer toutes les affectations existantes
         const deleteAssignmentsQuery = `
             DELETE FROM task_assignments 
@@ -794,13 +872,13 @@ router.put('/:id/planning', authenticateToken, async (req, res) => {
             )
         `;
         await client.query(deleteAssignmentsQuery, [missionId]);
-        
+
         // 2. Supprimer toutes les tâches de mission existantes
         const deleteTasksQuery = `
             DELETE FROM mission_tasks WHERE mission_id = $1
         `;
         await client.query(deleteTasksQuery, [missionId]);
-        
+
         // 3. Créer les nouvelles tâches et affectations
         if (tasks && Array.isArray(tasks)) {
             for (const task of tasks) {
@@ -812,15 +890,15 @@ router.put('/:id/planning', authenticateToken, async (req, res) => {
                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                     RETURNING *
                 `;
-                
+
                 const missionTaskResult = await client.query(missionTaskQuery, [
                     missionId, task.task_id, task.statut || 'PLANIFIEE',
                     task.date_debut, task.date_fin, task.duree_planifiee || 0,
                     task.notes || ''
                 ]);
-                
+
                 const missionTask = missionTaskResult.rows[0];
-                
+
                 // Créer les affectations de collaborateurs
                 if (task.assignments && Array.isArray(task.assignments)) {
                     for (const assignment of task.assignments) {
@@ -831,7 +909,7 @@ router.put('/:id/planning', authenticateToken, async (req, res) => {
                                     taux_horaire, statut, created_at, updated_at
                                 ) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                             `;
-                            
+
                             await client.query(assignmentQuery, [
                                 missionTask.id, assignment.collaborateur_id,
                                 assignment.heures_planifiees || 0, assignment.taux_horaire || 0,
@@ -842,9 +920,9 @@ router.put('/:id/planning', authenticateToken, async (req, res) => {
                 }
             }
         }
-        
+
         await client.query('COMMIT');
-        
+
         res.json({
             success: true,
             message: 'Planning mis à jour avec succès'
@@ -869,7 +947,7 @@ router.put('/:id/planning', authenticateToken, async (req, res) => {
 router.get('/:id/collaborateurs-taux', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         const query = `
             SELECT 
                 c.nom,
@@ -880,11 +958,11 @@ router.get('/:id/collaborateurs-taux', authenticateToken, async (req, res) => {
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
             WHERE m.id = $1 AND c.id IS NOT NULL AND g.taux_horaire_default IS NOT NULL
         `;
-        
+
         const result = await pool.query(query, [req.params.id]);
-        
+
         const tauxHoraires = result.rows.map(row => parseFloat(row.taux_horaire_default || 0)).filter(t => t > 0);
-        
+
         res.json({
             success: true,
             collaborateurs: result.rows,
@@ -908,7 +986,7 @@ router.get('/:id/collaborateurs-taux', authenticateToken, async (req, res) => {
 router.get('/:id/progress', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         // Statistiques des tâches avec heures validées
         const tasksStatsQuery = `
             SELECT 
@@ -917,75 +995,132 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
                     WHEN mt.statut = 'TERMINEE' THEN 1 
                     END) as completed_tasks,
                 COUNT(CASE 
-                    WHEN COALESCE(validated_hours.hours_validated, 0) > 0 THEN 1
+                    WHEN COALESCE(
+                        (SELECT SUM(te.heures)
+                         FROM time_entries te
+                         JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                         WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                         AND te.mission_id = mt.mission_id
+                         AND ts.status ILIKE 'approved'),
+                        0
+                    ) > 0 THEN 1
                     WHEN mt.statut = 'EN_COURS' THEN 1 
                     END) as in_progress_tasks,
                 COUNT(CASE 
-                    WHEN COALESCE(validated_hours.hours_validated, 0) = 0 
+                    WHEN COALESCE(
+                        (SELECT SUM(te.heures)
+                         FROM time_entries te
+                         JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                         WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                         AND te.mission_id = mt.mission_id
+                         AND ts.status ILIKE 'approved'),
+                        0
+                    ) = 0 
                     AND mt.statut = 'PLANIFIEE' THEN 1 
                     END) as planned_tasks,
-                SUM(mt.duree_planifiee) as total_planned_hours,
+                SUM(COALESCE(
+                    (SELECT SUM(ta.heures_planifiees)
+                     FROM task_assignments ta
+                     WHERE ta.mission_task_id = mt.id),
+                    0
+                )) as total_planned_hours,
                 SUM(mt.duree_reelle) as total_actual_hours,
-                COALESCE(SUM(validated_hours.hours_validated), 0) as total_validated_hours
+                COALESCE(SUM(
+                    (SELECT SUM(te.heures)
+                     FROM time_entries te
+                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                     AND te.mission_id = mt.mission_id
+                     AND ts.status ILIKE 'approved')
+                ), 0) as total_validated_hours
             FROM mission_tasks mt
-            LEFT JOIN (
-                SELECT 
-                    te.task_id,
-                    SUM(te.heures) as hours_validated
-                FROM time_entries te
-                JOIN time_sheets ts ON te.time_sheet_id = ts.id
-                WHERE te.mission_id = $1 
-                AND te.type_heures = 'HC'
-                AND ts.status IN ('approved', 'submitted')
-                GROUP BY te.task_id
-            ) validated_hours ON mt.task_id = validated_hours.task_id
             WHERE mt.mission_id = $1
         `;
-        
+
         const tasksStatsResult = await pool.query(tasksStatsQuery, [req.params.id]);
         const tasksStats = tasksStatsResult.rows[0];
-        
+
         // Progression par tâche avec heures validées
         const tasksProgressQuery = `
             SELECT 
                 mt.id,
                 mt.statut,
-                mt.duree_planifiee,
+                -- Calculer duree_planifiee comme la somme des heures planifiées des collaborateurs
+                COALESCE(
+                    (SELECT SUM(ta.heures_planifiees)
+                     FROM task_assignments ta
+                     WHERE ta.mission_task_id = mt.id),
+                    0
+                ) as duree_planifiee,
                 mt.duree_reelle,
                 t.libelle as task_libelle,
-                COALESCE(validated_hours.hours_validated, 0) as validated_hours,
+                -- Heures validées (approved)
+                COALESCE(
+                    (SELECT SUM(te.heures)
+                     FROM time_entries te
+                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                     AND te.mission_id = mt.mission_id
+                     AND ts.status ILIKE 'approved'),
+                    0
+                ) as heures_validees,
+                -- Heures saisies (submitted)
+                COALESCE(
+                    (SELECT SUM(te.heures)
+                     FROM time_entries te
+                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                     AND te.mission_id = mt.mission_id
+                     AND ts.status ILIKE 'submitted'),
+                    0
+                ) as heures_saisies,
                 ROUND(
                     CASE 
-                        WHEN mt.duree_planifiee > 0 
-                        THEN (COALESCE(validated_hours.hours_validated, 0) / mt.duree_planifiee) * 100
+                        WHEN COALESCE(
+                            (SELECT SUM(ta.heures_planifiees)
+                             FROM task_assignments ta
+                             WHERE ta.mission_task_id = mt.id),
+                            0
+                        ) > 0 
+                        THEN (COALESCE(
+                            (SELECT SUM(te.heures)
+                             FROM time_entries te
+                             JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                             WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                             AND te.mission_id = mt.mission_id
+                             AND ts.status ILIKE 'approved'),
+                            0
+                        ) / COALESCE(
+                            (SELECT SUM(ta.heures_planifiees)
+                             FROM task_assignments ta
+                             WHERE ta.mission_task_id = mt.id),
+                            1
+                        )) * 100
                         ELSE 0 
                     END, 2
                 ) as progress_percentage,
                 CASE 
-                    WHEN COALESCE(validated_hours.hours_validated, 0) > 0 THEN 'EN_COURS'
+                    WHEN COALESCE(
+                        (SELECT SUM(te.heures)
+                         FROM time_entries te
+                         JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                         WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                         AND te.mission_id = mt.mission_id
+                         AND ts.status ILIKE 'approved'),
+                        0
+                    ) > 0 THEN 'EN_COURS'
                     WHEN mt.statut = 'PLANIFIEE' THEN 'PLANIFIEE'
                     WHEN mt.statut = 'TERMINEE' THEN 'TERMINEE'
                     ELSE mt.statut
                 END as effective_status
             FROM mission_tasks mt
             LEFT JOIN tasks t ON mt.task_id = t.id
-            LEFT JOIN (
-                SELECT 
-                    te.task_id,
-                    SUM(te.heures) as hours_validated
-                FROM time_entries te
-                JOIN time_sheets ts ON te.time_sheet_id = ts.id
-                WHERE te.mission_id = $1 
-                AND te.type_heures = 'HC'
-                AND ts.status IN ('approved', 'submitted')
-                GROUP BY te.task_id
-            ) validated_hours ON mt.task_id = validated_hours.task_id
             WHERE mt.mission_id = $1
             ORDER BY mt.date_debut
         `;
-        
+
         const tasksProgressResult = await pool.query(tasksProgressQuery, [req.params.id]);
-        
+
         // Mettre à jour le statut de la mission si des heures sont validées
         const hasValidatedHours = tasksStats.total_validated_hours > 0;
         if (hasValidatedHours) {
@@ -999,7 +1134,7 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
             `;
             await pool.query(updateMissionStatusQuery, [req.params.id]);
         }
-        
+
         res.json({
             success: true,
             data: {
@@ -1024,17 +1159,17 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
 router.get('/active/:userId', authenticateToken, async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         // Vérifier que l'utilisateur demande ses propres missions
         if (userId !== req.user.id) {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Accès non autorisé' 
+            return res.status(403).json({
+                success: false,
+                message: 'Accès non autorisé'
             });
         }
 
         const pool = require('../utils/database');
-        
+
         // Récupérer les missions actives de l'utilisateur
         const missionsQuery = `
             SELECT DISTINCT
@@ -1065,9 +1200,9 @@ router.get('/active/:userId', authenticateToken, async (req, res) => {
             ORDER BY m.date_fin ASC
             LIMIT 10
         `;
-        
+
         const missionsResult = await pool.query(missionsQuery, [userId]);
-        
+
         // Si pas de missions réelles, retourner des missions simulées
         let missions = missionsResult.rows;
         if (missions.length === 0) {
@@ -1104,18 +1239,18 @@ router.get('/active/:userId', authenticateToken, async (req, res) => {
                 }
             ];
         }
-        
+
         res.json({
             success: true,
             data: missions
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de la récupération des missions actives:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Erreur lors de la récupération des missions actives',
-            error: error.message 
+            error: error.message
         });
     }
 });

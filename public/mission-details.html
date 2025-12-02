@@ -796,7 +796,7 @@
                                         </div>
                                     </td>
                                     <td class="text-center">${task.duree_planifiee || 0}h</td>
-                                    <td class="text-center">${task.duree_reelle || 0}h</td>
+                                    <td class="text-center">${formatHoursWithStatus(task.heures_saisies, task.heures_validees)}</td>
                                     <td class="text-center">${formatDate(task.date_debut)}</td>
                                     <td class="text-center">${formatDate(task.date_fin)}</td>
                                 </tr>
@@ -817,7 +817,7 @@
                                 </div>
                             </td>
                             <td class="text-center">${collab.heures_planifiees || 0}h</td>
-                            <td class="text-center">${collab.heures_effectuees || 0}h</td>
+                            <td class="text-center">${formatHoursWithStatus(collab.heures_saisies, collab.heures_validees)}</td>
                             <td class="text-center">${formatDate(collab.date_debut)}</td>
                             <td class="text-center">${formatDate(collab.date_fin)}</td>
                         </tr>
@@ -1160,8 +1160,8 @@
                                 </div>
                                 <div class="col-md-3">
                                     <small>Planifié: ${task.duree_planifiee || 0}h</small>
-                                    <br><small class="text-success">Validé: ${task.validated_hours || 0}h</small>
-                                    <br><small class="text-muted">Effectué: ${task.duree_reelle || 0}h</small>
+                                    <br><small class="text-success"><i class="fas fa-check-circle me-1"></i>Validées: ${task.heures_validees || 0}h</small>
+                                    <br><small class="text-warning"><i class="fas fa-clock me-1"></i>En attente: ${task.heures_saisies || 0}h</small>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="progress">
@@ -1249,6 +1249,34 @@
                 default:
                     return 'bg-secondary';
             }
+        }
+
+        /**
+         * Formate les heures avec code couleur selon le statut
+         * @param {number} heures_saisies - Heures soumises (en attente)
+         * @param {number} heures_validees - Heures approuvées
+         * @returns {string} HTML formaté avec code couleur
+         */
+        function formatHoursWithStatus(heures_saisies, heures_validees) {
+            heures_saisies = parseFloat(heures_saisies) || 0;
+            heures_validees = parseFloat(heures_validees) || 0;
+
+            // Si des heures sont validées, on affiche celles-là en vert (priorité)
+            if (heures_validees > 0) {
+                return `<span class="badge bg-success" title="Heures validées">
+                    <i class="fas fa-check-circle me-1"></i>${heures_validees}h validées
+                </span>`;
+            }
+
+            // Sinon, si des heures sont saisies, on les affiche en orange/warning
+            if (heures_saisies > 0) {
+                return `<span class="badge bg-warning text-dark" title="Heures en attente de validation">
+                    <i class="fas fa-clock me-1"></i>${heures_saisies}h en attente
+                </span>`;
+            }
+
+            // Aucune heure
+            return `<span class="text-muted">0h</span>`;
         }
 
         function showError(message) {

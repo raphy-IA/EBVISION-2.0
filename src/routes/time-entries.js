@@ -12,7 +12,7 @@ router.get('/', authenticateToken, async (req, res) => {
         const userId = user_id || req.user.id;
 
         let entries = [];
-        
+
         if (time_sheet_id) {
             // Récupérer les entrées pour une feuille de temps spécifique
             console.log(`🔍 Récupération des entrées pour la feuille de temps: ${time_sheet_id}`);
@@ -61,16 +61,16 @@ router.get('/', authenticateToken, async (req, res) => {
                 weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
                 const weekEnd = new Date(weekStart);
                 weekEnd.setDate(weekStart.getDate() + 6);
-                
+
                 entries = await TimeEntry.findByUserAndPeriod(userId, weekStart.toISOString().split('T')[0], weekEnd.toISOString().split('T')[0]);
             } else {
                 // Retourner un tableau vide pour la compatibilité
                 entries = [];
             }
         } else {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'ID utilisateur ou ID feuille de temps requis' 
+            return res.status(400).json({
+                success: false,
+                message: 'ID utilisateur ou ID feuille de temps requis'
             });
         }
 
@@ -81,10 +81,10 @@ router.get('/', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la récupération des entrées:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Erreur lors de la récupération des entrées',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -106,24 +106,24 @@ router.post('/', authenticateToken, async (req, res) => {
 
         // Validation des données
         if (!date_saisie || type_heures === undefined) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Données manquantes' 
+            return res.status(400).json({
+                success: false,
+                message: 'Données manquantes'
             });
         }
 
         // Pour l'instant, accepter les UUIDs tronqués (compatibilité)
         // TODO: Corriger le frontend pour envoyer des UUIDs complets
-        
+
         // Créer ou récupérer la feuille de temps pour cette semaine
         const weekStart = new Date(date_saisie);
         weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1); // Lundi de la semaine
-        
+
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6); // Dimanche de la semaine
 
         let timeSheet = await TimeSheet.findOrCreate(
-            userId, 
+            userId,
             weekStart.toISOString().split('T')[0],
             weekEnd.toISOString().split('T')[0]
         );
@@ -151,10 +151,10 @@ router.post('/', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la création de l\'entrée de temps:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Erreur lors de la création de l\'entrée de temps',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -166,18 +166,18 @@ router.put('/:id', authenticateToken, async (req, res) => {
         const { heures } = req.body;
 
         if (heures === undefined) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Heures requises' 
+            return res.status(400).json({
+                success: false,
+                message: 'Heures requises'
             });
         }
 
         const updatedEntry = await TimeEntry.update(id, { heures: parseFloat(heures) || 0 });
 
         if (!updatedEntry) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Entrée non trouvée' 
+            return res.status(404).json({
+                success: false,
+                message: 'Entrée non trouvée'
             });
         }
 
@@ -189,10 +189,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'entrée de temps:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Erreur lors de la mise à jour de l\'entrée de temps',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -204,17 +204,19 @@ router.delete('/delete-week', authenticateToken, async (req, res) => {
         const userId = user_id || req.user.id;
 
         if (!userId || !week_start || !week_end) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Paramètres manquants: user_id, week_start, week_end' 
+            return res.status(400).json({
+                success: false,
+                message: 'Paramètres manquants: user_id, week_start, week_end'
             });
         }
 
         // Vérifier que l'utilisateur demande la suppression de ses propres entrées
-        if (user_id && user_id !== req.user.id) {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Accès non autorisé' 
+        // Comparaison avec conversion de type pour éviter les problèmes de string vs UUID
+        if (user_id && user_id.toString() !== userId.toString()) {
+            console.warn(`⚠️ Tentative de suppression d'entrées d'un autre utilisateur: ${user_id} !== ${userId}`);
+            return res.status(403).json({
+                success: false,
+                message: 'Accès non autorisé'
             });
         }
 
@@ -229,10 +231,10 @@ router.delete('/delete-week', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la suppression des entrées de la semaine:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Erreur lors de la suppression des entrées de la semaine',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -246,25 +248,25 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         // Vérifier que l'entrée appartient à l'utilisateur connecté
         const entry = await TimeEntry.findById(id);
         if (!entry) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Entrée non trouvée' 
+            return res.status(404).json({
+                success: false,
+                message: 'Entrée non trouvée'
             });
         }
 
         if (entry.user_id !== userId) {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Accès non autorisé' 
+            return res.status(403).json({
+                success: false,
+                message: 'Accès non autorisé'
             });
         }
 
         const deleted = await TimeEntry.delete(id);
 
         if (!deleted) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Entrée non trouvée' 
+            return res.status(404).json({
+                success: false,
+                message: 'Entrée non trouvée'
             });
         }
 
@@ -275,10 +277,10 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la suppression de l\'entrée de temps:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Erreur lors de la suppression de l\'entrée de temps',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -289,22 +291,22 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 router.get('/personal-stats/:userId', authenticateToken, async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         // Vérifier que l'utilisateur demande ses propres statistiques
         if (userId !== req.user.id) {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Accès non autorisé' 
+            return res.status(403).json({
+                success: false,
+                message: 'Accès non autorisé'
             });
         }
 
         const pool = require('../utils/database');
-        
+
         // Calculer la date de début du mois en cours
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        
+
         // Statistiques du mois en cours
         const statsQuery = `
             SELECT 
@@ -317,13 +319,13 @@ router.get('/personal-stats/:userId', authenticateToken, async (req, res) => {
             AND te.date_saisie >= $2 
             AND te.date_saisie <= $3
         `;
-        
+
         const statsResult = await pool.query(statsQuery, [userId, monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]]);
-        
+
         // Statistiques du mois précédent pour calculer les tendances
         const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
         const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-        
+
         const prevStatsQuery = `
             SELECT COALESCE(SUM(te.heures), 0) as heures_mois_precedent
             FROM time_entries te
@@ -331,25 +333,25 @@ router.get('/personal-stats/:userId', authenticateToken, async (req, res) => {
             AND te.date_saisie >= $2 
             AND te.date_saisie <= $3
         `;
-        
+
         const prevStatsResult = await pool.query(prevStatsQuery, [userId, prevMonthStart.toISOString().split('T')[0], prevMonthEnd.toISOString().split('T')[0]]);
-        
+
         const stats = statsResult.rows[0];
         const prevStats = prevStatsResult.rows[0];
-        
+
         // Calculer les tendances
         const heuresMois = stats.heures_mois || 0;
         const heuresMoisPrecedent = prevStats.heures_mois_precedent || 0;
         const tendanceHeures = heuresMoisPrecedent > 0 ? ((heuresMois - heuresMoisPrecedent) / heuresMoisPrecedent) * 100 : 0;
-        
+
         // Objectif mensuel (exemple: 160h)
         const objectifMensuel = 160;
         const objectifAtteint = (heuresMois / objectifMensuel) * 100;
-        
+
         // Taux de facturation (exemple: 85%)
         const tauxFacturation = 85.0;
         const tendanceFacturation = 2.5; // Simulation
-        
+
         const data = {
             heures_mois: Math.round(heuresMois * 10) / 10,
             tendance_heures: Math.round(tendanceHeures * 10) / 10,
@@ -361,18 +363,18 @@ router.get('/personal-stats/:userId', authenticateToken, async (req, res) => {
             tendance_facturation: tendanceFacturation,
             moyenne_quotidienne: Math.round((stats.moyenne_quotidienne || 0) * 10) / 10
         };
-        
+
         res.json({
             success: true,
             data: data
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de la récupération des statistiques personnelles:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Erreur lors de la récupération des statistiques personnelles',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -381,22 +383,22 @@ router.get('/personal-stats/:userId', authenticateToken, async (req, res) => {
 router.get('/personal-chart-data/:userId', authenticateToken, async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         // Vérifier que l'utilisateur demande ses propres données
         if (userId !== req.user.id) {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Accès non autorisé' 
+            return res.status(403).json({
+                success: false,
+                message: 'Accès non autorisé'
             });
         }
 
         const pool = require('../utils/database');
-        
+
         // Données pour les 30 derniers jours
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - 30);
-        
+
         // Évolution des heures par jour
         const evolutionQuery = `
             SELECT 
@@ -409,9 +411,9 @@ router.get('/personal-chart-data/:userId', authenticateToken, async (req, res) =
             GROUP BY te.date_saisie
             ORDER BY te.date_saisie
         `;
-        
+
         const evolutionResult = await pool.query(evolutionQuery, [userId, startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]]);
-        
+
         // Répartition par type d'heures
         const repartitionQuery = `
             SELECT 
@@ -423,36 +425,36 @@ router.get('/personal-chart-data/:userId', authenticateToken, async (req, res) =
             AND te.date_saisie <= $3
             GROUP BY te.type_heures
         `;
-        
+
         const repartitionResult = await pool.query(repartitionQuery, [userId, startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]]);
-        
+
         // Préparer les données pour les graphiques
         const evolutionData = evolutionResult.rows.map(row => ({
             date: row.date_saisie,
             heures: parseFloat(row.heures_jour)
         }));
-        
+
         const repartitionData = repartitionResult.rows.map(row => ({
             type: row.type_heures,
             heures: parseFloat(row.total_heures)
         }));
-        
+
         const data = {
             evolution: evolutionData,
             repartition: repartitionData
         };
-        
+
         res.json({
             success: true,
             data: data
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de la récupération des données graphiques:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Erreur lors de la récupération des données graphiques',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -461,7 +463,7 @@ router.get('/personal-chart-data/:userId', authenticateToken, async (req, res) =
 router.get('/statistics', authenticateToken, async (req, res) => {
     try {
         const pool = require('../utils/database');
-        
+
         // Statistiques globales
         const statsQuery = `
             SELECT 
@@ -473,10 +475,10 @@ router.get('/statistics', authenticateToken, async (req, res) => {
             FROM time_entries te
             LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
         `;
-        
+
         const statsResult = await pool.query(statsQuery);
         const stats = statsResult.rows[0];
-        
+
         // Statistiques par mois (12 derniers mois)
         const monthlyQuery = `
             SELECT 
@@ -488,9 +490,9 @@ router.get('/statistics', authenticateToken, async (req, res) => {
             GROUP BY DATE_TRUNC('month', te.date_saisie)
             ORDER BY month DESC
         `;
-        
+
         const monthlyResult = await pool.query(monthlyQuery);
-        
+
         const data = {
             global: {
                 total_entries: parseInt(stats.total_entries) || 0,
@@ -505,18 +507,18 @@ router.get('/statistics', authenticateToken, async (req, res) => {
                 total_hours: parseFloat(row.total_hours)
             }))
         };
-        
+
         res.json({
             success: true,
             data: data
         });
-        
+
     } catch (error) {
         console.error('Erreur lors de la récupération des statistiques:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Erreur lors de la récupération des statistiques',
-            error: error.message 
+            error: error.message
         });
     }
 });
