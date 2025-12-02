@@ -172,9 +172,53 @@ const CURRENCY_CONFIG = {
     },
 
     /**
-     * Génère les options HTML pour un <select> de devises
-     * @returns {string} Chaîne HTML d'options
+     * Initialise la configuration depuis l'API
      */
+    init: async function () {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) return; // Pas connecté, on garde les défauts
+
+            const response = await fetch('/api/financial-settings', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.data) {
+                    this.defaultCurrency = data.data.defaultCurrency || 'XAF';
+                    console.log(`💱 Devise par défaut chargée : ${this.defaultCurrency}`);
+
+                    // Déclencher un événement pour notifier que la config est chargée
+                    window.dispatchEvent(new CustomEvent('currencyConfigLoaded'));
+
+                    // Mettre à jour les éléments qui ont la classe .currency-symbol
+                    this.updateInterfaceSymbols();
+                }
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement de la configuration des devises:', error);
+        }
+    },
+
+    /**
+     * Met à jour les symboles de devise dans l'interface
+     */
+    updateInterfaceSymbols: function () {
+        const symbol = this.getSymbol(this.defaultCurrency);
+        document.querySelectorAll('.currency-symbol').forEach(el => {
+            el.textContent = symbol;
+        });
+
+        // Mettre à jour les inputs avec placeholder contenant le symbole
+        document.querySelectorAll('[data-currency-placeholder]').forEach(el => {
+            el.placeholder = el.placeholder.replace(/€|\$|FCFA/, symbol);
+        });
+    },
+
     getCurrencyOptions: function () {
         let options = '<option value="">Sélectionner une devise</option>';
         const codes = this.getSupportedCurrencies();
@@ -186,6 +230,11 @@ const CURRENCY_CONFIG = {
         return options;
     }
 };
+
+// Initialisation automatique au chargement
+document.addEventListener('DOMContentLoaded', () => {
+    CURRENCY_CONFIG.init();
+});
 
 // Fonction helper globale pour formater les montants
 function formatCurrency(amount, currencyCode = null) {

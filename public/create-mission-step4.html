@@ -355,6 +355,7 @@
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/menu-permissions.js"></script>
+    <script src="/js/page-permissions.js"></script>
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
@@ -483,19 +484,19 @@
                     <div id="budget-calculator-content">
                         <div class="budget-item">
                             <span>Budget Total (Honoraires + Débours):</span>
-                            <span id="budget-total">€0.00</span>
+                            <span id="budget-total"><span class="currency-symbol">€</span>0.00</span>
                         </div>
                         <div class="budget-item">
                             <span>Budget Honoraires:</span>
-                            <span id="budget-honoraires">€0.00</span>
+                            <span id="budget-honoraires"><span class="currency-symbol">€</span>0.00</span>
                         </div>
                         <div class="budget-item">
                             <span>Coût Personnel:</span>
-                            <span id="budget-personnel">€0.00</span>
+                            <span id="budget-personnel"><span class="currency-symbol">€</span>0.00</span>
                         </div>
                         <div class="budget-item">
                             <span>Marge (Honoraires - Personnel):</span>
-                            <span id="budget-marge">€0.00</span>
+                            <span id="budget-marge"><span class="currency-symbol">€</span>0.00</span>
                         </div>
                         <div class="budget-item">
                             <span>Total Heures:</span>
@@ -503,7 +504,7 @@
                         </div>
                         <div class="budget-item">
                             <span>Taux Horaire Moyen:</span>
-                            <span id="budget-taux-moyen">€0.00</span>
+                            <span id="budget-taux-moyen"><span class="currency-symbol">€</span>0.00</span>
                         </div>
                     </div>
                 </div>
@@ -864,7 +865,7 @@
                                                                value="${collab.taux_horaire || 0}" 
                                                                readonly
                                                                title="Taux horaire">
-                                                        <span class="input-group-text">€/h</span>
+                                                        <span class="input-group-text"><span class="currency-symbol">€</span>/h</span>
                                                     </div>
                                                 </div>
                                                 <div class="collaborateur-heures">

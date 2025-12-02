@@ -415,7 +415,7 @@ async function syncPermissions(htmlFiles, menuStructure) {
         try {
             const permCode = `page.${file.filename.replace('.html', '').replace(/-/g, '_')}`;
             const permName = `Accès à ${file.title}`;
-            const permCategory = 'pages';
+            const permCategory = 'navigation';
 
             const existing = await pool.query(
                 'SELECT id FROM permissions WHERE code = $1',

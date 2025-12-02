@@ -103,6 +103,7 @@
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/menu-permissions.js"></script>
+    <script src="/js/page-permissions.js"></script>
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
@@ -498,7 +499,7 @@
                     <td>${taux.business_unit_nom || 'N/A'}</td>
                     <td>${taux.division_nom || 'N/A'}</td>
                     <td>${taux.grade_nom || 'N/A'}</td>
-                    <td>${taux.taux_horaire} €</td>
+                    <td>${taux.taux_horaire ? formatCurrency(taux.taux_horaire, 'XAF') : 'N/A'}</td>
                     <td>${new Date(taux.date_effet).toLocaleDateString('fr-FR')}</td>
                     <td>
                         <div class="btn-group btn-group-sm">

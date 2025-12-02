@@ -12,7 +12,7 @@ class PagePermissionsManager {
 
     async init() {
         if (this.initialized) return;
-        
+
         try {
             await this.loadUserPermissions();
             this.initialized = true;
@@ -115,13 +115,13 @@ class PagePermissionsManager {
     hideUnauthorizedElements() {
         // Masquer les boutons selon les rôles
         const userRole = this.getCurrentUserRole();
-        
+
         // SUPER_ADMIN peut voir tous les éléments
         if (userRole === 'SUPER_ADMIN') {
             console.log('✅ SUPER_ADMIN - Tous les éléments visibles');
             return;
         }
-        
+
         // Boutons de génération de comptes utilisateur (ADMIN, ADMIN_IT seulement)
         if (!['ADMIN', 'ADMIN_IT'].includes(userRole)) {
             const generateAccountBtns = document.querySelectorAll('[onclick*="generateUserAccount"]');
@@ -172,7 +172,7 @@ class PagePermissionsManager {
      */
     async protectPage(pageName) {
         const canAccess = await this.canAccessPage(pageName);
-        
+
         if (!canAccess) {
             this.redirectToAccessDenied(`Accès non autorisé à la page: ${pageName}`);
             return false;
@@ -209,38 +209,67 @@ function hideUnauthorizedElements() {
 }
 
 // Auto-protection des pages sensibles
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
-    
-        // Vérifier le rôle de l'utilisateur
-        const userRole = window.pagePermissionsManager.getCurrentUserRole();
-        
-        // SUPER_ADMIN a accès à toutes les pages
-        if (userRole === 'SUPER_ADMIN') {
-            console.log(`✅ SUPER_ADMIN - Accès total à toutes les pages`);
-            hideUnauthorizedElements();
+
+    // Vérifier le rôle de l'utilisateur
+    const userRole = window.pagePermissionsManager.getCurrentUserRole();
+
+    // SUPER_ADMIN a accès à toutes les pages
+    if (userRole === 'SUPER_ADMIN') {
+        console.log(`✅ SUPER_ADMIN - Accès total à toutes les pages`);
+        hideUnauthorizedElements();
+        return;
+    }
+
+    // Liste des pages sensibles qui doivent être protégées par permissions
+    // IMPORTANT: Les pages listées ici seront vérifiées via l'API backend
+    const sensitivePages = [
+        // Administration
+        'users', 'permissions-admin', 'collaborateurs',
+
+        // Dashboards (tous)
+        'dashboard-direction', 'dashboard-rentabilite', 'dashboard-recouvrement',
+        'dashboard-personnel', 'dashboard-equipe', 'dashboard-chargeabilite',
+        'dashboard-optimise', 'analytics',
+
+        // Finances
+        'invoices', 'invoice-details', 'taux-horaires', 'financial-settings',
+
+        // Missions et Projets
+        'missions', 'mission-details', 'mission-types',
+        'create-mission-step0', 'create-mission-step1', 'create-mission-step2',
+        'create-mission-step3', 'create-mission-step4', 'edit-mission-planning',
+
+        // Reports et Analytics
+        'reports', 'time-reports',
+
+        // RH et Évaluations
+        'evaluations-dashboard', 'evaluations-campaigns', 'evaluation-form',
+        'evaluation-view', 'performance-reviews',
+
+        // Configuration
+        'business-units', 'divisions', 'grades', 'postes', 'secteurs',
+        'fiscal-years', 'objectives-config', 'objectives-management',
+        'notification-settings',
+
+        // Opportunities et Campagnes
+        'opportunities', 'opportunities-new', 'opportun ities-fixed',
+        'campaign-execution', 'campaign-validations'
+    ];
+
+    if (sensitivePages.includes(currentPage)) {
+        console.log(`🔒 Protection de la page: ${currentPage}`);
+        const hasAccess = await protectPage(currentPage);
+
+        if (!hasAccess) {
+            console.log(`❌ Accès refusé à la page: ${currentPage}`);
             return;
         }
 
-        // Liste des pages sensibles
-        const sensitivePages = [
-            'users', 'permissions-admin',
-            'dashboard-direction', 'dashboard-rentabilite', 'invoices',
-            'taux-horaires', 'reports', 'analytics', 'missions'
-        ];
-
-        if (sensitivePages.includes(currentPage)) {
-            console.log(`🔒 Protection de la page: ${currentPage}`);
-            const hasAccess = await protectPage(currentPage);
-            
-            if (!hasAccess) {
-                console.log(`❌ Accès refusé à la page: ${currentPage}`);
-                return;
-            }
-            
-            console.log(`✅ Accès autorisé à la page: ${currentPage}`);
-        } else {
-            // Pour les pages non sensibles, juste masquer les éléments non autorisés
-            hideUnauthorizedElements();
-        }
+        console.log(`✅ Accès autorisé à la page: ${currentPage}`);
+    } else {
+        // Pour les pages non sensibles, juste masquer les éléments non autorisés
+        hideUnauthorizedElements();
+    }
 });

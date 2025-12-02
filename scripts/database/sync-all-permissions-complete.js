@@ -44,9 +44,9 @@ const ROUTES_DIR = path.join(__dirname, '../../src/routes');
 async function extractPermissionsFromRoutes() {
     const permissions = new Map();
     const routeFiles = await fs.readdir(ROUTES_DIR);
-    
+
     console.log('📋 Étape 1: Extraction des permissions depuis les routes API...\n');
-    
+
     // Mapping des modules aux catégories
     const categoryMap = {
         'users': 'users',
@@ -95,7 +95,7 @@ async function extractPermissionsFromRoutes() {
         'evolution_postes': 'hr',
         'evolution_grades': 'hr'
     };
-    
+
     const moduleNameFr = {
         'users': 'utilisateurs',
         'clients': 'clients',
@@ -143,7 +143,7 @@ async function extractPermissionsFromRoutes() {
         'evolution_postes': 'évolution postes',
         'evolution_grades': 'évolution grades'
     };
-    
+
     const actionMap = {
         'read': 'Voir',
         'create': 'Créer',
@@ -153,30 +153,30 @@ async function extractPermissionsFromRoutes() {
         'manage': 'Gérer',
         'view': 'Voir'
     };
-    
+
     for (const file of routeFiles) {
         if (!file.endsWith('.js') || file === 'index.js') continue;
-        
+
         const filePath = path.join(ROUTES_DIR, file);
         const content = await fs.readFile(filePath, 'utf-8');
-        
+
         // Extraire requirePermission('xxx')
         const requirePermissionRegex = /requirePermission\(['"]([^'"]+)['"]\)/g;
         let match;
         while ((match = requirePermissionRegex.exec(content)) !== null) {
             const permCode = match[1];
-            
+
             // Déterminer la catégorie basée sur le nom du fichier
             const moduleName = file.replace('.js', '').replace(/-/g, '_');
             const category = categoryMap[moduleName] || moduleName;
-            
+
             // Extraire le type d'action depuis le code de permission
             const action = permCode.split(':')[1] || 'view';
             const actionName = actionMap[action] || action;
             const moduleFr = moduleNameFr[moduleName] || moduleName;
-            
+
             const name = `${actionName} ${moduleFr}`;
-            
+
             permissions.set(permCode, {
                 code: permCode,
                 name,
@@ -184,16 +184,16 @@ async function extractPermissionsFromRoutes() {
                 description: `Permission pour ${actionName.toLowerCase()} ${moduleFr}`
             });
         }
-        
+
         // Extraire aussi les routes HTTP pour créer des permissions par défaut
         // pour les routes qui n'ont pas de requirePermission explicite
-        if (content.includes('router.get') || content.includes('router.post') || 
-            content.includes('router.put') || content.includes('router.patch') || 
+        if (content.includes('router.get') || content.includes('router.post') ||
+            content.includes('router.put') || content.includes('router.patch') ||
             content.includes('router.delete')) {
             const moduleName = file.replace('.js', '').replace(/-/g, '_');
             const category = categoryMap[moduleName] || moduleName;
             const moduleFr = moduleNameFr[moduleName] || moduleName;
-            
+
             // Créer les permissions CRUD de base si elles n'existent pas déjà
             const basePerms = [
                 { code: `${moduleName}:read`, name: `Voir ${moduleFr}`, action: 'read' },
@@ -201,16 +201,16 @@ async function extractPermissionsFromRoutes() {
                 { code: `${moduleName}:update`, name: `Modifier ${moduleFr}`, action: 'update' },
                 { code: `${moduleName}:delete`, name: `Supprimer ${moduleFr}`, action: 'delete' }
             ];
-            
+
             basePerms.forEach(perm => {
                 if (!permissions.has(perm.code)) {
                     // Vérifier si le fichier contient des routes correspondantes
-                    const hasRoute = 
+                    const hasRoute =
                         (perm.action === 'read' && (content.includes('router.get') || content.includes('GET'))) ||
                         (perm.action === 'create' && (content.includes('router.post') || content.includes('POST'))) ||
                         (perm.action === 'update' && (content.includes('router.put') || content.includes('router.patch') || content.includes('PUT') || content.includes('PATCH'))) ||
                         (perm.action === 'delete' && (content.includes('router.delete') || content.includes('DELETE')));
-                    
+
                     if (hasRoute) {
                         permissions.set(perm.code, {
                             code: perm.code,
@@ -223,7 +223,7 @@ async function extractPermissionsFromRoutes() {
             });
         }
     }
-    
+
     console.log(`   ✅ ${permissions.size} permissions trouvées dans les routes API\n`);
     return permissions;
 }
@@ -233,15 +233,15 @@ async function extractPermissionsFromRoutes() {
  */
 async function extractPermissionsFromHTML() {
     const permissions = new Map();
-    
+
     console.log('📋 Étape 2: Extraction des permissions depuis les pages HTML...\n');
-    
+
     const scanDir = async (dir) => {
         const entries = await fs.readdir(dir, { withFileTypes: true });
-        
+
         for (const entry of entries) {
             const fullPath = path.join(dir, entry.name);
-            
+
             if (entry.isDirectory()) {
                 if (!['node_modules', 'uploads', 'logs', 'css', 'js', 'images', 'fonts'].includes(entry.name)) {
                     await scanDir(fullPath);
@@ -251,11 +251,11 @@ async function extractPermissionsFromHTML() {
                     const content = await fs.readFile(fullPath, 'utf-8');
                     const relativePath = path.relative(PUBLIC_DIR, fullPath);
                     const permCode = `page.${relativePath.replace(/\\/g, '/').replace('.html', '').replace(/\//g, '_')}`;
-                    
+
                     // Extraire le titre et nettoyer uniquement les références hardcodées à "EB Vision"
                     const titleMatch = content.match(/<title>(.*?)<\/title>/i);
                     let title = titleMatch ? titleMatch[1] : entry.name.replace('.html', '');
-                    
+
                     // Anonymiser toutes les références hardcodées à "EB Vision" / "EBVISION"
                     title = title
                         .replace(/ - EB-Vision 2\.0/gi, '')
@@ -270,39 +270,13 @@ async function extractPermissionsFromHTML() {
                         .replace(/\bEBVISION\b/gi, '')
                         // Ne pas supprimer "EWM" ou autres noms génériques qui peuvent être dans le branding
                         .trim();
-                    
+
                     // Nettoyer les tirets en début/fin qui peuvent rester
                     title = title.replace(/^[\s\-]+/g, '').replace(/[\s\-]+$/g, '').trim();
-                    
-                    // Déterminer la catégorie basée sur le nom du fichier
-                    let category = 'pages';
-                    const fileName = entry.name.toLowerCase();
-                    
-                    // Catégoriser les pages dashboard
-                    if (fileName.includes('dashboard') || fileName.includes('analytics')) {
-                        category = 'dashboard';
-                    } else if (fileName.includes('report') || fileName.includes('rapport')) {
-                        category = 'reports';
-                    } else if (fileName.includes('client')) {
-                        category = 'clients';
-                    } else if (fileName.includes('mission')) {
-                        category = 'missions';
-                    } else if (fileName.includes('opportunit')) {
-                        category = 'opportunities';
-                    } else if (fileName.includes('campaign') || fileName.includes('prospect')) {
-                        category = 'campaigns';
-                    } else if (fileName.includes('collaborateur') || fileName.includes('grade') || fileName.includes('poste')) {
-                        category = 'hr';
-                    } else if (fileName.includes('time') || fileName.includes('feuille') || fileName.includes('temps')) {
-                        category = 'time';
-                    } else if (fileName.includes('invoice') || fileName.includes('facture')) {
-                        category = 'invoices';
-                    } else if (fileName.includes('user') || fileName.includes('utilisateur')) {
-                        category = 'users';
-                    } else if (fileName.includes('business') || fileName.includes('division') || fileName.includes('fiscal') || fileName.includes('config')) {
-                        category = 'config';
-                    }
-                    
+
+                    // Déterminer la catégorie : TOUTES les pages vont dans 'navigation'
+                    const category = 'navigation';
+
                     permissions.set(permCode, {
                         code: permCode,
                         name: `Accès à ${title}`,
@@ -315,7 +289,7 @@ async function extractPermissionsFromHTML() {
             }
         }
     }
-    
+
     await scanDir(PUBLIC_DIR);
     console.log(`   ✅ ${permissions.size} permissions de pages trouvées\n`);
     return permissions;
@@ -326,33 +300,33 @@ async function extractPermissionsFromHTML() {
  */
 async function extractPermissionsFromMenu() {
     const permissions = new Map();
-    
+
     console.log('📋 Étape 3: Extraction des permissions depuis le menu...\n');
-    
+
     try {
         const sidebarPath = path.join(PUBLIC_DIR, 'template-modern-sidebar.html');
         const content = await fs.readFile(sidebarPath, 'utf-8');
-        
+
         // Extraire les sections de menu
         const sectionRegex = /<li[^>]*data-section="([^"]+)"[^>]*>[\s\S]*?<span[^>]*>([^<]+)<\/span>/gi;
         const itemRegex = /<a[^>]*data-permission="([^"]+)"[^>]*href="([^"]+)"[^>]*>[\s\S]*?<span[^>]*>([^<]+)<\/span>/gi;
-        
+
         let sectionMatch;
         while ((sectionMatch = sectionRegex.exec(content)) !== null) {
             const sectionCode = sectionMatch[1];
             const sectionName = sectionMatch[2].trim();
-            
+
             // Extraire les items de cette section
             const sectionContent = content.substring(sectionMatch.index);
             const nextSectionIndex = content.indexOf('<li', sectionMatch.index + 1);
             const sectionEnd = nextSectionIndex > 0 ? nextSectionIndex : content.length;
             const sectionText = content.substring(sectionMatch.index, sectionEnd);
-            
+
             let itemMatch;
             while ((itemMatch = itemRegex.exec(sectionText)) !== null) {
                 const permCode = itemMatch[1];
                 const itemName = itemMatch[3].trim();
-                
+
                 permissions.set(permCode, {
                     code: permCode,
                     name: itemName,
@@ -361,7 +335,7 @@ async function extractPermissionsFromMenu() {
                 });
             }
         }
-        
+
         // Aussi chercher les permissions de menu dans le format strict menu.xxx.yyy
         // (uniquement lettres, chiffres, underscore) pour éviter de capturer
         // des bouts de code comme "menu.js" ou des scripts complets
@@ -378,11 +352,11 @@ async function extractPermissionsFromMenu() {
                 });
             }
         }
-        
+
     } catch (error) {
         console.error(`   ⚠️  Erreur lors de la lecture du menu:`, error.message);
     }
-    
+
     console.log(`   ✅ ${permissions.size} permissions de menu trouvées\n`);
     return permissions;
 }
@@ -392,7 +366,7 @@ async function extractPermissionsFromMenu() {
  */
 function getBaseAPIPermissions() {
     const permissions = new Map();
-    
+
     const apiPermissions = [
         { code: 'permission.manage', name: 'API - Gestion des permissions', category: 'api' },
         { code: 'permission.assign', name: 'API - Assigner des permissions', category: 'api' },
@@ -405,14 +379,14 @@ function getBaseAPIPermissions() {
         { code: 'api.missions.manage', name: 'API - Gestion des missions', category: 'api' },
         { code: 'api.opportunities.manage', name: 'API - Gestion des opportunités', category: 'api' }
     ];
-    
+
     apiPermissions.forEach(perm => {
         permissions.set(perm.code, {
             ...perm,
             description: perm.name
         });
     });
-    
+
     return permissions;
 }
 
@@ -421,7 +395,7 @@ function getBaseAPIPermissions() {
  */
 function getFunctionalPermissions() {
     const permissions = new Map();
-    
+
     // Permissions Clients
     const clientPerms = [
         { code: 'clients.view', name: 'Voir les clients', category: 'clients' },
@@ -429,7 +403,7 @@ function getFunctionalPermissions() {
         { code: 'clients.edit', name: 'Modifier les clients', category: 'clients' },
         { code: 'clients.delete', name: 'Supprimer les clients', category: 'clients' }
     ];
-    
+
     // Permissions Missions
     const missionPerms = [
         { code: 'missions.view', name: 'Voir les missions', category: 'missions' },
@@ -437,7 +411,7 @@ function getFunctionalPermissions() {
         { code: 'missions.edit', name: 'Modifier les missions', category: 'missions' },
         { code: 'missions.delete', name: 'Supprimer les missions', category: 'missions' }
     ];
-    
+
     // Permissions Opportunités
     const oppPerms = [
         { code: 'opportunities.view', name: 'Voir les opportunités', category: 'opportunities' },
@@ -445,7 +419,7 @@ function getFunctionalPermissions() {
         { code: 'opportunities.edit', name: 'Modifier les opportunités', category: 'opportunities' },
         { code: 'opportunities.delete', name: 'Supprimer les opportunités', category: 'opportunities' }
     ];
-    
+
     // Permissions Campagnes
     const campaignPerms = [
         { code: 'campaigns.view', name: 'Voir les campagnes', category: 'campaigns' },
@@ -455,7 +429,7 @@ function getFunctionalPermissions() {
         { code: 'campaigns.validate', name: 'Valider les campagnes', category: 'campaigns' },
         { code: 'campaigns.execute', name: 'Exécuter les campagnes', category: 'campaigns' }
     ];
-    
+
     // Permissions Config
     const configPerms = [
         { code: 'config.view', name: 'Voir la configuration', category: 'config' },
@@ -463,35 +437,28 @@ function getFunctionalPermissions() {
         { code: 'config.manage_permissions', name: 'Gérer les permissions', category: 'config' },
         { code: 'config.admin', name: 'Administrer la configuration', category: 'config' }
     ];
-    
+
     // Permissions Dashboard
     const dashboardPerms = [
         { code: 'dashboard.view', name: 'Voir le dashboard', category: 'dashboard' },
         { code: 'dashboard:read', name: 'Voir dashboard', category: 'dashboard' },
         { code: 'dashboard_analytics:read', name: 'Voir analytics', category: 'dashboard' },
-        { code: 'analytics:read', name: 'Voir analytics', category: 'dashboard' },
-        { code: 'dashboard.personnel', name: 'Dashboard Personnel', category: 'dashboard' },
-        { code: 'dashboard.equipe', name: 'Dashboard Équipe', category: 'dashboard' },
-        { code: 'dashboard.direction', name: 'Dashboard Direction', category: 'dashboard' },
-        { code: 'dashboard.recouvrement', name: 'Dashboard Recouvrement', category: 'dashboard' },
-        { code: 'dashboard.rentabilite', name: 'Dashboard Rentabilité', category: 'dashboard' },
-        { code: 'dashboard.chargeabilite', name: 'Dashboard Chargeabilité', category: 'dashboard' },
-        { code: 'dashboard.optimise', name: 'Dashboard Optimisé', category: 'dashboard' }
+        { code: 'analytics:read', name: 'Voir analytics', category: 'dashboard' }
     ];
-    
+
     // Permissions Rapports
     const reportPerms = [
         { code: 'reports.view', name: 'Voir les rapports', category: 'reports' },
         { code: 'reports.create', name: 'Créer des rapports', category: 'reports' }
     ];
-    
+
     [...clientPerms, ...missionPerms, ...oppPerms, ...campaignPerms, ...configPerms, ...dashboardPerms, ...reportPerms].forEach(perm => {
         permissions.set(perm.code, {
             ...perm,
             description: perm.name
         });
     });
-    
+
     return permissions;
 }
 
@@ -503,17 +470,17 @@ async function syncAllPermissions() {
         console.log('📡 Test de connexion à la base de données...');
         await pool.query('SELECT NOW()');
         console.log('✅ Connexion réussie!\n');
-        
+
         // 1. Extraire toutes les permissions
         const routePerms = await extractPermissionsFromRoutes();
         const htmlPerms = await extractPermissionsFromHTML();
         const menuPerms = await extractPermissionsFromMenu();
         const apiPerms = getBaseAPIPermissions();
         const funcPerms = getFunctionalPermissions();
-        
+
         // 2. Fusionner toutes les permissions
         const allPermissions = new Map();
-        
+
         // Priorité: routes > fonctionnelles > pages > menu > API
         [routePerms, funcPerms, htmlPerms, menuPerms, apiPerms].forEach(permMap => {
             permMap.forEach((perm, code) => {
@@ -524,7 +491,13 @@ async function syncAllPermissions() {
                     const existing = allPermissions.get(code);
                     // Garder la catégorie la plus spécifique (dashboard > pages, clients > pages, etc.)
                     const priorityCategories = ['dashboard', 'clients', 'missions', 'opportunities', 'campaigns', 'reports', 'hr', 'time', 'invoices', 'users', 'config'];
-                    if (priorityCategories.includes(perm.category) && !priorityCategories.includes(existing.category)) {
+
+                    // Si la permission est déjà 'navigation', on la garde comme telle (priorité absolue pour les pages)
+                    if (existing.category === 'navigation') {
+                        // Ne rien faire, on garde 'navigation'
+                    } else if (perm.category === 'navigation') {
+                        allPermissions.set(code, perm);
+                    } else if (priorityCategories.includes(perm.category) && !priorityCategories.includes(existing.category)) {
                         allPermissions.set(code, perm);
                     } else if (existing.category === 'menu' && perm.category !== 'menu') {
                         allPermissions.set(code, perm);
@@ -534,16 +507,16 @@ async function syncAllPermissions() {
                 }
             });
         });
-        
+
         console.log(`\n📊 Total: ${allPermissions.size} permissions à synchroniser\n`);
-        
+
         // 3. Synchroniser dans la base de données
         console.log('📋 Étape 4: Synchronisation dans la base de données...\n');
-        
+
         let created = 0;
         let updated = 0;
         let unchanged = 0;
-        
+
         for (const [code, perm] of allPermissions) {
             try {
                 // Vérifier si la permission existe
@@ -551,10 +524,10 @@ async function syncAllPermissions() {
                     'SELECT id, name, category FROM permissions WHERE code = $1',
                     [code]
                 );
-                
+
                 if (existing.rows.length > 0) {
                     const existingPerm = existing.rows[0];
-                    
+
                     // Mettre à jour si nécessaire
                     if (existingPerm.name !== perm.name || existingPerm.category !== perm.category) {
                         await pool.query(
@@ -580,7 +553,7 @@ async function syncAllPermissions() {
                 console.error(`   ❌ Erreur pour ${code}:`, error.message);
             }
         }
-        
+
         // 4. Résumé
         console.log('\n╔══════════════════════════════════════════════════════════════╗');
         console.log('║         ✅ SYNCHRONISATION TERMINÉE                      ║');
@@ -592,19 +565,19 @@ async function syncAllPermissions() {
         console.log(`   ✓ Inchangées   : ${unchanged}`);
         console.log(`   📦 Total       : ${allPermissions.size}`);
         console.log('\n🎯 Toutes les permissions ont été synchronisées avec succès!\n');
-        
+
         // 5. Afficher les catégories
         const categoriesResult = await pool.query(
             'SELECT category, COUNT(*) as count FROM permissions GROUP BY category ORDER BY category'
         );
-        
+
         console.log('📋 Permissions par catégorie:');
         console.log('═══════════════════════════════');
         categoriesResult.rows.forEach(row => {
             console.log(`   ${row.category}: ${row.count} permission(s)`);
         });
         console.log('');
-        
+
     } catch (error) {
         console.error('\n❌ ERREUR:', error.message);
         console.error(error);

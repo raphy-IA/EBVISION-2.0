@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rapports Missions</title>
-    
+
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="css/modern-sidebar.css">
     <link rel="stylesheet" href="css/app-title.css">
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <style>
         :root {
             --primary-color: #f093fb;
@@ -44,7 +45,7 @@
             padding: 2rem;
             border-radius: 15px;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .stats-grid {
@@ -58,7 +59,7 @@
             background: white;
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             transition: transform 0.2s;
         }
 
@@ -78,12 +79,14 @@
             margin-top: 0.5rem;
         }
 
-        .filters-card, .chart-card, .table-card {
+        .filters-card,
+        .chart-card,
+        .table-card {
             background: white;
             border-radius: 15px;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .chart-container {
@@ -98,15 +101,23 @@
         }
 
         @media (max-width: 768px) {
-            .page-wrapper { flex-direction: column; }
-            .main-content-area { padding: 1rem; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .page-wrapper {
+                flex-direction: column;
+            }
+
+            .main-content-area {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
         }
     </style>
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
@@ -114,6 +125,7 @@
     <!-- Configuration des devises -->
     <script src="js/currency-config.js"></script>
 </head>
+
 <body>
     <button class="sidebar-toggle d-md-none">
         <i class="fas fa-bars"></i>
@@ -150,11 +162,11 @@
                     <div class="stat-label">Missions terminées</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="totalBudget">0€</div>
+                    <div class="stat-number" id="totalBudget"><span class="currency-symbol">€</span>0</div>
                     <div class="stat-label">Budget total</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="totalRevenue">0€</div>
+                    <div class="stat-number" id="totalRevenue"><span class="currency-symbol">€</span>0</div>
                     <div class="stat-label">Revenu réalisé</div>
                 </div>
                 <div class="stat-card">
@@ -205,7 +217,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <!-- Période personnalisée (cachée par défaut) -->
                 <div class="row g-3 mt-2" id="customPeriodRow" style="display: none;">
                     <div class="col-md-3">
@@ -217,7 +229,7 @@
                         <input type="date" class="form-control" id="endDate">
                     </div>
                 </div>
-                
+
                 <div class="row g-3 mt-2">
                     <div class="col-md-3">
                         <label for="typeFilter" class="form-label">Type de mission</label>
@@ -230,11 +242,13 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label for="minBudgetPrevue" class="form-label">Budget prévu min (€)</label>
+                        <label for="minBudgetPrevue" class="form-label">Budget prévu min (<span
+                                class="currency-symbol">€</span>)</label>
                         <input type="number" class="form-control" id="minBudgetPrevue" placeholder="0">
                     </div>
                     <div class="col-md-3">
-                        <label for="minBudgetReel" class="form-label">Budget réalisé min (€)</label>
+                        <label for="minBudgetReel" class="form-label">Budget réalisé min (<span
+                                class="currency-symbol">€</span>)</label>
                         <input type="number" class="form-control" id="minBudgetReel" placeholder="0">
                     </div>
                     <div class="col-12">
@@ -303,7 +317,9 @@
                             </tr>
                         </thead>
                         <tbody id="missionsTable">
-                            <tr><td colspan="9" class="text-center">Chargement...</td></tr>
+                            <tr>
+                                <td colspan="9" class="text-center">Chargement...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -319,6 +335,7 @@
     <script src="js/tasks.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/menu-permissions.js"></script>
+    <script src="/js/page-permissions.js"></script>
     <script src="js/sidebar.js"></script>
     <script src="js/session-manager.js"></script>
 
@@ -328,18 +345,18 @@
         let allMissions = [];
         let financialDefaultCurrency = (typeof CURRENCY_CONFIG !== 'undefined' && CURRENCY_CONFIG.defaultCurrency) ? CURRENCY_CONFIG.defaultCurrency : 'XAF';
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadFilters();
             loadFinancialSettingsForReports()
                 .catch(err => console.warn('Erreur chargement paramètres financiers:', err))
                 .finally(() => {
                     loadData();
                 });
-            
+
             // Event listener for period filter
             const periodFilter = document.getElementById('periodFilter');
             if (periodFilter) {
-                periodFilter.addEventListener('change', function() {
+                periodFilter.addEventListener('change', function () {
                     const customRow = document.getElementById('customPeriodRow');
                     if (this.value === 'custom') {
                         customRow.style.display = 'flex';
@@ -353,12 +370,12 @@
         // Stockage des données de filtres (pour cohérence, pas de dépendances fortes ici)
         let allBusinessUnits = [];
         let allClients = [];
-        
+
         async function loadFilters() {
             try {
                 const token = localStorage.getItem('authToken');
                 const headers = { 'Authorization': `Bearer ${token}` };
-                
+
                 // Load Business Units
                 const buResponse = await fetch(`${API_BASE_URL}/business-units?limit=1000`, { headers });
                 if (buResponse.ok) {
@@ -373,7 +390,7 @@
                         select.appendChild(option);
                     });
                 }
-                
+
                 // Load clients
                 const clientResponse = await fetch(`${API_BASE_URL}/clients?limit=1000`, { headers });
                 if (clientResponse.ok) {
@@ -388,7 +405,7 @@
                         select.appendChild(option);
                     });
                 }
-                
+
                 console.log('✅ Filtres missions initialisés (pas de dépendances croisées)');
             } catch (error) {
                 console.error('Erreur chargement filtres:', error);
@@ -497,12 +514,12 @@
                     applyFilters();
                 } else {
                     console.error('Erreur API:', response.status);
-                    document.getElementById('missionsTable').innerHTML = 
+                    document.getElementById('missionsTable').innerHTML =
                         '<tr><td colspan="9" class="text-center text-danger">Erreur de chargement</td></tr>';
                 }
             } catch (error) {
                 console.error('Erreur chargement:', error);
-                document.getElementById('missionsTable').innerHTML = 
+                document.getElementById('missionsTable').innerHTML =
                     '<tr><td colspan="9" class="text-center text-danger">Erreur: ' + error.message + '</td></tr>';
             }
         }
@@ -517,7 +534,7 @@
             const minBudgetReel = parseFloat(document.getElementById('minBudgetReel').value) || 0;
 
             console.log('Filtres appliqués:', { dateRange, buFilter, clientFilter, statusFilter, typeFilter, minBudgetPrevue, minBudgetReel });
-            
+
             // Debug: afficher un échantillon de données
             if (allMissions.length > 0) {
                 console.log('Échantillon mission:', {
@@ -539,41 +556,41 @@
                         return false;
                     }
                 }
-                
+
                 // Filtre Business Unit
                 if (buFilter) {
                     if (!mission.business_unit_id || String(mission.business_unit_id) !== String(buFilter)) {
                         return false;
                     }
                 }
-                
+
                 // Filtre Client
                 if (clientFilter) {
                     if (!mission.client_id || String(mission.client_id) !== String(clientFilter)) {
                         return false;
                     }
                 }
-                
+
                 // Filtre Statut
                 if (statusFilter && mission.statut !== statusFilter) {
                     return false;
                 }
-                
+
                 // Filtre Type de mission
                 if (typeFilter && mission.type_mission !== typeFilter) {
                     return false;
                 }
-                
+
                 // Filtre Budget prévu minimum
                 if (minBudgetPrevue && (parseFloat(mission.budget_prevue) || 0) < minBudgetPrevue) {
                     return false;
                 }
-                
+
                 // Filtre Budget réalisé minimum
                 if (minBudgetReel && (parseFloat(mission.budget_reel) || 0) < minBudgetReel) {
                     return false;
                 }
-                
+
                 return true;
             });
 
@@ -640,8 +657,8 @@
                     labels: Object.keys(statusCounts),
                     datasets: [{
                         data: Object.values(statusCounts),
-                        backgroundColor: ['rgba(17,153,142,0.7)', 'rgba(102,126,234,0.7)', 
-                                         'rgba(245,87,108,0.7)', 'rgba(168,237,234,0.7)']
+                        backgroundColor: ['rgba(17,153,142,0.7)', 'rgba(102,126,234,0.7)',
+                            'rgba(245,87,108,0.7)', 'rgba(168,237,234,0.7)']
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
@@ -662,8 +679,8 @@
                     labels: Object.keys(typeCounts),
                     datasets: [{
                         data: Object.values(typeCounts),
-                        backgroundColor: ['rgba(240,147,251,0.7)', 'rgba(245,87,108,0.7)', 
-                                         'rgba(79,172,254,0.7)', 'rgba(56,239,125,0.7)']
+                        backgroundColor: ['rgba(240,147,251,0.7)', 'rgba(245,87,108,0.7)',
+                            'rgba(79,172,254,0.7)', 'rgba(56,239,125,0.7)']
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
@@ -700,7 +717,7 @@
             });
 
             // Revenue chart (top 10 by revenue)
-            const sorted = [...missions].sort((a, b) => 
+            const sorted = [...missions].sort((a, b) =>
                 (parseFloat(b.budget_reel) || 0) - (parseFloat(a.budget_reel) || 0)
             ).slice(0, 10);
 
@@ -737,17 +754,17 @@
 
             missions.slice(0, 50).forEach(m => {
                 const row = document.createElement('tr');
-                const budgetPrevue = m.budget_prevue ? 
+                const budgetPrevue = m.budget_prevue ?
                     formatAmount(m.budget_prevue, m.devise) : '-';
-                const budgetReel = m.budget_reel ? 
+                const budgetReel = m.budget_reel ?
                     formatAmount(m.budget_reel, m.devise) : '-';
                 const dateDebut = m.date_debut ? new Date(m.date_debut).toLocaleDateString('fr-FR') : '-';
                 const dateFin = m.date_fin_prevue ? new Date(m.date_fin_prevue).toLocaleDateString('fr-FR') : '-';
-                
-                const statusClass = m.statut === 'TERMINE' ? 'success' : 
-                                   m.statut === 'EN_COURS' ? 'primary' : 
-                                   m.statut === 'ANNULE' ? 'danger' : 'secondary';
-                
+
+                const statusClass = m.statut === 'TERMINE' ? 'success' :
+                    m.statut === 'EN_COURS' ? 'primary' :
+                        m.statut === 'ANNULE' ? 'danger' : 'secondary';
+
                 row.innerHTML = `
                     <td><strong>${m.titre || m.nom || '-'}</strong></td>
                     <td>${m.client_nom || '-'}</td>
@@ -788,4 +805,5 @@
         }
     </script>
 </body>
+
 </html>

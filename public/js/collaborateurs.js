@@ -1678,7 +1678,7 @@ async function loadHistoriqueGrades(collaborateurId) {
                                 <td>${evolution.grade_nom || 'N/A'}</td>
                                 <td>${new Date(evolution.date_debut).toLocaleDateString('fr-FR')}</td>
                                 <td>${evolution.date_fin ? new Date(evolution.date_fin).toLocaleDateString('fr-FR') : '-'}</td>
-                                <td>${evolution.taux_horaire_personnalise !== null ? evolution.taux_horaire_personnalise.toFixed(2) + ' €' : 'N/A'}</td>
+                                <td>${evolution.taux_horaire_personnalise !== null ? formatCurrency(evolution.taux_horaire_personnalise, 'XAF') : 'N/A'}</td>
                                 <td>${evolution.motif || '-'}</td>
                             </tr>
                         `).join('');
@@ -2736,7 +2736,7 @@ async function viewHistoriqueRH(collaborateurId) {
                     date: e.date_debut,
                     endDate: e.date_fin,
                     titre: `Changement de grade: ${e.grade_nom || 'N/A'}`,
-                    details: `Motif: ${e.motif || '-'}${e.taux_horaire_personnalise !== null ? ` · Salaire personnalisé: ${e.taux_horaire_personnalise.toFixed(2)} €` : ''}`
+                    details: `Motif: ${e.motif || '-'}${e.taux_horaire_personnalise !== null ? ` · Salaire personnalisé: ${formatCurrency(e.taux_horaire_personnalise, 'XAF')}` : ''}`
                 });
             });
         }

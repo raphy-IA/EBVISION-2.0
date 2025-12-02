@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détails Mission</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
+
     <script src="/js/currency-config.js" defer></script>
-    
+
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
     <script src="js/menu-permissions.js"></script>
+    <script src="/js/page-permissions.js"></script>
     <!-- SessionManager pour la gestion centralisée des sessions -->
     <script src="js/session-manager.js"></script>
-    
+
     <!-- Scripts de zone utilisateur -->
     <!-- <script src="js/user-modals.js"></script> -->
-    
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -30,13 +32,13 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
             overflow-x: hidden;
         }
-        
+
         .page-wrapper {
             display: flex;
             min-height: 100vh;
@@ -51,20 +53,21 @@
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column; /* Empile la sidebar et le contenu */
+                flex-direction: column;
+                /* Empile la sidebar et le contenu */
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .nav-tabs .nav-link {
             border: none;
             border-radius: 0;
@@ -72,25 +75,40 @@
             font-weight: 500;
             padding: 1rem 1.5rem;
         }
-        
+
         .nav-tabs .nav-link.active {
             background-color: var(--primary-color);
             color: white;
             border: none;
         }
-        
+
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
         }
-        
-        .status-en_cours { background-color: #e3f2fd; color: #1976d2; }
-        .status-terminee { background-color: #e8f5e8; color: #388e3c; }
-        .status-suspendue { background-color: #fff3e0; color: #f57c00; }
-        .status-annulee { background-color: #ffebee; color: #d32f2f; }
-        
+
+        .status-en_cours {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-terminee {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .status-suspendue {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-annulee {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+
         .back-button {
             background: var(--primary-color);
             color: white;
@@ -103,7 +121,7 @@
             gap: 0.5rem;
             margin-bottom: 1rem;
         }
-        
+
         .back-button:hover {
             background: #34495e;
             color: white;
@@ -111,9 +129,9 @@
         }
     </style>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
@@ -122,11 +140,12 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -140,227 +159,241 @@
 
         <!-- Main Content Area -->
         <div class="main-content-area">
-                <!-- Bouton retour -->
-                <a href="missions.html" class="back-button">
-                    <i class="fas fa-arrow-left"></i>
-                    Retour aux missions
-                </a>
+            <!-- Bouton retour -->
+            <a href="missions.html" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Retour aux missions
+            </a>
 
-                <!-- En-tête de la mission -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h2 id="missionTitle">Chargement...</h2>
-                                <p class="text-muted mb-0" id="missionCode">Code: ...</p>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <span id="missionStatus" class="status-badge">...</span>
-                            </div>
+            <!-- En-tête de la mission -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 id="missionTitle">Chargement...</h2>
+                            <p class="text-muted mb-0" id="missionCode">Code: ...</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span id="missionStatus" class="status-badge">...</span>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Onglets -->
-                <div class="card">
-                    <div class="card-header">
-                        <ul class="nav nav-tabs" id="missionTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">
-                                    <i class="fas fa-info-circle me-2"></i>Informations
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="financial-tab" data-bs-toggle="tab" data-bs-target="#financial" type="button" role="tab">
-                                    <i class="fas fa-euro-sign me-2"></i>Paramètres financiers
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="planning-tab" data-bs-toggle="tab" data-bs-target="#planning" type="button" role="tab">
-                                    <i class="fas fa-calendar-alt me-2"></i>Planning
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="invoicing-tab" data-bs-toggle="tab" data-bs-target="#invoicing" type="button" role="tab">
-                                    <i class="fas fa-file-invoice me-2"></i>Facturation
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="evolution-tab" data-bs-toggle="tab" data-bs-target="#evolution" type="button" role="tab">
-                                    <i class="fas fa-chart-line me-2"></i>Évolution
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="card-body">
-                        <div class="tab-content" id="missionTabContent">
-                            <!-- Onglet Informations -->
-                            <div class="tab-pane fade show active" id="info" role="tabpanel">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <h5>Informations générales</h5>
-                                        <div class="card">
-                                                                                         <div class="card-body">
-                                                 <p><strong>Client:</strong> <span id="missionClient">...</span></p>
-                                                 <p><strong>Type de mission:</strong> <span id="missionType">...</span></p>
-                                                 <p><strong>Responsable:</strong> <span id="missionResponsable">...</span></p>
-                                                 <p><strong>Associé en charge:</strong> <span id="missionAssocie">...</span></p>
-                                                 <p><strong>Business Unit:</strong> <span id="missionBusinessUnit">...</span></p>
-                                                 <p><strong>Division:</strong> <span id="missionDivision">...</span></p>
-                                                 <p><strong>Année fiscale:</strong> <span id="missionFiscalYear">...</span></p>
-                                                 <p><strong>Créé par:</strong> <span id="missionCreatedBy">...</span></p>
-                                                 <p><strong>Date de création:</strong> <span id="missionCreatedAt">...</span></p>
-                                             </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h5>Dates et durée</h5>
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <p><strong>Début:</strong> <span id="missionStartDate">...</span></p>
-                                                <p><strong>Fin prévue:</strong> <span id="missionEndDate">...</span></p>
-                                                <p><strong>Fin réelle:</strong> <span id="missionRealEndDate">...</span></p>
-                                                <p><strong>Durée:</strong> <span id="missionDuration">...</span></p>
-                                            </div>
+            <!-- Onglets -->
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs" id="missionTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info"
+                                type="button" role="tab">
+                                <i class="fas fa-info-circle me-2"></i>Informations
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="financial-tab" data-bs-toggle="tab" data-bs-target="#financial"
+                                type="button" role="tab">
+                                <i class="fas fa-euro-sign me-2"></i>Paramètres financiers
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="planning-tab" data-bs-toggle="tab" data-bs-target="#planning"
+                                type="button" role="tab">
+                                <i class="fas fa-calendar-alt me-2"></i>Planning
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="invoicing-tab" data-bs-toggle="tab" data-bs-target="#invoicing"
+                                type="button" role="tab">
+                                <i class="fas fa-file-invoice me-2"></i>Facturation
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="evolution-tab" data-bs-toggle="tab" data-bs-target="#evolution"
+                                type="button" role="tab">
+                                <i class="fas fa-chart-line me-2"></i>Évolution
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="missionTabContent">
+                        <!-- Onglet Informations -->
+                        <div class="tab-pane fade show active" id="info" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Informations générales</h5>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p><strong>Client:</strong> <span id="missionClient">...</span></p>
+                                            <p><strong>Type de mission:</strong> <span id="missionType">...</span></p>
+                                            <p><strong>Responsable:</strong> <span id="missionResponsable">...</span>
+                                            </p>
+                                            <p><strong>Associé en charge:</strong> <span id="missionAssocie">...</span>
+                                            </p>
+                                            <p><strong>Business Unit:</strong> <span id="missionBusinessUnit">...</span>
+                                            </p>
+                                            <p><strong>Division:</strong> <span id="missionDivision">...</span></p>
+                                            <p><strong>Année fiscale:</strong> <span id="missionFiscalYear">...</span>
+                                            </p>
+                                            <p><strong>Créé par:</strong> <span id="missionCreatedBy">...</span></p>
+                                            <p><strong>Date de création:</strong> <span id="missionCreatedAt">...</span>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row mt-4">
-                                    <div class="col-12">
-                                        <h5>Description</h5>
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <p id="missionDescription">...</p>
-                                            </div>
+                                <div class="col-md-6">
+                                    <h5>Dates et durée</h5>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p><strong>Début:</strong> <span id="missionStartDate">...</span></p>
+                                            <p><strong>Fin prévue:</strong> <span id="missionEndDate">...</span></p>
+                                            <p><strong>Fin réelle:</strong> <span id="missionRealEndDate">...</span></p>
+                                            <p><strong>Durée:</strong> <span id="missionDuration">...</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h5>Description</h5>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p id="missionDescription">...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Onglet Paramètres financiers -->
+                        <div class="tab-pane fade" id="financial" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6>Configuration des honoraires</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p><strong>Montant:</strong> <span id="honorairesMontant">...</span></p>
+                                            <p><strong>Devise:</strong> <span id="honorairesDevise">...</span></p>
+                                            <p><strong>Description:</strong> <span id="honorairesDescription">...</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6>Configuration des débours</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p><strong>Montant:</strong> <span id="deboursMontant">...</span></p>
+                                            <p><strong>Devise:</strong> <span id="deboursDevise">...</span></p>
+                                            <p><strong>Description:</strong> <span id="deboursDescription">...</span>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Onglet Paramètres financiers -->
-                            <div class="tab-pane fade" id="financial" role="tabpanel">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h6>Configuration des honoraires</h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <p><strong>Montant:</strong> <span id="honorairesMontant">...</span></p>
-                                                <p><strong>Devise:</strong> <span id="honorairesDevise">...</span></p>
-                                                <p><strong>Description:</strong> <span id="honorairesDescription">...</span></p>
-                                            </div>
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6>Conditions de paiement</h6>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h6>Configuration des débours</h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <p><strong>Montant:</strong> <span id="deboursMontant">...</span></p>
-                                                <p><strong>Devise:</strong> <span id="deboursDevise">...</span></p>
-                                                <p><strong>Description:</strong> <span id="deboursDescription">...</span></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mt-4">
-                                    <div class="col-12">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h6>Conditions de paiement</h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <div id="paymentConditions">...</div>
-                                            </div>
+                                        <div class="card-body">
+                                            <div id="paymentConditions">...</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Onglet Planning -->
-                            <div class="tab-pane fade" id="planning" role="tabpanel">
-                                <div class="row mb-3">
-                                    <div class="col-12">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h5><i class="fas fa-calendar-alt me-2"></i>Planning de la Mission</h5>
-                                            <button class="btn btn-primary" onclick="openPlanningEditor()">
-                                                <i class="fas fa-edit me-2"></i>Modifier le Planning
-                                            </button>
+                        <!-- Onglet Planning -->
+                        <div class="tab-pane fade" id="planning" role="tabpanel">
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5><i class="fas fa-calendar-alt me-2"></i>Planning de la Mission</h5>
+                                        <button class="btn btn-primary" onclick="openPlanningEditor()">
+                                            <i class="fas fa-edit me-2"></i>Modifier le Planning
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-users me-2"></i>Équipe de mission</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="missionTeam">...</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h6><i class="fas fa-users me-2"></i>Équipe de mission</h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <div id="missionTeam">...</div>
-                                            </div>
+
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-tasks me-2"></i>Tâches planifiées</h6>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="col-md-6">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h6><i class="fas fa-tasks me-2"></i>Tâches planifiées</h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="row mb-2">
-                                                    <div class="col-12 d-flex align-items-center gap-2">
-                                                        <label for="missionTasksFilter" class="form-label mb-0 small text-muted">Filtrer par tâche :</label>
-                                                        <select id="missionTasksFilter" class="form-select form-select-sm" style="max-width: 260px;">
-                                                            <option value="__all__">Toutes les tâches</option>
-                                                        </select>
-                                                    </div>
+                                        <div class="card-body">
+                                            <div class="row mb-2">
+                                                <div class="col-12 d-flex align-items-center gap-2">
+                                                    <label for="missionTasksFilter"
+                                                        class="form-label mb-0 small text-muted">Filtrer par tâche
+                                                        :</label>
+                                                    <select id="missionTasksFilter" class="form-select form-select-sm"
+                                                        style="max-width: 260px;">
+                                                        <option value="__all__">Toutes les tâches</option>
+                                                    </select>
                                                 </div>
-                                                <div id="missionTasks">...</div>
                                             </div>
+                                            <div id="missionTasks">...</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Onglet Facturation -->
-                            <div class="tab-pane fade" id="invoicing" role="tabpanel">
-                                <div class="row mb-3">
-                                    <div class="col-12">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h5>Factures générées</h5>
-                                            <button class="btn btn-primary" onclick="createInvoiceFromMission()">
-                                                <i class="fas fa-plus me-2"></i>Créer une facture
-                                            </button>
-                                        </div>
+                        <!-- Onglet Facturation -->
+                        <div class="tab-pane fade" id="invoicing" role="tabpanel">
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5>Factures générées</h5>
+                                        <button class="btn btn-primary" onclick="createInvoiceFromMission()">
+                                            <i class="fas fa-plus me-2"></i>Créer une facture
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <div id="invoicesList">...</div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <h5>Statistiques de facturation</h5>
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <p><strong>Total facturé:</strong> <span id="totalInvoiced">...</span></p>
-                                                <p><strong>Total payé:</strong> <span id="totalPaid">...</span></p>
-                                                <p><strong>En attente:</strong> <span id="totalPending">...</span></p>
-                                            </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div id="invoicesList">...</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5>Statistiques de facturation</h5>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p><strong>Total facturé:</strong> <span id="totalInvoiced">...</span></p>
+                                            <p><strong>Total payé:</strong> <span id="totalPaid">...</span></p>
+                                            <p><strong>En attente:</strong> <span id="totalPending">...</span></p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Onglet Évolution -->
-                            <div class="tab-pane fade" id="evolution" role="tabpanel">
-                                <div class="row">
-                                    <div class="col-12">
-                                        <h5>Progression des tâches</h5>
-                                        <div id="tasksProgress">...</div>
-                                    </div>
+                        <!-- Onglet Évolution -->
+                        <div class="tab-pane fade" id="evolution" role="tabpanel">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5>Progression des tâches</h5>
+                                    <div id="tasksProgress">...</div>
                                 </div>
                             </div>
                         </div>
@@ -368,6 +401,7 @@
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     <!-- Scripts -->
@@ -385,7 +419,7 @@
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            
+
             return fetch(url, {
                 ...options,
                 headers: {
@@ -396,11 +430,11 @@
         }
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Récupérer l'ID de la mission depuis l'URL
             const urlParams = new URLSearchParams(window.location.search);
             missionId = urlParams.get('id');
-            
+
             if (missionId) {
                 loadMissionDetails(missionId);
             } else {
@@ -779,7 +813,7 @@
                             <td>
                                 <div class="d-flex flex-column">
                                     <span><strong>${collab.prenom} ${collab.nom}</strong>${collab.grade_nom ? ` (${collab.grade_nom})` : ''}</span>
-                                    ${collab.taux_horaire ? `<small class="text-muted">${collab.taux_horaire}€/h</small>` : ''}
+                                    ${collab.taux_horaire ? `<small class="text-muted">${collab.taux_horaire}<span class="currency-symbol">€</span>/h</small>` : ''}
                                 </div>
                             </td>
                             <td class="text-center">${collab.heures_planifiees || 0}h</td>
@@ -837,7 +871,7 @@
         async function displayInvoicingData() {
             try {
                 const devise = currentMission?.devise || 'XAF';
-                
+
                 // Charger les factures de la mission
                 const response = await authenticatedFetch(`/api/invoices/mission/${missionId}`);
                 if (response.ok) {
@@ -949,19 +983,19 @@
                 if (response.ok) {
                     const result = await response.json();
                     const invoiceId = result.data.id;
-                    
+
                     // Générer automatiquement les lignes de facture basées sur les conditions de paiement
                     const generateResponse = await authenticatedFetch(`/api/invoices/${invoiceId}/generate-items`, {
                         method: 'POST'
                     });
-                    
+
                     if (generateResponse.ok) {
                         alert('Facture créée avec lignes générées automatiquement !');
                     } else {
                         const errorData = await generateResponse.json();
                         alert(`Facture créée mais erreur lors de la génération des lignes: ${errorData.error}`);
                     }
-                    
+
                     // Recharger les factures
                     displayInvoicingData();
                 } else {
@@ -1003,7 +1037,7 @@
         // Affichage des données de progression
         function displayProgressData(progressData) {
             const { stats, tasks, has_validated_hours } = progressData;
-            
+
             let progressHtml = `
                 <div class="row mb-4">
                     <div class="col-md-2">
@@ -1109,7 +1143,7 @@
                         </div>
                         <div class="card-body">
                 `;
-                
+
                 tasks.forEach(task => {
                     const statusClass = getStatusClass(task.effective_status || task.statut);
                     const hasValidatedHours = task.validated_hours > 0;
@@ -1144,7 +1178,7 @@
                         </div>
                     `;
                 });
-                
+
                 progressHtml += `
                         </div>
                     </div>
@@ -1157,7 +1191,7 @@
                     </div>
                 `;
             }
-            
+
             document.getElementById('tasksProgress').innerHTML = progressHtml;
         }
 
@@ -1168,28 +1202,23 @@
         }
 
         function formatCurrency(amount, currencyCode = null) {
-            if (!amount) {
+            if (!amount && amount !== 0) {
                 if (currencyCode) {
-                    return CURRENCY_CONFIG.formatCurrency(0, currencyCode);
+                    return CURRENCY_CONFIG.format(0, currencyCode);
                 }
-                return CURRENCY_CONFIG.formatCurrency(0, 'XAF');
+                return CURRENCY_CONFIG.format(0, 'XAF');
             }
-
-            if (currencyCode) {
-                return CURRENCY_CONFIG.formatCurrency(amount, currencyCode);
-            }
-
-            return CURRENCY_CONFIG.formatCurrency(amount, 'XAF');
+            return CURRENCY_CONFIG.format(amount, currencyCode || 'XAF');
         }
 
         function calculateDuration(startDate, endDate) {
             if (!startDate || !endDate) return 'N/A';
-            
+
             const start = new Date(startDate);
             const end = new Date(endDate);
             const diffTime = Math.abs(end - start);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
+
             return `${diffDays} jours`;
         }
 
@@ -1229,7 +1258,7 @@
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
+
             const container = document.querySelector('.main-content-area');
             if (container) {
                 container.insertBefore(alertDiv, container.firstChild);
@@ -1242,11 +1271,12 @@
                 showError('ID de mission non disponible');
                 return;
             }
-            
+
             // Ouvrir l'éditeur de planning dans une nouvelle fenêtre
             const planningUrl = `edit-mission-planning.html?mission_id=${missionId}`;
             window.open(planningUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
         }
     </script>
-    </body>
-</html> 
+</body>
+
+</html>

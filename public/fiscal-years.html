@@ -12,6 +12,7 @@
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
     <script src="js/menu-permissions.js"></script>
+    <script src="/js/page-permissions.js"></script>
 
     <!-- Scripts de zone utilisateur -->
     <script src="js/user-header.js"></script>
@@ -716,7 +717,7 @@
             }
 
             function formatCurrency(amount) {
-                if (!amount) return '0,00 €';
+                if (!amount) return `0,00 ${typeof CURRENCY_CONFIG !== 'undefined' ? CURRENCY_CONFIG.getSymbol() : '€'}`;
                 return new Intl.NumberFormat('fr-FR', {
                     style: 'currency',
                     currency: 'EUR'

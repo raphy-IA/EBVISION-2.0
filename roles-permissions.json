@@ -621,83 +621,6 @@
       "module": null
     },
     {
-      "id": "a1c7a991-1a00-4674-bf82-571e5a1af317",
-      "code": "dashboard.chargeabilite",
-      "name": "Dashboard Chargeabilité",
-      "description": "Dashboard Chargeabilité",
-      "category": "dashboard",
-      "created_at": "2025-11-24T22:15:54.680Z",
-      "updated_at": "2025-11-25T00:00:34.035Z",
-      "nom": null,
-      "module": null
-    },
-    {
-      "id": "8663bb40-9a65-4704-98cd-f2c7990f1368",
-      "code": "dashboard.direction",
-      "name": "Dashboard Direction",
-      "description": "Dashboard Direction",
-      "category": "dashboard",
-      "created_at": "2025-11-24T22:15:54.679Z",
-      "updated_at": "2025-11-25T00:00:34.035Z",
-      "nom": null,
-      "module": null
-    },
-    {
-      "id": "6feaf5cf-46ef-4afe-9ed7-7bf054fef25e",
-      "code": "dashboard.equipe",
-      "name": "Dashboard Équipe",
-      "description": "Dashboard Équipe",
-      "category": "dashboard",
-      "created_at": "2025-11-24T22:15:54.678Z",
-      "updated_at": "2025-11-25T00:00:34.035Z",
-      "nom": null,
-      "module": null
-    },
-    {
-      "id": "e2a1700f-8866-4faa-a6cd-6d814600aa30",
-      "code": "dashboard.optimise",
-      "name": "Dashboard Optimisé",
-      "description": "Dashboard Optimisé",
-      "category": "dashboard",
-      "created_at": "2025-11-24T22:15:54.681Z",
-      "updated_at": "2025-11-25T00:00:34.035Z",
-      "nom": null,
-      "module": null
-    },
-    {
-      "id": "34b34690-1f46-4097-8cd5-a452d06763f0",
-      "code": "dashboard.personnel",
-      "name": "Dashboard Personnel",
-      "description": "Dashboard Personnel",
-      "category": "dashboard",
-      "created_at": "2025-11-24T22:15:54.678Z",
-      "updated_at": "2025-11-25T00:00:34.035Z",
-      "nom": null,
-      "module": null
-    },
-    {
-      "id": "58796803-f9b4-453a-8fa5-4a6484b4aa38",
-      "code": "dashboard.recouvrement",
-      "name": "Dashboard Recouvrement",
-      "description": "Dashboard Recouvrement",
-      "category": "dashboard",
-      "created_at": "2025-11-24T22:15:54.679Z",
-      "updated_at": "2025-11-25T00:00:34.035Z",
-      "nom": null,
-      "module": null
-    },
-    {
-      "id": "7861d9e4-c628-48e8-a2f7-fdf35ae61c25",
-      "code": "dashboard.rentabilite",
-      "name": "Dashboard Rentabilité",
-      "description": "Dashboard Rentabilité",
-      "category": "dashboard",
-      "created_at": "2025-11-24T22:15:54.679Z",
-      "updated_at": "2025-11-25T00:00:34.035Z",
-      "nom": null,
-      "module": null
-    },
-    {
       "id": "2dd4b4fa-6eff-46a3-9fd0-cb707145478d",
       "code": "dashboard.view",
       "name": "Voir le dashboard",
@@ -4021,34 +3944,6 @@
     {
       "role_name": "SUPER_ADMIN",
       "permission_code": "contacts:read"
-    },
-    {
-      "role_name": "SUPER_ADMIN",
-      "permission_code": "dashboard.chargeabilite"
-    },
-    {
-      "role_name": "SUPER_ADMIN",
-      "permission_code": "dashboard.direction"
-    },
-    {
-      "role_name": "SUPER_ADMIN",
-      "permission_code": "dashboard.equipe"
-    },
-    {
-      "role_name": "SUPER_ADMIN",
-      "permission_code": "dashboard.optimise"
-    },
-    {
-      "role_name": "SUPER_ADMIN",
-      "permission_code": "dashboard.personnel"
-    },
-    {
-      "role_name": "SUPER_ADMIN",
-      "permission_code": "dashboard.recouvrement"
-    },
-    {
-      "role_name": "SUPER_ADMIN",
-      "permission_code": "dashboard.rentabilite"
     },
     {
       "role_name": "SUPER_ADMIN",

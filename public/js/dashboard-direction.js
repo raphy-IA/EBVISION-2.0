@@ -19,103 +19,78 @@ let currentFilters = {
 };
 
 // Initialisation du dashboard
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('🚀 Initialisation du Dashboard Direction...');
-    
+
     // Vérifier l'authentification
     if (!isAuthenticated()) {
         window.location.href = 'login.html';
         return;
     }
 
-// Charger la configuration financière (devise par défaut)
-async function loadFinancialSettingsForDashboard() {
-    try {
-        const response = await authenticatedFetch(`${API_BASE_URL}/financial-settings`);
-        if (!response.ok) return;
-        const result = await response.json();
-        if (result.success && result.data) {
-            financialDefaultCurrency = result.data.defaultCurrency || financialDefaultCurrency;
-            if (typeof CURRENCY_CONFIG !== 'undefined') {
-                CURRENCY_CONFIG.defaultCurrency = financialDefaultCurrency;
+    // Charger la configuration financière (devise par défaut)
+    async function loadFinancialSettingsForDashboard() {
+        try {
+            const response = await authenticatedFetch(`${API_BASE_URL}/financial-settings`);
+            if (!response.ok) return;
+            const result = await response.json();
+            if (result.success && result.data) {
+                financialDefaultCurrency = result.data.defaultCurrency || financialDefaultCurrency;
+                if (typeof CURRENCY_CONFIG !== 'undefined') {
+                    CURRENCY_CONFIG.defaultCurrency = financialDefaultCurrency;
+                }
             }
+        } catch (error) {
+            console.warn('Impossible de charger les paramètres financiers (direction):', error);
         }
-    } catch (error) {
-        console.warn('Impossible de charger les paramètres financiers (direction):', error);
     }
-}
-    
-    // Vérifier les permissions de direction
-    if (!hasDirectorRole()) {
-        showError('Accès Interdit', 'Vous n\'avez pas les permissions nécessaires pour accéder au Dashboard Direction. Contactez votre administrateur.');
-        return;
-    }
-    
+
     // Initialiser les filtres
     initializeFilters();
-    
+
     // Charger d abord la configuration financière puis les données
     loadFinancialSettingsForDashboard()
         .catch(err => console.warn('Erreur chargement paramètres financiers (dashboard direction):', err))
         .finally(() => {
             // Charger les données du dashboard
             loadDashboardData();
-            
+
             // Initialiser les graphiques
             initializeCharts();
-            
+
             // Charger les indicateurs financiers
             loadFinancialIndicators();
-            
+
             // Charger les alertes stratégiques
             loadStrategicAlerts();
-            
+
             // Charger le pipeline commercial
             loadPipelineSummary();
-            
+
             // Mettre à jour les informations direction
             updateDirectorInfo();
         });
 });
 
-// Vérifier si l'utilisateur a le rôle direction
-function hasDirectorRole() {
-    const token = localStorage.getItem('authToken');
-    if (!token) return false;
-    
-    try {
-        // Décoder le JWT pour obtenir les rôles
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const roles = payload.roles || [];
-        
-        // Vérifier si l'utilisateur a un des rôles autorisés
-        const authorizedRoles = ['SUPER_ADMIN', 'ADMIN', 'DIRECTEUR', 'ASSOCIE'];
-        return roles.some(role => authorizedRoles.includes(role));
-    } catch (e) {
-        console.error('❌ Erreur décodage token:', e);
-        return false;
-    }
-}
-
 // Initialiser les filtres
 function initializeFilters() {
     console.log('🔧 Initialisation des filtres direction...');
-    
+
     // Charger les business units
     loadBusinessUnits();
-    
+
     // Écouter les changements de filtres
-    document.getElementById('period-filter').addEventListener('change', function() {
+    document.getElementById('period-filter').addEventListener('change', function () {
         currentFilters.period = parseInt(this.value);
         refreshDashboard();
     });
-    
-    document.getElementById('business-unit-filter').addEventListener('change', function() {
+
+    document.getElementById('business-unit-filter').addEventListener('change', function () {
         currentFilters.businessUnit = this.value;
         refreshDashboard();
     });
-    
-    document.getElementById('year-filter').addEventListener('change', function() {
+
+    document.getElementById('year-filter').addEventListener('change', function () {
         currentFilters.year = parseInt(this.value);
         refreshDashboard();
     });
@@ -128,7 +103,7 @@ async function loadBusinessUnits() {
         if (response.ok) {
             const data = await response.json();
             const select = document.getElementById('business-unit-filter');
-            
+
             data.data.forEach(bu => {
                 const option = document.createElement('option');
                 option.value = bu.id;
@@ -145,59 +120,59 @@ async function loadBusinessUnits() {
 async function loadDashboardData() {
     try {
         console.log('📊 Chargement des données du dashboard direction...');
-        
+
         // Construire les paramètres de requête
         const params = new URLSearchParams({
             period: currentFilters.period,
             business_unit: currentFilters.businessUnit,
             year: currentFilters.year
         });
-        
+
         // Charger les statistiques stratégiques
         const statsResponse = await authenticatedFetch(`${API_BASE_URL}/analytics/strategic-stats?${params}`);
-        
+
         if (!statsResponse.ok) {
             throw new Error(`Erreur HTTP ${statsResponse.status}: ${statsResponse.statusText}`);
         }
-        
+
         const statsData = await statsResponse.json();
-        
+
         if (!statsData.success) {
             throw new Error(statsData.error || 'Erreur API statistiques');
         }
-        
+
         updateKPIs(statsData.data);
-        
+
         // Charger les données pour les graphiques
         const chartDataResponse = await authenticatedFetch(`${API_BASE_URL}/analytics/strategic-chart-data?${params}`);
-        
+
         if (!chartDataResponse.ok) {
             throw new Error(`Erreur HTTP ${chartDataResponse.status}: ${chartDataResponse.statusText}`);
         }
-        
+
         const chartData = await chartDataResponse.json();
-        
+
         if (!chartData.success) {
             throw new Error(chartData.error || 'Erreur API graphiques');
         }
-        
+
         updateCharts(chartData.data);
-        
+
         // Charger les objectifs stratégiques
         const objectivesResponse = await authenticatedFetch(`${API_BASE_URL}/analytics/strategic-objectives?${params}`);
-        
+
         if (!objectivesResponse.ok) {
             throw new Error(`Erreur HTTP ${objectivesResponse.status}: ${objectivesResponse.statusText}`);
         }
-        
+
         const objectivesData = await objectivesResponse.json();
-        
+
         if (!objectivesData.success) {
             throw new Error(objectivesData.error || 'Erreur API objectifs');
         }
-        
+
         updateStrategicObjectives(objectivesData.data);
-        
+
     } catch (error) {
         console.error('❌ Erreur lors du chargement des données:', error);
         showError(
@@ -211,11 +186,11 @@ async function loadDashboardData() {
 function showEmptyChartMessage(containerId, title, subtitle) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     // Masquer le canvas
     const canvas = container.querySelector('canvas');
     if (canvas) canvas.style.display = 'none';
-    
+
     // Créer le message vide
     const messageDiv = document.createElement('div');
     messageDiv.className = 'empty-chart-message text-center p-4';
@@ -224,7 +199,7 @@ function showEmptyChartMessage(containerId, title, subtitle) {
         <h5 class="text-muted">${title}</h5>
         <p class="text-muted small">${subtitle}</p>
     `;
-    
+
     container.appendChild(messageDiv);
 }
 
@@ -237,46 +212,46 @@ function hideEmptyChartMessages() {
 // Mettre à jour les KPIs
 function updateKPIs(data) {
     console.log('📈 Mise à jour des KPIs direction:', data);
-    
+
     // Chiffre d'affaires
     const caElement = document.getElementById('chiffre-affaires');
     const caTrendElement = document.getElementById('ca-trend');
     if (caElement && data.chiffre_affaires) {
         caElement.textContent = formatCurrency(data.chiffre_affaires);
-        
+
         const tendance = data.tendance_ca || 0;
         updateTrend(caTrendElement, tendance);
     }
-    
+
     // Marge brute
     const margeElement = document.getElementById('marge-brute');
     const margeTrendElement = document.getElementById('marge-trend');
     if (margeElement && data.marge_brute !== undefined) {
         const margeValue = parseFloat(data.marge_brute) || 0;
         margeElement.textContent = `${margeValue.toFixed(1)}%`;
-        
+
         const tendance = data.tendance_marge || 0;
         updateTrend(margeTrendElement, tendance);
     }
-    
+
     // Taux de conversion
     const conversionElement = document.getElementById('taux-conversion');
     const conversionTrendElement = document.getElementById('conversion-trend');
     if (conversionElement && data.taux_conversion !== undefined) {
         const conversionValue = parseFloat(data.taux_conversion) || 0;
         conversionElement.textContent = `${conversionValue.toFixed(1)}%`;
-        
+
         const tendance = data.tendance_conversion || 0;
         updateTrend(conversionTrendElement, tendance);
     }
-    
+
     // Satisfaction client
     const satisfactionElement = document.getElementById('satisfaction-client');
     const satisfactionTrendElement = document.getElementById('satisfaction-trend');
     if (satisfactionElement && data.satisfaction_client !== undefined) {
         const satisfactionValue = parseFloat(data.satisfaction_client) || 0;
         satisfactionElement.textContent = `${satisfactionValue.toFixed(1)}%`;
-        
+
         const tendance = data.tendance_satisfaction || 0;
         updateTrend(satisfactionTrendElement, tendance);
     }
@@ -285,9 +260,9 @@ function updateKPIs(data) {
 // Mettre à jour les tendances
 function updateTrend(element, tendance) {
     if (!element) return;
-    
+
     const tendanceValue = parseFloat(tendance) || 0;
-    
+
     if (tendanceValue > 0) {
         element.className = 'kpi-trend positive';
         element.innerHTML = `<i class="fas fa-arrow-up"></i> +${tendanceValue.toFixed(1)}%`;
@@ -303,7 +278,7 @@ function updateTrend(element, tendance) {
 // Initialiser les graphiques
 function initializeCharts() {
     console.log('📊 Initialisation des graphiques direction...');
-    
+
     // Graphique financier
     const financialCtx = document.getElementById('financialChart');
     if (financialCtx) {
@@ -353,7 +328,7 @@ function initializeCharts() {
                         position: 'left',
                         title: {
                             display: true,
-                            text: 'Chiffre d\'Affaires (€)'
+                            text: `Chiffre d'Affaires (${typeof CURRENCY_CONFIG !== 'undefined' ? CURRENCY_CONFIG.getSymbol() : '€'})`
                         },
                         beginAtZero: true
                     },
@@ -375,7 +350,7 @@ function initializeCharts() {
             }
         });
     }
-    
+
     // Graphique de répartition par BU
     const buCtx = document.getElementById('buDistributionChart');
     if (buCtx) {
@@ -414,7 +389,7 @@ function initializeCharts() {
 // Mettre à jour les graphiques avec les données
 function updateCharts(data) {
     console.log('📊 Mise à jour des graphiques direction:', data);
-    
+
     // Vérifier si les données existent et ne sont pas vides
     if (!data || !data.evolution || data.evolution.length === 0) {
         showEmptyChartMessage(
@@ -429,11 +404,11 @@ function updateCharts(data) {
             const emptyMsg = financialContainer.parentElement.querySelector('.empty-chart-message');
             if (emptyMsg) emptyMsg.remove();
         }
-        
+
         // Afficher le canvas
         const financialCanvas = document.getElementById('financialChart');
         if (financialCanvas) financialCanvas.style.display = 'block';
-        
+
         // Mettre à jour le graphique financier
         if (financialChart) {
             financialChart.data.labels = data.evolution.map(item => item.mois);
@@ -442,7 +417,7 @@ function updateCharts(data) {
             financialChart.update();
         }
     }
-    
+
     // Même logique pour le graphique de répartition BU
     if (!data || !data.bu_repartition || data.bu_repartition.length === 0) {
         showEmptyChartMessage(
@@ -457,11 +432,11 @@ function updateCharts(data) {
             const emptyMsg = buContainer.parentElement.querySelector('.empty-chart-message');
             if (emptyMsg) emptyMsg.remove();
         }
-        
+
         // Afficher le canvas
         const buCanvas = document.getElementById('buDistributionChart');
         if (buCanvas) buCanvas.style.display = 'block';
-        
+
         // Mettre à jour le graphique de répartition BU
         if (buDistributionChart) {
             buDistributionChart.data.labels = data.bu_repartition.map(item => item.bu);
@@ -479,9 +454,9 @@ async function loadFinancialIndicators() {
             business_unit: currentFilters.businessUnit,
             year: currentFilters.year
         });
-        
+
         const response = await authenticatedFetch(`${API_BASE_URL}/analytics/financial-indicators?${params}`);
-        
+
         if (response.ok) {
             const data = await response.json();
             displayFinancialIndicators(data.data);
@@ -495,17 +470,18 @@ async function loadFinancialIndicators() {
 function displayFinancialIndicators(indicators) {
     const container = document.getElementById('financial-indicators');
     if (!container) return;
-    
+
     if (!indicators || indicators.length === 0) {
         container.innerHTML = '<p class="text-muted text-center">Aucun indicateur disponible</p>';
         return;
     }
-    
+
     const indicatorsHTML = indicators.map(indicator => {
         const changeClass = indicator.positif ? 'positive' : 'negative';
         const changeIcon = indicator.positif ? 'arrow-up' : 'arrow-down';
-        const value = indicator.unite === '€' ? formatCurrency(indicator.valeur) : `${indicator.valeur}${indicator.unite}`;
-        
+        const currencySymbol = typeof CURRENCY_CONFIG !== 'undefined' ? CURRENCY_CONFIG.getSymbol() : '€';
+        const value = indicator.unite === currencySymbol ? formatCurrency(indicator.valeur) : `${indicator.valeur}${indicator.unite}`;
+
         return `
             <div class="financial-indicator">
                 <span class="indicator-label">${indicator.label}</span>
@@ -518,7 +494,7 @@ function displayFinancialIndicators(indicators) {
             </div>
         `;
     }).join('');
-    
+
     container.innerHTML = indicatorsHTML;
 }
 
@@ -529,9 +505,9 @@ async function loadStrategicAlerts() {
             business_unit: currentFilters.businessUnit,
             year: currentFilters.year
         });
-        
+
         const response = await authenticatedFetch(`${API_BASE_URL}/analytics/strategic-alerts?${params}`);
-        
+
         if (response.ok) {
             const data = await response.json();
             displayStrategicAlerts(data.data);
@@ -545,16 +521,16 @@ async function loadStrategicAlerts() {
 function displayStrategicAlerts(alerts) {
     const container = document.getElementById('strategic-alerts');
     if (!container) return;
-    
+
     if (!alerts || alerts.length === 0) {
         container.innerHTML = '<p class="text-muted text-center">Aucune alerte stratégique</p>';
         return;
     }
-    
+
     const alertsHTML = alerts.map(alert => {
-        const alertClass = alert.type === 'danger' ? 'alert-card' : 
-                          alert.type === 'success' ? 'success-card' : 'info-card';
-        
+        const alertClass = alert.type === 'danger' ? 'alert-card' :
+            alert.type === 'success' ? 'success-card' : 'info-card';
+
         return `
             <div class="${alertClass}">
                 <div class="d-flex align-items-center">
@@ -567,7 +543,7 @@ function displayStrategicAlerts(alerts) {
             </div>
         `;
     }).join('');
-    
+
     container.innerHTML = alertsHTML;
 }
 
@@ -578,9 +554,9 @@ async function loadPipelineSummary() {
             business_unit: currentFilters.businessUnit,
             year: currentFilters.year
         });
-        
+
         const response = await authenticatedFetch(`${API_BASE_URL}/analytics/pipeline-summary?${params}`);
-        
+
         if (response.ok) {
             const data = await response.json();
             displayPipelineSummary(data.data);
@@ -594,12 +570,12 @@ async function loadPipelineSummary() {
 function displayPipelineSummary(pipeline) {
     const container = document.getElementById('pipeline-summary');
     if (!container) return;
-    
+
     if (!pipeline) {
         container.innerHTML = '<p class="text-muted text-center">Aucune donnée disponible</p>';
         return;
     }
-    
+
     const pipelineHTML = `
         <div class="row">
             <div class="col-6">
@@ -625,14 +601,14 @@ function displayPipelineSummary(pipeline) {
             `).join('') : ''}
         </div>
     `;
-    
+
     container.innerHTML = pipelineHTML;
 }
 
 // Mettre à jour les objectifs stratégiques
 function updateStrategicObjectives(data) {
     console.log('🎯 Mise à jour des objectifs stratégiques:', data);
-    
+
     // Productivité
     if (data.productivite) {
         const actuelle = parseFloat(data.productivite.actuelle) || 0;
@@ -641,12 +617,12 @@ function updateStrategicObjectives(data) {
         const progressElement = document.getElementById('productivite-progress');
         const actuelElement = document.getElementById('productivite-actuel');
         const cibleElement = document.getElementById('productivite-cible');
-        
+
         if (progressElement) progressElement.style.width = `${Math.min(progress, 100)}%`;
         if (actuelElement) actuelElement.textContent = actuelle;
         if (cibleElement) cibleElement.textContent = cible;
     }
-    
+
     // Rétention
     if (data.retention) {
         const actuelle = parseFloat(data.retention.actuelle) || 0;
@@ -655,7 +631,7 @@ function updateStrategicObjectives(data) {
         const progressElement = document.getElementById('retention-progress');
         const actuelElement = document.getElementById('retention-actuel');
         const cibleElement = document.getElementById('retention-cible');
-        
+
         if (progressElement) progressElement.style.width = `${Math.min(progress, 100)}%`;
         if (actuelElement) actuelElement.textContent = actuelle;
         if (cibleElement) cibleElement.textContent = cible;
@@ -705,11 +681,11 @@ function getAlertIcon(type) {
 function showError(title, message) {
     const mainContent = document.querySelector('.main-content-area');
     if (!mainContent) return;
-    
+
     // Supprimer les alertes existantes
     const existingAlerts = mainContent.querySelectorAll('.alert.api-error-alert');
     existingAlerts.forEach(alert => alert.remove());
-    
+
     // Créer une nouvelle alerte
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-danger alert-dismissible fade show api-error-alert';
@@ -731,9 +707,9 @@ function showError(title, message) {
             </button>
         </div>
     `;
-    
+
     mainContent.insertBefore(alertDiv, mainContent.firstChild);
-    
+
     // Auto-scroll vers l'alerte
     alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
