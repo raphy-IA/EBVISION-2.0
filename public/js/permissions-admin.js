@@ -2265,6 +2265,20 @@ async function addUserToRole() {
     }
 }
 
+/**
+ * Vérifier si l'utilisateur est SUPER_ADMIN et afficher le bouton de synchronisation
+ */
+function checkSuperAdminAndShowSyncButton() {
+    // On utilise l'instance globale permissionsAdmin
+    if (permissionsAdmin && permissionsAdmin.currentUserRole === 'SUPER_ADMIN') {
+        const btn = document.getElementById('syncPermissionsBtn');
+        if (btn) {
+            btn.style.display = 'block';
+            console.log('✅ Bouton de synchronisation affiché pour SUPER_ADMIN');
+        }
+    }
+}
+
 // Initialisation
 let permissionsAdmin;
 document.addEventListener('DOMContentLoaded', () => {

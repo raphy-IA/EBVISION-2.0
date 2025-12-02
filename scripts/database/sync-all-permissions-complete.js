@@ -298,6 +298,9 @@ async function extractPermissionsFromHTML() {
 /**
  * Extraire les permissions depuis le menu (sidebar)
  */
+/**
+ * Extraire les permissions depuis le menu (sidebar)
+ */
 async function extractPermissionsFromMenu() {
     const permissions = new Map();
 
@@ -307,48 +310,52 @@ async function extractPermissionsFromMenu() {
         const sidebarPath = path.join(PUBLIC_DIR, 'template-modern-sidebar.html');
         const content = await fs.readFile(sidebarPath, 'utf-8');
 
-        // Extraire les sections de menu
-        const sectionRegex = /<li[^>]*data-section="([^"]+)"[^>]*>[\s\S]*?<span[^>]*>([^<]+)<\/span>/gi;
-        const itemRegex = /<a[^>]*data-permission="([^"]+)"[^>]*href="([^"]+)"[^>]*>[\s\S]*?<span[^>]*>([^<]+)<\/span>/gi;
+        // Regex pour extraire les sections
+        // <div class="sidebar-section"> ... <div class="sidebar-section-title"> ... ICON ... TEXT ... </div> ... LINKS ... </div>
+        const sectionRegex = /<div class="sidebar-section">\s*<div class="sidebar-section-title">\s*<i[^>]*><\/i>\s*([^<]+)<\/div>([\s\S]*?)(?=<div class="sidebar-section">|<\/nav>|$)/g;
 
         let sectionMatch;
         while ((sectionMatch = sectionRegex.exec(content)) !== null) {
-            const sectionCode = sectionMatch[1];
-            const sectionName = sectionMatch[2].trim();
+            const sectionName = sectionMatch[1].trim();
+            const sectionContent = sectionMatch[2];
 
-            // Extraire les items de cette section
-            const sectionContent = content.substring(sectionMatch.index);
-            const nextSectionIndex = content.indexOf('<li', sectionMatch.index + 1);
-            const sectionEnd = nextSectionIndex > 0 ? nextSectionIndex : content.length;
-            const sectionText = content.substring(sectionMatch.index, sectionEnd);
+            // Normaliser le code de section
+            const sectionCode = sectionName.toUpperCase().replace(/\s+/g, '_').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-            let itemMatch;
-            while ((itemMatch = itemRegex.exec(sectionText)) !== null) {
-                const permCode = itemMatch[1];
-                const itemName = itemMatch[3].trim();
+            // Regex pour extraire les liens avec data-permission
+            // <a href="..." ... data-permission="..."> ... <i ...></i> ... Label ... </a>
+            // Note: l'ordre des attributs peut varier, donc on utilise une regex plus souple ou celle qui marche pour le template actuel
+            // Le template actuel a: <a href="..." class="..." data-permission="...">
+            const linkRegex = /<a\s+href="([^"]+)"[^>]*data-permission="([^"]+)"[^>]*>\s*<i[^>]*><\/i>\s*([^<]+)/g;
+
+            let linkMatch;
+            while ((linkMatch = linkRegex.exec(sectionContent)) !== null) {
+                const url = linkMatch[1].trim();
+                let permCode = linkMatch[2].trim();
+                let label = linkMatch[3].trim();
+
+                // Décoder les entités HTML dans le label (ex: &amp; -> &)
+                label = label.replace(/&amp;/g, '&');
+
+                // Si pas de code de permission explicite (ne devrait pas arriver avec la regex ci-dessus), on génère
+                if (!permCode) {
+                    const itemCode = label
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/[^a-z0-9\s]/g, '_')
+                        .replace(/\s+/g, '_')
+                        .replace(/_+/g, '_')
+                        .replace(/^_|_$/g, '');
+
+                    permCode = `menu.${sectionCode.toLowerCase()}.${itemCode}`;
+                }
 
                 permissions.set(permCode, {
                     code: permCode,
-                    name: itemName,
+                    name: `Menu: ${label}`,
                     category: 'menu',
-                    description: `Accès au menu: ${itemName}`
-                });
-            }
-        }
-
-        // Aussi chercher les permissions de menu dans le format strict menu.xxx.yyy
-        // (uniquement lettres, chiffres, underscore) pour éviter de capturer
-        // des bouts de code comme "menu.js" ou des scripts complets
-        const menuPermissionRegex = /menu\.[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+/g;
-        let menuMatch;
-        while ((menuMatch = menuPermissionRegex.exec(content)) !== null) {
-            const permCode = menuMatch[0];
-            if (!permissions.has(permCode)) {
-                permissions.set(permCode, {
-                    code: permCode,
-                    name: `Menu: ${permCode}`,
-                    category: 'menu',
-                    description: `Permission d'accès au menu ${permCode}`
+                    description: `Permission pour afficher le menu "${label}" dans la section "${sectionName}"`
                 });
             }
         }

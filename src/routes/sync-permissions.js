@@ -332,7 +332,12 @@ async function syncMenus(menuStructure) {
             // Gérer les items du menu
             for (let i = 0; i < section.items.length; i++) {
                 const item = section.items[i];
-                const menuCode = `menu.${section.code.toLowerCase()}.${item.label.toLowerCase().replace(/\s+/g, '_')}`;
+                // Utiliser le code de permission défini dans le HTML s'il existe, sinon le générer
+                let menuCode = item.permission;
+
+                if (!menuCode) {
+                    menuCode = `menu.${section.code.toLowerCase()}.${item.label.toLowerCase().replace(/\s+/g, '_')}`;
+                }
 
                 const existingItem = await pool.query(
                     'SELECT id FROM menu_items WHERE code = $1',
@@ -452,19 +457,28 @@ async function syncPermissions(htmlFiles, menuStructure) {
     for (const section of menuStructure) {
         for (const item of section.items) {
             try {
-                // Normaliser le code de permission
-                const sectionCode = section.code.toLowerCase().replace(/\s+/g, '_');
-                const itemCode = item.label
-                    .toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '') // Supprimer les accents
-                    .replace(/[^a-z0-9\s]/g, '_') // Remplacer les caractères spéciaux par _
-                    .replace(/\s+/g, '_') // Remplacer les espaces par _
-                    .replace(/_+/g, '_') // Remplacer les _ multiples par un seul
-                    .replace(/^_|_$/g, ''); // Supprimer les _ au début/fin
+                // Utiliser le code de permission défini dans le HTML s'il existe
+                let permCode = item.permission;
 
-                const permCode = `menu.${sectionCode}.${itemCode}`;
-                const permName = `Menu: ${item.label}`;
+                // Décoder les entités HTML dans le label pour le nom
+                const decodedLabel = item.label.replace(/&amp;/g, '&');
+
+                if (!permCode) {
+                    // Normaliser le code de permission si pas défini
+                    const sectionCode = section.code.toLowerCase().replace(/\s+/g, '_');
+                    const itemCode = decodedLabel
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '') // Supprimer les accents
+                        .replace(/[^a-z0-9\s]/g, '_') // Remplacer les caractères spéciaux par _
+                        .replace(/\s+/g, '_') // Remplacer les espaces par _
+                        .replace(/_+/g, '_') // Remplacer les _ multiples par un seul
+                        .replace(/^_|_$/g, ''); // Supprimer les _ au début/fin
+
+                    permCode = `menu.${sectionCode}.${itemCode}`;
+                }
+
+                const permName = `Menu: ${decodedLabel}`;
                 const permCategory = 'menu';
 
                 const existing = await pool.query(
@@ -487,7 +501,7 @@ async function syncPermissions(htmlFiles, menuStructure) {
                     await pool.query(
                         `INSERT INTO permissions (code, name, description, category, created_at, updated_at)
                          VALUES ($1, $2, $3, $4, NOW(), NOW())`,
-                        [permCode, permName, `Permission pour afficher le menu "${item.label}" dans la section "${section.section}"`, permCategory]
+                        [permCode, permName, `Permission pour afficher le menu "${decodedLabel}" dans la section "${section.section}"`, permCategory]
                     );
                     menuAdded++;
                 }
