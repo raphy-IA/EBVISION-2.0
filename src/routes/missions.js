@@ -552,14 +552,14 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                      WHERE ta.mission_task_id = mt.id),
                     0
                 ) as duree_planifiee,
-                -- Heures saisies (submitted - en attente de validation)
+                -- Heures saisies (submitted + saved - en attente de validation ou brouillon)
                 COALESCE(
                     (SELECT SUM(te.heures)
                      FROM time_entries te
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND ts.status ILIKE 'submitted'),
+                     AND (ts.status ILIKE 'submitted' OR ts.status ILIKE 'saved')),
                     0
                 ) as heures_saisies,
                 -- Heures validées (approved - réellement validées)
@@ -572,7 +572,7 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                      AND ts.status ILIKE 'approved'),
                     0
                 ) as heures_validees,
-                -- Duree reelle = priorité aux validées, sinon saisies
+                -- Duree reelle = priorité aux validées, sinon saisies/brouillons
                 COALESCE(
                     (SELECT SUM(te.heures)
                      FROM time_entries te
@@ -585,7 +585,7 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND ts.status ILIKE 'submitted'),
+                     AND (ts.status ILIKE 'submitted' OR ts.status ILIKE 'saved')),
                     0
                 ) as duree_reelle,
                 mt.notes,
@@ -1064,14 +1064,14 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
                      AND ts.status ILIKE 'approved'),
                     0
                 ) as heures_validees,
-                -- Heures saisies (submitted)
+                -- Heures saisies (submitted + saved)
                 COALESCE(
                     (SELECT SUM(te.heures)
                      FROM time_entries te
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND ts.status ILIKE 'submitted'),
+                     AND (ts.status ILIKE 'submitted' OR ts.status ILIKE 'saved')),
                     0
                 ) as heures_saisies,
                 ROUND(
@@ -1250,6 +1250,82 @@ router.get('/active/:userId', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erreur lors de la récupération des missions actives',
+            error: error.message
+        });
+    }
+});
+
+// GET /api/missions/planned - Missions planifiées pour l'utilisateur connecté
+router.get('/planned', authenticateToken, async (req, res) => {
+    try {
+        const { pool } = require('../utils/database');
+        const userId = req.user.id;
+
+        const query = `
+            SELECT DISTINCT 
+                m.id, 
+                m.nom, 
+                m.code, 
+                c.nom as client_nom
+            FROM missions m
+            JOIN mission_tasks mt ON m.id = mt.mission_id
+            JOIN task_assignments ta ON mt.id = ta.mission_task_id
+            JOIN collaborateurs col ON ta.collaborateur_id = col.id
+            LEFT JOIN clients c ON m.client_id = c.id
+            WHERE col.user_id = $1
+            AND m.statut IN ('EN_COURS', 'PLANIFIEE')
+            ORDER BY m.nom
+        `;
+
+        const result = await pool.query(query, [userId]);
+
+        res.json({
+            success: true,
+            data: result.rows
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des missions planifiées:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des missions planifiées',
+            error: error.message
+        });
+    }
+});
+
+// GET /api/missions/:missionId/planned-tasks - Tâches planifiées pour une mission spécifique
+router.get('/:missionId/planned-tasks', authenticateToken, async (req, res) => {
+    try {
+        const { pool } = require('../utils/database');
+        const userId = req.user.id;
+        const { missionId } = req.params;
+
+        const query = `
+            SELECT 
+                t.id, 
+                t.nom, 
+                t.code,
+                mt.id as mission_task_id
+            FROM tasks t
+            JOIN mission_tasks mt ON t.id = mt.task_id
+            JOIN task_assignments ta ON mt.id = ta.mission_task_id
+            JOIN collaborateurs col ON ta.collaborateur_id = col.id
+            WHERE mt.mission_id = $1
+            AND col.user_id = $2
+            ORDER BY t.nom
+        `;
+
+        const result = await pool.query(query, [missionId, userId]);
+
+        res.json({
+            success: true,
+            data: result.rows
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des tâches planifiées:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des tâches planifiées',
             error: error.message
         });
     }

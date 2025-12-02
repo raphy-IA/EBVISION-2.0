@@ -14,13 +14,13 @@ class TimeSheetApproval {
                 JOIN collaborateurs c ON u.id = c.user_id
                 WHERE u.id = $1
             `, [supervisorUserId]);
-            
+
             if (supervisorResult.rows.length === 0) {
                 throw new Error('Superviseur non trouvé');
             }
-            
+
             const supervisorCollaborateurId = supervisorResult.rows[0].collaborateur_id;
-            
+
             // Démarrer une transaction
             await client.query('BEGIN');
 
@@ -37,6 +37,13 @@ class TimeSheetApproval {
                 UPDATE time_sheets 
                 SET status = $1, updated_at = NOW()
                 WHERE id = $2
+            `, [status, timeSheetId]);
+
+            // Synchroniser le statut de toutes les heures associées
+            await client.query(`
+                UPDATE time_entries
+                SET status = $1
+                WHERE time_sheet_id = $2
             `, [status, timeSheetId]);
 
             // Valider la transaction
@@ -95,16 +102,16 @@ class TimeSheetApproval {
                 JOIN users u ON ts.user_id = u.id
                 WHERE ts.id = $1
             `, [timeSheetId]);
-            
+
             if (result.rows.length === 0) {
                 return null;
             }
 
             const timeSheet = result.rows[0];
-            
+
             // Récupérer l'historique des approbations
             const approvals = await this.getApprovalHistory(timeSheetId);
-            
+
             return {
                 ...timeSheet,
                 approvals
@@ -238,13 +245,13 @@ class TimeSheetApproval {
                 JOIN collaborateurs c ON u.id = c.user_id
                 WHERE u.id = $1
             `, [supervisorUserId]);
-            
+
             if (supervisorResult.rows.length === 0) {
                 return false;
             }
-            
+
             const supervisorCollaborateurId = supervisorResult.rows[0].collaborateur_id;
-            
+
             const result = await client.query(`
                 SELECT COUNT(*) as count
                 FROM time_sheets ts
@@ -255,7 +262,7 @@ class TimeSheetApproval {
                 AND tss.supervisor_id = $2
                 AND ts.status = 'submitted'
             `, [timeSheetId, supervisorCollaborateurId]);
-            
+
             return parseInt(result.rows[0].count) > 0;
         } finally {
             client.release();

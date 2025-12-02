@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rapports Temps</title>
-    
+
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="css/modern-sidebar.css">
     <link rel="stylesheet" href="css/app-title.css">
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <style>
         :root {
             --primary-color: #667eea;
@@ -44,7 +45,7 @@
             padding: 2rem;
             border-radius: 15px;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .stats-grid {
@@ -58,7 +59,7 @@
             background: white;
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             transition: transform 0.2s;
         }
 
@@ -78,12 +79,14 @@
             margin-top: 0.5rem;
         }
 
-        .filters-card, .chart-card, .table-card {
+        .filters-card,
+        .chart-card,
+        .table-card {
             background: white;
             border-radius: 15px;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .chart-container {
@@ -98,21 +101,28 @@
         }
 
         @media (max-width: 768px) {
-            .page-wrapper { flex-direction: column; }
-            .main-content-area { 
-                padding: 1rem; 
+            .page-wrapper {
+                flex-direction: column;
             }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
+
+            .main-content-area {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
         }
     </style>
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <button class="sidebar-toggle d-md-none">
         <i class="fas fa-bars"></i>
@@ -192,7 +202,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="row g-3 mt-2">
                     <div class="col-md-3">
                         <label for="typeFilter" class="form-label">5. Type d'heures</label>
@@ -218,7 +228,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <!-- Période personnalisée (cachée par défaut) -->
                 <div class="row g-3 mt-2" id="customPeriodRow" style="display: none;">
                     <div class="col-md-3">
@@ -230,7 +240,7 @@
                         <input type="date" class="form-control" id="endDate">
                     </div>
                 </div>
-                
+
                 <div class="row g-3 mt-2">
                     <div class="col-12">
                         <button class="btn btn-primary" onclick="applyFilters()">
@@ -298,7 +308,9 @@
                             </tr>
                         </thead>
                         <tbody id="timeEntriesTable">
-                            <tr><td colspan="9" class="text-center">Chargement...</td></tr>
+                            <tr>
+                                <td colspan="9" class="text-center">Chargement...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -322,21 +334,21 @@
         const API_BASE_URL = '/api';
         let charts = {};
         let allTimeEntries = [];
-        
+
         // Données complètes pour les filtres en cascade
         let allBusinessUnits = [];
         let allDivisions = [];
         let allCollaborators = [];
         let allGrades = [];
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             initializeCascadingFilters();
             loadData();
-            
+
             // Event listener for period filter
             const periodFilter = document.getElementById('periodFilter');
             if (periodFilter) {
-                periodFilter.addEventListener('change', function() {
+                periodFilter.addEventListener('change', function () {
                     const customRow = document.getElementById('customPeriodRow');
                     if (this.value === 'custom') {
                         customRow.style.display = 'flex';
@@ -347,7 +359,7 @@
                 });
             }
         });
-        
+
         async function initializeCascadingFilters() {
             await Promise.all([
                 loadBusinessUnits(),
@@ -355,14 +367,14 @@
                 loadCollaborators(),
                 loadGrades()
             ]);
-            
+
             // Peupler TOUS les filtres au démarrage avec toutes les données
             populateAllFilters();
-            
+
             // Configurer les event listeners pour la cascade
             setupCascadingListeners();
         }
-        
+
         // Peupler tous les filtres avec toutes les données disponibles au démarrage
         function populateAllFilters() {
             // Peupler Business Units
@@ -374,7 +386,7 @@
                 option.textContent = bu.nom;
                 buSelect.appendChild(option);
             });
-            
+
             // Peupler Divisions
             const divisionSelect = document.getElementById('divisionFilter');
             divisionSelect.innerHTML = '<option value="">Toutes</option>';
@@ -384,7 +396,7 @@
                 option.textContent = div.nom;
                 divisionSelect.appendChild(option);
             });
-            
+
             // Peupler Collaborateurs
             const collabSelect = document.getElementById('collaboratorFilter');
             collabSelect.innerHTML = '<option value="">Tous</option>';
@@ -394,7 +406,7 @@
                 option.textContent = `${collab.prenom} ${collab.nom}`;
                 collabSelect.appendChild(option);
             });
-            
+
             // Peupler Grades
             const gradeSelect = document.getElementById('gradeFilter');
             gradeSelect.innerHTML = '<option value="">Tous</option>';
@@ -404,43 +416,43 @@
                 option.textContent = grade.nom;
                 gradeSelect.appendChild(option);
             });
-            
+
             console.log(`✅ Filtres initialisés: ${allBusinessUnits.length} BUs, ${allDivisions.length} divisions, ${allCollaborators.length} collaborateurs, ${allGrades.length} grades`);
         }
-        
+
         function setupCascadingListeners() {
             // Chaque filtre met à jour LES AUTRES (pas lui-même)
-            document.getElementById('businessUnitFilter').addEventListener('change', function() {
+            document.getElementById('businessUnitFilter').addEventListener('change', function () {
                 updateDependentFilters('businessUnit');
             });
-            
-            document.getElementById('divisionFilter').addEventListener('change', function() {
+
+            document.getElementById('divisionFilter').addEventListener('change', function () {
                 updateDependentFilters('division');
             });
-            
-            document.getElementById('collaboratorFilter').addEventListener('change', function() {
+
+            document.getElementById('collaboratorFilter').addEventListener('change', function () {
                 updateDependentFilters('collaborator');
             });
-            
-            document.getElementById('gradeFilter').addEventListener('change', function() {
+
+            document.getElementById('gradeFilter').addEventListener('change', function () {
                 updateDependentFilters('grade');
             });
-            
+
             console.log('✅ Filtres croisés configurés');
         }
-        
+
         // Mettre à jour les filtres dépendants (SAUF celui qui a changé)
         function updateDependentFilters(changedFilter) {
             const buId = document.getElementById('businessUnitFilter').value;
             const divisionId = document.getElementById('divisionFilter').value;
             const collaboratorId = document.getElementById('collaboratorFilter').value;
             const gradeId = document.getElementById('gradeFilter').value;
-            
+
             console.log(`🔄 Filtre "${changedFilter}" changé, mise à jour des autres`);
-            
+
             // Filtrer les collaborateurs selon TOUTES les sélections
             let filteredCollabs = [...allCollaborators];
-            
+
             if (buId) {
                 filteredCollabs = filteredCollabs.filter(c => String(c.business_unit_id) === String(buId));
             }
@@ -453,7 +465,7 @@
             if (gradeId) {
                 filteredCollabs = filteredCollabs.filter(c => String(c.grade_actuel_id) === String(gradeId));
             }
-            
+
             // Mettre à jour chaque filtre SAUF celui qui a changé
             if (changedFilter !== 'businessUnit') {
                 updateBusinessUnitFilterFromCollabs(filteredCollabs, buId);
@@ -468,14 +480,14 @@
                 updateGradeFilterFromCollabs(filteredCollabs, gradeId);
             }
         }
-        
+
         function updateBusinessUnitFilterFromCollabs(filteredCollabs, currentValue) {
             const select = document.getElementById('businessUnitFilter');
             select.innerHTML = '<option value="">Toutes</option>';
-            
+
             const buIds = [...new Set(filteredCollabs.map(c => c.business_unit_id).filter(id => id))];
             const availableBUs = allBusinessUnits.filter(bu => buIds.includes(bu.id));
-            
+
             availableBUs.forEach(bu => {
                 const option = document.createElement('option');
                 option.value = bu.id;
@@ -483,24 +495,24 @@
                 if (String(bu.id) === String(currentValue)) option.selected = true;
                 select.appendChild(option);
             });
-            
+
             console.log(`  📍 BU: ${availableBUs.length} disponibles`);
         }
-        
+
         function updateDivisionFilterFromCollabs(filteredCollabs, currentBuId, currentValue) {
             const select = document.getElementById('divisionFilter');
             select.innerHTML = '<option value="">Toutes</option>';
-            
+
             const divisionIds = [...new Set(filteredCollabs.map(c => c.division_id).filter(id => id))];
             let availableDivisions = allDivisions.filter(div => divisionIds.includes(div.id));
-            
+
             // Si une BU est sélectionnée, filtrer aussi par BU
             if (currentBuId) {
-                availableDivisions = availableDivisions.filter(div => 
+                availableDivisions = availableDivisions.filter(div =>
                     String(div.business_unit_id) === String(currentBuId)
                 );
             }
-            
+
             availableDivisions.forEach(div => {
                 const option = document.createElement('option');
                 option.value = div.id;
@@ -508,14 +520,14 @@
                 if (String(div.id) === String(currentValue)) option.selected = true;
                 select.appendChild(option);
             });
-            
+
             console.log(`  📍 Divisions: ${availableDivisions.length} disponibles`);
         }
-        
+
         function updateCollaboratorFilterFromCollabs(filteredCollabs, currentValue) {
             const select = document.getElementById('collaboratorFilter');
             select.innerHTML = '<option value="">Tous</option>';
-            
+
             filteredCollabs.forEach(collab => {
                 const option = document.createElement('option');
                 option.value = collab.id;
@@ -523,17 +535,17 @@
                 if (String(collab.id) === String(currentValue)) option.selected = true;
                 select.appendChild(option);
             });
-            
+
             console.log(`  📍 Collaborateurs: ${filteredCollabs.length} disponibles`);
         }
-        
+
         function updateGradeFilterFromCollabs(filteredCollabs, currentValue) {
             const select = document.getElementById('gradeFilter');
             select.innerHTML = '<option value="">Tous</option>';
-            
+
             const gradeIds = [...new Set(filteredCollabs.map(c => c.grade_actuel_id).filter(id => id))];
             const availableGrades = allGrades.filter(grade => gradeIds.includes(grade.id));
-            
+
             availableGrades.forEach(grade => {
                 const option = document.createElement('option');
                 option.value = grade.id;
@@ -541,14 +553,14 @@
                 if (String(grade.id) === String(currentValue)) option.selected = true;
                 select.appendChild(option);
             });
-            
+
             console.log(`  📍 Grades: ${availableGrades.length} disponibles`);
         }
 
         function setDefaultDates() {
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-            
+
             document.getElementById('startDate').value = firstDay.toISOString().split('T')[0];
             document.getElementById('endDate').value = today.toISOString().split('T')[0];
         }
@@ -559,7 +571,7 @@
                 const response = await fetch(`${API_BASE_URL}/business-units`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     allBusinessUnits = data.data.businessUnits || data.data || [];
@@ -576,14 +588,14 @@
                 console.error('❌ Erreur chargement business units:', error);
             }
         }
-        
+
         async function loadDivisions() {
             try {
                 const token = localStorage.getItem('authToken');
                 const response = await fetch(`${API_BASE_URL}/divisions`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     allDivisions = data.data.divisions || data.data || [];
@@ -600,7 +612,7 @@
                 const response = await fetch(`${API_BASE_URL}/collaborateurs?limit=1000`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     allCollaborators = data.data.collaborateurs || data.data || [];
@@ -617,7 +629,7 @@
                 const response = await fetch(`${API_BASE_URL}/grades`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     allGrades = data.data.grades || data.data || [];
@@ -693,17 +705,17 @@
         async function loadData() {
             const collaboratorId = document.getElementById('collaboratorFilter').value;
             const dateRange = getDateRange();
-            
+
             try {
                 const token = localStorage.getItem('authToken');
                 let url = `${API_BASE_URL}/reports/timeEntries?`;
-                
+
                 if (dateRange) {
                     url += `startDate=${dateRange.startDate.toISOString()}&`;
                     url += `endDate=${dateRange.endDate.toISOString()}&`;
                 }
                 if (collaboratorId) url += `collaboratorId=${collaboratorId}&`;
-                
+
                 const response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -720,12 +732,12 @@
                     applyFilters();
                 } else {
                     console.error('Erreur API:', response.status);
-                    document.getElementById('timeEntriesTable').innerHTML = 
+                    document.getElementById('timeEntriesTable').innerHTML =
                         '<tr><td colspan="9" class="text-center text-danger">Erreur de chargement</td></tr>';
                 }
             } catch (error) {
                 console.error('Erreur chargement:', error);
-                document.getElementById('timeEntriesTable').innerHTML = 
+                document.getElementById('timeEntriesTable').innerHTML =
                     '<tr><td colspan="9" class="text-center text-danger">Erreur: ' + error.message + '</td></tr>';
             }
         }
@@ -737,60 +749,64 @@
             const gradeFilter = document.getElementById('gradeFilter').value;
             const typeFilter = document.getElementById('typeFilter').value;
 
-            console.log('🔍 Filtres appliqués:', { 
-                businessUnitFilter, 
+            console.log('🔍 Filtres appliqués:', {
+                businessUnitFilter,
                 divisionFilter,
-                collaboratorFilter, 
+                collaboratorFilter,
                 gradeFilter,
                 typeFilter
             });
 
             // Filtrer selon la hiérarchie en cascade
             let filtered = allTimeEntries;
-            
+
             // 1. Filtre Business Unit (obligatoire pour activer les autres)
             if (businessUnitFilter) {
-                filtered = filtered.filter(entry => 
+                filtered = filtered.filter(entry =>
                     String(entry.business_unit_id) === String(businessUnitFilter)
                 );
                 console.log(`📊 Après filtre BU: ${filtered.length} saisies`);
-                
+
                 // 2. Filtre Division (si sélectionné)
                 if (divisionFilter) {
                     // Filtrer par les collaborateurs de cette division
                     const collaboratorsInDivision = allCollaborators
                         .filter(c => String(c.division_id) === String(divisionFilter))
                         .map(c => c.id);
-                    
-                    filtered = filtered.filter(entry => 
+
+                    filtered = filtered.filter(entry =>
                         collaboratorsInDivision.some(id => String(entry.collaborateur_id) === String(id))
                     );
                     console.log(`📊 Après filtre Division: ${filtered.length} saisies`);
                 }
-                
+
                 // 3. Filtre Collaborateur (si sélectionné)
                 if (collaboratorFilter) {
-                    filtered = filtered.filter(entry => 
+                    filtered = filtered.filter(entry =>
                         String(entry.collaborateur_id) === String(collaboratorFilter)
                     );
                     console.log(`📊 Après filtre Collaborateur: ${filtered.length} saisies`);
                 }
-                
+
                 // 4. Filtre Grade (si sélectionné)
                 if (gradeFilter) {
-                    filtered = filtered.filter(entry => 
+                    filtered = filtered.filter(entry =>
                         String(entry.grade_id) === String(gradeFilter)
                     );
                     console.log(`📊 Après filtre Grade: ${filtered.length} saisies`);
                 }
             }
-            
+
             // 5. Filtre Type d'heures (indépendant)
             if (typeFilter) {
-                filtered = filtered.filter(entry => entry.type_heures === typeFilter);
+                filtered = filtered.filter(entry => {
+                    if (typeFilter === 'BILLABLE') return entry.type_heures === 'BILLABLE' || entry.type_heures === 'HC';
+                    if (typeFilter === 'NON_BILLABLE') return entry.type_heures === 'NON_BILLABLE' || entry.type_heures === 'HNC';
+                    return entry.type_heures === typeFilter;
+                });
                 console.log(`📊 Après filtre Type: ${filtered.length} saisies`);
             }
-            
+
             // 6. Filtre Période
             const dateRange = getDateRange();
             if (dateRange) {
@@ -809,8 +825,8 @@
         function displayData(entries) {
             // Calculate statistics
             const totalHours = entries.reduce((sum, e) => sum + e.heures, 0);
-            const billableHours = entries.filter(e => e.type_heures === 'BILLABLE').reduce((sum, e) => sum + e.heures, 0);
-            const nonBillableHours = entries.filter(e => e.type_heures === 'NON_BILLABLE').reduce((sum, e) => sum + e.heures, 0);
+            const billableHours = entries.filter(e => e.type_heures === 'BILLABLE' || e.type_heures === 'HC').reduce((sum, e) => sum + e.heures, 0);
+            const nonBillableHours = entries.filter(e => e.type_heures === 'NON_BILLABLE' || e.type_heures === 'HNC').reduce((sum, e) => sum + e.heures, 0);
             const billableRate = totalHours > 0 ? ((billableHours / totalHours) * 100).toFixed(1) : 0;
             const collaborators = new Set(entries.map(e => e.collaborateur)).size;
             const missions = new Set(entries.filter(e => e.mission !== '-').map(e => e.mission)).size;
@@ -829,8 +845,9 @@
 
         function updateCharts(entries) {
             // Type chart
-            const billable = entries.filter(e => e.type_heures === 'BILLABLE').reduce((sum, e) => sum + e.heures, 0);
-            const nonBillable = entries.filter(e => e.type_heures === 'NON_BILLABLE').reduce((sum, e) => sum + e.heures, 0);
+            // Type chart
+            const billable = entries.filter(e => e.type_heures === 'BILLABLE' || e.type_heures === 'HC').reduce((sum, e) => sum + e.heures, 0);
+            const nonBillable = entries.filter(e => e.type_heures === 'NON_BILLABLE' || e.type_heures === 'HNC').reduce((sum, e) => sum + e.heures, 0);
 
             if (charts.typeChart) charts.typeChart.destroy();
             const ctx1 = document.getElementById('typeChart').getContext('2d');
@@ -950,9 +967,10 @@
             entries.slice(0, 100).forEach(e => {
                 const row = document.createElement('tr');
                 const date = new Date(e.date).toLocaleDateString('fr-FR');
-                const typeClass = e.type_heures === 'BILLABLE' ? 'success' : 'secondary';
-                const typeBadge = e.type_heures === 'BILLABLE' ? 'Facturable' : 'Non facturable';
-                
+                const isBillable = e.type_heures === 'BILLABLE' || e.type_heures === 'HC';
+                const typeClass = isBillable ? 'success' : 'secondary';
+                const typeBadge = isBillable ? 'Facturable' : 'Non facturable';
+
                 row.innerHTML = `
                     <td>${date}</td>
                     <td>${e.collaborateur}</td>
@@ -985,12 +1003,12 @@
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
             document.getElementById('customPeriodRow').style.display = 'none';
-            
+
             // Repeupler TOUS les filtres avec toutes les données
             populateAllFilters();
-            
+
             // ✅ NE PAS désactiver les filtres - ils doivent rester actifs !
-            
+
             loadData();
         }
 
@@ -999,4 +1017,5 @@
         }
     </script>
 </body>
+
 </html>

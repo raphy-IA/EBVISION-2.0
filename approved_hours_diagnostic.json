@@ -1,0 +1,203 @@
+{
+  "mission_id": "88df136e-3dac-402b-843a-94822a3dea67",
+  "total_entries": 15,
+  "by_status": {
+    "saved": {
+      "count": 15,
+      "total_hours": 93
+    }
+  },
+  "entries": [
+    {
+      "sheet_id": "fecafabc-03f2-4437-b804-6317ace5a479",
+      "sheet_status": "saved",
+      "week_start": "2025-11-25T05:00:00.000Z",
+      "week_end": "2025-12-01T05:00:00.000Z",
+      "entry_id": "d6f84ebc-e707-42b1-8774-7ec506e11c52",
+      "date_saisie": "2025-11-24T05:00:00.000Z",
+      "heures": "2.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "task_name": "Mise en œuvre des méthodes d'évaluation"
+    },
+    {
+      "sheet_id": "8b9870f9-6643-4a4b-aaa4-d1e3b6897745",
+      "sheet_status": "saved",
+      "week_start": "2025-11-25T05:00:00.000Z",
+      "week_end": "2025-12-01T05:00:00.000Z",
+      "entry_id": "0186a173-9fe4-462c-a5d1-c370d0233fc8",
+      "date_saisie": "2025-11-24T05:00:00.000Z",
+      "heures": "1.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "task_name": "Mise en œuvre des méthodes d'évaluation"
+    },
+    {
+      "sheet_id": "8b9870f9-6643-4a4b-aaa4-d1e3b6897745",
+      "sheet_status": "saved",
+      "week_start": "2025-11-25T05:00:00.000Z",
+      "week_end": "2025-12-01T05:00:00.000Z",
+      "entry_id": "dfe327d2-0e8c-4e7d-bcf9-07efa60915b2",
+      "date_saisie": "2025-11-25T05:00:00.000Z",
+      "heures": "4.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "task_name": "Mise en œuvre des méthodes d'évaluation"
+    },
+    {
+      "sheet_id": "fecafabc-03f2-4437-b804-6317ace5a479",
+      "sheet_status": "saved",
+      "week_start": "2025-11-25T05:00:00.000Z",
+      "week_end": "2025-12-01T05:00:00.000Z",
+      "entry_id": "f53e733b-c985-4549-b4fc-c6c207b069ac",
+      "date_saisie": "2025-11-25T05:00:00.000Z",
+      "heures": "4.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "task_name": "Mise en œuvre des méthodes d'évaluation"
+    },
+    {
+      "sheet_id": "fecafabc-03f2-4437-b804-6317ace5a479",
+      "sheet_status": "saved",
+      "week_start": "2025-11-25T05:00:00.000Z",
+      "week_end": "2025-12-01T05:00:00.000Z",
+      "entry_id": "9fcb83d5-f042-42c9-b2ea-f4bf89ba556d",
+      "date_saisie": "2025-11-26T05:00:00.000Z",
+      "heures": "6.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "task_name": "Mise en œuvre des méthodes d'évaluation"
+    },
+    {
+      "sheet_id": "fecafabc-03f2-4437-b804-6317ace5a479",
+      "sheet_status": "saved",
+      "week_start": "2025-11-25T05:00:00.000Z",
+      "week_end": "2025-12-01T05:00:00.000Z",
+      "entry_id": "19b22e33-f2b8-4ccf-9dd0-d7144773920c",
+      "date_saisie": "2025-11-26T05:00:00.000Z",
+      "heures": "3.00",
+      "task_id": "93fbc31c-dd27-4fbf-888e-25d8a500e845",
+      "task_name": "Prise de connaissance et Diagnostic"
+    },
+    {
+      "sheet_id": "8b9870f9-6643-4a4b-aaa4-d1e3b6897745",
+      "sheet_status": "saved",
+      "week_start": "2025-11-25T05:00:00.000Z",
+      "week_end": "2025-12-01T05:00:00.000Z",
+      "entry_id": "d533fcc1-145d-4290-b309-aa2d58ee6180",
+      "date_saisie": "2025-11-27T05:00:00.000Z",
+      "heures": "3.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "task_name": "Mise en œuvre des méthodes d'évaluation"
+    },
+    {
+      "sheet_id": "8b9870f9-6643-4a4b-aaa4-d1e3b6897745",
+      "sheet_status": "saved",
+      "week_start": "2025-11-25T05:00:00.000Z",
+      "week_end": "2025-12-01T05:00:00.000Z",
+      "entry_id": "2b8e5884-24b5-4a9c-8f25-d84587693462",
+      "date_saisie": "2025-11-28T05:00:00.000Z",
+      "heures": "8.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "task_name": "Mise en œuvre des méthodes d'évaluation"
+    },
+    {
+      "sheet_id": "fecafabc-03f2-4437-b804-6317ace5a479",
+      "sheet_status": "saved",
+      "week_start": "2025-11-25T05:00:00.000Z",
+      "week_end": "2025-12-01T05:00:00.000Z",
+      "entry_id": "2cfaaf29-c616-41d0-9317-ea75f665c6d7",
+      "date_saisie": "2025-11-29T05:00:00.000Z",
+      "heures": "5.00",
+      "task_id": "93fbc31c-dd27-4fbf-888e-25d8a500e845",
+      "task_name": "Prise de connaissance et Diagnostic"
+    },
+    {
+      "sheet_id": "fecafabc-03f2-4437-b804-6317ace5a479",
+      "sheet_status": "saved",
+      "week_start": "2025-11-25T05:00:00.000Z",
+      "week_end": "2025-12-01T05:00:00.000Z",
+      "entry_id": "6f41dbae-571d-4cc8-9016-6ce518e0a93b",
+      "date_saisie": "2025-11-30T05:00:00.000Z",
+      "heures": "9.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "task_name": "Mise en œuvre des méthodes d'évaluation"
+    },
+    {
+      "sheet_id": "21341321-8984-45e2-b7a9-2990dfa4b012",
+      "sheet_status": "saved",
+      "week_start": "2025-12-02T05:00:00.000Z",
+      "week_end": "2025-12-08T05:00:00.000Z",
+      "entry_id": "9ebf3151-bd7b-408f-b37e-e80e82e47f51",
+      "date_saisie": "2025-12-01T05:00:00.000Z",
+      "heures": "15.00",
+      "task_id": "93fbc31c-dd27-4fbf-888e-25d8a500e845",
+      "task_name": "Prise de connaissance et Diagnostic"
+    },
+    {
+      "sheet_id": "21341321-8984-45e2-b7a9-2990dfa4b012",
+      "sheet_status": "saved",
+      "week_start": "2025-12-02T05:00:00.000Z",
+      "week_end": "2025-12-08T05:00:00.000Z",
+      "entry_id": "723e0b4a-9ac6-4e41-83f1-4cd8673a62cd",
+      "date_saisie": "2025-12-01T05:00:00.000Z",
+      "heures": "10.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "task_name": "Mise en œuvre des méthodes d'évaluation"
+    },
+    {
+      "sheet_id": "21341321-8984-45e2-b7a9-2990dfa4b012",
+      "sheet_status": "saved",
+      "week_start": "2025-12-02T05:00:00.000Z",
+      "week_end": "2025-12-08T05:00:00.000Z",
+      "entry_id": "e54e6171-e32c-41b7-97fe-642c74eda080",
+      "date_saisie": "2025-12-02T05:00:00.000Z",
+      "heures": "10.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "task_name": "Mise en œuvre des méthodes d'évaluation"
+    },
+    {
+      "sheet_id": "21341321-8984-45e2-b7a9-2990dfa4b012",
+      "sheet_status": "saved",
+      "week_start": "2025-12-02T05:00:00.000Z",
+      "week_end": "2025-12-08T05:00:00.000Z",
+      "entry_id": "e59644e6-018b-41e0-a34c-f99229bcb1aa",
+      "date_saisie": "2025-12-02T05:00:00.000Z",
+      "heures": "5.00",
+      "task_id": "93fbc31c-dd27-4fbf-888e-25d8a500e845",
+      "task_name": "Prise de connaissance et Diagnostic"
+    },
+    {
+      "sheet_id": "21341321-8984-45e2-b7a9-2990dfa4b012",
+      "sheet_status": "saved",
+      "week_start": "2025-12-02T05:00:00.000Z",
+      "week_end": "2025-12-08T05:00:00.000Z",
+      "entry_id": "47c7b6b8-22a1-4b17-8349-4d4f6571d9a1",
+      "date_saisie": "2025-12-03T05:00:00.000Z",
+      "heures": "8.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "task_name": "Mise en œuvre des méthodes d'évaluation"
+    }
+  ],
+  "api_result": [
+    {
+      "mission_task_id": "952e53f6-1b24-4337-bc59-26b8171c6372",
+      "libelle": "Prise de connaissance et Diagnostic",
+      "heures_saisies": "28.00",
+      "heures_validees": "0"
+    },
+    {
+      "mission_task_id": "fc29f20f-133a-455c-868b-42331cc215be",
+      "libelle": "Retraitement des comptes",
+      "heures_saisies": "0",
+      "heures_validees": "0"
+    },
+    {
+      "mission_task_id": "2783281a-b8e4-4370-b6be-f49adde8446d",
+      "libelle": "Mise en œuvre des méthodes d'évaluation",
+      "heures_saisies": "65.00",
+      "heures_validees": "0"
+    },
+    {
+      "mission_task_id": "63c32e92-6d04-4fc7-a063-e7bf038c3a86",
+      "libelle": "Rapport de valorisation",
+      "heures_saisies": "0",
+      "heures_validees": "0"
+    }
+  ]
+}

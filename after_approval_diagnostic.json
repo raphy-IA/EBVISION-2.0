@@ -1,0 +1,71 @@
+{
+  "sheet_status": {
+    "id": "b2b2edb5-78b1-4a9a-867a-13bc279fc559",
+    "status": "approved",
+    "week_start": "2025-12-01T05:00:00.000Z",
+    "week_end": "2025-12-07T05:00:00.000Z"
+  },
+  "entries": [
+    {
+      "id": "723e0b4a-9ac6-4e41-83f1-4cd8673a62cd",
+      "heures": "10.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "date_saisie": "2025-12-01T05:00:00.000Z",
+      "status": "saved"
+    },
+    {
+      "id": "e54e6171-e32c-41b7-97fe-642c74eda080",
+      "heures": "10.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "date_saisie": "2025-12-02T05:00:00.000Z",
+      "status": "saved"
+    },
+    {
+      "id": "47c7b6b8-22a1-4b17-8349-4d4f6571d9a1",
+      "heures": "8.00",
+      "task_id": "f26173a4-7d62-4849-9db3-04dad00d42fa",
+      "date_saisie": "2025-12-03T05:00:00.000Z",
+      "status": "saved"
+    },
+    {
+      "id": "9ebf3151-bd7b-408f-b37e-e80e82e47f51",
+      "heures": "15.00",
+      "task_id": "93fbc31c-dd27-4fbf-888e-25d8a500e845",
+      "date_saisie": "2025-12-01T05:00:00.000Z",
+      "status": "saved"
+    },
+    {
+      "id": "e59644e6-018b-41e0-a34c-f99229bcb1aa",
+      "heures": "5.00",
+      "task_id": "93fbc31c-dd27-4fbf-888e-25d8a500e845",
+      "date_saisie": "2025-12-02T05:00:00.000Z",
+      "status": "saved"
+    }
+  ],
+  "api_result": [
+    {
+      "mission_task_id": "952e53f6-1b24-4337-bc59-26b8171c6372",
+      "libelle": "Prise de connaissance et Diagnostic",
+      "heures_validees": "0",
+      "heures_saisies": "28.00"
+    },
+    {
+      "mission_task_id": "fc29f20f-133a-455c-868b-42331cc215be",
+      "libelle": "Retraitement des comptes",
+      "heures_validees": "0",
+      "heures_saisies": "0"
+    },
+    {
+      "mission_task_id": "2783281a-b8e4-4370-b6be-f49adde8446d",
+      "libelle": "Mise en œuvre des méthodes d'évaluation",
+      "heures_validees": "0",
+      "heures_saisies": "65.00"
+    },
+    {
+      "mission_task_id": "63c32e92-6d04-4fc7-a063-e7bf038c3a86",
+      "libelle": "Rapport de valorisation",
+      "heures_validees": "0",
+      "heures_saisies": "0"
+    }
+  ]
+}

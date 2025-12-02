@@ -3,6 +3,7 @@ const router = express.Router();
 const TimeEntry = require('../models/TimeEntry');
 const TimeSheet = require('../models/TimeSheet');
 const { authenticateToken } = require('../middleware/auth');
+const { pool } = require('../utils/database');
 
 // ROUTES DE COMPATIBILITÉ POUR L'ANCIEN FRONTEND
 // GET /api/time-entries - Récupérer les entrées d'un utilisateur (compatibilité)
@@ -110,6 +111,28 @@ router.post('/', authenticateToken, async (req, res) => {
                 success: false,
                 message: 'Données manquantes'
             });
+        }
+
+        // Validation HC vs Planification
+        if (type_heures === 'HC' && mission_id && task_id) {
+            // Vérifier que le collaborateur est planifié sur cette tâche
+            const planningCheck = await pool.query(`
+                SELECT COUNT(*) as count
+                FROM task_assignments ta
+                JOIN mission_tasks mt ON ta.mission_task_id = mt.id
+                WHERE ta.collaborateur_id = (
+                    SELECT id FROM collaborateurs WHERE user_id = $1
+                )
+                AND mt.mission_id = $2
+                AND mt.task_id = $3
+            `, [userId, mission_id, task_id]);
+
+            if (parseInt(planningCheck.rows[0].count) === 0) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Vous ne pouvez charger des heures que sur les missions/tâches pour lesquelles vous êtes planifié'
+                });
+            }
         }
 
         // Pour l'instant, accepter les UUIDs tronqués (compatibilité)

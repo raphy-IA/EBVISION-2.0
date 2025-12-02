@@ -7,7 +7,7 @@ const { authenticateToken } = require('../middleware/auth');
 // Créer une nouvelle feuille de temps
 router.post('/', authenticateToken, async (req, res) => {
     try {
-        const { user_id, week_start, week_end, status = 'saved' } = req.body;
+        const { user_id, week_start, week_end, status = 'draft' } = req.body;
 
         if (!user_id || !week_start || !week_end) {
             return res.status(400).json({

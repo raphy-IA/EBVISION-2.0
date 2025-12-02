@@ -71,24 +71,38 @@ class TimeSheet {
             // S'assurer que les dates sont au format YYYY-MM-DD sans timezone
             const formattedWeekStart = weekStart.split('T')[0];
             const formattedWeekEnd = weekEnd.split('T')[0];
-            
+
             console.log('🔍 Recherche/création feuille de temps:');
             console.log('  - week_start:', formattedWeekStart);
             console.log('  - week_end:', formattedWeekEnd);
-            
+
             // Essayer de trouver une feuille existante
             let timeSheet = await this.findByWeekStart(userId, formattedWeekStart);
-            
+
             if (!timeSheet) {
-                // Créer une nouvelle feuille de temps
-                timeSheet = await this.create({
-                    user_id: userId,
-                    week_start: formattedWeekStart,
-                    week_end: formattedWeekEnd,
-                    status: 'saved'
-                });
+                try {
+                    // Créer une nouvelle feuille de temps
+                    timeSheet = await this.create({
+                        user_id: userId,
+                        week_start: formattedWeekStart,
+                        week_end: formattedWeekEnd,
+                        status: 'draft'
+                    });
+                } catch (error) {
+                    // Si erreur de contrainte unique (code 23505),
+                    // c'est qu'une autre requête a créé la feuille entre-temps (race condition)
+                    if (error.code === '23505') {
+                        console.log('⚠️ Race condition détectée - récupération de la feuille créée par une autre requête');
+                        timeSheet = await this.findByWeekStart(userId, formattedWeekStart);
+                        if (!timeSheet) {
+                            throw new Error('Impossible de récupérer la feuille de temps après race condition');
+                        }
+                    } else {
+                        throw error;
+                    }
+                }
             }
-            
+
             return timeSheet;
         } catch (error) {
             console.error('Erreur lors de la recherche/création de la feuille de temps:', error);
@@ -139,7 +153,7 @@ class TimeSheet {
 
     // Valider une feuille de temps
     static async validate(id, validateurId) {
-        return await this.update(id, { 
+        return await this.update(id, {
             status: 'approved',
             validateur_id: validateurId,
             date_validation: new Date()
@@ -148,7 +162,7 @@ class TimeSheet {
 
     // Rejeter une feuille de temps
     static async reject(id, validateurId, notesRejet) {
-        return await this.update(id, { 
+        return await this.update(id, {
             status: 'rejected',
             validateur_id: validateurId,
             notes_rejet: notesRejet,

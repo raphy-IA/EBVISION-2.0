@@ -1,0 +1,24 @@
+{
+  "approvals": [
+    {
+      "id": "413a17c9-31bf-452e-8e67-b8b744c053ac",
+      "action": "approve",
+      "created_at": "2025-12-02T10:55:30.134Z",
+      "sheet_id": "e94970f1-5ed6-4205-b4b7-dda850977b79",
+      "sheet_status": "approved"
+    }
+  ],
+  "analysis": [
+    "✅ 1 approbations trouvées."
+  ],
+  "status_counts": [
+    {
+      "status": "saved",
+      "count": "6"
+    },
+    {
+      "status": "approved",
+      "count": "1"
+    }
+  ]
+}
