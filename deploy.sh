@@ -71,7 +71,9 @@ section "📦 Sauvegarde de la base de données"
 
 # Charger les variables d'environnement
 if [ -f .env ]; then
-    export $(cat .env | grep -v '^#' | xargs)
+    set -a  # Marquer toutes les variables pour export
+    source .env 2>/dev/null || . .env
+    set +a  # Désactiver l'export automatique
 fi
 
 # Backup PostgreSQL
