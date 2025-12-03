@@ -73,3 +73,8 @@ Old_files/
 # Allow SQL files in migrations
 !migrations/*.sql
 
+
+# Configuration spécifique à l'environnement (ignorée)
+config/branding/eb-vision-2.json
+config/maintenance.json
+ecosystem.config.js
