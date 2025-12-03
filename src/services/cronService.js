@@ -4,7 +4,7 @@ const OpportunityWorkflowService = require('./opportunityWorkflowService');
 const NotificationService = require('./notificationService');
 
 class CronService {
-    
+
     /**
      * Initialiser tous les cron jobs
      */
@@ -23,13 +23,13 @@ class CronService {
 
                 // Vérifier les étapes en retard tous les jours à 9h00
                 this.scheduleOverdueStagesCheck();
-                
+
                 // Vérifier les feuilles de temps en retard tous les lundis à 8h00
                 this.scheduleTimeSheetReminders();
-                
+
                 // Nettoyer les anciennes notifications tous les dimanches à 2h00
                 this.scheduleNotificationCleanup();
-                
+
                 // Vérifier les opportunités inactives tous les jours à 10h00
                 this.scheduleInactiveOpportunitiesCheck();
 
@@ -38,7 +38,7 @@ class CronService {
 
                 // Vérifier la facturation des missions (honoraires / débours) tous les jours à 12h00
                 this.scheduleMissionBillingAlerts();
-                
+
                 console.log('✅ Toutes les tâches cron ont été programmées');
             })
             .catch(err => {
@@ -53,7 +53,7 @@ class CronService {
                 console.log('✅ Toutes les tâches cron ont été programmées (mode dégradé)');
             });
     }
-    
+
     /**
      * Vérifier les étapes en retard quotidiennement
      */
@@ -69,10 +69,10 @@ class CronService {
                 }
 
                 const overdueStages = await OpportunityWorkflowService.checkOverdueStages();
-                
+
                 if (overdueStages.length > 0) {
                     console.log(`⚠️ ${overdueStages.length} étape(s) en retard détectée(s)`);
-                    
+
                     // Envoyer des notifications pour chaque étape en retard
                     for (const stage of overdueStages) {
                         await NotificationService.sendOverdueNotification(stage.id, stage.opportunity_id);
@@ -87,10 +87,10 @@ class CronService {
             scheduled: true,
             timezone: "Europe/Paris"
         });
-        
+
         console.log('📅 Tâche cron programmée: Vérification des étapes en retard (9h00 quotidien)');
     }
-    
+
     /**
      * Vérifier les feuilles de temps en retard
      */
@@ -120,12 +120,12 @@ class CronService {
                     AND ts.semaine < EXTRACT(WEEK FROM CURRENT_DATE)
                     AND ts.annee <= EXTRACT(YEAR FROM CURRENT_DATE)
                 `);
-                
+
                 const overdueTimeSheets = result.rows;
-                
+
                 if (overdueTimeSheets.length > 0) {
                     console.log(`⚠️ ${overdueTimeSheets.length} feuille(s) de temps en retard détectée(s)`);
-                    
+
                     for (const timeSheet of overdueTimeSheets) {
                         await this.createTimeSheetNotification(timeSheet);
                     }
@@ -139,10 +139,10 @@ class CronService {
             scheduled: true,
             timezone: "Europe/Paris"
         });
-        
+
         console.log('📅 Tâche cron programmée: Vérification des feuilles de temps (8h00 lundi)');
     }
-    
+
     /**
      * Nettoyer les anciennes notifications
      */
@@ -156,18 +156,18 @@ class CronService {
                     WHERE read_at IS NOT NULL 
                     AND read_at < CURRENT_DATE - INTERVAL '30 days'
                 `);
-                
+
                 console.log(`🗑️ ${result.rowCount} notification(s) ancienne(s) supprimée(s)`);
-                
+
                 // Supprimer les notifications non lues de plus de 90 jours
                 const result2 = await pool.query(`
                     DELETE FROM notifications 
                     WHERE read_at IS NULL 
                     AND created_at < CURRENT_DATE - INTERVAL '90 days'
                 `);
-                
+
                 console.log(`🗑️ ${result2.rowCount} notification(s) non lue(s) ancienne(s) supprimée(s)`);
-                
+
             } catch (error) {
                 console.error('❌ Erreur lors du nettoyage des notifications:', error);
             }
@@ -175,10 +175,10 @@ class CronService {
             scheduled: true,
             timezone: "Europe/Paris"
         });
-        
+
         console.log('📅 Tâche cron programmée: Nettoyage des notifications (2h00 dimanche)');
     }
-    
+
     /**
      * Vérifier les opportunités inactives
      */
@@ -208,12 +208,12 @@ class CronService {
                     AND o.last_activity_at < CURRENT_DATE - INTERVAL '7 days'
                     AND o.last_activity_at > CURRENT_DATE - INTERVAL '30 days'
                 `);
-                
+
                 const inactiveOpportunities = result.rows;
-                
+
                 if (inactiveOpportunities.length > 0) {
                     console.log(`⚠️ ${inactiveOpportunities.length} opportunité(s) inactive(s) détectée(s)`);
-                    
+
                     for (const opportunity of inactiveOpportunities) {
                         await this.createInactiveOpportunityNotification(opportunity);
                     }
@@ -227,7 +227,7 @@ class CronService {
             scheduled: true,
             timezone: "Europe/Paris"
         });
-        
+
         console.log('📅 Tâche cron programmée: Vérification des opportunités inactives (10h00 quotidien)');
 
         // Programmer la vérification des campagnes de prospection (retard global + relances entreprises) à 9h00 quotidien
@@ -261,10 +261,10 @@ class CronService {
             scheduled: true,
             timezone: "Europe/Paris"
         });
-        
+
         console.log('📅 Tâche cron programmée: Vérification des campagnes en retard (9h00 quotidien)');
     }
-    
+
     /**
      * Créer une notification pour feuille de temps en retard
      */
@@ -288,13 +288,13 @@ class CronService {
                 timeSheet.semaine,
                 timeSheet.annee
             ]);
-            
+
             console.log(`📧 Notification créée pour ${timeSheet.collaborateur_nom}`);
         } catch (error) {
             console.error('❌ Erreur lors de la création de la notification de feuille de temps:', error);
         }
     }
-    
+
     /**
      * Créer une notification pour opportunité inactive
      */
@@ -332,7 +332,7 @@ class CronService {
                     collaborateur_id: opportunity.collaborateur_id
                 }
             });
-            
+
             console.log(`📧 Notification d'inactivité créée pour collaborateur ${opportunity.collaborateur_nom || ''} (user_id=${userId})`);
         } catch (error) {
             console.error('❌ Erreur lors de la création de la notification d\'inactivité:', error);
@@ -345,7 +345,7 @@ class CronService {
     static async checkOverdueCampaigns() {
         try {
             console.log('🔍 Vérification des campagnes de prospection en retard...');
-            
+
             const query = `
                 SELECT 
                     pc.id as campaign_id,
@@ -369,15 +369,15 @@ class CronService {
                 )
                 GROUP BY pc.id, pc.name, pc.scheduled_date, pc.created_at, u.id, u.nom, u.email
             `;
-            
+
             console.log('SQL checkMissionTaskEndApproaching =>', query);
             const result = await pool.query(query);
-            
+
             for (const campaign of result.rows) {
-                const progressPercentage = campaign.total_companies > 0 
-                    ? Math.round((campaign.completed_companies / campaign.total_companies) * 100) 
+                const progressPercentage = campaign.total_companies > 0
+                    ? Math.round((campaign.completed_companies / campaign.total_companies) * 100)
                     : 0;
-                
+
                 await NotificationService.createNotification({
                     type: 'CAMPAIGN_OVERDUE',
                     title: 'Campagne en retard',
@@ -393,10 +393,10 @@ class CronService {
                         total_companies: campaign.total_companies
                     }
                 });
-                
+
                 console.log(`📢 Notification de campagne en retard envoyée pour ${campaign.campaign_name}`);
             }
-            
+
             console.log(`✅ ${result.rows.length} notifications de campagnes en retard envoyées`);
         } catch (error) {
             console.error('❌ Erreur lors de la vérification des campagnes en retard:', error);
@@ -611,26 +611,26 @@ class CronService {
             // Définir des valeurs par défaut raisonnables (alignées sur notification-settings.js)
             const defaultAutomaticAlerts = {
                 // Opportunités
-                opportunity_stage_overdue:       { userDelayDays: 3,  managementDelayDays: 7  },
-                opportunity_inactive:            { userDelayDays: 14, managementDelayDays: 30 },
+                opportunity_stage_overdue: { userDelayDays: 3, managementDelayDays: 7 },
+                opportunity_inactive: { userDelayDays: 14, managementDelayDays: 30 },
 
                 // Missions (niveau mission global)
-                mission_inactive:                { userDelayDays: 7,  managementDelayDays: 14 },
+                mission_inactive: { userDelayDays: 7, managementDelayDays: 14 },
 
                 // Missions - niveau tâches
-                mission_task_end_approaching:    { userDelayDays: 3,  managementDelayDays: 7  },
-                mission_task_overdue_not_closed: { userDelayDays: 2,  managementDelayDays: 5  },
+                mission_task_end_approaching: { userDelayDays: 3, managementDelayDays: 7 },
+                mission_task_overdue_not_closed: { userDelayDays: 2, managementDelayDays: 5 },
 
                 // Facturation missions
-                mission_fee_billing_overdue:     { userDelayDays: 3,  managementDelayDays: 7  },
-                mission_expense_billing_overdue: { userDelayDays: 3,  managementDelayDays: 7  },
+                mission_fee_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },
+                mission_expense_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },
 
                 // Campagnes de prospection (global campagne)
-                campaign_validation_pending:     { userDelayDays: 3,  managementDelayDays: 7  },
-                campaign_not_launched:           { userDelayDays: 5,  managementDelayDays: 10 },
+                campaign_validation_pending: { userDelayDays: 3, managementDelayDays: 7 },
+                campaign_not_launched: { userDelayDays: 5, managementDelayDays: 10 },
 
                 // Campagnes de prospection - relance par entreprise
-                campaign_company_followup_due:   { userDelayDays: 7,  managementDelayDays: 14 }
+                campaign_company_followup_due: { userDelayDays: 7, managementDelayDays: 14 }
             };
 
             // Vérifier si la colonne automatic_alerts existe dans notification_settings
@@ -667,16 +667,16 @@ class CronService {
             console.error('❌ Erreur lors du chargement de la configuration automaticAlerts:', error);
             // En cas d'erreur (ex: table absente), on revient aux valeurs par défaut
             return {
-                opportunity_stage_overdue:       { userDelayDays: 3,  managementDelayDays: 7  },
-                opportunity_inactive:            { userDelayDays: 14, managementDelayDays: 30 },
-                mission_inactive:                { userDelayDays: 7,  managementDelayDays: 14 },
-                mission_task_end_approaching:    { userDelayDays: 3,  managementDelayDays: 7  },
-                mission_task_overdue_not_closed: { userDelayDays: 2,  managementDelayDays: 5  },
-                mission_fee_billing_overdue:     { userDelayDays: 3,  managementDelayDays: 7  },
-                mission_expense_billing_overdue: { userDelayDays: 3,  managementDelayDays: 7  },
-                campaign_validation_pending:     { userDelayDays: 3,  managementDelayDays: 7  },
-                campaign_not_launched:           { userDelayDays: 5,  managementDelayDays: 10 },
-                campaign_company_followup_due:   { userDelayDays: 7,  managementDelayDays: 14 }
+                opportunity_stage_overdue: { userDelayDays: 3, managementDelayDays: 7 },
+                opportunity_inactive: { userDelayDays: 14, managementDelayDays: 30 },
+                mission_inactive: { userDelayDays: 7, managementDelayDays: 14 },
+                mission_task_end_approaching: { userDelayDays: 3, managementDelayDays: 7 },
+                mission_task_overdue_not_closed: { userDelayDays: 2, managementDelayDays: 5 },
+                mission_fee_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },
+                mission_expense_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },
+                campaign_validation_pending: { userDelayDays: 3, managementDelayDays: 7 },
+                campaign_not_launched: { userDelayDays: 5, managementDelayDays: 10 },
+                campaign_company_followup_due: { userDelayDays: 7, managementDelayDays: 14 }
             };
         }
     }
@@ -743,6 +743,7 @@ class CronService {
                 }
 
                 await this.checkMissionFeeBillingOverdue();
+                await this.checkUpcomingBillingConditions();
                 await this.checkMissionExpenseBillingOverdue();
             } catch (error) {
                 console.error('❌ Erreur lors de la vérification de la facturation des missions:', error);
@@ -1127,6 +1128,122 @@ class CronService {
     }
 
     /**
+     * Vérifier les échéances de facturation basées sur les conditions de paiement (tranches)
+     */
+    static async checkUpcomingBillingConditions() {
+        try {
+            console.log('🔍 Vérification des échéances de facturation (conditions de paiement)...');
+            const automaticAlerts = await this.getAutomaticAlertsConfig();
+            const cfg = automaticAlerts?.mission_fee_billing_overdue || { userDelayDays: 3 };
+            const alertDays = typeof cfg.userDelayDays === 'number' ? cfg.userDelayDays : 3;
+
+            // 1. Récupérer les missions actives avec conditions de paiement
+            const missionsQuery = `
+                SELECT 
+                    m.id AS mission_id, 
+                    m.nom AS mission_nom, 
+                    m.conditions_paiement, 
+                    m.collaborateur_id AS manager_collaborateur_id,
+                    m.business_unit_id,
+                    bu.nom AS business_unit_nom
+                FROM missions m
+                LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+                WHERE m.statut = 'EN_COURS' 
+                AND m.conditions_paiement IS NOT NULL
+            `;
+
+            const missionsResult = await pool.query(missionsQuery);
+
+            for (const mission of missionsResult.rows) {
+                // Parser les conditions
+                let conditions = [];
+                try {
+                    conditions = JSON.parse(mission.conditions_paiement);
+                    if (!Array.isArray(conditions)) conditions = Object.values(conditions);
+                } catch (e) { continue; }
+
+                // Récupérer le total déjà facturé
+                const invoicesQuery = `
+                    SELECT SUM(montant_ht) as total_facture
+                    FROM invoices 
+                    WHERE mission_id = $1 AND statut != 'ANNULEE'
+                `;
+                const invoicesResult = await pool.query(invoicesQuery, [mission.mission_id]);
+                const totalFacture = parseFloat(invoicesResult.rows[0].total_facture || 0);
+
+                let cumulAttendu = 0;
+
+                for (let i = 0; i < conditions.length; i++) {
+                    const cond = conditions[i];
+                    const montantPrevu = parseFloat(cond.montant_honoraires || 0) + parseFloat(cond.montant_debours || 0);
+                    cumulAttendu += montantPrevu;
+
+                    // Si cette tranche n'est pas encore totalement couverte par les factures
+                    if (totalFacture < cumulAttendu - 1) {
+                        // Vérifier la date
+                        if (cond.date_prevue) {
+                            const datePrevue = new Date(cond.date_prevue);
+                            const today = new Date();
+                            const diffTime = datePrevue - today;
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                            // Si l'échéance est proche (ex: dans 3 jours) ou passée (négatif)
+                            if (diffDays <= alertDays) {
+                                // Identifier le manager (user)
+                                const userRes = await pool.query(`
+                                    SELECT u.id FROM users u WHERE u.collaborateur_id = $1 AND u.statut = 'ACTIF' LIMIT 1
+                                `, [mission.manager_collaborateur_id]);
+
+                                const userId = userRes.rows[0]?.id;
+                                if (!userId) break;
+
+                                // Vérifier si notif déjà envoyée pour cette tranche récemment
+                                const notifType = diffDays < 0 ? 'BILLING_CONDITION_OVERDUE' : 'BILLING_CONDITION_UPCOMING';
+                                const existsRes = await pool.query(`
+                                    SELECT 1 FROM notifications n
+                                    WHERE n.type = $1
+                                      AND n.user_id = $2
+                                      AND (n.metadata->>'mission_id')::uuid = $3
+                                      AND (n.metadata->>'condition_index')::int = $4
+                                      AND n.created_at > NOW() - INTERVAL '7 days'
+                                    LIMIT 1
+                                `, [notifType, userId, mission.mission_id, i]);
+
+                                if (existsRes.rows.length === 0) {
+                                    const message = diffDays < 0
+                                        ? `Facturation en retard : La tranche "${cond.details || 'Tranche ' + (i + 1)}" de la mission "${mission.mission_nom}" était prévue le ${new Date(cond.date_prevue).toLocaleDateString()}.`
+                                        : `Facturation à venir : La tranche "${cond.details || 'Tranche ' + (i + 1)}" de la mission "${mission.mission_nom}" est prévue pour le ${new Date(cond.date_prevue).toLocaleDateString()}.`;
+
+                                    await NotificationService.createNotification({
+                                        type: notifType,
+                                        title: diffDays < 0 ? 'Facturation en retard' : 'Prochaine facturation',
+                                        message: message,
+                                        user_id: userId,
+                                        priority: diffDays < 0 ? 'HIGH' : 'NORMAL',
+                                        metadata: {
+                                            mission_id: mission.mission_id,
+                                            mission_nom: mission.mission_nom,
+                                            condition_index: i,
+                                            date_prevue: cond.date_prevue,
+                                            montant: montantPrevu,
+                                            business_unit_id: mission.business_unit_id
+                                        }
+                                    });
+                                    console.log(`📢 Notification facturation (${notifType}) envoyée pour mission ${mission.mission_nom}`);
+                                }
+                            }
+                        }
+                        // On s'arrête à la première tranche non payée
+                        break;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors de la vérification des échéances de facturation:', error);
+        }
+    }
+
+    /**
      * Vérifier les missions dont la facturation des débours/frais est en retard
      */
     static async checkMissionExpenseBillingOverdue() {
@@ -1255,7 +1372,7 @@ class CronService {
             console.error('❌ Erreur lors de la vérification des débours de missions en retard de facturation:', error);
         }
     }
-    
+
     /**
      * Arrêter tous les cron jobs
      */

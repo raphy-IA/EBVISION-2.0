@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facturation</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-    
+
+
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
     <script src="js/menu-permissions.js"></script>
     <script src="/js/page-permissions.js"></script>
-    
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -27,13 +28,14 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
-            overflow-x: hidden; /* Empêche le défilement horizontal */
+            overflow-x: hidden;
+            /* Empêche le défilement horizontal */
         }
-        
+
         /* Le conteneur principal de la page qui contient la sidebar et le contenu */
         .page-wrapper {
             display: flex;
@@ -42,7 +44,8 @@
 
         /* Styles pour le contenu principal */
         .main-content-area {
-            flex-grow: 1; /* Prend l'espace restant */
+            flex-grow: 1;
+            /* Prend l'espace restant */
             padding: 2rem;
             background-color: var(--light-bg);
         }
@@ -53,41 +56,56 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
-        
+
         .stats-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
         .stats-card.success {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
-        
+
         .stats-card.warning {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
-        
+
         .stats-card.info {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
-        
+
         .invoice-status {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.875rem;
             font-weight: 500;
         }
-        
-        .status-brouillon { background-color: #6c757d; color: white; }
-        .status-emise { background-color: #17a2b8; color: white; }
-        .status-payee { background-color: #28a745; color: white; }
-        .status-annulee { background-color: #dc3545; color: white; }
-        
+
+        .status-brouillon {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .status-emise {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .status-payee {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-annulee {
+            background-color: #dc3545;
+            color: white;
+        }
+
         .overdue-badge {
             background-color: #dc3545;
             color: white;
@@ -95,7 +113,7 @@
             border-radius: 4px;
             font-size: 0.75rem;
         }
-        
+
         .filters-section {
             background-color: white;
             border-radius: 15px;
@@ -103,71 +121,72 @@
             margin-bottom: 2rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .table-responsive {
             border-radius: 15px;
             overflow: hidden;
         }
-        
+
         .table th {
             background-color: #f8f9fa;
             border: none;
             font-weight: 600;
             color: #495057;
         }
-        
+
         .table td {
             border: none;
             border-bottom: 1px solid #dee2e6;
             vertical-align: middle;
         }
-        
+
         .btn-action {
             padding: 0.25rem 0.5rem;
             font-size: 0.875rem;
             margin: 0 0.125rem;
         }
-        
+
         .pagination-container {
             display: flex;
             justify-content: center;
             align-items: center;
             margin-top: 2rem;
         }
-        
+
         .loading-spinner {
             display: none;
             text-align: center;
             padding: 2rem;
         }
-        
+
         .empty-state {
             text-align: center;
             padding: 3rem;
             color: #6c757d;
         }
-        
+
         .empty-state i {
             font-size: 4rem;
             margin-bottom: 1rem;
             opacity: 0.5;
         }
-        
+
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column; /* Empile la sidebar et le contenu */
+                flex-direction: column;
+                /* Empile la sidebar et le contenu */
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
         }
     </style>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
@@ -176,11 +195,12 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -254,19 +274,57 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <!-- Réduit les autres colonnes pour faire de la place ou passer en 5 colonnes -->
                     <div class="card stats-card info">
+                        <div class="card-body p-2"> <!-- Padding réduit -->
+                            <h6 class="card-title" style="font-size: 0.8rem;">En Retard</h6>
+                            <h4 id="overdueInvoices">-</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card" style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 <div>
-                                    <h6 class="card-title">En Retard</h6>
-                                    <h3 id="overdueInvoices">-</h3>
+                                    <h6 class="card-title">Prochaine Échéance</h6>
+                                    <h4 id="nextBillingDate">-</h4>
                                 </div>
                                 <div class="align-self-center">
-                                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                                    <i class="fas fa-calendar-alt fa-2x"></i>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Facturation à venir (Billing Assistant) -->
+            <div class="card mb-4 border-primary" id="billingAssistantSection" style="display: none;">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-magic me-2"></i>Assistant Facturation
+                    </h5>
+                    <span class="badge bg-light text-primary" id="upcomingCount">0 à facturer</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mission</th>
+                                    <th>Client</th>
+                                    <th>Prochaine Échéance</th>
+                                    <th>Montant Prévu</th>
+                                    <th>Progression</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="upcomingBillingBody">
+                                <!-- Rempli par JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -341,7 +399,7 @@
                         </div>
                         <p class="mt-2">Chargement des factures...</p>
                     </div>
-                    
+
                     <div class="empty-state" id="emptyState" style="display: none;">
                         <i class="fas fa-file-invoice"></i>
                         <h5>Aucune facture trouvée</h5>
@@ -350,7 +408,7 @@
                             <i class="fas fa-plus me-2"></i>Créer une facture
                         </button>
                     </div>
-                    
+
                     <div class="table-responsive" id="invoicesTable" style="display: none;">
                         <table class="table table-hover">
                             <thead>
@@ -373,7 +431,7 @@
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <!-- Pagination -->
                     <div class="pagination-container" id="paginationContainer" style="display: none;">
                         <nav>
@@ -439,7 +497,8 @@
                         <div class="row mt-3">
                             <div class="col-12">
                                 <label class="form-label">Conditions de paiement</label>
-                                <textarea class="form-control" id="conditionsPaiement" rows="2" placeholder="Ex: Paiement à 30 jours"></textarea>
+                                <textarea class="form-control" id="conditionsPaiement" rows="2"
+                                    placeholder="Ex: Paiement à 30 jours"></textarea>
                             </div>
                         </div>
                         <div class="row mt-3">
@@ -475,31 +534,146 @@
         let clients = [];
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             console.log('Page de facturation chargée');
             loadStats();
             loadMissions();
             loadClients();
+            loadUpcomingBilling();
             loadInvoices();
         });
 
-        // Charger les statistiques
-        async function loadStats() {
+        // Charger l'assistant de facturation
+        async function loadUpcomingBilling() {
             try {
-                const response = await fetch('/api/invoices/stats', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
+                const response = await fetch('/api/billing/upcoming', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
                 });
 
                 if (response.ok) {
                     const result = await response.json();
+                    const items = result.data || [];
+
+                    const section = document.getElementById('billingAssistantSection');
+                    const tbody = document.getElementById('upcomingBillingBody');
+                    const countBadge = document.getElementById('upcomingCount');
+
+                    if (items.length > 0) {
+                        section.style.display = 'block';
+                        countBadge.textContent = `${items.length} à facturer`;
+
+                        tbody.innerHTML = items.map(item => `
+                            <tr>
+                                <td>
+                                    <strong>${item.mission_code || ''}</strong><br>
+                                    ${item.mission_nom}
+                                </td>
+                                <td>${item.client_nom}</td>
+                                <td>
+                                    <span class="badge bg-info text-dark">
+                                        ${item.next_condition.details || 'Tranche ' + (item.condition_index + 1)}
+                                    </span>
+                                    ${item.next_condition.date_prevue ? `<br><small class="text-muted">${formatDate(item.next_condition.date_prevue)}</small>` : ''}
+                                </td>
+                                <td>
+                                    <strong>${formatCurrency(item.next_condition.montant_restant_tranche || (parseFloat(item.next_condition.montant_honoraires || 0) + parseFloat(item.next_condition.montant_debours || 0)))}</strong>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 5px;" title="${item.progress}% facturé">
+                                        <div class="progress-bar" role="progressbar" style="width: ${item.progress}%"></div>
+                                    </div>
+                                    <small class="text-muted">${item.progress}% global</small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-success" onclick="generateNextInvoice('${item.mission_id}', ${item.condition_index})">
+                                        <i class="fas fa-file-invoice-dollar me-1"></i>Générer
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        section.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur assistant facturation:', error);
+            }
+        }
+
+        // Générer la prochaine facture
+        async function generateNextInvoice(missionId, conditionIndex) {
+            if (!confirm('Voulez-vous générer la facture pour cette échéance ?')) return;
+
+            try {
+                const response = await fetch('/api/billing/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({ mission_id: missionId, condition_index: conditionIndex })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    // Recharger les données
+                    loadUpcomingBilling();
+                    loadInvoices();
+                    loadStats();
+                    // Ouvrir la facture créée (optionnel, ou juste notifier)
+                    alert('Facture brouillon générée avec succès !');
+                } else {
+                    alert('Erreur: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Erreur génération:', error);
+                alert('Erreur lors de la génération de la facture');
+            }
+        }
+
+        // Charger les statistiques
+        async function loadStats() {
+            try {
+                const [statsResponse, upcomingResponse] = await Promise.all([
+                    fetch('/api/invoices/stats', { headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` } }),
+                    fetch('/api/billing/upcoming', { headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` } })
+                ]);
+
+                if (statsResponse.ok) {
+                    const result = await statsResponse.json();
                     const stats = result.data;
-                    
+
                     document.getElementById('totalInvoices').textContent = stats.total_factures || 0;
                     document.getElementById('paidInvoices').textContent = stats.factures_payees || 0;
                     document.getElementById('remainingAmount').textContent = formatCurrency(stats.total_montant_restant || 0);
                     document.getElementById('overdueInvoices').textContent = stats.factures_en_retard || 0;
+                }
+
+                if (upcomingResponse.ok) {
+                    const result = await upcomingResponse.json();
+                    const items = result.data || [];
+
+                    // Trouver la date la plus proche
+                    let nextDate = null;
+                    items.forEach(item => {
+                        if (item.next_condition && item.next_condition.date_prevue) {
+                            const date = new Date(item.next_condition.date_prevue);
+                            if (!nextDate || date < nextDate) {
+                                nextDate = date;
+                            }
+                        }
+                    });
+
+                    const nextDateEl = document.getElementById('nextBillingDate');
+                    if (nextDate) {
+                        nextDateEl.textContent = formatDate(nextDate);
+                        // Mettre en rouge si dépassé
+                        if (nextDate < new Date()) {
+                            nextDateEl.classList.add('text-warning');
+                        }
+                    } else {
+                        nextDateEl.textContent = 'Aucune';
+                    }
                 }
             } catch (error) {
                 console.error('Erreur lors du chargement des statistiques:', error);
@@ -518,15 +692,55 @@
                 if (response.ok) {
                     const result = await response.json();
                     missions = result.data || [];
-                    
+
                     const missionSelect = document.getElementById('missionSelect');
                     missionSelect.innerHTML = '<option value="">Sélectionner une mission...</option>';
-                    
+
                     missions.forEach(mission => {
                         const option = document.createElement('option');
                         option.value = mission.id;
                         option.textContent = `${mission.code} - ${mission.nom}`;
                         missionSelect.appendChild(option);
+                    });
+
+                    // Écouteur pour pré-remplir les données intelligentes
+                    missionSelect.addEventListener('change', async function () {
+                        const missionId = this.value;
+                        if (!missionId) return;
+
+                        // Trouver la mission dans la liste locale pour le client
+                        const mission = missions.find(m => m.id === missionId);
+                        if (mission && mission.client_id) {
+                            document.getElementById('clientSelect').value = mission.client_id;
+                        }
+
+                        try {
+                            // Récupérer la prochaine facturation suggérée
+                            const response = await fetch(`/api/billing/mission/${missionId}/next`, {
+                                headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+                            });
+
+                            if (response.ok) {
+                                const result = await response.json();
+                                const next = result.data;
+
+                                if (next) {
+                                    // Pré-remplir les champs
+                                    document.getElementById('conditionsPaiement').value = next.description || '';
+                                    if (next.date_prevue) {
+                                        document.getElementById('dateEcheance').value = next.date_prevue.split('T')[0];
+                                    }
+
+                                    // Afficher une suggestion de montant (visuel seulement pour l'instant ou dans les notes)
+                                    const montantSuggere = formatCurrency(next.montant_total);
+                                    document.getElementById('notesFacture').value = `Suggestion système : ${next.type === 'CONDITION' ? 'Tranche prévue' : 'Solde restant'} de ${montantSuggere}`;
+
+                                    // TODO: Idéalement, on pourrait pré-générer les lignes de facture ici si le formulaire le permettait
+                                }
+                            }
+                        } catch (e) {
+                            console.error('Erreur suggestion facturation:', e);
+                        }
                     });
                 }
             } catch (error) {
@@ -546,19 +760,19 @@
                 if (response.ok) {
                     const result = await response.json();
                     clients = (result && (result.data?.clients || result.data || result.clients)) || [];
-                    
+
                     const clientSelect = document.getElementById('clientSelect');
                     const clientFilter = document.getElementById('clientFilter');
-                    
+
                     clientSelect.innerHTML = '<option value="">Sélectionner un client...</option>';
                     clientFilter.innerHTML = '<option value="">Tous les clients</option>';
-                    
+
                     (clients || []).forEach(client => {
                         const option1 = document.createElement('option');
                         option1.value = client.id;
                         option1.textContent = `${client.code} - ${client.nom}`;
                         clientSelect.appendChild(option1);
-                        
+
                         const option2 = document.createElement('option');
                         option2.value = client.id;
                         option2.textContent = `${client.code} - ${client.nom}`;
@@ -614,7 +828,7 @@
         async function loadInvoices() {
             try {
                 showLoading(true);
-                
+
                 const params = new URLSearchParams({
                     page: currentPage,
                     limit: 10,
@@ -631,11 +845,11 @@
                     const result = await response.json();
                     const invoices = result.data || [];
                     const pagination = result.pagination || {};
-                    
+
                     totalPages = pagination.pages || 1;
                     currentPage = pagination.page || 1;
-                    
-                    try { console.log('Invoices sample:', invoices.slice(0, 3)); } catch (_) {}
+
+                    try { console.log('Invoices sample:', invoices.slice(0, 3)); } catch (_) { }
                     renderInvoices(invoices);
                     renderPagination(pagination);
                     // Peupler dynamiquement les filtres BU/Division en fonction des factures visibles
@@ -674,7 +888,7 @@
             if (buHasOnlyDefault) {
                 // Reset en gardant la première option
                 buSelect.length = 1;
-                Array.from(buMap.entries()).sort((a,b) => a[1].localeCompare(b[1])).forEach(([id, nom]) => {
+                Array.from(buMap.entries()).sort((a, b) => a[1].localeCompare(b[1])).forEach(([id, nom]) => {
                     const opt = document.createElement('option');
                     opt.value = id;
                     opt.textContent = nom;
@@ -684,7 +898,7 @@
 
             if (divHasOnlyDefault) {
                 divisionSelect.length = 1;
-                Array.from(divMap.entries()).sort((a,b) => a[1].localeCompare(b[1])).forEach(([id, nom]) => {
+                Array.from(divMap.entries()).sort((a, b) => a[1].localeCompare(b[1])).forEach(([id, nom]) => {
                     const opt = document.createElement('option');
                     opt.value = id;
                     opt.textContent = nom;
@@ -698,16 +912,16 @@
             const tableBody = document.getElementById('invoicesTableBody');
             const table = document.getElementById('invoicesTable');
             const emptyState = document.getElementById('emptyState');
-            
+
             if (invoices.length === 0) {
                 table.style.display = 'none';
                 emptyState.style.display = 'block';
                 return;
             }
-            
+
             table.style.display = 'block';
             emptyState.style.display = 'none';
-            
+
             tableBody.innerHTML = invoices.map(invoice => `
                 <tr>
                     <td>
@@ -749,16 +963,16 @@
         function renderPagination(pagination) {
             const container = document.getElementById('paginationContainer');
             const paginationElement = document.getElementById('pagination');
-            
+
             if (pagination.pages <= 1) {
                 container.style.display = 'none';
                 return;
             }
-            
+
             container.style.display = 'block';
-            
+
             let html = '';
-            
+
             // Bouton précédent
             html += `
                 <li class="page-item ${pagination.page <= 1 ? 'disabled' : ''}">
@@ -767,7 +981,7 @@
                     </a>
                 </li>
             `;
-            
+
             // Pages
             for (let i = 1; i <= pagination.pages; i++) {
                 if (i === 1 || i === pagination.pages || (i >= pagination.page - 2 && i <= pagination.page + 2)) {
@@ -780,7 +994,7 @@
                     html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
                 }
             }
-            
+
             // Bouton suivant
             html += `
                 <li class="page-item ${pagination.page >= pagination.pages ? 'disabled' : ''}">
@@ -789,7 +1003,7 @@
                     </a>
                 </li>
             `;
-            
+
             paginationElement.innerHTML = html;
         }
 
@@ -812,14 +1026,14 @@
                 date_fin: document.getElementById('dateFinFilter').value,
                 search: document.getElementById('searchFilter').value
             };
-            
+
             // Supprimer les valeurs vides
             Object.keys(currentFilters).forEach(key => {
                 if (!currentFilters[key]) {
                     delete currentFilters[key];
                 }
             });
-            
+
             currentPage = 1;
             loadInvoices();
         }
@@ -833,7 +1047,7 @@
             document.getElementById('dateDebutFilter').value = '';
             document.getElementById('dateFinFilter').value = '';
             document.getElementById('searchFilter').value = '';
-            
+
             currentFilters = {};
             currentPage = 1;
             loadInvoices();
@@ -844,14 +1058,14 @@
             // Initialiser les dates
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('dateEmission').value = today;
-            
+
             const echeance = new Date();
             echeance.setDate(echeance.getDate() + 30);
             document.getElementById('dateEcheance').value = echeance.toISOString().split('T')[0];
-            
+
             // Réinitialiser le formulaire
             document.getElementById('createInvoiceForm').reset();
-            
+
             // Afficher le modal
             const modal = new bootstrap.Modal(document.getElementById('createInvoiceModal'));
             modal.show();
@@ -890,11 +1104,11 @@
                 if (response.ok) {
                     const result = await response.json();
                     alert('Facture créée avec succès !');
-                    
+
                     // Fermer le modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('createInvoiceModal'));
                     modal.hide();
-                    
+
                     // Recharger les données
                     loadStats();
                     loadInvoices();
@@ -956,7 +1170,7 @@
             const spinner = document.getElementById('loadingSpinner');
             const table = document.getElementById('invoicesTable');
             const emptyState = document.getElementById('emptyState');
-            
+
             if (show) {
                 spinner.style.display = 'block';
                 table.style.display = 'none';
@@ -999,7 +1213,7 @@
             alert(message);
         }
     </script>
-    
+
     <!-- Scripts JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1008,4 +1222,5 @@
     <script src="js/session-manager.js"></script>
     <script src="js/invoices.js"></script>
 </body>
+
 </html>

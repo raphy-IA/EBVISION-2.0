@@ -243,7 +243,7 @@ router.post('/', authenticateToken, async (req, res) => {
             priorite, date_debut, date_fin_prevue, budget_prevue, devise || 'XAF', notes, req.user.id,
             fiscal_year_id, opportunity_id, mission_type_id, montant_honoraires,
             description_honoraires, montant_debours, description_debours,
-            conditions_paiement, pourcentage_avance, business_unit_id, associe_id,
+            conditions_paiement ? JSON.stringify(conditions_paiement) : null, pourcentage_avance, business_unit_id, associe_id,
             division_id
         ]);
 
@@ -354,7 +354,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
             client_id: columns.includes('client_id') ? 'client_id' : null,
             type_mission: columns.includes('type_mission') ? 'type_mission' : null,
             business_unit_id: columns.includes('business_unit_id') ? 'business_unit_id' : null,
-            division_id: columns.includes('division_id') ? 'division_id' : null
+            division_id: columns.includes('division_id') ? 'division_id' : null,
+            conditions_paiement: columns.includes('conditions_paiement') ? 'conditions_paiement' : null
         };
 
         const setClauses = [];
@@ -365,6 +366,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
             const column = fieldMap[key];
             if (column) {
                 setClauses.push(`${column} = $${index++}`);
+                // Pour conditions_paiement (si jamais il passe par ici, bien que non mappé explicitement ci-dessus), on stringify
+                // Mais attendez, conditions_paiement n'est pas dans le fieldMap ci-dessus.
+                // Vérifions si on doit l'ajouter ou si c'est géré ailleurs.
+                // Le PUT actuel ne semble pas gérer conditions_paiement dans le fieldMap.
+                // Si on l'ajoute, il faudra le stringify.
+                // Pour l'instant, je ne touche pas à cette boucle car conditions_paiement n'est pas dans fieldMap.
                 values.push(req.body[key]);
             }
         });

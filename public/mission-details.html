@@ -377,11 +377,46 @@
                                 </div>
                                 <div class="col-md-4">
                                     <h5>Statistiques de facturation</h5>
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <p><strong>Total facturé:</strong> <span id="totalInvoiced">...</span></p>
-                                            <p><strong>Total payé:</strong> <span id="totalPaid">...</span></p>
-                                            <p><strong>En attente:</strong> <span id="totalPending">...</span></p>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="card bg-light">
+                                                <div class="card-body p-2 text-center">
+                                                    <small class="text-muted">Total facturé</small>
+                                                    <h6 class="mb-0" id="totalInvoiced">...</h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="card bg-light">
+                                                <div class="card-body p-2 text-center">
+                                                    <small class="text-muted">Total payé</small>
+                                                    <h6 class="mb-0 text-success" id="totalPaid">...</h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="card bg-light">
+                                                <div class="card-body p-2 text-center">
+                                                    <small class="text-muted">En attente</small>
+                                                    <h6 class="mb-0 text-warning" id="totalPending">...</h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="card text-white"
+                                                style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">
+                                                <div class="card-body p-2 text-center">
+                                                    <small>Prochaine facture</small>
+                                                    <h6 class="mb-0" id="nextBillingDateDetails">-</h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="alert alert-info mb-0 p-2 small" id="nextBillingInfo"
+                                                style="display: none;">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                <span id="nextBillingText"></span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -872,7 +907,7 @@
             try {
                 const devise = currentMission?.devise || 'XAF';
 
-                // Charger les factures de la mission
+                // 1. Charger les factures existantes
                 const response = await authenticatedFetch(`/api/invoices/mission/${missionId}`);
                 if (response.ok) {
                     const invoicesData = await response.json();
@@ -885,6 +920,44 @@
                         </div>
                     `;
                 }
+
+                // 2. Charger la prochaine facturation suggérée
+                const nextResponse = await authenticatedFetch(`/api/billing/mission/${missionId}/next`);
+                if (nextResponse.ok) {
+                    const result = await nextResponse.json();
+                    const next = result.data;
+
+                    const nextDateEl = document.getElementById('nextBillingDateDetails');
+                    const infoEl = document.getElementById('nextBillingInfo');
+                    const textEl = document.getElementById('nextBillingText');
+
+                    if (next) {
+                        if (next.date_prevue) {
+                            const d = new Date(next.date_prevue);
+                            nextDateEl.textContent = d.toLocaleDateString('fr-FR');
+                            if (d < new Date()) {
+                                nextDateEl.parentElement.parentElement.classList.remove('bg-success');
+                                nextDateEl.parentElement.parentElement.style.background = 'linear-gradient(135deg, #ff9966 0%, #ff5e62 100%)'; // Orange/Red
+                            } else {
+                                nextDateEl.parentElement.parentElement.style.background = 'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)'; // Green
+                            }
+                        } else {
+                            nextDateEl.textContent = 'À la demande';
+                            nextDateEl.parentElement.parentElement.style.background = 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)'; // Blue
+                        }
+
+                        infoEl.style.display = 'block';
+                        textEl.innerHTML = `<strong>${next.description}</strong><br>Montant suggéré : ${formatCurrency(next.montant_total, devise)}`;
+
+                        // Stocker pour usage dans createInvoiceFromMission
+                        window.nextBillingSuggestion = next;
+                    } else {
+                        nextDateEl.textContent = '-';
+                        infoEl.style.display = 'none';
+                        window.nextBillingSuggestion = null;
+                    }
+                }
+
             } catch (error) {
                 console.error('Erreur lors du chargement des factures:', error);
                 document.getElementById('invoicesList').innerHTML = `
@@ -905,6 +978,10 @@
                         Aucune facture trouvée pour cette mission
                     </div>
                 `;
+                // Reset stats
+                document.getElementById('totalInvoiced').textContent = formatCurrency(0, devise);
+                document.getElementById('totalPaid').textContent = formatCurrency(0, devise);
+                document.getElementById('totalPending').textContent = formatCurrency(0, devise);
                 return;
             }
 
@@ -961,18 +1038,49 @@
 
         // Fonction pour créer une facture depuis la mission
         async function createInvoiceFromMission() {
+            const next = window.nextBillingSuggestion;
+            const devise = currentMission?.devise || 'XAF';
+
+            let confirmMsg = "Voulez-vous créer une nouvelle facture pour cette mission ?";
+            if (next) {
+                confirmMsg = `Générer la facture pour : ${next.description} ?\nMontant suggéré : ${formatCurrency(next.montant_total, devise)}`;
+            }
+
+            if (!confirm(confirmMsg)) return;
+
             try {
-                // Préparer les données de la facture basées sur la mission
+                // Cas 1 : Génération depuis une condition spécifique
+                if (next && next.type === 'CONDITION') {
+                    const response = await authenticatedFetch('/api/billing/generate', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            mission_id: missionId,
+                            condition_index: next.condition_index
+                        })
+                    });
+
+                    if (response.ok) {
+                        alert('Facture brouillon générée avec succès !');
+                        displayInvoicingData();
+                    } else {
+                        const err = await response.json();
+                        alert('Erreur: ' + err.error);
+                    }
+                    return;
+                }
+
+                // Cas 2 : Solde ou Facture standard (si pas de suggestion ou type BALANCE)
+                // On crée une facture brouillon manuellement
                 const invoiceData = {
                     mission_id: missionId,
                     client_id: currentMission.client_id,
                     date_emission: new Date().toISOString().split('T')[0],
-                    date_echeance: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // +30 jours
+                    date_echeance: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                     statut: 'BROUILLON',
-                    conditions_paiement: currentMission.conditions_paiement,
+                    conditions_paiement: next ? next.description : 'Facture standard',
                     taux_tva: 19.25,
                     adresse_facturation: currentMission.adresse_facturation || '',
-                    notes_facture: `Facture générée automatiquement pour la mission: ${currentMission.nom}`
+                    notes_facture: next ? `Généré automatiquement (Solde).` : `Facture générée pour la mission: ${currentMission.nom}`
                 };
 
                 const response = await authenticatedFetch('/api/invoices', {
@@ -984,19 +1092,40 @@
                     const result = await response.json();
                     const invoiceId = result.data.id;
 
-                    // Générer automatiquement les lignes de facture basées sur les conditions de paiement
-                    const generateResponse = await authenticatedFetch(`/api/invoices/${invoiceId}/generate-items`, {
-                        method: 'POST'
-                    });
-
-                    if (generateResponse.ok) {
-                        alert('Facture créée avec lignes générées automatiquement !');
+                    // Si c'est un solde, on ajoute les lignes correspondantes
+                    if (next && next.type === 'BALANCE') {
+                        if (next.montant_honoraires > 0) {
+                            await authenticatedFetch(`/api/invoices/${invoiceId}/items`, {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    description: 'Solde Honoraires',
+                                    quantite: 1,
+                                    unite: 'forfait',
+                                    prix_unitaire: next.montant_honoraires,
+                                    taux_tva: 19.25
+                                })
+                            });
+                        }
+                        if (next.montant_debours > 0) {
+                            await authenticatedFetch(`/api/invoices/${invoiceId}/items`, {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    description: 'Solde Débours',
+                                    quantite: 1,
+                                    unite: 'forfait',
+                                    prix_unitaire: next.montant_debours,
+                                    taux_tva: 19.25
+                                })
+                            });
+                        }
+                        alert('Facture de solde générée avec succès !');
                     } else {
-                        const errorData = await generateResponse.json();
-                        alert(`Facture créée mais erreur lors de la génération des lignes: ${errorData.error}`);
+                        // Comportement par défaut (générer items depuis mission ou laisser vide)
+                        // Ici on laisse vide pour que l'utilisateur remplisse, ou on peut appeler generate-items
+                        // Pour l'instant, on notifie juste
+                        alert('Facture brouillon créée. Veuillez ajouter les lignes.');
                     }
 
-                    // Recharger les factures
                     displayInvoicingData();
                 } else {
                     const errorData = await response.json();

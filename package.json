@@ -36,7 +36,10 @@
     "branding:configure": "node docs/Branding/Scripts/configure_branding.js",
     "branding:verify": "node docs/Branding/Scripts/verify_branding.js",
     "branding:verify:fix": "node docs/Branding/Scripts/verify_branding.js --fix",
-    "branding:list": "node docs/Branding/Scripts/configure_branding.js --list"
+    "branding:list": "node docs/Branding/Scripts/configure_branding.js --list",
+    "migrate": "node scripts/migrate.js",
+    "validate-schema": "node scripts/validate-schema.js",
+    "init-migrations": "node scripts/init-migrations.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",

@@ -57,6 +57,7 @@ const prospectingRoutes = require('./src/routes/prospecting');
 const pagePermissionsRoutes = require('./src/routes/page-permissions');
 const permissionsRoutes = require('./src/routes/permissions');
 const brandingRoutes = require('./src/routes/branding');
+const billingRoutes = require('./src/routes/billing');
 const { authenticateToken } = require('./src/middleware/auth');
 
 // Import des middlewares
@@ -256,6 +257,7 @@ app.use('/api/prospecting', prospectingRoutes);
 app.use('/api/permissions', authenticateToken, permissionsRoutes);
 app.use('/api/auth', pagePermissionsRoutes);
 app.use('/api/branding', brandingRoutes);
+app.use('/api/billing', billingRoutes);
 
 // Route de synchronisation des permissions et menus
 const { router: syncPermissionsRoutes } = require('./src/routes/sync-permissions');
