@@ -68,20 +68,28 @@ router.post('/check-page-permission', authenticateToken, async (req, res) => {
 
         // Vérifier les permissions dans la base de données
         // Format du code de permission: 'page.{pageName}'
+        // NORMALISATION: Gérer à la fois les tirets et les underscores
+        const normalizePermissionCode = (code) => {
+            return code.toLowerCase().replace(/-/g, '_');
+        };
+
         const permissionCode = `page.${pageName}`;
+        const normalizedCode = normalizePermissionCode(permissionCode);
 
         console.log('   🔍 Recherche de la permission:', permissionCode);
+        console.log('   🔍 Code normalisé:', normalizedCode);
 
+        // Requête avec normalisation pour gérer les variations de nommage
         const permissionQuery = `
             SELECT DISTINCT p.code, p.name
             FROM permissions p
             JOIN role_permissions rp ON p.id = rp.permission_id
             JOIN user_roles ur ON rp.role_id = ur.role_id
             WHERE ur.user_id = $1 
-              AND p.code = $2
+              AND LOWER(REPLACE(p.code, '-', '_')) = $2
         `;
 
-        const permissionResult = await pool.query(permissionQuery, [req.user.id, permissionCode]);
+        const permissionResult = await pool.query(permissionQuery, [req.user.id, normalizedCode]);
 
         if (permissionResult.rows.length > 0) {
             console.log('   ✅ Accès autorisé via permissions en base de données');
@@ -96,14 +104,14 @@ router.post('/check-page-permission', authenticateToken, async (req, res) => {
         }
 
         // Si aucune permission n'est trouvée en base de données,
-        // vérifier si la permission existe pour cette page
+        // vérifier si la permission existe pour cette page (avec normalisation)
         const permissionExistsQuery = `
             SELECT code, name 
             FROM permissions 
-            WHERE code = $1
+            WHERE LOWER(REPLACE(code, '-', '_')) = $1
         `;
 
-        const permissionExistsResult = await pool.query(permissionExistsQuery, [permissionCode]);
+        const permissionExistsResult = await pool.query(permissionExistsQuery, [normalizedCode]);
 
         if (permissionExistsResult.rows.length > 0) {
             // La permission existe mais l'utilisateur ne l'a pas
