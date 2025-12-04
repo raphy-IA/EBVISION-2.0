@@ -566,7 +566,7 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND (ts.status ILIKE 'submitted' OR ts.status ILIKE 'saved')),
+                     AND (ts.statut ILIKE 'submitted' OR ts.statut ILIKE 'saved')),
                     0
                 ) as heures_saisies,
                 -- Heures validées (approved - réellement validées)
@@ -576,7 +576,7 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND ts.status ILIKE 'approved'),
+                     AND ts.statut ILIKE 'approved'),
                     0
                 ) as heures_validees,
                 -- Duree reelle = priorité aux validées, sinon saisies/brouillons
@@ -586,13 +586,13 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND ts.status ILIKE 'approved'),
+                     AND ts.statut ILIKE 'approved'),
                     (SELECT SUM(te.heures)
                      FROM time_entries te
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND (ts.status ILIKE 'submitted' OR ts.status ILIKE 'saved')),
+                     AND (ts.statut ILIKE 'submitted' OR ts.statut ILIKE 'saved')),
                     0
                 ) as duree_reelle,
                 mt.notes,
@@ -619,7 +619,7 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                                  WHERE te.task_id = mt.task_id
                                  AND te.mission_id = mt.mission_id
                                  AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
-                                 AND ts.status = 'submitted'),
+                                 AND ts.statut = 'submitted'),
                                 0
                             ),
                             'heures_validees', COALESCE(
@@ -629,7 +629,7 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                                  WHERE te.task_id = mt.task_id
                                  AND te.mission_id = mt.mission_id
                                  AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
-                                 AND ts.status = 'approved'),
+                                 AND ts.statut = 'approved'),
                                 0
                             ),
                             'heures_effectuees', COALESCE(
@@ -639,14 +639,14 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                                  WHERE te.task_id = mt.task_id
                                  AND te.mission_id = mt.mission_id
                                  AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
-                                 AND ts.status = 'approved'),
+                                 AND ts.statut = 'approved'),
                                 (SELECT SUM(te.heures)
                                  FROM time_entries te
                                  JOIN time_sheets ts ON te.time_sheet_id = ts.id
                                  WHERE te.task_id = mt.task_id
                                  AND te.mission_id = mt.mission_id
                                  AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
-                                 AND ts.status = 'submitted'),
+                                 AND ts.statut = 'submitted'),
                                 0
                             ),
                             'taux_horaire', ta.taux_horaire,
@@ -1008,7 +1008,7 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
                          JOIN time_sheets ts ON te.time_sheet_id = ts.id
                          WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                          AND te.mission_id = mt.mission_id
-                         AND ts.status ILIKE 'approved'),
+                         AND ts.statut ILIKE 'approved'),
                         0
                     ) > 0 THEN 1
                     WHEN mt.statut = 'EN_COURS' THEN 1 
@@ -1020,7 +1020,7 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
                          JOIN time_sheets ts ON te.time_sheet_id = ts.id
                          WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                          AND te.mission_id = mt.mission_id
-                         AND ts.status ILIKE 'approved'),
+                         AND ts.statut ILIKE 'approved'),
                         0
                     ) = 0 
                     AND mt.statut = 'PLANIFIEE' THEN 1 
@@ -1031,14 +1031,29 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
                      WHERE ta.mission_task_id = mt.id),
                     0
                 )) as total_planned_hours,
-                SUM(mt.duree_reelle) as total_actual_hours,
+                -- Calculate duree_reelle instead of referencing it
+                SUM(COALESCE(
+                    (SELECT SUM(te.heures)
+                     FROM time_entries te
+                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                     AND te.mission_id = mt.mission_id
+                     AND ts.statut ILIKE 'approved'),
+                    (SELECT SUM(te.heures)
+                     FROM time_entries te
+                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                     AND te.mission_id = mt.mission_id
+                     AND (ts.statut ILIKE 'submitted' OR ts.statut ILIKE 'saved')),
+                    0
+                )) as total_actual_hours,
                 COALESCE(SUM(
                     (SELECT SUM(te.heures)
                      FROM time_entries te
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND ts.status ILIKE 'approved')
+                     AND ts.statut ILIKE 'approved')
                 ), 0) as total_validated_hours
             FROM mission_tasks mt
             WHERE mt.mission_id = $1
@@ -1059,7 +1074,22 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
                      WHERE ta.mission_task_id = mt.id),
                     0
                 ) as duree_planifiee,
-                mt.duree_reelle,
+                -- Calculate duree_reelle instead of referencing it
+                COALESCE(
+                    (SELECT SUM(te.heures)
+                     FROM time_entries te
+                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                     AND te.mission_id = mt.mission_id
+                     AND ts.statut ILIKE 'approved'),
+                    (SELECT SUM(te.heures)
+                     FROM time_entries te
+                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                     AND te.mission_id = mt.mission_id
+                     AND (ts.statut ILIKE 'submitted' OR ts.statut ILIKE 'saved')),
+                    0
+                ) as duree_reelle,
                 t.libelle as task_libelle,
                 -- Heures validées (approved)
                 COALESCE(
@@ -1068,7 +1098,7 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND ts.status ILIKE 'approved'),
+                     AND ts.statut ILIKE 'approved'),
                     0
                 ) as heures_validees,
                 -- Heures saisies (submitted + saved)
@@ -1078,7 +1108,7 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND (ts.status ILIKE 'submitted' OR ts.status ILIKE 'saved')),
+                     AND (ts.statut ILIKE 'submitted' OR ts.statut ILIKE 'saved')),
                     0
                 ) as heures_saisies,
                 ROUND(
@@ -1095,7 +1125,7 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
                              JOIN time_sheets ts ON te.time_sheet_id = ts.id
                              WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                              AND te.mission_id = mt.mission_id
-                             AND ts.status ILIKE 'approved'),
+                             AND ts.statut ILIKE 'approved'),
                             0
                         ) / COALESCE(
                             (SELECT SUM(ta.heures_planifiees)
@@ -1113,7 +1143,7 @@ router.get('/:id/progress', authenticateToken, async (req, res) => {
                          JOIN time_sheets ts ON te.time_sheet_id = ts.id
                          WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                          AND te.mission_id = mt.mission_id
-                         AND ts.status ILIKE 'approved'),
+                         AND ts.statut ILIKE 'approved'),
                         0
                     ) > 0 THEN 'EN_COURS'
                     WHEN mt.statut = 'PLANIFIEE' THEN 'PLANIFIEE'

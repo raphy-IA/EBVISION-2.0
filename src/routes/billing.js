@@ -131,6 +131,8 @@ router.get('/mission/:id/next', authenticateToken, async (req, res) => {
 
         // 3. Analyser les conditions de paiement
         const conditions = parsePaymentConditions(mission.conditions_paiement);
+        console.log(`[Billing] Mission ${missionId}: ${conditions.length} conditions trouvées. Total facturé: ${totalFacture}`);
+
 
         let nextBilling = null;
         let cumulAttendu = 0;
@@ -216,8 +218,11 @@ router.post('/generate', authenticateToken, async (req, res) => {
             if (!cond) throw new Error('Condition de paiement introuvable');
 
             description = cond.details || cond.description || `Facture Tranche ${parseInt(condition_index) + 1}`;
+
+            // Normalisation des propriétés (support snake_case et camelCase)
             const honoraires = parseFloat(cond.montant_honoraires || cond.montantHonoraires || 0);
             const debours = parseFloat(cond.montant_debours || cond.montantDebours || 0);
+
             montant_ht = honoraires + debours;
 
             if (honoraires > 0) items.push({ description: `Honoraires - ${description}`, montant: honoraires, type: 'HONORAIRES' });
@@ -227,25 +232,60 @@ router.post('/generate', authenticateToken, async (req, res) => {
             items.push({ description: 'Solde Honoraires', montant: 0, type: 'HONORAIRES' });
         }
 
-        // 3. Générer le numéro de facture (Format: FACT-YYYYMM-XXXX)
+        // 3. Récupérer la configuration (BU ou Globale)
+        let invoicePrefixBase = 'FACT-';
+        let applicableTaxRate = 0;
+        let invoiceFooter = '';
+        let invoiceNotes = '';
+
+        // Vérifier si une config BU existe
+        const buSettingsRes = await client.query('SELECT * FROM bu_financial_settings WHERE business_unit_id = $1', [mission.business_unit_id]);
+
+        if (buSettingsRes.rows.length > 0) {
+            // Configuration BU trouvée
+            const buSettings = buSettingsRes.rows[0];
+            invoicePrefixBase = buSettings.invoice_prefix || 'FACT-';
+            invoiceFooter = buSettings.invoice_footer || '';
+
+            // Calculer le taux cumulé des taxes "AJOUTÉES" (ex: TVA + CSS)
+            if (buSettings.active_tax_ids && buSettings.active_tax_ids.length > 0) {
+                const taxesRes = await client.query(`
+                    SELECT rate FROM taxes 
+                    WHERE id = ANY($1::int[]) AND type = 'ADDED' AND is_active = true
+                `, [buSettings.active_tax_ids]);
+
+                applicableTaxRate = taxesRes.rows.reduce((sum, row) => sum + parseFloat(row.rate), 0);
+            }
+        } else {
+            // Fallback : Configuration Globale
+            const globalSettingsRes = await client.query("SELECT key, value FROM financial_settings");
+            const globalSettings = {};
+            globalSettingsRes.rows.forEach(row => globalSettings[row.key] = row.value);
+
+            invoicePrefixBase = globalSettings.invoice_prefix || 'FACT-';
+            applicableTaxRate = parseFloat(globalSettings.default_tva || 19.25);
+            invoiceFooter = globalSettings.invoice_footer || '';
+            invoiceNotes = globalSettings.invoice_notes_default || '';
+        }
+
+        // 4. Générer le numéro de facture
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
-        const prefix = `FACT-${year}${month}-`;
+        const fullPrefix = `${invoicePrefixBase}${year}${month}-`;
 
         const seqRes = await client.query(`
             SELECT COUNT(*) as count FROM invoices WHERE numero_facture LIKE $1
-        `, [`${prefix}%`]);
+        `, [`${fullPrefix}%`]);
         const nextSeq = parseInt(seqRes.rows[0].count) + 1;
-        const numeroFacture = `${prefix}${String(nextSeq).padStart(4, '0')}`;
+        const numeroFacture = `${fullPrefix}${String(nextSeq).padStart(4, '0')}`;
 
-        // 4. Calculer la date d'échéance (J+30 par défaut)
+        // 5. Calculer la date d'échéance (J+30 par défaut ou config)
+        // TODO: Ajouter default_payment_terms dans la config BU si nécessaire
         const dateEcheance = new Date();
         dateEcheance.setDate(dateEcheance.getDate() + 30);
 
-        // 5. Créer la facture
-        // Utilisation de notes_facture au lieu de description/objet qui n'existent pas
-        // montant_ht et montant_ttc sont des colonnes générées, on ne les insère pas
+        // 6. Créer la facture
         const invoiceQuery = `
             INSERT INTO invoices (
                 mission_id, client_id, statut, date_emission, date_echeance,
@@ -256,21 +296,23 @@ router.post('/generate', authenticateToken, async (req, res) => {
             ) RETURNING id, numero_facture
         `;
 
+        // Utiliser les notes par défaut si aucune description spécifique n'est fournie
+        const finalNotes = description || invoiceNotes;
+
         const invoiceRes = await client.query(invoiceQuery, [
             mission.id, mission.client_id, dateEcheance,
-            description, numeroFacture, req.user.id
+            finalNotes, numeroFacture, req.user.id
         ]);
         const invoice = invoiceRes.rows[0];
 
-        // 6. Créer les lignes de facture
+        // 7. Créer les lignes de facture avec le taux calculé
         for (const item of items) {
             await client.query(`
                 INSERT INTO invoice_items (
-                    invoice_id, description, quantite, prix_unitaire, 
-                    montant_ht, montant_ttc, taux_tva, montant_tva
+                    invoice_id, description, quantite, prix_unitaire, taux_tva
                 )
-                VALUES ($1, $2, 1, $3, $3, $3, 0, 0)
-            `, [invoice.id, item.description, item.montant]);
+                VALUES ($1, $2, 1, $3, $4)
+            `, [invoice.id, item.description, item.montant, applicableTaxRate]);
         }
 
         await client.query('COMMIT');
