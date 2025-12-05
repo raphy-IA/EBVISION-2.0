@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détails Facture</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-    
+
+
     <style>
         .invoice-status {
             padding: 0.25rem 0.75rem;
@@ -20,32 +21,49 @@
             font-size: 0.875rem;
             font-weight: 500;
         }
-        
-        .status-brouillon { background-color: #6c757d; color: white; }
-        .status-emise { background-color: #17a2b8; color: white; }
-        .status-payee { background-color: #28a745; color: white; }
-        .status-annulee { background-color: #dc3545; color: white; }
-        
+
+        .status-brouillon {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .status-emise {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .status-payee {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-annulee {
+            background-color: #dc3545;
+            color: white;
+        }
+
         .main-content-area {
             flex-grow: 1;
             padding: 2rem;
             min-height: 100vh;
             background-color: #f8f9fa;
         }
+
         /* Garantir l'agencement côte à côte sidebar + contenu */
         .page-wrapper {
             display: flex;
             min-height: 100vh;
         }
+
         .sidebar-container {
             width: 300px;
             flex-shrink: 0;
         }
     </style>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -56,11 +74,12 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -73,143 +92,147 @@
         <!-- Zone de contenu principale -->
         <div class="main-content-area">
             <div class="container-fluid">
-            <!-- Contenu existant -->
+                <!-- Contenu existant -->
 
-            <div class="row">
-                <div class="col-12">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h2 id="invoiceTitle">Détails de la facture</h2>
-                            <p class="text-muted" id="invoiceSubtitle">Chargement...</p>
-                        </div>
-                        <div>
-                            <button class="btn btn-outline-secondary me-2" onclick="goBack()">
-                                <i class="fas fa-arrow-left me-2"></i>Retour
-                            </button>
-                            <button class="btn btn-primary" onclick="printInvoice()">
-                                <i class="fas fa-print me-2"></i>Imprimer
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Informations de la facture -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5>Informations générales</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong>Numéro:</strong> <span id="invoiceNumber">...</span></p>
-                                    <p><strong>Statut:</strong> <span id="invoiceStatus">...</span></p>
-                                    <p><strong>Date d'émission:</strong> <span id="invoiceEmissionDate">...</span></p>
-                                    <p><strong>Date d'échéance:</strong> <span id="invoiceDueDate">...</span></p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p><strong>Client:</strong> <span id="invoiceClient">...</span></p>
-                                    <p><strong>Mission:</strong> <span id="invoiceMission">...</span></p>
-                                     <p><strong>Unité d'affaires:</strong> <span id="invoiceBU">...</span></p>
-                                    <p><strong>TVA:</strong> <span id="invoiceTVARate">...</span></p>
-                                    <p><strong>Créé par:</strong> <span id="invoiceCreatedBy">...</span></p>
-                                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h2 id="invoiceTitle">Détails de la facture</h2>
+                                <p class="text-muted" id="invoiceSubtitle">Chargement...</p>
+                            </div>
+                            <div>
+                                <button class="btn btn-outline-secondary me-2" onclick="goBack()">
+                                    <i class="fas fa-arrow-left me-2"></i>Retour
+                                </button>
+                                <button class="btn btn-primary" onclick="printInvoice()">
+                                    <i class="fas fa-print me-2"></i>Imprimer
+                                </button>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Montants -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="card text-center">
-                                <div class="card-body">
-                                    <h6>Montant HT</h6>
-                                    <h4 id="invoiceHT">...</h4>
-                                </div>
+                        <!-- Informations de la facture -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5>Informations générales</h5>
                             </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center">
-                                <div class="card-body">
-                                    <h6>Montant TVA</h6>
-                                    <h4 id="invoiceTVAAmount">...</h4>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center">
-                                <div class="card-body">
-                                    <h6>Montant TTC</h6>
-                                    <h4 id="invoiceTTC">...</h4>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center">
-                                <div class="card-body">
-                                    <h6>Montant payé</h6>
-                                    <h4 id="invoicePaid">...</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Onglets -->
-                    <ul class="nav nav-tabs" id="invoiceTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="items-tab" data-bs-toggle="tab" data-bs-target="#items" type="button" role="tab">
-                                <i class="fas fa-list me-2"></i>Lignes de facture
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab">
-                                <i class="fas fa-credit-card me-2"></i>Paiements
-                            </button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content" id="invoiceTabContent">
-                        <!-- Onglet Lignes de facture -->
-                        <div class="tab-pane fade show active" id="items" role="tabpanel">
-                            <div class="card mt-3">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-list"></i> Lignes de facture
-                                    </h5>
-                                    <div>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="addInvoiceItem()">
-                                            <i class="fas fa-plus"></i> Ajouter une ligne
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="regenerateItems()">
-                                            <i class="fas fa-sync"></i> Régénérer depuis la mission
-                                        </button>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Numéro:</strong> <span id="invoiceNumber">...</span></p>
+                                        <p><strong>Statut:</strong> <span id="invoiceStatus">...</span></p>
+                                        <p><strong>Date d'émission:</strong> <span id="invoiceEmissionDate">...</span>
+                                        </p>
+                                        <p><strong>Date d'échéance:</strong> <span id="invoiceDueDate">...</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Client:</strong> <span id="invoiceClient">...</span></p>
+                                        <p><strong>Mission:</strong> <span id="invoiceMission">...</span></p>
+                                        <p><strong>Unité d'affaires:</strong> <span id="invoiceBU">...</span></p>
+                                        <p><strong>TVA:</strong> <span id="invoiceTVARate">...</span></p>
+                                        <p><strong>Créé par:</strong> <span id="invoiceCreatedBy">...</span></p>
                                     </div>
                                 </div>
-                                <div class="card-body">
-                                    <div id="invoiceItems">Chargement des lignes...</div>
+                            </div>
+                        </div>
+
+                        <!-- Montants -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h6>Montant HT</h6>
+                                        <h4 id="invoiceHT">...</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h6>Montant TVA</h6>
+                                        <h4 id="invoiceTVAAmount">...</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h6>Montant TTC</h6>
+                                        <h4 id="invoiceTTC">...</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h6>Montant payé</h6>
+                                        <h4 id="invoicePaid">...</h4>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Onglet Paiements -->
-                        <div class="tab-pane fade" id="payments" role="tabpanel">
-                            <div class="card mt-3">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-credit-card"></i> Paiements
-                                    </h5>
-                                    <div>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="addPayment()">
-                                            <i class="fas fa-plus"></i> Ajouter un paiement
-                                        </button>
+                        <!-- Onglets -->
+                        <ul class="nav nav-tabs" id="invoiceTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="items-tab" data-bs-toggle="tab"
+                                    data-bs-target="#items" type="button" role="tab">
+                                    <i class="fas fa-list me-2"></i>Lignes de facture
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="payments-tab" data-bs-toggle="tab"
+                                    data-bs-target="#payments" type="button" role="tab">
+                                    <i class="fas fa-credit-card me-2"></i>Paiements
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="invoiceTabContent">
+                            <!-- Onglet Lignes de facture -->
+                            <div class="tab-pane fade show active" id="items" role="tabpanel">
+                                <div class="card mt-3">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-list"></i> Lignes de facture
+                                        </h5>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="addInvoiceItem()">
+                                                <i class="fas fa-plus"></i> Ajouter une ligne
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary"
+                                                onclick="regenerateItems()">
+                                                <i class="fas fa-sync"></i> Régénérer depuis la mission
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="invoiceItems">Chargement des lignes...</div>
                                     </div>
                                 </div>
-                                <div class="card-body">
-                                    <div id="invoicePayments">Chargement des paiements...</div>
+                            </div>
+
+                            <!-- Onglet Paiements -->
+                            <div class="tab-pane fade" id="payments" role="tabpanel">
+                                <div class="card mt-3">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-credit-card"></i> Paiements
+                                        </h5>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="addPayment()">
+                                                <i class="fas fa-plus"></i> Ajouter un paiement
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="invoicePayments">Chargement des paiements...</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
             </div>
         </div>
     </div>
@@ -233,34 +256,37 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="itemQuantity" class="form-label">Quantité</label>
-                                    <input type="number" class="form-control" id="itemQuantity" value="1" min="0" step="0.01" required>
-    </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="itemUnit" class="form-label">Unité</label>
-                                    <select class="form-control" id="itemUnit">
-                                        <option value="heure">Heure</option>
-                                        <option value="jour">Jour</option>
-                                        <option value="forfait">Forfait</option>
-                                        <option value="piece">Pièce</option>
-                                    </select>
+                                    <input type="number" class="form-control" id="itemQuantity" value="1" min="0"
+                                        step="0.01" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="itemUnit" class="form-label">Unité</label>
+                                        <select class="form-control" id="itemUnit">
+                                            <option value="heure">Heure</option>
+                                            <option value="jour">Jour</option>
+                                            <option value="forfait">Forfait</option>
+                                            <option value="piece">Pièce</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="itemUnitPrice" class="form-label">Prix unitaire</label>
-                                    <input type="number" class="form-control" id="itemUnitPrice" min="0" step="0.01" required>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="itemUnitPrice" class="form-label">Prix unitaire</label>
+                                        <input type="number" class="form-control" id="itemUnitPrice" min="0" step="0.01"
+                                            required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="itemTaxRate" class="form-label">Taux TVA (%)</label>
+                                        <input type="number" class="form-control" id="itemTaxRate" value="19.25" min="0"
+                                            step="0.01" required>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="itemTaxRate" class="form-label">Taux TVA (%)</label>
-                                    <input type="number" class="form-control" id="itemTaxRate" value="19.25" min="0" step="0.01" required>
-                                </div>
-                            </div>
-                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -292,7 +318,8 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="paymentAmount" class="form-label">Montant</label>
-                                    <input type="number" class="form-control" id="paymentAmount" min="0" step="0.01" required>
+                                    <input type="number" class="form-control" id="paymentAmount" min="0" step="0.01"
+                                        required>
                                 </div>
                             </div>
                         </div>
@@ -323,11 +350,13 @@
                         </div>
                         <div class="mb-3">
                             <label for="paymentReference" class="form-label">Référence</label>
-                            <input type="text" class="form-control" id="paymentReference" placeholder="Numéro de chèque, référence virement...">
+                            <input type="text" class="form-control" id="paymentReference"
+                                placeholder="Numéro de chèque, référence virement...">
                         </div>
                         <div class="mb-3">
                             <label for="paymentNotes" class="form-label">Notes</label>
-                            <textarea class="form-control" id="paymentNotes" rows="3" placeholder="Informations complémentaires..."></textarea>
+                            <textarea class="form-control" id="paymentNotes" rows="3"
+                                placeholder="Informations complémentaires..."></textarea>
                         </div>
                     </form>
                 </div>
@@ -354,7 +383,7 @@
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            
+
             return fetch(url, {
                 ...options,
                 headers: {
@@ -379,10 +408,10 @@
         }
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const urlParams = new URLSearchParams(window.location.search);
             invoiceId = urlParams.get('id');
-            
+
             if (invoiceId) {
                 loadInvoiceDetails(invoiceId);
             } else {
@@ -437,7 +466,7 @@
             document.getElementById('invoiceMission').textContent = currentInvoice.mission_nom || 'N/A';
             document.getElementById('invoiceBU').textContent = currentInvoice.business_unit_nom || currentInvoice.business_unit_code || 'N/A';
             document.getElementById('invoiceTVARate').textContent = `${currentInvoice.taux_tva}%`;
-            document.getElementById('invoiceCreatedBy').textContent = currentInvoice.created_by_prenom ? 
+            document.getElementById('invoiceCreatedBy').textContent = currentInvoice.created_by_prenom ?
                 `${currentInvoice.created_by_prenom} ${currentInvoice.created_by_nom}` : 'N/A';
 
             // Montants
@@ -470,7 +499,7 @@
                             <tr>
                                 <th>Description</th>
                                 <th>Quantité</th>
-                                <th>Prix unitaire</th>
+                                <th>Budget</th>
                                 <th>Montant HT</th>
                                 <th>TVA</th>
                                 <th>Montant TTC</th>
@@ -481,7 +510,18 @@
                             ${currentInvoice.items.map(item => `
                                 <tr>
                                     <td>${item.description}</td>
-                                    <td>${item.quantite} ${item.unite}</td>
+                                    <td>${item.quantite && !isNaN(item.quantite)
+                    ? (item.quantite < 1
+                        // FEES template: afficher en pourcentage
+                        ? (Number.isInteger(parseFloat(item.quantite * 100))
+                            ? parseInt(item.quantite * 100)
+                            : parseFloat(item.quantite * 100).toFixed(2)) + '%'
+                        // STANDARD template: afficher quantité normale
+                        : (Number.isInteger(parseFloat(item.quantite))
+                            ? parseInt(item.quantite)
+                            : parseFloat(item.quantite).toFixed(2)) + ' ' + (item.unite || 'unité'))
+                    : item.quantite
+                }</td>
                                     <td>${formatCurrency(item.prix_unitaire)}</td>
                                     <td>${formatCurrency(item.montant_ht)}</td>
                                     <td>${formatCurrency(item.montant_tva)}</td>
@@ -586,7 +626,7 @@
             document.getElementById('itemUnit').value = 'forfait';
             document.getElementById('itemUnitPrice').value = '';
             document.getElementById('itemTaxRate').value = '19.25';
-            
+
             const modal = new bootstrap.Modal(document.getElementById('itemModal'));
             modal.show();
         }
@@ -603,7 +643,7 @@
             document.getElementById('itemUnit').value = item.unite;
             document.getElementById('itemUnitPrice').value = item.prix_unitaire;
             document.getElementById('itemTaxRate').value = item.taux_tva;
-            
+
             const modal = new bootstrap.Modal(document.getElementById('itemModal'));
             modal.show();
         }
@@ -707,7 +747,7 @@
             document.getElementById('paymentStatus').value = 'EN_ATTENTE';
             document.getElementById('paymentReference').value = '';
             document.getElementById('paymentNotes').value = '';
-            
+
             const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
             modal.show();
         }
@@ -725,7 +765,7 @@
             document.getElementById('paymentStatus').value = payment.statut;
             document.getElementById('paymentReference').value = payment.reference || '';
             document.getElementById('paymentNotes').value = payment.notes || '';
-            
+
             const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
             modal.show();
         }
@@ -800,4 +840,5 @@
     <!-- SessionManager pour la gestion centralisée des sessions -->
     <script src="js/session-manager.js"></script>
 </body>
-</html> 
+
+</html>
