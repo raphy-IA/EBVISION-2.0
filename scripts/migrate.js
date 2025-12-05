@@ -124,11 +124,12 @@ async function executeMigration(filename) {
 /**
  * Fonction principale
  */
-async function runMigrations() {
+async function runMigrations(closePool = true) {
     log('\n🚀 Démarrage du système de migrations', 'blue');
     log('━'.repeat(60), 'gray');
 
     try {
+        // ... (execution logic remains same via existing code, we are just changing the wrapper)
         // 1. Créer la table de tracking
         await ensureMigrationsTable();
 
@@ -163,9 +164,12 @@ async function runMigrations() {
         log('\n━'.repeat(60), 'gray');
         log('❌ Échec de l\'exécution des migrations', 'red');
         log('━'.repeat(60), 'gray');
-        process.exit(1);
+        if (closePool) process.exit(1);
+        else throw error; // Re-throw for server to handle
     } finally {
-        await pool.end();
+        if (closePool) {
+            await pool.end();
+        }
     }
 }
 

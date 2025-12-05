@@ -58,6 +58,10 @@ const pagePermissionsRoutes = require('./src/routes/page-permissions');
 const permissionsRoutes = require('./src/routes/permissions');
 const brandingRoutes = require('./src/routes/branding');
 const billingRoutes = require('./src/routes/billing');
+const invoiceWorkflowRoutes = require('./src/routes/invoice-workflow');
+const financialInstitutionsRoutes = require('./src/routes/financial-institutions');
+const bankAccountsRoutes = require('./src/routes/bank-accounts');
+const paymentsRoutes = require('./src/routes/payments');
 const { authenticateToken } = require('./src/middleware/auth');
 
 // Import des middlewares
@@ -258,6 +262,10 @@ app.use('/api/permissions', authenticateToken, permissionsRoutes);
 app.use('/api/auth', pagePermissionsRoutes);
 app.use('/api/branding', brandingRoutes);
 app.use('/api/billing', billingRoutes);
+app.use('/api/invoices', invoiceWorkflowRoutes); // Workflow routes (mounted after main invoices routes)
+app.use('/api/financial-institutions', financialInstitutionsRoutes);
+app.use('/api/bank-accounts', bankAccountsRoutes);
+app.use('/api/payments', paymentsRoutes);
 
 // Route de synchronisation des permissions et menus
 const { router: syncPermissionsRoutes } = require('./src/routes/sync-permissions');
@@ -279,8 +287,18 @@ app.use(errorHandler);
 async function startServer() {
     try {
         // Connexion à la base de données
+        // Connexion à la base de données
         await connectDatabase();
         console.log('✅ Connexion à PostgreSQL réussie');
+
+        // Exécuter les migrations automatiquement
+        console.log('🔄 Vérification des migrations...');
+        const match = require('./scripts/migrate');
+        if (match && match.runMigrations) {
+            await match.runMigrations(false);
+        } else {
+            console.log('⚠️ Impossible de charger le module de migrations');
+        }
 
         // Initialiser les tâches cron
         CronService.initCronJobs();
