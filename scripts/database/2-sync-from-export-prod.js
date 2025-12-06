@@ -56,9 +56,12 @@ async function getCurrentSchema() {
 
 function compareSchemas(referenceSchema, currentSchema) {
     const differences = [];
+    let totalTablesChecked = 0;
+    let totalColumnsChecked = 0;
 
     // Pour chaque table de référence
     for (const tableName in referenceSchema.tables) {
+        totalTablesChecked++;
         const refTable = referenceSchema.tables[tableName];
         const currentTable = currentSchema[tableName];
 
@@ -79,6 +82,7 @@ function compareSchemas(referenceSchema, currentSchema) {
 
         // Vérifier chaque colonne de référence
         refTable.columns.forEach(refCol => {
+            totalColumnsChecked++;
             const currentCol = currentColMap[refCol.column_name];
 
             if (!currentCol) {
@@ -100,6 +104,9 @@ function compareSchemas(referenceSchema, currentSchema) {
             }
         });
     }
+
+    console.log(`   📊 ${totalTablesChecked} tables vérifiées`);
+    console.log(`   📊 ${totalColumnsChecked} colonnes comparées\n`);
 
     return differences;
 }
