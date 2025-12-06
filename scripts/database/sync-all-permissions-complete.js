@@ -472,11 +472,22 @@ function getFunctionalPermissions() {
 /**
  * Synchroniser toutes les permissions dans la base de données
  */
-async function syncAllPermissions() {
+/**
+ * Synchroniser toutes les permissions dans la base de données
+ * @param {object} [existingClient] - Client DB optionnel
+ */
+async function syncAllPermissions(existingClient = null) {
+    let client = existingClient;
+    let shouldRelease = false;
+
     try {
-        console.log('📡 Test de connexion à la base de données...');
-        await pool.query('SELECT NOW()');
-        console.log('✅ Connexion réussie!\n');
+        if (!client) {
+            console.log('📡 Connexion temporaire à la base de données pour sync permissions...');
+            client = await pool.connect();
+            shouldRelease = true;
+        }
+
+        console.log('✅ Début de la synchronisation des permissions...\n');
 
         // 1. Extraire toutes les permissions
         const routePerms = await extractPermissionsFromRoutes();
@@ -496,12 +507,10 @@ async function syncAllPermissions() {
                 } else {
                     // Mettre à jour si la catégorie est plus spécifique
                     const existing = allPermissions.get(code);
-                    // Garder la catégorie la plus spécifique (dashboard > pages, clients > pages, etc.)
                     const priorityCategories = ['dashboard', 'clients', 'missions', 'opportunities', 'campaigns', 'reports', 'hr', 'time', 'invoices', 'users', 'config'];
 
-                    // Si la permission est déjà 'navigation', on la garde comme telle (priorité absolue pour les pages)
                     if (existing.category === 'navigation') {
-                        // Ne rien faire, on garde 'navigation'
+                        // Garder navigation
                     } else if (perm.category === 'navigation') {
                         allPermissions.set(code, perm);
                     } else if (priorityCategories.includes(perm.category) && !priorityCategories.includes(existing.category)) {
@@ -515,11 +524,9 @@ async function syncAllPermissions() {
             });
         });
 
-        console.log(`\n📊 Total: ${allPermissions.size} permissions à synchroniser\n`);
+        console.log(`\n📊 Total: ${allPermissions.size} permissions identifiées\n`);
 
         // 3. Synchroniser dans la base de données
-        console.log('📋 Étape 4: Synchronisation dans la base de données...\n');
-
         let created = 0;
         let updated = 0;
         let unchanged = 0;
@@ -527,7 +534,7 @@ async function syncAllPermissions() {
         for (const [code, perm] of allPermissions) {
             try {
                 // Vérifier si la permission existe
-                const existing = await pool.query(
+                const existing = await client.query(
                     'SELECT id, name, category FROM permissions WHERE code = $1',
                     [code]
                 );
@@ -535,20 +542,18 @@ async function syncAllPermissions() {
                 if (existing.rows.length > 0) {
                     const existingPerm = existing.rows[0];
 
-                    // Mettre à jour si nécessaire
                     if (existingPerm.name !== perm.name || existingPerm.category !== perm.category) {
-                        await pool.query(
+                        await client.query(
                             `UPDATE permissions SET name = $1, description = $2, category = $3, updated_at = NOW() WHERE code = $4`,
                             [perm.name, perm.description, perm.category, code]
                         );
                         updated++;
-                        console.log(`   🔄 ${code} - Mis à jour`);
+                        // console.log(`   🔄 ${code} - Mis à jour`);
                     } else {
                         unchanged++;
                     }
                 } else {
-                    // Créer la permission
-                    await pool.query(
+                    await client.query(
                         `INSERT INTO permissions (code, name, description, category, created_at, updated_at)
                          VALUES ($1, $2, $3, $4, NOW(), NOW())`,
                         [code, perm.name, perm.description, perm.category]
@@ -561,42 +566,34 @@ async function syncAllPermissions() {
             }
         }
 
+
         // 4. Résumé
-        console.log('\n╔══════════════════════════════════════════════════════════════╗');
-        console.log('║         ✅ SYNCHRONISATION TERMINÉE                      ║');
-        console.log('╚══════════════════════════════════════════════════════════════╝\n');
-        console.log('📊 RÉSUMÉ :');
-        console.log('═══════════');
+        console.log('📊 RÉSUMÉ PERMISSIONS :');
         console.log(`   ✅ Créées      : ${created}`);
         console.log(`   🔄 Mises à jour: ${updated}`);
         console.log(`   ✓ Inchangées   : ${unchanged}`);
-        console.log(`   📦 Total       : ${allPermissions.size}`);
-        console.log('\n🎯 Toutes les permissions ont été synchronisées avec succès!\n');
+        console.log('\n🎯 Permissions synchronisées avec succès!\n');
 
-        // 5. Afficher les catégories
-        const categoriesResult = await pool.query(
-            'SELECT category, COUNT(*) as count FROM permissions GROUP BY category ORDER BY category'
-        );
-
-        console.log('📋 Permissions par catégorie:');
-        console.log('═══════════════════════════════');
-        categoriesResult.rows.forEach(row => {
-            console.log(`   ${row.category}: ${row.count} permission(s)`);
-        });
-        console.log('');
+        return { created, updated, unchanged };
 
     } catch (error) {
-        console.error('\n❌ ERREUR:', error.message);
-        console.error(error);
+        console.error('\n❌ ERREUR SYNC PERMISSIONS:', error.message);
         throw error;
     } finally {
-        await pool.end();
+        if (shouldRelease && client) {
+            client.release();
+            await pool.end(); // Fermer le pool si on l'a ouvert juste pour ce script
+        }
     }
 }
 
-// Exécution
-syncAllPermissions().catch(error => {
-    console.error('❌ Erreur fatale:', error);
-    process.exit(1);
-});
+// Exécution directe si appelé comme script
+if (require.main === module) {
+    syncAllPermissions().catch(error => {
+        console.error('❌ Erreur fatale:', error);
+        process.exit(1);
+    });
+}
+
+module.exports = { syncAllPermissions };
 

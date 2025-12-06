@@ -75,19 +75,15 @@ pm2 restart ebvision
 
 ---
 
-### 🌱 **SEEDS & DONNÉES DE RÉFÉRENCE**
+### 🌱 **POURQUOI TOUT EST DANS LE SCRIPT 3 ?**
 
-- **`seed_objective_types.js`** - Populate les types d'objectifs
-- **`setup_metrics_sources.js`** - Configure les sources de métriques
-- **`export-opportunity-types.js`** - Exporte les types d'opportunités
+Le script `3-insert-reference-data.js` centralise désormais **toutes** les insertions de données initiales pour simplifier la maintenance :
+- Données RH (grades, postes)
+- Données métier (types de missions, secteurs)
+- Géographie (pays)
+- Paramétrage (années fiscales, objectifs, métriques)
 
----
-
-### 🔧 **MIGRATIONS SPÉCIFIQUES**
-
-- **`run_migration_009.js`** - Exécute la migration 009
-- **`run_migration_010.js`** - Exécute la migration 010
-- **`run_migration_objectives.js`** - Migration pour les objectifs
+Il remplace tous les anciens scripts de "seed" individuels.
 
 ---
 
@@ -107,7 +103,7 @@ pm2 restart ebvision
 node scripts/database/0-init-complete.js
 ```
 
-### 🔄 Mise à Jour du Schéma en Production
+### 🔄 Mise à Jour du Schéma en Production (Deployment)
 ```bash
 # EN LOCAL
 node scripts/database/1-export-schema-local.js
@@ -119,25 +115,26 @@ git push
 cd ~/apps/ebvision
 git pull
 node scripts/database/2-sync-from-export-prod.js
+# Cela synchronise le schéma ET les permissions automatiquement
 pm2 restart ebvision
 ```
 
-### 🧹 Réinitialisation (Niveaux)
-```bash
-# Niveau 1: Données opérationnelles (timesheets, missions, etc.)
-# Niveau 2: Structure organisationnelle (BU, clients, etc.)
-# Niveau 3: Personnel (utilisateurs sauf SUPER_ADMIN)
-# Niveau 4: TOUT (base vierge)
+### 🆕 Ajouter une Nouvelle Page ou Permission (Dev Workflow)
 
-node scripts/database/0-reset-database.js
-# Puis suivre le menu interactif
-```
+Le système détecte **automatiquement** les nouvelles permissions sans configuration manuelle :
 
-### 🔐 Re-synchroniser les Permissions
-```bash
-# Si vous avez ajouté de nouvelles pages/routes
-node scripts/database/sync-all-permissions-complete.js
-```
+1.  **Pages HTML** : Créez simplement votre fichier dans `public/` (ex: `ma-page.html`).
+    *   Le script créera automatiquement la permission `page.ma_page`.
+2.  **Routes API** : Utilisez `requirePermission('ma.nouvelle.perm')` dans votre code routeur.
+    *   Le script détectera l'appel et créera la permission.
+3.  **Menu** : Ajoutez `data-permission="..."` dans le fichier `template-modern-sidebar.html`.
+
+**Workflow Développeur :**
+1.  Codez en local (créez la page/route).
+2.  `git push`
+3.  Sur le serveur : `git pull` puis `node scripts/database/2-sync-from-export-prod.js`.
+    *   Le script verra le nouveau fichier et créera la permission associée.
+
 
 ---
 

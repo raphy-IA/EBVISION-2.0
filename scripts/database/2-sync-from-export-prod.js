@@ -2,12 +2,14 @@ const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
+const { syncAllPermissions } = require('./sync-all-permissions-complete');
 
 /**
  * SCRIPT 2/2: Synchronisation de la production depuis l'export
  * À exécuter EN PRODUCTION uniquement
  * Lit: schema-export.json
  * Compare avec la base locale (production) et corrige les différences
+ * Synchronise ensuite les permissions.
  */
 
 const pool = new Pool({
@@ -161,38 +163,41 @@ async function syncFromExport() {
         const differences = compareSchemas(referenceSchema, currentSchema);
 
         if (differences.length === 0) {
-            console.log('✅ Aucune différence détectée! Le schéma est conforme.\n');
-            return;
+            console.log('✅ Aucune différence de schéma détectée.\n');
+        } else {
+            console.log(`⚠️  ${differences.length} différence(s) détectée(s):\n`);
+
+            const missingTables = differences.filter(d => d.type === 'MISSING_TABLE');
+            const missingColumns = differences.filter(d => d.type === 'MISSING_COLUMN');
+
+            if (missingTables.length > 0) {
+                console.log(`❌ Tables manquantes: ${missingTables.length}`);
+                missingTables.forEach(d => console.log(`   - ${d.table}`));
+                console.log('   ⚠️  Ces tables nécessitent une migration complète\n');
+            }
+
+            // Demander confirmation et appliquer seulement si colonnes manquantes
+            if (missingColumns.length > 0) {
+                console.log(`🔧 Colonnes manquantes: ${missingColumns.length}`);
+                missingColumns.forEach(d => console.log(`   - ${d.table}.${d.column}`));
+
+                console.log('\n🚀 Application des corrections de schéma...');
+                await applyFixes(missingColumns);
+            }
         }
 
-        console.log(`⚠️  ${differences.length} différence(s) détectée(s):\n`);
+        // =================================================================
+        // SYNCHRONISATION DES PERMISSIONS
+        // =================================================================
+        console.log('═══════════════════════════════════════════════════════════════════');
+        console.log('🛡️  SYNCHRONISATION DES PERMISSIONS');
+        console.log('═══════════════════════════════════════════════════════════════════\n');
 
-        const missingTables = differences.filter(d => d.type === 'MISSING_TABLE');
-        const missingColumns = differences.filter(d => d.type === 'MISSING_COLUMN');
-
-        if (missingTables.length > 0) {
-            console.log(`❌ Tables manquantes: ${missingTables.length}`);
-            missingTables.forEach(d => console.log(`   - ${d.table}`));
-            console.log('   ⚠️  Ces tables nécessitent une migration complète\n');
-        }
-
-        if (missingColumns.length > 0) {
-            console.log(`🔧 Colonnes manquantes: ${missingColumns.length}`);
-            missingColumns.forEach(d => console.log(`   - ${d.table}.${d.column}`));
-            console.log('');
-        }
-
-        // Demander confirmation
-        console.log('📝 Actions à effectuer:');
-        missingColumns.forEach(d => console.log(`   ${d.action}`));
-        console.log('');
-
-        // Appliquer les corrections
-        console.log('🚀 Application des corrections...\n');
-        await applyFixes(missingColumns);
+        // Note: syncAllPermissions gère sa propre connexion DB
+        await syncAllPermissions();
 
         console.log('═══════════════════════════════════════════════════════════════════');
-        console.log('✅ SYNCHRONISATION TERMINÉE!\n');
+        console.log('✅ SYNCHRONISATION GLOBALE TERMINÉE (SCHEMA + PERMISSIONS)!\n');
 
     } catch (error) {
         console.error('❌ Erreur:', error.message);

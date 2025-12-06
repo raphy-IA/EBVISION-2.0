@@ -268,7 +268,8 @@ app.use('/api/bank-accounts', bankAccountsRoutes);
 app.use('/api/payments', paymentsRoutes);
 
 // Route de synchronisation des permissions et menus
-const { router: syncPermissionsRoutes } = require('./src/routes/sync-permissions');
+// Route de synchronisation des permissions et menus
+const syncPermissionsRoutes = require('./src/routes/sync-permissions');
 app.use(syncPermissionsRoutes);
 
 // Import et utilisation des routes managers

@@ -46,7 +46,7 @@ console.log(`   🔐 SSL        : ${process.env.NODE_ENV === 'production' ? 'Oui
 
 async function main() {
     let client;
-    
+
     try {
         console.log('📡 Test de connexion à la base de données...');
         client = await pool.connect();
@@ -59,7 +59,7 @@ async function main() {
         console.log('╔══════════════════════════════════════════════════════════════╗');
         console.log('║                    📋 DONNÉES RH                            ║');
         console.log('╚══════════════════════════════════════════════════════════════╝\n');
-        
+
         await insertTypesCollaborateurs(client);
         await insertGrades(client);
         await insertPostes(client);
@@ -68,57 +68,65 @@ async function main() {
         console.log('\n╔══════════════════════════════════════════════════════════════╗');
         console.log('║                  💼 DONNÉES MÉTIER                          ║');
         console.log('╚══════════════════════════════════════════════════════════════╝\n');
-        
+
         await insertMissionTypes(client);
-        
+
         // 🌍 PARTIE 3 : Données Géographiques
         console.log('\n╔══════════════════════════════════════════════════════════════╗');
         console.log('║              🌍 DONNÉES GÉOGRAPHIQUES                       ║');
         console.log('╚══════════════════════════════════════════════════════════════╝\n');
-        
+
         await insertPays(client);
 
         // 📊 PARTIE 4 : Secteurs d'Activité
         console.log('\n╔══════════════════════════════════════════════════════════════╗');
         console.log('║            📊 SECTEURS D\'ACTIVITÉ                           ║');
         console.log('╚══════════════════════════════════════════════════════════════╝\n');
-        
+
         await insertSecteursActivite(client);
-        
+
         // 🏢 PARTIE 4B : Sources et Entreprises
         console.log('\n╔══════════════════════════════════════════════════════════════╗');
         console.log('║         🏢 SOURCES & ENTREPRISES                            ║');
         console.log('╚══════════════════════════════════════════════════════════════╝\n');
-        
+
         await insertCompanySourcesAndCompanies(client);
 
         // 📅 PARTIE 5 : Données Temporelles
         console.log('\n╔══════════════════════════════════════════════════════════════╗');
         console.log('║              📅 ANNÉES FISCALES                             ║');
         console.log('╚══════════════════════════════════════════════════════════════╝\n');
-        
+
         await insertFiscalYears(client);
 
         // 🎯 PARTIE 6 : Types d'Opportunités (avec étapes)
         console.log('\n╔══════════════════════════════════════════════════════════════╗');
         console.log('║         🎯 TYPES D\'OPPORTUNITÉS & ÉTAPES                    ║');
         console.log('╚══════════════════════════════════════════════════════════════╝\n');
-        
+
         await insertOpportunityTypesWithStages(client);
 
         // 🏢 PARTIE 7 : Activités Internes
         console.log('\n╔══════════════════════════════════════════════════════════════╗');
         console.log('║              🏢 ACTIVITÉS INTERNES                          ║');
         console.log('╚══════════════════════════════════════════════════════════════╝\n');
-        
+
         await insertInternalActivities(client);
 
         // 📋 PARTIE 8 : Tâches pour les Types de Mission
         console.log('\n╔══════════════════════════════════════════════════════════════╗');
         console.log('║         📋 TÂCHES DES TYPES DE MISSION                      ║');
         console.log('╚══════════════════════════════════════════════════════════════╝\n');
-        
+
         await insertMissionTasks(client);
+
+        // 🎯 PARTIE 9 : Types d'Objectifs (Nouveau)
+        console.log('\n╔══════════════════════════════════════════════════════════════╗');
+        console.log('║         🎯 TYPES D\'OBJECTIFS & MÉTRIQUES                    ║');
+        console.log('╚══════════════════════════════════════════════════════════════╝\n');
+
+        await insertObjectiveTypes(client);
+        await setupMetricsSources(client);
 
         console.log('\n╔══════════════════════════════════════════════════════════════╗');
         console.log('║   ✅ TOUTES LES DONNÉES DE RÉFÉRENCE SONT INSÉRÉES !       ║');
@@ -139,7 +147,7 @@ async function main() {
 // ===============================================
 async function insertTypesCollaborateurs(client) {
     console.log('🏷️  Insertion des Types de Collaborateurs...');
-    
+
     const types = [
         { code: 'ADM', nom: 'Administratif', description: 'Personnel administratif et gestion', statut: 'ACTIF' },
         { code: 'TEC', nom: 'Technique', description: 'Personnel technique (IT, maintenance, infrastructure)', statut: 'ACTIF' },
@@ -167,7 +175,7 @@ async function insertTypesCollaborateurs(client) {
             updated++;
         }
     }
-    
+
     console.log(`   ✓ ${created} créés, ${updated} mis à jour (Total: ${types.length})\n`);
 }
 
@@ -176,7 +184,7 @@ async function insertTypesCollaborateurs(client) {
 // ===============================================
 async function insertGrades(client) {
     console.log('📊 Insertion des Grades...');
-    
+
     const grades = [
         { nom: 'Associé', code: 'ASSOC', niveau: 6 },
         { nom: 'Manager', code: 'MGR', niveau: 5 },
@@ -206,7 +214,7 @@ async function insertGrades(client) {
             updated++;
         }
     }
-    
+
     console.log(`   ✓ ${created} créés, ${updated} mis à jour (Total: ${grades.length})\n`);
 }
 
@@ -215,7 +223,7 @@ async function insertGrades(client) {
 // ===============================================
 async function insertPostes(client) {
     console.log('💼 Insertion des Postes...');
-    
+
     const postes = [
         { nom: 'Directeur Général', code: 'DG', description: 'Direction générale de l\'entreprise' },
         { nom: 'Directeur des Opérations', code: 'DOPS', description: 'Direction des opérations' },
@@ -244,7 +252,7 @@ async function insertPostes(client) {
             updated++;
         }
     }
-    
+
     console.log(`   ✓ ${created} créés, ${updated} mis à jour (Total: ${postes.length})\n`);
 }
 
@@ -253,7 +261,7 @@ async function insertPostes(client) {
 // ===============================================
 async function insertMissionTypes(client) {
     console.log('📋 Insertion des Types de Missions...');
-    
+
     const missionTypes = [
         { codification: 'AUDIT_CAC', libelle: 'Audit & Commissariat aux Comptes (CAC)', description: 'Audit légal et commissariat aux comptes' },
         { codification: 'EXP_REC', libelle: 'Expertise Comptable & Financière - Mission Récurrente', description: 'Tenue et révision comptable récurrente' },
@@ -289,7 +297,7 @@ async function insertMissionTypes(client) {
             created++;
         }
     }
-    
+
     console.log(`   ✓ ${created} créés, ${updated} mis à jour (Total: ${missionTypes.length})\n`);
 }
 
@@ -298,11 +306,11 @@ async function insertMissionTypes(client) {
 // ===============================================
 async function insertCompanySourcesAndCompanies(client) {
     console.log('🏢 Insertion des Sources d\'Entreprise et Entreprises...');
-    
+
     // Charger les données depuis le fichier JSON
     const dataPath = path.resolve(__dirname, 'data/companies-and-sources.json');
     const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-    
+
     let sourcesCreated = 0, sourcesUpdated = 0;
     const sourceIdMap = {};
 
@@ -318,23 +326,23 @@ async function insertCompanySourcesAndCompanies(client) {
         `, [source.name, source.description]);
 
         sourceIdMap[source.name] = result.rows[0].id;
-        
+
         if (result.rows[0].inserted) {
             sourcesCreated++;
         } else {
             sourcesUpdated++;
         }
     }
-    
+
     console.log(`   ✓ Sources: ${sourcesCreated} créées, ${sourcesUpdated} mises à jour (Total: ${data.sources.length})`);
-    
+
     // Insérer les entreprises
     let companiesCreated = 0, companiesUpdated = 0;
-    
+
     for (const company of data.companies) {
         // Récupérer l'ID de la source
         const sourceId = sourceIdMap[company.source];
-        
+
         // Tenter une mise à jour par name; si aucune ligne affectée, insérer
         const updateRes = await client.query(`
             UPDATE companies 
@@ -386,7 +394,7 @@ async function insertCompanySourcesAndCompanies(client) {
             companiesCreated++;
         }
     }
-    
+
     console.log(`   ✓ Entreprises: ${companiesCreated} créées, ${companiesUpdated} mises à jour (Total: ${data.companies.length})\n`);
 }
 
@@ -395,7 +403,7 @@ async function insertCompanySourcesAndCompanies(client) {
 // ===============================================
 async function insertPays(client) {
     console.log('🌍 Insertion des Pays...');
-    
+
     const pays = [
         ['France', 'FRA', '+33', 'EUR', 'Français', 'Europe/Paris', 'Paris'],
         ['Sénégal', 'SEN', '+221', 'XOF', 'Français', 'Africa/Dakar', 'Dakar'],
@@ -451,7 +459,7 @@ async function insertPays(client) {
             updated++;
         }
     }
-    
+
     console.log(`   ✓ ${created} créés, ${updated} mis à jour (Total: ${pays.length})\n`);
 }
 
@@ -460,7 +468,7 @@ async function insertPays(client) {
 // ===============================================
 async function insertSecteursActivite(client) {
     console.log('📊 Insertion des Secteurs d\'activité...');
-    
+
     const secteurs = [
         ['Audit & Conseil', 'AUDIT', 'Services d\'audit et de conseil', '#e74c3c', 'fas fa-search', 1],
         ['Comptabilité', 'COMPTA', 'Services comptables et fiscaux', '#3498db', 'fas fa-calculator', 2],
@@ -511,7 +519,7 @@ async function insertSecteursActivite(client) {
             updated++;
         }
     }
-    
+
     console.log(`   ✓ ${created} créés, ${updated} mis à jour (Total: ${secteurs.length})\n`);
 }
 
@@ -561,12 +569,12 @@ async function insertFiscalYears(client) {
 // ===============================================
 async function insertOpportunityTypesWithStages(client) {
     console.log('🎯 Insertion des Types d\'Opportunités avec leurs étapes...\n');
-    
+
     // Charger les données depuis le fichier JSON
     const dataPath = path.resolve(__dirname, 'data/opportunity-types-config.json');
     const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
     const opportunityTypesWithStages = data.opportunityTypes;
-    
+
     /* Ancienne définition inline supprimée - maintenant dans opportunity-types-config.json
     const opportunityTypesWithStages = [
         {
@@ -716,7 +724,7 @@ async function insertOpportunityTypesWithStages(client) {
 // ===============================================
 async function insertInternalActivities(client) {
     console.log('🏢 Insertion des Activités Internes...');
-    
+
     const activities = [
         ['Congés annuel', 'Congés annuels'],
         ['Congés Maladie', 'Congés Maladie'],
@@ -746,7 +754,7 @@ async function insertInternalActivities(client) {
             created++;
         }
     }
-    
+
     console.log(`   ✓ ${created} créées, ${updated} mises à jour (Total: ${activities.length})\n`);
 }
 
@@ -1299,3 +1307,208 @@ async function insertMissionTasks(client) {
 }
 
 main().catch(console.error);
+
+// ===============================================
+// 🎯 TYPES D'OBJECTIFS (STRATÉGIQUE, OPÉRATIONNEL...)
+// ===============================================
+async function insertObjectiveTypes(client) {
+    console.log('🎯 Insertion des Types d\'Objectifs...');
+
+    // 1. Récupérer les Unités existantes
+    const unitsResult = await client.query('SELECT id, code, type, symbol FROM objective_units');
+    const units = {}; // Map code -> unit object
+    unitsResult.rows.forEach(u => units[u.code] = u);
+
+    // Fonction helper pour trouver une unité
+    const getUnit = (code) => {
+        if (units[code]) return units[code];
+        if (code === 'COUNT' && units['NUMBER']) return units['NUMBER'];
+        if (code === 'CURRENCY' && units['EUR']) return units['EUR'];
+        if (code === 'CURRENCY' && units['FCFA']) return units['FCFA'];
+        return null; // Fallback
+    };
+
+    const typesToInsert = [
+        // --- OPPORTUNITÉS ---
+        {
+            code: 'OPP_WON_COUNT', label: 'Opportunités Gagnées (Nombre)', category: 'commercial',
+            unit_code: 'COUNT', is_financial: false, entity_type: 'OPPORTUNITY', operation: 'WON',
+            value_field: 'id', description: 'Nombre d\'opportunités passées au statut "Gagnée"'
+        },
+        {
+            code: 'OPP_WON_AMOUNT', label: 'CA Signé (Montant)', category: 'commercial',
+            unit_code: 'CURRENCY', is_financial: true, entity_type: 'OPPORTUNITY', operation: 'WON',
+            value_field: 'montant_estime', description: 'Somme des montants des opportunités gagnées'
+        },
+        {
+            code: 'OPP_NEW_COUNT', label: 'Nouvelles Opportunités', category: 'commercial',
+            unit_code: 'COUNT', is_financial: false, entity_type: 'OPPORTUNITY', operation: 'CREATED',
+            value_field: 'id', description: 'Nombre d\'opportunités créées'
+        },
+        {
+            code: 'OPP_LOST_COUNT', label: 'Opportunités Perdues', category: 'commercial',
+            unit_code: 'COUNT', is_financial: false, entity_type: 'OPPORTUNITY', operation: 'LOST',
+            value_field: 'id', description: 'Nombre d\'opportunités perdues'
+        },
+        // --- MISSIONS ---
+        {
+            code: 'MISS_START_COUNT', label: 'Missions Démarrées', category: 'operations',
+            unit_code: 'COUNT', is_financial: false, entity_type: 'MISSION', operation: 'STARTED',
+            value_field: 'id', description: 'Nombre de missions dont la date de début est atteinte'
+        },
+        {
+            code: 'MISS_DONE_COUNT', label: 'Missions Terminées', category: 'operations',
+            unit_code: 'COUNT', is_financial: false, entity_type: 'MISSION', operation: 'COMPLETED',
+            value_field: 'id', description: 'Nombre de missions terminées'
+        },
+        {
+            code: 'MISS_REVENUE', label: 'Revenu Missions', category: 'financial',
+            unit_code: 'CURRENCY', is_financial: true, entity_type: 'MISSION', operation: 'COMPLETED',
+            value_field: 'montant_total', description: 'Revenu total généré par les missions terminées'
+        },
+        // --- CLIENTS & FACTURES ---
+        {
+            code: 'CLIENT_NEW', label: 'Nouveaux Clients', category: 'commercial',
+            unit_code: 'COUNT', is_financial: false, entity_type: 'CLIENT', operation: 'CREATED',
+            value_field: 'id', description: 'Nombre de nouveaux clients créés'
+        },
+        {
+            code: 'INV_SENT_COUNT', label: 'Factures Envoyées', category: 'financial',
+            unit_code: 'COUNT', is_financial: false, entity_type: 'INVOICE', operation: 'SENT',
+            value_field: 'id', description: 'Nombre de factures envoyées'
+        },
+        {
+            code: 'INV_PAID_AMT', label: 'Encaissements (TTC)', category: 'financial',
+            unit_code: 'CURRENCY', is_financial: true, entity_type: 'INVOICE', operation: 'PAID',
+            value_field: 'montant_total', description: 'Montant total des factures payées'
+        }
+    ];
+
+    let created = 0, updated = 0;
+
+    for (const type of typesToInsert) {
+        let unitObj = getUnit(type.unit_code);
+
+        // Fallback intelligent si unité pas trouvée par code exact
+        if (!unitObj) {
+            if (type.unit_code === 'COUNT') unitObj = Object.values(units).find(u => u.type === 'NUMBER' || u.code === 'NB');
+            else if (type.unit_code === 'CURRENCY') unitObj = Object.values(units).find(u => u.type === 'CURRENCY');
+        }
+
+        if (!unitObj) {
+            console.warn(`   ⚠️ Unité introuvable pour ${type.code} (${type.unit_code}), ignoré.`);
+            continue;
+        }
+
+        const result = await client.query(`
+            INSERT INTO objective_types (
+                code, label, category, unit, default_unit_id, is_financial, 
+                entity_type, operation, value_field, description,
+                created_at, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
+            ON CONFLICT (code) DO UPDATE SET
+                label = EXCLUDED.label,
+                category = EXCLUDED.category,
+                unit = EXCLUDED.unit,
+                default_unit_id = EXCLUDED.default_unit_id,
+                is_financial = EXCLUDED.is_financial,
+                entity_type = EXCLUDED.entity_type,
+                operation = EXCLUDED.operation,
+                value_field = EXCLUDED.value_field,
+                description = EXCLUDED.description,
+                updated_at = NOW()
+            RETURNING (xmax = 0) AS inserted
+        `, [
+            type.code, type.label, type.category,
+            unitObj.symbol || unitObj.code, unitObj.id,
+            type.is_financial, type.entity_type, type.operation,
+            type.value_field, type.description
+        ]);
+
+        if (result.rows[0].inserted) created++;
+        else updated++;
+    }
+
+    console.log(`   ✓ ${created} créés, ${updated} mis à jour (Total: ${typesToInsert.length})\n`);
+}
+
+// ===============================================
+// 🔗 SOURCES DE MÉTRIQUES
+// ===============================================
+async function setupMetricsSources(client) {
+    console.log('🔗 Configuration des Sources de Métriques...');
+
+    // Mapping Métrique -> Sources
+    // Note: Utilise les codes (CA_TOTAL) et (CA_OPP) définis précédemment
+    const configurations = [
+        {
+            metric: 'CA_TOTAL',
+            sources: ['OPP_WON_AMOUNT', 'MISS_REVENUE'] // Codes objective_types
+        },
+        {
+            metric: 'CLIENTS_COUNT',
+            sources: ['CLIENT_NEW']
+        },
+        {
+            metric: 'INVOICES_PAID',
+            sources: ['INV_PAID_AMT'] // Code type peut différer selon seed, vérifier mapping
+        },
+        {
+            metric: 'CASH_COLLECTED', // Si la métrique existe
+            sources: ['INV_PAID_AMT']
+        }
+    ];
+
+    // Pour simplifier ici, on mappe les codes utilisés dans setup_metrics_sources.js 
+    // vers ceux insérés par insertObjectiveTypes ci-dessus si différents.
+    // Mapping: { 'TYPE_DANS_CONFIG': 'CODE_REEL_DB' }
+    const typeMapping = {
+        'CA_OPP': 'OPP_WON_AMOUNT',
+        'CA_MISSION': 'MISS_REVENUE',
+        'NOUVEAUX_CLIENTS': 'CLIENT_NEW',
+        'FACTURES_PAYEES': 'INV_PAID_AMT', // À adapter si besoin
+        'CA_ENCAISSE': 'INV_PAID_AMT'
+    };
+
+    let configured = 0;
+
+    // Récupérer tous les types d'objectifs pour avoir leurs IDs
+    const typesRes = await client.query('SELECT id, code FROM objective_types');
+    const typeMap = {};
+    typesRes.rows.forEach(t => typeMap[t.code] = t.id);
+
+    // Récupérer toutes les métriques
+    const metricsRes = await client.query('SELECT id, code FROM objective_metrics WHERE is_active = TRUE');
+    const metricMap = {}; // code -> id
+    metricsRes.rows.forEach(m => metricMap[m.code] = m.id);
+
+    // Nettoyer sources existantes ? (Optionnel, ici on fait du ON CONFLICT ou insert simple)
+    // Pour être propre on truncate avant de réinsérer comme dans le script original
+    await client.query('TRUNCATE TABLE objective_metric_sources CASCADE');
+
+    for (const config of configurations) {
+        const metricId = metricMap[config.metric];
+        if (!metricId) continue;
+
+        for (const sourceType of config.sources) {
+            // Check mapping ou direct
+            const realCode = typeMapping[sourceType] || sourceType;
+            const typeId = typeMap[realCode];
+
+            if (!typeId) {
+                // console.warn(`      ⚠️ Type obj introuvable: ${sourceType} -> ${realCode}`);
+                continue;
+            }
+
+            await client.query(`
+                INSERT INTO objective_metric_sources (
+                    metric_id, objective_type_id, weight
+                ) VALUES ($1, $2, 1.0)
+            `, [metricId, typeId]);
+
+            configured++;
+        }
+    }
+
+    console.log(`   ✓ ${configured} sources configurées.\n`);
+}
