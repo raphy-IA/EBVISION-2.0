@@ -32,19 +32,15 @@ class TimeSheetApproval {
             `, [timeSheetId, supervisorCollaborateurId, action, comment]);
 
             // Mettre à jour le statut de la feuille de temps
-            const status = action === 'approve' ? 'approved' : 'rejected';
+            const statut = action === 'approve' ? 'validé' : 'rejeté';
             await client.query(`
                 UPDATE time_sheets 
-                SET status = $1, updated_at = NOW()
+                SET statut = $1, updated_at = NOW()
                 WHERE id = $2
-            `, [status, timeSheetId]);
+            `, [statut, timeSheetId]);
 
-            // Synchroniser le statut de toutes les heures associées
-            await client.query(`
-                UPDATE time_entries
-                SET status = $1
-                WHERE time_sheet_id = $2
-            `, [status, timeSheetId]);
+            // NOTE: time_entries n'a pas de colonne status, donc on supprime cette synchronisation
+            // Les entrées de temps héritent du statut de leur feuille parente
 
             // Valider la transaction
             await client.query('COMMIT');
@@ -92,7 +88,7 @@ class TimeSheetApproval {
         try {
             const result = await client.query(`
                 SELECT 
-                    ts.status,
+                    ts.statut,
                     ts.week_start,
                     ts.week_end,
                     u.nom as collaborateur_nom,
@@ -132,7 +128,7 @@ class TimeSheetApproval {
                     ts.id,
                     ts.week_start,
                     ts.week_end,
-                    ts.status,
+                    ts.statut,
                     ts.created_at,
                     ts.updated_at,
                     u.nom as collaborateur_nom,
@@ -144,7 +140,7 @@ class TimeSheetApproval {
                 JOIN time_sheet_supervisors tss ON c.id = tss.collaborateur_id
                 JOIN collaborateurs supervisor_c ON supervisor_c.user_id = $1
                 WHERE tss.supervisor_id = supervisor_c.id 
-                AND ts.status = 'submitted'
+                AND ts.statut IN ('soumis', 'submitted')
                 ORDER BY ts.week_start DESC, ts.created_at DESC
             `, [supervisorUserId]);
             return result.rows;
@@ -164,7 +160,7 @@ class TimeSheetApproval {
                     ts.id,
                     ts.week_start,
                     ts.week_end,
-                    ts.status,
+                    ts.statut,
                     ts.created_at,
                     ts.updated_at,
                     u.nom as collaborateur_nom,
@@ -193,8 +189,8 @@ class TimeSheetApproval {
                 LEFT JOIN collaborateurs approver_c ON tsa.supervisor_id = approver_c.id
                 LEFT JOIN users approver_u ON approver_c.user_id = approver_u.id
                 WHERE tss.supervisor_id = supervisor_c.id 
-                AND ts.status IN ('submitted', 'approved', 'rejected')
-                GROUP BY ts.id, ts.week_start, ts.week_end, ts.status, ts.created_at, ts.updated_at,
+                AND ts.statut IN ('soumis', 'validé', 'rejeté', 'submitted', 'approved', 'rejected')
+                GROUP BY ts.id, ts.week_start, ts.week_end, ts.statut, ts.created_at, ts.updated_at,
                          u.nom, u.prenom, u.email
                 ORDER BY ts.week_start DESC, ts.created_at DESC
             `, [supervisorUserId]);
@@ -215,7 +211,7 @@ class TimeSheetApproval {
                     ts.id,
                     ts.week_start,
                     ts.week_end,
-                    ts.status,
+                    ts.statut,
                     ts.created_at,
                     ts.updated_at,
                     u.nom as collaborateur_nom,
@@ -223,7 +219,7 @@ class TimeSheetApproval {
                     u.email as collaborateur_email
                 FROM time_sheets ts
                 JOIN users u ON ts.user_id = u.id
-                WHERE ts.status IN ('submitted', 'approved', 'rejected')
+                WHERE ts.statut IN ('soumis', 'validé', 'rejeté', 'submitted', 'approved', 'rejected')
                 ORDER BY ts.week_start DESC, ts.created_at DESC
             `);
             return result.rows;
@@ -260,7 +256,7 @@ class TimeSheetApproval {
                 JOIN time_sheet_supervisors tss ON c.id = tss.collaborateur_id
                 WHERE ts.id = $1 
                 AND tss.supervisor_id = $2
-                AND ts.status = 'submitted'
+                AND ts.statut IN ('soumis', 'submitted')
             `, [timeSheetId, supervisorCollaborateurId]);
 
             return parseInt(result.rows[0].count) > 0;
@@ -291,7 +287,7 @@ class TimeSheetApproval {
             // Mettre à jour le statut de la feuille de temps
             const result = await client.query(`
                 UPDATE time_sheets 
-                SET status = 'submitted', updated_at = NOW()
+                SET statut = 'soumis', updated_at = NOW()
                 WHERE id = $1 AND user_id = $2
                 RETURNING *
             `, [timeSheetId, userId]);

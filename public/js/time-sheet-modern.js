@@ -584,7 +584,13 @@ function getStatusText(status) {
         'saved': 'Sauvegardée',
         'submitted': 'Soumise',
         'approved': 'Approuvée',
-        'rejected': 'Rejetée'
+        'rejected': 'Rejetée',
+        // Valeurs françaises de la DB
+        'brouillon': 'Brouillon',
+        'sauvegardé': 'Sauvegardée',
+        'soumis': 'Soumise',
+        'validé': 'Approuvée',
+        'rejeté': 'Rejetée'
     };
     const displayText = statusMap[status] || status;
     console.log(`📊 getStatusText: ${status} -> ${displayText}`);
@@ -595,7 +601,7 @@ function getStatusText(status) {
 function toggleInterfaceLock() {
     // Seules les feuilles soumises ou approuvées sont verrouillées
     // Les feuilles rejetées peuvent être modifiées à nouveau
-    const isLocked = currentTimeSheet && ['submitted', 'approved'].includes(currentTimeSheet.status);
+    const isLocked = currentTimeSheet && ['submitted', 'approved', 'soumis', 'validé'].includes(currentTimeSheet.status);
 
     console.log(`🔒 Verrouillage de l'interface: ${isLocked ? 'VERROUILLÉ' : 'DÉVERROUILLÉ'} (statut: ${currentTimeSheet?.status})`);
     console.log('🔍 Détails du verrouillage:', {
@@ -1967,20 +1973,6 @@ async function saveTimeSheet() {
     try {
         console.log('💾 Début de la sauvegarde de la feuille de temps...');
 
-        // Vérifier si currentTimeSheet existe
-        if (!currentTimeSheet || !currentTimeSheet.id) {
-            console.error('Aucune feuille de temps actuelle disponible');
-            showAlert('Erreur: Aucune feuille de temps disponible', 'danger');
-            return;
-        }
-
-        // Vérifier le statut actuel de la feuille
-        const editableStatuses = ['draft', 'saved', 'rejected'];
-        if (currentTimeSheet.status && !editableStatuses.includes(currentTimeSheet.status)) {
-            // showAlert('Cette feuille de temps ne peut plus être modifiée (statut: ' + currentTimeSheet.status + ')', 'warning');
-            return;
-        }
-
         // Récupérer toutes les entrées temporaires de la page
         const timeEntries = [];
         const inputFields = document.querySelectorAll('input[type="number"][data-entry-id]');
@@ -2018,11 +2010,45 @@ async function saveTimeSheet() {
         // Convertir en tableau
         timeEntries.push(...Object.values(entriesByRowAndDate));
 
-        // Déterminer le statut en fonction du contenu
-        let newStatus = 'saved';
+        // Si aucune entrée, ne rien faire
         if (timeEntries.length === 0) {
-            newStatus = 'draft';
-            console.log('ℹ️ Aucune entrée à sauvegarder, passage en draft');
+            showAlert('Aucune entrée à sauvegarder', 'info');
+            return;
+        }
+
+        // Si la feuille de temps n'existe pas encore (mode brouillon), la créer
+        if (!currentTimeSheet || !currentTimeSheet.id) {
+            console.log('📋 Création d\'une nouvelle feuille de temps en DB...');
+
+            const weekEnd = getSundayOfWeek(currentWeekStart);
+            const createResponse = await authenticatedFetch(`${API_BASE_URL}/time-sheets`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_id: getCurrentUserId(),
+                    week_start: currentWeekStart,
+                    week_end: weekEnd,
+                    status: 'sauvegardé'
+                })
+            });
+
+            if (createResponse.ok) {
+                const result = await createResponse.json();
+                currentTimeSheet = result.data;
+                console.log('✅ Feuille de temps créée avec ID:', currentTimeSheet.id);
+            } else {
+                const error = await createResponse.json();
+                showAlert('Erreur lors de la création de la feuille de temps: ' + (error.message || 'Erreur inconnue'), 'danger');
+                return;
+            }
+        }
+
+        // Vérifier le statut actuel de la feuille
+        const editableStatuses = ['draft', 'saved', 'rejected', 'sauvegardé', 'rejeté', 'brouillon'];
+        if (currentTimeSheet.status && !editableStatuses.includes(currentTimeSheet.status)) {
+            return;
         }
 
         // Nettoyer les entrées existantes pour cette semaine avant de sauvegarder
@@ -2081,13 +2107,13 @@ async function saveTimeSheet() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                status: newStatus
+                statut: 'sauvegardé'
             })
         });
 
         if (response.ok) {
             // Mettre à jour le statut local immédiatement
-            updateTimeSheetStatus(newStatus);
+            updateTimeSheetStatus('sauvegardé');
 
             // Nettoyer l'affichage actuel avant de recharger
             console.log('🧹 Nettoyage de l\'affichage avant rechargement...');
@@ -2129,13 +2155,13 @@ async function submitTimeSheet() {
         }
 
         // Vérifier si la feuille est déjà soumise
-        if (currentTimeSheet.status === 'submitted') {
+        if (currentTimeSheet.status === 'soumis') {
             showAlert('Cette feuille de temps a déjà été soumise pour approbation', 'info');
             return;
         }
 
         // Vérifier si la feuille peut être soumise
-        const submittableStatuses = ['draft', 'saved', 'rejected'];
+        const submittableStatuses = ['draft', 'saved', 'rejected', 'sauvegardé', 'rejeté', 'brouillon'];
         if (currentTimeSheet.status && !submittableStatuses.includes(currentTimeSheet.status)) {
             showAlert('Cette feuille de temps ne peut plus être soumise (statut: ' + getStatusText(currentTimeSheet.status) + ')', 'warning');
             return;
@@ -2160,7 +2186,7 @@ async function submitTimeSheet() {
             showAlert(`Feuille de temps soumise avec succès ! ${data.data.supervisors} superviseur(s) notifié(s).`, 'success');
 
             // Mettre à jour le statut local immédiatement
-            updateTimeSheetStatus('submitted');
+            updateTimeSheetStatus('soumis');
 
             // Appliquer le verrouillage immédiatement
             toggleInterfaceLock();

@@ -13,7 +13,7 @@ router.post('/:timeSheetId/submit', authenticateToken, async (req, res) => {
         const { timeSheetId } = req.params;
         const userId = req.user.id;
         let supervisors; // Déclarer la variable ici pour qu'elle soit accessible plus tard
-        
+
         console.log('🔍 Informations de la requête:');
         console.log('  - timeSheetId:', timeSheetId);
         console.log('  - userId:', userId);
@@ -22,10 +22,10 @@ router.post('/:timeSheetId/submit', authenticateToken, async (req, res) => {
         // Vérifier que la feuille de temps appartient à l'utilisateur
         const { pool } = require('../utils/database');
         const client = await pool.connect();
-        
+
         try {
             const timeSheetCheck = await client.query(`
-                SELECT id, status, user_id 
+                SELECT id, statut, user_id 
                 FROM time_sheets 
                 WHERE id = $1
             `, [timeSheetId]);
@@ -42,16 +42,16 @@ router.post('/:timeSheetId/submit', authenticateToken, async (req, res) => {
             console.log('  - userId:', userId);
             console.log('  - Sont-ils égaux?', timeSheet.user_id === userId);
             if (timeSheet.user_id !== userId) {
-                return res.status(403).json({ 
-                    error: 'Vous n\'êtes pas autorisé à soumettre cette feuille de temps' 
+                return res.status(403).json({
+                    error: 'Vous n\'êtes pas autorisé à soumettre cette feuille de temps'
                 });
             }
 
             // Vérifier que la feuille peut être soumise
-            const submittableStatuses = ['draft', 'saved', 'rejected'];
-            if (!submittableStatuses.includes(timeSheet.status)) {
-                return res.status(400).json({ 
-                    error: 'Cette feuille de temps a déjà été soumise' 
+            const submittableStatuses = ['draft', 'saved', 'rejected', 'sauvegardé', 'rejeté', 'brouillon'];
+            if (!submittableStatuses.includes(timeSheet.statut)) {
+                return res.status(400).json({
+                    error: 'Cette feuille de temps a déjà été soumise'
                 });
             }
 
@@ -61,15 +61,15 @@ router.post('/:timeSheetId/submit', authenticateToken, async (req, res) => {
             console.log('📊 Superviseurs trouvés:', supervisors.length);
             console.log('📋 Détail des superviseurs:', supervisors);
             if (supervisors.length === 0) {
-                return res.status(400).json({ 
-                    error: 'Aucun superviseur configuré pour votre compte' 
+                return res.status(400).json({
+                    error: 'Aucun superviseur configuré pour votre compte'
                 });
             }
 
             // Mettre à jour le statut de la feuille de temps
             await client.query(`
                 UPDATE time_sheets 
-                SET status = 'submitted', updated_at = NOW()
+                SET statut = 'soumis', updated_at = NOW()
                 WHERE id = $1
             `, [timeSheetId]);
 
@@ -79,7 +79,7 @@ router.post('/:timeSheetId/submit', authenticateToken, async (req, res) => {
                 data: {
                     timeSheetId,
                     supervisors: supervisors.length,
-                    status: 'submitted'
+                    status: 'soumis'
                 }
             });
 
@@ -89,8 +89,8 @@ router.post('/:timeSheetId/submit', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la soumission de la feuille de temps:', error);
-        res.status(500).json({ 
-            error: 'Erreur lors de la soumission de la feuille de temps' 
+        res.status(500).json({
+            error: 'Erreur lors de la soumission de la feuille de temps'
         });
     }
 });
@@ -107,10 +107,10 @@ router.post('/:timeSheetId/approve', authenticateToken, async (req, res) => {
 
         // Vérifier que le superviseur peut approuver cette feuille
         const canApprove = await TimeSheetApproval.canSupervisorApprove(timeSheetId, supervisorId);
-        
+
         if (!canApprove) {
-            return res.status(403).json({ 
-                error: 'Vous n\'êtes pas autorisé à approuver cette feuille de temps' 
+            return res.status(403).json({
+                error: 'Vous n\'êtes pas autorisé à approuver cette feuille de temps'
             });
         }
 
@@ -124,8 +124,8 @@ router.post('/:timeSheetId/approve', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de l\'approbation de la feuille de temps:', error);
-        res.status(500).json({ 
-            error: 'Erreur lors de l\'approbation de la feuille de temps' 
+        res.status(500).json({
+            error: 'Erreur lors de l\'approbation de la feuille de temps'
         });
     }
 });
@@ -141,17 +141,17 @@ router.post('/:timeSheetId/reject', authenticateToken, async (req, res) => {
         const supervisorId = req.user.id;
 
         if (!comment) {
-            return res.status(400).json({ 
-                error: 'Un commentaire est requis pour rejeter une feuille de temps' 
+            return res.status(400).json({
+                error: 'Un commentaire est requis pour rejeter une feuille de temps'
             });
         }
 
         // Vérifier que le superviseur peut rejeter cette feuille
         const canApprove = await TimeSheetApproval.canSupervisorApprove(timeSheetId, supervisorId);
-        
+
         if (!canApprove) {
-            return res.status(403).json({ 
-                error: 'Vous n\'êtes pas autorisé à rejeter cette feuille de temps' 
+            return res.status(403).json({
+                error: 'Vous n\'êtes pas autorisé à rejeter cette feuille de temps'
             });
         }
 
@@ -165,8 +165,8 @@ router.post('/:timeSheetId/reject', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors du rejet de la feuille de temps:', error);
-        res.status(500).json({ 
-            error: 'Erreur lors du rejet de la feuille de temps' 
+        res.status(500).json({
+            error: 'Erreur lors du rejet de la feuille de temps'
         });
     }
 });
@@ -179,7 +179,7 @@ router.get('/:timeSheetId/history', authenticateToken, async (req, res) => {
     try {
         const { timeSheetId } = req.params;
         const history = await TimeSheetApproval.getApprovalHistory(timeSheetId);
-        
+
         res.json({
             message: 'Historique des approbations récupéré avec succès',
             data: history
@@ -187,8 +187,8 @@ router.get('/:timeSheetId/history', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la récupération de l\'historique:', error);
-        res.status(500).json({ 
-            error: 'Erreur lors de la récupération de l\'historique' 
+        res.status(500).json({
+            error: 'Erreur lors de la récupération de l\'historique'
         });
     }
 });
@@ -201,11 +201,11 @@ router.get('/:timeSheetId/status', authenticateToken, async (req, res) => {
     try {
         const { timeSheetId } = req.params;
         const status = await TimeSheetApproval.getTimeSheetStatus(timeSheetId);
-        
+
         if (!status) {
             return res.status(404).json({ error: 'Feuille de temps non trouvée' });
         }
-        
+
         res.json({
             message: 'Statut de la feuille de temps récupéré avec succès',
             data: status
@@ -213,8 +213,8 @@ router.get('/:timeSheetId/status', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la récupération du statut:', error);
-        res.status(500).json({ 
-            error: 'Erreur lors de la récupération du statut' 
+        res.status(500).json({
+            error: 'Erreur lors de la récupération du statut'
         });
     }
 });
@@ -227,7 +227,7 @@ router.get('/pending', authenticateToken, async (req, res) => {
     try {
         const supervisorId = req.user.id;
         const pendingApprovals = await TimeSheetApproval.getPendingApprovals(supervisorId);
-        
+
         res.json({
             message: 'Feuilles en attente récupérées avec succès',
             data: pendingApprovals
@@ -235,8 +235,8 @@ router.get('/pending', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la récupération des feuilles en attente:', error);
-        res.status(500).json({ 
-            error: 'Erreur lors de la récupération des feuilles en attente' 
+        res.status(500).json({
+            error: 'Erreur lors de la récupération des feuilles en attente'
         });
     }
 });
@@ -249,7 +249,7 @@ router.get('/all', authenticateToken, async (req, res) => {
     try {
         const supervisorId = req.user.id;
         const allTimeSheets = await TimeSheetApproval.getAllTimeSheetsForSupervisor(supervisorId);
-        
+
         res.json({
             message: 'Toutes les feuilles récupérées avec succès',
             data: allTimeSheets
@@ -257,8 +257,8 @@ router.get('/all', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la récupération de toutes les feuilles:', error);
-        res.status(500).json({ 
-            error: 'Erreur lors de la récupération de toutes les feuilles' 
+        res.status(500).json({
+            error: 'Erreur lors de la récupération de toutes les feuilles'
         });
     }
 });
@@ -271,13 +271,13 @@ router.get('/all-submitted', authenticateToken, async (req, res) => {
     try {
         // Vérifier que l'utilisateur est admin
         if (req.user.role !== 'ADMIN') {
-            return res.status(403).json({ 
-                error: 'Accès réservé aux administrateurs' 
+            return res.status(403).json({
+                error: 'Accès réservé aux administrateurs'
             });
         }
 
         const submittedTimeSheets = await TimeSheetApproval.getAllSubmittedTimeSheets();
-        
+
         res.json({
             message: 'Toutes les feuilles soumises récupérées avec succès',
             data: submittedTimeSheets
@@ -285,8 +285,8 @@ router.get('/all-submitted', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la récupération de toutes les feuilles soumises:', error);
-        res.status(500).json({ 
-            error: 'Erreur lors de la récupération de toutes les feuilles soumises' 
+        res.status(500).json({
+            error: 'Erreur lors de la récupération de toutes les feuilles soumises'
         });
     }
 });

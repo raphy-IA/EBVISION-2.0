@@ -17,8 +17,8 @@ class TimeEntry {
         const query = `
             INSERT INTO time_entries (
                 time_sheet_id, user_id, date_saisie, heures, type_heures,
-                mission_id, task_id, internal_activity_id, status
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'saved')
+                mission_id, task_id, internal_activity_id
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *
         `;
 
@@ -77,7 +77,7 @@ class TimeEntry {
 
     // Mettre à jour une entrée d'heures
     static async update(id, updateData) {
-        const allowedFields = ['heures', 'status'];
+        const allowedFields = ['heures'];
         const updates = [];
         const values = [];
         let paramCount = 1;
@@ -127,7 +127,7 @@ class TimeEntry {
         try {
             // Essayer de trouver une entrée existante
             let entry = await this.findExisting(
-                time_sheet_id, date_saisie, type_heures, 
+                time_sheet_id, date_saisie, type_heures,
                 mission_id, task_id, internal_activity_id
             );
 
@@ -281,23 +281,7 @@ class TimeEntry {
         }
     }
 
-    // Mettre à jour le status de toutes les entrées d'une feuille de temps
-    static async updateStatusByTimeSheet(timeSheetId, newStatus) {
-        const query = `
-            UPDATE time_entries 
-            SET status = $1, updated_at = CURRENT_TIMESTAMP
-            WHERE time_sheet_id = $2
-            RETURNING *
-        `;
-
-        try {
-            const result = await pool.query(query, [newStatus, timeSheetId]);
-            return result.rows;
-        } catch (error) {
-            console.error('Erreur lors de la mise à jour des statuts:', error);
-            throw error;
-        }
-    }
+    // Méthode supprimée - time_entries n'a pas de colonne status
 }
 
 module.exports = TimeEntry; 
