@@ -329,7 +329,38 @@
                 </div>
             </div>
 
-            <!-- Filtres -->
+            <!-- Filtres Rapides (Modes de vue) -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="btn-group w-100" role="group" aria-label="Modes de vue">
+                        <button type="button" class="btn btn-outline-primary active" id="btnViewMyScope"
+                            onclick="switchView('my_scope')">
+                            <i class="fas fa-user-circle me-2"></i>Ma Vue <small class="d-none d-md-inline">(Mes
+                                missions)</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" id="btnViewActionNeeded"
+                            onclick="switchView('action_needed')">
+                            <i class="fas fa-exclamation-circle me-2"></i>À Traiter <small
+                                class="d-none d-md-inline">(En attente)</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-info" id="btnViewEmitted"
+                            onclick="switchView('emitted')">
+                            <i class="fas fa-paper-plane me-2"></i>Émises <small
+                                class="d-none d-md-inline">(Finalisées)</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="btnViewSuggestions"
+                            onclick="switchView('suggestions')">
+                            <i class="fas fa-magic me-2"></i>Suggestions <small
+                                class="d-none d-md-inline">(Assistant)</small>
+                        </button>
+                        <button type="button" class="btn btn-outline-dark" id="btnViewAll" onclick="switchView('all')">
+                            <i class="fas fa-list me-2"></i>Tout voir
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtres Détaillés -->
             <div class="filters-section">
                 <div class="row">
                     <div class="col-md-3">
@@ -784,6 +815,42 @@
             }
         }
 
+
+        // Gestion des Vues
+        let currentView = 'my_scope';
+
+        function switchView(view) {
+            currentView = view;
+
+            // Mise à jour des classes active
+            document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+
+            let btnId = '';
+            if (view === 'my_scope') btnId = 'btnViewMyScope';
+            else if (view === 'action_needed') btnId = 'btnViewActionNeeded';
+            else if (view === 'emitted') btnId = 'btnViewEmitted';
+            else if (view === 'suggestions') btnId = 'btnViewSuggestions';
+            else if (view === 'all') btnId = 'btnViewAll';
+
+            const btn = document.getElementById(btnId);
+            if (btn) btn.classList.add('active');
+
+            // Gestion de l'affichage de la section Assistant
+            const assistantSection = document.getElementById('billingAssistantSection');
+            if (assistantSection) {
+                if (view === 'suggestions') {
+                    assistantSection.style.display = 'block';
+                    assistantSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    assistantSection.style.display = 'none';
+                }
+            }
+
+            // Rechargement des données
+            currentPage = 1;
+            loadInvoices();
+        }
+
         // Charger les Business Units
         async function loadBusinessUnits() {
             try {
@@ -832,6 +899,7 @@
                 const params = new URLSearchParams({
                     page: currentPage,
                     limit: 10,
+                    view: currentView,
                     ...currentFilters
                 });
 

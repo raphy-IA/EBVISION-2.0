@@ -214,14 +214,59 @@ class Invoice {
             division_id,
             date_debut,
             date_fin,
-            search
+            search,
+            view,
+            user // Used for scoping
         } = options;
 
         let conditions = [];
         let values = [];
         let valueIndex = 1;
 
-        // Construire les conditions de filtrage
+        let extraJoins = "";
+
+        // 1. Gestion des Vues (Scoping & Presets)
+        if (view === 'my_scope' && user) {
+            // Join user pour récupérer son collaborateur_id et ses rôles (si besoin de fraîcheur DB)
+            // On utilise une méthode robuste : joindre la table users pour l'utilisateur courant
+            extraJoins += ` LEFT JOIN users u_req ON u_req.id = $${valueIndex} `;
+            values.push(user.id);
+            valueIndex++;
+
+            // Condition de visibilité :
+            // - Super Admin / Admin / Senior Partner / Director : VOIT TOUT
+            // - Manager : Voit les missions où il est collaborateur_id (Manager)
+            // - Associé : Voit les missions où il est associe_id
+            // - Responsable BU : Voit les missions de sa BU (Principal ou Adjoint)
+            conditions.push(`(
+                'SUPER_ADMIN' = ANY(u_req.roles) OR 
+                'ADMIN' = ANY(u_req.roles) OR 
+                'SENIOR_PARTNER' = ANY(u_req.roles) OR
+                'DIRECTOR' = ANY(u_req.roles) OR
+                (m.collaborateur_id = u_req.collaborateur_id) OR
+                (m.associe_id = u_req.collaborateur_id) OR
+                (bu.responsable_principal_id = u_req.collaborateur_id) OR
+                (bu.responsable_adjoint_id = u_req.collaborateur_id)
+            )`);
+        }
+        else if (view === 'action_needed') {
+            // Factures en attente d'une action Workflow (hors Brouillon, hors Emise/Payée)
+            conditions.push(`i.statut IN ('EN_ATTENTE_VALIDATION', 'EN_ATTENTE_APPROBATION', 'EN_ATTENTE_EMISSION')`);
+        }
+        else if (view === 'emitted') {
+            conditions.push(`i.statut IN ('EMISE', 'PAYEE', 'EN_RETARD')`);
+        }
+        else if (view === 'suggestions') {
+            // Cas spécial : si géré par backend, sinon vide ou false
+            // Ici on retourne liste vide car c'est géré en frontend via un autre endpoint ?
+            // Ou alors on laisse le frontend gérer l'affichage de la section suggestions et on ne liste rien ici.
+            // Pour l'instant, on assume que ce view filtre la liste principale pour ne rien montrer ou les brouillons ?
+            // On va dire : ne rien montrer dans la liste principale, ou montrer les brouillons qui pourraient être liés.
+            // Mais l'utilisateur a dit "affiche toutes les suggestion... certte zone a été ajoutée".
+            // Donc la liste principale n'est pas concernée.
+        }
+
+        // Construire les conditions de filtrage standards
         if (statut) {
             conditions.push(`i.statut = $${valueIndex}`);
             values.push(statut);
@@ -282,6 +327,8 @@ class Invoice {
             FROM invoices i
             LEFT JOIN missions m ON i.mission_id = m.id
             LEFT JOIN clients c ON i.client_id = c.id
+            LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+            ${extraJoins}
             ${whereClause}
         `;
 
@@ -291,25 +338,26 @@ class Invoice {
         // Requête principale avec pagination
         const offset = (page - 1) * limit;
         const query = `
-            SELECT 
-                i.*,
-                m.nom as mission_nom,
-                c.nom as client_nom,
-                c.code as client_code,
-                u1.nom as created_by_nom,
-                u1.prenom as created_by_prenom,
-                m.business_unit_id,
-                bu.nom as business_unit_nom,
-                bu.code as business_unit_code,
-                m.division_id,
-                d.nom as division_nom,
-                d.code as division_code
+        SELECT
+        i.*,
+            m.nom as mission_nom,
+            c.nom as client_nom,
+            c.code as client_code,
+            u1.nom as created_by_nom,
+            u1.prenom as created_by_prenom,
+            m.business_unit_id,
+            bu.nom as business_unit_nom,
+            bu.code as business_unit_code,
+            m.division_id,
+            d.nom as division_nom,
+            d.code as division_code
             FROM invoices i
             LEFT JOIN missions m ON i.mission_id = m.id
             LEFT JOIN clients c ON i.client_id = c.id
             LEFT JOIN business_units bu ON m.business_unit_id = bu.id
             LEFT JOIN divisions d ON m.division_id = d.id
             LEFT JOIN users u1 ON i.created_by = u1.id
+            ${extraJoins}
             ${whereClause}
             ORDER BY i.created_at DESC
             LIMIT $${valueIndex} OFFSET $${valueIndex + 1}
@@ -336,19 +384,19 @@ class Invoice {
             await client.query('BEGIN');
 
             const query = `
-                UPDATE invoices 
-                SET 
-                    date_emission = $1,
-                    date_echeance = $2,
-                    statut = $3,
-                    conditions_paiement = $4,
-                    taux_tva = $5,
-                    adresse_facturation = $6,
-                    notes_facture = $7,
-                    updated_by = $8,
-                    updated_at = CURRENT_TIMESTAMP
+                UPDATE invoices
+        SET
+        date_emission = $1,
+            date_echeance = $2,
+            statut = $3,
+            conditions_paiement = $4,
+            taux_tva = $5,
+            adresse_facturation = $6,
+            notes_facture = $7,
+            updated_by = $8,
+            updated_at = CURRENT_TIMESTAMP
                 WHERE id = $9 AND statut = 'BROUILLON'
-                RETURNING *
+        RETURNING *
             `;
 
             if (this.statut !== 'BROUILLON') {
@@ -390,15 +438,15 @@ class Invoice {
     // Obtenir les lignes de facture
     async getItems() {
         const query = `
-            SELECT 
-                ii.*,
-                t.libelle as task_libelle,
-                t.code as task_code
+        SELECT
+        ii.*,
+            t.libelle as task_libelle,
+            t.code as task_code
             FROM invoice_items ii
             LEFT JOIN tasks t ON ii.task_id = t.id
             WHERE ii.invoice_id = $1
             ORDER BY ii.created_at
-        `;
+            `;
 
         const result = await pool.query(query, [this.id]);
         return result.rows;
@@ -407,12 +455,12 @@ class Invoice {
     // Ajouter une ligne de facture
     async addItem(itemData) {
         const query = `
-            INSERT INTO invoice_items (
+            INSERT INTO invoice_items(
                 invoice_id, description, quantite, unite, prix_unitaire,
                 taux_tva, task_id
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-            RETURNING *
-        `;
+            ) VALUES($1, $2, $3, $4, $5, $6, $7)
+        RETURNING *
+            `;
 
         const values = [
             this.id,
@@ -438,22 +486,22 @@ class Invoice {
     // Obtenir les paiements
     async getPayments() {
         const query = `
-            SELECT 
-                p.id,
-                p.payment_number,
-                p.payment_date,
-                pa.allocated_amount as montant,
-                p.payment_mode,
-                p.reference,
-                p.notes,
-                u.nom as created_by_nom,
-                u.prenom as created_by_prenom
+        SELECT
+        p.id,
+            p.payment_number,
+            p.payment_date,
+            pa.allocated_amount as montant,
+            p.payment_mode,
+            p.reference,
+            p.notes,
+            u.nom as created_by_nom,
+            u.prenom as created_by_prenom
             FROM payment_allocations pa
             JOIN payments p ON pa.payment_id = p.id
             LEFT JOIN users u ON p.created_by = u.id
             WHERE pa.invoice_id = $1
             ORDER BY p.payment_date DESC
-        `;
+            `;
 
         const result = await pool.query(query, [this.id]);
         return result.rows;
@@ -462,12 +510,12 @@ class Invoice {
     // Ajouter un paiement
     async addPayment(paymentData) {
         const query = `
-            INSERT INTO invoice_payments (
+            INSERT INTO invoice_payments(
                 invoice_id, numero_paiement, date_paiement, montant,
                 mode_paiement, reference_paiement, statut, notes, created_by
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            RETURNING *
-        `;
+            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        RETURNING *
+            `;
 
         const values = [
             this.id,
@@ -488,19 +536,19 @@ class Invoice {
     // Mettre à jour un paiement
     async updatePayment(paymentId, updateData) {
         const query = `
-            UPDATE invoice_payments 
-            SET 
-                numero_paiement = $1,
-                date_paiement = $2,
-                montant = $3,
-                mode_paiement = $4,
-                reference_paiement = $5,
-                statut = $6,
-                notes = $7,
-                updated_at = CURRENT_TIMESTAMP
+            UPDATE invoice_payments
+        SET
+        numero_paiement = $1,
+            date_paiement = $2,
+            montant = $3,
+            mode_paiement = $4,
+            reference_paiement = $5,
+            statut = $6,
+            notes = $7,
+            updated_at = CURRENT_TIMESTAMP
             WHERE id = $8 AND invoice_id = $9
-            RETURNING *
-        `;
+        RETURNING *
+            `;
 
         const values = [
             updateData.numero_paiement,
@@ -533,12 +581,12 @@ class Invoice {
 
             // Récupérer les informations de la mission avec les conditions de paiement
             const missionQuery = `
-                SELECT 
-                    m.conditions_paiement,
-                    m.montant_honoraires,
-                    m.montant_debours,
-                    m.devise,
-                    m.nom as mission_nom
+        SELECT
+        m.conditions_paiement,
+            m.montant_honoraires,
+            m.montant_debours,
+            m.devise,
+            m.nom as mission_nom
                 FROM missions m
                 WHERE m.id = $1
             `;
@@ -591,11 +639,11 @@ class Invoice {
                 if (hon > 0) {
                     const montantHT = hon;
                     await client.query(
-                        `INSERT INTO invoice_items (invoice_id, description, quantite, unite, prix_unitaire, taux_tva)
-                         VALUES ($1, $2, $3, $4, $5, $6)`,
+                        `INSERT INTO invoice_items(invoice_id, description, quantite, unite, prix_unitaire, taux_tva)
+        VALUES($1, $2, $3, $4, $5, $6)`,
                         [
                             this.id,
-                            `Honoraires - ${mission.mission_nom || ''}`.trim(),
+                            `Honoraires - ${mission.mission_nom || ''} `.trim(),
                             1,
                             'forfait',
                             montantHT,
@@ -606,11 +654,11 @@ class Invoice {
                 if (deb > 0) {
                     const montantHT = deb;
                     await client.query(
-                        `INSERT INTO invoice_items (invoice_id, description, quantite, unite, prix_unitaire, taux_tva)
-                         VALUES ($1, $2, $3, $4, $5, $6)`,
+                        `INSERT INTO invoice_items(invoice_id, description, quantite, unite, prix_unitaire, taux_tva)
+        VALUES($1, $2, $3, $4, $5, $6)`,
                         [
                             this.id,
-                            `Débours - ${mission.mission_nom || ''}`.trim(),
+                            `Débours - ${mission.mission_nom || ''} `.trim(),
                             1,
                             'forfait',
                             montantHT,
@@ -624,16 +672,16 @@ class Invoice {
                     // Ligne pour les honoraires
                     if (condition.montant_honoraires && condition.montant_honoraires > 0) {
                         const honorairesItemQuery = `
-                        INSERT INTO invoice_items (
-                            invoice_id, description, quantite, unite, prix_unitaire, taux_tva
-                        ) VALUES ($1, $2, $3, $4, $5, $6)
+                        INSERT INTO invoice_items(
+            invoice_id, description, quantite, unite, prix_unitaire, taux_tva
+        ) VALUES($1, $2, $3, $4, $5, $6)
                     `;
 
                         const montantHT = parseFloat(condition.montant_honoraires);
                         const montantTVA = montantHT * (this.taux_tva / 100);
                         const honorairesValues = [
                             this.id,
-                            `Honoraires - ${condition.details || 'Tranche ' + (condition.numero || '')}`,
+                            `Honoraires - ${condition.details || 'Tranche ' + (condition.numero || '')} `,
                             1,
                             'forfait',
                             montantHT,
@@ -646,16 +694,16 @@ class Invoice {
                     // Ligne pour les débours
                     if (condition.montant_debours && condition.montant_debours > 0) {
                         const deboursItemQuery = `
-                        INSERT INTO invoice_items (
-                            invoice_id, description, quantite, unite, prix_unitaire, taux_tva
-                        ) VALUES ($1, $2, $3, $4, $5, $6)
+                        INSERT INTO invoice_items(
+            invoice_id, description, quantite, unite, prix_unitaire, taux_tva
+        ) VALUES($1, $2, $3, $4, $5, $6)
                     `;
 
                         const montantHT = parseFloat(condition.montant_debours);
                         const montantTVA = montantHT * (this.taux_tva / 100);
                         const deboursValues = [
                             this.id,
-                            `Débours - ${condition.details || 'Tranche ' + (condition.numero || '')}`,
+                            `Débours - ${condition.details || 'Tranche ' + (condition.numero || '')} `,
                             1,
                             'forfait',
                             montantHT,
@@ -680,16 +728,16 @@ class Invoice {
     // Obtenir les statistiques de facturation
     static async getStats() {
         const query = `
-            SELECT 
-                COUNT(*) as total_factures,
-                COUNT(CASE WHEN statut = 'EMISE' THEN 1 END) as factures_emises,
-                COUNT(CASE WHEN statut = 'PAYEE' THEN 1 END) as factures_payees,
-                COUNT(CASE WHEN statut = 'BROUILLON' THEN 1 END) as factures_brouillon,
-                SUM(montant_ttc) as total_montant_ttc,
-                SUM(montant_paye) as total_montant_paye,
-                SUM(montant_restant) as total_montant_restant
+        SELECT
+        COUNT(*) as total_factures,
+            COUNT(CASE WHEN statut = 'EMISE' THEN 1 END) as factures_emises,
+            COUNT(CASE WHEN statut = 'PAYEE' THEN 1 END) as factures_payees,
+            COUNT(CASE WHEN statut = 'BROUILLON' THEN 1 END) as factures_brouillon,
+            SUM(montant_ttc) as total_montant_ttc,
+            SUM(montant_paye) as total_montant_paye,
+            SUM(montant_restant) as total_montant_restant
             FROM invoices
-        `;
+            `;
 
         const result = await pool.query(query);
         return result.rows[0];
@@ -698,11 +746,11 @@ class Invoice {
     // Obtenir les factures en retard
     static async getOverdueInvoices() {
         const query = `
-            SELECT 
-                i.*,
-                m.nom as mission_nom,
-                c.nom as client_nom,
-                c.code as client_code
+        SELECT
+        i.*,
+            m.nom as mission_nom,
+            c.nom as client_nom,
+            c.code as client_code
             FROM invoices i
             LEFT JOIN missions m ON i.mission_id = m.id
             LEFT JOIN clients c ON i.client_id = c.id
@@ -725,7 +773,7 @@ class Invoice {
      */
     async submit(submittedBy) {
         if (this.statut !== 'BROUILLON') {
-            throw new Error(`Impossible de soumettre une facture en statut ${this.statut}`);
+            throw new Error(`Impossible de soumettre une facture en statut ${this.statut} `);
         }
 
         // Vérification élémentaire
@@ -749,7 +797,7 @@ class Invoice {
      */
     async validate(validatedBy) {
         if (this.statut !== 'EN_ATTENTE_VALIDATION') {
-            throw new Error(`Impossible de valider une facture en statut ${this.statut}`);
+            throw new Error(`Impossible de valider une facture en statut ${this.statut} `);
         }
 
         // Vérification des permissions (Responsable BU ou Associé)
@@ -864,9 +912,33 @@ class Invoice {
 
     async updateStatus(newStatus, userId) {
         console.log(`[Invoice.updateStatus] ID: ${this.id}, Status: ${newStatus}, UserId: ${userId}`);
+
+        // Déterminer les champs temporels à mettre à jour selon la transition
+        let extraSet = "";
+
+        // Validation (Action: Valider)
+        // Transition typique : EN_ATTENTE_VALIDATION -> EN_ATTENTE_APPROBATION
+        if (newStatus === 'EN_ATTENTE_APPROBATION') {
+            extraSet = ", validated_at = CURRENT_TIMESTAMP, validated_by = $2";
+        }
+        // Approbation (Action: Approuver)
+        // Transition typique : EN_ATTENTE_APPROBATION -> EN_ATTENTE_EMISSION
+        else if (newStatus === 'EN_ATTENTE_EMISSION') {
+            extraSet = ", emission_validated_at = CURRENT_TIMESTAMP, emission_validated_by = $2";
+        }
+        // Emission (Action: Emettre)
+        // Transition typique : EN_ATTENTE_EMISSION -> EMISE
+        else if (newStatus === 'EMISE') {
+            extraSet = ", emitted_at = CURRENT_TIMESTAMP, emitted_by = $2, date_emission = CURRENT_DATE";
+        }
+        // Soumission (Action: Soumettre) - souvent géré ailleurs, mais au cas où
+        else if (newStatus === 'EN_ATTENTE_VALIDATION' && this.statut === 'BROUILLON') {
+            extraSet = ", submitted_for_validation_at = CURRENT_TIMESTAMP, submitted_for_validation_by = $2";
+        }
+
         const query = `
             UPDATE invoices 
-            SET statut = $1, updated_by = $2, updated_at = CURRENT_TIMESTAMP
+            SET statut = $1, updated_by = $2, updated_at = CURRENT_TIMESTAMP ${extraSet}
             WHERE id = $3
         `;
         await pool.query(query, [newStatus, userId, this.id]);

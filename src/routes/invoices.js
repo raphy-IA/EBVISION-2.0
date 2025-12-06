@@ -47,7 +47,8 @@ router.get('/', async (req, res) => {
             mission_id,
             date_debut,
             date_fin,
-            search
+            search,
+            view // 'my_scope', 'action_needed', 'emitted', 'suggestions', 'all'
         } = req.query;
 
         const options = {
@@ -58,7 +59,9 @@ router.get('/', async (req, res) => {
             mission_id,
             date_debut,
             date_fin,
-            search
+            search,
+            view,
+            user: req.user // Pass user for scoping
         };
 
         const result = await Invoice.findAll(options);
