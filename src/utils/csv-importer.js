@@ -95,7 +95,7 @@ class CSVImporter {
         console.log('👥 Importation des utilisateurs...');
 
         const filePath = path.join(process.cwd(), 'initiales.csv');
-        
+
         if (!fs.existsSync(filePath)) {
             console.log('   ⚠️  Fichier initiales.csv non trouvé, création d\'utilisateurs par défaut');
             await this.createDefaultUsers();
@@ -183,7 +183,7 @@ class CSVImporter {
         console.log('💰 Importation des taux horaires...');
 
         const filePath = path.join(process.cwd(), 'Taux horaire par grade.csv');
-        
+
         if (!fs.existsSync(filePath)) {
             console.log('   ⚠️  Fichier Taux horaire par grade.csv non trouvé, création de taux par défaut');
             await this.createDefaultHourlyRates();
@@ -254,7 +254,7 @@ class CSVImporter {
         console.log('🏢 Importation des clients...');
 
         const filePath = path.join(process.cwd(), 'données_TRS.csv');
-        
+
         if (!fs.existsSync(filePath)) {
             console.log('   ⚠️  Fichier données_TRS.csv non trouvé');
             return;
@@ -310,7 +310,7 @@ class CSVImporter {
         console.log('🎯 Importation des missions...');
 
         const filePath = path.join(process.cwd(), 'liste des missions.csv');
-        
+
         if (!fs.existsSync(filePath)) {
             console.log('   ⚠️  Fichier liste des missions.csv non trouvé');
             return;
@@ -358,7 +358,7 @@ class CSVImporter {
         console.log('⏰ Importation des saisies de temps...');
 
         const filePath = path.join(process.cwd(), 'données_TRS.csv');
-        
+
         if (!fs.existsSync(filePath)) {
             console.log('   ⚠️  Fichier données_TRS.csv non trouvé');
             return;
@@ -380,8 +380,8 @@ class CSVImporter {
                     transport: parseFloat(trsRow.Transport || trsRow.transport || 0) || 0,
                     hotel: parseFloat(trsRow.Hotel || trsRow.hotel || 0) || 0,
                     restaurant: parseFloat(trsRow.Restaurant || trsRow.restaurant || 0) || 0,
-                    divers: parseFloat(trsRow.Divers || trsRow.divers || 0) || 0,
-                    statut: this.mapTimeEntryStatus(trsRow.Statut || trsRow.statut || 'SAISIE')
+                    divers: parseFloat(trsRow.Divers || trsRow.divers || 0) || 0
+                    // REMOVED: statut - this column does not exist in time_entries table
                 };
 
                 // Vérifier que l'utilisateur existe
@@ -391,9 +391,9 @@ class CSVImporter {
                 }
 
                 await query(
-                    `INSERT INTO time_entries (user_id, mission_id, date_saisie, heures, type_heures, description, perdiem, transport, hotel, restaurant, divers, statut)
-                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-                    [timeEntry.user_id, timeEntry.mission_id, timeEntry.date_saisie, timeEntry.heures, timeEntry.type_heures, timeEntry.description, timeEntry.perdiem, timeEntry.transport, timeEntry.hotel, timeEntry.restaurant, timeEntry.divers, timeEntry.statut]
+                    `INSERT INTO time_entries (user_id, mission_id, date_saisie, heures, type_heures, description, perdiem, transport, hotel, restaurant, divers)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                    [timeEntry.user_id, timeEntry.mission_id, timeEntry.date_saisie, timeEntry.heures, timeEntry.type_heures, timeEntry.description, timeEntry.perdiem, timeEntry.transport, timeEntry.hotel, timeEntry.restaurant, timeEntry.divers]
                 );
 
                 importedCount++;
@@ -413,7 +413,7 @@ class CSVImporter {
         console.log('🧾 Importation des factures...');
 
         const filePath = path.join(process.cwd(), 'liste des factures.csv');
-        
+
         if (!fs.existsSync(filePath)) {
             console.log('   ⚠️  Fichier liste des factures.csv non trouvé');
             return;
@@ -467,7 +467,7 @@ class CSVImporter {
         console.log('🎯 Importation des opportunités...');
 
         const filePath = path.join(process.cwd(), 'liste des opportunités.csv');
-        
+
         if (!fs.existsSync(filePath)) {
             console.log('   ⚠️  Fichier liste des opportunités.csv non trouvé');
             return;
@@ -647,7 +647,7 @@ class CSVImporter {
      */
     parseDate(dateStr) {
         if (!dateStr) return null;
-        
+
         // Formats de date courants
         const datePatterns = [
             /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, // DD/MM/YYYY
@@ -700,14 +700,14 @@ class CSVImporter {
         console.log('==============================');
         console.log(`📁 Fichiers traités: ${this.importStats.processedFiles}`);
         console.log(`📊 Lignes importées: ${this.importStats.importedRows}`);
-        
+
         if (this.importStats.errors.length > 0) {
             console.log(`❌ Erreurs: ${this.importStats.errors.length}`);
             this.importStats.errors.slice(0, 5).forEach(error => {
                 console.log(`   - ${error}`);
             });
         }
-        
+
         if (this.importStats.warnings.length > 0) {
             console.log(`⚠️  Avertissements: ${this.importStats.warnings.length}`);
             this.importStats.warnings.slice(0, 5).forEach(warning => {
