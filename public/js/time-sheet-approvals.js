@@ -5,7 +5,7 @@ let currentTimeSheet = null;
 let currentAction = null;
 
 // Initialisation
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('🚀 Initialisation de la page de validation des feuilles de temps');
     initializePage();
 });
@@ -21,10 +21,10 @@ async function initializePage() {
 
         // Charger les données
         await loadTimeSheets();
-        
+
         // Initialiser les événements
         initializeEvents();
-        
+
         console.log('✅ Page de validation des feuilles de temps initialisée');
     } catch (error) {
         console.error('❌ Erreur lors de l\'initialisation:', error);
@@ -35,7 +35,7 @@ async function initializePage() {
 async function loadTimeSheets() {
     try {
         console.log('📊 Chargement des feuilles de temps...');
-        
+
         // Par défaut, charger seulement les feuilles soumises (pending)
         const response = await fetch('/api/time-sheet-approvals/pending', {
             headers: {
@@ -49,9 +49,9 @@ async function loadTimeSheets() {
 
         const data = await response.json();
         allTimeSheets = data.data || [];
-        
+
         console.log(`✅ ${allTimeSheets.length} feuilles de temps chargées`);
-        
+
         // Charger les entrées de temps pour chaque feuille
         for (let sheet of allTimeSheets) {
             try {
@@ -60,7 +60,7 @@ async function loadTimeSheets() {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
-                
+
                 if (entriesResponse.ok) {
                     const entriesData = await entriesResponse.json();
                     sheet.timeEntries = entriesData.data || [];
@@ -71,16 +71,16 @@ async function loadTimeSheets() {
                 sheet.timeEntries = [];
             }
         }
-        
+
         // Charger et afficher le filtre par collaborateur
         await loadCollaborateurFilter();
-        
+
         // Afficher les feuilles de temps
         displayTimeSheets();
-        
+
         // Mettre à jour les statistiques
         updateStats();
-        
+
     } catch (error) {
         console.error('❌ Erreur lors du chargement des feuilles de temps:', error);
         showAlert('Erreur lors du chargement des feuilles de temps', 'danger');
@@ -91,7 +91,7 @@ async function loadCollaborateurFilter() {
     try {
         // Extraire la liste unique des collaborateurs
         const collaborateurs = [...new Set(allTimeSheets.map(sheet => sheet.collaborateur_email))];
-        
+
         const filterContainer = document.getElementById('collaborateur-filter-container');
         if (filterContainer) {
             filterContainer.innerHTML = `
@@ -103,9 +103,9 @@ async function loadCollaborateurFilter() {
                         <select id="collaborateur-filter" class="form-select" onchange="filterByCollaborateur()">
                             <option value="all">Tous les collaborateurs</option>
                             ${collaborateurs.map(email => {
-                                const sheet = allTimeSheets.find(s => s.collaborateur_email === email);
-                                return `<option value="${email}">${sheet.collaborateur_prenom} ${sheet.collaborateur_nom}</option>`;
-                            }).join('')}
+                const sheet = allTimeSheets.find(s => s.collaborateur_email === email);
+                return `<option value="${email}">${sheet.collaborateur_prenom} ${sheet.collaborateur_nom}</option>`;
+            }).join('')}
                         </select>
                     </div>
                     <div class="col-md-8 d-flex align-items-end">
@@ -133,41 +133,48 @@ function filterByCollaborateur() {
 
 function displayTimeSheets() {
     const container = document.getElementById('time-sheets-container');
-    
+
     // Filtrer les feuilles selon le filtre actuel
     let filteredSheets = allTimeSheets;
     if (currentFilter !== 'all') {
-        filteredSheets = allTimeSheets.filter(sheet => sheet.status === currentFilter);
+        // Support both English and French status values
+        const statusMappings = {
+            'submitted': ['submitted', 'soumis'],
+            'approved': ['approved', 'validé'],
+            'rejected': ['rejected', 'rejeté']
+        };
+        const validStatuses = statusMappings[currentFilter] || [currentFilter];
+        filteredSheets = allTimeSheets.filter(sheet => validStatuses.includes(sheet.statut || sheet.status));
     }
-    
+
     // Filtrer par collaborateur si un filtre est sélectionné
     const collaborateurFilter = document.getElementById('collaborateur-filter')?.value;
     if (collaborateurFilter && collaborateurFilter !== 'all') {
-        filteredSheets = filteredSheets.filter(sheet => 
+        filteredSheets = filteredSheets.filter(sheet =>
             sheet.collaborateur_email === collaborateurFilter
         );
     }
-    
+
     if (filteredSheets.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-inbox"></i>
                 <h4>Aucune feuille de temps</h4>
                 <p class="text-muted">
-                    ${currentFilter === 'all' ? 'Aucune feuille de temps à valider' : 
-                      currentFilter === 'submitted' ? 'Aucune feuille en attente de validation' :
-                      currentFilter === 'approved' ? 'Aucune feuille approuvée' :
-                      'Aucune feuille rejetée'}
+                    ${currentFilter === 'all' ? 'Aucune feuille de temps à valider' :
+                currentFilter === 'submitted' ? 'Aucune feuille en attente de validation' :
+                    currentFilter === 'approved' ? 'Aucune feuille approuvée' :
+                        'Aucune feuille rejetée'}
                 </p>
             </div>
         `;
         return;
     }
-    
+
     container.innerHTML = filteredSheets.map(sheet => {
-        const statusClass = `status-${sheet.status}`;
-        const statusText = getStatusText(sheet.status);
-        
+        const statusClass = `status-${sheet.statut || sheet.status}`;
+        const statusText = getStatusText(sheet.statut || sheet.status);
+
         // Générer l'historique des approbations
         let approvalsHistory = '';
         if (sheet.approvals_history && sheet.approvals_history.length > 0) {
@@ -187,7 +194,7 @@ function displayTimeSheets() {
                 </div>
             `;
         }
-        
+
         return `
             <div class="approval-card">
                 <div class="approval-header">
@@ -232,12 +239,21 @@ function displayTimeSheets() {
 }
 
 function getStatusText(status) {
-    switch (status) {
-        case 'submitted': return 'En attente';
-        case 'approved': return 'Approuvée';
-        case 'rejected': return 'Rejetée';
-        default: return 'Brouillon';
-    }
+    const statusMap = {
+        // English values
+        'submitted': 'En attente',
+        'approved': 'Approuvée',
+        'rejected': 'Rejetée',
+        'draft': 'Brouillon',
+        'saved': 'Sauvegardée',
+        // French values from DB
+        'soumis': 'En attente',
+        'validé': 'Approuvée',
+        'rejeté': 'Rejetée',
+        'brouillon': 'Brouillon',
+        'sauvegardé': 'Sauvegardée'
+    };
+    return statusMap[status] || 'Brouillon';
 }
 
 function formatDate(dateString) {
@@ -265,9 +281,9 @@ function getTotalHours(sheet, type) {
     if (!sheet.timeEntries) {
         return type === 'chargeable' ? '0' : type === 'non-chargeable' ? '0' : '0';
     }
-    
+
     const entries = sheet.timeEntries;
-    
+
     if (type === 'chargeable') {
         return entries
             .filter(entry => entry.type_heures === 'HC')
@@ -289,33 +305,33 @@ function generateTimeSheetRows(weekStart, weekEnd, timeEntries) {
     const weekDays = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     const startDate = new Date(weekStart);
     const endDate = new Date(weekEnd);
-    
+
     let rows = '';
-    
+
     for (let i = 0; i < 7; i++) {
         const currentDate = new Date(startDate);
         currentDate.setDate(startDate.getDate() + i);
-        
+
         const dateString = currentDate.toISOString().split('T')[0];
         const dayName = weekDays[i];
-        
+
         // Trouver les entrées pour ce jour
         const dayEntries = timeEntries.filter(entry => {
             const entryDate = new Date(entry.date_saisie);
             return entryDate.toISOString().split('T')[0] === dateString;
         });
-        
+
         // Calculer les heures pour ce jour
         const chargeableHours = dayEntries
             .filter(entry => entry.type_heures === 'HC')
             .reduce((sum, entry) => sum + (parseFloat(entry.heures) || 0), 0);
-            
+
         const nonChargeableHours = dayEntries
             .filter(entry => entry.type_heures === 'HNC')
             .reduce((sum, entry) => sum + (parseFloat(entry.heures) || 0), 0);
-            
+
         const totalDayHours = chargeableHours + nonChargeableHours;
-        
+
         rows += `
             <tr>
                 <td><strong>${dayName}</strong><br><small class="text-muted">${formatDate(dateString)}</small></td>
@@ -325,7 +341,7 @@ function generateTimeSheetRows(weekStart, weekEnd, timeEntries) {
             </tr>
         `;
     }
-    
+
     return rows;
 }
 
@@ -349,7 +365,7 @@ function calculateTotalHours(timeEntries, type) {
 function generateChargeableEntriesTable(timeEntries, weekStart) {
     const weekDays = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     const startDate = new Date(weekStart);
-    
+
     // Générer les dates pour chaque jour de la semaine avec abréviations
     const weekDates = weekDays.map((day, index) => {
         const date = new Date(startDate);
@@ -359,15 +375,15 @@ function generateChargeableEntriesTable(timeEntries, weekStart) {
             date: date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
         };
     });
-    
+
     // Grouper les entrées par mission et tâche
     const groupedEntries = {};
-    
+
     console.log('🔍 generateChargeableEntriesTable - Debug:');
     console.log('  - timeEntries.length:', timeEntries.length);
     console.log('  - weekStart:', weekStart);
     console.log('  - startDate:', startDate);
-    
+
     timeEntries
         .filter(entry => entry.type_heures === 'HC')
         .forEach(entry => {
@@ -379,12 +395,12 @@ function generateChargeableEntriesTable(timeEntries, weekStart) {
                     days: {}
                 };
             }
-            
+
             const entryDate = new Date(entry.date_saisie);
             const dayIndex = Math.floor((entryDate - startDate) / (1000 * 60 * 60 * 24));
-            
+
             console.log(`  - Entry: ${entry.date_saisie} -> dayIndex: ${dayIndex}, dayKey: ${weekDays[dayIndex]}, heures: ${entry.heures}`);
-            
+
             if (dayIndex >= 0 && dayIndex < 7) {
                 const dayKey = weekDays[dayIndex];
                 if (!groupedEntries[key].days[dayKey]) {
@@ -393,7 +409,7 @@ function generateChargeableEntriesTable(timeEntries, weekStart) {
                 groupedEntries[key].days[dayKey] += parseFloat(entry.heures) || 0;
             }
         });
-    
+
     if (Object.keys(groupedEntries).length === 0) {
         return `
             <tr>
@@ -403,20 +419,20 @@ function generateChargeableEntriesTable(timeEntries, weekStart) {
             </tr>
         `;
     }
-    
+
     return Object.values(groupedEntries).map(entry => {
         const total = Object.values(entry.days).reduce((sum, hours) => sum + hours, 0);
-        
+
         return `
             <tr>
                 <td><strong>${entry.mission}</strong></td>
                 <td>${entry.tache}</td>
                 ${weekDates.map((dayInfo, index) => {
-                    // Utiliser le nom complet du jour (Lundi, Mardi, etc.) au lieu de l'abréviation
-                    const fullDayName = weekDays[index];
-                    const hours = entry.days[fullDayName] || 0;
-                    return `<td class="text-center">${hours > 0 ? hours.toFixed(1) + 'h' : '-'}</td>`;
-                }).join('')}
+            // Utiliser le nom complet du jour (Lundi, Mardi, etc.) au lieu de l'abréviation
+            const fullDayName = weekDays[index];
+            const hours = entry.days[fullDayName] || 0;
+            return `<td class="text-center">${hours > 0 ? hours.toFixed(1) + 'h' : '-'}</td>`;
+        }).join('')}
                 <td class="text-center"><strong>${total.toFixed(1)}h</strong></td>
             </tr>
         `;
@@ -426,7 +442,7 @@ function generateChargeableEntriesTable(timeEntries, weekStart) {
 function generateNonChargeableEntriesTable(timeEntries, weekStart) {
     const weekDays = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     const startDate = new Date(weekStart);
-    
+
     // Générer les dates pour chaque jour de la semaine avec abréviations
     const weekDates = weekDays.map((day, index) => {
         const date = new Date(startDate);
@@ -436,10 +452,10 @@ function generateNonChargeableEntriesTable(timeEntries, weekStart) {
             date: date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
         };
     });
-    
+
     // Grouper les entrées par activité interne
     const groupedEntries = {};
-    
+
     timeEntries
         .filter(entry => entry.type_heures === 'HNC')
         .forEach(entry => {
@@ -450,10 +466,10 @@ function generateNonChargeableEntriesTable(timeEntries, weekStart) {
                     days: {}
                 };
             }
-            
+
             const entryDate = new Date(entry.date_saisie);
             const dayIndex = Math.floor((entryDate - startDate) / (1000 * 60 * 60 * 24));
-            
+
             if (dayIndex >= 0 && dayIndex < 7) {
                 const dayKey = weekDays[dayIndex];
                 if (!groupedEntries[key].days[dayKey]) {
@@ -462,7 +478,7 @@ function generateNonChargeableEntriesTable(timeEntries, weekStart) {
                 groupedEntries[key].days[dayKey] += parseFloat(entry.heures) || 0;
             }
         });
-    
+
     if (Object.keys(groupedEntries).length === 0) {
         return `
             <tr>
@@ -472,19 +488,19 @@ function generateNonChargeableEntriesTable(timeEntries, weekStart) {
             </tr>
         `;
     }
-    
+
     return Object.values(groupedEntries).map(entry => {
         const total = Object.values(entry.days).reduce((sum, hours) => sum + hours, 0);
-        
+
         return `
             <tr>
                 <td><strong>${entry.activite}</strong></td>
                 ${weekDates.map((dayInfo, index) => {
-                    // Utiliser le nom complet du jour (Lundi, Mardi, etc.) au lieu de l'abréviation
-                    const fullDayName = weekDays[index];
-                    const hours = entry.days[fullDayName] || 0;
-                    return `<td class="text-center">${hours > 0 ? hours.toFixed(1) + 'h' : '-'}</td>`;
-                }).join('')}
+            // Utiliser le nom complet du jour (Lundi, Mardi, etc.) au lieu de l'abréviation
+            const fullDayName = weekDays[index];
+            const hours = entry.days[fullDayName] || 0;
+            return `<td class="text-center">${hours > 0 ? hours.toFixed(1) + 'h' : '-'}</td>`;
+        }).join('')}
                 <td class="text-center"><strong>${total.toFixed(1)}h</strong></td>
             </tr>
         `;
@@ -494,7 +510,7 @@ function generateNonChargeableEntriesTable(timeEntries, weekStart) {
 function generateDailySummary(timeEntries, weekStart) {
     const weekDays = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
     const startDate = new Date(weekStart);
-    
+
     // Générer les dates pour chaque jour de la semaine avec abréviations
     const weekDates = weekDays.map((day, index) => {
         const date = new Date(startDate);
@@ -504,30 +520,30 @@ function generateDailySummary(timeEntries, weekStart) {
             date: date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
         };
     });
-    
+
     // Calculer les heures pour chaque jour
     const dailyHours = weekDates.map((dayInfo, index) => {
         const currentDate = new Date(startDate);
         currentDate.setDate(startDate.getDate() + index);
         const dateString = currentDate.toISOString().split('T')[0];
-        
+
         // Trouver les entrées pour ce jour
         const dayEntries = timeEntries.filter(entry => {
             const entryDate = new Date(entry.date_saisie);
             return entryDate.toISOString().split('T')[0] === dateString;
         });
-        
+
         // Calculer les heures pour ce jour
         const chargeableHours = dayEntries
             .filter(entry => entry.type_heures === 'HC')
             .reduce((sum, entry) => sum + (parseFloat(entry.heures) || 0), 0);
-            
+
         const nonChargeableHours = dayEntries
             .filter(entry => entry.type_heures === 'HNC')
             .reduce((sum, entry) => sum + (parseFloat(entry.heures) || 0), 0);
-            
+
         const totalDayHours = chargeableHours + nonChargeableHours;
-        
+
         return {
             day: dayInfo.day,
             date: dayInfo.date,
@@ -536,7 +552,7 @@ function generateDailySummary(timeEntries, weekStart) {
             total: totalDayHours
         };
     });
-    
+
     // Générer le HTML du récapitulatif
     const summaryRows = dailyHours.map(day => `
         <td class="text-center">
@@ -546,7 +562,7 @@ function generateDailySummary(timeEntries, weekStart) {
             </small>
         </td>
     `).join('');
-    
+
     return `
         <div class="card mb-3">
             <div class="card-header bg-primary text-white">
@@ -558,9 +574,9 @@ function generateDailySummary(timeEntries, weekStart) {
                         <thead class="table-light">
                             <tr>
                                 <th>Jour</th>
-                                ${weekDates.map(dayInfo => 
-                                    `<th class="text-center">${dayInfo.day}<br><small class="text-muted">${dayInfo.date}</small></th>`
-                                ).join('')}
+                                ${weekDates.map(dayInfo =>
+        `<th class="text-center">${dayInfo.day}<br><small class="text-muted">${dayInfo.date}</small></th>`
+    ).join('')}
                             </tr>
                         </thead>
                         <tbody>
@@ -578,18 +594,18 @@ function generateDailySummary(timeEntries, weekStart) {
 
 async function filterTimeSheets(filter) {
     currentFilter = filter;
-    
+
     // Mettre à jour les boutons de filtre
     document.querySelectorAll('.filter-buttons .btn').forEach(btn => {
         btn.classList.remove('active');
     });
     event.target.classList.add('active');
-    
+
     try {
         console.log(`📊 Filtrage des feuilles de temps: ${filter}`);
-        
+
         let response;
-        
+
         // Charger les données selon le filtre sélectionné
         switch (filter) {
             case 'pending':
@@ -627,12 +643,17 @@ async function filterTimeSheets(filter) {
 
         const data = await response.json();
         let filteredSheets = data.data || [];
-        
+
         // Filtrer selon le statut si on utilise la route "all"
         if (filter === 'approved' || filter === 'rejected') {
-            filteredSheets = filteredSheets.filter(sheet => sheet.status === filter);
+            const statusMappings = {
+                'approved': ['approved', 'validé'],
+                'rejected': ['rejected', 'rejeté']
+            };
+            const validStatuses = statusMappings[filter] || [filter];
+            filteredSheets = filteredSheets.filter(sheet => validStatuses.includes(sheet.statut || sheet.status));
         }
-        
+
         // Charger les entrées de temps pour chaque feuille filtrée
         for (let sheet of filteredSheets) {
             try {
@@ -641,7 +662,7 @@ async function filterTimeSheets(filter) {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
-                
+
                 if (entriesResponse.ok) {
                     const entriesData = await entriesResponse.json();
                     sheet.timeEntries = entriesData.data || [];
@@ -651,19 +672,19 @@ async function filterTimeSheets(filter) {
                 sheet.timeEntries = [];
             }
         }
-        
+
         // Mettre à jour la liste globale avec les feuilles filtrées
         allTimeSheets = filteredSheets;
-        
+
         // Recharger le filtre par collaborateur
         await loadCollaborateurFilter();
-        
+
         // Afficher les feuilles de temps
         displayTimeSheets();
-        
+
         // Mettre à jour les statistiques
         updateStats();
-        
+
     } catch (error) {
         console.error('❌ Erreur lors du filtrage des feuilles de temps:', error);
         showAlert('Erreur lors du filtrage des feuilles de temps', 'danger');
@@ -677,16 +698,16 @@ function initializeEvents() {
 
 function openApprovalModal(timeSheetId, action) {
     console.log('🔍 openApprovalModal appelé avec:', { timeSheetId, action });
-    
+
     if (!timeSheetId) {
         console.error('❌ timeSheetId est undefined');
         showAlert('Erreur: ID de feuille de temps manquant', 'error');
         return;
     }
-    
+
     currentTimeSheet = timeSheetId;
     currentAction = action;
-    
+
     // Ouvrir directement le modal de commentaire pour l'approbation/rejet
     openCommentModal();
 }
@@ -694,7 +715,7 @@ function openApprovalModal(timeSheetId, action) {
 async function loadTimeSheetDetails(timeSheetId) {
     try {
         console.log('🔍 Chargement des détails pour la feuille:', timeSheetId);
-        
+
         // Charger les détails de la feuille de temps
         const statusResponse = await fetch(`/api/time-sheet-approvals/${timeSheetId}/status`, {
             headers: {
@@ -708,12 +729,12 @@ async function loadTimeSheetDetails(timeSheetId) {
 
         const statusData = await statusResponse.json();
         const timeSheet = statusData.data;
-        
+
         // Ajouter l'ID de la feuille de temps
         timeSheet.id = timeSheetId;
-        
+
         console.log('✅ Détails de la feuille chargés:', timeSheet);
-        
+
         // Charger les entrées de temps détaillées
         const entriesResponse = await fetch(`/api/time-entries?time_sheet_id=${timeSheetId}`, {
             headers: {
@@ -727,40 +748,40 @@ async function loadTimeSheetDetails(timeSheetId) {
 
         const entriesData = await entriesResponse.json();
         const timeEntries = entriesData.data || [];
-        
+
         console.log('✅ Entrées de temps chargées:', timeEntries.length);
         console.log('🔍 Détail des entrées:', timeEntries);
-        
+
         // Afficher les premières entrées pour débogage
         if (timeEntries.length > 0) {
             console.log('📊 Exemple d\'entrée:', timeEntries[0]);
             console.log('📊 Types d\'heures trouvés:', [...new Set(timeEntries.map(e => e.type_heures))]);
             console.log('📊 Dates trouvées:', [...new Set(timeEntries.map(e => e.date_saisie))]);
         }
-        
+
         // Remplir le contenu du modal avec la vue exacte de la feuille de temps
         const modalContent = document.getElementById('approvalModalContent');
-        
+
         console.log('🔍 Génération du HTML pour les détails...');
         console.log('📊 Nombre d\'entrées chargeables:', timeEntries.filter(e => e.type_heures === 'HC').length);
         console.log('📊 Nombre d\'entrées non-chargeables:', timeEntries.filter(e => e.type_heures === 'HNC').length);
-        
+
         // Debug des types d'heures
         console.log('🔍 Types d\'heures trouvés:', [...new Set(timeEntries.map(e => e.type_heures))]);
         console.log('🔍 Exemples d\'entrées avec type_heures:');
         timeEntries.slice(0, 3).forEach((entry, index) => {
             console.log(`   ${index + 1}. type_heures: "${entry.type_heures}", heures: ${entry.heures}, date: ${entry.date_saisie}`);
         });
-        
+
         const chargeableHTML = generateChargeableEntriesTable(timeEntries, timeSheet.week_start);
         const nonChargeableHTML = generateNonChargeableEntriesTable(timeEntries, timeSheet.week_start);
-        
+
         // Générer le récapitulatif des heures par jour
         const dailySummary = generateDailySummary(timeEntries, timeSheet.week_start);
-        
+
         console.log('🔍 HTML généré pour chargeables:', chargeableHTML.substring(0, 200) + '...');
         console.log('🔍 HTML généré pour non-chargeables:', nonChargeableHTML.substring(0, 200) + '...');
-        
+
         // Générer les en-têtes avec dates pour les tableaux
         const weekDays = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
         const weekDates = weekDays.map((day, index) => {
@@ -771,15 +792,15 @@ async function loadTimeSheetDetails(timeSheetId) {
                 date: date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
             };
         });
-        
-        const chargeableHeaders = weekDates.map(dayInfo => 
+
+        const chargeableHeaders = weekDates.map(dayInfo =>
             `<th>${dayInfo.day}<br><small class="text-muted">${dayInfo.date}</small></th>`
         ).join('');
-        
-        const nonChargeableHeaders = weekDates.map(dayInfo => 
+
+        const nonChargeableHeaders = weekDates.map(dayInfo =>
             `<th>${dayInfo.day}<br><small class="text-muted">${dayInfo.date}</small></th>`
         ).join('');
-        
+
         modalContent.innerHTML = `
             <div class="row mb-3">
                 <div class="col-md-6">
@@ -886,22 +907,22 @@ async function loadTimeSheetDetails(timeSheetId) {
              <div class="row mt-4">
                  <div class="col-12">
                      <div class="d-flex justify-content-center gap-3">
-                         <button class="btn btn-success btn-lg ${timeSheet.status !== 'submitted' ? 'disabled' : ''}" 
-                                 onclick="${timeSheet.status === 'submitted' ? `openApprovalModal('${timeSheet.id}', 'approve')` : 'return false'}"
-                                 title="${timeSheet.status !== 'submitted' ? 'Feuille déjà traitée' : 'Approuver la feuille de temps'}">
+                         <button class="btn btn-success btn-lg ${(timeSheet.statut !== 'soumis' && timeSheet.status !== 'submitted') ? 'disabled' : ''}" 
+                                 onclick="${(timeSheet.statut === 'soumis' || timeSheet.status === 'submitted') ? `openApprovalModal('${timeSheet.id}', 'approve')` : 'return false'}"
+                                 title="${(timeSheet.statut !== 'soumis' && timeSheet.status !== 'submitted') ? 'Feuille déjà traitée' : 'Approuver la feuille de temps'}">
                              <i class="fas fa-check me-2"></i>Approuver la feuille de temps
                          </button>
-                         <button class="btn btn-danger btn-lg ${timeSheet.status !== 'submitted' ? 'disabled' : ''}" 
-                                 onclick="${timeSheet.status === 'submitted' ? `openApprovalModal('${timeSheet.id}', 'reject')` : 'return false'}"
-                                 title="${timeSheet.status !== 'submitted' ? 'Feuille déjà traitée' : 'Rejeter la feuille de temps'}">
+                         <button class="btn btn-danger btn-lg ${(timeSheet.statut !== 'soumis' && timeSheet.status !== 'submitted') ? 'disabled' : ''}" 
+                                 onclick="${(timeSheet.statut === 'soumis' || timeSheet.status === 'submitted') ? `openApprovalModal('${timeSheet.id}', 'reject')` : 'return false'}"
+                                 title="${(timeSheet.statut !== 'soumis' && timeSheet.status !== 'submitted') ? 'Feuille déjà traitée' : 'Rejeter la feuille de temps'}">
                              <i class="fas fa-times me-2"></i>Rejeter la feuille de temps
                          </button>
                      </div>
-                     ${timeSheet.status !== 'submitted' ? `
+                     ${(timeSheet.statut !== 'soumis' && timeSheet.status !== 'submitted') ? `
                          <div class="text-center mt-2">
                              <small class="text-muted">
                                  <i class="fas fa-info-circle"></i> 
-                                 Feuille ${timeSheet.status === 'approved' ? 'approuvée' : 'rejetée'} - 
+                                 Feuille ${(timeSheet.statut === 'validé' || timeSheet.status === 'approved') ? 'approuvée' : 'rejetée'} - 
                                  Plus d'actions possibles
                              </small>
                          </div>
@@ -925,7 +946,7 @@ async function loadTimeSheetDetails(timeSheetId) {
                  </div>
              ` : ''}
          `;
-        
+
     } catch (error) {
         console.error('❌ Erreur lors du chargement des détails:', error);
         showAlert('Erreur lors du chargement des détails', 'danger');
@@ -934,36 +955,36 @@ async function loadTimeSheetDetails(timeSheetId) {
 
 function openCommentModal() {
     console.log(`🔍 openCommentModal appelé avec: currentTimeSheet = "${currentTimeSheet}", currentAction = "${currentAction}"`);
-    
+
     // Fermer le modal d'approbation
     const approvalModal = bootstrap.Modal.getInstance(document.getElementById('approvalModal'));
     approvalModal.hide();
-    
+
     // Mettre à jour le titre du modal de commentaire
     const title = currentAction === 'approve' ? 'Approuver la feuille de temps' : 'Rejeter la feuille de temps';
     document.getElementById('commentModalTitle').textContent = title;
-    
+
     // Vider le champ de commentaire
     document.getElementById('comment-text').value = '';
-    
+
     // Afficher le modal de commentaire
     const commentModal = new bootstrap.Modal(document.getElementById('commentModal'));
     commentModal.show();
-    
+
     console.log(`✅ Modal de commentaire ouvert avec titre: "${title}"`);
 }
 
 async function handleApprovalAction() {
     try {
         const comment = document.getElementById('comment-text').value;
-        
+
         console.log(`📝 ${currentAction === 'approve' ? 'Approbation' : 'Rejet'} de la feuille de temps...`);
         console.log(`🔍 Variables globales: currentTimeSheet = "${currentTimeSheet}", currentAction = "${currentAction}"`);
-        
+
         if (!currentTimeSheet) {
             throw new Error('ID de feuille de temps manquant');
         }
-        
+
         const response = await fetch(`/api/time-sheet-approvals/${currentTimeSheet}/${currentAction}`, {
             method: 'POST',
             headers: {
@@ -982,16 +1003,16 @@ async function handleApprovalAction() {
 
         const data = await response.json();
         console.log('✅ Action effectuée:', data);
-        
+
         showAlert(`Feuille de temps ${currentAction === 'approve' ? 'approuvée' : 'rejetée'} avec succès`, 'success');
-        
+
         // Fermer le modal
         const commentModal = bootstrap.Modal.getInstance(document.getElementById('commentModal'));
         commentModal.hide();
-        
+
         // Recharger les données
         await loadTimeSheets();
-        
+
     } catch (error) {
         console.error('❌ Erreur lors de l\'action:', error);
         showAlert(error.message, 'danger');
@@ -1002,17 +1023,17 @@ function viewTimeSheetDetails(timeSheetId) {
     // Ouvrir le modal avec la vue complète de la feuille de temps
     currentTimeSheet = timeSheetId;
     currentAction = 'view';
-    
+
     // Charger les détails de la feuille de temps
     loadTimeSheetDetails(timeSheetId);
-    
+
     // Afficher le modal
     const modal = new bootstrap.Modal(document.getElementById('approvalModal'));
     const modalTitle = document.getElementById('approvalModalTitle');
-    
+
     // Changer le titre du modal
     modalTitle.textContent = 'Feuille de temps complète';
-    
+
     modal.show();
 }
 
@@ -1021,7 +1042,7 @@ function updateStats() {
     const approved = allTimeSheets.filter(sheet => sheet.status === 'approved').length;
     const rejected = allTimeSheets.filter(sheet => sheet.status === 'rejected').length;
     const total = allTimeSheets.length;
-    
+
     document.getElementById('pending-count').textContent = pending;
     document.getElementById('approved-count').textContent = approved;
     document.getElementById('rejected-count').textContent = rejected;
@@ -1031,16 +1052,16 @@ function updateStats() {
 function showAlert(message, type = 'info') {
     const alertContainer = document.getElementById('alert-container');
     const alertId = 'alert-' + Date.now();
-    
+
     const alertHtml = `
         <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     `;
-    
+
     alertContainer.innerHTML = alertHtml;
-    
+
     // Auto-dismiss après 5 secondes
     setTimeout(() => {
         const alert = document.getElementById(alertId);

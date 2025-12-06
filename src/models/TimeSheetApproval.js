@@ -234,6 +234,10 @@ class TimeSheetApproval {
     static async canSupervisorApprove(timeSheetId, supervisorUserId) {
         const client = await pool.connect();
         try {
+            console.log('🔍 canSupervisorApprove - Début de la vérification');
+            console.log('  - timeSheetId:', timeSheetId);
+            console.log('  - supervisorUserId:', supervisorUserId);
+
             // D'abord, récupérer le collaborateur_id du superviseur
             const supervisorResult = await client.query(`
                 SELECT c.id as collaborateur_id
@@ -242,11 +246,15 @@ class TimeSheetApproval {
                 WHERE u.id = $1
             `, [supervisorUserId]);
 
+            console.log('📊 Résultat recherche collaborateur superviseur:', supervisorResult.rows);
+
             if (supervisorResult.rows.length === 0) {
+                console.log('❌ Aucun collaborateur trouvé pour le superviseur');
                 return false;
             }
 
             const supervisorCollaborateurId = supervisorResult.rows[0].collaborateur_id;
+            console.log('✅ collaborateur_id du superviseur:', supervisorCollaborateurId);
 
             const result = await client.query(`
                 SELECT COUNT(*) as count
@@ -259,7 +267,13 @@ class TimeSheetApproval {
                 AND ts.statut IN ('soumis', 'submitted')
             `, [timeSheetId, supervisorCollaborateurId]);
 
-            return parseInt(result.rows[0].count) > 0;
+            console.log('📊 Résultat vérification autorisation:', result.rows);
+            console.log('  - count:', result.rows[0].count);
+
+            const canApprove = parseInt(result.rows[0].count) > 0;
+            console.log(canApprove ? '✅ Superviseur AUTORISÉ' : '❌ Superviseur NON AUTORISÉ');
+
+            return canApprove;
         } finally {
             client.release();
         }
