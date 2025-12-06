@@ -364,7 +364,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
 
         // Vérifier que la feuille de temps n'est pas en statut final ou soumise
-        if (['validé', 'soumis'].includes(timeSheet.status)) {
+        if (['validé', 'soumis'].includes(timeSheet.statut)) {
             return res.status(400).json({ error: 'Impossible de modifier une feuille de temps validée ou soumise' });
         }
 

@@ -37,7 +37,7 @@ class TimeEntry {
     // Trouver une entrée d'heures par ID
     static async findById(id) {
         const query = `
-            SELECT te.*, ts.status as time_sheet_status
+            SELECT te.*, ts.statut as time_sheet_status
             FROM time_entries te
             JOIN time_sheets ts ON te.time_sheet_id = ts.id
             WHERE te.id = $1
