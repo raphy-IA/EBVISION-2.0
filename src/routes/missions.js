@@ -230,6 +230,47 @@ router.get('/stats', authenticateToken, async (req, res) => {
     }
 });
 
+
+// GET /api/missions/planned - Missions planifiées pour l'utilisateur connecté
+router.get('/planned', authenticateToken, async (req, res) => {
+    try {
+        const { pool } = require('../utils/database');
+        const userId = req.user.id;
+        console.log(`[API] Fetching planned missions for user: ${userId}`);
+
+        const query = `
+            SELECT DISTINCT 
+                m.id, 
+                m.nom, 
+                m.code, 
+                c.nom as client_nom
+            FROM missions m
+            JOIN mission_tasks mt ON m.id = mt.mission_id
+            JOIN task_assignments ta ON mt.id = ta.mission_task_id
+            JOIN collaborateurs col ON ta.collaborateur_id = col.id
+            LEFT JOIN clients c ON m.client_id = c.id
+            WHERE col.user_id = $1
+            AND m.statut IN ('EN_COURS', 'PLANIFIEE')
+            ORDER BY m.nom
+        `;
+
+        const result = await pool.query(query, [userId]);
+        console.log(`[API] Found ${result.rows.length} planned missions`);
+
+        res.json({
+            success: true,
+            data: result.rows
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des missions planifiées:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des missions planifiées',
+            error: error.message
+        });
+    }
+});
+
 /**
  * GET /api/missions/:id
  * Récupérer une mission par ID
@@ -1393,11 +1434,12 @@ router.get('/active/:userId', authenticateToken, async (req, res) => {
     }
 });
 
+
 // GET /api/missions/planned - Missions planifiées pour l'utilisateur connecté
 router.get('/planned', authenticateToken, async (req, res) => {
     try {
-        const { pool } = require('../utils/database');
         const userId = req.user.id;
+        console.log(`[API] Fetching planned missions for user: ${userId}`);
 
         const query = `
             SELECT DISTINCT 
@@ -1416,6 +1458,7 @@ router.get('/planned', authenticateToken, async (req, res) => {
         `;
 
         const result = await pool.query(query, [userId]);
+        console.log(`[API] Found ${result.rows.length} planned missions`);
 
         res.json({
             success: true,

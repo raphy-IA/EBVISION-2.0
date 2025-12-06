@@ -7,7 +7,7 @@ class TimeSheet {
             user_id,
             week_start,
             week_end,
-            status = 'saved'
+            status = 'sauvegardé'
         } = timeSheetData;
 
         // S'assurer que les dates sont au format YYYY-MM-DD sans timezone
@@ -19,14 +19,19 @@ class TimeSheet {
         console.log('  - week_end:', formattedWeekEnd);
 
         const query = `
-            INSERT INTO time_sheets (user_id, week_start, week_end, status)
+            INSERT INTO time_sheets (user_id, week_start, week_end, statut)
             VALUES ($1, $2, $3, $4)
             RETURNING *
         `;
 
         try {
             const result = await pool.query(query, [user_id, formattedWeekStart, formattedWeekEnd, status]);
-            return result.rows[0];
+            const timeSheet = result.rows[0];
+            // Map 'statut' to 'status' for frontend compatibility
+            if (timeSheet && timeSheet.statut) {
+                timeSheet.status = timeSheet.statut;
+            }
+            return timeSheet;
         } catch (error) {
             console.error('Erreur lors de la création de la feuille de temps:', error);
             throw error;
@@ -42,7 +47,12 @@ class TimeSheet {
 
         try {
             const result = await pool.query(query, [id]);
-            return result.rows[0] || null;
+            const timeSheet = result.rows[0] || null;
+            // Map 'statut' to 'status' for frontend compatibility
+            if (timeSheet && timeSheet.statut) {
+                timeSheet.status = timeSheet.statut;
+            }
+            return timeSheet;
         } catch (error) {
             console.error('Erreur lors de la recherche de la feuille de temps:', error);
             throw error;
@@ -58,7 +68,12 @@ class TimeSheet {
 
         try {
             const result = await pool.query(query, [userId, weekStart]);
-            return result.rows[0] || null;
+            const timeSheet = result.rows[0] || null;
+            // Map 'statut' to 'status' for frontend compatibility
+            if (timeSheet && timeSheet.statut) {
+                timeSheet.status = timeSheet.statut;
+            }
+            return timeSheet;
         } catch (error) {
             console.error('Erreur lors de la recherche de la feuille de temps:', error);
             throw error;
@@ -86,7 +101,7 @@ class TimeSheet {
                         user_id: userId,
                         week_start: formattedWeekStart,
                         week_end: formattedWeekEnd,
-                        status: 'draft'
+                        status: 'sauvegardé'
                     });
                 } catch (error) {
                     // Si erreur de contrainte unique (code 23505),
@@ -112,7 +127,7 @@ class TimeSheet {
 
     // Mettre à jour une feuille de temps
     static async update(id, updateData) {
-        const allowedFields = ['status', 'notes_rejet', 'validateur_id', 'date_validation'];
+        const allowedFields = ['statut', 'notes_rejet', 'validateur_id', 'date_validation'];
         const updates = [];
         const values = [];
         let paramCount = 1;
@@ -139,7 +154,12 @@ class TimeSheet {
 
         try {
             const result = await pool.query(query, values);
-            return result.rows[0];
+            const timeSheet = result.rows[0];
+            // Map 'statut' to 'status' for frontend compatibility
+            if (timeSheet && timeSheet.statut) {
+                timeSheet.status = timeSheet.statut;
+            }
+            return timeSheet;
         } catch (error) {
             console.error('Erreur lors de la mise à jour de la feuille de temps:', error);
             throw error;
@@ -148,13 +168,13 @@ class TimeSheet {
 
     // Soumettre une feuille de temps
     static async submit(id) {
-        return await this.update(id, { status: 'submitted' });
+        return await this.update(id, { statut: 'soumis' });
     }
 
     // Valider une feuille de temps
     static async validate(id, validateurId) {
         return await this.update(id, {
-            status: 'approved',
+            statut: 'validé',
             validateur_id: validateurId,
             date_validation: new Date()
         });
@@ -163,7 +183,7 @@ class TimeSheet {
     // Rejeter une feuille de temps
     static async reject(id, validateurId, notesRejet) {
         return await this.update(id, {
-            status: 'rejected',
+            statut: 'rejeté',
             validateur_id: validateurId,
             notes_rejet: notesRejet,
             date_validation: new Date()

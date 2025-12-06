@@ -7,7 +7,7 @@ const { authenticateToken } = require('../middleware/auth');
 // Créer une nouvelle feuille de temps
 router.post('/', authenticateToken, async (req, res) => {
     try {
-        const { user_id, week_start, week_end, status = 'draft' } = req.body;
+        const { user_id, week_start, week_end, status = 'sauvegardé' } = req.body;
 
         if (!user_id || !week_start || !week_end) {
             return res.status(400).json({
@@ -80,17 +80,20 @@ router.get('/current', authenticateToken, async (req, res) => {
 
         console.log('Full user object:', req.user);
 
-        // Trouver ou créer la feuille de temps
-        let timeSheet;
-        try {
-            timeSheet = await TimeSheet.findOrCreate(userId, week_start, weekEnd);
-        } catch (error) {
-            console.error('Erreur lors de la création de la feuille de temps:', error);
-            return res.status(500).json({ error: error.message });
-        }
+        // Chercher la feuille de temps (SANS créer automatiquement)
+        let timeSheet = await TimeSheet.findByWeekStart(userId, week_start);
 
+        // Si pas de feuille trouvée, retourner null (le frontend affichera "Brouillon")
         if (!timeSheet) {
-            return res.status(500).json({ error: 'Impossible de créer ou récupérer la feuille de temps' });
+            return res.json({
+                timeSheet: null,
+                timeEntries: [],
+                statistics: {
+                    total_hours: 0,
+                    billable_hours: 0,
+                    non_billable_hours: 0
+                }
+            });
         }
 
         // Récupérer les entrées d'heures de cette feuille de temps
@@ -359,10 +362,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
             return res.status(403).json({ error: 'Accès non autorisé' });
         }
 
+
         // Vérifier que la feuille de temps n'est pas en statut final ou soumise
-        if (['approved', 'submitted'].includes(timeSheet.status)) {
+        if (['validé', 'soumis'].includes(timeSheet.status)) {
             return res.status(400).json({ error: 'Impossible de modifier une feuille de temps validée ou soumise' });
         }
+
 
         // Mettre à jour la feuille de temps
         const updatedTimeSheet = await TimeSheet.update(id, updateData);
