@@ -10,7 +10,7 @@ const WORKFLOW_ROUTES = [
     { path: 'validate', method: 'validate', success: 'Facture validée avec succès' },
     { path: 'approve', method: 'approve', success: 'Facture approuvée pour émission' },
     { path: 'reject', method: 'reject', success: 'Facture rejetée', bodyParams: ['reason'] },
-    { path: 'emit', method: 'emit', success: 'Facture émise avec succès' }
+    { path: 'emit', method: 'emit', success: 'Facture émise avec succès', bodyParams: ['date_echeance'] }
 ];
 
 WORKFLOW_ROUTES.forEach(route => {
@@ -97,7 +97,7 @@ router.get('/', async (req, res) => {
 // GET /api/invoices/stats - Statistiques de facturation
 router.get('/stats', async (req, res) => {
     try {
-        const stats = await Invoice.getStats();
+        const stats = await Invoice.getStats(req.user);
         res.json({
             success: true,
             data: stats

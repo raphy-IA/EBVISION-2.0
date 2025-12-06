@@ -99,7 +99,7 @@
     "currencySymbol": "$"
   },
   "demo": {
-    "mode": true,
+    "mode": false,
     "bannerText": "🎨 BRANDING TEST - Vérification du système de couleurs personnalisées",
     "watermark": true,
     "sampleData": true,

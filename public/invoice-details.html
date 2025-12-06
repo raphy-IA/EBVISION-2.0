@@ -419,141 +419,164 @@
                 </div>
             </div>
         </div>
-    </div>
+        <!-- Modal pour Emission / Modification Echéance -->
+        <div class="modal fade" id="echeanceModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="echeanceModalTitle">Date d'échéance</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Date d'échéance</label>
+                            <input type="date" class="form-control" id="modalDateEcheance">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-primary" onclick="confirmEcheanceAction()">Valider</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <!-- Scripts -->
+        <!-- Scripts -->
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/auth.js" defer></script>
-    <script src="/js/sidebar.js" defer></script>
-    <script>
-        let currentInvoice = null;
-        let invoiceId = null;
+        <!-- Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="/js/auth.js" defer></script>
+        <script src="/js/sidebar.js" defer></script>
+        <script>
+            let currentInvoice = null;
+            let invoiceId = null;
 
-        // Fonction utilitaire pour les appels API authentifiés
-        async function authenticatedFetch(url, options = {}) {
-            const token = localStorage.getItem('authToken');
-            const defaultHeaders = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            };
+            // Fonction utilitaire pour les appels API authentifiés
+            async function authenticatedFetch(url, options = {}) {
+                const token = localStorage.getItem('authToken');
+                const defaultHeaders = {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                };
 
-            return fetch(url, {
-                ...options,
-                headers: {
-                    ...defaultHeaders,
-                    ...options.headers
+                return fetch(url, {
+                    ...options,
+                    headers: {
+                        ...defaultHeaders,
+                        ...options.headers
+                    }
+                });
+            }
+
+            // Fonction utilitaire pour formater les montants
+            function formatCurrency(amount, currency = 'XAF') {
+                return new Intl.NumberFormat('fr-FR', {
+                    style: 'currency',
+                    currency: currency
+                }).format(amount || 0);
+            }
+
+            // Fonction utilitaire pour formater les dates
+            function formatDate(dateString) {
+                if (!dateString) return 'N/A';
+                return new Date(dateString).toLocaleDateString('fr-FR');
+            }
+
+            // Initialisation
+            document.addEventListener('DOMContentLoaded', function () {
+                const urlParams = new URLSearchParams(window.location.search);
+                invoiceId = urlParams.get('id');
+
+                if (invoiceId) {
+                    loadInvoiceDetails(invoiceId);
+                } else {
+                    showError('ID de facture manquant');
                 }
             });
-        }
 
-        // Fonction utilitaire pour formater les montants
-        function formatCurrency(amount, currency = 'XAF') {
-            return new Intl.NumberFormat('fr-FR', {
-                style: 'currency',
-                currency: currency
-            }).format(amount || 0);
-        }
-
-        // Fonction utilitaire pour formater les dates
-        function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            return new Date(dateString).toLocaleDateString('fr-FR');
-        }
-
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            invoiceId = urlParams.get('id');
-
-            if (invoiceId) {
-                loadInvoiceDetails(invoiceId);
-            } else {
-                showError('ID de facture manquant');
-            }
-        });
-
-        // Bouton retour robuste
-        function goBack() {
-            try {
-                if (document.referrer && document.referrer !== '' && document.referrer.indexOf(window.location.hostname) !== -1) {
-                    window.history.back();
-                } else {
+            // Bouton retour robuste
+            function goBack() {
+                try {
+                    if (document.referrer && document.referrer !== '' && document.referrer.indexOf(window.location.hostname) !== -1) {
+                        window.history.back();
+                    } else {
+                        window.location.href = '/invoices.html';
+                    }
+                } catch (e) {
                     window.location.href = '/invoices.html';
                 }
-            } catch (e) {
-                window.location.href = '/invoices.html';
             }
-        }
 
-        // Chargement des détails de la facture
-        async function loadInvoiceDetails(id) {
-            try {
-                const response = await authenticatedFetch(`/api/invoices/${id}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    currentInvoice = data.data;
-                    displayInvoiceDetails();
-                    await renderHistory(currentInvoice);
-                } else {
-                    showError('Erreur lors du chargement de la facture');
+            // Chargement des détails de la facture
+            async function loadInvoiceDetails(id) {
+                try {
+                    const response = await authenticatedFetch(`/api/invoices/${id}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        currentInvoice = data.data;
+                        displayInvoiceDetails();
+                        await renderHistory(currentInvoice);
+                    } else {
+                        showError('Erreur lors du chargement de la facture');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showError('Erreur de connexion');
                 }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showError('Erreur de connexion');
             }
-        }
 
-        // Affichage des détails de la facture
-        function displayInvoiceDetails() {
-            if (!currentInvoice) return;
+            // Affichage des détails de la facture
+            function displayInvoiceDetails() {
+                if (!currentInvoice) return;
 
-            // Titre et sous-titre
-            document.getElementById('invoiceTitle').textContent = `Facture ${currentInvoice.numero_facture}`;
-            document.getElementById('invoiceSubtitle').textContent = `Créée le ${formatDate(currentInvoice.created_at)}`;
+                // Titre et sous-titre
+                document.getElementById('invoiceTitle').textContent = `Facture ${currentInvoice.numero_facture}`;
+                document.getElementById('invoiceSubtitle').textContent = `Créée le ${formatDate(currentInvoice.created_at)}`;
 
-            // Informations générales
-            document.getElementById('invoiceNumber').textContent = currentInvoice.numero_facture;
-            document.getElementById('invoiceStatus').innerHTML = `<span class="badge status-${currentInvoice.statut.toLowerCase()}">${currentInvoice.statut}</span>`;
-            document.getElementById('invoiceEmissionDate').textContent = formatDate(currentInvoice.date_emission);
-            document.getElementById('invoiceDueDate').textContent = formatDate(currentInvoice.date_echeance);
-            document.getElementById('invoiceClient').textContent = currentInvoice.client_nom || 'N/A';
-            document.getElementById('invoiceMission').textContent = currentInvoice.mission_nom || 'N/A';
-            document.getElementById('invoiceBU').textContent = currentInvoice.business_unit_nom || currentInvoice.business_unit_code || 'N/A';
-            document.getElementById('invoiceTVARate').textContent = `${currentInvoice.taux_tva}%`;
-            document.getElementById('invoiceCreatedBy').textContent = currentInvoice.created_by_prenom ?
-                `${currentInvoice.created_by_prenom} ${currentInvoice.created_by_nom}` : 'N/A';
+                // Informations générales
+                document.getElementById('invoiceNumber').textContent = currentInvoice.numero_facture;
+                document.getElementById('invoiceStatus').innerHTML = `<span class="badge status-${currentInvoice.statut.toLowerCase()}">${currentInvoice.statut}</span>`;
+                document.getElementById('invoiceEmissionDate').textContent = formatDate(currentInvoice.date_emission);
+                document.getElementById('invoiceDueDate').textContent = formatDate(currentInvoice.date_echeance);
+                document.getElementById('invoiceClient').textContent = currentInvoice.client_nom || 'N/A';
+                document.getElementById('invoiceMission').textContent = currentInvoice.mission_nom || 'N/A';
+                document.getElementById('invoiceBU').textContent = currentInvoice.business_unit_nom || currentInvoice.business_unit_code || 'N/A';
+                document.getElementById('invoiceTVARate').textContent = `${currentInvoice.taux_tva}%`;
+                document.getElementById('invoiceCreatedBy').textContent = currentInvoice.created_by_prenom ?
+                    `${currentInvoice.created_by_prenom} ${currentInvoice.created_by_nom}` : 'N/A';
 
-            // Montants
-            document.getElementById('invoiceHT').textContent = formatCurrency(currentInvoice.montant_ht);
-            document.getElementById('invoiceTVAAmount').textContent = formatCurrency(currentInvoice.montant_tva);
-            document.getElementById('invoiceTTC').textContent = formatCurrency(currentInvoice.montant_ttc);
-            document.getElementById('invoicePaid').textContent = formatCurrency(currentInvoice.montant_paye);
+                // Montants
+                document.getElementById('invoiceHT').textContent = formatCurrency(currentInvoice.montant_ht);
+                document.getElementById('invoiceTVAAmount').textContent = formatCurrency(currentInvoice.montant_tva);
+                document.getElementById('invoiceTTC').textContent = formatCurrency(currentInvoice.montant_ttc);
+                document.getElementById('invoicePaid').textContent = formatCurrency(currentInvoice.montant_paye);
 
-            // Charger les lignes et paiements
-            displayInvoiceItems();
-            displayInvoicePayments();
+                // Charger les lignes et paiements
+                displayInvoiceItems();
+                displayInvoicePayments();
 
-            // Mise à jour de l'UI selon le workflow
-            updateWorkflowUI();
-        }
+                // Mise à jour de l'UI selon le workflow
+                updateWorkflowUI();
+            }
 
-        function updateWorkflowUI() {
-            const actionsDiv = document.getElementById('workflowActions');
-            const status = currentInvoice.statut;
-            let buttons = '';
+            function updateWorkflowUI() {
+                const actionsDiv = document.getElementById('workflowActions');
+                const status = currentInvoice.statut;
+                let buttons = '';
 
-            // TODO: Ajouter vérification des rôles ici si nécessaire via user.roles
+                // TODO: Ajouter vérification des rôles ici si nécessaire via user.roles
 
-            if (status === 'BROUILLON') {
-                buttons += `
+                if (status === 'BROUILLON') {
+                    buttons += `
                     <button class="btn btn-success me-2" onclick="updateWorkflow('submit')">
                         <i class="fas fa-paper-plane me-2"></i>Soumettre
                     </button>
+                    <button class="btn btn-outline-secondary me-2" onclick="openEcheanceModal('EDIT')">
+                        <i class="fas fa-calendar-alt me-2"></i>Modifier Échéance
+                    </button>
                 `;
-            } else if (status === 'EN_ATTENTE_VALIDATION') {
-                buttons += `
+                } else if (status === 'EN_ATTENTE_VALIDATION') {
+                    buttons += `
                     <button class="btn btn-success me-2" onclick="updateWorkflow('validate')">
                         <i class="fas fa-check me-2"></i>Valider
                     </button>
@@ -561,8 +584,8 @@
                         <i class="fas fa-times me-2"></i>Rejeter
                     </button>
                 `;
-            } else if (status === 'EN_ATTENTE_APPROBATION') {
-                buttons += `
+                } else if (status === 'EN_ATTENTE_APPROBATION') {
+                    buttons += `
                     <button class="btn btn-success me-2" onclick="updateWorkflow('approve')">
                         <i class="fas fa-check-double me-2"></i>Approuver
                     </button>
@@ -570,85 +593,132 @@
                         <i class="fas fa-times me-2"></i>Rejeter
                     </button>
                 `;
-            } else if (status === 'EN_ATTENTE_EMISSION') {
-                buttons += `
-                    <button class="btn btn-primary me-2" onclick="updateWorkflow('emit')">
-                        <i class="fas fa-file-invoice me-2"></i>Émettre
-                    </button>
-                `;
-            }
-
-            actionsDiv.innerHTML = buttons;
-
-            // Verrouillage UI si pas brouillon
-            const isEditable = status === 'BROUILLON';
-
-            // Masquer boutons d'édition/ajout
-            if (!isEditable) {
-                const addBtns = document.querySelectorAll('button[onclick^="add"], button[onclick^="edit"], button[onclick^="delete"], button[onclick^="regenerate"]');
-                addBtns.forEach(btn => btn.style.display = 'none');
-
-                // Exception: le bouton edit n'existe pas en tant que tel au niveau global, 
-                // mais on désactive les actions sur les lignes.
-                // Note: La suppression de paiement (désallocation) reste possible même après émission
-                // car cela concerne la gestion des paiements, pas le contenu de la facture elle-même.
-                // MAIS si on veut strict :
-                // const unallocBtns = document.querySelectorAll('button[onclick^="deletePayment"]');
-                // unallocBtns.forEach(btn => btn.style.display = 'none'); 
-            }
-        }
-
-        async function updateWorkflow(action, body = {}) {
-            if (!confirm(`Confirmer l'action : ${action} ?`)) return;
-
-            try {
-                const response = await authenticatedFetch(`/api/invoices/${invoiceId}/workflow/${action}`, {
-                    method: 'POST',
-                    body: JSON.stringify(body)
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    alert(data.message);
-                    await loadInvoiceDetails(invoiceId);
-                } else {
-                    const error = await response.json();
-                    showError(error.error || 'Erreur workflow');
+                } else if (status === 'EN_ATTENTE_EMISSION') {
+                    buttons += `
+                        <button class="btn btn-primary me-2" onclick="openEcheanceModal('EMIT')">
+                            <i class="fas fa-file-invoice me-2"></i>Émettre
+                        </button>
+                    `;
                 }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showError('Erreur de connexion');
+
+                actionsDiv.innerHTML = buttons;
+
+                // Verrouillage UI si pas brouillon
+                const isEditable = status === 'BROUILLON';
+
+                // Masquer boutons d'édition/ajout
+                if (!isEditable) {
+                    const addBtns = document.querySelectorAll('button[onclick^="add"], button[onclick^="edit"], button[onclick^="delete"], button[onclick^="regenerate"]');
+                    addBtns.forEach(btn => btn.style.display = 'none');
+
+                    // Exception: le bouton edit n'existe pas en tant que tel au niveau global, 
+                    // mais on désactive les actions sur les lignes.
+                    // Note: La suppression de paiement (désallocation) reste possible même après émission
+                    // car cela concerne la gestion des paiements, pas le contenu de la facture elle-même.
+                    // MAIS si on veut strict :
+                    // const unallocBtns = document.querySelectorAll('button[onclick^="deletePayment"]');
+                    // unallocBtns.forEach(btn => btn.style.display = 'none'); 
+                }
             }
-        }
 
-        function openRejectModal() {
-            new bootstrap.Modal(document.getElementById('rejectModal')).show();
-        }
+            async function updateWorkflow(action, body = {}) {
+                if (!confirm(`Confirmer l'action : ${action} ?`)) return;
 
-        async function confirmReject() {
-            const reason = document.getElementById('rejectReason').value;
-            if (!reason) {
-                alert('Le motif est obligatoire');
-                return;
+                try {
+                    const response = await authenticatedFetch(`/api/invoices/${invoiceId}/workflow/${action}`, {
+                        method: 'POST',
+                        body: JSON.stringify(body)
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        alert(data.message);
+                        await loadInvoiceDetails(invoiceId);
+                    } else {
+                        const error = await response.json();
+                        showError(error.error || 'Erreur workflow');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showError('Erreur de connexion');
+                }
             }
 
-            await updateWorkflow('reject', { reason });
-            bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
-        }
+            let echeanceAction = null; // 'EMIT' or 'EDIT'
 
-        // Affichage des lignes de facture
-        function displayInvoiceItems() {
-            if (!currentInvoice.items || currentInvoice.items.length === 0) {
-                document.getElementById('invoiceItems').innerHTML = `
+            function openEcheanceModal(action) {
+                echeanceAction = action;
+                const title = action === 'EMIT' ? "Confirmer l'émission" : "Modifier la date d'échéance";
+                document.getElementById('echeanceModalTitle').textContent = title;
+
+                // Pré-remplir avec la date actuelle de la facture
+                if (currentInvoice && currentInvoice.date_echeance) {
+                    document.getElementById('modalDateEcheance').value = new Date(currentInvoice.date_echeance).toISOString().split('T')[0];
+                }
+
+                new bootstrap.Modal(document.getElementById('echeanceModal')).show();
+            }
+
+            async function confirmEcheanceAction() {
+                const dateVal = document.getElementById('modalDateEcheance').value;
+                if (!dateVal) {
+                    alert('Veuillez sélectionner une date');
+                    return;
+                }
+
+                bootstrap.Modal.getInstance(document.getElementById('echeanceModal')).hide();
+
+                if (echeanceAction === 'EMIT') {
+                    // Emettre avec la date (nouvelle ou inchangée)
+                    await updateWorkflow('emit', { date_echeance: dateVal });
+                } else if (echeanceAction === 'EDIT') {
+                    // Juste mettre à jour la facture
+                    try {
+                        const response = await authenticatedFetch(`/api/invoices/${invoiceId}`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ date_echeance: dateVal })
+                        });
+                        if (response.ok) {
+                            alert('Date mise à jour');
+                            await loadInvoiceDetails(invoiceId);
+                        } else {
+                            showError('Erreur mise à jour');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        showError('Erreur technique');
+                    }
+                }
+            }
+
+            function openRejectModal() {
+                new bootstrap.Modal(document.getElementById('rejectModal')).show();
+            }
+
+            async function confirmReject() {
+                const reason = document.getElementById('rejectReason').value;
+                if (!reason) {
+                    alert('Le motif est obligatoire');
+                    return;
+                }
+
+                await updateWorkflow('reject', { reason });
+                bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+            }
+
+            // Affichage des lignes de facture
+            function displayInvoiceItems() {
+                if (!currentInvoice.items || currentInvoice.items.length === 0) {
+                    document.getElementById('invoiceItems').innerHTML = `
                     <div class="text-muted">
                         <i class="fas fa-info-circle me-2"></i>
                         Aucune ligne de facture trouvée
                     </div>
                 `;
-                return;
-            }
+                    return;
+                }
 
-            const itemsHtml = `
+                const itemsHtml = `
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -667,17 +737,17 @@
                                 <tr>
                                     <td>${item.description}</td>
                                     <td>${item.quantite && !isNaN(item.quantite)
-                    ? (item.quantite < 1
-                        // FEES template: afficher en pourcentage
-                        ? (Number.isInteger(parseFloat(item.quantite * 100))
-                            ? parseInt(item.quantite * 100)
-                            : parseFloat(item.quantite * 100).toFixed(2)) + '%'
-                        // STANDARD template: afficher quantité normale
-                        : (Number.isInteger(parseFloat(item.quantite))
-                            ? parseInt(item.quantite)
-                            : parseFloat(item.quantite).toFixed(2)) + ' ' + (item.unite || 'unité'))
-                    : item.quantite
-                }</td>
+                        ? (item.quantite < 1
+                            // FEES template: afficher en pourcentage
+                            ? (Number.isInteger(parseFloat(item.quantite * 100))
+                                ? parseInt(item.quantite * 100)
+                                : parseFloat(item.quantite * 100).toFixed(2)) + '%'
+                            // STANDARD template: afficher quantité normale
+                            : (Number.isInteger(parseFloat(item.quantite))
+                                ? parseInt(item.quantite)
+                                : parseFloat(item.quantite).toFixed(2)) + ' ' + (item.unite || 'unité'))
+                        : item.quantite
+                    }</td>
                                     <td>${formatCurrency(item.prix_unitaire)}</td>
                                     <td>${formatCurrency(item.montant_ht)}</td>
                                     <td>${formatCurrency(item.montant_tva)}</td>
@@ -697,22 +767,22 @@
                 </div>
             `;
 
-            document.getElementById('invoiceItems').innerHTML = itemsHtml;
-        }
+                document.getElementById('invoiceItems').innerHTML = itemsHtml;
+            }
 
-        // Affichage des paiements
-        function displayInvoicePayments() {
-            if (!currentInvoice.payments || currentInvoice.payments.length === 0) {
-                document.getElementById('invoicePayments').innerHTML = `
+            // Affichage des paiements
+            function displayInvoicePayments() {
+                if (!currentInvoice.payments || currentInvoice.payments.length === 0) {
+                    document.getElementById('invoicePayments').innerHTML = `
                     <div class="text-muted">
                         <i class="fas fa-info-circle me-2"></i>
                         Aucun paiement enregistré
                     </div>
                 `;
-                return;
-            }
+                    return;
+                }
 
-            const paymentsHtml = `
+                const paymentsHtml = `
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -745,217 +815,217 @@
                 </div>
             `;
 
-            document.getElementById('invoicePayments').innerHTML = paymentsHtml;
-        }
-
-        // Fonction pour imprimer la facture
-        function printInvoice() {
-            window.print();
-        }
-
-        // Fonction pour afficher les erreurs
-        function showError(message) {
-            alert(message);
-        }
-
-        // Fonction pour ajouter une ligne de facture
-        function addInvoiceItem() {
-            document.getElementById('itemModalTitle').textContent = 'Ajouter une ligne';
-            document.getElementById('itemId').value = '';
-            document.getElementById('itemDescription').value = '';
-            document.getElementById('itemQuantity').value = '1';
-            document.getElementById('itemUnit').value = 'forfait';
-            document.getElementById('itemUnitPrice').value = '';
-            document.getElementById('itemTaxRate').value = '19.25';
-
-            const modal = new bootstrap.Modal(document.getElementById('itemModal'));
-            modal.show();
-        }
-
-        // Fonction pour éditer une ligne de facture
-        function editInvoiceItem(itemId) {
-            const item = currentInvoice.items.find(i => i.id === itemId);
-            if (!item) return;
-
-            document.getElementById('itemModalTitle').textContent = 'Modifier une ligne';
-            document.getElementById('itemId').value = item.id;
-            document.getElementById('itemDescription').value = item.description;
-            document.getElementById('itemQuantity').value = item.quantite;
-            document.getElementById('itemUnit').value = item.unite;
-            document.getElementById('itemUnitPrice').value = item.prix_unitaire;
-            document.getElementById('itemTaxRate').value = item.taux_tva;
-
-            const modal = new bootstrap.Modal(document.getElementById('itemModal'));
-            modal.show();
-        }
-
-        // Fonction pour sauvegarder une ligne de facture
-        async function saveInvoiceItem() {
-            const itemId = document.getElementById('itemId').value;
-            const itemData = {
-                description: document.getElementById('itemDescription').value,
-                quantite: parseFloat(document.getElementById('itemQuantity').value),
-                unite: document.getElementById('itemUnit').value,
-                prix_unitaire: parseFloat(document.getElementById('itemUnitPrice').value),
-                taux_tva: parseFloat(document.getElementById('itemTaxRate').value)
-            };
-
-            try {
-                let response;
-                if (itemId) {
-                    // Modification
-                    response = await authenticatedFetch(`/api/invoices/${invoiceId}/items/${itemId}`, {
-                        method: 'PUT',
-                        body: JSON.stringify(itemData)
-                    });
-                } else {
-                    // Ajout
-                    response = await authenticatedFetch(`/api/invoices/${invoiceId}/items`, {
-                        method: 'POST',
-                        body: JSON.stringify(itemData)
-                    });
-                }
-
-                if (response.ok) {
-                    // Fermer le modal et recharger les données
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('itemModal'));
-                    modal.hide();
-                    await loadInvoiceDetails(invoiceId);
-                } else {
-                    const errorData = await response.json();
-                    showError(`Erreur: ${errorData.error}`);
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showError('Erreur de connexion');
-            }
-        }
-
-        // Fonction pour supprimer une ligne de facture
-        async function deleteInvoiceItem(itemId) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer cette ligne ?')) {
-                return;
+                document.getElementById('invoicePayments').innerHTML = paymentsHtml;
             }
 
-            try {
-                const response = await authenticatedFetch(`/api/invoices/${invoiceId}/items/${itemId}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok) {
-                    await loadInvoiceDetails(invoiceId);
-                } else {
-                    const errorData = await response.json();
-                    showError(`Erreur: ${errorData.error}`);
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showError('Erreur de connexion');
-            }
-        }
-
-        async function renderHistory(invoice) {
-            const container = document.getElementById('invoiceTimeline');
-            let events = [];
-
-            // 1. Creation
-            if (invoice.created_at) {
-                events.push({
-                    date: new Date(invoice.created_at),
-                    title: 'Facture Créée',
-                    user: `${invoice.created_by_prenom || ''} ${invoice.created_by_nom || ''}`.trim() || 'Système',
-                    color: 'secondary',
-                    icon: 'fa-file-invoice'
-                });
+            // Fonction pour imprimer la facture
+            function printInvoice() {
+                window.print();
             }
 
-            // 2. Soumission
-            if (invoice.submitted_for_validation_at) {
-                events.push({
-                    date: new Date(invoice.submitted_for_validation_at),
-                    title: 'Soumise pour Validation',
-                    user: `${invoice.submitted_by_prenom || ''} ${invoice.submitted_by_nom || ''}`.trim(),
-                    color: 'warning',
-                    icon: 'fa-paper-plane'
-                });
+            // Fonction pour afficher les erreurs
+            function showError(message) {
+                alert(message);
             }
 
-            // 3. Validation
-            if (invoice.validated_at) {
-                events.push({
-                    date: new Date(invoice.validated_at),
-                    title: 'Validée (Prête pour Approbation)',
-                    user: `${invoice.validated_by_prenom || ''} ${invoice.validated_by_nom || ''}`.trim(),
-                    color: 'info',
-                    icon: 'fa-check'
-                });
+            // Fonction pour ajouter une ligne de facture
+            function addInvoiceItem() {
+                document.getElementById('itemModalTitle').textContent = 'Ajouter une ligne';
+                document.getElementById('itemId').value = '';
+                document.getElementById('itemDescription').value = '';
+                document.getElementById('itemQuantity').value = '1';
+                document.getElementById('itemUnit').value = 'forfait';
+                document.getElementById('itemUnitPrice').value = '';
+                document.getElementById('itemTaxRate').value = '19.25';
+
+                const modal = new bootstrap.Modal(document.getElementById('itemModal'));
+                modal.show();
             }
 
-            // 4. Approbation (Emission Validated)
-            if (invoice.emission_validated_at) {
-                events.push({
-                    date: new Date(invoice.emission_validated_at),
-                    title: 'Approuvée (Prête pour Émission)',
-                    user: `${invoice.approved_by_prenom || ''} ${invoice.approved_by_nom || ''}`.trim(),
-                    color: 'primary',
-                    icon: 'fa-check-double'
-                });
+            // Fonction pour éditer une ligne de facture
+            function editInvoiceItem(itemId) {
+                const item = currentInvoice.items.find(i => i.id === itemId);
+                if (!item) return;
+
+                document.getElementById('itemModalTitle').textContent = 'Modifier une ligne';
+                document.getElementById('itemId').value = item.id;
+                document.getElementById('itemDescription').value = item.description;
+                document.getElementById('itemQuantity').value = item.quantite;
+                document.getElementById('itemUnit').value = item.unite;
+                document.getElementById('itemUnitPrice').value = item.prix_unitaire;
+                document.getElementById('itemTaxRate').value = item.taux_tva;
+
+                const modal = new bootstrap.Modal(document.getElementById('itemModal'));
+                modal.show();
             }
 
-            // 5. Emission
-            if (invoice.emitted_at) {
-                events.push({
-                    date: new Date(invoice.emitted_at),
-                    title: 'Émise',
-                    user: `${invoice.emitted_by_prenom || ''} ${invoice.emitted_by_nom || ''}`.trim(),
-                    color: 'success',
-                    icon: 'fa-envelope'
-                });
-            }
+            // Fonction pour sauvegarder une ligne de facture
+            async function saveInvoiceItem() {
+                const itemId = document.getElementById('itemId').value;
+                const itemData = {
+                    description: document.getElementById('itemDescription').value,
+                    quantite: parseFloat(document.getElementById('itemQuantity').value),
+                    unite: document.getElementById('itemUnit').value,
+                    prix_unitaire: parseFloat(document.getElementById('itemUnitPrice').value),
+                    taux_tva: parseFloat(document.getElementById('itemTaxRate').value)
+                };
 
-            // 6. Rejet (Dernier)
-            if (invoice.rejected_at) {
-                events.push({
-                    date: new Date(invoice.rejected_at),
-                    title: 'Rejetée',
-                    user: `${invoice.rejected_by_prenom || ''} ${invoice.rejected_by_nom || ''}`.trim(),
-                    color: 'danger',
-                    icon: 'fa-times-circle',
-                    notes: `Motif: ${invoice.rejection_reason}`
-                });
-            }
-
-            // 7. Paiements (Fetch via API)
-            try {
-                // Utiliser l'API payments existante ou celle des factures
-                const pRes = await authenticatedFetch(`/api/billing/invoices/${invoice.id}/payments`);
-                // Note: Vérifier si cette route existe ou utiliser /api/payments?invoice_id=...
-                // Si la route n'existe pas, on tente via la collection payments
-                if (pRes.ok) {
-                    const pData = await pRes.json();
-                    const payments = pData.data || [];
-                    payments.forEach(p => {
-                        events.push({
-                            date: new Date(p.date_paiement),
-                            title: `Paiement Reçu (${formatCurrency(p.montant)})`,
-                            user: 'Comptabilité',
-                            color: 'success',
-                            icon: 'fa-money-bill-wave'
+                try {
+                    let response;
+                    if (itemId) {
+                        // Modification
+                        response = await authenticatedFetch(`/api/invoices/${invoiceId}/items/${itemId}`, {
+                            method: 'PUT',
+                            body: JSON.stringify(itemData)
                         });
-                    });
+                    } else {
+                        // Ajout
+                        response = await authenticatedFetch(`/api/invoices/${invoiceId}/items`, {
+                            method: 'POST',
+                            body: JSON.stringify(itemData)
+                        });
+                    }
+
+                    if (response.ok) {
+                        // Fermer le modal et recharger les données
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('itemModal'));
+                        modal.hide();
+                        await loadInvoiceDetails(invoiceId);
+                    } else {
+                        const errorData = await response.json();
+                        showError(`Erreur: ${errorData.error}`);
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showError('Erreur de connexion');
                 }
-            } catch (e) { console.warn('Erreur historique paiements', e); }
-
-            // Trier par date décroissante
-            events.sort((a, b) => b.date - a.date);
-
-            // Render
-            if (events.length === 0) {
-                container.innerHTML = '<p class="text-muted text-center">Aucun historique disponible.</p>';
-                return;
             }
 
-            container.innerHTML = events.map(e => `
+            // Fonction pour supprimer une ligne de facture
+            async function deleteInvoiceItem(itemId) {
+                if (!confirm('Êtes-vous sûr de vouloir supprimer cette ligne ?')) {
+                    return;
+                }
+
+                try {
+                    const response = await authenticatedFetch(`/api/invoices/${invoiceId}/items/${itemId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        await loadInvoiceDetails(invoiceId);
+                    } else {
+                        const errorData = await response.json();
+                        showError(`Erreur: ${errorData.error}`);
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showError('Erreur de connexion');
+                }
+            }
+
+            async function renderHistory(invoice) {
+                const container = document.getElementById('invoiceTimeline');
+                let events = [];
+
+                // 1. Creation
+                if (invoice.created_at) {
+                    events.push({
+                        date: new Date(invoice.created_at),
+                        title: 'Facture Créée',
+                        user: `${invoice.created_by_prenom || ''} ${invoice.created_by_nom || ''}`.trim() || 'Système',
+                        color: 'secondary',
+                        icon: 'fa-file-invoice'
+                    });
+                }
+
+                // 2. Soumission
+                if (invoice.submitted_for_validation_at) {
+                    events.push({
+                        date: new Date(invoice.submitted_for_validation_at),
+                        title: 'Soumise pour Validation',
+                        user: `${invoice.submitted_by_prenom || ''} ${invoice.submitted_by_nom || ''}`.trim(),
+                        color: 'warning',
+                        icon: 'fa-paper-plane'
+                    });
+                }
+
+                // 3. Validation
+                if (invoice.validated_at) {
+                    events.push({
+                        date: new Date(invoice.validated_at),
+                        title: 'Validée (Prête pour Approbation)',
+                        user: `${invoice.validated_by_prenom || ''} ${invoice.validated_by_nom || ''}`.trim(),
+                        color: 'info',
+                        icon: 'fa-check'
+                    });
+                }
+
+                // 4. Approbation (Emission Validated)
+                if (invoice.emission_validated_at) {
+                    events.push({
+                        date: new Date(invoice.emission_validated_at),
+                        title: 'Approuvée (Prête pour Émission)',
+                        user: `${invoice.approved_by_prenom || ''} ${invoice.approved_by_nom || ''}`.trim(),
+                        color: 'primary',
+                        icon: 'fa-check-double'
+                    });
+                }
+
+                // 5. Emission
+                if (invoice.emitted_at) {
+                    events.push({
+                        date: new Date(invoice.emitted_at),
+                        title: 'Émise',
+                        user: `${invoice.emitted_by_prenom || ''} ${invoice.emitted_by_nom || ''}`.trim(),
+                        color: 'success',
+                        icon: 'fa-envelope'
+                    });
+                }
+
+                // 6. Rejet (Dernier)
+                if (invoice.rejected_at) {
+                    events.push({
+                        date: new Date(invoice.rejected_at),
+                        title: 'Rejetée',
+                        user: `${invoice.rejected_by_prenom || ''} ${invoice.rejected_by_nom || ''}`.trim(),
+                        color: 'danger',
+                        icon: 'fa-times-circle',
+                        notes: `Motif: ${invoice.rejection_reason}`
+                    });
+                }
+
+                // 7. Paiements (Fetch via API)
+                try {
+                    // Utiliser l'API payments existante ou celle des factures
+                    const pRes = await authenticatedFetch(`/api/billing/invoices/${invoice.id}/payments`);
+                    // Note: Vérifier si cette route existe ou utiliser /api/payments?invoice_id=...
+                    // Si la route n'existe pas, on tente via la collection payments
+                    if (pRes.ok) {
+                        const pData = await pRes.json();
+                        const payments = pData.data || [];
+                        payments.forEach(p => {
+                            events.push({
+                                date: new Date(p.date_paiement),
+                                title: `Paiement Reçu (${formatCurrency(p.montant)})`,
+                                user: 'Comptabilité',
+                                color: 'success',
+                                icon: 'fa-money-bill-wave'
+                            });
+                        });
+                    }
+                } catch (e) { console.warn('Erreur historique paiements', e); }
+
+                // Trier par date décroissante
+                events.sort((a, b) => b.date - a.date);
+
+                // Render
+                if (events.length === 0) {
+                    container.innerHTML = '<p class="text-muted text-center">Aucun historique disponible.</p>';
+                    return;
+                }
+
+                container.innerHTML = events.map(e => `
                 <div class="timeline-item">
                     <div class="timeline-badge badge-${e.color}"></div>
                     <div class="timeline-content">
@@ -966,58 +1036,58 @@
                     </div>
                 </div>
              `).join('');
-        }
-
-        // Fonction pour régénérer les lignes depuis la mission
-        async function regenerateItems() {
-            if (!confirm('Cela va remplacer toutes les lignes actuelles. Continuer ?')) {
-                return;
             }
 
-            try {
-                const response = await authenticatedFetch(`/api/invoices/${invoiceId}/generate-items`, {
-                    method: 'POST'
-                });
-
-                if (response.ok) {
-                    await loadInvoiceDetails(invoiceId);
-                    alert('Lignes régénérées avec succès !');
-                } else {
-                    const errorData = await response.json();
-                    showError(`Erreur: ${errorData.error}`);
+            // Fonction pour régénérer les lignes depuis la mission
+            async function regenerateItems() {
+                if (!confirm('Cela va remplacer toutes les lignes actuelles. Continuer ?')) {
+                    return;
                 }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showError('Erreur de connexion');
-            }
-        }
 
-        // Fonction pour désallouer un paiement
-        async function deletePayment(paymentId) {
-            if (!confirm('Voulez-vous vraiment désallouer ce paiement de la facture ?\n(Le paiement restera disponible dans la liste globale)')) {
-                return;
-            }
+                try {
+                    const response = await authenticatedFetch(`/api/invoices/${invoiceId}/generate-items`, {
+                        method: 'POST'
+                    });
 
-            try {
-                const response = await authenticatedFetch(`/api/invoices/${invoiceId}/payments/${paymentId}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok) {
-                    await loadInvoiceDetails(invoiceId);
-                } else {
-                    const errorData = await response.json();
-                    showError(`Erreur: ${errorData.error}`);
+                    if (response.ok) {
+                        await loadInvoiceDetails(invoiceId);
+                        alert('Lignes régénérées avec succès !');
+                    } else {
+                        const errorData = await response.json();
+                        showError(`Erreur: ${errorData.error}`);
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showError('Erreur de connexion');
                 }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showError('Erreur de connexion');
             }
-        }
-    </script>
 
-    <!-- SessionManager pour la gestion centralisée des sessions -->
-    <script src="js/session-manager.js"></script>
+            // Fonction pour désallouer un paiement
+            async function deletePayment(paymentId) {
+                if (!confirm('Voulez-vous vraiment désallouer ce paiement de la facture ?\n(Le paiement restera disponible dans la liste globale)')) {
+                    return;
+                }
+
+                try {
+                    const response = await authenticatedFetch(`/api/invoices/${invoiceId}/payments/${paymentId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        await loadInvoiceDetails(invoiceId);
+                    } else {
+                        const errorData = await response.json();
+                        showError(`Erreur: ${errorData.error}`);
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showError('Erreur de connexion');
+                }
+            }
+        </script>
+
+        <!-- SessionManager pour la gestion centralisée des sessions -->
+        <script src="js/session-manager.js"></script>
 </body>
 
 </html>

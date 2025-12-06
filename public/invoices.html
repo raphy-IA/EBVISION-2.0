@@ -356,6 +356,10 @@
                         <button type="button" class="btn btn-outline-dark" id="btnViewAll" onclick="switchView('all')">
                             <i class="fas fa-list me-2"></i>Tout voir
                         </button>
+                        <button type="button" class="btn btn-outline-danger" id="btnViewLate"
+                            onclick="switchView('late')">
+                            <i class="fas fa-clock me-2"></i>En Retard
+                        </button>
                     </div>
                 </div>
             </div>
@@ -417,7 +421,7 @@
             </div>
 
             <!-- Liste des factures -->
-            <div class="card">
+            <div class="card" id="invoicesListCard">
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="fas fa-list me-2"></i>Liste des Factures
@@ -837,13 +841,32 @@
 
             // Gestion de l'affichage de la section Assistant
             const assistantSection = document.getElementById('billingAssistantSection');
+            const invoicesCard = document.getElementById('invoicesListCard');
+            const paginationContainer = document.getElementById('paginationContainer');
+
             if (assistantSection) {
                 if (view === 'suggestions') {
                     assistantSection.style.display = 'block';
                     assistantSection.scrollIntoView({ behavior: 'smooth' });
+                    // Masquer la liste principale
+                    if (invoicesCard) invoicesCard.style.display = 'none';
+                    if (paginationContainer) paginationContainer.style.display = 'none';
                 } else {
                     assistantSection.style.display = 'none';
+                    // Afficher la liste principale
+                    if (invoicesCard) invoicesCard.style.display = 'block';
+                    // La pagination s'affichera si nécessaire via renderPagination
                 }
+            }
+
+            // Mise à jour de l'ID bouton actif pour 'late'
+            if (view === 'late') {
+                const btnLate = document.getElementById('btnViewLate');
+                if (btnLate) btnLate.classList.add('active');
+            }
+
+            if (view === 'suggestions') {
+                loadUpcomingBilling();
             }
 
             // Rechargement des données
@@ -1105,6 +1128,95 @@
             currentPage = 1;
             loadInvoices();
         }
+
+        // Charger les suggestions de facturation
+        async function loadUpcomingBilling() {
+            try {
+                const tbody = document.getElementById('upcomingBillingBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border text-primary spinner-border-sm" role="status"></div> Chargement...</td></tr>';
+
+                const response = await fetch('/api/billing/upcoming', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    renderUpcomingBilling(result.data || []);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erreur lors du chargement des suggestions</td></tr>';
+                }
+            } catch (error) {
+                console.error('Erreur suggestions:', error);
+                const tbody = document.getElementById('upcomingBillingBody');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erreur technique</td></tr>';
+            }
+        }
+
+        function renderUpcomingBilling(items) {
+            const tbody = document.getElementById('upcomingBillingBody');
+            if (!tbody) return;
+
+            if (items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Aucune suggestion pour le moment</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = items.map(item => {
+                const cond = item.next_condition;
+                const montant = parseFloat(cond.montant_honoraires || 0) + parseFloat(cond.montant_debours || 0);
+
+                return `
+                <tr>
+                    <td><strong>${item.mission_nom}</strong><br><small class="text-muted">${item.client_nom}</small></td>
+                    <td>${cond.description || cond.details || 'Échéance prévue'}</td>
+                    <td>${formatDate(cond.date_prevue)}</td>
+                    <td>${formatCurrency(montant)}</td>
+                    <td><span class="badge bg-info text-dark">Suggestion</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="generateInvoiceFromSuggestion('${item.mission_id}', ${item.index})">
+                            <i class="fas fa-plus"></i> Créer
+                        </button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        async function generateInvoiceFromSuggestion(missionId, index) {
+            if (!confirm('Voulez-vous générer une facture brouillon pour cette suggestion ?')) return;
+
+            try {
+                const response = await fetch('/api/billing/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({
+                        mission_id: missionId,
+                        condition_index: index,
+                        type: 'CONDITION'
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('Facture brouillon générée avec succès !');
+                    // Rediriger ou recharger
+                    switchView('my_scope'); // Retour à la liste pour voir le brouillon
+                    loadStats();
+                } else {
+                    const err = await response.json();
+                    alert('Erreur: ' + (err.error || 'Impossible de générer'));
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Erreur technique lors de la génération');
+            }
+        }
+
 
         // Effacer les filtres
         function clearFilters() {

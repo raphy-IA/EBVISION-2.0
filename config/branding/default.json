@@ -14,14 +14,14 @@
     },
     "colors": {
       "primary": "#0D47A1",
-	  "secondary": "#546E7A",
-		"accent": "#03A9F4",
-		"success": "#4CAF50",
-		"warning": "#FF9800",
-		"danger": "#F44336",
-		"info": "#2196F3",
-		"dark": "#212121",
-		"light": "#FAFAFA"
+      "secondary": "#546E7A",
+      "accent": "#03A9F4",
+      "success": "#4CAF50",
+      "warning": "#FF9800",
+      "danger": "#F44336",
+      "info": "#2196F3",
+      "dark": "#212121",
+      "light": "#FAFAFA"
     },
     "theme": "default"
   },
@@ -88,26 +88,22 @@
     "email": "contact@ewmanagement.com",
     "phone": "+1 (555) 000-0000",
     "website": "https://ewmanagement.bosssystemsai.com",
-    "supportUrl": "https://ewmanagement.bosssystemsai.com
+    "supportUrl": "https://ewmanagement.bosssystemsai.com"
   },
   "localization": {
     "defaultLanguage": "fr",
-    "availableLanguages": ["fr", "en"],
+    "availableLanguages": [
+      "fr",
+      "en"
+    ],
     "dateFormat": "DD/MM/YYYY",
     "timeFormat": "HH:mm",
     "currency": "USD",
     "currencySymbol": "$"
   },
   "demo": {
-    "mode": true,
+    "mode": false,
     "bannerText": "EWM - Workforce Management Systems",
     "watermark": true
   }
 }
-
-
-
-
-
-
-

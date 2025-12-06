@@ -227,27 +227,39 @@ class Invoice {
 
         // 1. Gestion des Vues (Scoping & Presets)
         if (view === 'my_scope' && user) {
-            // Join user pour récupérer son collaborateur_id et ses rôles (si besoin de fraîcheur DB)
-            // On utilise une méthode robuste : joindre la table users pour l'utilisateur courant
-            extraJoins += ` LEFT JOIN users u_req ON u_req.id = $${valueIndex} `;
-            values.push(user.id);
-            valueIndex++;
+            // Logique JS pour déterminer le scope en fonction des rôles de l'utilisateur
+            // (Evite de dépendre de colonnes SQL qui n'existent peut-être pas ou sont en cours de migration)
+            const userRoles = user.roles || [];
+            const isSuperAdmin = userRoles.includes('SUPER_ADMIN') || userRoles.includes('ADMIN') || userRoles.includes('SENIOR_PARTNER') || userRoles.includes('DIRECTOR');
 
-            // Condition de visibilité :
-            // - Super Admin / Admin / Senior Partner / Director : VOIT TOUT
-            // - Manager : Voit les missions où il est collaborateur_id (Manager)
-            // - Associé : Voit les missions où il est associe_id
-            // - Responsable BU : Voit les missions de sa BU (Principal ou Adjoint)
-            conditions.push(`(
-                'SUPER_ADMIN' = ANY(u_req.roles) OR 
-                'ADMIN' = ANY(u_req.roles) OR 
-                'SENIOR_PARTNER' = ANY(u_req.roles) OR
-                'DIRECTOR' = ANY(u_req.roles) OR
-                (m.collaborateur_id = u_req.collaborateur_id) OR
-                (m.associe_id = u_req.collaborateur_id) OR
-                (bu.responsable_principal_id = u_req.collaborateur_id) OR
-                (bu.responsable_adjoint_id = u_req.collaborateur_id)
-            )`);
+            if (!isSuperAdmin) {
+                // Manager / Associé / Resp BU : Restriction aux missions liées
+                // On utilise les IDs passés par l'objet user (qui doivent être peuplés par le middleware auth)
+                // Si l'objet user n'a pas les IDs, on peut avoir besoin de les récupérer via une jointure simple sur users si nécessaire,
+                // mais ici on va assumer que si on est pas admin, on filtre sur l'ID collaborateur courant.
+
+                // Pour sécuriser, on fait une jointure sur users pour récupérer collaborateur_id frais si besoin, 
+                // mais le problème précédent était sur la colonne roles.
+                // On va filtrer simplement sur les champs de mission.
+
+                // Note: user.collaborateur_id doit être disponible. Si non, on restreint tout.
+                if (user.collaborateur_id) {
+                    conditions.push(`(
+                        m.collaborateur_id = $${valueIndex} OR
+                        m.associe_id = $${valueIndex} OR
+                        bu.responsable_principal_id = $${valueIndex} OR
+                        bu.responsable_adjoint_id = $${valueIndex}
+                    )`);
+                    values.push(user.collaborateur_id);
+                    valueIndex++;
+                } else {
+                    // Fallback securité : si pas de collaborateur_id et pas admin, on ne montre rien (ou juste ses propres créations ?)
+                    conditions.push(`i.created_by = $${valueIndex}`);
+                    values.push(user.id);
+                    valueIndex++;
+                }
+            }
+            // Si SuperAdmin/Admin, aucune condition additionnelle de scope n'est ajoutée => VOIT TOUT
         }
         else if (view === 'action_needed') {
             // Factures en attente d'une action Workflow (hors Brouillon, hors Emise/Payée)
@@ -264,6 +276,13 @@ class Invoice {
             // On va dire : ne rien montrer dans la liste principale, ou montrer les brouillons qui pourraient être liés.
             // Mais l'utilisateur a dit "affiche toutes les suggestion... certte zone a été ajoutée".
             // Donc la liste principale n'est pas concernée.
+            conditions.push('1=0'); // Force empty result for main list in suggestions view
+        }
+        else if (view === 'late') {
+            conditions.push(`(
+                i.statut = 'EN_RETARD' OR 
+                (i.statut = 'EMISE' AND i.date_echeance < CURRENT_DATE)
+            )`);
         }
 
         // Construire les conditions de filtrage standards
@@ -726,20 +745,57 @@ class Invoice {
     }
 
     // Obtenir les statistiques de facturation
-    static async getStats() {
-        const query = `
-        SELECT
-        COUNT(*) as total_factures,
-            COUNT(CASE WHEN statut = 'EMISE' THEN 1 END) as factures_emises,
-            COUNT(CASE WHEN statut = 'PAYEE' THEN 1 END) as factures_payees,
-            COUNT(CASE WHEN statut = 'BROUILLON' THEN 1 END) as factures_brouillon,
-            SUM(montant_ttc) as total_montant_ttc,
-            SUM(montant_paye) as total_montant_paye,
-            SUM(montant_restant) as total_montant_restant
-            FROM invoices
-            `;
+    static async getStats(user = null) {
+        let conditions = [];
+        let values = [];
+        let valueIndex = 1;
+        let joins = "";
 
-        const result = await pool.query(query);
+        if (user) {
+            const userRoles = user.roles || [];
+            const isSuperAdmin = userRoles.includes('SUPER_ADMIN') || userRoles.includes('ADMIN') || userRoles.includes('SENIOR_PARTNER') || userRoles.includes('DIRECTOR');
+
+            if (!isSuperAdmin) {
+                // Nécessaire de joindre missions et BU pour filtrer
+                joins = `
+                    LEFT JOIN missions m ON i.mission_id = m.id
+                    LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+                `;
+
+                if (user.collaborateur_id) {
+                    conditions.push(`(
+                        m.collaborateur_id = $${valueIndex} OR
+                        m.associe_id = $${valueIndex} OR
+                        bu.responsable_principal_id = $${valueIndex} OR
+                        bu.responsable_adjoint_id = $${valueIndex}
+                    )`);
+                    values.push(user.collaborateur_id);
+                    valueIndex++;
+                } else {
+                    conditions.push(`i.created_by = $${valueIndex}`);
+                    values.push(user.id);
+                    valueIndex++;
+                }
+            }
+        }
+
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+        const query = `
+            SELECT
+                COUNT(*) as total_factures,
+                COUNT(CASE WHEN i.statut = 'EMISE' THEN 1 END) as factures_emises,
+                COUNT(CASE WHEN i.statut = 'PAYEE' THEN 1 END) as factures_payees,
+                COUNT(CASE WHEN i.statut = 'BROUILLON' THEN 1 END) as factures_brouillon,
+                COALESCE(SUM(i.montant_ttc), 0) as total_montant_ttc,
+                COALESCE(SUM(i.montant_paye), 0) as total_montant_paye,
+                COALESCE(SUM(i.montant_restant), 0) as total_montant_restant
+            FROM invoices i
+            ${joins}
+            ${whereClause}
+        `;
+
+        const result = await pool.query(query, values);
         return result.rows[0];
     }
 
@@ -883,7 +939,7 @@ class Invoice {
     /**
      * Emettre la facture (EN_ATTENTE_EMISSION → EMISE)
      */
-    async emit(emittedBy) {
+    async emit(emittedBy, dateEcheance = null) {
         if (this.statut !== 'EN_ATTENTE_EMISSION') {
             throw new Error(`Impossible d'émettre une facture en statut ${this.statut}`);
         }
@@ -893,6 +949,17 @@ class Invoice {
         // const isAdmin = await this.checkRole(emittedBy, 'ADMIN');
 
         const newStatus = 'EMISE';
+
+        // Si une nouvelle date d'échéance est fournie, on la met à jour
+        let extraUpdate = "";
+        let params = [newStatus, emittedBy, this.id];
+        let paramIndex = 4;
+
+        if (dateEcheance) {
+            extraUpdate = `, date_echeance = $${paramIndex}`;
+            params.push(dateEcheance);
+        }
+
         const query = `
             UPDATE invoices 
             SET statut = $1, 
@@ -900,10 +967,16 @@ class Invoice {
                 emitted_by = $2,
                 emitted_at = CURRENT_TIMESTAMP,
                 updated_at = CURRENT_TIMESTAMP
+                ${extraUpdate}
             WHERE id = $3
         `;
-        await pool.query(query, [newStatus, emittedBy, this.id]);
+
+        await pool.query(query, params);
+
         this.statut = 'EMISE';
+        if (dateEcheance) {
+            this.date_echeance = dateEcheance;
+        }
 
         // Notification (optionnel, peut-être au client ou retour créateur)
 

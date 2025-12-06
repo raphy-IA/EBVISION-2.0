@@ -202,6 +202,58 @@
                     </div>
                 </div>
 
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <h6 class="card-title text-white-50">Total Missions</h6>
+                                <div class="stat-number" id="statsTotal">...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card info">
+                            <div class="card-body">
+                                <h6 class="card-title text-white-50">En Cours</h6>
+                                <div class="stat-number" id="statsActive">...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card success">
+                            <div class="card-body">
+                                <h6 class="card-title text-white-50">Terminées</h6>
+                                <div class="stat-number" id="statsFinished">...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card warning">
+                            <div class="card-body">
+                                <h6 class="card-title text-white-50">Budget Total</h6>
+                                <div class="stat-number" id="statsBudget">...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Filters -->
+                <div class="d-flex gap-2 mb-4 overflow-auto pb-2">
+                    <button class="btn btn-primary quick-filter active" onclick="switchView('my_scope', this)">
+                        <i class="fas fa-user me-2"></i>Ma Vue
+                    </button>
+                    <button class="btn btn-outline-secondary quick-filter" onclick="switchView('active', this)">
+                        <i class="fas fa-play me-2"></i>Missions En Cours
+                    </button>
+                    <button class="btn btn-outline-secondary quick-filter" onclick="switchView('finished', this)">
+                        <i class="fas fa-check me-2"></i>Missions Terminées
+                    </button>
+                    <button class="btn btn-outline-secondary quick-filter" onclick="switchView('all', this)">
+                        <i class="fas fa-list me-2"></i>Toutes les Missions
+                    </button>
+                </div>
+
                 <!-- Filtres -->
                 <div class="card mb-4">
                     <div class="card-body">
@@ -210,10 +262,11 @@
                                 <label for="statusFilter" class="form-label">Statut</label>
                                 <select class="form-select" id="statusFilter">
                                     <option value="">Tous les statuts</option>
-                                    <option value="ACTIVE">Active</option>
-                                    <option value="COMPLETED">Terminée</option>
-                                    <option value="PENDING">En attente</option>
-                                    <option value="CANCELLED">Annulée</option>
+                                    <option value="EN_COURS">En cours</option>
+                                    <option value="TERMINEE">Terminée</option>
+                                    <option value="PLANIFIEE">Planifiée</option>
+                                    <option value="ANNULEE">Annulée</option>
+                                    <option value="ARCHIVEE">Archivée</option>
                                 </select>
                             </div>
                             <div class="col-md-3 mb-3">
@@ -330,10 +383,10 @@
                             <div class="col-md-6 mb-3">
                                 <label for="missionStatus" class="form-label">Statut</label>
                                 <select class="form-select" id="missionStatus">
-                                    <option value="ACTIVE">Active</option>
-                                    <option value="PENDING">En attente</option>
-                                    <option value="COMPLETED">Terminée</option>
-                                    <option value="CANCELLED">Annulée</option>
+                                    <option value="PLANIFIEE">Planifiée</option>
+                                    <option value="EN_COURS">En cours</option>
+                                    <option value="TERMINEE">Terminée</option>
+                                    <option value="ANNULEE">Annulée</option>
                                 </select>
                             </div>
                         </div>
@@ -415,6 +468,7 @@
         let missions = [];
         let clients = [];
         let currentMissionId = null;
+        let currentView = 'my_scope';
 
         // Fonction utilitaire pour les appels API authentifiés
         async function authenticatedFetch(url, options = {}) {
@@ -435,6 +489,7 @@
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function () {
+            loadStats();
             loadMissions();
             loadClients();
             setupEventListeners();
@@ -463,6 +518,7 @@
             showLoading(true);
             try {
                 const params = new URLSearchParams({
+                    view: currentView,
                     statut: document.getElementById('statusFilter').value || '',
                     client_id: document.getElementById('clientFilter').value || '',
                     business_unit_id: document.getElementById('buFilter').value || '',
@@ -566,6 +622,54 @@
 
         // Filtrage des missions
         function filterMissions() { loadMissions(); }
+
+        // Stats & Vue Rapide
+        async function loadStats() {
+            try {
+                console.log('🔄 Chargement des statistiques...');
+                const response = await authenticatedFetch('/api/missions/stats');
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        const data = result.data;
+                        console.log('📊 Stats reçues:', data);
+
+                        document.getElementById('statsTotal').textContent = data.total_missions || '0';
+                        document.getElementById('statsActive').textContent = data.missions_actives || '0';
+                        document.getElementById('statsFinished').textContent = data.missions_terminees || '0';
+
+                        // Conversion explicite pour formatCurrency
+                        const budget = parseFloat(data.total_budget || 0);
+                        document.getElementById('statsBudget').textContent = formatCurrency(budget);
+                    }
+                } else {
+                    console.error('❌ Erreur réponse stats:', response.status);
+                    document.getElementById('statsTotal').textContent = '-';
+                    document.getElementById('statsActive').textContent = '-';
+                    document.getElementById('statsFinished').textContent = '-';
+                    document.getElementById('statsBudget').textContent = '-';
+                }
+            } catch (e) {
+                console.error('❌ Exception stats:', e);
+                document.getElementById('statsTotal').textContent = '!';
+            }
+        }
+
+        function switchView(view, btn) {
+            currentView = view;
+
+            // Update buttons
+            document.querySelectorAll('.quick-filter').forEach(b => {
+                b.classList.remove('btn-primary', 'active');
+                b.classList.add('btn-outline-secondary');
+            });
+            if (btn) {
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-primary', 'active');
+            }
+
+            loadMissions();
+        }
 
         // Réinitialisation des filtres
         function resetFilters() {

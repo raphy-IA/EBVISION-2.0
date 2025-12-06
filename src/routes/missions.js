@@ -20,12 +20,48 @@ router.get('/', authenticateToken, async (req, res) => {
             business_unit_id: req.query.business_unit_id,
             division_id: req.query.division_id,
             code: req.query.code,
-            search: req.query.search
+            search: req.query.search,
+            view: req.query.view // 'my_scope', 'active', 'finished'
         };
+
+        const user = req.user; // Authenticated user
 
         let whereConditions = [];
         let queryParams = [];
         let paramIndex = 1;
+        let extraJoins = ""; // Pour les jointures conditionnelles
+
+        // 0. Filtres "Vue Rapide" (View Scoping)
+        if (options.view === 'my_scope') {
+            const userRoles = user.roles || [];
+            const isSuperAdmin = userRoles.some(r => ['SUPER_ADMIN', 'ADMIN', 'SENIOR_PARTNER', 'DIRECTOR'].includes(r));
+
+            if (!isSuperAdmin) {
+                // Si pas admin, on filtre sur ce que l'utilisateur peut voir
+                // Il faut s'assurer qu'on peut filtrer sur le user courant.
+                // On peut utiliser req.user.id directement si collaborateur_id est lié, ou utiliser collaborateur_id
+                // On suppose ici que req.user a collaborateur_id (populé par le middleware auth ou via login)
+                // Sinon, on filtre par created_by ou via jointure users
+
+                // Pour sécurité, on joint users pour l'utilisateur courant afin d'avoir ses droits à jour
+                extraJoins += ` LEFT JOIN users u_req ON u_req.id = $${paramIndex} `;
+                queryParams.push(user.id);
+                paramIndex++;
+
+                whereConditions.push(`(
+                    m.collaborateur_id = u_req.collaborateur_id OR
+                    m.associe_id = u_req.collaborateur_id OR
+                    bu.responsable_principal_id = u_req.collaborateur_id OR
+                    bu.responsable_adjoint_id = u_req.collaborateur_id
+                )`);
+            }
+        }
+        else if (options.view === 'active') {
+            whereConditions.push(`m.statut = 'EN_COURS'`);
+        }
+        else if (options.view === 'finished') {
+            whereConditions.push(`m.statut IN ('TERMINEE', 'ARCHIVEE')`);
+        }
 
         if (options.client_id) {
             whereConditions.push(`m.client_id = $${paramIndex++}`);
@@ -74,6 +110,8 @@ router.get('/', authenticateToken, async (req, res) => {
             SELECT COUNT(*) as total
             FROM missions m
             LEFT JOIN clients c ON m.client_id = c.id
+            LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+            ${extraJoins}
             ${whereClause}
         `;
 
@@ -98,6 +136,7 @@ router.get('/', authenticateToken, async (req, res) => {
             LEFT JOIN clients c ON m.client_id = c.id
             LEFT JOIN business_units bu ON m.business_unit_id = bu.id
             LEFT JOIN divisions d ON m.division_id = d.id
+            ${extraJoins}
             ${whereClause}
             ORDER BY m.created_at DESC
             LIMIT $${paramIndex++} OFFSET $${paramIndex++}
@@ -126,6 +165,68 @@ router.get('/', authenticateToken, async (req, res) => {
             error: 'Erreur lors de la récupération des missions',
             details: error.message
         });
+    }
+});
+
+/**
+ * GET /api/missions/stats
+ * Récupérer les statistiques globales des missions (filtrées par scope user)
+ */
+router.get('/stats', authenticateToken, async (req, res) => {
+    try {
+        const { pool } = require('../utils/database');
+        const user = req.user;
+        let conditions = [];
+        let values = [];
+        let valueIndex = 1;
+        let joins = `
+            LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+        `;
+
+        // Logique de scoping identique à Invoice.js / Missions GET
+        const userRoles = user.roles || [];
+        const isSuperAdmin = userRoles.some(r => ['SUPER_ADMIN', 'ADMIN', 'SENIOR_PARTNER', 'DIRECTOR'].includes(r));
+
+        if (!isSuperAdmin) {
+            if (user.collaborateur_id) {
+                conditions.push(`(
+                    m.collaborateur_id = $${valueIndex} OR
+                    m.associe_id = $${valueIndex} OR
+                    bu.responsable_principal_id = $${valueIndex} OR
+                    bu.responsable_adjoint_id = $${valueIndex}
+                )`);
+                values.push(user.collaborateur_id);
+                valueIndex++;
+            } else {
+                // Fallback: created_by
+                conditions.push(`m.created_by = $${valueIndex}`);
+                values.push(user.id);
+                valueIndex++;
+            }
+        }
+
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+        const query = `
+            SELECT
+                COUNT(*) as total_missions,
+                COUNT(CASE WHEN m.statut = 'EN_COURS' THEN 1 END) as missions_actives,
+                COUNT(CASE WHEN m.statut IN ('TERMINEE', 'ARCHIVEE') THEN 1 END) as missions_terminees,
+                COALESCE(SUM(m.budget_estime), 0) as total_budget
+            FROM missions m
+            ${joins}
+            ${whereClause}
+        `;
+
+        const result = await pool.query(query, values);
+        res.json({
+            success: true,
+            data: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Erreur stats missions:', error);
+        res.status(500).json({ success: false, error: 'Erreur lors de la récupération des statistiques' });
     }
 });
 
