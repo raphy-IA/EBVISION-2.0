@@ -42,11 +42,94 @@
             color: white;
         }
 
+        .status-en_attente_validation {
+            background-color: #fd7e14;
+            color: white;
+        }
+
+        .status-en_attente_approbation {
+            background-color: #0dcaf0;
+            color: white;
+        }
+
+        .status-en_attente_emission {
+            background-color: #0d6efd;
+            color: white;
+        }
+
         .main-content-area {
             flex-grow: 1;
-            padding: 2rem;
+            padding: 20px;
             min-height: 100vh;
             background-color: #f8f9fa;
+        }
+
+        /* Timeline Styles */
+        .timeline {
+            border-left: 2px solid #e9ecef;
+            margin-left: 15px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .timeline-item {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .timeline-badge {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            position: absolute;
+            left: -39px;
+            top: 4px;
+            background-color: #e9ecef;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #dee2e6;
+            z-index: 1;
+        }
+
+        .timeline-date {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 2px;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            color: #343a40;
+            margin-bottom: 4px;
+        }
+
+        .timeline-user {
+            font-size: 0.9rem;
+            color: #495057;
+        }
+
+        /* Badge Colors */
+        .badge-success {
+            background-color: #28a745;
+        }
+
+        .badge-info {
+            background-color: #17a2b8;
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+        }
+
+        .badge-danger {
+            background-color: #dc3545;
+        }
+
+        .badge-primary {
+            background-color: #0d6efd;
+        }
+
+        .badge-secondary {
+            background-color: #6c757d;
         }
 
         /* Garantir l'agencement côte à côte sidebar + contenu */
@@ -102,6 +185,9 @@
                                 <p class="text-muted" id="invoiceSubtitle">Chargement...</p>
                             </div>
                             <div>
+                                <div id="workflowActions" class="d-inline-block me-2">
+                                    <!-- Boutons injectés par JS -->
+                                </div>
                                 <button class="btn btn-outline-secondary me-2" onclick="goBack()">
                                     <i class="fas fa-arrow-left me-2"></i>Retour
                                 </button>
@@ -186,6 +272,12 @@
                                     <i class="fas fa-credit-card me-2"></i>Paiements
                                 </button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history"
+                                    type="button" role="tab">
+                                    <i class="fas fa-history me-2"></i>Historique
+                                </button>
+                            </li>
                         </ul>
 
                         <div class="tab-content" id="invoiceTabContent">
@@ -219,14 +311,24 @@
                                         <h5 class="mb-0">
                                             <i class="fas fa-credit-card"></i> Paiements
                                         </h5>
-                                        <div>
-                                            <button class="btn btn-sm btn-outline-primary" onclick="addPayment()">
-                                                <i class="fas fa-plus"></i> Ajouter un paiement
-                                            </button>
-                                        </div>
+                                        <!-- Bouton ajouter retiré car géré via le module Paiements -->
                                     </div>
                                     <div class="card-body">
                                         <div id="invoicePayments">Chargement des paiements...</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Onglet Historique -->
+                            <div class="tab-pane fade" id="history" role="tabpanel">
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="fas fa-history"></i> Historique des actions</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="timeline" id="invoiceTimeline">
+                                            <!-- Timeline content generated by JS -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -297,76 +399,29 @@
         </div>
     </div>
 
-    <!-- Modal pour ajouter/modifier un paiement -->
-    <div class="modal fade" id="paymentModal" tabindex="-1">
+    <!-- Modal pour rejet -->
+    <div class="modal fade" id="rejectModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="paymentModalTitle">Ajouter un paiement</h5>
+                    <h5 class="modal-title">Motif du rejet</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="paymentForm">
-                        <input type="hidden" id="paymentId">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="paymentDate" class="form-label">Date de paiement</label>
-                                    <input type="date" class="form-control" id="paymentDate" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="paymentAmount" class="form-label">Montant</label>
-                                    <input type="number" class="form-control" id="paymentAmount" min="0" step="0.01"
-                                        required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="paymentMode" class="form-label">Mode de paiement</label>
-                                    <select class="form-control" id="paymentMode" required>
-                                        <option value="">Sélectionner...</option>
-                                        <option value="VIREMENT">Virement</option>
-                                        <option value="CHEQUE">Chèque</option>
-                                        <option value="ESPECES">Espèces</option>
-                                        <option value="CARTE">Carte bancaire</option>
-                                        <option value="AUTRE">Autre</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="paymentStatus" class="form-label">Statut</label>
-                                    <select class="form-control" id="paymentStatus" required>
-                                        <option value="EN_ATTENTE">En attente</option>
-                                        <option value="CONFIRME">Confirmé</option>
-                                        <option value="ANNULE">Annulé</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="paymentReference" class="form-label">Référence</label>
-                            <input type="text" class="form-control" id="paymentReference"
-                                placeholder="Numéro de chèque, référence virement...">
-                        </div>
-                        <div class="mb-3">
-                            <label for="paymentNotes" class="form-label">Notes</label>
-                            <textarea class="form-control" id="paymentNotes" rows="3"
-                                placeholder="Informations complémentaires..."></textarea>
-                        </div>
-                    </form>
+                    <div class="mb-3">
+                        <label class="form-label">Motif du rejet</label>
+                        <textarea class="form-control" id="rejectReason" rows="3" required></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" onclick="savePayment()">Enregistrer</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmReject()">Rejeter</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Scripts -->
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -440,6 +495,7 @@
                     const data = await response.json();
                     currentInvoice = data.data;
                     displayInvoiceDetails();
+                    await renderHistory(currentInvoice);
                 } else {
                     showError('Erreur lors du chargement de la facture');
                 }
@@ -478,6 +534,106 @@
             // Charger les lignes et paiements
             displayInvoiceItems();
             displayInvoicePayments();
+
+            // Mise à jour de l'UI selon le workflow
+            updateWorkflowUI();
+        }
+
+        function updateWorkflowUI() {
+            const actionsDiv = document.getElementById('workflowActions');
+            const status = currentInvoice.statut;
+            let buttons = '';
+
+            // TODO: Ajouter vérification des rôles ici si nécessaire via user.roles
+
+            if (status === 'BROUILLON') {
+                buttons += `
+                    <button class="btn btn-success me-2" onclick="updateWorkflow('submit')">
+                        <i class="fas fa-paper-plane me-2"></i>Soumettre
+                    </button>
+                `;
+            } else if (status === 'EN_ATTENTE_VALIDATION') {
+                buttons += `
+                    <button class="btn btn-success me-2" onclick="updateWorkflow('validate')">
+                        <i class="fas fa-check me-2"></i>Valider
+                    </button>
+                    <button class="btn btn-danger me-2" onclick="openRejectModal()">
+                        <i class="fas fa-times me-2"></i>Rejeter
+                    </button>
+                `;
+            } else if (status === 'EN_ATTENTE_APPROBATION') {
+                buttons += `
+                    <button class="btn btn-success me-2" onclick="updateWorkflow('approve')">
+                        <i class="fas fa-check-double me-2"></i>Approuver
+                    </button>
+                    <button class="btn btn-danger me-2" onclick="openRejectModal()">
+                        <i class="fas fa-times me-2"></i>Rejeter
+                    </button>
+                `;
+            } else if (status === 'EN_ATTENTE_EMISSION') {
+                buttons += `
+                    <button class="btn btn-primary me-2" onclick="updateWorkflow('emit')">
+                        <i class="fas fa-file-invoice me-2"></i>Émettre
+                    </button>
+                `;
+            }
+
+            actionsDiv.innerHTML = buttons;
+
+            // Verrouillage UI si pas brouillon
+            const isEditable = status === 'BROUILLON';
+
+            // Masquer boutons d'édition/ajout
+            if (!isEditable) {
+                const addBtns = document.querySelectorAll('button[onclick^="add"], button[onclick^="edit"], button[onclick^="delete"], button[onclick^="regenerate"]');
+                addBtns.forEach(btn => btn.style.display = 'none');
+
+                // Exception: le bouton edit n'existe pas en tant que tel au niveau global, 
+                // mais on désactive les actions sur les lignes.
+                // Note: La suppression de paiement (désallocation) reste possible même après émission
+                // car cela concerne la gestion des paiements, pas le contenu de la facture elle-même.
+                // MAIS si on veut strict :
+                // const unallocBtns = document.querySelectorAll('button[onclick^="deletePayment"]');
+                // unallocBtns.forEach(btn => btn.style.display = 'none'); 
+            }
+        }
+
+        async function updateWorkflow(action, body = {}) {
+            if (!confirm(`Confirmer l'action : ${action} ?`)) return;
+
+            try {
+                const response = await authenticatedFetch(`/api/invoices/${invoiceId}/workflow/${action}`, {
+                    method: 'POST',
+                    body: JSON.stringify(body)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(data.message);
+                    await loadInvoiceDetails(invoiceId);
+                } else {
+                    const error = await response.json();
+                    showError(error.error || 'Erreur workflow');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Erreur de connexion');
+            }
+        }
+
+        function openRejectModal() {
+            new bootstrap.Modal(document.getElementById('rejectModal')).show();
+        }
+
+        async function confirmReject() {
+            const reason = document.getElementById('rejectReason').value;
+            if (!reason) {
+                alert('Le motif est obligatoire');
+                return;
+            }
+
+            await updateWorkflow('reject', { reason });
+            bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
         }
 
         // Affichage des lignes de facture
@@ -562,9 +718,8 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Montant</th>
-                                <th>Mode de paiement</th>
-                                <th>Statut</th>
+                                <th>Montant Alloué</th>
+                                <th>Mode</th>
                                 <th>Référence</th>
                                 <th>Notes</th>
                                 <th>Actions</th>
@@ -573,18 +728,14 @@
                         <tbody>
                             ${currentInvoice.payments.map(payment => `
                                 <tr>
-                                    <td>${formatDate(payment.date_paiement)}</td>
+                                    <td>${formatDate(payment.payment_date)}</td>
                                     <td>${formatCurrency(payment.montant)}</td>
-                                    <td>${payment.mode_paiement}</td>
-                                    <td><span class="badge bg-${getPaymentStatusColor(payment.statut)}">${payment.statut}</span></td>
+                                    <td><span class="badge bg-secondary">${payment.payment_mode}</span></td>
                                     <td>${payment.reference || 'N/A'}</td>
                                     <td>${payment.notes || ''}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="editPayment('${payment.id}')">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deletePayment('${payment.id}')">
-                                            <i class="fas fa-trash"></i>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deletePayment('${payment.id}')" title="Désallouer">
+                                            <i class="fas fa-unlink"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -595,16 +746,6 @@
             `;
 
             document.getElementById('invoicePayments').innerHTML = paymentsHtml;
-        }
-
-        // Fonction pour obtenir la couleur du statut de paiement
-        function getPaymentStatusColor(status) {
-            switch (status) {
-                case 'CONFIRME': return 'success';
-                case 'EN_ATTENTE': return 'warning';
-                case 'ANNULE': return 'danger';
-                default: return 'secondary';
-            }
         }
 
         // Fonction pour imprimer la facture
@@ -713,6 +854,120 @@
             }
         }
 
+        async function renderHistory(invoice) {
+            const container = document.getElementById('invoiceTimeline');
+            let events = [];
+
+            // 1. Creation
+            if (invoice.created_at) {
+                events.push({
+                    date: new Date(invoice.created_at),
+                    title: 'Facture Créée',
+                    user: `${invoice.created_by_prenom || ''} ${invoice.created_by_nom || ''}`.trim() || 'Système',
+                    color: 'secondary',
+                    icon: 'fa-file-invoice'
+                });
+            }
+
+            // 2. Soumission
+            if (invoice.submitted_for_validation_at) {
+                events.push({
+                    date: new Date(invoice.submitted_for_validation_at),
+                    title: 'Soumise pour Validation',
+                    user: `${invoice.submitted_by_prenom || ''} ${invoice.submitted_by_nom || ''}`.trim(),
+                    color: 'warning',
+                    icon: 'fa-paper-plane'
+                });
+            }
+
+            // 3. Validation
+            if (invoice.validated_at) {
+                events.push({
+                    date: new Date(invoice.validated_at),
+                    title: 'Validée (Prête pour Approbation)',
+                    user: `${invoice.validated_by_prenom || ''} ${invoice.validated_by_nom || ''}`.trim(),
+                    color: 'info',
+                    icon: 'fa-check'
+                });
+            }
+
+            // 4. Approbation (Emission Validated)
+            if (invoice.emission_validated_at) {
+                events.push({
+                    date: new Date(invoice.emission_validated_at),
+                    title: 'Approuvée (Prête pour Émission)',
+                    user: `${invoice.approved_by_prenom || ''} ${invoice.approved_by_nom || ''}`.trim(),
+                    color: 'primary',
+                    icon: 'fa-check-double'
+                });
+            }
+
+            // 5. Emission
+            if (invoice.emitted_at) {
+                events.push({
+                    date: new Date(invoice.emitted_at),
+                    title: 'Émise',
+                    user: `${invoice.emitted_by_prenom || ''} ${invoice.emitted_by_nom || ''}`.trim(),
+                    color: 'success',
+                    icon: 'fa-envelope'
+                });
+            }
+
+            // 6. Rejet (Dernier)
+            if (invoice.rejected_at) {
+                events.push({
+                    date: new Date(invoice.rejected_at),
+                    title: 'Rejetée',
+                    user: `${invoice.rejected_by_prenom || ''} ${invoice.rejected_by_nom || ''}`.trim(),
+                    color: 'danger',
+                    icon: 'fa-times-circle',
+                    notes: `Motif: ${invoice.rejection_reason}`
+                });
+            }
+
+            // 7. Paiements (Fetch via API)
+            try {
+                // Utiliser l'API payments existante ou celle des factures
+                const pRes = await authenticatedFetch(`/api/billing/invoices/${invoice.id}/payments`);
+                // Note: Vérifier si cette route existe ou utiliser /api/payments?invoice_id=...
+                // Si la route n'existe pas, on tente via la collection payments
+                if (pRes.ok) {
+                    const pData = await pRes.json();
+                    const payments = pData.data || [];
+                    payments.forEach(p => {
+                        events.push({
+                            date: new Date(p.date_paiement),
+                            title: `Paiement Reçu (${formatCurrency(p.montant)})`,
+                            user: 'Comptabilité',
+                            color: 'success',
+                            icon: 'fa-money-bill-wave'
+                        });
+                    });
+                }
+            } catch (e) { console.warn('Erreur historique paiements', e); }
+
+            // Trier par date décroissante
+            events.sort((a, b) => b.date - a.date);
+
+            // Render
+            if (events.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">Aucun historique disponible.</p>';
+                return;
+            }
+
+            container.innerHTML = events.map(e => `
+                <div class="timeline-item">
+                    <div class="timeline-badge badge-${e.color}"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">${e.date.toLocaleString('fr-FR')}</div>
+                        <div class="timeline-title">${e.title}</div>
+                        <div class="timeline-user"><i class="fas fa-user-circle"></i> ${e.user}</div>
+                        ${e.notes ? `<div class="text-danger small mt-1">${e.notes}</div>` : ''}
+                    </div>
+                </div>
+             `).join('');
+        }
+
         // Fonction pour régénérer les lignes depuis la mission
         async function regenerateItems() {
             if (!confirm('Cela va remplacer toutes les lignes actuelles. Continuer ?')) {
@@ -737,85 +992,9 @@
             }
         }
 
-        // Fonction pour ajouter un paiement
-        function addPayment() {
-            document.getElementById('paymentModalTitle').textContent = 'Ajouter un paiement';
-            document.getElementById('paymentId').value = '';
-            document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('paymentAmount').value = '';
-            document.getElementById('paymentMode').value = '';
-            document.getElementById('paymentStatus').value = 'EN_ATTENTE';
-            document.getElementById('paymentReference').value = '';
-            document.getElementById('paymentNotes').value = '';
-
-            const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
-            modal.show();
-        }
-
-        // Fonction pour éditer un paiement
-        function editPayment(paymentId) {
-            const payment = currentInvoice.payments.find(p => p.id === paymentId);
-            if (!payment) return;
-
-            document.getElementById('paymentModalTitle').textContent = 'Modifier un paiement';
-            document.getElementById('paymentId').value = payment.id;
-            document.getElementById('paymentDate').value = payment.date_paiement.split('T')[0];
-            document.getElementById('paymentAmount').value = payment.montant;
-            document.getElementById('paymentMode').value = payment.mode_paiement;
-            document.getElementById('paymentStatus').value = payment.statut;
-            document.getElementById('paymentReference').value = payment.reference || '';
-            document.getElementById('paymentNotes').value = payment.notes || '';
-
-            const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
-            modal.show();
-        }
-
-        // Fonction pour sauvegarder un paiement
-        async function savePayment() {
-            const paymentId = document.getElementById('paymentId').value;
-            const paymentData = {
-                date_paiement: document.getElementById('paymentDate').value,
-                montant: parseFloat(document.getElementById('paymentAmount').value),
-                mode_paiement: document.getElementById('paymentMode').value,
-                statut: document.getElementById('paymentStatus').value,
-                reference: document.getElementById('paymentReference').value,
-                notes: document.getElementById('paymentNotes').value
-            };
-
-            try {
-                let response;
-                if (paymentId) {
-                    // Modification
-                    response = await authenticatedFetch(`/api/invoices/${invoiceId}/payments/${paymentId}`, {
-                        method: 'PUT',
-                        body: JSON.stringify(paymentData)
-                    });
-                } else {
-                    // Ajout
-                    response = await authenticatedFetch(`/api/invoices/${invoiceId}/payments`, {
-                        method: 'POST',
-                        body: JSON.stringify(paymentData)
-                    });
-                }
-
-                if (response.ok) {
-                    // Fermer le modal et recharger les données
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
-                    modal.hide();
-                    await loadInvoiceDetails(invoiceId);
-                } else {
-                    const errorData = await response.json();
-                    showError(`Erreur: ${errorData.error}`);
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showError('Erreur de connexion');
-            }
-        }
-
-        // Fonction pour supprimer un paiement
+        // Fonction pour désallouer un paiement
         async function deletePayment(paymentId) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer ce paiement ?')) {
+            if (!confirm('Voulez-vous vraiment désallouer ce paiement de la facture ?\n(Le paiement restera disponible dans la liste globale)')) {
                 return;
             }
 

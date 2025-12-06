@@ -264,222 +264,6 @@ async function savePayment() {
     }
 }
 
-// GESTION DES ALLOCATIONS (POST-PAIEMENT)
-// =================================================================
-
-// Ouvrir le modal d'allocation
-async function openAllocationModal(paymentId) {
-    try {
-        const response = await authenticatedFetch(`/api/payments/${paymentId}`);
-        const data = await response.json();
-
-        if (!data.success) throw new Error(data.error);
-        const payment = data.data;
-
-        // Stocker les infos du paiement
-        document.getElementById('allocationPaymentId').value = payment.id;
-        document.getElementById('allocationPaymentAmount').value = payment.amount;
-        document.getElementById('displayPaymentAmount').textContent = formatCurrency(payment.amount);
-
-        // Charger les factures disponibles pour la BU du paiement
-        // On récupère TOUTES les factures de la BU qui sont émises et qui ont un reste à payer > 0
-        // PLUS les factures déjà allouées à ce paiement (pour pouvoir modifier/voir)
-        await loadAvailableInvoicesForModal(payment.business_unit_id);
-
-        // Initialiser les allocations existantes
-        modalAllocationRows = (payment.allocations || []).map(alloc => ({
-            id: Date.now() + Math.random(),
-            invoice_id: alloc.invoice_id,
-            allocated_amount: parseFloat(alloc.allocated_amount),
-            // Infos pour l'affichage (non sauvegardées mais utiles)
-            numero_facture: alloc.numero_facture,
-            montant_restant: parseFloat(alloc.montant_restant) + parseFloat(alloc.allocated_amount), // Reste original avant ce paiement
-            montant_ttc: parseFloat(alloc.montant_ttc)
-        }));
-
-        renderModalAllocations();
-        recalculateModalTotals();
-
-        allocationModal.show();
-
-    } catch (error) {
-        console.error('Erreur ouverture modal allocation:', error);
-        showError('Impossible de charger les détails du paiement');
-    }
-}
-
-// Charger les factures pour le modal
-async function loadAvailableInvoicesForModal(buId) {
-    try {
-        // Obtenir les factures filtres par BU
-        // Note: Idéalement il faudrait une API qui donne les factures éligibles
-        const response = await authenticatedFetch(`/api/invoices?business_unit_id=${buId}&workflow_status=EMISE`);
-        const data = await response.json();
-        const allInvoices = data.data || data.invoices || [];
-
-        // Filtrer celles qui ont un reste à payer
-        modalAvailableInvoices = allInvoices.filter(inv => parseFloat(inv.montant_restant || 0) > 0);
-    } catch (error) {
-        console.error('Erreur chargement factures modal:', error);
-        modalAvailableInvoices = [];
-    }
-}
-
-// Ajouter une ligne au modal
-function addAllocationRowToModal() {
-    modalAllocationRows.push({
-        id: Date.now(),
-        invoice_id: '',
-        allocated_amount: 0,
-        montant_restant: 0,
-        montant_ttc: 0
-    });
-    renderModalAllocations();
-}
-
-// Supprimer une ligne du modal
-function removeAllocationRowFromModal(rowId) {
-    modalAllocationRows = modalAllocationRows.filter(r => r.id != rowId);
-    renderModalAllocations();
-    recalculateModalTotals();
-}
-
-// Mettre à jour une allocation dans le modal
-function updateAllocationInModal(rowId, field, value) {
-    const row = modalAllocationRows.find(r => r.id == rowId);
-    if (!row) return;
-
-    if (field === 'invoice_id') {
-        const invoice = modalAvailableInvoices.find(inv => inv.id === value);
-        if (invoice) {
-            row.invoice_id = value;
-            row.numero_facture = invoice.numero_facture; // Pour affichage si besoin
-            row.montant_restant = parseFloat(invoice.montant_restant);
-            row.montant_ttc = parseFloat(invoice.montant_ttc);
-
-            // Pré-remplir le montant alloué ??
-            // On pourrait mettre le min(reste, non_alloué_paiement)
-        }
-    } else if (field === 'allocated_amount') {
-        row.allocated_amount = parseFloat(value) || 0;
-    }
-
-    renderModalAllocations();
-    recalculateModalTotals();
-}
-
-// Recalculer les totaux du modal
-function recalculateModalTotals() {
-    const paymentAmount = parseFloat(document.getElementById('allocationPaymentAmount').value || 0);
-    const totalAllocated = modalAllocationRows.reduce((sum, r) => sum + (r.allocated_amount || 0), 0);
-    const remaining = paymentAmount - totalAllocated;
-
-    document.getElementById('displayAllocatedAmount').textContent = formatCurrency(totalAllocated);
-
-    const unallocatedEl = document.getElementById('displayUnallocatedAmount');
-    unallocatedEl.textContent = formatCurrency(remaining);
-
-    if (remaining < 0) {
-        unallocatedEl.classList.remove('text-success');
-        unallocatedEl.classList.add('text-danger');
-    } else if (remaining === 0) {
-        unallocatedEl.classList.remove('text-danger');
-        unallocatedEl.classList.add('text-success');
-    } else {
-        unallocatedEl.classList.remove('text-danger', 'text-success');
-    }
-}
-
-// Rendu du tableau modal
-function renderModalAllocations() {
-    const tbody = document.getElementById('modalAllocationsTable');
-
-    // Pour ne pas pouvoir sélectionner deux fois la même facture, on peut filtrer
-
-    tbody.innerHTML = modalAllocationRows.map(row => {
-        // Options pour le select
-        // On inclut la facture actuellement sélectionnée même si elle n'est plus "disponible" (car déjà prise ici)
-        // Mais c'est complexe. Simplifions : on liste toutes les factures dispos.
-
-        const options = modalAvailableInvoices.map(inv =>
-            `<option value="${inv.id}" ${inv.id === row.invoice_id ? 'selected' : ''}>
-                ${inv.numero_facture} (${formatCurrency(inv.montant_restant)})
-            </option>`
-        ).join('');
-
-        // Si la facture sélectionnée n'est pas dans la liste (cas d'une facture déjà payée à 100% mais qu'on modifie), il faudrait l'ajouter
-        // Pour l'instant on suppose qu'elle est dans la liste ou qu'on gère le cas simples.
-
-        return `
-            <tr>
-                <td>
-                    <select class="form-select form-select-sm" 
-                        onchange="updateAllocationInModal(${row.id}, 'invoice_id', this.value)">
-                        <option value="">Sélectionner une facture</option>
-                        ${options}
-                    </select>
-                </td>
-                <td>${formatCurrency(row.montant_ttc)}</td>
-                <td>${formatCurrency(row.montant_restant)}</td>
-                <td>
-                    <input type="number" class="form-control form-control-sm" 
-                           value="${row.allocated_amount}" 
-                           onchange="updateAllocationInModal(${row.id}, 'allocated_amount', this.value)"
-                           step="100">
-                </td>
-                <td>
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAllocationRowFromModal(${row.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-// Sauvegarder les allocations
-async function saveAllocationsFromModal() {
-    const paymentId = document.getElementById('allocationPaymentId').value;
-    const paymentAmount = parseFloat(document.getElementById('allocationPaymentAmount').value);
-
-    const validAllocations = modalAllocationRows.filter(r => r.invoice_id && r.allocated_amount > 0);
-
-    // Validation somme
-    const totalAllocated = validAllocations.reduce((sum, r) => sum + r.allocated_amount, 0);
-
-    if (Math.abs(totalAllocated - paymentAmount) > 0.01) {
-        if (!confirm(`Attention : Le montant total alloué (${formatCurrency(totalAllocated)}) ne correspond pas au montant du paiement (${formatCurrency(paymentAmount)}). Continuer ?`)) {
-            return;
-        }
-    }
-
-    try {
-        const response = await authenticatedFetch(`/api/payments/${paymentId}/allocations`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                allocations: validAllocations.map(r => ({
-                    invoice_id: r.invoice_id,
-                    allocated_amount: r.allocated_amount,
-                    notes: ''
-                }))
-            })
-        });
-
-        if (response.ok) {
-            showSuccess('Allocations mises à jour avec succès');
-            allocationModal.hide();
-            loadPayments(); // Recharger la liste
-        } else {
-            const error = await response.json();
-            showError(error.error || 'Erreur lors de la mise à jour');
-        }
-    } catch (error) {
-        console.error('Erreur sauvegarde allocations:', error);
-        showError('Erreur de connexion');
-    }
-}
-
 // =================================================================
 // GESTION DES ALLOCATIONS (POST-PAIEMENT)
 // =================================================================
@@ -508,10 +292,12 @@ async function openAllocationModal(paymentId) {
             invoice_id: alloc.invoice_id,
             allocated_amount: parseFloat(alloc.allocated_amount),
             // Infos pour l'affichage (non sauvegardées mais utiles)
-            numero_facture: alloc.numero_facture,
+            numero_facture: alloc.invoice_number || alloc.numero_facture, // Support different keys
             // Reste originel = reste actuel + ce qu'on avait alloué
             montant_restant: parseFloat(alloc.montant_restant) + parseFloat(alloc.allocated_amount),
-            montant_ttc: parseFloat(alloc.montant_ttc)
+            montant_ttc: parseFloat(alloc.invoice_total || alloc.montant_ttc),
+            is_existing: true, // Flag pour mode lecture
+            is_editing: false
         }));
 
         renderModalAllocations();
@@ -528,18 +314,11 @@ async function openAllocationModal(paymentId) {
 // Charger les factures pour le modal
 async function loadAvailableInvoicesForModal(buId) {
     try {
-        const response = await authenticatedFetch(`/api/invoices?business_unit_id=${buId}&workflow_status=EMISE`);
+        const response = await authenticatedFetch(`/api/invoices?business_unit_id=${buId}&statut=EMISE`);
         const data = await response.json();
         const allInvoices = data.data || data.invoices || [];
 
-        // Filtrer celles qui ont un reste à payer > 0
-        // Pour être sûr d'avoir aussi les factures complètement payées par CE paiement si on modifie,
-        // c'est compliqué. Simplification: on prend celles qui ont un reste > 0.
-        // Si une facture est déjà payée totalement par ce paiement, elle n'apparaitra pas dans "available" 
-        // MAIS elle sera déjà dans `modalAllocationRows` donc on aura son numero_facture via row.numero_facture.
-        // Si on veut changer l'allocation d'une facture payée, elle ne sera pas dans la liste déroulante pour la RÉ-AJOUTER, 
-        // mais elle sera déjà présente dans la ligne. C'est acceptable.
-
+        // Filtrer celles qui ont un reste à payer
         modalAvailableInvoices = allInvoices.filter(inv => parseFloat(inv.montant_restant || 0) > 0);
     } catch (error) {
         console.error('Erreur chargement factures modal:', error);
@@ -622,48 +401,68 @@ function renderModalAllocations() {
     const tbody = document.getElementById('modalAllocationsTable');
 
     tbody.innerHTML = modalAllocationRows.map(row => {
-        // Liste des options : factures disponibles + facture actuelle si elle n'est plus disponible (car payée)
-        // Pour simplifier, on affiche les dispos. Si l'ID actuel n'est pas dans les dispos, on ajoute une option "Facture actuelle"
-        // pour que l'affichage reste correct (mais on ne peut pas changer pour une autre facture non dispo).
-
-        // Est-ce que la facture allouée est dans la liste des dispos ?
-        const isCurrentInAvailable = modalAvailableInvoices.some(inv => inv.id === row.invoice_id);
-
-        let selectHtml = `<select class="form-select form-select-sm" onchange="updateAllocationInModal(${row.id}, 'invoice_id', this.value)">`;
-        selectHtml += '<option value="">Sélectionner une facture</option>';
-
-        // Si la facture allouée n'est pas dispo (ex: payée totalement), on l'ajoute en haut
-        if (row.invoice_id && !isCurrentInAvailable) {
-            selectHtml += `<option value="${row.invoice_id}" selected>${row.numero_facture || 'Facture actuelle'}</option>`;
-        }
-
-        selectHtml += modalAvailableInvoices.map(inv =>
+        // Options pour le select
+        const options = modalAvailableInvoices.map(inv =>
             `<option value="${inv.id}" ${inv.id === row.invoice_id ? 'selected' : ''}>
-                ${inv.numero_facture} (Reste: ${formatCurrency(inv.montant_restant)})
+                ${inv.numero_facture} (${formatCurrency(inv.montant_restant)})
             </option>`
         ).join('');
 
-        selectHtml += '</select>';
+        // Si mode lecture (existant et non en édition)
+        const isReadOnly = row.is_existing && !row.is_editing;
+        const isDisabled = isReadOnly ? 'disabled' : '';
+        const rowClass = isReadOnly ? 'table-light' : '';
+
+        // Bouton d'action: soit edit (si existant et locked), soit delete (toujours)
+        let actionButtons = '';
+
+        if (row.is_existing && !row.is_editing) {
+            actionButtons = `
+                <button type="button" class="btn btn-sm btn-outline-warning" onclick="enableAllocationEdit(${row.id})" title="Modifier">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+             `;
+        }
+
+        actionButtons += `
+            <button type="button" class="btn btn-sm btn-outline-danger ms-1" onclick="removeAllocationRowFromModal(${row.id})" title="Supprimer">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
 
         return `
-            <tr>
-                <td>${selectHtml}</td>
-                <td class="text-end">${formatCurrency(row.montant_ttc)}</td>
-                <td class="text-end">${formatCurrency(row.montant_restant)}</td>
+            <tr class="${rowClass}">
+                <td>
+                    <select class="form-select form-select-sm" 
+                        onchange="updateAllocationInModal(${row.id}, 'invoice_id', this.value)" ${isDisabled}>
+                        <option value="">Sélectionner une facture</option>
+                        <!-- Si lecture seule et facture pas dans la liste (car payée), on affiche quant même l'option sélectionnée -->
+                        ${isReadOnly && row.invoice_id ? `<option value="${row.invoice_id}" selected>${row.numero_facture}</option>` : options}
+                    </select>
+                </td>
+                <td>${formatCurrency(row.montant_ttc)}</td>
+                <td>${formatCurrency(row.montant_restant)}</td>
                 <td>
                     <input type="number" class="form-control form-control-sm text-end" 
                            value="${row.allocated_amount}" 
                            onchange="updateAllocationInModal(${row.id}, 'allocated_amount', this.value)"
-                           min="0" step="100">
+                           min="0" step="100" ${isDisabled}>
                 </td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAllocationRowFromModal(${row.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                <td class="text-end text-nowrap">
+                    ${actionButtons}
                 </td>
             </tr>
         `;
     }).join('');
+}
+
+// Activer l'édition d'une ligne
+function enableAllocationEdit(rowId) {
+    const row = modalAllocationRows.find(r => r.id === rowId);
+    if (row) {
+        row.is_editing = true;
+        renderModalAllocations();
+    }
 }
 
 // Sauvegarder les allocations

@@ -1,21 +1,20 @@
 
 const { pool } = require('./src/utils/database');
 
-async function checkSchema() {
+async function checkInvoiceSchema() {
     try {
-        console.log('--- INVOICES SCHEMA ---');
-        const invoices = await pool.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'invoices'");
-        console.log(JSON.stringify(invoices.rows, null, 2));
-
-        console.log('--- INVOICE_ITEMS SCHEMA ---');
-        const items = await pool.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'invoice_items'");
-        console.log(JSON.stringify(items.rows, null, 2));
-
-        process.exit(0);
-    } catch (e) {
-        console.error(e);
-        process.exit(1);
+        console.log('Checking invoices table schema...');
+        const result = await pool.query(`
+            SELECT column_name, data_type, character_maximum_length 
+            FROM information_schema.columns 
+            WHERE table_name = 'invoices' AND column_name IN ('numero_facture', 'statut', 'workflow_status')
+        `);
+        console.log(result.rows);
+    } catch (error) {
+        console.error('Error:', error.message);
+    } finally {
+        pool.end();
     }
 }
 
-checkSchema();
+checkInvoiceSchema();

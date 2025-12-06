@@ -38,7 +38,30 @@ class Invoice {
         this.business_unit_code = data.business_unit_code;
         this.division_id = data.division_id;
         this.division_nom = data.division_nom;
+        this.division_nom = data.division_nom;
         this.division_code = data.division_code;
+
+        // Champs Historique
+        this.submitted_for_validation_at = data.submitted_for_validation_at;
+        this.submitted_by_nom = data.submitted_by_nom;
+        this.submitted_by_prenom = data.submitted_by_prenom;
+
+        this.validated_at = data.validated_at;
+        this.validated_by_nom = data.validated_by_nom;
+        this.validated_by_prenom = data.validated_by_prenom;
+
+        this.emission_validated_at = data.emission_validated_at;
+        this.approved_by_nom = data.approved_by_nom;
+        this.approved_by_prenom = data.approved_by_prenom;
+
+        this.emitted_at = data.emitted_at;
+        this.emitted_by_nom = data.emitted_by_nom;
+        this.emitted_by_prenom = data.emitted_by_prenom;
+
+        this.rejected_at = data.rejected_at;
+        this.rejected_by_nom = data.rejected_by_nom;
+        this.rejected_by_prenom = data.rejected_by_prenom;
+        this.rejection_reason = data.rejection_reason;
     }
 
     // Créer une nouvelle facture
@@ -93,7 +116,7 @@ class Invoice {
                     `);
                     fiscalYearId = fyCurrent.rows[0]?.id || null;
                 }
-            } catch (_) {}
+            } catch (_) { }
 
             const query = `
                 INSERT INTO invoices (
@@ -140,6 +163,16 @@ class Invoice {
                 c.code as client_code,
                 u1.nom as created_by_nom,
                 u1.prenom as created_by_prenom,
+                u_val.nom as validated_by_nom,
+                u_val.prenom as validated_by_prenom,
+                u_app.nom as approved_by_nom,
+                u_app.prenom as approved_by_prenom,
+                u_emit.nom as emitted_by_nom,
+                u_emit.prenom as emitted_by_prenom,
+                u_sub.nom as submitted_by_nom,
+                u_sub.prenom as submitted_by_prenom,
+                u_rej.nom as rejected_by_nom,
+                u_rej.prenom as rejected_by_prenom,
                 m.business_unit_id,
                 bu.nom as business_unit_nom,
                 bu.code as business_unit_code,
@@ -152,11 +185,21 @@ class Invoice {
             LEFT JOIN business_units bu ON m.business_unit_id = bu.id
             LEFT JOIN divisions d ON m.division_id = d.id
             LEFT JOIN users u1 ON i.created_by = u1.id
+            LEFT JOIN users u_val ON i.validated_by = u_val.id
+            LEFT JOIN users u_app ON i.emission_validated_by = u_app.id
+            LEFT JOIN users u_emit ON i.emitted_by = u_emit.id
+            LEFT JOIN users u_sub ON i.submitted_for_validation_by = u_sub.id
+            LEFT JOIN users u_rej ON i.rejected_by = u_rej.id
             WHERE i.id = $1
         `;
 
         const result = await pool.query(query, [id]);
-        return result.rows.length > 0 ? new Invoice(result.rows[0]) : null;
+        if (result.rows.length === 0) return null;
+
+        // Instancier l'objet Invoice et lui attacher les noms supplémentaires
+        const invoice = new Invoice(result.rows[0]);
+
+        return invoice;
     }
 
     // Trouver toutes les factures avec pagination et filtres
@@ -304,10 +347,13 @@ class Invoice {
                     notes_facture = $7,
                     updated_by = $8,
                     updated_at = CURRENT_TIMESTAMP
-                WHERE id = $9
+                WHERE id = $9 AND statut = 'BROUILLON'
                 RETURNING *
             `;
 
+            if (this.statut !== 'BROUILLON') {
+                throw new Error('Impossible de modifier une facture qui n\'est pas au statut BROUILLON');
+            }
             const values = [
                 updateData.date_emission || this.date_emission,
                 updateData.date_echeance || this.date_echeance,
@@ -393,13 +439,20 @@ class Invoice {
     async getPayments() {
         const query = `
             SELECT 
-                ip.*,
+                p.id,
+                p.payment_number,
+                p.payment_date,
+                pa.allocated_amount as montant,
+                p.payment_mode,
+                p.reference,
+                p.notes,
                 u.nom as created_by_nom,
                 u.prenom as created_by_prenom
-            FROM invoice_payments ip
-            LEFT JOIN users u ON ip.created_by = u.id
-            WHERE ip.invoice_id = $1
-            ORDER BY ip.date_paiement DESC
+            FROM payment_allocations pa
+            JOIN payments p ON pa.payment_id = p.id
+            LEFT JOIN users u ON p.created_by = u.id
+            WHERE pa.invoice_id = $1
+            ORDER BY p.payment_date DESC
         `;
 
         const result = await pool.query(query, [this.id]);
@@ -465,9 +518,9 @@ class Invoice {
         return result.rows[0];
     }
 
-    // Supprimer un paiement
+    // Supprimer un paiement (allocation)
     async removePayment(paymentId) {
-        const query = 'DELETE FROM invoice_payments WHERE id = $1 AND invoice_id = $2';
+        const query = 'DELETE FROM payment_allocations WHERE payment_id = $1 AND invoice_id = $2';
         const result = await pool.query(query, [paymentId, this.id]);
         return result.rowCount > 0;
     }
@@ -491,13 +544,13 @@ class Invoice {
             `;
 
             const missionResult = await client.query(missionQuery, [this.mission_id]);
-            
+
             if (missionResult.rows.length === 0) {
                 throw new Error('Mission non trouvée');
             }
 
             const mission = missionResult.rows[0];
-            
+
             // Supprimer les lignes existantes
             await client.query('DELETE FROM invoice_items WHERE invoice_id = $1', [this.id]);
 
@@ -568,49 +621,49 @@ class Invoice {
             } else {
                 // Générer les lignes de facture basées sur les conditions de paiement
                 for (const condition of paymentConditions) {
-                // Ligne pour les honoraires
-                if (condition.montant_honoraires && condition.montant_honoraires > 0) {
-                    const honorairesItemQuery = `
+                    // Ligne pour les honoraires
+                    if (condition.montant_honoraires && condition.montant_honoraires > 0) {
+                        const honorairesItemQuery = `
                         INSERT INTO invoice_items (
                             invoice_id, description, quantite, unite, prix_unitaire, taux_tva
                         ) VALUES ($1, $2, $3, $4, $5, $6)
                     `;
 
-                    const montantHT = parseFloat(condition.montant_honoraires);
-                    const montantTVA = montantHT * (this.taux_tva / 100);
-                    const honorairesValues = [
-                        this.id,
-                        `Honoraires - ${condition.details || 'Tranche ' + (condition.numero || '')}`,
-                        1,
-                        'forfait',
-                        montantHT,
-                        this.taux_tva
-                    ];
+                        const montantHT = parseFloat(condition.montant_honoraires);
+                        const montantTVA = montantHT * (this.taux_tva / 100);
+                        const honorairesValues = [
+                            this.id,
+                            `Honoraires - ${condition.details || 'Tranche ' + (condition.numero || '')}`,
+                            1,
+                            'forfait',
+                            montantHT,
+                            this.taux_tva
+                        ];
 
-                    await client.query(honorairesItemQuery, honorairesValues);
-                }
+                        await client.query(honorairesItemQuery, honorairesValues);
+                    }
 
-                // Ligne pour les débours
-                if (condition.montant_debours && condition.montant_debours > 0) {
-                    const deboursItemQuery = `
+                    // Ligne pour les débours
+                    if (condition.montant_debours && condition.montant_debours > 0) {
+                        const deboursItemQuery = `
                         INSERT INTO invoice_items (
                             invoice_id, description, quantite, unite, prix_unitaire, taux_tva
                         ) VALUES ($1, $2, $3, $4, $5, $6)
                     `;
 
-                    const montantHT = parseFloat(condition.montant_debours);
-                    const montantTVA = montantHT * (this.taux_tva / 100);
-                    const deboursValues = [
-                        this.id,
-                        `Débours - ${condition.details || 'Tranche ' + (condition.numero || '')}`,
-                        1,
-                        'forfait',
-                        montantHT,
-                        this.taux_tva
-                    ];
+                        const montantHT = parseFloat(condition.montant_debours);
+                        const montantTVA = montantHT * (this.taux_tva / 100);
+                        const deboursValues = [
+                            this.id,
+                            `Débours - ${condition.details || 'Tranche ' + (condition.numero || '')}`,
+                            1,
+                            'forfait',
+                            montantHT,
+                            this.taux_tva
+                        ];
 
-                    await client.query(deboursItemQuery, deboursValues);
-                }
+                        await client.query(deboursItemQuery, deboursValues);
+                    }
                 }
             }
 
@@ -662,6 +715,196 @@ class Invoice {
         const result = await pool.query(query);
         return result.rows.map(row => new Invoice(row));
     }
+
+    // =========================================================================
+    // WORKFLOW INVOICE
+    // =========================================================================
+
+    /**
+     * Soumettre la facture pour validation (BROUILLON → EN_ATTENTE_VALIDATION)
+     */
+    async submit(submittedBy) {
+        if (this.statut !== 'BROUILLON') {
+            throw new Error(`Impossible de soumettre une facture en statut ${this.statut}`);
+        }
+
+        // Vérification élémentaire
+        const items = await this.getItems();
+        if (items.length === 0) {
+            throw new Error('La facture doit contenir au moins une ligne');
+        }
+
+        const newStatus = 'EN_ATTENTE_VALIDATION';
+        await this.updateStatus(newStatus, submittedBy);
+
+        // Notification
+        const NotificationService = require('../services/notificationService');
+        await NotificationService.sendInvoiceSubmittedNotification(this.id, submittedBy);
+
+        return this;
+    }
+
+    /**
+     * Valider la facture (EN_ATTENTE_VALIDATION → EN_ATTENTE_APPROBATION)
+     */
+    async validate(validatedBy) {
+        if (this.statut !== 'EN_ATTENTE_VALIDATION') {
+            throw new Error(`Impossible de valider une facture en statut ${this.statut}`);
+        }
+
+        // Vérification des permissions (Responsable BU ou Associé)
+        const authorized = await this.checkValidationPermission(validatedBy);
+        if (!authorized) {
+            throw new Error('Vous n\'êtes pas autorisé à valider cette facture');
+        }
+
+        const newStatus = 'EN_ATTENTE_APPROBATION';
+        await this.updateStatus(newStatus, validatedBy);
+
+        // Notification aux Approbateurs (Senior Partners)
+        const NotificationService = require('../services/notificationService');
+        await NotificationService.sendInvoiceValidatedNotification(this.id, validatedBy);
+
+        return this;
+    }
+
+    /**
+     * Approuver la facture (EN_ATTENTE_APPROBATION → EN_ATTENTE_EMISSION)
+     */
+    async approve(approvedBy) {
+        if (this.statut !== 'EN_ATTENTE_APPROBATION') {
+            throw new Error(`Impossible d'approuver une facture en statut ${this.statut}`);
+        }
+
+        // Vérification permissions (Senior Partner)
+        const isSeniorPartner = await this.checkRole(approvedBy, 'SENIOR_PARTNER');
+        if (!isSeniorPartner) {
+            throw new Error('Seul un Senior Partner peut approuver cette facture');
+        }
+
+        const newStatus = 'EN_ATTENTE_EMISSION';
+        await this.updateStatus(newStatus, approvedBy);
+
+        // Notification aux émetteurs (Finance/Admin)
+        const NotificationService = require('../services/notificationService');
+        await NotificationService.sendInvoiceApprovedNotification(this.id, approvedBy);
+
+        return this;
+    }
+
+    /**
+     * Rejeter la facture (→ BROUILLON)
+     */
+    async reject(rejectedBy, reason) {
+        if (!['EN_ATTENTE_VALIDATION', 'EN_ATTENTE_APPROBATION', 'EN_ATTENTE_EMISSION'].includes(this.statut)) {
+            throw new Error(`Impossible de rejeter une facture en statut ${this.statut}`);
+        }
+
+        if (!reason) {
+            throw new Error('Le motif de rejet est obligatoire');
+        }
+
+        // Vérification des permissions selon le statut
+        if (this.statut === 'EN_ATTENTE_VALIDATION') {
+            const authorized = await this.checkValidationPermission(rejectedBy);
+            if (!authorized) throw new Error('Action non autorisée');
+        } else if (this.statut === 'EN_ATTENTE_APPROBATION') {
+            const isSP = await this.checkRole(rejectedBy, 'SENIOR_PARTNER');
+            if (!isSP) throw new Error('Action non autorisée');
+        }
+
+        const query = `
+            UPDATE invoices 
+            SET statut = 'BROUILLON', 
+                rejection_reason = $1,
+                rejected_by = $2,
+                rejected_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $3
+        `;
+        await pool.query(query, [reason, rejectedBy, this.id]);
+        this.statut = 'BROUILLON';
+
+        // Notification au créateur
+        const NotificationService = require('../services/notificationService');
+        await NotificationService.sendInvoiceRejectedNotification(this.id, rejectedBy, reason);
+
+        return this;
+    }
+
+    /**
+     * Emettre la facture (EN_ATTENTE_EMISSION → EMISE)
+     */
+    async emit(emittedBy) {
+        if (this.statut !== 'EN_ATTENTE_EMISSION') {
+            throw new Error(`Impossible d'émettre une facture en statut ${this.statut}`);
+        }
+
+        // Permissions: Admin ou Créateur (si autorisé)
+        // Pour l'instant, on laisse ouvert ou on restreint aux ADMINS
+        // const isAdmin = await this.checkRole(emittedBy, 'ADMIN');
+
+        const newStatus = 'EMISE';
+        const query = `
+            UPDATE invoices 
+            SET statut = $1, 
+                date_emission = CURRENT_DATE,
+                emitted_by = $2,
+                emitted_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $3
+        `;
+        await pool.query(query, [newStatus, emittedBy, this.id]);
+        this.statut = 'EMISE';
+
+        // Notification (optionnel, peut-être au client ou retour créateur)
+
+        return this;
+    }
+
+    async updateStatus(newStatus, userId) {
+        console.log(`[Invoice.updateStatus] ID: ${this.id}, Status: ${newStatus}, UserId: ${userId}`);
+        const query = `
+            UPDATE invoices 
+            SET statut = $1, updated_by = $2, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $3
+        `;
+        await pool.query(query, [newStatus, userId, this.id]);
+        this.statut = newStatus;
+    }
+
+    // Helpers de permissions
+
+    async checkValidationPermission(userId) {
+        // Vérifie si l'utilisateur est Associé de la mission OU Responsable de la BU
+        // Attention: m.associe_id et bu.responsable_*_id référencent la table `collaborateurs`
+        // Il faut donc faire le lien user -> collaborateur
+        const query = `
+            SELECT 1 
+            FROM invoices i
+            JOIN missions m ON i.mission_id = m.id
+            JOIN business_units bu ON m.business_unit_id = bu.id
+            JOIN users u ON u.id = $2
+            WHERE i.id = $1 
+            AND (
+                u.collaborateur_id IN (m.associe_id, bu.responsable_principal_id, bu.responsable_adjoint_id)
+            )
+         `;
+        const result = await pool.query(query, [this.id, userId]);
+        return result.rows.length > 0;
+    }
+
+    async checkRole(userId, roleCode) {
+        const query = `
+            SELECT 1 
+            FROM users u
+            JOIN user_roles ur ON u.id = ur.user_id
+            JOIN roles r ON ur.role_id = r.id
+            WHERE u.id = $1 AND r.name = $2
+         `;
+        const result = await pool.query(query, [userId, roleCode]);
+        return result.rows.length > 0;
+    }
 }
 
-module.exports = Invoice; 
+module.exports = Invoice;

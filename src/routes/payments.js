@@ -56,7 +56,7 @@ router.get('/', async (req, res) => {
                 fi.name as institution_name,
                 u.prenom || ' ' || u.nom as created_by_name,
                 u.prenom || ' ' || u.nom as created_by_name,
-                COUNT(DISTINCT pa.invoice_id) as invoices_count,
+                COUNT(pa.id) as invoices_count,
                 COALESCE(SUM(pa.allocated_amount), 0) as allocated_amount
             FROM payments p
             JOIN bank_accounts ba ON p.bank_account_id = ba.id

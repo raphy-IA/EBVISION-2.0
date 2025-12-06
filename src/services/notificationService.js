@@ -2,7 +2,7 @@ const { pool } = require('../utils/database');
 const EmailService = require('./emailService');
 
 class NotificationService {
-    
+
     /**
      * Envoyer une notification d'étape en retard
      */
@@ -438,8 +438,8 @@ class NotificationService {
                             <div style="padding: 20px; background-color: #f8f9fa;">
                                 <p>Bonjour ${rec.prenom || ''} ${rec.nom || ''},</p>
                                 <p>${fromCampaign
-                                    ? `Une nouvelle opportunité a été créée à partir d'une campagne de prospection.`
-                                    : `Une nouvelle opportunité a été créée dans EB-Vision.`}
+                            ? `Une nouvelle opportunité a été créée à partir d'une campagne de prospection.`
+                            : `Une nouvelle opportunité a été créée dans EB-Vision.`}
                                 </p>
                                 <p><strong>Détails de l'opportunité :</strong></p>
                                 <ul>
@@ -578,7 +578,7 @@ class NotificationService {
         try {
             // TODO: Implémenter l'envoi d'email avec un service comme SendGrid, Mailgun, etc.
             console.log(`Email à envoyer à ${email}:`, emailData);
-            
+
             // Pour l'instant, on simule l'envoi
             return true;
         } catch (error) {
@@ -1278,11 +1278,218 @@ class NotificationService {
                     division: opportunityData.division
                 }
             });
-            
+
             console.log('✅ Notification d\'opportunité créée envoyée à l\'utilisateur:', userId);
             return true;
         } catch (error) {
             console.error('❌ Erreur lors de l\'envoi de la notification d\'opportunité créée:', error);
+            return false;
+        }
+    }
+
+    // =========================================================================
+    // NOTIFICATIONS FACTURATION
+    // =========================================================================
+
+    /**
+     * Notification de soumission de facture pour validation
+     * Destinataires : Associé de la mission + Responsable de la BU
+     */
+    static async sendInvoiceSubmittedNotification(invoiceId, submittedByUserId) {
+        try {
+            const query = `
+                SELECT 
+                    i.id as invoice_id,
+                    i.numero_facture,
+                    i.montant_ttc,
+                    m.devise,
+                    m.id as mission_id,
+                    m.nom as mission_title,
+                    bu.id as business_unit_id,
+                    bu.nom as business_unit_name,
+                    u.nom as submitter_name,
+                    u.prenom as submitter_prenom,
+                    -- Responsables à notifier
+                    m.associe_id,
+                    bu.responsable_principal_id,
+                    bu.responsable_adjoint_id
+                FROM invoices i
+                JOIN missions m ON i.mission_id = m.id
+                JOIN business_units bu ON m.business_unit_id = bu.id
+                JOIN users u ON i.created_by = u.id
+                WHERE i.id = $1
+            `;
+
+            const result = await pool.query(query, [invoiceId]);
+            if (result.rows.length === 0) return false;
+
+            const data = result.rows[0];
+            const submitter = `${data.submitter_prenom} ${data.submitter_name}`;
+
+            // Liste des destinataires (déduplication)
+            const recipients = new Set([
+                data.associe_id,
+                data.responsable_principal_id,
+                data.responsable_adjoint_id
+            ].filter(id => id && id !== submittedByUserId)); // Exclure l'émetteur s'il est aussi validateur
+
+            const promises = Array.from(recipients).map(recipientId =>
+                this.createNotification({
+                    type: 'INVOICE_SUBMITTED',
+                    title: 'Facture en attente de validation',
+                    message: `${submitter} a soumis la facture ${data.numero_facture} (${data.montant_ttc} ${data.devise}) pour la mission "${data.mission_title}".`,
+                    user_id: recipientId,
+                    priority: 'HIGH',
+                    metadata: {
+                        invoice_id: data.invoice_id,
+                        invoice_number: data.numero_facture,
+                        mission_id: data.mission_id,
+                        business_unit: data.business_unit_name,
+                        amount: data.montant_ttc,
+                        currency: data.devise
+                    }
+                })
+            );
+
+            await Promise.all(promises);
+            return true;
+        } catch (error) {
+            console.error('Erreur notification soumission facture:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Notification de validation de facture (Prête pour approbation)
+     * Destinataires : Senior Partners
+     */
+    static async sendInvoiceValidatedNotification(invoiceId, validatedByUserId) {
+        try {
+            const query = `
+                SELECT 
+                    i.id as invoice_id,
+                    i.numero_facture,
+                    m.nom as mission_title,
+                    u.nom as validator_name
+                FROM invoices i
+                JOIN missions m ON i.mission_id = m.id
+                JOIN users u ON i.validated_by = u.id
+                WHERE i.id = $1
+            `;
+            const result = await pool.query(query, [invoiceId]);
+            if (result.rows.length === 0) return false;
+            const data = result.rows[0];
+
+            // Trouver les Senior Partners
+            const spQuery = `
+                SELECT u.id 
+                FROM users u
+                JOIN user_roles ur ON u.id = ur.user_id
+                JOIN roles r ON ur.role_id = r.id
+                WHERE r.name = 'SENIOR_PARTNER'
+            `;
+            const spResult = await pool.query(spQuery);
+
+            const promises = spResult.rows.map(sp =>
+                this.createNotification({
+                    type: 'INVOICE_VALIDATED',
+                    title: 'Facture à approuver',
+                    message: `La facture ${data.numero_facture} a été validée par ${data.validator_name} et nécessite votre approbation finale.`,
+                    user_id: sp.id,
+                    priority: 'HIGH',
+                    metadata: {
+                        invoice_id: data.invoice_id,
+                        invoice_number: data.numero_facture
+                    }
+                })
+            );
+
+            await Promise.all(promises);
+            return true;
+        } catch (error) {
+            console.error('Erreur notification validation facture:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Notification d'approbation (Prête pour émission)
+     * Destinataires : Admin / Finance
+     */
+    static async sendInvoiceApprovedNotification(invoiceId, approvedByUserId) {
+        try {
+            const query = `
+                SELECT i.id, i.numero_facture FROM invoices i WHERE i.id = $1
+            `;
+            const result = await pool.query(query, [invoiceId]);
+            if (result.rows.length === 0) return false;
+            const data = result.rows[0];
+
+            // Pour l'instant, notifier les ADMINS
+            const adminQuery = `
+                SELECT u.id 
+                FROM users u 
+                JOIN user_roles ur ON u.id = ur.user_id
+                JOIN roles r ON ur.role_id = r.id
+                WHERE r.name = 'SUPER_ADMIN' OR r.name = 'ADMIN_METIER' OR r.name = 'ADMIN_IT'
+            `;
+            const adminResult = await pool.query(adminQuery);
+
+            const promises = adminResult.rows.map(admin =>
+                this.createNotification({
+                    type: 'INVOICE_APPROVED',
+                    title: 'Facture prête pour émission',
+                    message: `La facture ${data.numero_facture} a été approuvée et peut être émise.`,
+                    user_id: admin.id,
+                    priority: 'NORMAL',
+                    metadata: {
+                        invoice_id: data.id,
+                        invoice_number: data.numero_facture
+                    }
+                })
+            );
+
+            await Promise.all(promises);
+            return true;
+        } catch (error) {
+            console.error('Erreur notification approbation facture:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Notification de rejet
+     * Destinataire : Créateur de la facture
+     */
+    static async sendInvoiceRejectedNotification(invoiceId, rejectedByUserId, reason) {
+        try {
+            const query = `
+                SELECT 
+                    i.id, i.numero_facture, i.created_by,
+                    u.nom as rejector_name
+                FROM invoices i
+                JOIN users u ON u.id = $2
+                WHERE i.id = $1
+            `;
+            const result = await pool.query(query, [invoiceId, rejectedByUserId]);
+            if (result.rows.length === 0) return false;
+            const data = result.rows[0];
+
+            await this.createNotification({
+                type: 'INVOICE_REJECTED',
+                title: 'Facture rejetée',
+                message: `Votre facture ${data.numero_facture} a été rejetée par ${data.rejector_name}. Motif : ${reason}`,
+                user_id: data.created_by,
+                priority: 'HIGH',
+                metadata: {
+                    invoice_id: data.id,
+                    invoice_number: data.numero_facture,
+                    reason: reason
+                }
+            });
+            return true;
+        } catch (error) {
+            console.error('Erreur notification rejet facture:', error);
             return false;
         }
     }

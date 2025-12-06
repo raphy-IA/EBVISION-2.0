@@ -5,6 +5,37 @@ const { authenticateToken } = require('../middleware/auth');
 // Appliquer l'authentification réelle
 router.use(authenticateToken);
 
+const WORKFLOW_ROUTES = [
+    { path: 'submit', method: 'submit', success: 'Facture soumise pour validation' },
+    { path: 'validate', method: 'validate', success: 'Facture validée avec succès' },
+    { path: 'approve', method: 'approve', success: 'Facture approuvée pour émission' },
+    { path: 'reject', method: 'reject', success: 'Facture rejetée', bodyParams: ['reason'] },
+    { path: 'emit', method: 'emit', success: 'Facture émise avec succès' }
+];
+
+WORKFLOW_ROUTES.forEach(route => {
+    router.post(`/:id/workflow/${route.path}`, async (req, res) => {
+        try {
+            const invoice = await Invoice.findById(req.params.id);
+            if (!invoice) return res.status(404).json({ success: false, error: 'Facture non trouvée' });
+
+            // TODO: Ajouter vérification des permissions ici (ex: seul un Manager peut valider)
+
+            const args = route.bodyParams ? route.bodyParams.map(p => req.body[p]) : [];
+            await invoice[route.method](req.user.id, ...args);
+
+            res.json({
+                success: true,
+                message: route.success,
+                data: invoice
+            });
+        } catch (error) {
+            console.error(`Erreur workflow ${route.path}:`, error);
+            res.status(400).json({ success: false, error: error.message });
+        }
+    });
+});
+
 // GET /api/invoices - Liste des factures avec filtres et pagination
 router.get('/', async (req, res) => {
     try {
@@ -44,7 +75,7 @@ router.get('/', async (req, res) => {
                 }));
                 console.log('🧾 Aperçu factures BU/Division:', sample);
             }
-        } catch (_) {}
+        } catch (_) { }
 
         res.json({
             success: true,
@@ -98,7 +129,7 @@ router.get('/overdue', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);
-        
+
         if (!invoice) {
             return res.status(404).json({
                 success: false,
@@ -108,7 +139,7 @@ router.get('/:id', async (req, res) => {
 
         // Récupérer les lignes de facture
         const items = await invoice.getItems();
-        
+
         // Récupérer les paiements
         const payments = await invoice.getPayments();
 
@@ -121,7 +152,7 @@ router.get('/:id', async (req, res) => {
                 division_id: invoice.division_id,
                 division: invoice.division_nom
             });
-        } catch (_) {}
+        } catch (_) { }
 
         res.json({
             success: true,
@@ -149,7 +180,7 @@ router.post('/', async (req, res) => {
         };
 
         const invoice = await Invoice.create(invoiceData);
-        
+
         res.status(201).json({
             success: true,
             data: invoice,
@@ -168,7 +199,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);
-        
+
         if (!invoice) {
             return res.status(404).json({
                 success: false,
@@ -182,7 +213,7 @@ router.put('/:id', async (req, res) => {
         };
 
         const updatedInvoice = await invoice.update(updateData);
-        
+
         res.json({
             success: true,
             data: updatedInvoice,
@@ -201,7 +232,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);
-        
+
         if (!invoice) {
             return res.status(404).json({
                 success: false,
@@ -210,7 +241,7 @@ router.delete('/:id', async (req, res) => {
         }
 
         await invoice.delete();
-        
+
         res.json({
             success: true,
             message: 'Facture supprimée avec succès'
@@ -228,7 +259,7 @@ router.delete('/:id', async (req, res) => {
 router.post('/:id/generate-items', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);
-        
+
         if (!invoice) {
             return res.status(404).json({
                 success: false,
@@ -237,10 +268,10 @@ router.post('/:id/generate-items', async (req, res) => {
         }
 
         await invoice.generateItemsFromMission();
-        
+
         // Récupérer les lignes générées
         const items = await invoice.getItems();
-        
+
         res.json({
             success: true,
             data: items,
@@ -259,7 +290,7 @@ router.post('/:id/generate-items', async (req, res) => {
 router.post('/:id/items', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);
-        
+
         if (!invoice) {
             return res.status(404).json({
                 success: false,
@@ -268,7 +299,7 @@ router.post('/:id/items', async (req, res) => {
         }
 
         const item = await invoice.addItem(req.body);
-        
+
         res.status(201).json({
             success: true,
             data: item,
@@ -287,7 +318,7 @@ router.post('/:id/items', async (req, res) => {
 router.put('/:id/items/:itemId', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);
-        
+
         if (!invoice) {
             return res.status(404).json({
                 success: false,
@@ -347,7 +378,7 @@ router.put('/:id/items/:itemId', async (req, res) => {
 router.delete('/:id/items/:itemId', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);
-        
+
         if (!invoice) {
             return res.status(404).json({
                 success: false,
@@ -356,7 +387,7 @@ router.delete('/:id/items/:itemId', async (req, res) => {
         }
 
         const deleted = await invoice.removeItem(req.params.itemId);
-        
+
         if (!deleted) {
             return res.status(404).json({
                 success: false,
@@ -381,7 +412,7 @@ router.delete('/:id/items/:itemId', async (req, res) => {
 router.post('/:id/payments', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);
-        
+
         if (!invoice) {
             return res.status(404).json({
                 success: false,
@@ -395,7 +426,7 @@ router.post('/:id/payments', async (req, res) => {
         };
 
         const payment = await invoice.addPayment(paymentData);
-        
+
         res.status(201).json({
             success: true,
             data: payment,
@@ -414,7 +445,7 @@ router.post('/:id/payments', async (req, res) => {
 router.put('/:id/payments/:paymentId', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);
-        
+
         if (!invoice) {
             return res.status(404).json({
                 success: false,
@@ -423,7 +454,7 @@ router.put('/:id/payments/:paymentId', async (req, res) => {
         }
 
         const payment = await invoice.updatePayment(req.params.paymentId, req.body);
-        
+
         if (!payment) {
             return res.status(404).json({
                 success: false,
@@ -449,7 +480,7 @@ router.put('/:id/payments/:paymentId', async (req, res) => {
 router.delete('/:id/payments/:paymentId', async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id);
-        
+
         if (!invoice) {
             return res.status(404).json({
                 success: false,
@@ -458,7 +489,7 @@ router.delete('/:id/payments/:paymentId', async (req, res) => {
         }
 
         const deleted = await invoice.removePayment(req.params.paymentId);
-        
+
         if (!deleted) {
             return res.status(404).json({
                 success: false,
@@ -488,7 +519,7 @@ router.get('/mission/:missionId', async (req, res) => {
         };
 
         const result = await Invoice.findAll(options);
-        
+
         res.json({
             success: true,
             data: result.invoices,
@@ -500,6 +531,106 @@ router.get('/mission/:missionId', async (req, res) => {
             success: false,
             error: 'Erreur lors de la récupération des factures de la mission'
         });
+    }
+});
+
+// =========================================================================
+// WORKFLOW ROUTES
+// =========================================================================
+
+// PATCH /api/invoices/:id/workflow/submit
+router.patch('/:id/workflow/submit', async (req, res) => {
+    try {
+        const invoice = await Invoice.findById(req.params.id);
+        if (!invoice) return res.status(404).json({ success: false, error: 'Facture non trouvée' });
+
+        await invoice.submit(req.user.id);
+
+        res.json({
+            success: true,
+            data: invoice,
+            message: 'Facture soumise pour validation'
+        });
+    } catch (error) {
+        console.error('Erreur workflow submit:', error);
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// PATCH /api/invoices/:id/workflow/validate
+router.patch('/:id/workflow/validate', async (req, res) => {
+    try {
+        const invoice = await Invoice.findById(req.params.id);
+        if (!invoice) return res.status(404).json({ success: false, error: 'Facture non trouvée' });
+
+        await invoice.validate(req.user.id);
+
+        res.json({
+            success: true,
+            data: invoice,
+            message: 'Facture validée'
+        });
+    } catch (error) {
+        console.error('Erreur workflow validate:', error);
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// PATCH /api/invoices/:id/workflow/approve
+router.patch('/:id/workflow/approve', async (req, res) => {
+    try {
+        const invoice = await Invoice.findById(req.params.id);
+        if (!invoice) return res.status(404).json({ success: false, error: 'Facture non trouvée' });
+
+        await invoice.approve(req.user.id);
+
+        res.json({
+            success: true,
+            data: invoice,
+            message: 'Facture approuvée'
+        });
+    } catch (error) {
+        console.error('Erreur workflow approve:', error);
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// PATCH /api/invoices/:id/workflow/reject
+router.patch('/:id/workflow/reject', async (req, res) => {
+    try {
+        const invoice = await Invoice.findById(req.params.id);
+        if (!invoice) return res.status(404).json({ success: false, error: 'Facture non trouvée' });
+
+        const { reason } = req.body;
+        await invoice.reject(req.user.id, reason);
+
+        res.json({
+            success: true,
+            data: invoice,
+            message: 'Facture rejetée'
+        });
+    } catch (error) {
+        console.error('Erreur workflow reject:', error);
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// PATCH /api/invoices/:id/workflow/emit
+router.patch('/:id/workflow/emit', async (req, res) => {
+    try {
+        const invoice = await Invoice.findById(req.params.id);
+        if (!invoice) return res.status(404).json({ success: false, error: 'Facture non trouvée' });
+
+        await invoice.emit(req.user.id);
+
+        res.json({
+            success: true,
+            data: invoice,
+            message: 'Facture émise avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur workflow emit:', error);
+        res.status(400).json({ success: false, error: error.message });
     }
 });
 
