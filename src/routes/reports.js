@@ -7,7 +7,7 @@ const { authenticateToken } = require('../middleware/auth');
 router.get('/timeEntries', authenticateToken, async (req, res) => {
     try {
         const { startDate, endDate, collaboratorId, clientId } = req.query;
-        
+
         let whereConditions = [];
         let params = [];
         let paramIndex = 1;
@@ -39,7 +39,6 @@ router.get('/timeEntries', authenticateToken, async (req, res) => {
                 te.date_saisie,
                 te.heures,
                 te.type_heures,
-                te.status,
                 c.id as collaborateur_id,
                 c.nom as collaborateur_nom,
                 c.prenom as collaborateur_prenom,
@@ -80,12 +79,12 @@ router.get('/timeEntries', authenticateToken, async (req, res) => {
             type_heures: row.type_heures,
             description: `${row.type_heures} - ${row.mission_titre || row.internal_activity_nom || 'Activité interne'}`,
             collaborateur_id: row.collaborateur_id || null,
-            collaborateur: row.collaborateur_prenom && row.collaborateur_nom 
-                ? `${row.collaborateur_prenom} ${row.collaborateur_nom}` 
+            collaborateur: row.collaborateur_prenom && row.collaborateur_nom
+                ? `${row.collaborateur_prenom} ${row.collaborateur_nom}`
                 : 'Non assigné',
             mission: row.mission_titre || '-',
             client: row.client_nom || '-',
-            statut: row.time_sheet_status || row.status || 'N/A',
+            statut: row.time_sheet_status || 'N/A',
             business_unit_id: row.business_unit_id || null,
             business_unit_nom: row.business_unit_nom || '-',
             division_id: row.division_id || null,
@@ -115,10 +114,10 @@ router.get('/timeEntries', authenticateToken, async (req, res) => {
 router.get('/summary', authenticateToken, async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
-        
+
         let dateFilter = '';
         let params = [];
-        
+
         if (startDate && endDate) {
             dateFilter = 'WHERE date_saisie BETWEEN $1 AND $2';
             params = [startDate, endDate];
@@ -128,13 +127,14 @@ router.get('/summary', authenticateToken, async (req, res) => {
         const statsQuery = `
             SELECT 
                 COUNT(*) as total_entries,
-                COUNT(CASE WHEN statut = 'VALIDEE' THEN 1 END) as validated_entries,
-                COUNT(CASE WHEN statut = 'SOUMISE' THEN 1 END) as pending_entries,
-                COUNT(CASE WHEN statut = 'REJETEE' THEN 1 END) as rejected_entries,
-                COALESCE(SUM(CASE WHEN statut = 'VALIDEE' THEN heures ELSE 0 END), 0) as total_hours,
-                COALESCE(AVG(CASE WHEN statut = 'VALIDEE' THEN heures ELSE NULL END), 0) as avg_hours_per_entry
-            FROM time_entries
-            ${dateFilter}
+                COUNT(CASE WHEN ts.statut = 'validé' THEN 1 END) as validated_entries,
+                COUNT(CASE WHEN ts.statut = 'soumis' THEN 1 END) as pending_entries,
+                COUNT(CASE WHEN ts.statut = 'rejeté' THEN 1 END) as rejected_entries,
+                COALESCE(SUM(CASE WHEN ts.statut = 'validé' THEN te.heures ELSE 0 END), 0) as total_hours,
+                COALESCE(AVG(CASE WHEN ts.statut = 'validé' THEN te.heures ELSE NULL END), 0) as avg_hours_per_entry
+            FROM time_entries te
+            LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
+            ${dateFilter ? dateFilter.replace('date_saisie', 'te.date_saisie') : ''}
         `;
 
         const statsResult = await pool.query(statsQuery, params);
@@ -176,12 +176,13 @@ router.get('/summary', authenticateToken, async (req, res) => {
         // Répartition par statut
         const statusDistributionQuery = `
             SELECT 
-                statut,
+                ts.statut,
                 COUNT(*) as count,
-                COALESCE(SUM(heures), 0) as total_hours
-            FROM time_entries
-            ${dateFilter}
-            GROUP BY statut
+                COALESCE(SUM(te.heures), 0) as total_hours
+            FROM time_entries te
+            LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
+            ${dateFilter ? dateFilter.replace('date_saisie', 'te.date_saisie') : ''}
+            GROUP BY ts.statut
             ORDER BY count DESC
         `;
 
@@ -234,7 +235,7 @@ router.get('/summary', authenticateToken, async (req, res) => {
 router.get('/statistics', async (req, res) => {
     try {
         const { startDate, endDate, collaborateur_id, mission_id } = req.query;
-        
+
         let whereConditions = [];
         let params = [];
         let paramIndex = 1;
@@ -268,10 +269,11 @@ router.get('/statistics', async (req, res) => {
                 COUNT(te.id) as entries_count,
                 COALESCE(SUM(te.heures), 0) as total_hours,
                 COALESCE(AVG(te.heures), 0) as avg_hours_per_entry,
-                COUNT(CASE WHEN te.statut = 'VALIDEE' THEN 1 END) as validated_count,
-                COUNT(CASE WHEN te.statut = 'SOUMISE' THEN 1 END) as pending_count
+                COUNT(CASE WHEN ts.statut = 'validé' THEN 1 END) as validated_count,
+                COUNT(CASE WHEN ts.statut = 'soumis' THEN 1 END) as pending_count
             FROM collaborateurs c
             LEFT JOIN time_entries te ON c.id = te.user_id
+            LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
             ${whereClause}
             GROUP BY c.id, c.nom, c.prenom
             ORDER BY total_hours DESC
@@ -287,10 +289,11 @@ router.get('/statistics', async (req, res) => {
                 COUNT(te.id) as entries_count,
                 COALESCE(SUM(te.heures), 0) as total_hours,
                 COALESCE(AVG(te.heures), 0) as avg_hours_per_entry,
-                COUNT(CASE WHEN te.statut = 'VALIDEE' THEN 1 END) as validated_count,
-                COUNT(CASE WHEN te.statut = 'SOUMISE' THEN 1 END) as pending_count
+                COUNT(CASE WHEN ts.statut = 'validé' THEN 1 END) as validated_count,
+                COUNT(CASE WHEN ts.statut = 'soumis' THEN 1 END) as pending_count
             FROM missions m
             LEFT JOIN time_entries te ON m.id = te.mission_id
+            LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
             ${whereClause}
             GROUP BY m.id, m.nom
             ORDER BY total_hours DESC
@@ -336,10 +339,10 @@ router.get('/statistics', async (req, res) => {
 router.get('/export', async (req, res) => {
     try {
         const { format = 'json', startDate, endDate } = req.query;
-        
+
         let whereClause = '';
         let params = [];
-        
+
         if (startDate && endDate) {
             whereClause = 'WHERE te.date_saisie BETWEEN $1 AND $2';
             params = [startDate, endDate];
@@ -350,16 +353,17 @@ router.get('/export', async (req, res) => {
                 te.id,
                 te.date_saisie,
                 te.heures,
-                te.statut,
+                ts.statut,
                 te.description,
                 c.nom as collaborateur_nom,
                 c.prenom as collaborateur_prenom,
                 m.nom as mission_nom,
                 cl.raison_sociale as client_nom
             FROM time_entries te
+            LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
             JOIN collaborateurs c ON te.user_id = c.id
-            JOIN missions m ON te.mission_id = m.id
-            JOIN clients cl ON m.client_id = cl.id
+            LEFT JOIN missions m ON te.mission_id = m.id
+            LEFT JOIN clients cl ON m.client_id = cl.id
             ${whereClause}
             ORDER BY te.date_saisie DESC
         `;
@@ -369,11 +373,11 @@ router.get('/export', async (req, res) => {
         if (format === 'csv') {
             res.setHeader('Content-Type', 'text/csv');
             res.setHeader('Content-Disposition', 'attachment; filename="time_entries_export.csv"');
-            
+
             // En-têtes CSV
             const headers = ['ID', 'Date', 'Heures', 'Statut', 'Commentaire', 'Collaborateur', 'Mission', 'Client'];
             res.write(headers.join(',') + '\n');
-            
+
             // Données CSV
             result.rows.forEach(row => {
                 const line = [
@@ -388,7 +392,7 @@ router.get('/export', async (req, res) => {
                 ].join(',');
                 res.write(line + '\n');
             });
-            
+
             res.end();
         } else {
             res.json({
@@ -411,7 +415,7 @@ router.get('/export', async (req, res) => {
 router.get('/hr', authenticateToken, async (req, res) => {
     try {
         const { startDate, endDate, businessUnitId, divisionId, gradeId } = req.query;
-        
+
         let whereConditions = [];
         let params = [];
         let paramIndex = 1;
@@ -574,7 +578,7 @@ router.get('/hr', authenticateToken, async (req, res) => {
 router.get('/hr/collaborateurs', authenticateToken, async (req, res) => {
     try {
         const { businessUnitId, divisionId, gradeId, statut } = req.query;
-        
+
         let whereConditions = [];
         let params = [];
         let paramIndex = 1;
