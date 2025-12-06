@@ -30,7 +30,7 @@ CREATE TABLE time_entries (
     date_saisie DATE NOT NULL,
     heures NUMERIC(5,2) NOT NULL DEFAULT 0 CHECK (heures >= 0),
     type_heures VARCHAR(3) NOT NULL CHECK (type_heures IN ('HC', 'HNC')),
-    statut VARCHAR(20) NOT NULL DEFAULT 'saisie' CHECK (statut IN ('saisie', 'soumis', 'validé', 'rejeté')),
+    statut VARCHAR(20) NOT NULL DEFAULT 'sauvegardé' CHECK (statut IN ('sauvegardé', 'soumis', 'validé', 'rejeté')),
     mission_id UUID REFERENCES missions(id) ON DELETE SET NULL,
     task_id UUID REFERENCES tasks(id) ON DELETE SET NULL,
     internal_activity_id UUID REFERENCES internal_activities(id) ON DELETE SET NULL,
