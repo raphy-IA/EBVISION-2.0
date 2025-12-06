@@ -1,6 +1,14 @@
 const { Pool } = require('pg');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
+
+// Charger .env.production si disponible (pour les credentials de production)
+const productionEnvPath = path.join(__dirname, '..', '..', '.env.production');
+if (fs.existsSync(productionEnvPath)) {
+    console.log('📋 Chargement de .env.production...\n');
+    require('dotenv').config({ path: productionEnvPath });
+}
 
 /**
  * Script de comparaison et synchronisation COMPLÈTE des schémas

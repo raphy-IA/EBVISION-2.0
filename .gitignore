@@ -29,7 +29,7 @@ build/
 .pm2/
 
 # Fichiers de base de données
-*.sql
+#*.sql
 *.db
 
 # Fichiers d'upload
