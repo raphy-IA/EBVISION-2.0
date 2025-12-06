@@ -188,7 +188,7 @@ class TimeEntry {
         const query = `
             SELECT te.*, 
                    m.nom as mission_nom,
-                   COALESCE(t.description, t.libelle) as task_nom,
+                   t.libelle as task_nom,
                    ia.description as internal_activity_nom
             FROM time_entries te
             LEFT JOIN missions m ON te.mission_id = m.id
@@ -212,7 +212,7 @@ class TimeEntry {
         const query = `
             SELECT te.*, ts.week_start, ts.week_end,
                    m.nom as mission_nom,
-                   COALESCE(t.description, t.libelle) as task_nom,
+                   t.libelle as task_nom,
                    ia.description as internal_activity_nom
             FROM time_entries te
             JOIN time_sheets ts ON te.time_sheet_id = ts.id
