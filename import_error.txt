@@ -1,0 +1,9 @@
+
+Table: financial_settings
+Message: la colonne « id » n'existe pas
+Code: 42703
+Detail: undefined
+Hint: undefined
+Position: 197
+Columns: key, value, description, type, updated_at, updated_by
+                

@@ -448,20 +448,27 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="missionResponsible" class="form-label">Responsable de la Mission
+                                    <div class="col-md-4 mb-3">
+                                        <label for="missionResponsible" class="form-label">Responsable (In-Charge)
                                             *</label>
                                         <select class="form-select" id="missionResponsible" required>
                                             <option value="">Sélectionner un responsable</option>
                                         </select>
-                                        <div class="form-text">Manager de la mission</div>
+                                        <div class="form-text">Exécute la mission sur le terrain</div>
                                     </div>
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="missionManager" class="form-label">Manager *</label>
+                                        <select class="form-select" id="missionManager" required>
+                                            <option value="">Sélectionner un manager</option>
+                                        </select>
+                                        <div class="form-text">Supervise l'ensemble de la mission</div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
                                         <label for="missionAssociate" class="form-label">Associé de la Mission *</label>
                                         <select class="form-select" id="missionAssociate" required>
                                             <option value="">Sélectionner un associé</option>
                                         </select>
-                                        <div class="form-text">Associé impliqué dans la mission</div>
+                                        <div class="form-text">Apporte sa caution (Signataire)</div>
                                     </div>
                                 </div>
                             </div>
@@ -689,24 +696,23 @@
         // Remplir le select des collaborateurs
         function populateCollaborateursSelect() {
             const responsibleSelect = document.getElementById('missionResponsible');
+            const managerSelect = document.getElementById('missionManager');
             const associateSelect = document.getElementById('missionAssociate');
 
-            // Remplir le select du responsable
+            // Remplir les selects
             responsibleSelect.innerHTML = '<option value="">Sélectionner un responsable</option>';
+            managerSelect.innerHTML = '<option value="">Sélectionner un manager</option>';
             associateSelect.innerHTML = '<option value="">Sélectionner un associé</option>';
 
             collaborateurs.forEach(collab => {
-                // Option pour le responsable
-                const responsibleOption = document.createElement('option');
-                responsibleOption.value = collab.id;
-                responsibleOption.textContent = `${collab.nom} ${collab.prenom}`;
-                responsibleSelect.appendChild(responsibleOption);
+                const name = `${collab.nom} ${collab.prenom}`;
 
+                // Option pour le responsable
+                responsibleSelect.add(new Option(name, collab.id));
+                // Option pour le manager
+                managerSelect.add(new Option(name, collab.id));
                 // Option pour l'associé
-                const associateOption = document.createElement('option');
-                associateOption.value = collab.id;
-                associateOption.textContent = `${collab.nom} ${collab.prenom}`;
-                associateSelect.appendChild(associateOption);
+                associateSelect.add(new Option(name, collab.id));
             });
 
             // Sélectionner le responsable de l'opportunité si disponible
@@ -809,7 +815,7 @@
 
         // Validation du formulaire
         function validateForm() {
-            const requiredFields = ['missionCode', 'missionName', 'missionStartDate', 'missionEndDate', 'missionResponsible', 'missionAssociate', 'missionCurrency'];
+            const requiredFields = ['missionCode', 'missionName', 'missionStartDate', 'missionEndDate', 'missionResponsible', 'missionManager', 'missionAssociate', 'missionCurrency'];
             let isValid = true;
 
             // Validation des champs obligatoires
@@ -876,6 +882,7 @@
                 if (!document.getElementById('missionStartDate').value) missingFields.push('Date de Début');
                 if (!document.getElementById('missionEndDate').value) missingFields.push('Date de Fin');
                 if (!document.getElementById('missionResponsible').value) missingFields.push('Responsable de la Mission');
+                if (!document.getElementById('missionManager').value) missingFields.push('Manager de la Mission');
                 if (!document.getElementById('missionAssociate').value) missingFields.push('Associé de la Mission');
                 if (!document.getElementById('missionCurrency').value) missingFields.push('Devise de la Mission');
                 if (!document.getElementById('kycFile').files || document.getElementById('kycFile').files.length === 0) missingFields.push('Document KYC');
@@ -914,6 +921,7 @@
                 budget_prevue: parseFloat(document.getElementById('missionBudget').value) || 0,
                 devise: document.getElementById('missionCurrency').value, // Devise de la mission
                 responsable_id: document.getElementById('missionResponsible').value || null,
+                manager_id: document.getElementById('missionManager').value || null,
                 associe_id: document.getElementById('missionAssociate').value || null,
                 priorite: document.getElementById('missionPriority').value,
                 statut: calculateMissionStatus(), // Calcul automatique du statut

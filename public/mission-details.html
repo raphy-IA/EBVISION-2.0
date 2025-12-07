@@ -229,6 +229,8 @@
                                             <p><strong>Type de mission:</strong> <span id="missionType">...</span></p>
                                             <p><strong>Responsable:</strong> <span id="missionResponsable">...</span>
                                             </p>
+                                            <p><strong>Manager:</strong> <span id="missionManager">...</span>
+                                            </p>
                                             <p><strong>Associé en charge:</strong> <span id="missionAssocie">...</span>
                                             </p>
                                             <p><strong>Business Unit:</strong> <span id="missionBusinessUnit">...</span>
@@ -508,6 +510,7 @@
             document.getElementById('missionClient').textContent = currentMission.client_nom || 'N/A';
             document.getElementById('missionType').textContent = currentMission.mission_type_nom || currentMission.type_mission || 'N/A';
             document.getElementById('missionResponsable').textContent = formatResponsable(currentMission.responsable_nom, currentMission.responsable_prenom);
+            document.getElementById('missionManager').textContent = formatResponsable(currentMission.manager_nom, currentMission.manager_prenom);
             document.getElementById('missionAssocie').textContent = formatResponsable(currentMission.associe_nom, currentMission.associe_prenom);
             document.getElementById('missionBusinessUnit').textContent = currentMission.business_unit_nom || 'N/A';
             document.getElementById('missionDivision').textContent = currentMission.division_nom || 'N/A';

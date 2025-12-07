@@ -18,19 +18,23 @@ class Mission {
         this.priorite = data.priorite;
         this.division_id = data.division_id;
         this.responsable_id = data.responsable_id;
+        this.manager_id = data.manager_id;
         this.fiscal_year_id = data.fiscal_year_id;
         this.notes = data.notes;
         this.date_creation = data.date_creation;
         this.date_modification = data.date_modification;
         this.created_by = data.created_by;
         this.updated_by = data.updated_by;
-        
+
         // Champs joints
         this.client_nom = data.client_nom;
         this.client_statut = data.client_statut;
         this.responsable_nom = data.responsable_nom;
         this.responsable_prenom = data.responsable_prenom;
         this.responsable_initiales = data.responsable_initiales;
+        this.manager_nom = data.manager_nom;
+        this.manager_prenom = data.manager_prenom;
+        this.manager_initiales = data.manager_initiales;
         this.division_nom = data.division_nom;
         this.business_unit_nom = data.business_unit_nom;
         this.associe_nom = data.associe_nom;
@@ -79,7 +83,7 @@ class Mission {
         }
 
         if (responsable_id) {
-            conditions.push(`m.responsable_id = $${paramIndex++}`);
+            conditions.push(`m.collaborateur_id = $${paramIndex++}`);
             params.push(responsable_id);
         }
 
@@ -113,18 +117,21 @@ class Mission {
                 c.statut as client_statut,
                 col.nom as responsable_nom,
                 col.initiales as responsable_initiales,
+                col_mgr.nom as manager_nom,
+                col_mgr.initiales as manager_initiales,
                 d.nom as division_nom,
                 fy.annee as fiscal_year_annee,
                 COUNT(em.id) as nombre_collaborateurs,
                 COALESCE(SUM(em.taux_horaire_mission), 0) as total_taux_horaire
             FROM missions m
             LEFT JOIN clients c ON m.client_id = c.id
-            LEFT JOIN collaborateurs col ON m.responsable_id = col.id
+            LEFT JOIN collaborateurs col ON m.collaborateur_id = col.id
+            LEFT JOIN collaborateurs col_mgr ON m.manager_id = col_mgr.id
             LEFT JOIN divisions d ON m.division_id = d.id
             LEFT JOIN fiscal_years fy ON m.fiscal_year_id = fy.id
             LEFT JOIN equipes_mission em ON m.id = em.mission_id
             ${whereClause}
-            GROUP BY m.id, c.nom, c.statut, col.nom, col.initiales, d.nom, fy.annee
+            GROUP BY m.id, c.nom, c.statut, col.nom, col.initiales, col_mgr.nom, col_mgr.initiales, d.nom, fy.annee
             ORDER BY m.${sortBy} ${sortOrder}
             LIMIT $${paramIndex++} OFFSET $${paramIndex++}
         `;
@@ -170,6 +177,9 @@ class Mission {
                 col_resp.nom as responsable_nom,
                 col_resp.prenom as responsable_prenom,
                 col_resp.initiales as responsable_initiales,
+                col_mgr.nom as manager_nom,
+                col_mgr.prenom as manager_prenom,
+                col_mgr.initiales as manager_initiales,
                 d.nom as division_nom,
                 bu.nom as business_unit_nom,
                 col_assoc.nom as associe_nom,
@@ -180,12 +190,13 @@ class Mission {
             FROM missions m
             LEFT JOIN clients c ON m.client_id = c.id
             LEFT JOIN collaborateurs col_resp ON m.collaborateur_id = col_resp.id
+            LEFT JOIN collaborateurs col_mgr ON m.manager_id = col_mgr.id
             LEFT JOIN divisions d ON m.division_id = d.id
             LEFT JOIN business_units bu ON m.business_unit_id = bu.id
             LEFT JOIN collaborateurs col_assoc ON m.associe_id = col_assoc.id
             LEFT JOIN equipes_mission em ON m.id = em.mission_id
             WHERE m.id = $1
-            GROUP BY m.id, c.nom, c.statut, col_resp.nom, col_resp.prenom, col_resp.initiales, d.nom, bu.nom, col_assoc.nom, col_assoc.prenom, col_assoc.initiales
+            GROUP BY m.id, c.nom, c.statut, col_resp.nom, col_resp.prenom, col_resp.initiales, col_mgr.nom, col_mgr.prenom, col_mgr.initiales, d.nom, bu.nom, col_assoc.nom, col_assoc.prenom, col_assoc.initiales
         `;
 
         try {
@@ -202,7 +213,7 @@ class Mission {
         const {
             titre, description, client_id, statut, type_mission,
             date_debut, date_fin_prevue, budget_prevue, priorite,
-            division_id, responsable_id, notes, created_by, fiscal_year_id
+            division_id, responsable_id, manager_id, notes, created_by, fiscal_year_id
         } = missionData;
 
         // Si aucune année fiscale n'est spécifiée, utiliser l'année active
@@ -217,15 +228,15 @@ class Mission {
             INSERT INTO missions (
                 titre, description, client_id, statut, type_mission,
                 date_debut, date_fin_prevue, budget_prevue, priorite,
-                division_id, responsable_id, notes, created_by, fiscal_year_id
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                division_id, collaborateur_id, manager_id, notes, created_by, fiscal_year_id
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
             RETURNING *
         `;
 
         const values = [
             titre, description, client_id, statut, type_mission,
             date_debut, date_fin_prevue, budget_prevue, priorite,
-            division_id, responsable_id, notes, created_by, finalFiscalYearId
+            division_id, responsable_id, manager_id, notes, created_by, finalFiscalYearId
         ];
 
         try {
@@ -243,7 +254,7 @@ class Mission {
             titre, description, statut, type_mission,
             date_debut, date_fin_prevue, date_fin_reelle,
             budget_prevue, budget_reel, taux_horaire_moyen,
-            montant_total, priorite, division_id, responsable_id,
+            montant_total, priorite, division_id, responsable_id, manager_id,
             notes, updated_by
         } = updateData;
 
@@ -262,10 +273,11 @@ class Mission {
                 montant_total = COALESCE($11, montant_total),
                 priorite = COALESCE($12, priorite),
                 division_id = COALESCE($13, division_id),
-                responsable_id = COALESCE($14, responsable_id),
-                notes = COALESCE($15, notes),
-                updated_by = $16
-            WHERE id = $17
+                collaborateur_id = COALESCE($14, responsable_id),
+                manager_id = COALESCE($15, manager_id),
+                notes = COALESCE($16, notes),
+                updated_by = $17
+            WHERE id = $18
             RETURNING *
         `;
 
@@ -273,7 +285,7 @@ class Mission {
             titre, description, statut, type_mission,
             date_debut, date_fin_prevue, date_fin_reelle,
             budget_prevue, budget_reel, taux_horaire_moyen,
-            montant_total, priorite, division_id, responsable_id,
+            montant_total, priorite, division_id, responsable_id, manager_id,
             notes, updated_by, this.id
         ];
 
@@ -293,7 +305,7 @@ class Mission {
     // Supprimer une mission
     async delete() {
         const query = 'DELETE FROM missions WHERE id = $1 RETURNING *';
-        
+
         try {
             const result = await pool.query(query, [this.id]);
             return result.rows.length > 0;
@@ -413,11 +425,11 @@ class Mission {
         try {
             const result = await pool.query(query, [this.id]);
             const taux_moyen = result.rows[0].taux_moyen;
-            
+
             if (taux_moyen) {
                 await this.update({ taux_horaire_moyen: parseFloat(taux_moyen) });
             }
-            
+
             return taux_moyen;
         } catch (error) {
             console.error('Erreur lors du calcul du taux horaire moyen:', error);
