@@ -1,9 +1,9 @@
 
-Table: financial_settings
-Message: la colonne « id » n'existe pas
-Code: 42703
-Detail: undefined
+Table: types_collaborateurs
+Message: la valeur d'une clé dupliquée rompt la contrainte unique « types_collaborateurs_code_key »
+Code: 23505
+Detail: La clé « (code)=(ADM) » existe déjà.
 Hint: undefined
-Position: 197
-Columns: key, value, description, type, updated_at, updated_by
+Position: undefined
+Columns: id, nom, code, description, statut, created_at, updated_at
                 

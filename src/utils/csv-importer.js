@@ -203,9 +203,15 @@ class CSVImporter {
                 };
 
                 await query(
-                    `INSERT INTO hourly_rates (grade, taux_horaire, date_effet, statut)
-                     VALUES ($1, $2, $3, $4)
-                     ON CONFLICT (grade, date_effet) DO NOTHING`,
+                    `INSERT INTO taux_horaires (grade_id, division_id, taux_base, date_effet, statut)
+                     VALUES (
+                         (SELECT id FROM grades WHERE code = $1),
+                         NULL,
+                         $2,
+                         $3,
+                         $4
+                     )
+                     ON CONFLICT DO NOTHING`,
                     [rate.grade, rate.taux_horaire, rate.date_effet, rate.statut]
                 );
 
@@ -234,9 +240,15 @@ class CSVImporter {
         for (const rate of defaultRates) {
             try {
                 await query(
-                    `INSERT INTO hourly_rates (grade, taux_horaire, date_effet, statut)
-                     VALUES ($1, $2, $3, $4)
-                     ON CONFLICT (grade, date_effet) DO NOTHING`,
+                    `INSERT INTO taux_horaires (grade_id, division_id, taux_base, date_effet, statut)
+                     VALUES (
+                         (SELECT id FROM grades WHERE code = $1),
+                         NULL,
+                         $2,
+                         $3,
+                         $4
+                     )
+                     ON CONFLICT DO NOTHING`,
                     [rate.grade, rate.taux, new Date().toISOString().split('T')[0], 'ACTIF']
                 );
             } catch (error) {

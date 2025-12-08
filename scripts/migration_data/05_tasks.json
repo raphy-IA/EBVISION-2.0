@@ -1,0 +1,2198 @@
+[
+  {
+    "mission_code": "TAX-25-001",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-002",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-003",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-004",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-005",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-006",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-007",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-008",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-009",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-010",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-011",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-012",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-013",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-014",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-015",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-016",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-017",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-018",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-019",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-020",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-021",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-022",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-023",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-024",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-025",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-026",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-027",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-028",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-029",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-030",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-031",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-032",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-033",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-034",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-035",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-036",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-037",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-038",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-039",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-040",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-041",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-042",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-043",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-044",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-045",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-046",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-047",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-048",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-049",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-050",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-051",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-052",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-053",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-054",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-055",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-056",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-057",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-058",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-059",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-060",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-061",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-062",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-063",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-064",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-065",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-066",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-067",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-068",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-069",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-070",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-071",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-072",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-073",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-074",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-075",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-076",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-077",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-078",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-079",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-080",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-081",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-082",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-083",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-084",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-085",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-086",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-087",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-088",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-089",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-090",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-091",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-092",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-093",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-094",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-095",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-096",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-097",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-098",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-099",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-100",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-101",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-102",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-103",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-104",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-105",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-106",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-107",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-108",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-109",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-110",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-111",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-112",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-113",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-114",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-115",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-116",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-117",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-118",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-119",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-120",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-121",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-122",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-123",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "ASS-25-124",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-125",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-126",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-127",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-128",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-129",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-130",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-131",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-132",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-133",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-134",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-135",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-136",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-137",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-138",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "ASS-25-139",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "ASS-25-140",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "ASS-25-141",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "ASS-25-142",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "ASS-25-143",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "ASS-25-144",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-145",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-146",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-147",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-148",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-149",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-150",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-151",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-152",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-153",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-154",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-155",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-156",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-157",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-158",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-159",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-160",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-161",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-162",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-163",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-164",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-165",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-166",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-167",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-168",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-169",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-170",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-171",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-172",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-173",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-174",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-175",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-176",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-177",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-178",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-179",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-180",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-181",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-182",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-183",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-184",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-185",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-186",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-187",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-188",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-189",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-190",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-191",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-192",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-193",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-194",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-195",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-196",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-197",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-198",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-199",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-200",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-201",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-202",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-203",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-204",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-205",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-206",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-207",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-208",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-209",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-210",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-211",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-212",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-213",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-214",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-215",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-216",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-217",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-218",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-219",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-220",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-221",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-222",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-223",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-224",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-225",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-226",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-227",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-228",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-229",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-230",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-231",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-232",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-233",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-234",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-235",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-236",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-237",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-238",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-239",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-240",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-241",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-242",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-243",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-244",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-245",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-246",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-247",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-248",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-249",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-250",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-251",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-252",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-253",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-254",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-255",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-256",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-257",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-258",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-259",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-260",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-261",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-262",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-263",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-264",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "AUD-25-265",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-266",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-267",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-268",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-269",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-270",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-271",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-272",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-273",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-274",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-275",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-276",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-277",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-278",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-279",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-280",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-281",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-282",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-283",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-284",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-285",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-286",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-287",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-288",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-289",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-290",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-291",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-292",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-293",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-294",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-295",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-296",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-297",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-298",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-299",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-300",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-301",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-302",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-303",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-304",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-305",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-306",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-307",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-308",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-309",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-310",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-311",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-312",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-313",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-314",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-315",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-316",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-317",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-318",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-319",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-320",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-321",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-322",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-323",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-324",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-325",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-326",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-327",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-328",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-329",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-330",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-331",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-332",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-333",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-334",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-335",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-336",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-337",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-338",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-339",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-340",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "DOU-25-341",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-342",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-343",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-344",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-345",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-346",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-347",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-348",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "LEG-25-349",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-350",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-351",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "FIN-25-352",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "RH-25-353",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "RH-25-354",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-355",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-356",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-357",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "EB -25-358",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-359",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-360",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-361",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-362",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-363",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-364",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-365",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  },
+  {
+    "mission_code": "TAX-25-366",
+    "libelle": "Mission_Task",
+    "description": "Tâche par défaut pour saisie des heures",
+    "statut": "PLANIFIEE"
+  }
+]

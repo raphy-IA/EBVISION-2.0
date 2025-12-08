@@ -1,7 +1,7 @@
 {
-  "exported_at": "2025-12-06T21:24:25.774Z",
-  "database": "EB-PostProd1",
-  "total_tables": 105,
+  "exported_at": "2025-12-07T23:00:34.071Z",
+  "database": "EB-PostProd2",
+  "total_tables": 101,
   "tables": {
     "activities": {
       "columns": [
@@ -4155,118 +4155,6 @@
         }
       ]
     },
-    "menu_items": {
-      "columns": [
-        {
-          "column_name": "id",
-          "data_type": "uuid",
-          "character_maximum_length": null,
-          "is_nullable": "NO",
-          "column_default": "uuid_generate_v4()",
-          "ordinal_position": 1
-        },
-        {
-          "column_name": "code",
-          "data_type": "character varying",
-          "character_maximum_length": 255,
-          "is_nullable": "NO",
-          "column_default": null,
-          "ordinal_position": 2
-        },
-        {
-          "column_name": "label",
-          "data_type": "character varying",
-          "character_maximum_length": 255,
-          "is_nullable": "NO",
-          "column_default": null,
-          "ordinal_position": 3
-        },
-        {
-          "column_name": "url",
-          "data_type": "character varying",
-          "character_maximum_length": 500,
-          "is_nullable": "NO",
-          "column_default": null,
-          "ordinal_position": 4
-        },
-        {
-          "column_name": "section_id",
-          "data_type": "uuid",
-          "character_maximum_length": null,
-          "is_nullable": "YES",
-          "column_default": null,
-          "ordinal_position": 5
-        },
-        {
-          "column_name": "display_order",
-          "data_type": "integer",
-          "character_maximum_length": null,
-          "is_nullable": "YES",
-          "column_default": "0",
-          "ordinal_position": 6
-        },
-        {
-          "column_name": "created_at",
-          "data_type": "timestamp without time zone",
-          "character_maximum_length": null,
-          "is_nullable": "YES",
-          "column_default": "CURRENT_TIMESTAMP",
-          "ordinal_position": 7
-        },
-        {
-          "column_name": "updated_at",
-          "data_type": "timestamp without time zone",
-          "character_maximum_length": null,
-          "is_nullable": "YES",
-          "column_default": "CURRENT_TIMESTAMP",
-          "ordinal_position": 8
-        }
-      ]
-    },
-    "menu_sections": {
-      "columns": [
-        {
-          "column_name": "id",
-          "data_type": "uuid",
-          "character_maximum_length": null,
-          "is_nullable": "NO",
-          "column_default": "uuid_generate_v4()",
-          "ordinal_position": 1
-        },
-        {
-          "column_name": "code",
-          "data_type": "character varying",
-          "character_maximum_length": 100,
-          "is_nullable": "NO",
-          "column_default": null,
-          "ordinal_position": 2
-        },
-        {
-          "column_name": "name",
-          "data_type": "character varying",
-          "character_maximum_length": 255,
-          "is_nullable": "NO",
-          "column_default": null,
-          "ordinal_position": 3
-        },
-        {
-          "column_name": "created_at",
-          "data_type": "timestamp without time zone",
-          "character_maximum_length": null,
-          "is_nullable": "YES",
-          "column_default": "CURRENT_TIMESTAMP",
-          "ordinal_position": 4
-        },
-        {
-          "column_name": "updated_at",
-          "data_type": "timestamp without time zone",
-          "character_maximum_length": null,
-          "is_nullable": "YES",
-          "column_default": "CURRENT_TIMESTAMP",
-          "ordinal_position": 5
-        }
-      ]
-    },
     "migrations": {
       "columns": [
         {
@@ -6272,50 +6160,6 @@
           "is_nullable": "YES",
           "column_default": null,
           "ordinal_position": 11
-        }
-      ]
-    },
-    "pages": {
-      "columns": [
-        {
-          "column_name": "id",
-          "data_type": "uuid",
-          "character_maximum_length": null,
-          "is_nullable": "NO",
-          "column_default": "uuid_generate_v4()",
-          "ordinal_position": 1
-        },
-        {
-          "column_name": "title",
-          "data_type": "character varying",
-          "character_maximum_length": 255,
-          "is_nullable": "NO",
-          "column_default": null,
-          "ordinal_position": 2
-        },
-        {
-          "column_name": "url",
-          "data_type": "character varying",
-          "character_maximum_length": 500,
-          "is_nullable": "NO",
-          "column_default": null,
-          "ordinal_position": 3
-        },
-        {
-          "column_name": "created_at",
-          "data_type": "timestamp without time zone",
-          "character_maximum_length": null,
-          "is_nullable": "YES",
-          "column_default": "CURRENT_TIMESTAMP",
-          "ordinal_position": 4
-        },
-        {
-          "column_name": "updated_at",
-          "data_type": "timestamp without time zone",
-          "character_maximum_length": null,
-          "is_nullable": "YES",
-          "column_default": "CURRENT_TIMESTAMP",
-          "ordinal_position": 5
         }
       ]
     },
@@ -8587,34 +8431,6 @@
         }
       ]
     },
-    "test_permissions": {
-      "columns": [
-        {
-          "column_name": "id",
-          "data_type": "uuid",
-          "character_maximum_length": null,
-          "is_nullable": "NO",
-          "column_default": "gen_random_uuid()",
-          "ordinal_position": 1
-        },
-        {
-          "column_name": "name",
-          "data_type": "character varying",
-          "character_maximum_length": 50,
-          "is_nullable": "NO",
-          "column_default": null,
-          "ordinal_position": 2
-        },
-        {
-          "column_name": "created_at",
-          "data_type": "timestamp without time zone",
-          "character_maximum_length": null,
-          "is_nullable": "YES",
-          "column_default": "CURRENT_TIMESTAMP",
-          "ordinal_position": 3
-        }
-      ]
-    },
     "time_entries": {
       "columns": [
         {
@@ -8670,7 +8486,7 @@
           "data_type": "character varying",
           "character_maximum_length": 20,
           "is_nullable": "NO",
-          "column_default": "'saisie'::character varying",
+          "column_default": "'sauvegardé'::character varying",
           "ordinal_position": 7
         },
         {

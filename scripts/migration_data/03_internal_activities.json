@@ -1,0 +1,44 @@
+[
+  {
+    "libelle": "Bureau",
+    "description": "Travail au bureau",
+    "code": "BUR",
+    "actif": true
+  },
+  {
+    "libelle": "Congés",
+    "description": "Congés payés",
+    "code": "CGE",
+    "actif": true
+  },
+  {
+    "libelle": "Maladie",
+    "description": "Congé maladie",
+    "code": "MAL",
+    "actif": true
+  },
+  {
+    "libelle": "Formation",
+    "description": "Formation interne",
+    "code": "FOR",
+    "actif": true
+  },
+  {
+    "libelle": "Fériés",
+    "description": "Fériés",
+    "code": "FER",
+    "actif": true
+  },
+  {
+    "libelle": "Rédaction de Propositions",
+    "description": "Rédaction de Propositions",
+    "code": "PROP",
+    "actif": true
+  },
+  {
+    "libelle": "Autres Temps Disponibles",
+    "description": "Autres Temps Disponibles",
+    "code": "AUT",
+    "actif": true
+  }
+]

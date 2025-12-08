@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Clients</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-    
+
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -22,13 +23,14 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
-            overflow-x: hidden; /* Empêche le défilement horizontal */
+            overflow-x: hidden;
+            /* Empêche le défilement horizontal */
         }
-        
+
         /* Le conteneur principal de la page qui contient la sidebar et le contenu */
         .page-wrapper {
             display: flex;
@@ -37,51 +39,52 @@
 
         /* Styles pour le contenu principal */
         .main-content-area {
-            flex-grow: 1; /* Prend l'espace restant */
+            flex-grow: 1;
+            /* Prend l'espace restant */
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
         .stat-card.success {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
-        
+
         .stat-card.warning {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
-        
+
         .stat-card.info {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
-        
+
         .stat-number {
             font-size: 2.5rem;
             font-weight: bold;
         }
-        
+
         .table thead th {
             background-color: var(--primary-color);
             color: white;
         }
-        
+
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
         }
-        
+
         .sigle-badge {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -93,19 +96,34 @@
             min-width: 40px;
             text-align: center;
         }
-        
-        .status-saisie { background-color: #e3f2fd; color: #1976d2; }
-        .status-soumise { background-color: #fff3e0; color: #f57c00; }
-        .status-validee { background-color: #e8f5e8; color: #388e3c; }
-        .status-rejetee { background-color: #ffebee; color: #d32f2f; }
-        
+
+        .status-saisie {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-soumise {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-validee {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .status-rejetee {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+
         .loading {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 200px;
         }
-        
+
         .chart-container {
             position: relative;
             height: 300px;
@@ -114,14 +132,15 @@
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column; /* Empile la sidebar et le contenu */
+                flex-direction: column;
+                /* Empile la sidebar et le contenu */
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
         }
-    
+
         /* Styles pour la sidebar unifiée */
         .main-content-wrapper {
             margin-left: 300px;
@@ -129,11 +148,11 @@
             min-height: 100vh;
             padding: 0;
         }
-        
+
         .main-content {
             padding: 2rem;
         }
-        
+
         @media (max-width: 768px) {
             .main-content-wrapper {
                 margin-left: 0;
@@ -142,16 +161,16 @@
             .sidebar-container.open {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 padding: 1rem;
             }
         }
     </style>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -162,11 +181,12 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -186,6 +206,46 @@
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addClientModal">
                         <i class="fas fa-plus me-2"></i>Nouveau Client
                     </button>
+                </div>
+
+                <!-- KPIs / Statistiques -->
+                <div class="row mb-4" id="statsContainer">
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <h6 class="card-title text-white-50">Total Clients</h6>
+                                <div class="stat-number" id="statsTotal">0</div>
+                                <div class="small">Base clients globale</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card success">
+                            <div class="card-body">
+                                <h6 class="card-title text-white-50">Nouveaux (30j)</h6>
+                                <div class="stat-number" id="statsNew">0</div>
+                                <div class="small">Dernière acquisition</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card info">
+                            <div class="card-body">
+                                <h6 class="card-title text-white-50">Clients Actifs (7j)</h6>
+                                <div class="stat-number" id="statsActive">0</div>
+                                <div class="small">Avec activité récente</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card warning">
+                            <div class="card-body">
+                                <h6 class="card-title text-white-50">Clients Fidèles</h6>
+                                <div class="stat-number" id="statsLoyal">0</div>
+                                <div class="small">Statut: Client Fidèle</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Filtres -->
@@ -218,7 +278,8 @@
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label for="searchInput" class="form-label">Recherche</label>
-                                <input type="text" class="form-control" id="searchInput" placeholder="Rechercher un client...">
+                                <input type="text" class="form-control" id="searchInput"
+                                    placeholder="Rechercher un client...">
                             </div>
                             <div class="col-md-3 mb-3 d-flex align-items-end">
                                 <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
@@ -264,6 +325,19 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Pagination -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="text-muted small">
+                                Affichage de <span id="paginationStart">0</span> à <span id="paginationEnd">0</span> sur
+                                <span id="paginationTotal">0</span> clients
+                            </div>
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                                    <!-- Les contrôles seront générés par JS -->
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -290,8 +364,10 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="clientSigle" class="form-label">Sigle</label>
-                                <input type="text" class="form-control" id="clientSigle" placeholder="Abréviation du nom" maxlength="20">
-                                <small class="form-text text-muted">Abréviation ou sigle pour identification rapide</small>
+                                <input type="text" class="form-control" id="clientSigle"
+                                    placeholder="Abréviation du nom" maxlength="20">
+                                <small class="form-text text-muted">Abréviation ou sigle pour identification
+                                    rapide</small>
                             </div>
                         </div>
                         <div class="row">
@@ -400,9 +476,21 @@
         let clients = [];
         let currentClientId = null;
         let secteurs = []; // Pour stocker les données des secteurs
+        let currentPage = 1;
+        const itemsPerPage = 20;
+
+        // Debounce utility
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
+            loadStats();
             loadClients();
             loadFormData();
             setupEventListeners();
@@ -423,17 +511,17 @@
                         'Content-Type': 'application/json'
                     }
                 });
-                
+
                 if (response.ok) {
                     const responseData = await response.json();
                     if (responseData.success) {
                         // Pays avec données structurées
                         populatePaysOptions('clientPays', responseData.data.pays);
-                        
+
                         // Secteurs avec sous-secteurs
                         secteurs = responseData.data.secteurs; // Stocker les secteurs
                         populateSecteursOptions('clientSector', secteurs);
-                        
+
                         // Autres listes simples
                         populateSelectOptions('clientStatut', responseData.data.statuts);
                         populateSelectOptions('clientTailleEntreprise', responseData.data.tailles_entreprise);
@@ -481,7 +569,7 @@
             const select = document.getElementById(selectId);
             if (select) {
                 select.innerHTML = `<option value="">Sélectionner un secteur</option>`;
-                
+
                 // Grouper par secteur principal
                 secteurs.forEach(secteur => {
                     // Option pour le secteur principal
@@ -498,11 +586,11 @@
         function populateSousSecteursOptions(secteurNom) {
             const sousSecteurSelect = document.getElementById('clientSousSector');
             if (!sousSecteurSelect) return;
-            
+
             sousSecteurSelect.innerHTML = `<option value="">Sélectionner un sous-secteur</option>`;
-            
+
             if (!secteurNom) return;
-            
+
             // Trouver le secteur sélectionné
             const secteur = secteurs.find(s => s.nom === secteurNom);
             if (secteur && secteur.sous_secteurs && secteur.sous_secteurs.length > 0) {
@@ -517,18 +605,60 @@
 
         // Configuration des événements
         function setupEventListeners() {
-            document.getElementById('statusFilter').addEventListener('change', filterClients);
-            document.getElementById('sectorFilter').addEventListener('change', filterClients);
-            document.getElementById('searchInput').addEventListener('input', filterClients);
-            
+            document.getElementById('statusFilter').addEventListener('change', () => filterClients(true));
+            document.getElementById('sectorFilter').addEventListener('change', () => filterClients(true));
+            document.getElementById('searchInput').addEventListener('input', debounce(() => filterClients(true), 500));
+
             // Événement pour mettre à jour les sous-secteurs quand le secteur change
-            document.getElementById('clientSector').addEventListener('change', function() {
+            document.getElementById('clientSector').addEventListener('change', function () {
                 populateSousSecteursOptions(this.value);
             });
         }
 
+        // Chargement des statistiques
+        async function loadStats() {
+            try {
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                if (!token) return;
+
+                const response = await fetch('/api/clients/statistics', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const stats = result.data;
+                        document.getElementById('statsTotal').textContent = stats.total_clients || 0;
+                        document.getElementById('statsNew').textContent = stats.nouveaux_30j || 0;
+                        document.getElementById('statsActive').textContent = stats.actifs_7j || 0;
+                        document.getElementById('statsLoyal').textContent = stats.clients_fideles || 0;
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur stats:', error);
+            }
+        }
+
         // Chargement des clients
-        async function loadClients() {
+        async function loadClients(page = 1) {
+            const tbody = document.getElementById('clientsTableBody');
+
+            // Afficher loading
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center">
+                        <div class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            currentPage = page;
+
             try {
                 const token = localStorage.getItem('token') || localStorage.getItem('authToken');
                 if (!token) {
@@ -536,18 +666,29 @@
                     return;
                 }
 
-                const response = await fetch('/api/clients', {
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    limit: itemsPerPage,
+                    statut: document.getElementById('statusFilter').value || '',
+                    secteur_activite: document.getElementById('sectorFilter').value || '',
+                    search: document.getElementById('searchInput').value || ''
+                });
+
+                const response = await fetch(`/api/clients?${params.toString()}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
-                
+
                 if (response.ok) {
                     const responseData = await response.json();
                     if (responseData.success) {
-                        clients = responseData.data.clients;
+                        clients = responseData.data.clients || [];
+                        const pagination = responseData.pagination || { total: 0, totalPages: 0, page: 1, limit: 20 };
+
                         displayClients(clients);
+                        updatePaginationControls(pagination);
                     } else {
                         console.error('Erreur API:', responseData.message);
                     }
@@ -562,10 +703,66 @@
             }
         }
 
+        function updatePaginationControls(pagination) {
+            const start = (pagination.page - 1) * pagination.limit + 1;
+            const end = Math.min(pagination.page * pagination.limit, pagination.total);
+
+            document.getElementById('paginationStart').textContent = pagination.total > 0 ? start : 0;
+            document.getElementById('paginationEnd').textContent = end;
+            document.getElementById('paginationTotal').textContent = pagination.total;
+
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+
+            // Previous
+            const liPrev = document.createElement('li');
+            liPrev.className = `page-item ${pagination.page <= 1 ? 'disabled' : ''}`;
+            liPrev.innerHTML = `<a class="page-link" href="#" onclick="event.preventDefault(); loadClients(${pagination.page - 1})">Précédent</a>`;
+            controls.appendChild(liPrev);
+
+            // Pages logic
+            const totalPages = pagination.totalPages;
+            if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) {
+                    addPageItem(i, pagination.page, controls);
+                }
+            } else {
+                addPageItem(1, pagination.page, controls);
+                if (pagination.page > 3) addEllipsis(controls);
+
+                for (let i = Math.max(2, pagination.page - 1); i <= Math.min(totalPages - 1, pagination.page + 1); i++) {
+                    addPageItem(i, pagination.page, controls);
+                }
+
+                if (pagination.page < totalPages - 2) addEllipsis(controls);
+                addPageItem(totalPages, pagination.page, controls);
+            }
+
+            // Next
+            const liNext = document.createElement('li');
+            liNext.className = `page-item ${pagination.page >= pagination.totalPages ? 'disabled' : ''}`;
+            liNext.innerHTML = `<a class="page-link" href="#" onclick="event.preventDefault(); loadClients(${pagination.page + 1})">Suivant</a>`;
+            controls.appendChild(liNext);
+        }
+
+        function addPageItem(page, current, container) {
+            const li = document.createElement('li');
+            li.className = `page-item ${page === current ? 'active' : ''}`;
+            li.innerHTML = `<a class="page-link" href="#" onclick="event.preventDefault(); loadClients(${page})">${page}</a>`;
+            container.appendChild(li);
+        }
+
+        function addEllipsis(container) {
+            const li = document.createElement('li');
+            li.className = `page-item disabled`;
+            li.innerHTML = `<span class="page-link">...</span>`;
+            container.appendChild(li);
+        }
+
         // Affichage des clients
         function displayClients(clientsToShow) {
             const tbody = document.getElementById('clientsTableBody');
-            
+
             if (clientsToShow.length === 0) {
                 tbody.innerHTML = `
                     <tr>
@@ -580,17 +777,17 @@
 
             tbody.innerHTML = clientsToShow.map(client => {
                 // Affichage du pays avec code
-                const paysDisplay = client.pays_nom ? 
-                    `${client.pays_nom} (${client.pays_code || 'N/A'})` : 
+                const paysDisplay = client.pays_nom ?
+                    `${client.pays_nom} (${client.pays_code || 'N/A'})` :
                     (client.pays || 'N/A');
-                
+
                 // Affichage du secteur avec couleur et sous-secteur
                 let secteurDisplay = 'N/A';
                 if (client.secteur_nom) {
                     secteurDisplay = `<span class="badge" style="background-color: ${client.secteur_couleur || '#3498db'}">
                         ${client.secteur_nom}
                     </span>`;
-                    
+
                     // Ajouter le sous-secteur s'il existe
                     if (client.sous_secteur_nom) {
                         secteurDisplay += `<br><small class="text-muted">└─ ${client.sous_secteur_nom}</small>`;
@@ -621,24 +818,10 @@
             }).join('');
         }
 
-        // Filtrage des clients
-        function filterClients() {
-            const statusFilter = document.getElementById('statusFilter').value;
-            const sectorFilter = document.getElementById('sectorFilter').value;
-            const searchFilter = document.getElementById('searchInput').value.toLowerCase();
-
-            let filteredClients = clients.filter(client => {
-                const statusMatch = !statusFilter || client.statut === statusFilter;
-                const sectorMatch = !sectorFilter || client.secteur_activite === sectorFilter;
-                const searchMatch = !searchFilter || 
-                    (client.nom && client.nom.toLowerCase().includes(searchFilter)) ||
-                    (client.raison_sociale && client.raison_sociale.toLowerCase().includes(searchFilter)) ||
-                    (client.code && client.code.toLowerCase().includes(searchFilter));
-
-                return statusMatch && sectorMatch && searchMatch;
-            });
-
-            displayClients(filteredClients);
+        // Filtrage des clients (serveur)
+        function filterClients(resetPage = false) {
+            if (resetPage) currentPage = 1;
+            loadClients(currentPage);
         }
 
         // Réinitialisation des filtres
@@ -710,7 +893,7 @@
             if (client) {
                 currentClientId = clientId;
                 document.getElementById('clientModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Modifier le Client';
-                
+
                 document.getElementById('clientNom').value = client.nom || '';
                 document.getElementById('clientSigle').value = client.sigle || '';
                 document.getElementById('clientSector').value = client.secteur_activite || '';
@@ -783,14 +966,14 @@
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
+
             const container = document.querySelector('.main-content-area');
             if (container) {
                 container.insertBefore(alertDiv, container.firstChild);
             } else {
                 document.body.appendChild(alertDiv);
             }
-            
+
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
@@ -801,10 +984,10 @@
         // Génération automatique du sigle
         function generateSigle(nom) {
             if (!nom) return '';
-            
+
             // Supprimer les caractères spéciaux et extraire les premières lettres de chaque mot
             const words = nom.replace(/[^\w\s]/g, '').split(' ').filter(word => word.length > 0);
-            
+
             if (words.length === 1) {
                 // Un seul mot : prendre les 3 premières lettres
                 return words[0].substring(0, 3).toUpperCase();
@@ -815,12 +998,12 @@
         }
 
         // Écouter les changements sur le champ nom pour générer automatiquement le sigle
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const nomInput = document.getElementById('clientNom');
             const sigleInput = document.getElementById('clientSigle');
-            
+
             if (nomInput && sigleInput) {
-                nomInput.addEventListener('input', function() {
+                nomInput.addEventListener('input', function () {
                     // Générer le sigle seulement si le champ sigle est vide
                     if (!sigleInput.value) {
                         sigleInput.value = generateSigle(this.value);
@@ -829,5 +1012,6 @@
             }
         });
     </script>
-    </body>
+</body>
+
 </html>

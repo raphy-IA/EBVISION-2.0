@@ -44,7 +44,7 @@ class Client {
         this.nombre_missions = data.nombre_missions;
         this.nombre_opportunites = data.nombre_opportunites;
         this.chiffre_affaires_total = data.chiffre_affaires_total;
-        
+
         // Données des relations
         this.pays_nom = data.pays_nom;
         this.pays_code = data.pays_code;
@@ -248,7 +248,7 @@ class Client {
         const values = [
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
             secteur_activite, taille_entreprise, statut, source_prospection,
-            notes, collaborateur_id, pays_id, secteur_activite_id, sous_secteur_activite_id, 
+            notes, collaborateur_id, pays_id, secteur_activite_id, sous_secteur_activite_id,
             forme_juridique, effectif, updated_by, this.id
         ];
 
@@ -268,7 +268,7 @@ class Client {
     // Supprimer un client
     async delete() {
         const query = 'DELETE FROM clients WHERE id = $1 RETURNING *';
-        
+
         try {
             const result = await pool.query(query, [this.id]);
             return result.rows.length > 0;
@@ -325,7 +325,7 @@ class Client {
     async getOpportunites() {
         const query = `
             SELECT o.*, col.nom as collaborateur_nom
-            FROM opportunites o
+            FROM opportunities o
             LEFT JOIN collaborateurs col ON o.collaborateur_id = col.id
             WHERE o.client_id = $1
             ORDER BY o.date_creation DESC

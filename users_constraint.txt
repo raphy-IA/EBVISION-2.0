@@ -1,0 +1,6 @@
+[
+  {
+    "conname": "users_role_check",
+    "def": "CHECK (((role)::text = ANY (ARRAY[('ADMIN'::character varying)::text, ('ADMIN_IT'::character varying)::text, ('ASSOCIE'::character varying)::text, ('COLLABORATEUR'::character varying)::text, ('CONSULTANT'::character varying)::text, ('DIRECTEUR'::character varying)::text, ('IT'::character varying)::text, ('MANAGER'::character varying)::text, ('SUPER_ADMIN'::character varying)::text, ('SUPER_USER'::character varying)::text, ('SUPERVISEUR'::character varying)::text])))"
+  }
+]

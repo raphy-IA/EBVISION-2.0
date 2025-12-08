@@ -9,24 +9,29 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-async function checkSchema() {
-    console.log('🔍 Checking schema for table: companies');
+async function check() {
+    const client = await pool.connect();
     try {
-        const res = await pool.query(
-            "SELECT column_name FROM information_schema.columns WHERE table_name = 'companies' AND column_name LIKE 'admin_%'"
-        );
-        console.log('Found Columns:', res.rows.map(r => r.column_name));
+        const tables = ['clients'];
 
-        if (res.rows.length === 3) {
-            console.log('✅ Success: All 3 admin columns found.');
-        } else {
-            console.error('❌ Failure: Missing columns.');
+        for (const table of tables) {
+            console.log(`\n--- TABLE: ${table} ---`);
+            const res = await client.query(`
+                SELECT column_name, data_type, is_nullable, column_default 
+                FROM information_schema.columns 
+                WHERE table_name = $1 
+                ORDER BY ordinal_position
+            `, [table]);
+
+            res.rows.forEach(r => {
+                console.log(`  ${r.column_name.padEnd(20)} | ${r.data_type.padEnd(15)} | Nullable: ${r.is_nullable} | Default: ${r.column_default}`);
+            });
         }
     } catch (e) {
         console.error(e);
     } finally {
+        client.release();
         await pool.end();
     }
 }
-
-checkSchema();
+check();

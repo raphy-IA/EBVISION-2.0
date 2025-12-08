@@ -1,0 +1,34 @@
+{
+  "sheets": [
+    {
+      "conname": "time_sheets_statut_check",
+      "def": "CHECK (((statut)::text = ANY ((ARRAY['sauvegardé'::character varying, 'soumis'::character varying, 'validé'::character varying, 'rejeté'::character varying])::text[])))"
+    }
+  ],
+  "entries": [
+    {
+      "conname": "time_entries_heures_check",
+      "def": "CHECK ((heures >= (0)::numeric))"
+    },
+    {
+      "conname": "time_entries_type_heures_check",
+      "def": "CHECK (((type_heures)::text = ANY ((ARRAY['HC'::character varying, 'HNC'::character varying])::text[])))"
+    },
+    {
+      "conname": "time_entries_statut_check",
+      "def": "CHECK (((statut)::text = ANY ((ARRAY['sauvegardé'::character varying, 'soumis'::character varying, 'validé'::character varying, 'rejeté'::character varying])::text[])))"
+    },
+    {
+      "conname": "check_hc_requires_mission",
+      "def": "CHECK (((((type_heures)::text = 'HC'::text) AND (mission_id IS NOT NULL)) OR (((type_heures)::text = 'HNC'::text) AND (mission_id IS NULL))))"
+    },
+    {
+      "conname": "check_hc_requires_task",
+      "def": "CHECK (((((type_heures)::text = 'HC'::text) AND (task_id IS NOT NULL)) OR (((type_heures)::text = 'HNC'::text) AND (task_id IS NULL))))"
+    },
+    {
+      "conname": "check_hnc_requires_internal_activity",
+      "def": "CHECK (((((type_heures)::text = 'HNC'::text) AND (internal_activity_id IS NOT NULL)) OR (((type_heures)::text = 'HC'::text) AND (internal_activity_id IS NULL))))"
+    }
+  ]
+}

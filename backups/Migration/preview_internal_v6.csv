@@ -1,0 +1,31 @@
+TYPE,ACTIVITY_NAME
+INTERNAL,Promotion
+INTERNAL,Rédaction de Propositions
+INTERNAL,Formations
+INTERNAL,Administration
+INTERNAL,Congés
+INTERNAL,Autres Temps Disponibles
+INTERNAL,Risk Management
+INTERNAL,Planification
+INTERNAL,Ressources Humaines
+INTERNAL,Information Technology
+INTERNAL,Fériés
+INTERNAL,Absence Autorisée
+INTERNAL,Prospection et développement du portefeuille client
+INTERNAL,Cotation et négociation des offres d’assurances
+INTERNAL,Conseil et accompagnement client
+INTERNAL,Gestion administrative
+INTERNAL,Gestion des contrats d’assurances
+INTERNAL,Suivi et gestion des sinistres
+INTERNAL,Production d’assurances
+INTERNAL,Activités inter BU/GROUP
+INTERNAL,Recrutement
+INTERNAL,Travaux Inter BU / GROUP
+INTERNAL,Voyages
+INTERNAL,"SITES WEB ( mises à jour, control, sécurité et conceptions)"
+INTERNAL,"Réseaux sociaux (booste, publication, control des commentaires et messages)"
+INTERNAL,Formations et tutos recherches
+INTERNAL,Courses et commissions
+INTERNAL,Graphisme (Documents internes -  3D -  Vidéo )
+INTERNAL,IT Support
+INTERNAL,Maladie

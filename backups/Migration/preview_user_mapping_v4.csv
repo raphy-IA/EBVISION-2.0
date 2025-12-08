@@ -1,0 +1,23 @@
+ACTION,SOURCE_NAME,SOURCE_EMAIL,DB_MATCH,METHOD,ALIASES_FOUND,SOURCES
+CREATE_NEW,Jean Michel MEYANGA,(None),Will Create Assistant,FALLBACK,Jean Michel MEYANGA,Missions
+CREATE_NEW,N/A,(None),Will Create Assistant,FALLBACK,N/A,Missions
+CREATE_NEW,Mikael Kouam,(None),Will Create Assistant,FALLBACK,Mikael Kouam,Missions
+CREATE_NEW,Samira Vindjedou,(None),Will Create Assistant,FALLBACK,Samira Vindjedou,Missions
+CREATE_NEW,Admin Ebvision,(None),Will Create Assistant,FALLBACK,Admin Ebvision,Missions
+CREATE_NEW,Raphaël Ngos,(None),Will Create Assistant,FALLBACK,Raphaël Ngos,Missions
+CREATE_NEW,Leonelle Tinko,(None),Will Create Assistant,FALLBACK,Leonelle Tinko,Missions
+CREATE_NEW,Grégoire ODODI BEYEKE,(None),Will Create Assistant,FALLBACK,Grégoire ODODI BEYEKE,Missions
+CREATE_NEW,Robert Songo Songo,(None),Will Create Assistant,FALLBACK,Robert Songo Songo,Missions
+CREATE_NEW,Brian Metuge,(None),Will Create Assistant,FALLBACK,Brian Metuge,Missions
+CREATE_NEW,Cyrille Djiki,(None),Will Create Assistant,FALLBACK,Cyrille Djiki,Missions
+CREATE_NEW,Jean Daniel Youmbi,(None),Will Create Assistant,FALLBACK,Jean Daniel Youmbi,Missions
+MATCH,Ashley Elang,(None),Elang  Ashley,NAME_TOKENS,Ashley Elang,Missions
+MATCH,Emile Bitoungui,(None),Bitoungui Emile,NAME_TOKENS,Emile Bitoungui,Missions
+MATCH,Alvine Aoum,(None),Oum Alvine,FUZZY_NAME_DB,Alvine Aoum,Missions
+MATCH,Samson Bilangna,(None),Bilangna Samson,NAME_TOKENS,Samson Bilangna,Missions
+MATCH,Seraphin Doumbe,(None),Doumbe Séraphin,FUZZY_NAME_DB,Seraphin Doumbe,Missions
+MATCH,Franck Wafeu,(None),Wafeu Franck,NAME_TOKENS,Franck Wafeu,Missions
+MATCH,Alyssa Molom,(None),Molom Alyssa,NAME_TOKENS,Alyssa Molom,Missions
+MATCH,Salomée Ngomsu,(None),Ngomsu Salomée,NAME_TOKENS,Salomée Ngomsu,Missions
+MATCH,Léopold Tchako,(None),Tchako Leopold ,FUZZY_NAME_DB,Léopold Tchako,Missions
+MATCH,Larissa Ndome,(None),Ndome Larissa,NAME_TOKENS,Larissa Ndome,Missions

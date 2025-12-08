@@ -1,0 +1,39 @@
+ACTION,SOURCE_NAME,SOURCE_EMAIL,DB_MATCH,METHOD,ALIASES_FOUND,SOURCES
+CREATE_NEW,Raphaël Ngos,rngos@eb-partnersgroup.cm,Will Create Assistant,FALLBACK,Raphaël Ngos,"Timesheets, Missions"
+CREATE_NEW,Cyrille Djiki,cdjiki@eb-partnersgroup.cm,Will Create Assistant,FALLBACK,Cyrille Djiki,"Timesheets, Missions"
+CREATE_NEW,Jean Michel Meyanga,jmeyanga@eb-partnersgroup.cm,Will Create Assistant,FALLBACK,Jean Michel Meyanga / Jean Michel MEYANGA,"Timesheets, Missions"
+CREATE_NEW,N/A,(None),Will Create Assistant,FALLBACK,N/A,Missions
+CREATE_NEW,Mikael Kouam,(None),Will Create Assistant,FALLBACK,Mikael Kouam,Missions
+CREATE_NEW,Samira Vindjedou,(None),Will Create Assistant,FALLBACK,Samira Vindjedou,Missions
+CREATE_NEW,Admin Ebvision,(None),Will Create Assistant,FALLBACK,Admin Ebvision,Missions
+CREATE_NEW,Robert Songo Songo,(None),Will Create Assistant,FALLBACK,Robert Songo Songo,Missions
+CREATE_NEW,Brian Metuge,(None),Will Create Assistant,FALLBACK,Brian Metuge,Missions
+MATCH,Irène Lowe,ilowe@eb-partnersgroup.cm,Lowe Irene,EMAIL_STRICT,Irène Lowe,Timesheets
+MATCH,Emilie Beutchom,ebeutchom@eb-partnersgroup.cm,Beutchom Emilie,EMAIL_STRICT,Emilie Beutchom,Timesheets
+MATCH,Alyssa Molom,amolom@eb-partnersgroup.cm,Molom Alyssa,EMAIL_STRICT,Alyssa Molom,"Timesheets, Missions"
+MATCH,Ghislaine Toka,gtoka@eb-partnersgroup.cm,Toka Gyslaine,EMAIL_STRICT,Ghislaine Toka,Timesheets
+MATCH,Franck  Wafeu,fwafeu@eb-partnersgroup.cm,Wafeu Franck,EMAIL_STRICT,Franck  Wafeu / Franck Wafeu,"Timesheets, Missions"
+MATCH,Robert Songo,rsongo@eb-partnersgroup.cm,Songo Robert,EMAIL_STRICT,Robert Songo,Timesheets
+MATCH,Larissa Gaelle Ndome,lndome@eb-partnersgroup.cm,Ndome Larissa,EMAIL_STRICT,Larissa Gaelle Ndome / Larissa Ndome,"Timesheets, Missions"
+MATCH,Leonelle Tinko,ltinko@eb-partnersgroup.cm,Tinko Leonnel,EMAIL_STRICT,Leonelle Tinko,"Timesheets, Missions"
+MATCH,Viviane Ngo Bbiboum,vbiboum@eb-partnersgroup.cm,Ngo Biboum Vivianne,EMAIL_STRICT,Viviane Ngo Bbiboum,Timesheets
+MATCH,salomée Ngomsu,sngomsu@eb-partnersgroup.cm,Ngomsu Salomée,EMAIL_STRICT,salomée Ngomsu / Salomée Ngomsu,"Timesheets, Missions"
+MATCH,Jean Daniel Youmbi,jyoumbi@exfineolis.com,Youmbi Jean ,EMAIL_STRICT,Jean Daniel Youmbi,"Timesheets, Missions"
+MATCH,Alvine Aoum,aoum@eb-partnersgroup.cm,Oum Alvine,EMAIL_STRICT,Alvine Oum / Alvine Aoum,"Timesheets, Missions"
+MATCH,Ashley Elang,aelang@eb-partnersgroup.cm,Elang  Ashley,EMAIL_STRICT,Ashley Elang,"Timesheets, Missions"
+MATCH,Grégoire ODODI BEYEKE,gododi@eb-partnersgroup.cm,Ododi Grégoire,EMAIL_STRICT,Grégoire Ododi / Grégoire ODODI BEYEKE,"Timesheets, Missions"
+MATCH,Lydie Mone,lmone@eb-partnersgroup.cm,Mone lydie,EMAIL_STRICT,Lydie Mone,Timesheets
+MATCH,Joseph Ndoumbe,jndoumbe@eb-partnersgroup.cm,Ndoumbe Joseph,EMAIL_STRICT,Joseph Ndoumbe,Timesheets
+MATCH,Stive Mba,smba@eb-partnersgroup.cm,Mba  Stive,EMAIL_STRICT,Stive Mba,Timesheets
+MATCH,Gessu Tchuente  Sandra Doris,sgessu@eb-partnersgroup.cm,Gessu  Sandra,EMAIL_STRICT,Gessu Tchuente  Sandra Doris,Timesheets
+MATCH,Marthe Biloa,mbiloa@eb-partnersgroup.cm,Biloa Marthe,EMAIL_STRICT,Marthe Biloa,Timesheets
+MATCH,Emma Hagbe,ehagbe@eb-partnersgroup.cm,Ngo Hagbe Emma,EMAIL_STRICT,Emma Hagbe,Timesheets
+MATCH,Franck Dibandjo,fdibandjo@eb-partnersgroup.cm,Dibandjo Franck,EMAIL_STRICT,Franck Dibandjo,Timesheets
+MATCH,Marlyse Melombi,mmelombi@eb-partnersgroup.cm,Melombi Marlyse,EMAIL_STRICT,Marlyse Melombi,Timesheets
+MATCH,Tchatcheu Leudeu Steves,stchatcheu@eb-partnersgroup.cm,Tchatcheu Steves,EMAIL_STRICT,Tchatcheu Leudeu Steves,Timesheets
+MATCH,Serge Sop,ssop@eb-partnersgroup.cm,Sop serge,EMAIL_STRICT,Serge Sop,Timesheets
+MATCH,Séraphin Doumbe,sdoumbe@eb-partnersgroup.cm,Doumbe Séraphin,EMAIL_STRICT,Séraphin Doumbe / Seraphin Doumbe,"Timesheets, Missions"
+MATCH,Léopold Tckako,ltchako@eb-partnersgroup.cm,Tchako Leopold ,EMAIL_STRICT,Léopold Tckako / Léopold Tchako,"Timesheets, Missions"
+MATCH,Corinne Enyegue,cenyegue@eb-partnersgroup.cm,Enyegue Corinne,EMAIL_STRICT,Corinne Enyegue,Timesheets
+MATCH,Emile Bitoungui,(None),Bitoungui Emile,NAME_EXACT_ORPHAN,Emile Bitoungui,Missions
+MATCH,Samson Bilangna,(None),Bilangna Samson,NAME_EXACT_ORPHAN,Samson Bilangna,Missions

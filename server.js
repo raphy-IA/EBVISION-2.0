@@ -259,7 +259,7 @@ app.use('/api/analytics', dashboardAnalyticsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/prospecting', prospectingRoutes);
 app.use('/api/permissions', authenticateToken, permissionsRoutes);
-app.use('/api/auth', pagePermissionsRoutes);
+app.use('/api/page-permissions', pagePermissionsRoutes); // Changed from /api/auth to avoid conflict
 app.use('/api/branding', brandingRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/invoices', invoiceWorkflowRoutes); // Workflow routes (mounted after main invoices routes)

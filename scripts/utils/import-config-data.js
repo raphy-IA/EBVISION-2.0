@@ -5,9 +5,9 @@ const path = require('path');
 // Configuration
 const EXPORT_DIR = path.join(__dirname, '../database/dumps');
 
-async function importTable(tableName, rows, conflictColumns = ['id']) {
+async function importTable(tableName, rows, conflictColumns = ['id'], strategy = 'UPSERT') {
     if (!rows || rows.length === 0) return;
-    console.log(`Importing ${rows.length} rows into ${tableName}...`);
+    console.log(`Importing ${rows.length} rows into ${tableName}... (${strategy})`);
 
     try {
         // Filter out columns that might be generated or problematic
@@ -20,19 +20,26 @@ async function importTable(tableName, rows, conflictColumns = ['id']) {
             const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
             const quotedColumns = columns.map(c => `"${c}"`).join(', ');
 
-            // Exclude conflict columns AND timestamps from UPDATE
-            const ignoredInUpdate = [...conflictColumns, 'created_at', 'updated_at'];
-
-            const updateClause = columns
-                .filter(col => !ignoredInUpdate.includes(col))
-                .map(col => `"${col}" = EXCLUDED."${col}"`)
-                .join(', ');
-
             const conflictStr = conflictColumns.map(c => `"${c}"`).join(', ');
 
-            const doAction = updateClause.length > 0
-                ? `DO UPDATE SET ${updateClause}`
-                : 'DO NOTHING';
+            let doAction;
+            if (strategy === 'INSERT_ONLY') {
+                // DO NOTHING - garde les données existantes, ajoute seulement les nouvelles
+                doAction = 'DO NOTHING';
+            } else {
+                // UPSERT - met à jour les données existantes
+                // Exclude conflict columns AND timestamps from UPDATE
+                const ignoredInUpdate = [...conflictColumns, 'created_at', 'updated_at'];
+
+                const updateClause = columns
+                    .filter(col => !ignoredInUpdate.includes(col))
+                    .map(col => `"${col}" = EXCLUDED."${col}"`)
+                    .join(', ');
+
+                doAction = updateClause.length > 0
+                    ? `DO UPDATE SET ${updateClause}`
+                    : 'DO NOTHING';
+            }
 
             const query = `
                 INSERT INTO "${tableName}" (${quotedColumns}) 
@@ -85,10 +92,10 @@ async function runImport() {
             console.warn('  ⚠️ Could not disable triggers (insufficient privileges?). Proceeding anyway.');
         }
 
-        // Helper to run import with logging
-        const tryImport = async (name, data, conflict) => {
+        // Helper with strategy support
+        const tryImportWithStrategy = async (name, data, conflict, strategy = 'UPSERT') => {
             try {
-                await importTable(name, data, conflict);
+                await importTable(name, data, conflict, strategy);
             } catch (e) {
                 console.error(`🚨 FAILED to import table: ${name}`);
 
@@ -109,38 +116,42 @@ Columns: ${data && data[0] ? Object.keys(data[0]).join(', ') : 'No data'}
             }
         };
 
-        // 1. Roles & Permissions
-        await tryImport('permissions', data.permissions, ['id']);
-        await tryImport('roles', data.roles, ['id']);
-        await tryImport('role_permissions', data.role_permissions, ['role_id', 'permission_id']);
+        // 1. Permissions = INSERT_ONLY (fusionner avec permissions locales)
+        await tryImportWithStrategy('permissions', data.permissions, ['code'], 'INSERT_ONLY');
 
-        // 2. Users
-        await tryImport('users', data.users, ['id']);
-        await tryImport('user_roles', data.user_roles, ['user_id', 'role_id']);
+        // 2. Roles = INSERT_ONLY (garder locaux, ajouter nouveaux)
+        await tryImportWithStrategy('roles', data.roles, ['name'], 'INSERT_ONLY');
+
+        // 2b. Role Permissions = UPSERT (synchroniser permissions des rôles avec prod)
+        await tryImportWithStrategy('role_permissions', data.role_permissions, ['role_id', 'permission_id'], 'UPSERT');
+
+        // 3. Users = INSERT_ONLY (ajouter uniquement nouveaux)
+        await tryImportWithStrategy('users', data.users, ['email'], 'INSERT_ONLY');
+        await tryImportWithStrategy('user_roles', data.user_roles, ['user_id', 'role_id'], 'INSERT_ONLY');
 
 
-        // 3. Organization
-        await tryImport('business_units', data.business_units, ['id']);
-        await tryImport('divisions', data.divisions, ['id']);
+        // 4. Organization = INSERT_ONLY (ajouter uniquement nouveaux)
+        await tryImportWithStrategy('business_units', data.business_units, ['code'], 'INSERT_ONLY');
+        await tryImportWithStrategy('divisions', data.divisions, ['code'], 'INSERT_ONLY');
         // Services removed from export
-        // await tryImport('services', data.services, ['id']);
+        // await tryImportWithStrategy('services', data.services, ['id'], 'INSERT_ONLY');
 
-        // 4. RH
-        await tryImport('grades', data.grades, ['id']);
-        await tryImport('postes', data.postes, ['id']);
-        await tryImport('types_collaborateurs', data.types_collaborateurs, ['id']);
+        // 5. RH = INSERT_ONLY (données de référence)
+        await tryImportWithStrategy('grades', data.grades, ['code'], 'INSERT_ONLY');
+        await tryImportWithStrategy('postes', data.postes, ['code'], 'INSERT_ONLY');
+        await tryImportWithStrategy('types_collaborateurs', data.types_collaborateurs, ['code'], 'INSERT_ONLY');
 
-        // 5. Collaborators
+        // 6. Collaborators = INSERT_ONLY (ajouter uniquement nouveaux)
         if (data.collaborators && data.collaborators.length > 0) {
             const collabTable = data._meta?.collaborators_table_name || 'collaborateurs';
             console.log(`Importing collaborators into ${collabTable}...`);
-            await tryImport(collabTable, data.collaborators, ['id']);
+            await tryImportWithStrategy(collabTable, data.collaborators, ['email'], 'INSERT_ONLY');
         }
 
-        // 6. Settings
-        await tryImport('financial_settings', data.financial_settings, ['key']);
-        await tryImport('notification_settings', data.notification_settings, ['id']);
-        await tryImport('objective_types', data.objective_types, ['code']);
+        // 7. Settings = INSERT_ONLY
+        await tryImportWithStrategy('financial_settings', data.financial_settings, ['key'], 'INSERT_ONLY');
+        await tryImportWithStrategy('notification_settings', data.notification_settings, ['id'], 'INSERT_ONLY');
+        await tryImportWithStrategy('objective_types', data.objective_types, ['code'], 'INSERT_ONLY');
 
         await pool.query('COMMIT');
         console.log('✅ Import completed successfully!');

@@ -1,0 +1,551 @@
+{
+  "tables": [
+    {
+      "schemaname": "public",
+      "tablename": "activities",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "bank_accounts",
+      "size": "56 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "bu_financial_settings",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "business_unit_objectives",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "business_units",
+      "size": "112 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "clients",
+      "size": "72 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "collaborateurs",
+      "size": "272 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "companies",
+      "size": "152 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "company_imports",
+      "size": "24 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "company_sources",
+      "size": "48 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "contacts",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "departs_collaborateurs",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "division_objectives",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "divisions",
+      "size": "80 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "equipes_mission",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "evaluation_campaigns",
+      "size": "16 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "evaluation_comments",
+      "size": "24 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "evaluation_objective_scores",
+      "size": "24 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "evaluation_templates",
+      "size": "16 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "evaluations",
+      "size": "48 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "evolution_grades",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "evolution_organisations",
+      "size": "48 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "evolution_postes",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "feuille_temps_entries",
+      "size": "24 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "feuilles_temps",
+      "size": "56 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "financial_institutions",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "financial_settings",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "fiscal_years",
+      "size": "88 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "global_objectives",
+      "size": "56 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "grade_objectives",
+      "size": "16 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "grades",
+      "size": "96 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "hourly_rates",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "individual_objectives",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "internal_activities",
+      "size": "64 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "internal_activity_business_units",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "internal_activity_time_entries",
+      "size": "64 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "invoice_items",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "invoice_payments",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "invoice_time_entries",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "invoices",
+      "size": "112 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "menu_items",
+      "size": "48 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "menu_sections",
+      "size": "24 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "migrations",
+      "size": "16 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "mission_tasks",
+      "size": "48 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "mission_types",
+      "size": "96 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "missions",
+      "size": "144 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "notification_settings",
+      "size": "64 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "notifications",
+      "size": "88 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "objective_metric_sources",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "objective_metrics",
+      "size": "24 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "objective_progress",
+      "size": "24 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "objective_types",
+      "size": "64 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "objective_units",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "opportunites",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "opportunities",
+      "size": "80 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "opportunity_actions",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "opportunity_documents",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "opportunity_stage_templates",
+      "size": "64 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "opportunity_stages",
+      "size": "80 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "opportunity_types",
+      "size": "48 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "pages",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payment_allocations",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payments",
+      "size": "64 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "pays",
+      "size": "80 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "permission_audit_log",
+      "size": "64 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "permissions",
+      "size": "424 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "postes",
+      "size": "128 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "prospecting_campaign_companies",
+      "size": "72 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "prospecting_campaign_validation_companies",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "prospecting_campaign_validations",
+      "size": "56 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "prospecting_campaigns",
+      "size": "48 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "prospecting_templates",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "risk_parameters",
+      "size": "24 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "role_permissions",
+      "size": "960 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "roles",
+      "size": "48 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "schema_migrations",
+      "size": "56 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "secteurs_activite",
+      "size": "80 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "sous_secteurs_activite",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "stage_actions",
+      "size": "24 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "stage_documents",
+      "size": "24 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "stage_required_actions",
+      "size": "16 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "stage_required_documents",
+      "size": "16 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "stage_validations",
+      "size": "24 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "strategic_objectives",
+      "size": "16 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "super_admin_audit_log",
+      "size": "48 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "task_assignments",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "task_mission_types",
+      "size": "72 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tasks",
+      "size": "112 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "taux_horaires",
+      "size": "120 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "taxes",
+      "size": "16 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "test_permissions",
+      "size": "8192 bytes"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "time_entries",
+      "size": "56 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "time_entries_detailed",
+      "size": "56 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "time_sheet_approvals",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "time_sheet_notifications",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "time_sheet_supervisors",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "time_sheets",
+      "size": "48 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "two_factor_attempts",
+      "size": "40 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "types_collaborateurs",
+      "size": "80 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "types_heures_non_chargeables",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_business_unit_access",
+      "size": "32 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_permissions",
+      "size": "200 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_roles",
+      "size": "160 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "users",
+      "size": "272 kB"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "utilisateurs",
+      "size": "24 kB"
+    }
+  ],
+  "duplicates": [],
+  "orphans": [],
+  "unusedTables": [
+    "company_imports",
+    "evaluation_comments",
+    "hourly_rates",
+    "internal_activity_time_entries",
+    "invoice_time_entries",
+    "menu_items",
+    "menu_sections",
+    "migrations",
+    "notification_settings",
+    "pages",
+    "stage_documents",
+    "stage_validations",
+    "super_admin_audit_log",
+    "test_permissions",
+    "time_entries_detailed",
+    "time_sheet_notifications",
+    "two_factor_attempts"
+  ],
+  "missingReferences": []
+}

@@ -344,6 +344,19 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Pagination -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="text-muted small">
+                                Affichage de <span id="paginationStart">0</span> à <span id="paginationEnd">0</span> sur
+                                <span id="paginationTotal">0</span> missions
+                            </div>
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                                    <!-- Les contrôles seront générés par JS -->
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -469,6 +482,8 @@
         let clients = [];
         let currentMissionId = null;
         let currentView = 'my_scope';
+        let currentPage = 1;
+        const itemsPerPage = 20;
 
         // Fonction utilitaire pour les appels API authentifiés
         async function authenticatedFetch(url, options = {}) {
@@ -497,12 +512,21 @@
 
         // Configuration des événements
         function setupEventListeners() {
-            document.getElementById('statusFilter').addEventListener('change', filterMissions);
-            document.getElementById('clientFilter').addEventListener('change', filterMissions);
-            document.getElementById('buFilter').addEventListener('change', filterMissions);
-            document.getElementById('divisionFilter').addEventListener('change', filterMissions);
-            document.getElementById('searchInput').addEventListener('input', filterMissions);
-            document.getElementById('codeFilter').addEventListener('input', filterMissions);
+            document.getElementById('statusFilter').addEventListener('change', () => filterMissions(true));
+            document.getElementById('clientFilter').addEventListener('change', () => filterMissions(true));
+            document.getElementById('buFilter').addEventListener('change', () => filterMissions(true));
+            document.getElementById('divisionFilter').addEventListener('change', () => filterMissions(true));
+            document.getElementById('searchInput').addEventListener('input', debounce(() => filterMissions(true), 500));
+            document.getElementById('codeFilter').addEventListener('input', debounce(() => filterMissions(true), 500));
+        }
+
+        // Debounce utility
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
         }
 
         // Fonction pour afficher/masquer le loading
@@ -514,10 +538,14 @@
         }
 
         // Chargement des missions
-        async function loadMissions() {
+        async function loadMissions(page = 1) {
             showLoading(true);
+            currentPage = page;
+
             try {
                 const params = new URLSearchParams({
+                    page: currentPage,
+                    limit: itemsPerPage,
                     view: currentView,
                     statut: document.getElementById('statusFilter').value || '',
                     client_id: document.getElementById('clientFilter').value || '',
@@ -532,11 +560,15 @@
                 const response = await authenticatedFetch(`/api/missions?${params.toString()}`);
                 if (response.ok) {
                     const data = await response.json();
-                    // L'API missions retourne {data: Array} directement
-                    missions = data.data || data;
-                    // Mettre à jour les options de filtres au réel des missions affichées
-                    populateFilterOptionsFromMissions(missions);
+                    // L'API missions retourne {data: Array, pagination: Object}
+                    missions = data.data || [];
+                    const pagination = data.pagination || { total: 0, totalPages: 0, page: 1, limit: 20 };
+
+                    // Mettre à jour les options de filtres au réel des missions affichées (optionnel, peut être limité avec pagination)
+                    // populateFilterOptionsFromMissions(missions); // Peut être désactivé si trop partiel
+
                     displayMissions(missions);
+                    updatePaginationControls(pagination);
                 } else {
                     console.error('Erreur lors du chargement des missions');
                 }
@@ -545,6 +577,65 @@
             } finally {
                 showLoading(false);
             }
+        }
+
+        function updatePaginationControls(pagination) {
+            const start = (pagination.page - 1) * pagination.limit + 1;
+            const end = Math.min(pagination.page * pagination.limit, pagination.total);
+
+            document.getElementById('paginationStart').textContent = pagination.total > 0 ? start : 0;
+            document.getElementById('paginationEnd').textContent = end;
+            document.getElementById('paginationTotal').textContent = pagination.total;
+
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+
+            // Previous
+            const liPrev = document.createElement('li');
+            liPrev.className = `page-item ${pagination.page <= 1 ? 'disabled' : ''}`;
+            liPrev.innerHTML = `<a class="page-link" href="#" onclick="event.preventDefault(); loadMissions(${pagination.page - 1})">Précédent</a>`;
+            controls.appendChild(liPrev);
+
+            // Pages
+            // Simple logic: show current, prev, next, first, last
+            const totalPages = pagination.totalPages;
+
+            if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) {
+                    addPageItem(i, pagination.page, controls);
+                }
+            } else {
+                // Complex logic with ellipsis can go here, keep simple for now
+                addPageItem(1, pagination.page, controls);
+                if (pagination.page > 3) addEllipsis(controls);
+
+                for (let i = Math.max(2, pagination.page - 1); i <= Math.min(totalPages - 1, pagination.page + 1); i++) {
+                    addPageItem(i, pagination.page, controls);
+                }
+
+                if (pagination.page < totalPages - 2) addEllipsis(controls);
+                addPageItem(totalPages, pagination.page, controls);
+            }
+
+            // Next
+            const liNext = document.createElement('li');
+            liNext.className = `page-item ${pagination.page >= pagination.totalPages ? 'disabled' : ''}`;
+            liNext.innerHTML = `<a class="page-link" href="#" onclick="event.preventDefault(); loadMissions(${pagination.page + 1})">Suivant</a>`;
+            controls.appendChild(liNext);
+        }
+
+        function addPageItem(page, current, container) {
+            const li = document.createElement('li');
+            li.className = `page-item ${page === current ? 'active' : ''}`;
+            li.innerHTML = `<a class="page-link" href="#" onclick="event.preventDefault(); loadMissions(${page})">${page}</a>`;
+            container.appendChild(li);
+        }
+
+        function addEllipsis(container) {
+            const li = document.createElement('li');
+            li.className = `page-item disabled`;
+            li.innerHTML = `<span class="page-link">...</span>`;
+            container.appendChild(li);
         }
 
         // Chargement des clients
@@ -579,7 +670,7 @@
                 tbody.innerHTML = '';
             }
 
-            if (missionsToShow.length === 0) {
+            if (!missionsToShow || missionsToShow.length === 0) {
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="11" class="text-center text-muted">
@@ -621,7 +712,10 @@
         }
 
         // Filtrage des missions
-        function filterMissions() { loadMissions(); }
+        function filterMissions(resetPage = false) {
+            if (resetPage) currentPage = 1;
+            loadMissions(currentPage);
+        }
 
         // Stats & Vue Rapide
         async function loadStats() {

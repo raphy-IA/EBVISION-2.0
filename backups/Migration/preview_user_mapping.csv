@@ -1,0 +1,52 @@
+ACTION,SOURCE_NAME,SOURCE_EMAIL,DB_MATCH,METHOD,SOURCES
+CREATE_NEW,Jean Michel MEYANGA,,Will Create Assistant,FALLBACK,Missions
+MATCH,Ashley Elang,,Elang  Ashley,NAME_EXACT,Missions
+MATCH,Emile Bitoungui,,Bitoungui Emile,NAME_EXACT,Missions
+CREATE_NEW,Alvine Aoum,,Will Create Assistant,FALLBACK,Missions
+CREATE_NEW,N/A,,Will Create Assistant,FALLBACK,Missions
+CREATE_NEW,Mikael Kouam,,Will Create Assistant,FALLBACK,Missions
+CREATE_NEW,Samira Vindjedou,,Will Create Assistant,FALLBACK,Missions
+CREATE_NEW,Admin Ebvision,,Will Create Assistant,FALLBACK,Missions
+CREATE_NEW,Raphaël Ngos,,Will Create Assistant,FALLBACK,Missions
+MATCH,Samson Bilangna,,Bilangna Samson,NAME_EXACT,Missions
+CREATE_NEW,Leonelle Tinko,,Will Create Assistant,FALLBACK,Missions
+CREATE_NEW,Seraphin Doumbe,,Will Create Assistant,FALLBACK,Missions
+CREATE_NEW,Grégoire ODODI BEYEKE,,Will Create Assistant,FALLBACK,Missions
+MATCH,Franck Wafeu,,Wafeu Franck,NAME_EXACT,Missions
+CREATE_NEW,Robert Songo Songo,,Will Create Assistant,FALLBACK,Missions
+MATCH,Alyssa Molom,,Molom Alyssa,NAME_EXACT,Missions
+CREATE_NEW,Brian Metuge,,Will Create Assistant,FALLBACK,Missions
+CREATE_NEW,Cyrille Djiki,,Will Create Assistant,FALLBACK,Missions
+MATCH,Salomée Ngomsu,,Ngomsu Salomée,NAME_EXACT,Missions
+CREATE_NEW,Léopold Tchako,,Will Create Assistant,FALLBACK,Missions
+CREATE_NEW,Jean Daniel Youmbi,,Will Create Assistant,FALLBACK,Missions
+MATCH,Larissa Ndome,,Ndome Larissa,NAME_EXACT,Missions
+CREATE_NEW,Rapha‰l Ngos,rngos@eb-partnersgroup.cm,Will Create Assistant,FALLBACK,Timesheets
+CREATE_NEW,IrŠne Lowe,vbiboum@showoff-assurance.com,Will Create Assistant,FALLBACK,Timesheets
+MATCH,Emilie Beutchom,ebeutchom@eb-partnersgroup.cm,Beutchom Emilie,EMAIL,Timesheets
+CREATE_NEW,Cyrille Djiki,cdjiki@eb-partnersgroup.cm,Will Create Assistant,FALLBACK,Timesheets
+MATCH,Alyssa Molom,amolom@eb-partnersgroup.cm,Molom Alyssa,EMAIL,Timesheets
+MATCH,Ghislaine Toka,gtoka@eb-partnersgroup.cm,Toka Gyslaine,EMAIL,Timesheets
+MATCH,Franck  Wafeu,fwafeu@eb-partnersgroup.cm,Wafeu Franck,EMAIL,Timesheets
+MATCH,Robert Songo,rsongo@eb-partnersgroup.cm,Songo Robert,EMAIL,Timesheets
+MATCH,Larissa Gaelle Ndome,lndome@eb-partnersgroup.cm,Ndome Larissa,EMAIL,Timesheets
+CREATE_NEW,Leonelle Tinko,ltinko@showoff-assurance.com,Will Create Assistant,FALLBACK,Timesheets
+MATCH,salom‚e Ngomsu,sngomsu@exfineolis.com,Ngomsu Salomée,NAME_EXACT,Timesheets
+CREATE_NEW,Jean Daniel Youmbi,jyoumbi@exfineolis.com,Will Create Assistant,FALLBACK,Timesheets
+MATCH,Alvine Oum,aoum@eb-partnersgroup.cm,Oum Alvine,EMAIL,Timesheets
+MATCH,Ashley Elang,aelang@eb-partnersgroup.cm,Elang  Ashley,EMAIL,Timesheets
+CREATE_NEW,Jean Michel Meyanga,jmeyanga@eb-partnersgroup.cm,Will Create Assistant,FALLBACK,Timesheets
+MATCH,Gr‚goire Ododi,gododi@eb-partnersgroup.cm,Ododi Grégoire,EMAIL,Timesheets
+MATCH,Lydie Mone,lmone@eb-partnersgroup.cm,Mone lydie,EMAIL,Timesheets
+MATCH,Joseph Ndoumbe,jndoumbe@eb-partnersgroup.cm,Ndoumbe Joseph,EMAIL,Timesheets
+MATCH,Stive Mba,smba@eb-partnersgroup.cm,Mba  Stive,EMAIL,Timesheets
+MATCH,Gessu Tchuente  Sandra Doris,sgessu@eb-partnersgroup.cm,Gessu  Sandra,EMAIL,Timesheets
+MATCH,Emma Hagbe,mbiloa@eb-partnersgroup.cm,Biloa Marthe,EMAIL,Timesheets
+MATCH,Emma Hagbe,ehagbe@eb-partnersgroup.cm,Ngo Hagbe Emma,EMAIL,Timesheets
+MATCH,Franck Dibandjo,fdibandjo@eb-partnersgroup.cm,Dibandjo Franck,EMAIL,Timesheets
+MATCH,Marlyse Melombi,mmelombi@eb-partnersgroup.cm,Melombi Marlyse,EMAIL,Timesheets
+MATCH,Tchatcheu Leudeu Steves,stchatcheu@eb-partnersgroup.cm,Tchatcheu Steves,EMAIL,Timesheets
+MATCH,Serge Sop,ssop@eb-partnersgroup.cm,Sop serge,EMAIL,Timesheets
+MATCH,S‚raphin Doumbe,sdoumbe@eb-partnersgroup.cm,Doumbe Séraphin,EMAIL,Timesheets
+CREATE_NEW,L‚opold Tckako,ltchako@exfineolis.com,Will Create Assistant,FALLBACK,Timesheets
+MATCH,Corinne Enyegue,cenyegue@eb-partnersgroup.cm,Enyegue Corinne,EMAIL,Timesheets

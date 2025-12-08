@@ -1,0 +1,755 @@
+ACTION,CLIENT_NAME,ADMIN,SECTOR,COUNTRY
+CREATE,BOUCHERIE CHARCUTERIE DU LITTORAL,Jean Roger DAVID,Consumer markets,Cameroun
+CREATE,SIPAL,Jean Roger DAVID,Consumer markets,Cameroun
+CREATE,PRUDENTIAL BENEFICIAL INSURANCE CAMEROON,Eddie F. BROWN,Insurance,Cameroun
+CREATE,BGFIBANK CAMEROUN SA,Abakal MAHAMAT,Bank,Cameroun
+CREATE,NACHTIGAL HYDRO POWER COMPANY,Vincent LEROUX,ENR - Power & Utilities,Cameroun
+CREATE,PORT AUTONOME DE DOUALA,Cyrus NGO'O,Government & public sector,Cameroun
+CREATE,VISION 4 TELEVISION SA,Jean Pierre AMOUGOU BELINGA,"Technology, media & telecommunications",Cameroun
+CREATE,LA REGIONALE BANK S.A,Rev. Charles Rollin OMBANG,Bank,Cameroun
+CREATE,WEBB FONTAINE GROUP,Timothy COLLIER,"Technology, media & telecommunications",Cameroun
+CREATE,EXCO AFRIQUE SENEGAL,MAMADOU SAAR,Other Financial services,Sénégal
+CREATE,CECEC SA,TCHANKUEGNE DEUDJUI DIDEROT,Bank,Cameroun
+CREATE,SOCIETE ANONYME DES BOISSONS DU CAMEROUN,Stéphane DESCAZEAUD,Industrial manufacturing,Cameroun
+CREATE,UNION MARITIME AGENCY,KADIN ADEBAYO,Transport & leisure,Cameroun
+CREATE,AFRICA BRIGHT CAPITAL,MEHDI CHIFAOUI,Other Financial services,Cameroun
+CREATE,MEDECINS SANS FRONTIERES,MODESTE KAMAKLOE,Miscellaneous,Cameroun
+CREATE,AIR LIQUIDE CAMEROUN,Alain DIBADJO,Other industry,Cameroun
+CREATE,CADYST CONSUMER GROUP,M. TSAFACK,Food and Drink,Cameroun
+CREATE,SOCOMAR,M VITALE,Transport & leisure,Cameroun
+CREATE,CIMENCAM,,Other industry,Cameroun
+CREATE,MTN CAMEROUN,,"Technology, media & telecommunications",Cameroun
+CREATE,ENEO CAMEROUN,Siegfried DIBONG,ENR - Power & Utilities,Cameroun
+CREATE,WAFACASH,,Other Financial services,Cameroun
+CREATE,CANAL +,,Private Equity,Cameroun
+CREATE,ADVANS CAMEROUN,,Other Financial services,Cameroun
+CREATE,CFAO RETAIL CAMEROUN,,"Infrastructure,  Healthcare",Cameroun
+CREATE,SGS,,Miscellaneous,Cameroun
+CREATE,CAMTEL,,"Technology, media & telecommunications",Cameroun
+CREATE,CHANAS ASSURANCES,,Insurance,Cameroun
+SKIP (EXISTS),AXA ASSURANCES,,Insurance,Cameroun
+SKIP (EXISTS),ACTIVA ASSURANCES,,Insurance,Cameroun
+CREATE,ALLIANZ CAMEROUN VIE,,Insurance,Cameroun
+CREATE,ASCOMA ASSURANCE,,Insurance,Cameroun
+CREATE,AFRICA LEASING CAMEROUN,,Miscellaneous,Cameroun
+CREATE,CEGELEC,,Miscellaneous,Cameroun
+CREATE,APM TERMINALS,,Miscellaneous,Cameroun
+CREATE,PRODIFOOD'S,Jean Roger DAVID,Miscellaneous,Cameroun
+CREATE,CFAO MOBILITY CAMEROON,,Miscellaneous,Cameroun
+CREATE,DANGOTE CEMENT CAMEROON SA,Bertrand MBOUCK,Industrial manufacturing,Cameroun
+CREATE,EMPLOY GLOBAL,FRED TSHIDIMBA,Miscellaneous,ÎLE MAURICE
+CREATE,MBOKA INDUSTRIAL SERVICES (CAMEROON) SA,MUKETE BEYONGO DYNAMIC,Industrial manufacturing,Cameroun
+CREATE,SOCIETE NATIONALE DE RAFFINAGE,Jean-Paul SIMO NJONOU,Energy and Oil & Gas,Cameroun
+CREATE,CONTINENTAL OIL TRANSPORTATION OPERATING CITERNES SA,THIERRY GHOMSI,Transport & leisure,Cameroun
+CREATE,ASSOCIATION YUMMEN,HADJIDJATOU IYAWA OUSMANOU,Project & NGO,Cameroun
+CREATE,MONSIEUR MBOCK DESIRE GEOFFROY,M. MBOCK DESIRE GEOFFROY,Miscellaneous,Cameroun
+CREATE,TERMINAL MIXTE FRUITIER DE DOUALA,,Miscellaneous,Cameroun
+CREATE,SOFOMEUTEX,,Miscellaneous,Cameroun
+CREATE,PEOPLE KNOWLEDGE SERVICES SARL,PAULINS KETCHATE,Miscellaneous,Cameroun
+CREATE,EOLIS CAMEROUN,,Miscellaneous,Cameroun
+CREATE,Y.M TRANSIT,,Miscellaneous,Cameroun
+CREATE,AFRICA BRIGHT ASSET MANAGEMENT SA,MEDHI CHIFAOUI,Other Financial services,Cameroun
+CREATE,MAÎTRE CHEMOU,MAÎTRE CHEMOU,Miscellaneous,Cameroun
+CREATE,PROMETAL SA,HAYSSAM EL JAMMAL,Industrial manufacturing,Cameroun
+CREATE,BOUYGUES ENERGIES & SERVICES CAMEROUN,Pierre VANSTOFLEGATTE,Energy and Oil & Gas,Cameroun
+CREATE,ALLIANZ CAMEROUN SA,Olivier MALATRE,Insurance,Cameroun
+CREATE,GULF OF GUINEA INVEST SHIPPING & TRADING,Albert BOUM,Energy and Oil & Gas,Cameroun
+CREATE,CFAO TECHNOLOGIES SA,Stephane BORDURE-LINDER,"Technology, media & telecommunications",Cameroun
+CREATE,ASCOMA CAMEROUN SA,Philippe BETI,Miscellaneous,Cameroun
+CREATE,POLYPHARMA SARL,Modeste TABOUGUIA,"Infrastructure,  Healthcare",Cameroun
+CREATE,ORANGE CAMEROUN SA,Patrick BENON,"Technology, media & telecommunications",Cameroun
+CREATE,MTN CAMEROUN SA,Stephen BLEWETT,"Technology, media & telecommunications",Cameroun
+CREATE,ADDAX PETROLIUM,QU BIN,Energy and Oil & Gas,Cameroun
+CREATE,CAMLAIT,Paulin Landry TOUKAM ZUKO,Food and Drink,Cameroun
+CREATE,CFAO MOBILITY CAMEROON,Denis ZAPPULLA,Other industry,Cameroun
+SKIP (EXISTS),TRACTAFRIC EQUIPMENT CAMEROUN,Guy STABILE,Other industry,Cameroun
+CREATE,GUINNESS CAMEROUN S.A,Stéphane DESCAZEAUD,Industrial manufacturing,Cameroun
+CREATE,DHL EXPRESS,Alphonse BEA,Miscellaneous,Cameroun
+CREATE,LABOREX CAMEROUN SA,Sébastien ROUX,"Infrastructure,  Healthcare",Cameroun
+CREATE,ALIOS FINANCE SA,Georges James NDZUTUE FOTSO,Bank,Cameroun
+CREATE,COMETAL,Stanislas KOUALA,Industrial manufacturing,Cameroun
+CREATE,SOLEVO CAMEROUN,Martial MEKONGO,Other industry,Cameroun
+CREATE,MAERSK,Michel KONAN KOFFI,Miscellaneous,Cameroun
+CREATE,SIC CACAOS,PIERLUIGI PASSERA,Industrial manufacturing,Cameroun
+CREATE,COLGATE PALMOLIVE CAMEROUN SA,Richard FOWANG,Miscellaneous,Cameroun
+CREATE,CHOCOCAM,NDIAYE MOUHAMADOU,Industrial manufacturing,Cameroun
+CREATE,BVS PRODUCTION CAMEROUN SA,Stéphane SOUMAHORO,Miscellaneous,Cameroun
+CREATE,TRADEX CAMEROUN SA,Simon PALEY,Energy and Oil & Gas,Cameroun
+CREATE,UBA CAMEROON,Jude ANELE,Bank,Cameroun
+CREATE,NEXTTEL,Benoît YAOUSSOU,"Technology, media & telecommunications",Cameroun
+CREATE,NEPTUNE OIL SA,Antoine NDZENGUE,Energy and Oil & Gas,Cameroun
+CREATE,GLOBELEQ,Frédéric Didier MVONDO,ENR - Power & Utilities,Cameroun
+CREATE,ACCESS BANK PLC,Roosevelt OGBONNA,Bank,Cameroun
+CREATE,COMMERCIAL BANK OF CAMEROUN,,Bank,Cameroun
+CREATE,ECOBANK,,Bank,Cameroun
+CREATE,CORLAY CAMEROUN,,Industrial manufacturing,Cameroun
+CREATE,DAMCO CAMEROUN,,Transport & leisure,Cameroun
+CREATE,AUTO 22 INDUSTRY,JEAN BERNARD GATEU FOM,Industrial manufacturing,Cameroun
+CREATE,AUTO 22 INDUSTRY,JEAN BERNARD GATEU FOM,Industrial manufacturing,Cameroun
+CREATE,AUTO 22 INDUSTRY,JEAN BERNARD GATEU FOM,Industrial manufacturing,Cameroun
+CREATE,AUTO 22 INDUSTRY,JEAN BERNARD GATEU FOM,Industrial manufacturing,Cameroun
+CREATE,CHANAS ASSURANCES S.A,LEONCE AUGOU,Insurance,Cameroun
+CREATE,KALFRELEC SARL,ALAIN KENTSA,Other industry,Cameroun
+CREATE,PERENCO OIL &GAS,ARMEL SIMONDIN,Energy and Oil & Gas,Cameroun
+CREATE,ICRAFON,PATRICE PORTE,Other industry,Cameroun
+CREATE,SMALTO,RAFIK .R,Industrial manufacturing,Cameroun
+CREATE,NOVA PLAST SARL,ALEXIS TSOBZE,Other industry,Cameroun
+CREATE,SMT CAMEROUN S.A,JEROME FRANCOIS,Industrial manufacturing,Cameroun
+CREATE,ASQUINI ENCORAD,MICHEL NGAPANOUN,Other industry,Cameroun
+CREATE,OK PLASTCAM SARL,SAMI BAKER,Other industry,Cameroun
+CREATE,SIKA CAMEROON,JOEL SOULAT,Other industry,Cameroun
+CREATE,SASEL S.A,PIERRE ANDRE CHASTEL,Other industry,Cameroun
+CREATE,CIMAF,HAMMI ISMAAYL,Other industry,Cameroun
+CREATE,CIMAF,HAMMI ISMAAYL,Other industry,Cameroun
+CREATE,SOURCE DU PAYS,EL SAHELY NESSRALLAH,Climate change/Water,Cameroun
+CREATE,FERMENCAM,PIERRE TCHINDA,Other industry,Cameroun
+CREATE,FME-GAZ les gaz industriels du Cameroun,VICTOR TIENCHEU,Energy and Oil & Gas,Cameroun
+CREATE,SCTM,LUDOVIC YAHNE SIELIENOU,Energy and Oil & Gas,Cameroun
+CREATE,EDC ASSET MANAGEMENT,NOELLE KOUO NGAMBY,Miscellaneous,Cameroun
+CREATE,ALUBASSA,,Miscellaneous,Cameroun
+CREATE,ALIOS FINANCE,HICHAM DAOUK,Miscellaneous,Cameroun
+CREATE,BOUYGUES ENERGIES & SERVICES,PIERRE VANSTOFLEGATTE,"Technology, media & telecommunications",Cameroun
+CREATE,FINANCIA CAPITAL,SERGE YANIC NANA,Miscellaneous,Cameroun
+CREATE,PLASTICAM,FOYOU MARIELLE,Other industry,Cameroun
+CREATE,SOCAFER,TANKEU MAURICE,Miscellaneous,Cameroun
+CREATE,UNALOR,MARIE LOUIS KONDECK,Miscellaneous,Cameroun
+CREATE,IHS CAMEROUN SA,,Miscellaneous,Cameroun
+CREATE,MOULIN COQ ROUGE,,Miscellaneous,Cameroun
+CREATE,HYSACAM,,Miscellaneous,Cameroun
+CREATE,LES GRANGS COMPLEXES D'AFRIQUE,,Miscellaneous,Cameroun
+CREATE,INODA INDUSTRIES SARL,,Miscellaneous,Cameroun
+CREATE,EURO COSMETICS,,Miscellaneous,Cameroun
+CREATE,CAMRAIL,,Miscellaneous,Cameroun
+CREATE,SOCIETE GENERAL CAMEROUN,,Bank,Cameroun
+CREATE,ERICSON CAMEROUN,,Miscellaneous,Cameroun
+CREATE,CAMEROON WATER UTILITIES CORPORATION,,Miscellaneous,Cameroun
+CREATE,Programme d'Appui à la reforme de l'éducation au Cameroun,Hadidjatou Iyawa Ousmanou,Project & NGO,Cameroun
+CREATE,SANLAM ASSURANCES,,Insurance,Cameroun
+CREATE,SUNU ASSURANCES IARD,,Insurance,Cameroun
+SKIP (EXISTS),SUNU ASSURANCES VIE,,Insurance,Cameroun
+CREATE,CIMENCAM,,Insurance,Cameroun
+CREATE,BATIMETAL,MFENJOU WILLIAM,Miscellaneous,Cameroun
+CREATE,UBC,CHARLOTTE KOUECHEU,Miscellaneous,Cameroun
+CREATE,Société D'Exploitation des Etablissements de Fombelle  (SEEF S.A.),Pierre MANCEL,FORESTIER,Cameroun
+CREATE,BIA CAMEROUN,,Miscellaneous,Cameroun
+CREATE,COLOR CERAMICA,,Other industry,Cameroun
+SKIP (EXISTS),BLESSING PETROLEUM,,Energy and Oil & Gas,Cameroun
+CREATE,GRAPHIC SYSTEM,,Miscellaneous,Cameroun
+CREATE,BANGE,,Bank,Cameroun
+CREATE,Krystal Palace,FOYOU,Hôtellerie,Cameroun
+CREATE,LES BATISSEURS REUNIS,,Miscellaneous,Cameroun
+CREATE,CAMEROON UNITED FOREST,,N/A,Cameroun
+CREATE,ORANGE MONEY CAMEROUN SA,,Other Financial services,Cameroun
+CREATE,GAZ DU CAMEROUN,,Miscellaneous,Cameroun
+CREATE,BERNABE CAMEROUN,,Miscellaneous,Cameroun
+CREATE,BESIX CAMEROUN,,Miscellaneous,Cameroun
+CREATE,Tractafric motors SA,,Miscellaneous,Cameroun
+CREATE,PRIMO SARL,,Miscellaneous,Cameroun
+CREATE,Tropik Industries Cameroun,,Miscellaneous,Cameroun
+CREATE,SOCIETE MODERNE DU PNEUMATIQUE CAMEROUNAIS SMPC,,Miscellaneous,Cameroun
+CREATE,SEFECAM,,Miscellaneous,Cameroun
+CREATE,BIOPHARMA,,Miscellaneous,Cameroun
+CREATE,TELCAR COCOA LIMITED,,Miscellaneous,Cameroun
+CREATE,NFC BANK,,Bank,Cameroun
+CREATE,TRANSMISSION MANUTENTION DU CAMEROUN TMC,,Miscellaneous,Cameroun
+CREATE,SOREPCO,,Miscellaneous,Cameroun
+CREATE,SOCIETE D'EXPLOITATION DES PARCS A BOIS DU CAMEROUN SEPBC,,FORESTIER,Cameroun
+CREATE,SPEED APPRO,,Miscellaneous,Cameroun
+CREATE,AGROCHEM,,Miscellaneous,Cameroun
+CREATE,FIRST TRUST SA,,Other Financial services,Cameroun
+CREATE,LONG METAL SARL,,Miscellaneous,Cameroun
+CREATE,AZUR,,Food and Drink,Cameroun
+CREATE,IMS SARL,,Miscellaneous,Cameroun
+CREATE,SOCATUR SA,,Miscellaneous,Cameroun
+CREATE,BATIBOIS,,FORESTIER,Cameroun
+CREATE,HAVEST ASSET MANAGEMENT SA,,Miscellaneous,Cameroun
+SKIP (EXISTS),MAHIMA,,Miscellaneous,Cameroun
+CREATE,AMS GROUP,,Miscellaneous,Cameroun
+CREATE,WOOD SENSES,,Miscellaneous,Cameroun
+CREATE,SEEF SA,,FORESTIER,Cameroun
+CREATE,HYDRAC,,Miscellaneous,Cameroun
+CREATE,COMMUNAUTE HURBAINE DE YAOUNDE,CUY,N/A,N/A
+CREATE,COMMUNAUTE URBAINE DE KRIBI,,Government & public sector,Cameroun
+CREATE,Port Autonome de Kribi,,Government & public sector,Cameroun
+CREATE,COMPAGNIE NATIONALE DES CHARGEURS DU CAMEROUN,,Transport & leisure,Cameroun
+CREATE,CHASLES CORPORATION,,Miscellaneous,Cameroun
+CREATE,FLORE SERVICES SARL,,Miscellaneous,Cameroun
+CREATE,AFRICA WORKS,,Miscellaneous,Cameroun
+CREATE,CREATIVE SARL,,Miscellaneous,Cameroun
+CREATE,WISDOM INTERNATIONAL,,Miscellaneous,Cameroun
+CREATE,FONDS COMMUN PSFE,,Climate change/Water,Cameroun
+CREATE,EDF CAMEROUN SA,,Energy and Oil & Gas,Cameroun
+CREATE,MEDLOG CAMEROUN SA,,Transport & leisure,N/A
+CREATE,SOLEIL CAMEROUN,,Miscellaneous,Cameroun
+CREATE,SINCATEX SA,,Miscellaneous,Cameroun
+CREATE,EMRALD SECURITIES SERVICES BOURSE SA,,Miscellaneous,Cameroun
+CREATE,CAMBUILD BTP,,Miscellaneous,Cameroun
+CREATE,METAFRIQUE STEEL,,Miscellaneous,Cameroun
+CREATE,AGROCAM SA,Jean Daniel AYAMAPI,Other industry,Cameroun
+CREATE,BANQUE ATLANTIQUE CAMEROUN,Habib Koné,Bank,Cameroun
+CREATE,NSIA ASSURANCES CAMEROUN,Esther TIAKO,Insurance,Cameroun
+CREATE,SOCAPALM,Dominique CORNET,Industrial manufacturing,Cameroun
+CREATE,FONDS NATIONAL DE L'EMPLOI,Jean Ronald Joseph,Government & public sector,Cameroun
+CREATE,CENTRE INTERNATIONAL DE RECHERCHE CHANTAL BIYA,Alexis NDJOLO,Government & public sector,Cameroun
+CREATE,AGENCE NATIONALE D'APPUI AU DEVELOPPEMENT FORESTTIER,Jean Baptiste Baskouda,Government & public sector,Cameroun
+CREATE,NACHTIGAL HYDRO POWER COMPANY,Vincent Leroux,Energy and Oil & Gas,Cameroun
+CREATE,SANLAM LIFE,Vincent Ongono,Insurance,Cameroun
+CREATE,CAISSE AUTONOME D'AMORTISSEMENT,Richard EVINA OBAM,Government & public sector,Cameroun
+CREATE,LONGSTAR EQUIPMENT CAMEROUN,Long Hai,Miscellaneous,Cameroun
+CREATE,EB-Partners Law Tax & Global Legal Services,Emile BITOUNGUI,Miscellaneous,Cameroun
+CREATE,PTT TELECOM SA,Jean Marie OLICARD,"Technology, media & telecommunications",Cameroun
+CREATE,commune d'arrondissement de douala 1er,,Government & public sector,Cameroun
+CREATE,Commune de douala 3eme,,Government & public sector,Cameroun
+CREATE,Commune de douala 4eme,,Government & public sector,Cameroun
+CREATE,Commune de douala 5eme,,Government & public sector,N/A
+CREATE,Communauté urbaine de douala,,Government & public sector,N/A
+CREATE,WEBB FONTAINE CAMEROUN S.A,Moïse YAKAN A BESSIOM,Miscellaneous,Cameroun
+CREATE,AFRICA BRIGHT SECURITIES SA,,Other Financial services,Cameroun
+CREATE,ELECNOR CAMEROUN S.A,,Other industry,Cameroun
+CREATE,MOUSSE ET DRIVES DU CAMEROUN,Paul RODRIGUE TSAFACK,Miscellaneous,Cameroun
+CREATE,Le Plastique Camerounais,FOYOU Epse FANKAM YAMAKO Marielle,Industrial manufacturing,Cameroun
+CREATE,Agriculture du Cameroun,Jean Daniel AYAMAPI,FORESTIER,Cameroun
+SKIP (EXISTS),SOCIETE METCH-ELEC SARL,Gilbert METCHEKA,Energy and Oil & Gas,Cameroun
+CREATE,SOCIETE CAMEROUNAISE DE VERRERIE,Selon Emmanuel De Tailly,Industrial manufacturing,Cameroun
+CREATE,COLGATE PALMOLIVE CAMEROUN SA,Richard FOWANG,Miscellaneous,Cameroun
+CREATE,Sté Camerounaise de Cartonnages et de Fournitures de matériel scolaire & Bureau,Samuel KONDO NJANGA NGANDE,Industrial manufacturing,Cameroun
+CREATE,Société de Transformation de Blé Au Cameroun,,Food and Drink,Cameroun
+CREATE,LES LABORATOIRES BIOPHARMA SA,Francis NANA DJOMOU,Miscellaneous,Cameroun
+CREATE,COTONNIERE INDUSTRIELLE DU CAMEROUN,Edouard Abada EBAH,Industrial manufacturing,Cameroun
+CREATE,SOCIETE CAMEROUNAISE DE FABRICATION DES LUBRIFIANTS,Cyrine DRAIF,Industrial manufacturing,Cameroun
+CREATE,SOCIETE DES PRODUITS NOUVEAUX,OBALLA,Miscellaneous,Cameroun
+CREATE,SOCIETE DES TRANSFORMATIONS INDUSTRIELLES DU CAMEROUN,Mohamed Saad,Industrial manufacturing,Cameroun
+CREATE,SOYBEANS PROCESSING INDUSTRY OF CAMEROON,Raymond DIFFO,Food and Drink,Cameroun
+CREATE,CFAO TECHNOLOGIES,Stephane BORDURE-LINDER,"Technology, media & telecommunications",Cameroun
+CREATE,SIMI CAMAROES SARL,Arnaud WATAT,Energy and Oil & Gas,Cameroun
+CREATE,CAISSE NATIONALE DE PREVOYANCE SOCIALE,Mekulu MVONDO,Government & public sector,Cameroun
+CREATE,CAMEROON TELECOMMUNICATIONS,Judith YAH SUNDAY,"Technology, media & telecommunications",Cameroun
+CREATE,SOCIETE NATIONAL DES HYDROCARBURES,Adolphe MOUDIKI,Energy and Oil & Gas,Cameroun
+CREATE,COMPAGNIE CAMEROUNAISE DE L’ALUMINIUM,Alain MALONG,Industrial manufacturing,Cameroun
+CREATE,FONDS SPÉCIAL D’EQUIPEMENT ET D’INTERVENTION INTER COMMUNAL,Philippe CAMILLE AKOA,Government & public sector,Cameroun
+CREATE,SOCIETE DE DEVELOPPEMENT DU COTON DU CAMEROUN,MOHAMADOU BAYERO,Government & public sector,Cameroun
+CREATE,SOCIETE NATIONALE DE RAFFINAGE,Jean Paul SIMO NJONOU,Energy and Oil & Gas,Cameroun
+CREATE,CAISSE DE STABILISATION DES PRIX D’HYDROCARBURES,OKIE JOHSON NDOH,Government & public sector,Cameroun
+SKIP (EXISTS),CAMEROON DEVELOPMENT CORPORATION,Francklin NJIE NGONI,Government & public sector,Cameroun
+CREATE,AGENCE DE REGULATION DES TELECOMMUNICATIONS,Philemon ZO’O ZAME,"Technology, media & telecommunications",Cameroun
+CREATE,CAMEROON RADIO AND TELEVISION,Charles NDONGO,"Technology, media & telecommunications",Cameroun
+CREATE,CREDIT FONCIER DU CAMEROUN,Jean Paul MISSI,Government & public sector,Cameroun
+CREATE,CENTRALE NATIONALE D’APPROVISIONNEMENT EN MEDICAMENTS ET CONSOMMABLES  MEDICAUX ESSENTIELS,SALIHOU SADOU,Government & public sector,Cameroun
+CREATE,AEROPORTS DU CAMEROUN,Thomas OWONA ASSOUMOU,Transport & leisure,Cameroun
+CREATE,CAMEROON AIRLINE CORPORATION,Louis Georges NJIPENDI KOUOTOU,Transport & leisure,Cameroun
+CREATE,CAMEROON CIVIL AVIATION AUTHORITY,Paule AVOMO ASSOUMOU,Transport & leisure,Cameroun
+CREATE,FONDS NATIONAL DE L’EMPLOI,Camille MOUTE A BIDIAS,Government & public sector,Cameroun
+CREATE,PORT AUTONOME DE DOUALA,Cyrus NGO'O,Government & public sector,Cameroun
+CREATE,PORT AUTONOME DE KRIBI,Patrice Barthélemy MELOM,Government & public sector,Cameroun
+CREATE,SOCIETE CAMEROUNAISE DES DEPÔTS PETROLIERS,Véronique MOAMPEA MBIO,Energy and Oil & Gas,Cameroun
+CREATE,COTONNIERE INDUSTRIELLE DU CAMEROUN,Edouard ABADA EBAH,Industrial manufacturing,Cameroun
+CREATE,FONDS DE DEVELOPPEMENT DES FILIERES CACAO ET CAFE,Samuel Donatien NENGUE,Government & public sector,Cameroun
+CREATE,AGENCE DE REGULATION DES MARCHES PUBLICS,Ayélé DATTI,Government & public sector,Cameroun
+CREATE,ELECTRICITY DEVELOPMENT CORPORATE,Théodore NSANGOU,Energy and Oil & Gas,Cameroun
+CREATE,EBOT EBOT ENAWAGENCE NATIONALE DES TECHNOLOGIES DE I’INFORMATION ET DE LA COMMUNICATION,EBOT EBOT ENAW,"Technology, media & telecommunications",Cameroun
+CREATE,CENTRE INTERNATIONAL DE REFRENCE CHANTAL BIYA,Alexis NDJOLO,Private Equity,Cameroun
+CREATE,CONSEIL NATIONAL DES CHARGEURS DU CAMEROUN,Auguste MBAPPE PENDA,Government & public sector,Cameroun
+CREATE,CHANTIER NAVAL ET INDUSTRIEL DU CAMEROUN,Roland Maxime AKA'A NDI'I,Other industry,Cameroun
+CREATE,CENTRE PASTEUR DU CAMEROUN,Mirdad KAZANJI,Government & public sector,Cameroun
+CREATE,GENERAL CERTIFICATE OF EDUCATION,DANG AKUH Dominic,Government & public sector,Cameroun
+CREATE,HOPITAL GENERAL DE DOUALA,Henry NAMME LUMA,Government & public sector,Cameroun
+CREATE,HOPITAL GENERAL DE YAOUNDE,Vincent de Paul NDJIENTCHEU,Government & public sector,Cameroun
+CREATE,INSTITUT NATIONAL DE LA STATISTQUE,Joseph TEDOU,Government & public sector,Cameroun
+CREATE,OFFICE DU BACCALAUREAT DU CAMEROUN,Etienne Roger MINKOULOU,Government & public sector,Cameroun
+CREATE,PAMOL PLANTATIONS Plc,Charles MEKANYA OKON,Miscellaneous,Cameroun
+CREATE,SOCIETE DE DEVELOPPEMENT DU CACAO,Jean Claude EKO’O AKOUAFANE,Other industry,Cameroun
+CREATE,SOCIETE DE PRESSE ET D’EDITIONS DU CAMEROUN,Marie Claire NNANA,Miscellaneous,Cameroun
+CREATE,BUREAU CENTRAL DES RECENSEMENTS DE LA POPULATION,Bernadette MBARGA.,Government & public sector,Cameroun
+CREATE,COMITE DE GESTION FAO/PAM,MATAPIT Othon,Miscellaneous,Cameroun
+CREATE,MISSION D’AMENAGEMENT DES TERRAINS URBAINS ET RURAUX,Louis Roger MANGA,Government & public sector,Cameroun
+CREATE,SOCIETE DE DEVELOPPEMENT ET D’EXPLOITATION DES PRODUCTIONS ANIMALES,Denis KOULAGNA KOUTOU,Miscellaneous,Cameroun
+CREATE,SOCIETE NATIONALE DE TRANSPORT D’ELECTRICITE,Victor MBEMI NYANKGA,Energy and Oil & Gas,Cameroun
+CREATE,SOCIETE DE RECOUVREMENT DES CREANCES DU CAMEROUN,Marie Rose MESSI,Government & public sector,Cameroun
+CREATE,AGENCE D’ELECTRIFICATION RURALE,Moussa OUSMANOU,ENR - Power & Utilities,Cameroun
+CREATE,AGENCE D’ELECTRIFICATION RURALE,Moussa OUSMANOU,ENR - Power & Utilities,Cameroun
+CREATE,SOCIETE ALUMINIUM DE BASSA,Alain MALONG,Other industry,Cameroun
+CREATE,AGENCE NATIONALE D’APPUI AU DEVELOPPEMENT FORESTIER,Théophile BEKOLO BEKOLO,FORESTIER,Cameroun
+CREATE,AGENCE DES NORMES ET DE LA QUALITE,Charles BOOTO à NGON,Miscellaneous,Cameroun
+CREATE,AGENCE NATIONALE DE RADIOPROTECTION,Augustin SIMO,Government & public sector,Cameroun
+CREATE,AGENCE DE PROMOTION DES INVESTEMENTS,Marthe Angeline MINJA,Government & public sector,Cameroun
+CREATE,AUTORITE PORTUAIRE NATIONALE,Louis EBOUBEKE,Government & public sector,Cameroun
+CREATE,AGENCE DE SERVICE CIVIQUE NATIONAL DE PARTICIPATION AU DEVELOPPEMEN,,Government & public sector,Cameroun
+CREATE,BUREAU NATIONAL DE L'ETAT CIVIL,Abdoulaye ADJIALI BOUKAR,Government & public sector,Cameroun
+CREATE,CAISSE AUTONOME D'AMORTISSEMENT,Richard EVINA OBAM,Government & public sector,Cameroun
+CREATE,CAMEROON POSTAL SERVICES,Pierre KALDADAK,Government & public sector,Cameroun
+CREATE,SOCIETE NATIONALE DE TRANSPORT ET DE TRANSIT DU CAMEROUN,Peters EKOLLE,Government & public sector,Cameroun
+CREATE,CAISSE DE DEVELOPPEMENT DE L'ELEVAGE DU NORD-OUEST,Michael MBAH SHUPONG,Government & public sector,Cameroun
+CREATE,CENTRE HOSPITALIER DE RECHERCHE ET 'APPLICATION EN CHIRURGIE ENDOSCOPIQUE ET DE  REPRODUCTION HUMANE,Jean Marie KASIA,"Infrastructure,  Healthcare",Cameroun
+CREATE,CENTRE HOSPITALIER DE RECHERCHE ET 'APPLICATION EN CHIRURGIE ENDOSCOPIQUE ET DE  REPRODUCTION HUMANE,Jean Marie KASIA,"Infrastructure,  Healthcare",Cameroun
+CREATE,CENTRE HOSPITALIER UNIVERSITAIRE,ESSOMBA Arthur Georges Alfred,"Infrastructure,  Healthcare",Cameroun
+CREATE,CAMEROUN PUBLI-EXPANSION,Amadou BELLO,Miscellaneous,Cameroun
+CREATE,ECOLE INTERNATIONALE DES FORCES DE SECURITE,BITOTE André Patrice,Miscellaneous,Cameroun
+CREATE,ECOLE NATIONALE 'ADMINISTRATION ET DE MAGISTRATURE,Bertrand Pierre SOUMBOU ANGOULA,Government & public sector,Cameroun
+CREATE,ECOLE NATIONALE SUPERIEURE DES TRAVAUX PUBLICS,George ELAMBO NKENG,Government & public sector,Cameroun
+CREATE,FONDS ROUTIER,Samuel NENGUE,Government & public sector,Cameroun
+CREATE,HOPITAL GYNECO-OBSTETRIQUE ET PEDIATRIQUE DE DOUALA,Emille Télesphore MBOUDOU,"Infrastructure,  Healthcare",Cameroun
+CREATE,HOPITAL GYNECO-OBSTETRIQUE ET PEDIATRIQUE DE YAOUNDE,Robison ENOW MBU,"Infrastructure,  Healthcare",Cameroun
+CREATE,MEKIN HYDROELECTRIC DEVELOPMENT CORPORATION,Frédéric BIYA MOTTO,ENR - Power & Utilities,Cameroun
+CREATE,INSTITUT NATIONAL DE CARTOGRAPHIE,Martin ELIMBI,Government & public sector,Cameroun
+CREATE,INSTITUT NATIONAL DE LA JEUNESSE ET SPORT,Edmond EBAL MINYE,Government & public sector,Cameroun
+CREATE,INSTITUT DE RECHERCHE MEDICALE ET D’ETUDES DES PLANTES MEDECINALES,Jean Louis ESSAME OYONO,Government & public sector,Cameroun
+CREATE,INSTITUT SUPERIEUR DE MANAGEMENT PUBLIC,Edward MESIME MOKWE,Government & public sector,Cameroun
+CREATE,LABORATOIRE NATIONAL VETERINAIRE,Abel WADE,"Infrastructure,  Healthcare",Cameroun
+CREATE,MISSION DE REGULATION ET D’APPROVISIONNEMENT DES PRODUITS DE GRANDE  CONSOMMATION,Cyprien BAMZOK NTOL,Miscellaneous,Cameroun
+CREATE,MISSION DE REGULATION ET D’APPROVISIONNEMENT DES PRODUITS DE GRANDE  CONSOMMATION,Cyprien BAMZOK NTOL,Miscellaneous,Cameroun
+CREATE,r christol Georges MANONMISSION D’AMENAGEMENT ET DE GESTION DES ZONES INDUSTRIELLES,christol Georges MANON,Miscellaneous,Cameroun
+CREATE,PARC NATIONAL DE MATERIEL DE GENIE CIVIL,Gustave EBONGUE,Government & public sector,Cameroun
+CREATE,MISSION D'ETUDES POUR L'AMENAGEMENT DU NORD,ABDOULAY SERNO,Miscellaneous,Cameroun
+CREATE,MISSION D’ETUDES POUR L’AMENAGEMENT DE L’OCEAN,Hubert MBAMBA BONDIMA,Government & public sector,Cameroun
+CREATE,MISSION DE DEVELOPPEMENT INTEGRE DES MONTS MANDARA,TCHARI BOULAMA,Government & public sector,Cameroun
+CREATE,MISSION DE DEVELOPPEMENT DE LA PÊCHE ARTISANALE ET MARITIME,SAMMY AKO TAMBI,Government & public sector,Cameroun
+CREATE,MISSION DE DEVELOPPEMENT INTEGRE DES MONTS MANDARA,TCHARI BOULAMA,Government & public sector,Cameroun
+CREATE,MISSION DE PROMOTION DES MATERIAUX LOCAUX (,LIKIBY ABOUBAKAR,Government & public sector,Cameroun
+CREATE,MISSION DE REGULATION ET D’APPROVISIONNEMENT DES PRODUITS DE GRANDE  CONSOMMATION,Cyprien BAMZOK NTOL,Government & public sector,Cameroun
+CREATE,NATIONAL SCHOOL OF LOCAL ADMINISTRATION,TANYITIKU ENOHACHUO BAYEE,Government & public sector,Cameroun
+CREATE,OFFICE NATIONAL ET DU CACAO ET DU CAFE,Michael NDOPING,Private Equity,Cameroun
+CREATE,SOCIETE D’EXPLOITATION ET D’EXPANSION DU RIZ DE YAGOUA,FISSOU KOUMA,Miscellaneous,Cameroun
+CREATE,SOCIETE IMMOBILIERE DU CAMEROUN,Ahmadou SARDOUNA,Government & public sector,Cameroun
+CREATE,SOCIETE NATIONALE D’INVESTISSEMENT,Aissatou YAOU,Government & public sector,Cameroun
+CREATE,SOUTH WEST DEVELOPMENT AUTHORITHY,BESONG NTUI OGORK,Miscellaneous,Cameroun
+CREATE,"ECOLE NATIONALE SUPERIEURE DES POSTES, DES TELECOMMUNICATIONS ET DES  TECHNOLOGIES DE L’INFORMATION ET DE LA COMMUNICATION",Félix WATCHING,Government & public sector,Cameroun
+CREATE,"ECOLE NATIONALE SUPERIEURE DES POSTES, DES TELECOMMUNICATIONS ET DES  TECHNOLOGIES DE L’INFORMATION ET DE LA COMMUNICATION",Félix WATCHING,Government & public sector,Cameroun
+CREATE,UPPER NOUN DEVELOPMENT VALLEY AUTHORITHY,CHIN WIRNKAR Richard,Miscellaneous,Cameroun
+CREATE,UNITE DE TRAITEMENTS AGRICOLES PAR VOIE AERIENNE,Mathieu NGAÏ,Government & public sector,Cameroun
+CREATE,OFFICE CEREALIER,MOHAMADOU GASSIMOU,Miscellaneous,Cameroun
+CREATE,OFFICE NATIONAL DES ANCIENS COMBATTANTS,Alfred FULLER,Miscellaneous,Cameroun
+CREATE,OBSERVATOIRE NATIONAL SUR LES CHANGEMENTS CLIMATIQUES,Joseph AMOUGOU ARMATHE,Climate change/Water,Cameroun
+CREATE,INSTITUT DE RECHERCHES AGRICOLES POUR LE DEVELOPPEMENT,,Government & public sector,Cameroun
+CREATE,ACADEMIE NATIONAL DE FOOTBALL,,Government & public sector,N/A
+CREATE,AGENCE DE PROMOTION DES PETITES ET MOYENNES ENTREPRISES,,Government & public sector,Cameroun
+CREATE,AUTORITE PORTUAIRE NATIONAL,,Government & public sector,Cameroun
+CREATE,BUREAU CENTRAL DES RECENSEMENTS DE LA POPULATION,,Government & public sector,Cameroun
+CREATE,CAISSE DE DEVELOPPEMENT DE L'ELEVAGE DU NORD,,Government & public sector,Cameroun
+CREATE,CAISSE DE DEVELOPPEMENT DE LA PECHE MARITIME,,Government & public sector,Cameroun
+CREATE,CENTRE NATIONAL D'ETUDE ET D'EXPERIMENTATION DU MACHINISME AGRICOLE,,Government & public sector,Cameroun
+CREATE,CENTRE NATIONAL DE REHABILITATION DES PERSONNES HANDICAPEES PAUL EMILE LEGER,,Government & public sector,Cameroun
+CREATE,COMMISSION NATIONAL ANTI-CORRUPTION,,Government & public sector,Cameroun
+CREATE,IMPRIMERIE NATIONAL,,Government & public sector,Cameroun
+CREATE,INSTITUT DE RECHERCHE GEOLOGIQUE ET MINIERE,,Government & public sector,Cameroun
+CREATE,LABORATOIRE NATIONAL D'ANALYSE ET DE CONTROLE DE LA QUALITE DES MEDICAMENTS,,Government & public sector,Cameroun
+CREATE,LIMBE NAUTICAL ARTS AND FISHERIES INSTITUTE,,Government & public sector,Cameroun
+CREATE,MISSION DE DEVELOPPEMENT DU NORD OUEST,,Government & public sector,Cameroun
+CREATE,MISSION DE REGULATION ET D'APPROVISIONNEMENT DES PRODUITS DE GRANDE CONSOMMATION,,Government & public sector,Cameroun
+CREATE,PALAIS DES CONGRES,,Government & public sector,Cameroun
+CREATE,AGENCE NATIONAL DES TECHNOLOGIES DE L'INFORMATION ET DE LA COMMUNICATION,,Government & public sector,Cameroun
+CREATE,MISSION D'AMENAGEMENT ET DE GRSTION DES ZONES INDUSTRIELLES,,Government & public sector,Cameroun
+CREATE,SOCIETE DE RECOUVREMENT DES CREANCES DU CAMEROUN,,Government & public sector,Cameroun
+CREATE,THE BRIDGE INTERNATIONAL SCHOOL,,Miscellaneous,Cameroun
+CREATE,COLLEGE BILINGUE LAVAL,,Miscellaneous,Cameroun
+CREATE,COLLEGE LA CONQUETE,,Miscellaneous,Cameroun
+CREATE,COLLEGE LIBERMAN,,Miscellaneous,Cameroun
+CREATE,COLLEGE DE LA SALLE,,Miscellaneous,Cameroun
+CREATE,ROUSSEAU INTERNATIONAL SCHOOL,,Miscellaneous,Cameroun
+CREATE,ENKO BONANJO INTERNATIONAL SCHOOL,,Miscellaneous,Cameroun
+CREATE,BRITISH ISLES INTERNATIONAL SCHOOL,,Miscellaneous,Cameroun
+CREATE,AMERICAN SCHOOL OF DOUALA,,Miscellaneous,Cameroun
+CREATE,FERRERO CAMEROUN SA,,Industrial manufacturing,Cameroun
+CREATE,FIMEX INTERNATIONAL,,Miscellaneous,Cameroun
+CREATE,YOOMEE MOBILE SA,,"Technology, media & telecommunications",Cameroun
+CREATE,EASY LIFE,,Miscellaneous,Cameroun
+CREATE,FINEX,,Transport & leisure,Cameroun
+CREATE,SAKER,,Consumer markets,Cameroun
+CREATE,CCMM SA,,Transport & leisure,Cameroun
+CREATE,SCHLUMBERGER CAMEROUN,,Energy and Oil & Gas,N/A
+CREATE,OLAM CAM SARL,,Industrial manufacturing,Cameroun
+CREATE,SCI LES TROPIQUES,,Hôtellerie,Cameroun
+CREATE,ENEM,,Industrial manufacturing,Cameroun
+CREATE,ESTIA SYNERGIE CAMEROUN,,ENR - Power & Utilities,Cameroun
+CREATE,EMPLOI SERVICE SA,,Miscellaneous,Cameroun
+CREATE,EMPLOI SERVICE INTERIM,,Miscellaneous,Cameroun
+CREATE,EMRALD SECURITIES SERVICES CAPITAL,,Bank,Cameroun
+CREATE,EMRALD SECURITIES SERVICES MGT,,Bank,Cameroun
+CREATE,PRUDENTIAL BENEFICIAL,,Bank,Cameroun
+CREATE,KADY LESSIVAGE SA,,Miscellaneous,Cameroun
+CREATE,NESTLE CAMEROUN,,Industrial manufacturing,Cameroun
+CREATE,APAVE CAMEROUN,,Miscellaneous,Cameroun
+CREATE,CAPI CAMEROUN SA,,Miscellaneous,Cameroun
+CREATE,SOCIETE CAMEROUNAISE DES CHEMIN DE FER,,Miscellaneous,Cameroun
+CREATE,SOCIETE CAMEROUNAISE DES BOIS DEBITES,,Industrial manufacturing,Cameroun
+CREATE,SOCIETE CAMEROUNAISE D4EQUIPEMENT INDUSTRIEL,,Miscellaneous,Cameroun
+CREATE,SOCIETE CAMEROUNAISE DE MEDECINE,,Miscellaneous,Cameroun
+CREATE,SOCIETE CAMEROUNAISE DE TRANSFORMATION DE BLE,,Industrial manufacturing,Cameroun
+CREATE,ETUDE Me SANDRINE MONGUE,,Miscellaneous,Cameroun
+CREATE,ETUDE Me BETCHEM NOTAIRE,,Miscellaneous,Cameroun
+CREATE,BEKO CAPITAL ADVISORY,,Bank,Cameroun
+CREATE,SOGOTRANS SA,,Transport & leisure,Cameroun
+CREATE,AREA ASSURANCES,,Insurance,Cameroun
+CREATE,ASCESE,,Miscellaneous,Cameroun
+CREATE,OLEA CAMEROUN,,Insurance,Cameroun
+CREATE,OLA ENERGY CAMEROON,,Energy and Oil & Gas,Cameroun
+CREATE,MULTISERVICES SARL,,Miscellaneous,Cameroun
+CREATE,WIRE CAMEROUN,,Energy and Oil & Gas,Cameroun
+CREATE,OMEGA CAMEROUN,,Transport & leisure,Cameroun
+CREATE,MULTITECH,,Miscellaneous,Cameroun
+CREATE,AFRICA SECURITY CAMEROON SARL,,Miscellaneous,Cameroun
+CREATE,LANA BIO COSMETICS,,Miscellaneous,Cameroun
+CREATE,UNION CAMEROUNAISE DES BRASSERIES,,Industrial manufacturing,Cameroun
+CREATE,COMPLEXE CHIMIQUE CAMEROUNAIS,,Industrial manufacturing,Cameroun
+CREATE,DOUALA PORT WEIGHING SERVICES,,Miscellaneous,Cameroun
+CREATE,GEODIS PROJECTS CAMEROON,,Transport & leisure,Cameroun
+CREATE,SOCIETE D'APPROVISIONNEMENT ET DE MAINTENANCE INDUSTRIELLE,,Energy and Oil & Gas,Cameroun
+CREATE,SOCIETE CAMEROUNAISE DE COMMERCE ET DE REPRESENTATION INDUSTRIELLE,,Miscellaneous,Cameroun
+CREATE,OMOA CAMEROUN SA,,Bank,Cameroun
+CREATE,DEE-LITE SARL,,Miscellaneous,Cameroun
+CREATE,LCI ORCA CAMEROUN,,Miscellaneous,Cameroun
+CREATE,SOCIETE ELECTROMECANIQUE & ASCENCEURS,,Industrial manufacturing,Cameroun
+CREATE,ONYX MANPOWER SERVICES CAMEROUN,,Miscellaneous,Cameroun
+CREATE,ACCENT MEDIA SA,,Miscellaneous,Cameroun
+CREATE,complexe métallurgique du Cameroun,,Other industry,Cameroun
+CREATE,SAFCAM SA,,Consumer markets,Cameroun
+CREATE,PANZANI CAMEROUN,,Fast Moving Consumer Goods,Cameroun
+CREATE,SOCIETE DE TRANSFORMATION DU BLE DU CAMEROUN,,Other industry,Cameroun
+CREATE,CICAM SA,,Other industry,Cameroun
+CREATE,SOCIETE DES TRANSFORMATIONS INDUSTRIELLES DU CAMEROUN,,Other industry,Cameroun
+CREATE,TOLES ET ACIERS DU CAMEROUN,,Other industry,Cameroun
+CREATE,SOPROICAM,,Other industry,Cameroun
+CREATE,CFAO,,Consumer markets,Cameroun
+CREATE,AMAL SIMI,,Other industry,Cameroun
+CREATE,METCH ELEC,,"Technology, media & telecommunications",Cameroun
+CREATE,INSTITUT DE LA FRANCOPHONIE POUR LE DEVELOPPEMENT DURABLE,Cécile Martin-Phipps,Project & NGO,Cameroun
+CREATE,GHANA REINSURANCE PLC,,Insurance,Cameroun
+CREATE,BRUSSELS AIRLINES,,Miscellaneous,Cameroun
+CREATE,ETHIOPIAN AIRLINES,,Miscellaneous,Cameroun
+CREATE,NED'CAM,,Miscellaneous,Cameroun
+CREATE,SCHNEIDER ELECTRIC,,Miscellaneous,Cameroun
+CREATE,TRADEX S.A,,Energy and Oil & Gas,Cameroun
+CREATE,EGYPTAIR AIRLINES,,Miscellaneous,Cameroun
+CREATE,PRO-PME FINANCEMENT S.A,,Other Financial services,Cameroun
+CREATE,ALLIANZ CAMEROUN,,Insurance,Cameroun
+CREATE,PLANET HOTEL,,Hôtellerie,Cameroun
+CREATE,SEMEM DISTRIBUTOR SARL,,Miscellaneous,Cameroun
+CREATE,BALOON ASSURANCE CAMEROUN,,Insurance,Cameroun
+CREATE,COLOR CERAMICA SARL,,Miscellaneous,Cameroun
+CREATE,MTN CAMEROON LTD,,"Technology, media & telecommunications",Cameroun
+CREATE,WAFACASH CAMEROUN,,Bank,Cameroun
+CREATE,CAMEROUNAISE DE CONSTRUCTION DU BARRAGE DE NACHTIGAL S.A.S,,Miscellaneous,Cameroun
+CREATE,TOTALENERGIES MARKETING CAMEROUN S.A,,Energy and Oil & Gas,Cameroun
+CREATE,SYSTEMES ET APPLICATIONS ELECTRONIQUES S.A,,Miscellaneous,Cameroun
+CREATE,SOACAM AGRO INDUSTRIES S.A,,Industrial manufacturing,Cameroun
+CREATE,RW KING S.A,,Miscellaneous,Cameroun
+CREATE,ATTIJARI SECURITIES CENTRAL AFRICA,,Bank,Cameroun
+CREATE,DHL GLOBAL FORWARDING CAMEROUN PLC,,Miscellaneous,Cameroun
+CREATE,HYDIAM FORAGES,,Miscellaneous,Cameroun
+CREATE,IBI S.A,,Miscellaneous,Cameroun
+CREATE,GREENFIL PLANTATION LTD S.A,,Miscellaneous,Cameroun
+CREATE,AZUR S.A,,Industrial manufacturing,Cameroun
+CREATE,MAÎTRE ESSONO EPOUSE CHEMOU BLANCHE,,Miscellaneous,Cameroun
+CREATE,ICM CONSULTING SARL,,Miscellaneous,Cameroun
+CREATE,DIRECTION GENERALE DES DOUANES ET DES DROITS INDIRECTS DU TCHAD,,Government & public sector,Tchad
+CREATE,SCI VESTALIA,JEAN ROGER DAVID,Miscellaneous,Cameroun
+CREATE,AIR COTE D'IVOIRE,,Transport & leisure,Cameroun
+CREATE,SIC CACAOS,,Industrial manufacturing,Cameroun
+CREATE,GEODIS PROJECTS CAMEROON S.A.,,Transport & leisure,Cameroun
+CREATE,CONGELCAM S.A.,,Consumer markets,Cameroun
+CREATE,GULFIN S & T CO,,Energy and Oil & Gas,Cameroun
+CREATE,ZENITHE INSURANCE,Maxwell NDECHAM,Insurance,Cameroun
+CREATE,CAMEROUN RAILWAYS S.A.,,Transport & leisure,Cameroun
+CREATE,MEDITERRANEAN SHIPPING COMPANY CAMEROUN,,Transport & leisure,Cameroun
+CREATE,SOCIETE D'EXPLOITATION DU PARC A BOIS DU CAMEROUN,,Miscellaneous,Cameroun
+CREATE,SOCOPAO CAMEROUN,,Transport & leisure,Cameroun
+CREATE,BOLLORE TRANSPORT ET LOGISTICS CAMEROUN,,Transport & leisure,Cameroun
+CREATE,KRIBI CONTENEUR TERMINAL,,Transport & leisure,Cameroun
+CREATE,KRIBI POWER DEVELOPMENT COMPANY,,ENR - Power & Utilities,Cameroun
+CREATE,SOA - Soulemanou Haliyou,Soulemanou Haliyou,Other Financial services,Cameroun
+CREATE,SOA-HUNTER SERVICES SARL,HUNTER SERVICES,Government & public sector,Cameroun
+CREATE,GUICHET UNIQUE DES OPERATIONS DU COMMERCE EXTERIEUR,,Miscellaneous,Cameroun
+CREATE,GRAPHICS SYSTEME S.A,,"Technology, media & telecommunications",Cameroun
+CREATE,UNION BANK OF CAMEROON S.A,,Bank,Cameroun
+CREATE,UNION DES TRANSACTIONS COMMERCIALES & INDUSTRIELLES,,Miscellaneous,Cameroun
+CREATE,HEVEA CAMEROUN S.A,,Industrial manufacturing,Cameroun
+CREATE,GALERIES PEYRISSAC S.A.,,Consumer markets,Cameroun
+CREATE,BLESSING PETROLEUM S.A,,Energy and Oil & Gas,Cameroun
+CREATE,MAHIMA SARL,,Fast Moving Consumer Goods,Cameroun
+CREATE,SOREPCO S.A,,Consumer markets,Cameroun
+CREATE,ADVANS CAMEROUN S.A,,Bank,Cameroun
+CREATE,DAVUM CAMEROUN S.A,,Consumer markets,Cameroun
+CREATE,SOCIETE CAMEROUNAISE DE FERRONNERIE S.A,,Industrial manufacturing,Cameroun
+CREATE,SOCIETE CAMEROUNAISE DE VERRERIE S.A,,Industrial manufacturing,Cameroun
+CREATE,LES LABORATOIRES BIOPHARMA,,Industrial manufacturing,Cameroun
+CREATE,LE GLACIER MODERNE S.A,,Fast Moving Consumer Goods,Cameroun
+CREATE,FAYADORT S.A,,Consumer markets,Cameroun
+CREATE,NSIA ASSURANCES CAMEROUN S.A,,Insurance,Cameroun
+CREATE,SOCIETE COMMERCIALE DE BANQUE CAMEROUN S.A,,Bank,Cameroun
+CREATE,CHANAS ASSURANCES CAMEROUN S.A,,Insurance,Cameroun
+CREATE,ECOBANK CAMEROUN S.A,,Bank,Cameroun
+CREATE,NEPTUNE S.A,,Energy and Oil & Gas,Cameroun
+CREATE,MEDIA PLUS SARL,,"Technology, media & telecommunications",Cameroun
+CREATE,EASY RIDE S.A,,Miscellaneous,Cameroun
+CREATE,KALFRELEC S.A,,Miscellaneous,Cameroun
+CREATE,SUNU ASSURANCE VIE CAMEROUN S.A,,Insurance,Cameroun
+CREATE,SUNU ASSURANCE IARD S.A,,Insurance,Cameroun
+CREATE,CAMEROUNAISE DE DISTRIBUTION ALIMENTAIRE S.A,,Fast Moving Consumer Goods,Cameroun
+CREATE,ELECNOR SUCCURSALE,,N/A,N/A
+CREATE,BOURBON OFFSHORE MARINE SERVICES CAMEROUN,Roman DUBOVITSKII,Energy and Oil & Gas,Cameroun
+CREATE,HORUS INVESTMENT CAPITAL S.A,Cyrille ONANA,Other Financial services,Cameroun
+CREATE,TELCAR COCOA LIMITED,KANYI-TOMETI FOTSO,Other industry,Cameroun
+CREATE,LOXEA S.A,Geoffroy DE MARCELLUS,Miscellaneous,Cameroun
+CREATE,ATLANTIQUE ASSURANCE IARDT-CAMEROUN,NGNIWAKE NORBERT,Insurance,Cameroun
+CREATE,Coopérative d'Epargne et de Crédit des Artisans du Wouri,,Other Financial services,Cameroun
+CREATE,TRANSMISSION MANUTENTION DU CAMEROUN,,Miscellaneous,Cameroun
+CREATE,PARLYM CAMEROUN,,Miscellaneous,Cameroun
+CREATE,CHANTIER NAVALE ET INDUSTRIEL DU CAMEROUN,,Transport & leisure,Cameroun
+CREATE,WOOD SENSES,,Industrial manufacturing,Cameroun
+CREATE,Société d'Exploitation Forestière et Commerciale Camerounaise,,Industrial manufacturing,Cameroun
+CREATE,PAN-AFRICAN SAVINGS LOANS,,Miscellaneous,Cameroun
+CREATE,HARVEST ASSET MANAGEMENT,,Miscellaneous,Cameroun
+CREATE,ORCA,,Consumer markets,Cameroun
+SKIP (EXISTS),AXA ASSURANCES,,Insurance,Cameroun
+CREATE,Société de Routes et de Bâtiments Cameroun,,Miscellaneous,Cameroun
+CREATE,SOCIETE D'EXPLOITATION FORESTIERE ET AGRICOLE DU CAMEROUN SA,,FORESTIER,Cameroun
+CREATE,SOCIETE AFRICAINE DE FABRICATION DE CAHIERS,,Industrial manufacturing,Cameroun
+CREATE,SOCIETE DES CEREALES DE CAMEROUN,,Industrial manufacturing,Cameroun
+CREATE,SOCIETE CAMEROUNAISE DE RAFFINAGE MAYA & CIE,,Industrial manufacturing,Cameroun
+CREATE,AFRICA GOLDEN BANK,Samuel Foyou,Bank,Cameroun
+CREATE,DIBAMBA POWER DEVELOPMENT COMPANY SA,Frédéric Didier MVONDO,Energy and Oil & Gas,Cameroun
+CREATE,OFFICE TOGOLAIS DES RECETTES,,Miscellaneous,N/A
+CREATE,CFAO TECHNOLOGY & ENERGY,Laurent DUPUIS,"Technology, media & telecommunications",Cameroun
+CREATE,AFRICA GLOBAL PORT SOLUTIONS,,Transport & leisure,Cameroun
+CREATE,HOTEL SAWA,,Hôtellerie,Cameroun
+CREATE,BUREAU VERITAS S.A,,Miscellaneous,Cameroun
+CREATE,2NI SARL,,Miscellaneous,Cameroun
+CREATE,AFG CENTRAL & EAST AFRICA,,Other Financial services,Cameroun
+CREATE,SIKA CAMEROUN SARL,,Miscellaneous,Cameroun
+CREATE,SOCIETE AFRICAINE DE SEL SA,,Industrial manufacturing,Cameroun
+CREATE,CITRA S.A.,,Transport & leisure,Cameroun
+CREATE,EDC INVEST CORPORATION,,Other Financial services,Cameroun
+CREATE,LES CIMENTERIES DU CAMEROUN S.A,,Industrial manufacturing,Cameroun
+CREATE,COMPAGNIES PROFESSIONNELLE D'ASSURANCE,,Insurance,Cameroun
+CREATE,AIPI PIETRO ET FILS CAMEROUN SARL,,FORESTIER,Cameroun
+CREATE,CIMENTS DE L'AFRIQUE CAMEROUN,,Industrial manufacturing,Cameroun
+CREATE,NOVIA INDUSTRIES,,Miscellaneous,Cameroun
+CREATE,AFRILAND FIRST BANK,,Bank,Cameroun
+CREATE,BOCOM PETROLEUM S.A,,Energy and Oil & Gas,Cameroun
+CREATE,AREOFEU,,Miscellaneous,Cameroun
+CREATE,ASQUINI ENCORAD,,Miscellaneous,Cameroun
+CREATE,HYGIENE ET SALUBRETE DU CAMEROUN,,Miscellaneous,Cameroun
+CREATE,ESICO,,Transport & leisure,Cameroun
+CREATE,MOULIN DE FRANCE,,Food and Drink,Cameroun
+CREATE,CFAO TECHNOLOGIES S.A,,Miscellaneous,Cameroun
+CREATE,TAM-TAM SOLEIL,Jean Roger DAVID,Other industry,Cameroun
+CREATE,EB-PARTNERS AUDIT,Samira VINDJEDOU,Miscellaneous,N/A
+CREATE,ARNO SA,Jean Jacques ARNOPOULO,Miscellaneous,Cameroun
+CREATE,Mutuelles des inspecteur et officiers des Douanes du Cameroun,,Miscellaneous,Cameroun
+CREATE,Commission Technique de Rehabilitation,,Miscellaneous,Cameroun
+CREATE,AFRICA FOOD DISTRIBUTION,,Food and Drink,Cameroun
+CREATE,ARNO S.A.,,Miscellaneous,Cameroun
+CREATE,ATTIJARIWAFA BANK,,Bank,Cameroun
+CREATE,AKWA PALACE,,Hôtellerie,Cameroun
+CREATE,BANGE BANK CAMEROUN,,Bank,Cameroun
+CREATE,CITY BANK OF CAMEROUN,,Bank,Cameroun
+CREATE,AFRIQUE MARITIME ET LOGISTIQUE S.A,,Transport & leisure,Cameroun
+CREATE,McCANN,,"Technology, media & telecommunications",Cameroun
+CREATE,SOCIETE LES GRANDS MOULINS DU CAMEROUN,,Food and Drink,Cameroun
+CREATE,CHASLES CORPORATION SARL,,Miscellaneous,Cameroun
+CREATE,SOCIETE CAMEROUNAISE DES GAZ LIQUEFIES DE PETROLE,,Energy and Oil & Gas,Cameroun
+CREATE,SOLEVO CAMEROUN,,Industrial manufacturing,Cameroun
+CREATE,CFAO MOBILITY CAMEROON,Denis ZAPPULLA,Other industry,Cameroun
+CREATE,Transformation des produits agricoles et agroalimentaires,,Industrial manufacturing,Cameroun
+CREATE,Ministrère de la Fonction Publique et de la Réforme Administrative,Ministre,Miscellaneous,Cameroun
+CREATE,CAMEROON CIVIL AVIATION AUTHORITY,Mme AVOMO ASSOUMOU Paule Epse KOKI,Government & public sector,Cameroun
+CREATE,PROJET D'ASSISTANCE TECHNIQUE POUR LE DÉVELLOPEMENT DE L'HYDROELECTRICITE SUR LE FLEUVE SANAGA,PODIE LUC,Government & public sector,Cameroun
+CREATE,BANQUE INTERNATIONALE DU CAMEROUN POUR L'EPARGNE ET LE CREDIT,,Bank,Cameroun
+CREATE,KING BAY CENTER S.A,,Miscellaneous,Gabon
+CREATE,DJILO NGASSOP IRENE,DJILO NGASSOP IRENE,Government & public sector,Cameroun
+CREATE,SHOW OFF SARL,TOKA Gislaine,Other industry,Cameroun
+CREATE,CIA CAPITAL INVEST,KACOU NEUBA Isidore,Other Financial services,Cote d'Ivoire
+CREATE,AMT CAMEROUN S.A,Marcel BUERGI,Miscellaneous,Cameroun
+CREATE,DJOUFACK NGOUNE SUZANNE,DJOUFACK NGOUNE Suzanne,Transport & leisure,Cameroun
+CREATE,DJOUFACK NGOUNE SUZANNE,DJOUFACK NGOUNE Suzanne,Transport & leisure,Cameroun
+CREATE,JOCCIDALO PETROLEUM,Olivier SABOCK,Energy and Oil & Gas,Cameroun
+CREATE,TCHARITRANS,Mahamat MOUSSA HASSANE,Miscellaneous,Cameroun
+CREATE,KRIEGER BREWERY COMPANY PLC,Dynamic BEYONGO MUKETE,Industrial manufacturing,Cameroun
+CREATE,3S MOTORS,KEVIN FOSSO,Other industry,Cameroun
+CREATE,TOTAL ENERGIES,NYEBEL Samuel,Energy and Oil & Gas,Cameroun
+CREATE,Pari Mutuel Urbain Camerounais,,Other industry,Cameroun
+CREATE,SOCIETE DES EAUX MINERALES DU CAMEROUN,,Climate change/Water,Cameroun
+CREATE,LOMAR TRANSIT,MBASSI MAX,Miscellaneous,Cameroun
+CREATE,LOMAR TRANSIT,MBASSI MAX,Miscellaneous,Cameroun
+CREATE,MAYA CAM (quincaillerie MBOPPI),Mr. ERNEST,Consumer markets,Cameroun
+CREATE,GRAND ZONG SARL,Mr. GARIEL,Consumer markets,Cameroun
+CREATE,SON ET IMAGE,SADIFFO Michel,Consumer markets,Cameroun
+CREATE,STANDART MARKET,,Consumer markets,Cameroun
+CREATE,SAPRES SARL,,Consumer markets,Cameroun
+CREATE,FRIPPERIE MBOPPI (BOUTIQUE N°1),Mr. DJAMEN,Consumer markets,Cameroun
+CREATE,FRIPPERIE MBOPPI (BOUTIQUE N°2),Mr. KAMDEM Romain,Consumer markets,Cameroun
+CREATE,FRIPPERIE MBOPPI (BOUTIQUE N°3),Mr. BANKOP Serge,Consumer markets,Cameroun
+CREATE,FRIPPERIE MBOPPI(BOUTIQUE N°4),Mr. KARIM,Consumer markets,Cameroun
+CREATE,FRIPPERIE MBOPPI (BOUTIQUE N°5),Mr. TALLA,Consumer markets,Cameroun
+CREATE,FRIPPERIE MBOPPI(BOUTIQUE N°6),Mr. Fabrice,Consumer markets,Cameroun
+CREATE,FRIPPERIE MBOPPI(BOUTIQUE N°7),,Consumer markets,Cameroun
+CREATE,CAMUSAT CAMEROUN,,Other industry,Cameroun
+CREATE,SAVANAH OIL SERVICES CAM,,N/A,Cameroun
+CREATE,STRIDES PHARMA CAMEROUN,,"Infrastructure,  Healthcare",Cameroun
+CREATE,FILIERE BOIS SA,,FORESTIER,Cameroun
+CREATE,BRULERIE MODERNE,,Food and Drink,Cameroun
+CREATE,SOCIETE DE MARGARINERIE DU CAMEROUN SARL,,Food and Drink,Cameroun
+CREATE,GROUPE SEFAC SA,,FORESTIER,Cameroun
+CREATE,SATOM CAMEROUN,,"Infrastructure,  Healthcare",Cameroun
+CREATE,BAKER HUGHES,FOSSI DEMETRIUS,Energy and Oil & Gas,Cameroun
+CREATE,RAZEL CAMEROUN,MELANIE TCHANGA,"Infrastructure,  Healthcare",Cameroun
+CREATE,REGIE DU TERMINAL A CONTENEURS,,Transport & leisure,Cameroun
+CREATE,LA PASTA SA,,Food and Drink,Cameroun
+CREATE,HORIZON PHYTO PLUS,,Other industry,Cameroun
+CREATE,FRIEDLANDER CAMEROUN,,"Infrastructure,  Healthcare",Cameroun
+CREATE,ACIERS ET METAUX DIVERS SARL,,Industrial manufacturing,Cameroun
+SKIP (EXISTS),CONSTRUCTION METALLIQUE,,"Technology, media & telecommunications",Cameroun
+CREATE,CELSON INDUSTRIES,,"Infrastructure,  Healthcare",Cameroun
+CREATE,ROYAL CHIMIE SA,,Food and Drink,Cameroun
+CREATE,COMPLEXE MULTI INDUSTRIEL DU CAMEROUN,,"Infrastructure,  Healthcare",Cameroun
+CREATE,COMPLEXE MULTI INDUSTRIEL DU CAMEROUN,,"Infrastructure,  Healthcare",Cameroun
+CREATE,SAAGRY SARL,,Food and Drink,Cameroun
+CREATE,SAAGRY SARL,,Food and Drink,Cameroun
+CREATE,PERENCO CAMEROUN,PATRICK NDONGO,Energy and Oil & Gas,Cameroun
+CREATE,PERENCO RIO DEL REY,PATRICK NDONGO,Energy and Oil & Gas,Cameroun
+CREATE,PARLITE FOODS,,Food and Drink,Cameroun
+CREATE,CARROSSERIE NOUVELLE DU CAMEROUN,,Food and Drink,Cameroun
+CREATE,SOCIETE DE PLANTATION DU HAUT PENJA,,Food and Drink,Cameroun
+CREATE,LONGSTAR ENERGY CAMEROUN,PATERNE BISSAY,Energy and Oil & Gas,Cameroun
+CREATE,GRACEDOM INVEST S.A,Jacqueline DONGMO,Consumer markets,Cameroun
+CREATE,EXCELLENCE EQUIPMENT & MOTORS NGAOUNDERE SARL,HASSAN Hariri,Energy and Oil & Gas,Cameroun
+CREATE,SOCIETE MINIERE DE L'EST,YOSSA NOUBEYO,Energy and Oil & Gas,Cameroun
+CREATE,KIKOT-MBEBE HYDRO POWER COMPANY,Marlène BIESSY,Energy and Oil & Gas,Cameroun
+CREATE,OHADA,,Private Equity,Cameroun
+CREATE,MUTUELLE DES INSPECTEURS ET OFFICIERS DE DOUANE,,Project & NGO,Cameroun
+CREATE,SHOW OFF ASSURANCE,,Insurance,Cameroun
+CREATE,TCHOUTCHUI DJONDI EPSE TANKEU BAYU Emilienne,TCHOUTCHUI DJONDI EPSE TANKEU BAYU Emilienne,Other industry,Cameroun
+CREATE,ARYSTA LifeScience,,Food and Drink,Cameroun
+CREATE,CFAO MOBILITY CAMEROON,,Miscellaneous,Cameroun
+CREATE,UNITED BANK FOR AFRIKA CAMEROUN S.A,,Bank,Cameroun
+CREATE,MTN CAMEROON LTD,,"Technology, media & telecommunications",Cameroun
+CREATE,LABOREX CAMEROUN,,Miscellaneous,Cameroun
+CREATE,ORANGE CAMEROUN,,"Technology, media & telecommunications",Cameroun
+CREATE,WAFACASH,,Other Financial services,Cameroun
+CREATE,TOTALENERGIES MARKETING CAMEROUN S.A,,Energy and Oil & Gas,Cameroun
+CREATE,MAHIMA SARL,,Consumer markets,Cameroun
+CREATE,SOCIETE DE REPRESENTATION ET DE COMMERCE S.A,,Consumer markets,Cameroun
+SKIP (EXISTS),GUINNESS CAMEROUN SA,Stéphane DESCAZEAUD,Industrial manufacturing,Cameroun
+CREATE,COGENI CAMEROUN S.A,,Consumer markets,Cameroun
+CREATE,ADIALEA CAMEROUN S.A,,Miscellaneous,Cameroun
+CREATE,STE MAHIMA H SARL,,Consumer markets,Cameroun
+CREATE,3C CAMEROUN SAS,,Consumer markets,Cameroun
+CREATE,ESTIA SYNERGIE CAMEROUN,,Miscellaneous,Cameroun
+CREATE,ENEM CAMEROUN,,ENR - Power & Utilities,Cameroun
+CREATE,ENEM CAMEROUN,,ENR - Power & Utilities,Cameroun
+CREATE,ENEM CAMEROUN,,ENR - Power & Utilities,Cameroun
+CREATE,LANA BIO COSMETICS SARL,,Consumer markets,Cameroun
+CREATE,BERNABE CAMEROUN,,Consumer markets,Cameroun
+CREATE,AFRICA FINANCES,FACHEU BELMOND,Bank,Cameroun
+CREATE,CFAO TECHNOLOGIES,,Miscellaneous,Cameroun
+CREATE,Projet de Mobilité Urbaine de Douala,,Project & NGO,Cameroun
+CREATE,Ministère des Domaines du Cadastre et des Affaires Foncières,,Project & NGO,Cameroun
+CREATE,TSG CAMEROUN S.A,François BAFALAK,Energy and Oil & Gas,Cameroun
+CREATE,DAFMA & FORTRANS,Stéphane FOSSO,Miscellaneous,Cameroun
+CREATE,CONGELES DU CAMEROUN S.A,,Miscellaneous,Cameroun
+CREATE,ADDAX PETROLEUM CAMEROUN COMPANY S.A.,,Energy and Oil & Gas,Cameroun
+CREATE,GEODIS PROJECTS CAMEROON S.A,,Energy and Oil & Gas,Cameroun
+CREATE,DAVUM CAMEROUN S.A,,Miscellaneous,Cameroun
+CREATE,ICRAFON,,Miscellaneous,Cameroun
+CREATE,CHOCOLATERIE CONFISERIE DU CAMEROUN,,Industrial manufacturing,Cameroun
+CREATE,LA CAMEROUNAISE D'IMPORTATION-ORCA SARL,,Miscellaneous,Cameroun
+CREATE,LA CAMEROUNAISE D'IMPORTATION-ORCA SARL,,Miscellaneous,Cameroun
+CREATE,ACTIVA CAMEROUN,,Insurance,Cameroun
+CREATE,AFRICA GLOBAL LOGISTICS,,Transport & leisure,Cameroun
+CREATE,3S MOTORS,,Miscellaneous,Cameroun
+CREATE,AFRICA PETROLEUM S.A,,Energy and Oil & Gas,Cameroun
+CREATE,PRINCESSE VOYAGE,,Transport & leisure,Cameroun
+CREATE,GENERALIA ASSURANCE,,Insurance,Cameroun
+CREATE,CANAL + CAMEROUN,,"Technology, media & telecommunications",Cameroun
+CREATE,CAPI CAMEROUN,,Miscellaneous,Cameroun
+CREATE,AFRICA SECURITY,,Insurance,Cameroun
+CREATE,AFRICA SECURITY CAMEROUN,,Miscellaneous,Cameroun
+CREATE,ACCESS BANK,,Bank,Cameroun
+CREATE,MEN GROUP,Wilfried EBANDA,Transport & leisure,Cameroun
+CREATE,CALLENS CAMEROUN S.A,,Other industry,Cameroun
+CREATE,FOSTEMA TCHAD,,Other industry,Tchad
+CREATE,SCI PYRAMIDE,,Industrial manufacturing,Cameroun
+CREATE,MUTUELLE  FINANCE DES FEMMES DYNAMIQUE,,Bank,Cameroun
+CREATE,DOSSIER D' INPORTATION DU SUCRE,,Bank,Cameroun
+CREATE,J2N CONSEIL SARL,NOUTCHIE NJIKI Jackson,Other Financial services,Cameroun
+CREATE,AUTORITE DE L’AVIATION CIVILE DU TCHAD,,Project & NGO,Tchad
+CREATE,KAKOTEL S.A,,"Technology, media & telecommunications",Cameroun
+CREATE,CHINA HARBOUR ENGINEERING COMPANY LTD,Emmanuelle LIU,Miscellaneous,Cameroun
+CREATE,LONGSTAR,LONG HAI,Miscellaneous,Cameroun
+CREATE,Office Régional Agricole et des Produits de Rente du Sud,DOUA Raymond,Government & public sector,Cameroun
+CREATE,Office Régional Agricole et des Produits de Rente du Sud,YOUMBI TETU JEAN DANIEL,Consumer markets,Cameroun
+CREATE,GROUPE KEDE SARL,Madame NKOMBOU epse YOBA Ingrd Sophie Sandrne,ENR - Power & Utilities,Cameroun
+CREATE,DAVINCI INVESTMENT GROUP SARL,FOTSING Firmin Bouler,Bank,Cameroun
+CREATE,AZA Finance,,Bank,Sénégal
+CREATE,SAMSON BILANGNA,SAMSON BILANGNA,Other industry,Cameroun
+CREATE,CAMEROON INTERNATIONALE TRADE SARL,ABDOUL Karim GNAGUELE,Consumer markets,Cameroun
+CREATE,SOLIDARITE MINIERE DU CAMEROUN,KUETE GUSTAVE,ENR - Mining,Cameroun
+CREATE,SOLIDARITE MINIERE DU CAMEROUN,KUETE GUSTAVE,ENR - Mining,Cameroun
+CREATE,BEST WIN S.A,,Other Financial services,Cameroun
+CREATE,CAMEROON INTERNATIONALE TRADE SARL 2,ABDOUL Karim GNAGUELE,Consumer markets,Cameroun
+CREATE,ARCHIBAT PLUS DESIGN,Monsieur NJIOSSI Jean-Roger,Hôtellerie,Cameroun
+CREATE,NOTICAM SA,Monsieur Jules MANDJIA MOUICHE,Energy and Oil & Gas,Cameroun
+CREATE,Advance Maritime Transport,Marcel BUERGI,Transport & leisure,Cameroun
+CREATE,SOLIDARITE MINIERE DU CAMEROUN,KUETE GUSTAVE,N/A,Cameroun
+CREATE,MOTOA TRANSPORT TRANSIT ET  SERVICES (MTTS),MDIBA SAID,Miscellaneous,Cameroun
+CREATE,EVERWELL  CAMEROON CABLES AND ENGINEERING S.A,DANIEL ZHANG LONGFANG,Industrial manufacturing,Cameroun
+CREATE,CAMFISH,EKENE BODO Cyrille,Climate change/Water,Cameroun
+CREATE,SOCIETE INTERAFRICAINE DES PRODUITS PHARMACEUTIQUES ET PARAPHARMACEUTIQUES,Dr Yolande DJOMO Epse MANE,Miscellaneous,Cameroun
+CREATE,Société commerciale de Banque Cameroun,,Bank,Cameroun
+CREATE,EVERWELL CAMEROUN CABLES and ENGINEERING SA,Séraphin,ENR - Power & Utilities,Cameroun
+CREATE,NGOLLE 4 ISSAC RICHARD,,Government & public sector,Cameroun
+CREATE,SOCIETE DE DISTRIBUTION ET DE NEGOCE INTERNATIONAL(SODISNI),,Fast Moving Consumer Goods,Cameroun
+CREATE,FOBS,,Other industry,Cameroun
+CREATE,PETRO SERVICE & LOGISTIQUE SARL,,Transport & leisure,Cameroun
+CREATE,MIA,,Other industry,Cameroun
+CREATE,SIGMA INC LTD,,Other industry,Cameroun
+CREATE,AMT CAMEROUN S.A,Marcel BUERGI,Energy and Oil & Gas,Cameroun
+CREATE,SITRAB-CAM,,Other industry,Cameroun
+CREATE,COMPAGNY OF TRANSPORT AND FAIR TRADE,,Transport & leisure,Cameroun
+CREATE,BRIGHT POINT LOGISTICS SARL,,Transport & leisure,Cameroun
+CREATE,OCEAN PETROLEUM SARL,,Energy and Oil & Gas,Cameroun
+CREATE,ENGINE OIL COMPANY SA,,Energy and Oil & Gas,Cameroun
+CREATE,AFRICA VISION DEVELOPMENT SARL,,Miscellaneous,Cameroun
+CREATE,ARTS ET METIERS SARL,,Miscellaneous,Cameroun
+CREATE,Etude Me Grâce NKAKE BOLLANGA,Grâce NKAKE BOLLANGA,Miscellaneous,Cameroun
+CREATE,MERMO OIL,,Energy and Oil & Gas,Cameroun
+CREATE,PATNUC,,Project & NGO,Cameroun
+CREATE,MINSANTE,,Project & NGO,Cameroun
+CREATE,MINFI,,Project & NGO,Cameroun
+CREATE,CAMLAIT,,Consumer markets,Cameroun
+CREATE,CONNECTION CAMEROUN,,"Technology, media & telecommunications",Cameroun
+CREATE,SOCIETE AFRICAINE DE PROMOTION IMMOBOLIERE  SA,,Consumer markets,Cameroun
+CREATE,SAE,,Miscellaneous,Cameroun
+CREATE,AUG ASSURANCES,,Insurance,Cameroun
+CREATE,CAMLAIT SA,,Food and Drink,Cameroun
+CREATE,BANQUE INTERNATIONAL DU CAMEROUN POUR L'EPARGNE ET LE CREDIT,Monsieur ROCHDI SANHAJI,Bank,Cameroun
+CREATE,MERMO OIL,,Energy and Oil & Gas,Cameroun
+CREATE,Societé d'Expliotation Industrielle Agricole,NYANGON BITA Olga,Other industry,Cameroun
+CREATE,MEN LOGISTICS SA,,Industrial manufacturing,Cameroun
+CREATE,MONSIEUR BAHA Robert,MONSIEUR BAHA Robert,Miscellaneous,Cameroun
+CREATE,EMRALD SECURITIES SERVICES BOURSE,Christian DIN DIKA,Other Financial services,Cameroun
+CREATE,IMPLANTS & SERVICES SARL,Mr. Jean BAHEBECK,Miscellaneous,Cameroun
+CREATE,NORBERT GWEM,,"Infrastructure,  Healthcare",Cameroun
+CREATE,JL2M MULTISERVICES SARL,TETA Emmanuel,Consumer markets,Cameroun
+CREATE,AGROLOGISTIK SARL,NGUEN III Georges Ronald,Food and Drink,Cameroun
+CREATE,COMPLEXE CHIMIQUE D'AFRIQUE CENTRALE,,Food and Drink,Cameroun
+CREATE,SOCOMAC SARL,,Industrial manufacturing,Cameroun
+CREATE,GANESHA CAMEROUN SARL,,Other industry,Cameroun
+CREATE,SODIPRAC SARL,,Other industry,Cameroun
+CREATE,GENERAL TRADING INTERNATIONAL,,Other industry,Cameroun
+CREATE,MEDICARE SARL,,"Infrastructure,  Healthcare",Cameroun
+CREATE,BARYO INTERNATIONAL,,"Infrastructure,  Healthcare",Cameroun
+CREATE,BARYO INTERNATIONAL,,"Infrastructure,  Healthcare",Cameroun
+CREATE,INSTRUMELEC,,Industrial manufacturing,N/A
+CREATE,BIA CAMEROUN SA,,Other industry,N/A
+CREATE,ROUD'AF,,"Infrastructure,  Healthcare",Cameroun
+CREATE,MC DISTRIBUTION,,Food and Drink,Cameroun
+CREATE,OLAM AGRI,,Food and Drink,Cameroun
+CREATE,SOGEA - SATOM,,"Infrastructure,  Healthcare",Cameroun
+CREATE,CECOTRAM APPRO DISTRIBUTION,,Other industry,Cameroun
+CREATE,SEMAGRI SARL,,Food and Drink,Cameroun
+CREATE,SOCIETE SEVI SUARL,,FORESTIER,Cameroun
+CREATE,MIRA CEMENT,,"Infrastructure,  Healthcare",Cameroun
+CREATE,SOCIETE FORESTIERE DU CAMEROUN,,FORESTIER,Cameroun
+CREATE,SPEEDY WORLD WIDE SERVICES,,Miscellaneous,Cameroun
+CREATE,SOLIDARITÉS INTERNATIONAL,,Project & NGO,Cameroun
+CREATE,ZTE INTERNATIONAL LIMITED,,Miscellaneous,Cameroun

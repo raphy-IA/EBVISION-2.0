@@ -32,7 +32,7 @@ class PagePermissionsManager {
                 throw new Error('Token d\'authentification manquant');
             }
 
-            const response = await fetch('/api/auth/check-page-permission', {
+            const response = await fetch('/api/page-permissions/check-page-permission', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -59,7 +59,7 @@ class PagePermissionsManager {
                 return false;
             }
 
-            const response = await fetch('/api/auth/check-page-permission', {
+            const response = await fetch('/api/page-permissions/check-page-permission', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
