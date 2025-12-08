@@ -24,9 +24,9 @@
     "actif": true
   },
   {
-    "libelle": "Fériés",
-    "description": "Fériés",
-    "code": "FER",
+    "libelle": "Promotion",
+    "description": "Promotion",
+    "code": "PROMOTION",
     "actif": true
   },
   {
@@ -36,9 +36,153 @@
     "actif": true
   },
   {
+    "libelle": "Formations",
+    "description": "Formations",
+    "code": "FORMATIONS",
+    "actif": true
+  },
+  {
+    "libelle": "Administration",
+    "description": "Administration",
+    "code": "ADMINISTRA",
+    "actif": true
+  },
+  {
     "libelle": "Autres Temps Disponibles",
     "description": "Autres Temps Disponibles",
     "code": "AUT",
+    "actif": true
+  },
+  {
+    "libelle": "Risk Management",
+    "description": "Risk Management",
+    "code": "RISK_MANAG",
+    "actif": true
+  },
+  {
+    "libelle": "Planification",
+    "description": "Planification",
+    "code": "PLANIFICAT",
+    "actif": true
+  },
+  {
+    "libelle": "Ressources Humaines",
+    "description": "Ressources Humaines",
+    "code": "RESSOURCES",
+    "actif": true
+  },
+  {
+    "libelle": "Information Technology",
+    "description": "Information Technology",
+    "code": "INFORMATIO",
+    "actif": true
+  },
+  {
+    "libelle": "Fériés",
+    "description": "Fériés",
+    "code": "FER",
+    "actif": true
+  },
+  {
+    "libelle": "Absence Autorisée",
+    "description": "Absence Autorisée",
+    "code": "ABSENCE_AU",
+    "actif": true
+  },
+  {
+    "libelle": "Prospection et développement du portefeuille client",
+    "description": "Prospection et développement du portefeuille client",
+    "code": "PROSPECTIO",
+    "actif": true
+  },
+  {
+    "libelle": "Cotation et négociation des offres d’assurances",
+    "description": "Cotation et négociation des offres d’assurances",
+    "code": "COTATION_E",
+    "actif": true
+  },
+  {
+    "libelle": "Conseil et accompagnement client",
+    "description": "Conseil et accompagnement client",
+    "code": "CONSEIL_ET",
+    "actif": true
+  },
+  {
+    "libelle": "Gestion administrative",
+    "description": "Gestion administrative",
+    "code": "GESTION_AD",
+    "actif": true
+  },
+  {
+    "libelle": "Gestion des contrats d’assurances",
+    "description": "Gestion des contrats d’assurances",
+    "code": "GESTION_DE",
+    "actif": true
+  },
+  {
+    "libelle": "Suivi et gestion des sinistres",
+    "description": "Suivi et gestion des sinistres",
+    "code": "SUIVI_ET_G",
+    "actif": true
+  },
+  {
+    "libelle": "Production d’assurances",
+    "description": "Production d’assurances",
+    "code": "PRODUCTION",
+    "actif": true
+  },
+  {
+    "libelle": "Activités inter BU/GROUP",
+    "description": "Activités inter BU/GROUP",
+    "code": "ACTIVIT_S_",
+    "actif": true
+  },
+  {
+    "libelle": "Recrutement",
+    "description": "Recrutement",
+    "code": "RECRUTEMEN",
+    "actif": true
+  },
+  {
+    "libelle": "Travaux Inter BU / GROUP",
+    "description": "Travaux Inter BU / GROUP",
+    "code": "TRAVAUX_IN",
+    "actif": true
+  },
+  {
+    "libelle": "Voyages",
+    "description": "Voyages",
+    "code": "VOYAGES",
+    "actif": true
+  },
+  {
+    "libelle": "SITES WEB ( mises à jour, control, sécurité et conceptions)",
+    "description": "SITES WEB ( mises à jour, control, sécurité et conceptions)",
+    "code": "SITES_WEB_",
+    "actif": true
+  },
+  {
+    "libelle": "Réseaux sociaux (booste, publication, control des commentaires et messages)",
+    "description": "Réseaux sociaux (booste, publication, control des commentaires et messages)",
+    "code": "R_SEAUX_SO",
+    "actif": true
+  },
+  {
+    "libelle": "Courses et commissions",
+    "description": "Courses et commissions",
+    "code": "COURSES_ET",
+    "actif": true
+  },
+  {
+    "libelle": "Graphisme (Documents internes -  3D -  Vidéo )",
+    "description": "Graphisme (Documents internes -  3D -  Vidéo )",
+    "code": "GRAPHISME_",
+    "actif": true
+  },
+  {
+    "libelle": "IT Support",
+    "description": "IT Support",
+    "code": "IT_SUPPORT",
     "actif": true
   }
 ]

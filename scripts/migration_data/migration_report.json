@@ -1,0 +1,523 @@
+{
+  "success": [
+    {
+      "client": "CECEC SA",
+      "mission": "Assistance juridique",
+      "code": "EB--25-006"
+    },
+    {
+      "client": "SOCIETE ANONYME DES BOISSONS DU CAMEROUN",
+      "mission": "Gestion de la paie des Expatriés",
+      "code": "EB--25-008"
+    },
+    {
+      "client": "WEBB FONTAINE GROUP",
+      "mission": "Assistance juridique",
+      "code": "EB--25-013"
+    },
+    {
+      "client": "LA REGIONALE BANK S.A",
+      "mission": "Assistance fiscale, juridique et sociale permanente",
+      "code": "EB--25-014"
+    },
+    {
+      "client": "SOCIETE ANONYME DES BOISSONS DU CAMEROUN",
+      "mission": "Assistance fiscale",
+      "code": "EB--25-024"
+    },
+    {
+      "client": "SOCIETE ANONYME DES BOISSONS DU CAMEROUN",
+      "mission": "Assistance à obtention des visas de contrats de travail des expatriés",
+      "code": "EB--25-050"
+    },
+    {
+      "client": "AFRICA BRIGHT SECURITIES SA",
+      "mission": "Assistance juridique et fiscale permanente",
+      "code": "EB--25-053"
+    },
+    {
+      "client": "AFRICA BRIGHT ASSET MANAGEMENT SA",
+      "mission": "Assistance juridique et fiscale permanente",
+      "code": "EB--25-054"
+    },
+    {
+      "client": "NACHTIGAL HYDRO POWER COMPANY",
+      "mission": "Veille fiscale permanente et audit fiscal trimestriel",
+      "code": "EB--25-060"
+    },
+    {
+      "client": "KRIBI POWER DEVELOPMENT COMPANY",
+      "mission": "Assistance for Post Clearance Control",
+      "code": "EB--25-119"
+    },
+    {
+      "client": "MEDECINS SANS FRONTIERES",
+      "mission": "Assistance juridique et fiscale permanente",
+      "code": "EB--25-130"
+    },
+    {
+      "client": "LOXEA S.A",
+      "mission": "Assistance à contrôle sur pièces des exercices 2019, 2020 et 2021",
+      "code": "EB--25-137"
+    },
+    {
+      "client": "CFAO TECHNOLOGIES S.A",
+      "mission": "Assistance à contrôle et contentieux douaniers",
+      "code": "EB--25-157"
+    },
+    {
+      "client": "GUINNESS CAMEROUN S.A",
+      "mission": "Gestion de la paie des expatriés",
+      "code": "EB--25-166"
+    },
+    {
+      "client": "TRACTAFRIC EQUIPMENT CAMEROUN",
+      "mission": "Assistance à contrôle douanier à postériori",
+      "code": "EB--25-170"
+    },
+    {
+      "client": "AMT CAMEROUN S.A",
+      "mission": "Assistance à l'élaboration de la DSF rectificative de l'exercice2022 et de la DSF de l'exercice 2023",
+      "code": "EB--25-179"
+    },
+    {
+      "client": "NACHTIGAL HYDRO POWER COMPANY",
+      "mission": "Assistance à l'évaluation de la dépense fiscale de la société NHPC au titre de l'exercice 2023",
+      "code": "EB--25-187"
+    },
+    {
+      "client": "TRACTAFRIC EQUIPMENT CAMEROUN",
+      "mission": "Assistance à contrôle et contentieux douaniers",
+      "code": "EB--25-188"
+    },
+    {
+      "client": "AMT CAMEROUN S.A",
+      "mission": "Assistance juridique et fiscale permanente",
+      "code": "EB--25-193"
+    },
+    {
+      "client": "DHL GLOBAL FORWARDING CAMEROUN PLC",
+      "mission": "Assistance à contentieux fiscal des exercices 2021 & 2022",
+      "code": "EB--25-196"
+    },
+    {
+      "client": "LONGSTAR EQUIPMENT CAMEROUN",
+      "mission": "Assistance douanière permanente",
+      "code": "EB--25-204"
+    },
+    {
+      "client": "AMT CAMEROUN S.A",
+      "mission": "Assistance permanente-Douane",
+      "code": "EB--25-206"
+    },
+    {
+      "client": "Mutuelles des inspecteur et officiers des Douanes du Cameroun",
+      "mission": "ASSISTANCE COMPTABLE",
+      "code": "EB -25-207"
+    },
+    {
+      "client": "MEDECINS SANS FRONTIERES",
+      "mission": "DSF 2023",
+      "code": "EB -25-209"
+    },
+    {
+      "client": "AMT CAMEROUN S.A",
+      "mission": "DSF & ANALYSE DES COMPTES",
+      "code": "EB -25-212"
+    },
+    {
+      "client": "TSG CAMEROUN S.A",
+      "mission": "Assistance à secrétariat juridique",
+      "code": "EB--25-223"
+    },
+    {
+      "client": "J2N CONSEIL SARL",
+      "mission": "Assistance à recherche de financement",
+      "code": "EXF-25-228"
+    },
+    {
+      "client": "AMT CAMEROUN S.A",
+      "mission": "AUDIT DES CREANCES",
+      "code": "EB -25-229"
+    },
+    {
+      "client": "KAKOTEL S.A",
+      "mission": "ASSISTANCE COMPTABLE",
+      "code": "EB -25-230"
+    },
+    {
+      "client": "MEDECINS SANS FRONTIERES",
+      "mission": "APUREMENT ATN PAR MACATN",
+      "code": "EB--25-231"
+    },
+    {
+      "client": "KIKOT-MBEBE HYDRO POWER COMPANY",
+      "mission": "Assistance fiscale et sociale permanente",
+      "code": "EB--25-234"
+    },
+    {
+      "client": "MEN GROUP",
+      "mission": "Assistance juridique et fiscale permanente",
+      "code": "EB--25-238"
+    },
+    {
+      "client": "LA REGIONALE BANK S.A",
+      "mission": "Assistance à VGC 2020 à 2022",
+      "code": "EB--25-240"
+    },
+    {
+      "client": "KIKOT-MBEBE HYDRO POWER COMPANY",
+      "mission": "Assistance à l'optimisation de la paie",
+      "code": "EB--25-241"
+    },
+    {
+      "client": "AZA Finance",
+      "mission": "Transfert à l'international",
+      "code": "EXF-25-245"
+    },
+    {
+      "client": "CAMEROON INTERNATIONALE TRADE SARL",
+      "mission": "Assistance à recherche de financement",
+      "code": "EXF-25-248"
+    },
+    {
+      "client": "CAMEROON INTERNATIONALE TRADE SARL 2",
+      "mission": "Assistance à recherche de financement",
+      "code": "EXF-25-249"
+    },
+    {
+      "client": "Advance Maritime Transport",
+      "mission": "Assistance à la recherche de financement",
+      "code": "EXF-25-252"
+    },
+    {
+      "client": "BEST WIN S.A",
+      "mission": "ASSISTANCE COMPTABLE",
+      "code": "EB -25-253"
+    },
+    {
+      "client": "CAMFISH",
+      "mission": "Assistance à recherche de financement",
+      "code": "EXF-25-254"
+    },
+    {
+      "client": "SOCIETE COMMERCIALE DE BANQUE CAMEROUN S.A",
+      "mission": "Assistance à régularisation des opérations d'importation des logiciels, cartes et chequiers",
+      "code": "EB--25-255"
+    },
+    {
+      "client": "CHINA HARBOUR ENGINEERING COMPANY LTD",
+      "mission": "Assistance à obtention des facilités douanières dans le cadre des APEC",
+      "code": "EB--25-258"
+    },
+    {
+      "client": "SHOW OFF SARL",
+      "mission": "Assistance à controle et contentieux douanier",
+      "code": "EB--25-259"
+    },
+    {
+      "client": "ADIALEA CAMEROUN S.A",
+      "mission": "Assistance à controle douanier",
+      "code": "EB--25-260"
+    },
+    {
+      "client": "EVERWELL  CAMEROON CABLES AND ENGINEERING S.A",
+      "mission": "Assistance fiscale et douanière",
+      "code": "EB--25-263"
+    },
+    {
+      "client": "MEDECINS SANS FRONTIERES",
+      "mission": "DEDOUANEMENT DE TROIS CONTENEUR FRIGORIFIQUE P/C MSF",
+      "code": "EB--25-264"
+    },
+    {
+      "client": "AMT CAMEROUN S.A",
+      "mission": "Commissariat Aux comptes",
+      "code": "EB -25-265"
+    },
+    {
+      "client": "MEDECINS SANS FRONTIERES",
+      "mission": "DEDOUANEMENT D'UN CONTENEUR FRIGORIFIQUE P/C MSF",
+      "code": "EB--25-266"
+    },
+    {
+      "client": "MEDECINS SANS FRONTIERES",
+      "mission": "DEDOUANEMENT DE DEUX CONTENEUR FRIGORIFIQUE P/C MSF",
+      "code": "EB--25-267"
+    },
+    {
+      "client": "NGOLLE 4 ISSAC RICHARD",
+      "mission": "DEDOUANEMENT D'1 VEHICULE TIGGO 9 DANS TC 20'",
+      "code": "EB--25-268"
+    },
+    {
+      "client": "SIGMA INC LTD",
+      "mission": "DEDOUANEMENT UN CONTENEUR DISANT CONTENIR RECYCLED-STRETCH FILM ; RECYCLED-PP STRAPPING ; RECYCLED-CLIP 12MM",
+      "code": "EB--25-270"
+    },
+    {
+      "client": "LA REGIONALE BANK S.A",
+      "mission": "Assistance à VGC des exercices 2021 et 2022",
+      "code": "EB--25-271"
+    },
+    {
+      "client": "DHL EXPRESS",
+      "mission": "Assistance à VGC des exercices 2020 2021 et 2022",
+      "code": "EB--25-272"
+    },
+    {
+      "client": "DHL GLOBAL FORWARDING CAMEROUN PLC",
+      "mission": "Assistance à VGC des exercices 2021 et 2022",
+      "code": "EB--25-273"
+    },
+    {
+      "client": "LOXEA S.A",
+      "mission": "Assistance à VGC des exercices 2020, 2021 et 2022",
+      "code": "EB--25-274"
+    },
+    {
+      "client": "ACCESS BANK PLC",
+      "mission": "Assistance à VGC des exercices 2020, 2021 et 2022",
+      "code": "EB--25-275"
+    },
+    {
+      "client": "ACCESS BANK PLC",
+      "mission": "Assistance juridique et fiscale permanente",
+      "code": "EB--25-276"
+    },
+    {
+      "client": "ACCESS BANK PLC",
+      "mission": "Revue de la liasse fiscale annuelle (DSF) de l'exercice 2024",
+      "code": "EB--25-277"
+    },
+    {
+      "client": "AMT CAMEROUN S.A",
+      "mission": "Revue de la liasse fiscale annuelle (DSF) de l'exercice 2024",
+      "code": "EB--25-278"
+    },
+    {
+      "client": "KIKOT-MBEBE HYDRO POWER COMPANY",
+      "mission": "Assistance juridique et fiscale permanente complémentaire",
+      "code": "EB--25-279"
+    },
+    {
+      "client": "SITRAB-CAM",
+      "mission": "Assistance du dossier API",
+      "code": "EXF-25-281"
+    },
+    {
+      "client": "MEDECINS SANS FRONTIERES",
+      "mission": "Assistance au montage et à la revue de la DSF de l'exercice 2024",
+      "code": "EB--25-282"
+    },
+    {
+      "client": "LA REGIONALE BANK S.A",
+      "mission": "Assistance à contrôle CNPS de l'exercice 2023",
+      "code": "EB--25-283"
+    },
+    {
+      "client": "NACHTIGAL HYDRO POWER COMPANY",
+      "mission": "Assistance à évaluation de la dépense fiscale de l'exercice 2024",
+      "code": "EB--25-284"
+    },
+    {
+      "client": "DHL EXPRESS",
+      "mission": "Assistance à insertion dans la liste des entreprises habilitées à opérer la retenue à la source de la TVA et de l’AIR au titre de l’exercice 2025",
+      "code": "EB--25-285"
+    },
+    {
+      "client": "KIKOT-MBEBE HYDRO POWER COMPANY",
+      "mission": "Assistance à obtention Carte de Séjour expatrié",
+      "code": "EB--25-288"
+    },
+    {
+      "client": "AMT CAMEROUN S.A",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-290"
+    },
+    {
+      "client": "COMPAGNY OF TRANSPORT AND FAIR TRADE",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-291"
+    },
+    {
+      "client": "LOXEA S.A",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-293"
+    },
+    {
+      "client": "MEDECINS SANS FRONTIERES",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-294"
+    },
+    {
+      "client": "HEVEA CAMEROUN S.A",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-295"
+    },
+    {
+      "client": "BRIGHT POINT LOGISTICS SARL",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-296"
+    },
+    {
+      "client": "TELCAR COCOA LIMITED",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-297"
+    },
+    {
+      "client": "OCEAN PETROLEUM SARL",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-298"
+    },
+    {
+      "client": "ENGINE OIL COMPANY SA",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-299"
+    },
+    {
+      "client": "KIKOT-MBEBE HYDRO POWER COMPANY",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-300"
+    },
+    {
+      "client": "SOCIETE GENERAL CAMEROUN",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-301"
+    },
+    {
+      "client": "TRACTAFRIC EQUIPMENT CAMEROUN",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-302"
+    },
+    {
+      "client": "EVERWELL CAMEROUN CABLES and ENGINEERING SA",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-303"
+    },
+    {
+      "client": "CECEC SA",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-304"
+    },
+    {
+      "client": "SOCIETE ANONYME DES BOISSONS DU CAMEROUN",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-305"
+    },
+    {
+      "client": "AFRICA VISION DEVELOPMENT SARL",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-306"
+    },
+    {
+      "client": "ATTIJARI SECURITIES CENTRAL AFRICA",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-307"
+    },
+    {
+      "client": "NACHTIGAL HYDRO POWER COMPANY",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-308"
+    },
+    {
+      "client": "ENEO CAMEROUN",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-309"
+    },
+    {
+      "client": "TOTALENERGIES MARKETING CAMEROUN S.A",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-310"
+    },
+    {
+      "client": "MAÎTRE CHEMOU",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-312"
+    },
+    {
+      "client": "ACCESS BANK PLC",
+      "mission": "Participation au séminaire de la loi de finances 2025",
+      "code": "EB--25-314"
+    },
+    {
+      "client": "PORT AUTONOME DE DOUALA",
+      "mission": "Assistance à obtention d'une remise totale ou d'une modération des pénalités et intérêts de retard",
+      "code": "EB--25-316"
+    },
+    {
+      "client": "CAMLAIT",
+      "mission": "Assistance au développement",
+      "code": "EXF-25-339"
+    },
+    {
+      "client": "MERMO OIL",
+      "mission": "Assistance à recherche de financement",
+      "code": "EXF-25-340"
+    },
+    {
+      "client": "Societé d'Expliotation Industrielle Agricole",
+      "mission": "Assistance à recherche de financement",
+      "code": "EXF-25-342"
+    },
+    {
+      "client": "TSG CAMEROUN S.A",
+      "mission": "Assistance à rédaction des actes juridiques",
+      "code": "EB--25-344"
+    },
+    {
+      "client": "MONSIEUR BAHA Robert",
+      "mission": "Assistance à déclaration préremplie de l’impôt sur les Sociétés et l’Impôt sur le Revenu des Personnes Physiques",
+      "code": "EB--25-345"
+    },
+    {
+      "client": "EMRALD SECURITIES SERVICES BOURSE SA",
+      "mission": "Revue fiscale des opérations des exercices non prescrits (2021_2024)",
+      "code": "EB--25-346"
+    },
+    {
+      "client": "DJILO NGASSOP IRENE",
+      "mission": "DEDOUANEMENT TOYOTA HIGHLANDER 2020",
+      "code": "EB--25-347"
+    },
+    {
+      "client": "NORBERT GWEM",
+      "mission": "DEDOUANEMENT D'1 D7H ANNEE: 1986 + 1 PORTE-ENGINSANNEE: 1974 + 1 TRACTEUR ROUTIER ANNEE: 2007",
+      "code": "EB--25-350"
+    },
+    {
+      "client": "IMPLANTS & SERVICES SARL",
+      "mission": "DEDOUANEMENT D'1 CAMION PLATEAU MERCEDES BENZ AVEC GRUE ANNEE: 1977 PAR UNE MISE A LA CONSOMMATION",
+      "code": "EB--25-351"
+    },
+    {
+      "client": "AMT CAMEROUN S.A",
+      "mission": "Mise à disposition et gestion de la paie du personnel détaché près des entités locales d'ADDAX PETROLEUM",
+      "code": "RH-25-353"
+    },
+    {
+      "client": "AGROLOGISTIK SARL",
+      "mission": "DEDOUANEMENT D'UN CAMION BENNE SHACMAN",
+      "code": "EB--25-357"
+    },
+    {
+      "client": "SAMSON BILANGNA",
+      "mission": "DEDOUANEMENT D'UN CONTENEUR 20' DE CARREAUX",
+      "code": "EB--25-358"
+    }
+  ],
+  "skipped": [
+    {
+      "client_raw": "",
+      "activity_raw": "<No Code>",
+      "resolved_client": "",
+      "reason": "Mission Match Failed"
+    },
+    {
+      "client_raw": "",
+      "activity_raw": "",
+      "resolved_client": "",
+      "reason": "Mission Match Failed"
+    }
+  ]
+}
