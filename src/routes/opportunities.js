@@ -16,12 +16,12 @@ const fs = require('fs');
 // GET /api/opportunities - Récupérer toutes les opportunités
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const { 
-            page = 1, 
-            limit = 10, 
-            search, 
-            statut, 
-            client_id, 
+        const {
+            page = 1,
+            limit = 10,
+            search,
+            statut,
+            client_id,
             collaborateur_id,
             business_unit_id,
             opportunity_type_id,
@@ -30,14 +30,14 @@ router.get('/', authenticateToken, async (req, res) => {
         } = req.query;
 
         const offset = (page - 1) * limit;
-        
+
         // Récupérer les Business Units auxquelles l'utilisateur a accès
         const permissionManager = require('../utils/PermissionManager');
         const userBusinessUnits = await permissionManager.getUserBusinessUnits(req.user.id);
         const userBusinessUnitIds = userBusinessUnits.map(bu => bu.id);
-        
+
         console.log(`🔍 Utilisateur ${req.user.id} a accès aux BU:`, userBusinessUnitIds);
-        
+
         const options = {
             limit: parseInt(limit),
             offset: parseInt(offset),
@@ -128,9 +128,9 @@ router.get('/won-for-mission', authenticateToken, async (req, res) => {
             )
             ORDER BY o.created_at DESC
         `;
-        
+
         const result = await pool.query(query);
-        
+
         res.json({
             success: true,
             data: {
@@ -150,7 +150,7 @@ router.get('/won-for-mission', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const opportunity = await Opportunity.findById(req.params.id);
-        
+
         if (!opportunity) {
             return res.status(404).json({
                 success: false,
@@ -379,7 +379,7 @@ router.post('/:id/documents/upload', authenticateToken, upload.single('file'), a
 router.post('/', authenticateToken, async (req, res) => {
     try {
         console.log('📋 Données reçues dans la route POST:', JSON.stringify(req.body, null, 2));
-        
+
         const {
             nom,
             description,
@@ -444,9 +444,9 @@ router.post('/', authenticateToken, async (req, res) => {
         } catch (fyErr) {
             console.warn('⚠️ Impossible de déterminer l\'année fiscale en cours pour l\'opportunité:', fyErr.message);
         }
-        
+
         console.log('📋 Données envoyées au modèle Opportunity.create:', JSON.stringify(opportunityData, null, 2));
-        
+
         const opportunity = await Opportunity.create(opportunityData);
 
         // Instancier les étapes depuis les templates si un type est fourni
@@ -490,7 +490,7 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const opportunity = await Opportunity.findById(req.params.id);
-        
+
         if (!opportunity) {
             return res.status(404).json({
                 success: false,
@@ -522,7 +522,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const deleted = await Opportunity.delete(req.params.id);
-        
+
         if (!deleted) {
             return res.status(404).json({
                 success: false,
@@ -547,7 +547,7 @@ router.delete('/:id', async (req, res) => {
 router.get('/stats/overview', authenticateToken, async (req, res) => {
     try {
         const stats = await Opportunity.getStats();
-        
+
         res.json({
             success: true,
             data: {
@@ -566,11 +566,12 @@ router.get('/stats/overview', authenticateToken, async (req, res) => {
 // GET /api/opportunities/form-data - Données pour les formulaires
 router.get('/form-data', authenticateToken, async (req, res) => {
     try {
-        const [clients, collaborateurs, businessUnits, opportunityTypes] = await Promise.all([
+        const [clients, collaborateurs, businessUnits, opportunityTypes, statutsResult] = await Promise.all([
             Client.findAll(),
             Collaborateur.findAll(),
             BusinessUnit.findAll(),
-            OpportunityType.findAll()
+            OpportunityType.findAll(),
+            pool.query('SELECT DISTINCT statut FROM opportunities WHERE statut IS NOT NULL ORDER BY statut')
         ]);
 
         res.json({
@@ -579,7 +580,8 @@ router.get('/form-data', authenticateToken, async (req, res) => {
                 clients: clients,
                 collaborateurs: collaborateurs,
                 businessUnits: businessUnits,
-                opportunityTypes: opportunityTypes
+                opportunityTypes: opportunityTypes,
+                statuts: statutsResult.rows.map(r => r.statut)
             }
         });
     } catch (error) {
@@ -596,7 +598,7 @@ router.get('/:id/history', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const history = await OpportunityWorkflowService.getOpportunityHistory(id);
-        
+
         res.json({
             success: true,
             data: history
@@ -787,7 +789,7 @@ router.post('/:id/reopen', authenticateToken, async (req, res) => {
                     LIMIT 1
                 `;
                 const lastStageResult = await client.query(lastStageQuery, [id]);
-                
+
                 if (lastStageResult.rows.length > 0) {
                     const lastStage = lastStageResult.rows[0];
                     // Si la dernière étape était terminée, reprendre depuis le début

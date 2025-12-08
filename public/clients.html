@@ -253,27 +253,27 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-3 mb-3">
-                                <label for="statusFilter" class="form-label">Statut</label>
-                                <select class="form-select" id="statusFilter">
-                                    <option value="">Tous les statuts</option>
+                                <label for="typeFilter" class="form-label">Type</label>
+                                <select class="form-select" id="typeFilter">
+                                    <option value="">Tous les types</option>
                                     <option value="PROSPECT">Prospect</option>
                                     <option value="CLIENT">Client</option>
                                     <option value="CLIENT_FIDELE">Client Fidèle</option>
+                                    <option value="ABANDONNE">Abandonné</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="statusFilter" class="form-label">Statut</label>
+                                <select class="form-select" id="statusFilter">
+                                    <option value="">Tous les statuts</option>
                                     <option value="ACTIF">Actif</option>
                                     <option value="INACTIF">Inactif</option>
-                                    <option value="ABANDONNE">Abandonné</option>
                                 </select>
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label for="sectorFilter" class="form-label">Secteur</label>
                                 <select class="form-select" id="sectorFilter">
                                     <option value="">Tous les secteurs</option>
-                                    <option value="AUDIT">Audit</option>
-                                    <option value="COMPTABILITE">Comptabilité</option>
-                                    <option value="FINANCE">Finance</option>
-                                    <option value="JURIDIQUE">Juridique</option>
-                                    <option value="FISCALITE">Fiscalité</option>
-                                    <option value="GOUVERNANCE">Gouvernance</option>
                                 </select>
                             </div>
                             <div class="col-md-3 mb-3">
@@ -302,14 +302,12 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Sigle</th>
-                                        <th>Nom</th>
+                                        <th>Client</th>
                                         <th>Secteur</th>
-                                        <th>Email</th>
-                                        <th>Téléphone</th>
-                                        <th>Ville</th>
+                                        <th>Contact</th>
+                                        <th>Localisation</th>
                                         <th>Statut</th>
-                                        <th>Actions</th>
+                                        <th class="text-end">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="clientsTableBody">
@@ -396,13 +394,24 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="clientAdresse" class="form-label">Adresse</label>
-                                <textarea class="form-control" id="clientAdresse" rows="3"></textarea>
+                                <label for="clientType" class="form-label">Type *</label>
+                                <select class="form-select" id="clientType" required>
+                                    <option value="">Sélectionner un type</option>
+                                    <option value="PROSPECT">Prospect</option>
+                                    <option value="CLIENT">Client</option>
+                                    <option value="CLIENT_FIDELE">Client Fidèle</option>
+                                </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="clientStatut" class="form-label">Statut</label>
-                                <select class="form-select" id="clientStatut">
+                                <label for="clientStatut" class="form-label">Statut *</label>
+                                <select class="form-select" id="clientStatut" required>
                                 </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="clientAdresse" class="form-label">Adresse</label>
+                                <textarea class="form-control" id="clientAdresse" rows="2"></textarea>
                             </div>
                         </div>
                         <div class="row">
@@ -521,9 +530,11 @@
                         // Secteurs avec sous-secteurs
                         secteurs = responseData.data.secteurs; // Stocker les secteurs
                         populateSecteursOptions('clientSector', secteurs);
+                        populateSecteursOptions('sectorFilter', secteurs);
 
                         // Autres listes simples
                         populateSelectOptions('clientStatut', responseData.data.statuts);
+                        populateSelectOptions('clientType', responseData.data.types);
                         populateSelectOptions('clientTailleEntreprise', responseData.data.tailles_entreprise);
                         populateSelectOptions('clientSourceProspection', responseData.data.sources_prospection);
                         populateSelectOptions('clientFormeJuridique', responseData.data.formes_juridiques);
@@ -605,6 +616,7 @@
 
         // Configuration des événements
         function setupEventListeners() {
+            document.getElementById('typeFilter').addEventListener('change', () => filterClients(true));
             document.getElementById('statusFilter').addEventListener('change', () => filterClients(true));
             document.getElementById('sectorFilter').addEventListener('change', () => filterClients(true));
             document.getElementById('searchInput').addEventListener('input', debounce(() => filterClients(true), 500));
@@ -647,7 +659,8 @@
             // Afficher loading
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center">
+                <tr>
+                    <td colspan="6" class="text-center">
                         <div class="loading">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Chargement...</span>
@@ -669,6 +682,7 @@
                 const params = new URLSearchParams({
                     page: currentPage,
                     limit: itemsPerPage,
+                    type: document.getElementById('typeFilter').value || '',
                     statut: document.getElementById('statusFilter').value || '',
                     secteur_activite: document.getElementById('sectorFilter').value || '',
                     search: document.getElementById('searchInput').value || ''
@@ -766,7 +780,7 @@
             if (clientsToShow.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-center text-muted">
+                        <td colspan="6" class="text-center text-muted">
                             <i class="fas fa-inbox fa-2x mb-3"></i>
                             <p>Aucun client trouvé</p>
                         </td>
@@ -798,14 +812,30 @@
 
                 return `
                     <tr>
-                        <td><span class="sigle-badge">${client.sigle || 'N/A'}</span></td>
-                        <td>${client.nom || 'N/A'}</td>
-                        <td>${secteurDisplay}</td>
-                        <td>${client.email || 'N/A'}</td>
-                        <td>${client.telephone || 'N/A'}</td>
-                        <td>${client.ville || 'N/A'}</td>
-                        <td><span class="status-badge status-${client.statut?.toLowerCase()}">${client.statut || 'N/A'}</span></td>
                         <td>
+                            <div class="d-flex align-items-center">
+                                <span class="sigle-badge me-2">${client.sigle || 'N/A'}</span>
+                                <div>
+                                    <div class="fw-bold">${client.nom || 'N/A'}</div>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-tag me-1 text-primary"></i>${client.type || 'N/A'}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${secteurDisplay}</td>
+                        <td>
+                            <div><i class="fas fa-envelope text-muted me-2"></i><a href="mailto:${client.email}" class="text-body">${client.email || 'N/A'}</a></div>
+                            <div class="small"><i class="fas fa-phone text-muted me-2"></i>${client.telephone || 'N/A'}</div>
+                        </td>
+                        <td>
+                            <div><i class="fas fa-map-marker-alt text-muted me-2"></i>${client.ville || 'N/A'}</div>
+                            <div class="small text-muted">${client.pays_nom || client.pays || ''}</div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-${client.statut?.toLowerCase()}">${client.statut || 'N/A'}</span>
+                        </td>
+                        <td class="text-end">
                             <button class="btn btn-sm btn-outline-primary me-1" onclick="editClient('${client.id}')">
                                 <i class="fas fa-edit"></i>
                             </button>
@@ -842,7 +872,9 @@
                 email: document.getElementById('clientEmail').value,
                 telephone: document.getElementById('clientTelephone').value,
                 adresse: document.getElementById('clientAdresse').value,
+                adresse: document.getElementById('clientAdresse').value,
                 statut: document.getElementById('clientStatut').value,
+                type: document.getElementById('clientType').value,
                 notes: document.getElementById('clientNotes').value,
                 ville: document.getElementById('clientVille').value,
                 code_postal: document.getElementById('clientCodePostal').value,
@@ -901,7 +933,9 @@
                 document.getElementById('clientEmail').value = client.email || '';
                 document.getElementById('clientTelephone').value = client.telephone || '';
                 document.getElementById('clientAdresse').value = client.adresse || '';
-                document.getElementById('clientStatut').value = client.statut || 'PROSPECT';
+                document.getElementById('clientAdresse').value = client.adresse || '';
+                document.getElementById('clientStatut').value = client.statut || 'ACTIF';
+                document.getElementById('clientType').value = client.type || 'PROSPECT';
                 document.getElementById('clientNotes').value = client.notes || '';
                 document.getElementById('clientVille').value = client.ville || '';
                 document.getElementById('clientCodePostal').value = client.code_postal || '';

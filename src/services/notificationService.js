@@ -1011,6 +1011,28 @@ class NotificationService {
                 });
             }
 
+            // Notification pour les AUTRES validateurs (qui n'ont pas fait l'action mais étaient sollicités)
+            const otherValidatorsRes = await pool.query(`
+                SELECT DISTINCT u.id, u.email, u.nom, u.prenom
+                FROM prospecting_campaign_validations pcv
+                JOIN collaborateurs c ON pcv.validateur_id = c.id
+                JOIN users u ON c.user_id = u.id
+                WHERE pcv.campaign_id = $1
+                  AND (pcv.statut_validation = 'RESOLU_AUTRE' OR (pcv.statut_validation = 'EN_ATTENTE' AND u.id != $2))
+                  AND u.id != $2
+            `, [campaignId, validatorId]);
+
+            for (const otherVal of otherValidatorsRes.rows) {
+                await this.createNotification({
+                    type: 'CAMPAIGN_VALIDATION_INFO',
+                    title: `Campagne ${decisionText.toLowerCase()} par un autre validateur`,
+                    message: `La campagne "${data.campaign_name}" a été traitée par ${validatorUser ? validatorUser.nom : 'un autre responsable'}. Aucune action requise de votre part.`,
+                    user_id: otherVal.id,
+                    priority: 'LOW',
+                    metadata: { ...metaBase, handled_by: validatorUser ? validatorUser.nom : 'Autre' }
+                });
+            }
+
             // Construire l'email détaillé pour créateur / responsable
             const companiesSection = (list, title) => {
                 if (!list || list.length === 0) return '';

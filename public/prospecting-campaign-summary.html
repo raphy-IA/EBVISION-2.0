@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détails de Campagne</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
+
     <link rel="stylesheet" href="css/app-title.css">
-    
+
     <!-- Scripts pour la top bar EBVISION 2.0 -->
     <script src="js/global-auth.js"></script>
     <!-- Script pour la gestion utilisateur -->
@@ -21,10 +22,10 @@
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
-    
-    
-    
-    
+
+
+
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -33,26 +34,26 @@
             --warning-color: #f39c12;
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
-            --card-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             --border-radius: 12px;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
             color: #2c3e50;
         }
-        
+
         .page-wrapper {
             display: flex;
             min-height: 100vh;
         }
-        
+
         .main-content-area {
             flex-grow: 1;
             padding: 2rem;
         }
-        
+
         /* Header de la campagne */
         .campaign-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -62,18 +63,18 @@
             margin-bottom: 2rem;
             box-shadow: var(--card-shadow);
         }
-        
+
         .campaign-title {
             font-size: 1.8rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
-        
+
         .campaign-subtitle {
             opacity: 0.9;
             font-size: 1rem;
         }
-        
+
         .status-badge {
             padding: 0.5rem 1rem;
             border-radius: 20px;
@@ -82,12 +83,27 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
-        .status-draft { background: #e9ecef; color: #6c757d; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-validated { background: #d4edda; color: #155724; }
-        .status-rejected { background: #f8d7da; color: #721c24; }
-        
+
+        .status-draft {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-validated {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
         /* Cards principales */
         .info-card {
             background: white;
@@ -97,7 +113,7 @@
             box-shadow: var(--card-shadow);
             border: none;
         }
-        
+
         .info-card h5 {
             color: var(--primary-color);
             font-weight: 600;
@@ -106,11 +122,11 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .info-card h5 i {
             color: var(--secondary-color);
         }
-        
+
         /* Statistiques */
         .stats-grid {
             display: grid;
@@ -118,7 +134,7 @@
             gap: 1rem;
             margin-bottom: 2rem;
         }
-        
+
         .stat-card {
             background: white;
             border-radius: var(--border-radius);
@@ -128,18 +144,18 @@
             border-left: 4px solid var(--secondary-color);
             transition: transform 0.2s ease;
         }
-        
+
         .stat-card:hover {
             transform: translateY(-2px);
         }
-        
+
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
             color: var(--secondary-color);
             display: block;
         }
-        
+
         .stat-label {
             color: #6c757d;
             font-size: 0.9rem;
@@ -147,13 +163,13 @@
             letter-spacing: 0.5px;
             margin-top: 0.5rem;
         }
-        
+
         /* Liste des entreprises */
         .company-list {
             max-height: 400px;
             overflow-y: auto;
         }
-        
+
         .company-item {
             background: #f8f9fa;
             border-radius: 8px;
@@ -162,27 +178,27 @@
             border-left: 3px solid var(--success-color);
             transition: all 0.2s ease;
         }
-        
+
         .company-item:hover {
             background: #e9ecef;
             transform: translateX(5px);
         }
-        
+
         .company-item.rejected {
             border-left-color: var(--danger-color);
         }
-        
+
         .company-name {
             font-weight: 600;
             color: var(--primary-color);
         }
-        
+
         .company-details {
             color: #6c757d;
             font-size: 0.85rem;
             margin-top: 0.25rem;
         }
-        
+
         /* Validateurs */
         .validators-section {
             background: white;
@@ -191,7 +207,7 @@
             margin-bottom: 1.5rem;
             box-shadow: var(--card-shadow);
         }
-        
+
         .validator-item {
             display: flex;
             align-items: center;
@@ -201,7 +217,7 @@
             border-radius: 8px;
             margin-bottom: 0.5rem;
         }
-        
+
         .validator-avatar {
             width: 40px;
             height: 40px;
@@ -213,12 +229,12 @@
             color: white;
             font-weight: bold;
         }
-        
+
         .validator-info h6 {
             margin: 0;
             color: var(--primary-color);
         }
-        
+
         .validator-role {
             background: var(--secondary-color);
             color: white;
@@ -227,7 +243,7 @@
             font-size: 0.75rem;
             font-weight: 600;
         }
-        
+
         /* Boutons d'action */
         .action-buttons {
             position: sticky;
@@ -235,10 +251,10 @@
             background: white;
             border-radius: var(--border-radius);
             padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             margin-top: 2rem;
         }
-        
+
         .btn-modern {
             border-radius: 8px;
             padding: 0.75rem 1.5rem;
@@ -247,31 +263,31 @@
             letter-spacing: 0.5px;
             transition: all 0.2s ease;
         }
-        
+
         .btn-modern:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
-        
+
         /* Responsive */
         @media (max-width: 768px) {
             .main-content-area {
                 padding: 1rem;
             }
-            
+
             .campaign-header {
                 padding: 1.5rem;
             }
-            
+
             .campaign-title {
                 font-size: 1.5rem;
             }
-            
+
             .stats-grid {
                 grid-template-columns: 1fr;
             }
         }
-        
+
         /* Loading */
         .loading {
             display: flex;
@@ -280,7 +296,7 @@
             height: 200px;
             color: var(--secondary-color);
         }
-        
+
         /* Alertes */
         .alert-modern {
             border-radius: var(--border-radius);
@@ -291,17 +307,18 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
         <i class="fas fa-bars"></i>
     </button>
-    
+
     <div class="page-wrapper">
         <!-- Sidebar Container -->
         <div class="sidebar-container">
@@ -374,7 +391,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-6">
                     <div class="info-card">
                         <h5><i class="fas fa-calendar-alt"></i>Planning</h5>
@@ -407,7 +424,8 @@
             <div class="action-buttons">
                 <div class="row">
                     <div class="col-md-6">
-                        <button class="btn btn-success btn-modern me-2" id="submitCampaignBtn" onclick="submitForValidation()" style="display: none;">
+                        <button class="btn btn-success btn-modern me-2" id="submitCampaignBtn"
+                            onclick="submitForValidation()" style="display: none;">
                             <i class="fas fa-paper-plane me-2"></i>Soumettre pour validation
                         </button>
                         <button class="btn btn-primary btn-modern me-2" onclick="editCurrentCampaign()">
@@ -424,6 +442,109 @@
                     </div>
                 </div>
             </div>
+            <!-- Modal d'édition d'entreprise -->
+            <div class="modal fade" id="editCompanyModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Modifier l'entreprise</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editCompanyForm">
+                                <input type="hidden" id="editCompanyId">
+
+                                <ul class="nav nav-tabs mb-3" id="editCompanyTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab"
+                                            data-bs-target="#general" type="button" role="tab">Informations
+                                            Générales</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="contacts-tab" data-bs-toggle="tab"
+                                            data-bs-target="#contacts" type="button" role="tab">Contacts &
+                                            Admin</button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content" id="editCompanyTabContent">
+                                    <!-- Onglet Général -->
+                                    <div class="tab-pane fade show active" id="general" role="tabpanel">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Nom de l'entreprise *</label>
+                                                <input type="text" class="form-control" id="editName" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Secteur d'activité</label>
+                                                <input type="text" class="form-control" id="editIndustry">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Email général</label>
+                                                <input type="email" class="form-control" id="editEmail">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Téléphone standard</label>
+                                                <input type="text" class="form-control" id="editPhone">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Site web</label>
+                                                <input type="url" class="form-control" id="editWebsite">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Ville</label>
+                                                <input type="text" class="form-control" id="editCity">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Onglet Contacts -->
+                                    <div class="tab-pane fade" id="contacts" role="tabpanel">
+                                        <h6 class="mb-3 text-primary"><i class="fas fa-user me-2"></i>Contact Principal
+                                        </h6>
+                                        <div class="row g-3 mb-4">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Nom du contact</label>
+                                                <input type="text" class="form-control" id="editContactNom">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Email contact</label>
+                                                <input type="email" class="form-control" id="editContactEmail">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Tél contact</label>
+                                                <input type="text" class="form-control" id="editContactTel">
+                                            </div>
+                                        </div>
+
+                                        <h6 class="mb-3 text-secondary"><i
+                                                class="fas fa-user-shield me-2"></i>Administrateur / Dirigeant</h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Nom Administrateur</label>
+                                                <input type="text" class="form-control" id="editAdminNom">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Email Admin</label>
+                                                <input type="email" class="form-control" id="editAdminEmail">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Contact Admin (Tel)</label>
+                                                <input type="text" class="form-control" id="editAdminContact">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="button" class="btn btn-primary"
+                                onclick="saveCompanyDetails()">Enregistrer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -431,7 +552,7 @@
     <script src="js/menu-permissions.js"></script>
     <script src="/js/page-permissions.js"></script>
     <script src="js/session-manager.js"></script>
-    
+
     <script>
         let currentCampaignId = null;
         const API = '/api/prospecting';
@@ -446,7 +567,7 @@
         function showAlert(message, type = 'info') {
             const alertsContainer = document.getElementById('alertsContainer');
             const alertId = 'alert-' + Date.now();
-            
+
             alertsContainer.innerHTML = `
                 <div id="${alertId}" class="alert alert-${type} alert-modern alert-dismissible fade show" role="alert">
                     <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
@@ -454,7 +575,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
-            
+
             setTimeout(() => {
                 const alert = document.getElementById(alertId);
                 if (alert) {
@@ -471,8 +592,8 @@
             const badge = document.getElementById('campaignStatus');
             let className = 'status-draft';
             let text = 'Brouillon';
-            
-            switch(status) {
+
+            switch (status) {
                 case 'DRAFT':
                     className = 'status-draft';
                     text = 'Brouillon';
@@ -493,7 +614,7 @@
                     text = 'Rejetée';
                     break;
             }
-            
+
             badge.className = `status-badge ${className}`;
             badge.textContent = text;
         }
@@ -502,33 +623,33 @@
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 currentCampaignId = urlParams.get('id');
-                
+
                 if (!currentCampaignId) {
                     showAlert('ID de campagne manquant', 'danger');
                     return;
                 }
 
                 console.log('🔍 Chargement de la campagne:', currentCampaignId);
-                
+
                 const response = await fetch(`${API}/campaigns/${currentCampaignId}`, {
                     headers: getAuthHeader()
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     const campaign = result.data;
                     console.log('📋 Campagne chargée:', campaign);
-                    
+
                     // Mettre à jour les informations de base
                     document.getElementById('campaignName').textContent = campaign.name;
                     document.getElementById('campaignDescription').innerHTML = `
                         <i class="fas fa-clock me-2"></i>Créée le ${new Date(campaign.created_at).toLocaleDateString('fr-FR')}
                     `;
-                    
+
                     // Statut
                     updateStatusBadge(campaign.validation_statut || campaign.status);
-                    
+
                     // Informations générales
                     document.getElementById('campaignChannelDetail').textContent = campaign.channel || 'Non défini';
                     document.getElementById('campaignPriority').textContent = campaign.priority || 'Normale';
@@ -536,24 +657,24 @@
                     document.getElementById('campaignBU').textContent = campaign.business_unit_name || 'Non défini';
                     document.getElementById('campaignDivision').textContent = campaign.division_name || 'Non défini';
                     document.getElementById('campaignResponsible').textContent = campaign.responsible_name || 'Non défini';
-                    
+
                     // Planning
                     document.getElementById('campaignScheduledDate').textContent = campaign.scheduled_date ? new Date(campaign.scheduled_date).toLocaleDateString('fr-FR') : 'Non définie';
                     document.getElementById('campaignSubmissionDate').textContent = campaign.date_soumission ? new Date(campaign.date_soumission).toLocaleDateString('fr-FR') : 'Non soumise';
                     document.getElementById('campaignValidationDate').textContent = campaign.date_validation ? new Date(campaign.date_validation).toLocaleDateString('fr-FR') : 'Non validée';
                     document.getElementById('campaignCreator').textContent = campaign.creator_name || 'Système';
-                    
+
                     // Charger les entreprises
                     await loadCompanies();
-                    
+
                     // Charger les validateurs si la campagne est en validation ou validée
                     if (['EN_VALIDATION', 'VALIDE', 'VALIDATED'].includes(campaign.validation_statut || campaign.status)) {
                         await loadValidators();
                     }
-                    
+
                     // Gérer les boutons selon le statut
                     updateActionButtons(campaign.validation_statut || campaign.status);
-                    
+
                 } else {
                     showAlert('Erreur lors du chargement de la campagne: ' + result.error, 'danger');
                 }
@@ -566,17 +687,17 @@
         async function loadCompanies() {
             try {
                 console.log('🔍 Chargement des entreprises de la campagne');
-                
+
                 const response = await fetch(`${API}/campaigns/${currentCampaignId}/companies?limit=1000`, {
                     headers: getAuthHeader()
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     const companies = result.data || [];
                     console.log('📊 Entreprises chargées:', companies.length);
-                    
+
                     renderCompanies(companies);
                     updateStats(companies);
                 } else {
@@ -590,7 +711,7 @@
 
         function renderCompanies(companies) {
             const container = document.getElementById('companiesList');
-            
+
             if (companies.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-4">
@@ -600,18 +721,18 @@
                 `;
                 return;
             }
-            
+
             let html = '';
             companies.forEach(company => {
                 const validationStatus = company.validation_status || 'PENDING';
                 const isRejected = validationStatus === 'REJECTED';
                 const isApproved = validationStatus === 'APPROVED';
                 const isPending = validationStatus === 'PENDING';
-                
+
                 let statusClass = '';
                 let statusIcon = '';
                 let statusText = '';
-                
+
                 if (isRejected) {
                     statusClass = 'rejected';
                     statusIcon = 'fa-times-circle text-danger';
@@ -625,7 +746,7 @@
                     statusIcon = 'fa-clock text-warning';
                     statusText = 'En attente';
                 }
-                
+
                 html += `
                     <div class="company-item ${statusClass}">
                         <div class="d-flex justify-content-between align-items-start">
@@ -637,15 +758,19 @@
                                     ${company.email ? `<i class="fas fa-envelope ms-2 me-1"></i>${company.email}` : ''}
                                 </div>
                             </div>
+                            </div>
                             <div class="text-end">
                                 <i class="fas ${statusIcon}"></i>
-                                <div class="small text-muted">${statusText}</div>
+                                <div class="small text-muted mb-2">${statusText}</div>
+                                <button class="btn btn-sm btn-outline-primary" onclick="openEditCompanyModal(${company.id})" title="Modifier l'entreprise">
+                                    <i class="fas fa-edit"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
                 `;
             });
-            
+
             container.innerHTML = html;
         }
 
@@ -653,7 +778,7 @@
             const total = companies.length;
             const approved = companies.filter(c => c.validation_status === 'APPROVED').length;
             const rejected = companies.filter(c => c.validation_status === 'REJECTED').length;
-            
+
             document.getElementById('totalCompanies').textContent = total;
             document.getElementById('approvedCompanies').textContent = approved;
             document.getElementById('rejectedCompanies').textContent = rejected;
@@ -665,9 +790,9 @@
                 const response = await fetch(`${API}/campaigns/${currentCampaignId}/validators`, {
                     headers: getAuthHeader()
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     renderValidatorsList(result.data);
                     document.getElementById('validatorsSection').style.display = 'block';
@@ -679,12 +804,12 @@
 
         function renderValidatorsList(validators) {
             const container = document.getElementById('validatorsList');
-            
+
             if (validators.length === 0) {
                 container.innerHTML = '<p class="text-muted">Aucun validateur assigné</p>';
                 return;
             }
-            
+
             let html = '';
             validators.forEach(validator => {
                 html += `
@@ -702,21 +827,21 @@
                     </div>
                 `;
             });
-            
+
             container.innerHTML = html;
         }
 
         function updateActionButtons(status) {
             const submitBtn = document.getElementById('submitCampaignBtn');
             const executionBtn = document.getElementById('executionBtn');
-            
+
             // Bouton de soumission
             if (status === 'DRAFT' || status === 'BROUILLON') {
                 submitBtn.style.display = 'inline-block';
             } else {
                 submitBtn.style.display = 'none';
             }
-            
+
             // Bouton d'exécution
             if (status === 'VALIDATED' || status === 'VALIDE') {
                 executionBtn.style.display = 'inline-block';
@@ -731,17 +856,17 @@
                 const submitBtn = document.getElementById('submitCampaignBtn');
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></i>Soumission...';
-                
+
                 const response = await fetch(`${API}/campaigns/${currentCampaignId}/submit`, {
                     method: 'POST',
                     headers: getAuthHeader()
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     showAlert('Campagne soumise avec succès pour validation !', 'success');
-                    
+
                     setTimeout(async () => {
                         await loadCampaignData();
                         await loadValidators();
@@ -749,7 +874,7 @@
                 } else {
                     throw new Error(result.error || 'Erreur lors de la soumission');
                 }
-                
+
             } catch (error) {
                 console.error('Erreur soumission:', error);
                 showAlert('Erreur lors de la soumission : ' + error.message, 'danger');
@@ -770,15 +895,15 @@
                     rejetees: document.getElementById('rejectedCompanies').textContent,
                     dateExport: new Date().toLocaleString('fr-FR')
                 };
-                
+
                 const dataStr = JSON.stringify(campaignData, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(dataBlob);
                 link.download = `campagne_${campaignData.nom.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
                 link.click();
-                
+
                 showAlert('Données de la campagne exportées avec succès !', 'success');
             } catch (error) {
                 console.error('Erreur export:', error);
@@ -794,16 +919,116 @@
             }
         }
 
+        let editCompanyModal;
+
+        async function openEditCompanyModal(companyId) {
+            try {
+                // Initialiser le modal si pas encore fait
+                if (!editCompanyModal) {
+                    editCompanyModal = new bootstrap.Modal(document.getElementById('editCompanyModal'));
+                }
+
+                // Charger les détails de l'entreprise
+                const response = await fetch(`${API}/companies/${companyId}`, {
+                    headers: getAuthHeader()
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const company = result.data;
+
+                    // Remplir le formulaire
+                    document.getElementById('editCompanyId').value = company.id;
+
+                    // Champs généraux
+                    document.getElementById('editName').value = company.name || '';
+                    document.getElementById('editIndustry').value = company.industry || '';
+                    document.getElementById('editEmail').value = company.email || '';
+                    document.getElementById('editPhone').value = company.phone || '';
+                    document.getElementById('editWebsite').value = company.website || '';
+                    document.getElementById('editCity').value = company.city || '';
+
+                    // Nouveaux champs contacts
+                    document.getElementById('editContactNom').value = company.contact_nom || '';
+                    document.getElementById('editContactEmail').value = company.contact_email || '';
+                    document.getElementById('editContactTel').value = company.contact_tel || '';
+
+                    document.getElementById('editAdminNom').value = company.admin_nom || '';
+                    document.getElementById('editAdminEmail').value = company.admin_email || '';
+                    document.getElementById('editAdminContact').value = company.admin_contact || '';
+
+                    // Ouvrir le modal
+                    editCompanyModal.show();
+                } else {
+                    showAlert('Erreur lors du chargement des détails de l\'entreprise', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur chargement entreprise:', error);
+                showAlert('Erreur technique lors du chargement', 'danger');
+            }
+        }
+
+        async function saveCompanyDetails() {
+            try {
+                const id = document.getElementById('editCompanyId').value;
+                const name = document.getElementById('editName').value;
+
+                if (!name.trim()) {
+                    alert('Le nom de l\'entreprise est obligatoire');
+                    return;
+                }
+
+                const data = {
+                    name: name,
+                    industry: document.getElementById('editIndustry').value,
+                    email: document.getElementById('editEmail').value,
+                    phone: document.getElementById('editPhone').value,
+                    website: document.getElementById('editWebsite').value,
+                    city: document.getElementById('editCity').value,
+
+                    contact_nom: document.getElementById('editContactNom').value,
+                    contact_email: document.getElementById('editContactEmail').value,
+                    contact_tel: document.getElementById('editContactTel').value,
+
+                    admin_nom: document.getElementById('editAdminNom').value,
+                    admin_email: document.getElementById('editAdminEmail').value,
+                    admin_contact: document.getElementById('editAdminContact').value
+                };
+
+                const response = await fetch(`${API}/companies/${id}`, {
+                    method: 'PUT',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    editCompanyModal.hide();
+                    showAlert('Entreprise mise à jour avec succès', 'success');
+                    // Recharger la liste
+                    loadCompanies();
+                } else {
+                    showAlert('Erreur lors de la mise à jour: ' + result.error, 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur sauvegarde:', error);
+                showAlert('Erreur lors de la sauvegarde', 'danger');
+            }
+        }
+
         // Initialisation
         document.addEventListener('DOMContentLoaded', () => {
             loadCampaignData();
         });
     </script>
-    
+
     <!-- Bootstrap JS pour les modals (notifications, etc.) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Script pour la sidebar -->
     <script src="js/sidebar.js" defer></script>
 </body>
+
 </html>

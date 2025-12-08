@@ -10,7 +10,7 @@ const { authenticateToken } = require('../middleware/auth');
 // Fonction pour résoudre l'ID d'un pays par son nom
 async function resolvePaysId(paysNom) {
     if (!paysNom) return null;
-    
+
     try {
         const result = await pool.query(
             'SELECT id FROM pays WHERE nom = $1',
@@ -26,7 +26,7 @@ async function resolvePaysId(paysNom) {
 // Fonction pour résoudre l'ID d'un secteur par son nom
 async function resolveSecteurId(secteurNom) {
     if (!secteurNom) return null;
-    
+
     try {
         const result = await pool.query(
             'SELECT id FROM secteurs_activite WHERE nom = $1',
@@ -42,7 +42,7 @@ async function resolveSecteurId(secteurNom) {
 // Fonction pour résoudre l'ID d'un sous-secteur par son nom et secteur parent
 async function resolveSousSecteurId(sousSecteurNom, secteurNom) {
     if (!sousSecteurNom || !secteurNom) return null;
-    
+
     try {
         const result = await pool.query(
             `SELECT ss.id FROM sous_secteurs_activite ss
@@ -61,7 +61,7 @@ async function resolveSousSecteurId(sousSecteurNom, secteurNom) {
 router.get('/form-data', authenticateToken, async (req, res) => {
     try {
         // Récupérer les données depuis les nouvelles tables
-        const [paysResult, secteursResult, sourcesResult, statutsResult] = await Promise.all([
+        const [paysResult, secteursResult, sourcesResult, statutsResult, clientSecteursResult] = await Promise.all([
             pool.query('SELECT nom, code_pays, code_appel, devise FROM pays WHERE actif = true ORDER BY nom'),
             pool.query(`
                 SELECT s.nom, s.code, s.couleur, s.icone, s.ordre,
@@ -73,7 +73,8 @@ router.get('/form-data', authenticateToken, async (req, res) => {
                 ORDER BY s.ordre, s.nom
             `),
             pool.query('SELECT DISTINCT source_prospection FROM clients WHERE source_prospection IS NOT NULL ORDER BY source_prospection'),
-            pool.query('SELECT DISTINCT statut FROM clients WHERE statut IS NOT NULL ORDER BY statut')
+            pool.query('SELECT DISTINCT statut FROM clients WHERE statut IS NOT NULL ORDER BY statut'),
+            pool.query('SELECT DISTINCT secteur_activite FROM clients WHERE secteur_activite IS NOT NULL ORDER BY secteur_activite')
         ]);
 
         // Valeurs standardisées
@@ -107,12 +108,14 @@ router.get('/form-data', authenticateToken, async (req, res) => {
                 'autre'
             ],
             statuts: [
-                'PROSPECT',
-                'CLIENT',
-                'CLIENT_FIDELE',
                 'ACTIF',
                 'INACTIF',
                 'ABANDONNE'
+            ],
+            types: [
+                'PROSPECT',
+                'CLIENT',
+                'CLIENT_FIDELE'
             ],
             tailles_entreprise: [
                 'TPE',
@@ -160,6 +163,7 @@ router.get('/', authenticateToken, async (req, res) => {
             page = 1,
             limit = 10,
             statut,
+            type,
             collaborateur_id,
             secteur_activite,
             search,
@@ -171,6 +175,7 @@ router.get('/', authenticateToken, async (req, res) => {
             page: parseInt(page),
             limit: parseInt(limit),
             statut,
+            type, // Keep distinct from statut
             collaborateur_id,
             secteur_activite,
             search,
@@ -179,7 +184,7 @@ router.get('/', authenticateToken, async (req, res) => {
         };
 
         const result = await Client.findAll(options);
-        
+
         res.json({
             success: true,
             data: {
@@ -201,7 +206,7 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/statistics', async (req, res) => {
     try {
         const statistics = await Client.getStatistics();
-        
+
         res.json({
             success: true,
             data: statistics
@@ -220,7 +225,7 @@ router.get('/statistics', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const client = await Client.findById(req.params.id);
-        
+
         if (!client) {
             return res.status(404).json({
                 success: false,
@@ -246,7 +251,7 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/missions', async (req, res) => {
     try {
         const client = await Client.findById(req.params.id);
-        
+
         if (!client) {
             return res.status(404).json({
                 success: false,
@@ -255,7 +260,7 @@ router.get('/:id/missions', async (req, res) => {
         }
 
         const missions = await client.getMissions();
-        
+
         res.json({
             success: true,
             data: missions
@@ -274,7 +279,7 @@ router.get('/:id/missions', async (req, res) => {
 router.get('/:id/opportunites', async (req, res) => {
     try {
         const client = await Client.findById(req.params.id);
-        
+
         if (!client) {
             return res.status(404).json({
                 success: false,
@@ -283,7 +288,7 @@ router.get('/:id/opportunites', async (req, res) => {
         }
 
         const opportunites = await client.getOpportunites();
-        
+
         res.json({
             success: true,
             data: opportunites
@@ -327,7 +332,7 @@ router.post('/', async (req, res) => {
         };
 
         const client = await Client.create(clientData);
-        
+
         res.status(201).json({
             success: true,
             message: 'Client créé avec succès',
@@ -347,7 +352,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const client = await Client.findById(req.params.id);
-        
+
         if (!client) {
             return res.status(404).json({
                 success: false,
@@ -381,7 +386,7 @@ router.put('/:id', async (req, res) => {
         };
 
         const updatedClient = await client.update(updateData);
-        
+
         res.json({
             success: true,
             message: 'Client mis à jour avec succès',
@@ -401,7 +406,7 @@ router.put('/:id', async (req, res) => {
 router.patch('/:id/statut', async (req, res) => {
     try {
         const { statut } = req.body;
-        
+
         if (!statut) {
             return res.status(400).json({
                 success: false,
@@ -410,7 +415,7 @@ router.patch('/:id/statut', async (req, res) => {
         }
 
         const client = await Client.findById(req.params.id);
-        
+
         if (!client) {
             return res.status(404).json({
                 success: false,
@@ -419,7 +424,7 @@ router.patch('/:id/statut', async (req, res) => {
         }
 
         const updatedClient = await client.changeStatut(statut, req.body.updated_by || 'system');
-        
+
         res.json({
             success: true,
             message: 'Statut du client mis à jour avec succès',
@@ -439,7 +444,7 @@ router.patch('/:id/statut', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const client = await Client.findById(req.params.id);
-        
+
         if (!client) {
             return res.status(404).json({
                 success: false,
@@ -448,7 +453,7 @@ router.delete('/:id', async (req, res) => {
         }
 
         const deleted = await client.delete();
-        
+
         if (deleted) {
             res.json({
                 success: true,
@@ -474,12 +479,12 @@ router.delete('/:id', async (req, res) => {
 router.get('/statut/:statut', async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
-        
+
         const result = await Client.getByStatut(req.params.statut, {
             page: parseInt(page),
             limit: parseInt(limit)
         });
-        
+
         res.json({
             success: true,
             data: result.clients,
@@ -499,12 +504,12 @@ router.get('/statut/:statut', async (req, res) => {
 router.get('/search/:term', async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
-        
+
         const result = await Client.search(req.params.term, {
             page: parseInt(page),
             limit: parseInt(limit)
         });
-        
+
         res.json({
             success: true,
             data: result.clients,

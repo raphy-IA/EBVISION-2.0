@@ -4,11 +4,13 @@ const BusinessUnit = require('../models/BusinessUnit');
 const { businessUnitValidation } = require('../utils/validators');
 const { authenticateToken } = require('../middleware/auth');
 
-// GET /api/business-units - Récupérer toutes les business units (PUBLIC)
-router.get('/', async (req, res) => {
+// GET /api/business-units - Récupérer toutes les business units (PROTECTED & SCOPED)
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const { page = 1, limit = 10, search = '', status = '' } = req.query;
-        
+        const user = req.user;
+        const { pool } = require('../utils/database');
+
         const options = {
             page: parseInt(page),
             limit: parseInt(limit),
@@ -17,7 +19,41 @@ router.get('/', async (req, res) => {
         };
 
         const result = await BusinessUnit.findAll(options);
-        
+
+        // Security: Filter results for non-admins
+        const userRoles = user.roles || [];
+        const isSuperAdmin = userRoles.some(r => ['SUPER_ADMIN', 'ADMIN', 'SENIOR_PARTNER', 'DIRECTOR'].includes(r));
+
+        if (!isSuperAdmin) {
+            // Find all BUs user has access to (Explicit + Implicit)
+            // Implicit: Via collaborateurs.business_unit_id
+            // Explicit: Via user_business_unit_access table
+            const userBuQuery = `
+                SELECT DISTINCT bu.id
+                FROM business_units bu
+                LEFT JOIN user_business_unit_access uba ON bu.id = uba.business_unit_id AND uba.user_id = $1
+                LEFT JOIN users u ON u.id = $1
+                LEFT JOIN collaborateurs c ON c.id = u.collaborateur_id 
+                WHERE 
+                    (uba.user_id IS NOT NULL AND uba.granted = true)
+                    OR 
+                    (c.business_unit_id = bu.id)
+            `;
+
+            const buRes = await pool.query(userBuQuery, [user.id]);
+            const allowedBuIds = buRes.rows.map(r => r.id);
+
+            if (allowedBuIds.length > 0) {
+                result.businessUnits = result.businessUnits.filter(bu => allowedBuIds.includes(bu.id));
+                // Adjust pagination total (approximate)
+                result.pagination.total = result.businessUnits.length;
+                result.pagination.pages = 1;
+            } else {
+                result.businessUnits = [];
+                result.pagination.total = 0;
+            }
+        }
+
         res.json({
             success: true,
             message: 'Business units récupérées avec succès',
@@ -38,7 +74,7 @@ router.get('/', async (req, res) => {
 router.get('/active', async (req, res) => {
     try {
         const businessUnits = await BusinessUnit.findActive();
-        
+
         res.json({
             success: true,
             message: 'Business units actives récupérées avec succès',
@@ -59,14 +95,14 @@ router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const businessUnit = await BusinessUnit.findById(id);
-        
+
         if (!businessUnit) {
             return res.status(404).json({
                 success: false,
                 message: 'Business unit non trouvée'
             });
         }
-        
+
         res.json({
             success: true,
             message: 'Business unit récupérée avec succès',
@@ -105,7 +141,7 @@ router.post('/', async (req, res) => {
         }
 
         const businessUnit = await BusinessUnit.create(value);
-        
+
         res.status(201).json({
             success: true,
             message: 'Business unit créée avec succès',
@@ -125,7 +161,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         // Validation des données
         const { error, value } = businessUnitValidation.update.validate(req.body);
         if (error) {
@@ -157,7 +193,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
         }
 
         const updatedBusinessUnit = await BusinessUnit.update(id, value);
-        
+
         res.json({
             success: true,
             message: 'Business unit mise à jour avec succès',
@@ -178,7 +214,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { force = false } = req.query; // Paramètre pour forcer la suppression
-        
+
         // Vérifier si la business unit existe
         const existingBusinessUnit = await BusinessUnit.findById(id);
         if (!existingBusinessUnit) {
@@ -190,18 +226,18 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
         // Vérifier les dépendances
         const dependencies = await BusinessUnit.checkDependencies(id);
-        
+
         if (!dependencies.canDelete && !force) {
             // Construire le message d'erreur détaillé
             const deps = dependencies.dependencies;
             const reasons = [];
-            
+
             if (deps.active_divisions > 0) reasons.push(`${deps.active_divisions} division(s) active(s)`);
             if (deps.active_collaborateurs > 0) reasons.push(`${deps.active_collaborateurs} collaborateur(s) actif(s)`);
             if (deps.opportunities > 0) reasons.push(`${deps.opportunities} opportunité(s)`);
             if (deps.prospecting_campaigns > 0) reasons.push(`${deps.prospecting_campaigns} campagne(s) de prospection`);
             if (deps.time_entries > 0) reasons.push(`${deps.time_entries} saisie(s) de temps`);
-            
+
             return res.status(400).json({
                 success: false,
                 message: `Impossible de supprimer cette business unit car elle contient des données liées`,
@@ -233,7 +269,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
                 action: 'deactivated'
             });
         }
-        
+
     } catch (error) {
         console.error('Erreur lors de la suppression de la business unit:', error);
         res.status(500).json({
@@ -249,7 +285,7 @@ router.get('/:id/divisions', async (req, res) => {
     try {
         const { id } = req.params;
         const { page = 1, limit = 10, status = '' } = req.query;
-        
+
         // Vérifier si la business unit existe
         const existingBusinessUnit = await BusinessUnit.findById(id);
         if (!existingBusinessUnit) {
@@ -266,7 +302,7 @@ router.get('/:id/divisions', async (req, res) => {
         };
 
         const result = await BusinessUnit.getDivisions(id, options);
-        
+
         res.json({
             success: true,
             message: 'Divisions récupérées avec succès',
@@ -286,7 +322,7 @@ router.get('/:id/divisions', async (req, res) => {
 router.get('/:id/stats', async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         // Vérifier si la business unit existe
         const existingBusinessUnit = await BusinessUnit.findById(id);
         if (!existingBusinessUnit) {
@@ -297,7 +333,7 @@ router.get('/:id/stats', async (req, res) => {
         }
 
         const stats = await BusinessUnit.getStats(id);
-        
+
         res.json({
             success: true,
             message: 'Statistiques récupérées avec succès',
@@ -317,7 +353,7 @@ router.get('/:id/stats', async (req, res) => {
 router.get('/statistics/global', async (req, res) => {
     try {
         const stats = await BusinessUnit.getGlobalStats();
-        
+
         res.json({
             success: true,
             message: 'Statistiques globales récupérées avec succès',

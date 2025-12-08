@@ -9,7 +9,7 @@ class CompanySource {
         );
         return res.rows[0];
     }
-    
+
     static async findAll() {
         const res = await pool.query(`
             SELECT cs.*, 
@@ -24,12 +24,12 @@ class CompanySource {
         `);
         return res.rows;
     }
-    
+
     static async findById(id) {
         const res = await pool.query(`SELECT * FROM company_sources WHERE id = $1`, [id]);
         return res.rows[0] || null;
     }
-    
+
     static async update(id, { name, description }) {
         const res = await pool.query(
             `UPDATE company_sources SET name = $1, description = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *`,
@@ -37,7 +37,7 @@ class CompanySource {
         );
         return res.rows[0] || null;
     }
-    
+
     static async delete(id) {
         const res = await pool.query(`DELETE FROM company_sources WHERE id = $1 RETURNING *`, [id]);
         return res.rows[0] || null;
@@ -49,9 +49,9 @@ class Company {
         let inserted = 0;
         let updated = 0;
         let errors = 0;
-        
+
         console.log(`🔥 [IMPORT] Début import pour source ${sourceId}: ${rows.length} entreprises`);
-        
+
         for (const r of rows) {
             try {
                 if (!r.name || r.name.trim() === '') {
@@ -59,13 +59,13 @@ class Company {
                     skipped++;
                     continue;
                 }
-                
+
                 // Vérifier d'abord si l'entreprise existe
                 const existingCompany = await pool.query(
                     `SELECT id, sigle, email, industry FROM companies WHERE source_id = $1 AND name = $2`,
                     [sourceId, r.name.trim()]
                 );
-                
+
                 const result = await pool.query(
                     `INSERT INTO companies(source_id, name, industry, email, phone, website, country, city, address, siret, size_label, sigle)
                      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
@@ -97,7 +97,7 @@ class Company {
                         r.sigle || null
                     ]
                 );
-                
+
                 if (result.rows.length > 0) {
                     if (existingCompany.rows.length > 0) {
                         // L'entreprise existait déjà, c'est une mise à jour
@@ -105,7 +105,7 @@ class Company {
                         if (updated % 100 === 0) {
                             console.log(`🔄 [IMPORT] Progression: ${updated}/${rows.length} entreprises mises à jour`);
                         }
-                        
+
                         // Log des changements pour debug
                         const oldData = existingCompany.rows[0];
                         if (r.sigle && !oldData.sigle) {
@@ -124,13 +124,13 @@ class Company {
                 errors++;
             }
         }
-        
+
         console.log(`🔥 [IMPORT] Résultat final: ${inserted} insérées, ${updated} mises à jour, ${errors} erreurs`);
-        
-        return { 
-            inserted, 
-            updated, 
-            errors, 
+
+        return {
+            inserted,
+            updated,
+            errors,
             total: rows.length,
             message: `Import terminé: ${inserted} entreprises ajoutées, ${updated} entreprises mises à jour, ${errors} erreurs`
         };
@@ -168,7 +168,7 @@ class Company {
         const validSortColumns = ['name', 'industry', 'city', 'created_at'];
         const sortColumn = validSortColumns.includes(sort_by) ? sort_by : 'name';
         const sortDirection = sort_order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-        
+
         const count = await pool.query(`SELECT COUNT(*)::int AS total FROM companies c ${where}`, params);
         const data = await pool.query(
             `SELECT c.*, 
@@ -191,7 +191,8 @@ class Company {
     }
 
     static async update(id, data) {
-        const allowed = ['name','industry','email','phone','website','country','city','address','siret','size_label','sigle'];
+        const allowed = ['name', 'industry', 'email', 'phone', 'website', 'country', 'city', 'address', 'siret', 'size_label', 'sigle',
+            'contact_nom', 'contact_tel', 'contact_email', 'admin_nom', 'admin_contact', 'admin_email'];
         const sets = [];
         const vals = [];
         let idx = 1;
@@ -216,14 +217,14 @@ class Company {
                 message: `Cette entreprise ne peut pas être supprimée car elle est impliquée dans ${deps.campaigns_count} campagne(s) et ${deps.validations_count} validation(s)`
             };
         }
-        
+
         const res = await pool.query(`DELETE FROM companies WHERE id = $1 RETURNING *`, [id]);
         return res.rows[0] || null;
     }
 
     static async bulkDelete(ids) {
         if (!Array.isArray(ids) || ids.length === 0) return { deleted: 0 };
-        
+
         // Vérifier les dépendances pour chaque entreprise
         const dependencies = [];
         for (const companyId of ids) {
@@ -235,7 +236,7 @@ class Company {
                 });
             }
         }
-        
+
         // Si des entreprises ont des dépendances, retourner les détails
         if (dependencies.length > 0) {
             return {
@@ -245,30 +246,30 @@ class Company {
                 message: `${dependencies.length} entreprise(s) ne peuvent pas être supprimées car elles sont impliquées dans des campagnes`
             };
         }
-        
+
         // Supprimer les entreprises sans dépendances
         const placeholders = ids.map((_, i) => `$${i + 1}`).join(',');
         const res = await pool.query(`DELETE FROM companies WHERE id IN (${placeholders}) RETURNING id`, ids);
         return { deleted: res.rows.length };
     }
-    
+
     static async checkDependencies(companyId) {
         // Vérifier si l'entreprise est impliquée dans des campagnes
         const campaignsResult = await pool.query(
             `SELECT COUNT(*) as count FROM prospecting_campaign_companies WHERE company_id = $1`,
             [companyId]
         );
-        
+
         const campaignsCount = parseInt(campaignsResult.rows[0].count);
-        
+
         // Vérifier si l'entreprise est impliquée dans des validations
         const validationsResult = await pool.query(
             `SELECT COUNT(*) as count FROM prospecting_campaign_validation_companies WHERE company_id = $1`,
             [companyId]
         );
-        
+
         const validationsCount = parseInt(validationsResult.rows[0].count);
-        
+
         return {
             hasDependencies: campaignsCount > 0 || validationsCount > 0,
             campaigns_count: campaignsCount,
@@ -341,7 +342,7 @@ class ProspectingTemplate {
     }
 
     static async update(id, data) {
-        const allowed = ['name','channel','type_courrier','business_unit_id','division_id','subject','body_template'];
+        const allowed = ['name', 'channel', 'type_courrier', 'business_unit_id', 'division_id', 'subject', 'body_template'];
         const sets = [];
         const vals = [];
         let idx = 1;
@@ -368,11 +369,11 @@ class ProspectingTemplate {
                 `SELECT COUNT(*) as count FROM prospecting_campaigns WHERE template_id = $1`,
                 [id]
             );
-            
+
             if (campaignsResult.rows[0].count > 0) {
-                return { 
-                    success: false, 
-                    error: 'Impossible de supprimer ce modèle car il est utilisé dans des campagnes' 
+                return {
+                    success: false,
+                    error: 'Impossible de supprimer ce modèle car il est utilisé dans des campagnes'
                 };
             }
 
@@ -411,9 +412,9 @@ class ProspectingCampaign {
                 data.responsible_id || null
             ]
         );
-        
+
         const campaign = res.rows[0];
-        
+
         // Envoyer une notification de création de campagne
         if (campaign && data.created_by) {
             try {
@@ -423,7 +424,7 @@ class ProspectingCampaign {
                 console.error('Erreur lors de l\'envoi de la notification de création:', error);
             }
         }
-        
+
         return campaign;
     }
     static async addCompanies(campaignId, companyIds) {
@@ -451,7 +452,7 @@ class ProspectingCampaign {
                  WHERE campaign_id = $1 AND company_id = $2`,
                 [campaignId, companyId]
             );
-            
+
             if (result.rowCount > 0) {
                 return { success: true, removed: 1 };
             } else {
@@ -465,12 +466,12 @@ class ProspectingCampaign {
 
     static async findAll(params = {}) {
         const { limit = 20, offset = 0, userBusinessUnitIds } = params;
-        
+
         let whereClause = '';
         let countWhereClause = '';
         let queryParams = [];
         let paramIndex = 1;
-        
+
         // Filtrer par Business Units si spécifié
         if (userBusinessUnitIds && userBusinessUnitIds.length > 0) {
             const placeholders = userBusinessUnitIds.map(() => `$${paramIndex++}`).join(',');
@@ -478,7 +479,7 @@ class ProspectingCampaign {
             countWhereClause = `WHERE pc.business_unit_id IN (${placeholders})`;
             queryParams.push(...userBusinessUnitIds);
         }
-        
+
         // Requête de comptage
         const countQuery = `
             SELECT COUNT(*)::int AS total 
@@ -486,7 +487,7 @@ class ProspectingCampaign {
             ${countWhereClause}
         `;
         const count = await pool.query(countQuery, queryParams);
-        
+
         // Requête principale
         const dataQuery = `
             SELECT pc.*, 
@@ -509,7 +510,7 @@ class ProspectingCampaign {
              ORDER BY pc.created_at DESC
              LIMIT $${paramIndex++} OFFSET $${paramIndex++}
         `;
-        
+
         const data = await pool.query(dataQuery, [...queryParams, limit, offset]);
         return { campaigns: data.rows, pagination: { total: count.rows[0].total, limit, offset } };
     }
@@ -558,7 +559,7 @@ class ProspectingCampaign {
     }
 
     static async update(id, data) {
-        const allowed = ['name','channel','template_id','business_unit_id','division_id','status','scheduled_date','responsible_id'];
+        const allowed = ['name', 'channel', 'template_id', 'business_unit_id', 'division_id', 'status', 'scheduled_date', 'responsible_id'];
         const sets = [];
         const vals = [];
         let idx = 1;
@@ -587,9 +588,9 @@ class ProspectingCampaign {
             LEFT JOIN divisions d ON pt.division_id = d.id
             WHERE pc.id = $1
         `, [id]);
-        
+
         if (res.rows.length === 0) return null;
-        
+
         const campaign = res.rows[0];
         if (campaign.creator_name) {
             campaign.creator_name = `${campaign.creator_prenom} ${campaign.creator_name}`;
@@ -597,7 +598,7 @@ class ProspectingCampaign {
         if (campaign.responsible_name) {
             campaign.responsible_name = `${campaign.responsible_prenom} ${campaign.responsible_name}`;
         }
-        
+
         return campaign;
     }
 
@@ -612,7 +613,7 @@ class ProspectingCampaign {
             WHERE pcv.campaign_id = $1
             ORDER BY pcv.created_at DESC
         `, [campaignId]);
-        
+
         return res.rows.map(row => ({
             ...row,
             demandeur_name: `${row.demandeur_prenom} ${row.demandeur_nom}`,
@@ -629,17 +630,17 @@ class ProspectingCampaign {
                 LEFT JOIN prospecting_templates pt ON pc.template_id = pt.id
                 WHERE pc.id = $1
             `, [campaignId]);
-            
+
             if (campaign.rows.length === 0) {
                 return { success: false, error: 'Campagne non trouvée' };
             }
-            
+
             const campaignData = campaign.rows[0];
-            
+
             if (campaignData.validation_statut === 'EN_VALIDATION') {
                 return { success: false, error: 'La campagne est déjà en cours de validation' };
             }
-            
+
             if (campaignData.validation_statut === 'VALIDE') {
                 return { success: false, error: 'La campagne a déjà été validée' };
             }
@@ -650,27 +651,27 @@ class ProspectingCampaign {
                 'SELECT c.id as collaborateur_id FROM users u LEFT JOIN collaborateurs c ON u.id = c.user_id WHERE u.id = $1',
                 [demandeurId]
             );
-            
+
             console.log('🔍 [DEBUG] Résultat recherche utilisateur:', user.rows);
-            
+
             if (user.rows.length === 0 || !user.rows[0].collaborateur_id) {
                 console.log('❌ [DEBUG] Utilisateur non trouvé ou pas de collaborateur_id');
                 return { success: false, error: 'Collaborateur non trouvé' };
             }
-            
+
             console.log('🔍 [DEBUG] Recherche collaborateur:', user.rows[0].collaborateur_id);
             const collaborateur = await pool.query(
                 'SELECT * FROM collaborateurs WHERE id = $1',
                 [user.rows[0].collaborateur_id]
             );
-            
+
             console.log('🔍 [DEBUG] Résultat recherche collaborateur:', collaborateur.rows);
-            
+
             if (collaborateur.rows.length === 0) {
                 console.log('❌ [DEBUG] Collaborateur non trouvé dans la table collaborateurs');
                 return { success: false, error: 'Collaborateur non trouvé' };
             }
-            
+
             const collabId = collaborateur.rows[0].id;
 
             // Debug: Afficher les informations de la campagne
@@ -687,12 +688,12 @@ class ProspectingCampaign {
                 campaignData.division_id,
                 validationLevel
             );
-            
+
             if (!validators || validators.length === 0) {
                 const levelText = validationLevel === 'DIVISION' ? 'division' : 'business unit';
-                return { 
-                    success: false, 
-                    error: `Aucun responsable défini pour la ${levelText}. Veuillez contacter l'administrateur.` 
+                return {
+                    success: false,
+                    error: `Aucun responsable défini pour la ${levelText}. Veuillez contacter l'administrateur.`
                 };
             }
 
@@ -712,7 +713,7 @@ class ProspectingCampaign {
                         campaign_id, demandeur_id, validateur_id, niveau_validation, statut_validation, commentaire_demandeur
                     ) VALUES($1, $2, $3, $4, $5, $6) RETURNING *
                 `, [campaignId, collabId, validator.id, validationLevel, 'EN_ATTENTE', comment]);
-                
+
                 validations.push(validation.rows[0]);
                 console.log(`✅ Validation créée pour ${validator.nom} ${validator.prenom} (${validator.role})`);
             }
@@ -732,9 +733,9 @@ class ProspectingCampaign {
                 console.error('Erreur lors de l\'envoi de la notification de soumission:', error);
             }
 
-            return { 
-                success: true, 
-                data: validations 
+            return {
+                success: true,
+                data: validations
             };
         } catch (e) {
             console.error('Erreur soumission validation:', e);
@@ -751,7 +752,7 @@ class ProspectingCampaign {
                 JOIN prospecting_campaigns pc ON pcv.campaign_id = pc.id
                 WHERE pcv.id = $1 AND pcv.statut_validation = 'EN_ATTENTE'
             `, [validationId]);
-            
+
             if (validation.rows.length === 0) {
                 return { success: false, error: 'Validation non trouvée ou déjà traitée' };
             }
@@ -761,11 +762,11 @@ class ProspectingCampaign {
                 'SELECT * FROM collaborateurs WHERE user_id = $1',
                 [validateurId]
             );
-            
+
             if (collaborateur.rows.length === 0) {
                 return { success: false, error: 'Validateur non trouvé' };
             }
-            
+
             const collabId = collaborateur.rows[0].id;
 
             // Mettre à jour la validation
@@ -779,13 +780,13 @@ class ProspectingCampaign {
             // Sauvegarder les validations par entreprise et mettre à jour les statuts
             if (companyValidations && companyValidations.length > 0) {
                 console.log('💾 Sauvegarde des validations par entreprise:', companyValidations);
-                
+
                 // Supprimer les anciennes validations par entreprise pour cette validation
                 await pool.query(`
                     DELETE FROM prospecting_campaign_validation_companies 
                     WHERE validation_id = $1
                 `, [validationId]);
-                
+
                 // Insérer les nouvelles validations par entreprise et mettre à jour les statuts
                 for (const companyValidation of companyValidations) {
                     // Sauvegarder la validation dans la table de validation
@@ -799,12 +800,12 @@ class ProspectingCampaign {
                         companyValidation.validation,
                         companyValidation.note || null
                     ]);
-                    
+
                     // Sauvegarder la validation de l'entreprise (ne pas mettre à jour le statut immédiatement)
                     // Le statut sera mis à jour une fois que tous les validateurs auront donné leur avis
                     console.log(`💾 Validation sauvegardée pour ${companyValidation.company_id}: ${companyValidation.validation}`);
                 }
-                
+
                 console.log('✅ Validations par entreprise sauvegardées et statuts mis à jour');
             }
 
@@ -825,6 +826,17 @@ class ProspectingCampaign {
                 console.log('❌ Campagne rejetée par', validateurId);
             }
 
+            // Marquer les autres validations en attente comme résolues par un tiers (pour nettoyer les listes d'attente)
+            await pool.query(`
+                UPDATE prospecting_campaign_validations 
+                SET statut_validation = 'RESOLU_AUTRE', 
+                    date_validation = CURRENT_TIMESTAMP,
+                    commentaire_validateur = $2 
+                WHERE campaign_id = $1 
+                  AND id != $3 
+                  AND statut_validation = 'EN_ATTENTE'
+            `, [validation.rows[0].campaign_id, `Traité par ${collaborateur.rows[0].nom} ${collaborateur.rows[0].prenom}`, validationId]);
+
             // Envoyer une notification de décision de validation
             try {
                 await NotificationService.sendCampaignValidationDecisionNotification(
@@ -838,7 +850,7 @@ class ProspectingCampaign {
             } catch (error) {
                 console.error('Erreur lors de l\'envoi de la notification de décision:', error);
             }
-            
+
             // Mettre à jour les statuts des entreprises immédiatement
             await this.updateCompanyValidationStatuses(validation.rows[0].campaign_id, validationId);
 
@@ -859,7 +871,7 @@ class ProspectingCampaign {
                 JOIN collaborateurs c ON pcv.demandeur_id = c.id
                 WHERE pcv.id = $1 AND c.user_id = $2 AND pcv.statut_validation = 'EN_ATTENTE'
             `, [validationId, demandeurId]);
-            
+
             if (validation.rows.length === 0) {
                 return { success: false, error: 'Validation non trouvée ou non autorisée' };
             }
@@ -893,14 +905,14 @@ class ProspectingCampaign {
                 LEFT JOIN prospecting_campaigns pc ON pcv.campaign_id = pc.id
                 WHERE pcv.id = $1
             `, [validationId]);
-            
+
             return res.rows[0] || null;
         } catch (e) {
             console.error('Erreur récupération validation:', e);
             return null;
         }
     }
-    
+
     static async updateCompanyValidationStatuses(campaignId, validationId = null) {
         try {
             if (validationId) {
@@ -910,16 +922,16 @@ class ProspectingCampaign {
                     FROM prospecting_campaign_validation_companies 
                     WHERE validation_id = $1
                 `, [validationId]);
-                
+
                 for (const companyValidation of companyValidations.rows) {
                     const finalStatus = companyValidation.validation === 'OK' ? 'APPROVED' : 'REJECTED';
-                    
+
                     await pool.query(`
                         UPDATE prospecting_campaign_companies 
                         SET validation_status = $1
                         WHERE campaign_id = $2 AND company_id = $3
                     `, [finalStatus, campaignId, companyValidation.company_id]);
-                    
+
                     console.log(`🏢 Entreprise ${companyValidation.company_id} mise à jour: ${finalStatus}`);
                 }
             } else {
@@ -928,7 +940,7 @@ class ProspectingCampaign {
                     SELECT DISTINCT company_id FROM prospecting_campaign_companies 
                     WHERE campaign_id = $1
                 `, [campaignId]);
-                
+
                 for (const company of companies.rows) {
                     const validations = await pool.query(`
                         SELECT pcvc.validation
@@ -936,20 +948,20 @@ class ProspectingCampaign {
                         JOIN prospecting_campaign_validations pcv ON pcvc.validation_id = pcv.id
                         WHERE pcv.campaign_id = $1 AND pcvc.company_id = $2
                     `, [campaignId, company.company_id]);
-                    
+
                     const hasRejection = validations.rows.some(v => v.validation === 'NOT_OK');
                     const finalStatus = hasRejection ? 'REJECTED' : 'APPROVED';
-                    
+
                     await pool.query(`
                         UPDATE prospecting_campaign_companies 
                         SET validation_status = $1
                         WHERE campaign_id = $2 AND company_id = $3
                     `, [finalStatus, campaignId, company.company_id]);
-                    
+
                     console.log(`🏢 Entreprise ${company.company_id} mise à jour: ${finalStatus}`);
                 }
             }
-            
+
             console.log('✅ Statuts des entreprises mis à jour');
         } catch (e) {
             console.error('Erreur mise à jour statuts entreprises:', e);
@@ -963,27 +975,27 @@ class ProspectingCampaign {
             const campaign = await pool.query(`
                 SELECT validation_statut FROM prospecting_campaigns WHERE id = $1
             `, [campaignId]);
-            
+
             if (campaign.rows.length === 0) {
                 return { success: false, error: 'Campagne non trouvée' };
             }
-            
+
             // TEMPORAIRE: Permettre l'exécution même si la campagne n'est pas validée
             // TODO: Remettre la vérification quand le workflow sera complet
             // if (campaign.rows[0].validation_statut !== 'VALIDE') {
             //     return { success: false, error: 'La campagne doit être validée pour pouvoir exécuter' };
             // }
-            
+
             // Vérifier que l'entreprise est approuvée dans cette campagne
             const companyStatus = await pool.query(`
                 SELECT validation_status FROM prospecting_campaign_companies 
                 WHERE campaign_id = $1 AND company_id = $2
             `, [campaignId, companyId]);
-            
+
             if (companyStatus.rows.length === 0) {
                 return { success: false, error: 'Entreprise non trouvée dans cette campagne' };
             }
-            
+
             // TEMPORAIRE: Permettre l'exécution même si l'entreprise n'est pas approuvée
             // TODO: Remettre la vérification quand le workflow sera complet
             if (companyStatus.rows[0].validation_status !== 'APPROVED') {
@@ -995,19 +1007,19 @@ class ProspectingCampaign {
                 `, [campaignId, companyId]);
                 console.log(`✅ Auto-approbation de l'entreprise ${companyId} pour les tests`);
             }
-            
+
             // Mettre à jour le statut d'exécution
             const executionDate = executionStatus === 'deposed' || executionStatus === 'sent' ? 'CURRENT_TIMESTAMP' : null;
-            
+
             // Préparer les paramètres pour la requête
             const updateParams = [executionStatus, notes, campaignId, companyId];
             let executionFileColumn = '';
-            
+
             if (executionFile) {
                 executionFileColumn = ', execution_file = $5';
                 updateParams.push(executionFile);
             }
-            
+
             await pool.query(`
                 UPDATE prospecting_campaign_companies 
                 SET execution_status = $1, 
@@ -1015,7 +1027,7 @@ class ProspectingCampaign {
                     execution_notes = $2${executionFileColumn}
                 WHERE campaign_id = $3 AND company_id = $4
             `, updateParams);
-            
+
             // Vérifier la progression de la campagne et envoyer une notification si nécessaire
             try {
                 await this.checkAndSendProgressNotification(campaignId);
@@ -1023,9 +1035,9 @@ class ProspectingCampaign {
                 console.error('Erreur lors de la vérification de progression:', error);
             }
 
-            return { 
-                success: true, 
-                execution_file: executionFile || null 
+            return {
+                success: true,
+                execution_file: executionFile || null
             };
         } catch (e) {
             console.error('Erreur mise à jour statut exécution:', e);
@@ -1045,30 +1057,30 @@ class ProspectingCampaign {
                 JOIN prospecting_campaigns pc ON pcc.campaign_id = pc.id
                 WHERE pcc.campaign_id = $1 AND pcc.company_id = $2
             `, [campaignId, companyId]);
-            
+
             if (companyExecution.rows.length === 0) {
                 return { success: false, error: 'Entreprise non trouvée dans cette campagne' };
             }
-            
+
             const company = companyExecution.rows[0];
-            
+
             if (company.converted_to_opportunity) {
                 return { success: false, error: 'Cette entreprise a déjà été convertie en opportunité' };
             }
-            
+
             if (!['deposed', 'sent'].includes(company.execution_status)) {
                 return { success: false, error: 'L\'entreprise doit être exécutée (déposée ou envoyée) pour être convertie' };
             }
-            
+
             // Utiliser le client ID fourni ou créer un nouveau client
             let clientId = null;
-            
+
             if (opportunityData.clientId) {
                 // Vérifier que le client existe
                 const clientExists = await pool.query(`
                     SELECT id FROM clients WHERE id = $1
                 `, [opportunityData.clientId]);
-                
+
                 if (clientExists.rows.length > 0) {
                     clientId = opportunityData.clientId;
                 } else {
@@ -1079,7 +1091,7 @@ class ProspectingCampaign {
                 const existingClient = await pool.query(`
                     SELECT id FROM clients WHERE nom = $1 OR email = $2
                 `, [company.company_name, company.company_email]);
-                
+
                 if (existingClient.rows.length > 0) {
                     clientId = existingClient.rows[0].id;
                 } else {
@@ -1089,20 +1101,20 @@ class ProspectingCampaign {
                         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
                         RETURNING id
                     `, [company.company_name, company.company_email, 'PROSPECT', 'PROSPECTION']);
-                    
+
                     clientId = newClient.rows[0].id;
                 }
             }
-            
+
             // Utiliser le type d'opportunité fourni ou récupérer un type par défaut
             let opportunityTypeId = null;
-            
+
             if (opportunityData.opportunityTypeId) {
                 // Vérifier que le type fourni existe
                 const typeCheck = await pool.query(`
                     SELECT id FROM opportunity_types WHERE id = $1 AND is_active = true
                 `, [opportunityData.opportunityTypeId]);
-                
+
                 if (typeCheck.rows.length > 0) {
                     opportunityTypeId = opportunityData.opportunityTypeId;
                 } else {
@@ -1113,7 +1125,7 @@ class ProspectingCampaign {
                 const defaultType = await pool.query(`
                     SELECT id FROM opportunity_types WHERE name = 'PROSPECTION' OR name = 'GENERAL' OR name = 'Audit' LIMIT 1
                 `);
-                
+
                 if (defaultType.rows.length > 0) {
                     opportunityTypeId = defaultType.rows[0].id;
                 } else {
@@ -1126,7 +1138,7 @@ class ProspectingCampaign {
                     opportunityTypeId = newType.rows[0].id;
                 }
             }
-            
+
             // Créer l'opportunité
             const opportunity = await pool.query(`
                 INSERT INTO opportunities (
@@ -1151,9 +1163,9 @@ class ProspectingCampaign {
                 `Opportunité créée à partir de la campagne de prospection. Entreprise: ${company.company_name}`,
                 null // created_by sera défini par le trigger si nécessaire
             ]);
-            
+
             const opportunityId = opportunity.rows[0].id;
-            
+
             // Créer automatiquement les étapes pour cette opportunité
             try {
                 const OpportunityType = require('./OpportunityType');
@@ -1168,21 +1180,21 @@ class ProspectingCampaign {
                 console.error('❌ Erreur lors de la création des étapes:', stageError);
                 // Ne pas faire échouer la conversion pour cela
             }
-            
+
             // Marquer comme convertie
             await pool.query(`
                 UPDATE prospecting_campaign_companies 
                 SET converted_to_opportunity = TRUE, opportunity_id = $1
                 WHERE campaign_id = $2 AND company_id = $3
             `, [opportunityId, campaignId, companyId]);
-            
+
             // Envoyer des notifications de conversion étendues
             try {
                 const NotificationService = require('../services/notificationService');
-                
+
                 // 1. Notification au responsable de la campagne
                 await NotificationService.sendCampaignConversionNotification(campaignId, companyId, opportunityId);
-                
+
                 // 2. Récupérer les informations de division et business unit
                 const campaignInfo = await pool.query(`
                     SELECT pc.business_unit_id, pc.division_id,
@@ -1193,10 +1205,10 @@ class ProspectingCampaign {
                     LEFT JOIN divisions d ON pc.division_id = d.id
                     WHERE pc.id = $1
                 `, [campaignId]);
-                
+
                 if (campaignInfo.rows.length > 0) {
                     const campaign = campaignInfo.rows[0];
-                    
+
                     // 3. Notification aux responsables de division
                     if (campaign.division_id) {
                         const divisionResponsibles = await pool.query(`
@@ -1207,7 +1219,7 @@ class ProspectingCampaign {
                             AND u.role IN ('MANAGER', 'ADMIN', 'IT_ADMIN')
                             AND u.statut = 'ACTIF'
                         `, [campaign.division_id]);
-                        
+
                         for (const user of divisionResponsibles.rows) {
                             await NotificationService.sendOpportunityCreatedFromProspectionNotification(user.id, {
                                 opportunity_id: opportunityId,
@@ -1218,7 +1230,7 @@ class ProspectingCampaign {
                             });
                         }
                     }
-                    
+
                     // 4. Notification aux responsables de business unit
                     if (campaign.business_unit_id) {
                         const businessUnitResponsibles = await pool.query(`
@@ -1229,7 +1241,7 @@ class ProspectingCampaign {
                             AND u.role IN ('MANAGER', 'ADMIN', 'IT_ADMIN')
                             AND u.statut = 'ACTIF'
                         `, [campaign.business_unit_id]);
-                        
+
                         for (const user of businessUnitResponsibles.rows) {
                             await NotificationService.sendOpportunityCreatedFromProspectionNotification(user.id, {
                                 opportunity_id: opportunityId,
@@ -1252,9 +1264,9 @@ class ProspectingCampaign {
             } catch (notificationError) {
                 console.warn('⚠️ Erreur lors de l\'envoi des notifications de conversion:', notificationError);
             }
-            
-            return { 
-                success: true, 
+
+            return {
+                success: true,
                 opportunityId,
                 opportunityData: {
                     id: opportunityId,
@@ -1286,13 +1298,13 @@ class ProspectingCampaign {
                 'SELECT * FROM collaborateurs WHERE user_id = $1',
                 [userId]
             );
-            
+
             if (collaborateur.rows.length === 0) {
                 return [];
             }
-            
+
             const collabId = collaborateur.rows[0].id;
-            
+
             // Récupérer les validations pour ce responsable
             let query = `
                 SELECT pcv.*,
@@ -1333,19 +1345,19 @@ class ProspectingCampaign {
                 ) stats ON stats.campaign_id = pc.id
                 WHERE pcv.validateur_id = $1
             `;
-            
+
             const params = [collabId];
             let paramIndex = 2;
-            
+
             // Filtrer par statut si nécessaire
             if (!includeAllStatuses) {
                 query += ` AND pcv.statut_validation = 'EN_ATTENTE'`;
             }
-            
+
             query += ` ORDER BY pcv.created_at DESC`;
-            
+
             const validations = await pool.query(query, params);
-            
+
             return validations.rows;
         } catch (e) {
             console.error('Erreur récupération validations:', e);
@@ -1365,7 +1377,7 @@ class ProspectingCampaign {
                 WHERE pcvc.validation_id = $1
                 ORDER BY c.name
             `, [validationId]);
-            
+
             return res.rows;
         } catch (e) {
             console.error('Erreur récupération validations entreprises:', e);
@@ -1403,7 +1415,7 @@ class ProspectingCampaign {
                 WHERE pcv.campaign_id = $1
                 ORDER BY v.nom, v.prenom
             `, [campaignId]);
-            
+
             return res.rows;
         } catch (e) {
             console.error('Erreur récupération validateurs campagne:', e);
@@ -1430,7 +1442,7 @@ class ProspectingCampaign {
 
             // Seuils de progression pour les notifications (25%, 50%, 75%, 100%)
             const progressThresholds = [25, 50, 75, 100];
-            
+
             // Vérifier si on a atteint un nouveau seuil
             const lastProgressResult = await pool.query(`
                 SELECT metadata->>'progress_percentage' as last_progress
@@ -1466,7 +1478,7 @@ class ProspectingCampaign {
     static async delete(campaignId) {
         try {
             console.log('🔥 [API] Suppression de la campagne:', campaignId);
-            
+
             // Vérifier d'abord si la campagne existe
             const campaign = await this.findById(campaignId);
             if (!campaign) {

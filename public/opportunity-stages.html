@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Étapes d'une Opportunité</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-    
+
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -22,13 +23,14 @@
             --danger-color: #e74c4c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
-            overflow-x: hidden; /* Empêche le défilement horizontal */
+            overflow-x: hidden;
+            /* Empêche le défilement horizontal */
         }
-        
+
         /* Le conteneur principal de la page qui contient la sidebar et le contenu */
         .page-wrapper {
             display: flex;
@@ -37,63 +39,79 @@
 
         /* Styles pour le contenu principal */
         .main-content-area {
-            flex-grow: 1; /* Prend l'espace restant */
+            flex-grow: 1;
+            /* Prend l'espace restant */
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
         .stat-card.success {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
-        
+
         .stat-card.warning {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
-        
+
         .stat-card.info {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
-        
+
         .stat-number {
             font-size: 2.5rem;
             font-weight: bold;
         }
-        
+
         .table thead th {
             background-color: var(--primary-color);
             color: white;
         }
-        
+
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
         }
-        
-        .status-saisie { background-color: #e3f2fd; color: #1976d2; }
-        .status-soumise { background-color: #fff3e0; color: #f57c00; }
-        .status-validee { background-color: #e8f5e8; color: #388e3c; }
-        .status-rejetee { background-color: #ffebee; color: #d32f2f; }
-        
+
+        .status-saisie {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-soumise {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-validee {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .status-rejetee {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+
         .loading {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 200px;
         }
-        
+
         .chart-container {
             position: relative;
             height: 300px;
@@ -139,26 +157,57 @@
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column; /* Empile la sidebar et le contenu */
+                flex-direction: column;
+                /* Empile la sidebar et le contenu */
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
         }
 
         /* Kanban */
-        .kanban-board { display: flex; gap: 1rem; }
-        .kanban-column { flex: 1; background: #ffffff; border-radius: 12px; padding: 0.75rem; min-height: 240px; border: 1px solid #eee; }
-        .kanban-column h6 { font-weight: 600; margin-bottom: 0.75rem; }
-        .kanban-card { background: #f8f9fa; border: 1px solid #eaeaea; border-radius: 10px; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; cursor: grab; }
-        .kanban-card .small-muted { font-size: 12px; color: #6c757d; }
-        .droppable-hover { outline: 2px dashed var(--secondary-color); }
+        .kanban-board {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .kanban-column {
+            flex: 1;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 0.75rem;
+            min-height: 240px;
+            border: 1px solid #eee;
+        }
+
+        .kanban-column h6 {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .kanban-card {
+            background: #f8f9fa;
+            border: 1px solid #eaeaea;
+            border-radius: 10px;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.5rem;
+            cursor: grab;
+        }
+
+        .kanban-card .small-muted {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .droppable-hover {
+            outline: 2px dashed var(--secondary-color);
+        }
     </style>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -169,11 +218,12 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -277,8 +327,8 @@
                     <h5 class="card-title mb-0"><i class="fas fa-bell me-2"></i>Alertes</h5>
                     <button class="btn btn-sm btn-outline-secondary" id="btn-refresh-alerts">
                         <i class="fas fa-rotate"></i> Actualiser
-                        </button>
-                    </div>
+                    </button>
+                </div>
                 <div class="card-body" id="alerts-container">
                     <div class="text-muted">Chargement des alertes…</div>
                 </div>
@@ -342,10 +392,12 @@
                                         <option value="">Sélectionner une action…</option>
                                         <optgroup label="Actions commerciales principales">
                                             <option value="premier_contact">Premier contact prospect</option>
-                                            <option value="qualification_besoin">Qualification initiale du besoin</option>
+                                            <option value="qualification_besoin">Qualification initiale du besoin
+                                            </option>
                                             <option value="rdv_planifie">Planification rendez-vous</option>
                                             <option value="rdv_realise">Rendez-vous client effectué</option>
-                                            <option value="analyse_besoin_approfondie">Analyse détaillée besoins</option>
+                                            <option value="analyse_besoin_approfondie">Analyse détaillée besoins
+                                            </option>
                                             <option value="proposition_envoyee">Envoi proposition commerciale</option>
                                             <option value="negociation_menee">Négociation conditions</option>
                                             <option value="conditions_acceptees">Validation conditions finales</option>
@@ -367,7 +419,8 @@
                                             <option value="chiffrage_detaille">Chiffrage précis de la mission</option>
                                         </optgroup>
                                     </select>
-                                    <button class="btn btn-outline-success" id="btn-add-extra-action"><i class="fas fa-plus"></i></button>
+                                    <button class="btn btn-outline-success" id="btn-add-extra-action"><i
+                                            class="fas fa-plus"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -404,7 +457,8 @@
                                             <option value="proces_verbaux">PV d'assemblées/conseils</option>
                                         </optgroup>
                                     </select>
-                                    <button class="btn btn-outline-primary" id="btn-add-extra-doc"><i class="fas fa-upload"></i></button>
+                                    <button class="btn btn-outline-primary" id="btn-add-extra-doc"><i
+                                            class="fas fa-upload"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -658,7 +712,7 @@
             document.getElementById('btn-add-extra-doc').addEventListener('click', onAddExtraDoc);
             loadHistory(oppId);
             loadComplements(oppId);
-            
+
             // Vérifier si on doit afficher automatiquement l'historique complet
             const params = new URLSearchParams(window.location.search);
             if (params.get('show_history') === 'true') {
@@ -722,7 +776,7 @@
         function manageActionButtons(opportunityStatus) {
             const actionButtons = document.getElementById('action-buttons');
             const oppId = getOpportunityIdFromUrl();
-            
+
             switch (opportunityStatus) {
                 case 'GAGNEE':
                 case 'PERDUE':
@@ -734,7 +788,7 @@
                         </div>
                     `;
                     break;
-                    
+
                 case 'ANNULEE':
                     // Opportunité abandonnée : peut être réouverte
                     actionButtons.innerHTML = `
@@ -745,7 +799,7 @@
                             <i class="fas fa-play-circle"></i> Réouvrir l'opportunité
                         </button>
                     `;
-                    
+
                     // Ajouter les écouteurs d'événements
                     setTimeout(() => {
                         const btnRefresh = document.getElementById('btn-refresh-req');
@@ -758,7 +812,7 @@
                         }
                     }, 100);
                     break;
-                    
+
                 default:
                     // État normal : tous les boutons disponibles
                     actionButtons.innerHTML = `
@@ -772,7 +826,7 @@
                             <i class="fas fa-times-circle"></i> Abandonner l'opportunité
                         </button>
                     `;
-                    
+
                     // Ajouter les écouteurs d'événements
                     setTimeout(() => {
                         const btnRefresh = document.getElementById('btn-refresh-req');
@@ -884,7 +938,7 @@
         function onDragStart(e) {
             e.dataTransfer.setData('text/plain', e.target.dataset.stageId);
         }
-        function onDragEnd() {}
+        function onDragEnd() { }
         function initDroppables() {
             document.querySelectorAll('.kanban-column').forEach(col => {
                 col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('droppable-hover'); });
@@ -905,7 +959,7 @@
                     await startStage(stageId);
                 } else if (targetStatus === 'COMPLETED') {
                     // si PENDING -> IN_PROGRESS puis COMPLETE
-                    await startStage(stageId).catch(() => {});
+                    await startStage(stageId).catch(() => { });
                     await completeStage(stageId);
                 }
             } catch (e) {
@@ -931,12 +985,12 @@
                 // Vérifier si c'est l'étape de négociation ou de décision
                 const stages = await loadOpportunityStagesData();
                 const currentStage = stages.find(s => s.id === stageId);
-                
+
                 if (currentStage && (currentStage.stage_name === 'Négociation' || currentStage.stage_name === 'Décision')) {
                     // Pour la négociation et la décision, demander le résultat
                     const outcome = await showOutcomeDialog(currentStage.stage_name);
                     if (!outcome) return; // Annulé par l'utilisateur
-                    
+
                     // Gérer le nouveau format avec raisons
                     let requestBody = {};
                     if (typeof outcome === 'string') {
@@ -944,13 +998,13 @@
                         requestBody = { outcome: outcome };
                     } else if (outcome && outcome.outcome) {
                         // Nouveau format avec raisons
-                        requestBody = { 
+                        requestBody = {
                             outcome: outcome.outcome,
                             reason: outcome.reason,
                             details: outcome.details
                         };
                     }
-                    
+
                     const resp = await authenticatedFetch(`${API_BASE_URL}/opportunity-stages/${stageId}/complete`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -968,7 +1022,7 @@
                     const json = await resp.json();
                     if (!json.success) throw new Error(json.error || 'Erreur');
                 }
-                
+
                 reload();
             } catch (e) {
                 console.error(e);
@@ -1067,15 +1121,15 @@
                         </div>
                     </div>
                 `;
-                
+
                 document.body.appendChild(modal);
                 const bsModal = new bootstrap.Modal(modal);
                 bsModal.show();
-                
+
                 // Stocker la fonction de résolution et l'état
                 window.__outcomeResolver = resolve;
                 window.__outcomeStageName = stageName;
-                
+
                 // Nettoyer après fermeture
                 modal.addEventListener('hidden.bs.modal', () => {
                     document.body.removeChild(modal);
@@ -1116,12 +1170,12 @@
         function confirmOutcomeWithReason() {
             const reason = document.getElementById('outcome-reason').value;
             const details = document.getElementById('outcome-details').value;
-            
+
             if (!reason) {
                 showAlert('Veuillez sélectionner une raison de perte', 'warning');
                 return;
             }
-            
+
             if (window.__outcomeResolver) {
                 window.__outcomeResolver({
                     outcome: 'perdue',
@@ -1130,7 +1184,7 @@
                 });
                 window.__outcomeResolver = null;
             }
-            
+
             // Fermer le modal
             const modal = document.querySelector('.modal.show');
             if (modal) {
@@ -1252,11 +1306,11 @@
                     </div>
                 </div>
             `;
-            
+
             document.body.appendChild(modal);
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
-            
+
             // Nettoyer après fermeture
             modal.addEventListener('hidden.bs.modal', () => {
                 document.body.removeChild(modal);
@@ -1270,12 +1324,12 @@
             const notifyManagers = document.getElementById('notify-managers').checked;
             const archiveDocuments = document.getElementById('archive-documents').checked;
             const updateCrm = document.getElementById('update-crm').checked;
-            
+
             if (!reason) {
                 showAlert('Veuillez sélectionner une raison d\'abandon', 'warning');
                 return;
             }
-            
+
             try {
                 const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${opportunityId}/abandon`, {
                     method: 'POST',
@@ -1287,7 +1341,7 @@
                         update_crm: updateCrm
                     })
                 });
-                
+
                 const result = await response.json();
                 if (result.success) {
                     showAlert('Opportunité abandonnée avec succès', 'success');
@@ -1398,11 +1452,11 @@
                     </div>
                 </div>
             `;
-            
+
             document.body.appendChild(modal);
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
-            
+
             // Nettoyer après fermeture
             modal.addEventListener('hidden.bs.modal', () => {
                 document.body.removeChild(modal);
@@ -1416,12 +1470,12 @@
             const notifyTeam = document.getElementById('notify-team').checked;
             const reactivateStages = document.getElementById('reactivate-stages').checked;
             const updateCrm = document.getElementById('update-crm-reopen').checked;
-            
+
             if (!reason) {
                 showAlert('Veuillez sélectionner une raison de réouverture', 'warning');
                 return;
             }
-            
+
             try {
                 const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${opportunityId}/reopen`, {
                     method: 'POST',
@@ -1433,7 +1487,7 @@
                         update_crm: updateCrm
                     })
                 });
-                
+
                 const result = await response.json();
                 if (result.success) {
                     showAlert('Opportunité réouverte avec succès', 'success');
@@ -1539,16 +1593,20 @@
                     const li = document.createElement('li');
                     li.className = 'list-group-item d-flex justify-content-between align-items-center';
                     const countInfo = actionCounts[a.action_type];
-                    const doneBadge = countInfo ? `<span class=\"badge bg-success ms-2\">Fait (${countInfo.count})</span>` : '';
+                    const doneBadge = countInfo ? `<span class="badge bg-success ms-2">Fait (${countInfo.count})</span>` : '';
                     const lastDate = countInfo?.last_performed_at ? new Date(countInfo.last_performed_at).toLocaleDateString('fr-FR') : '';
+
+                    // Escape single quotes for onclick attribute
+                    const safeActionType = a.action_type.replace(/'/g, "\\'");
+
                     li.innerHTML = `
                         <div>
                             <span class="badge bg-secondary me-2">${a.validation_order ?? ''}</span>
-                            ${ACTION_LABELS[a.action_type] || a.action_type} ${doneBadge} ${lastDate ? `<span class=\"text-muted small\">— ${lastDate}</span>` : ''}
+                            ${ACTION_LABELS[a.action_type] || a.action_type} ${doneBadge} ${lastDate ? `<span class="text-muted small">— ${lastDate}</span>` : ''}
                         </div>
-                        <div class=\"btn-group btn-group-sm\">
-                            <button class=\"btn btn-outline-secondary\" onclick=\"viewActionsOfType('${a.action_type}')\"><i class=\"fas fa-eye\"></i> Voir</button>
-                            <button class=\"btn btn-outline-success\" onclick=\"addActionForStage('${stageId}','${a.action_type}')\"><i class=\"fas fa-plus\"></i> Enregistrer</button>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-secondary" onclick="viewActionsOfType('${safeActionType}')"><i class="fas fa-eye"></i> Voir</button>
+                            <button class="btn btn-outline-success" onclick="addActionForStage('${stageId}','${safeActionType}')"><i class="fas fa-plus"></i> Enregistrer</button>
                         </div>
                     `;
                     actionsUl.appendChild(li);
@@ -1562,13 +1620,17 @@
                     const li = document.createElement('li');
                     li.className = 'list-group-item d-flex justify-content-between align-items-center';
                     const dCount = documentCounts[d.document_type];
-                    const docBadge = dCount ? `<span class=\"badge bg-success ms-2\">Téléversé (${dCount.count})</span>` : '';
-                    const valBadge = dCount ? `<span class=\"badge ${dCount.validated_count>0?'bg-primary':'bg-warning text-dark'} ms-2\">${dCount.validated_count>0?'Validé':'En attente'}</span>` : '';
+                    const docBadge = dCount ? `<span class="badge bg-success ms-2">Téléversé (${dCount.count})</span>` : '';
+                    const valBadge = dCount ? `<span class="badge ${dCount.validated_count > 0 ? 'bg-primary' : 'bg-warning text-dark'} ms-2">${dCount.validated_count > 0 ? 'Validé' : 'En attente'}</span>` : '';
+
+                    // Escape single quotes for onclick attribute
+                    const safeDocType = d.document_type.replace(/'/g, "\\'");
+
                     li.innerHTML = `
                         <div>${DOC_LABELS[d.document_type] || d.document_type} ${docBadge} ${valBadge}</div>
-                        <div class=\"btn-group btn-group-sm\">
-                            <button class=\"btn btn-outline-secondary\" onclick=\"viewDocumentsOfType('${d.document_type}')\"><i class=\"fas fa-eye\"></i> Voir</button>
-                            <button class=\"btn btn-outline-primary\" onclick=\"addDocumentForStage('${stageId}','${d.document_type}')\"><i class=\"fas fa-upload\"></i> Ajouter</button>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-secondary" onclick="viewDocumentsOfType('${safeDocType}')"><i class="fas fa-eye"></i> Voir</button>
+                            <button class="btn btn-outline-primary" onclick="addDocumentForStage('${stageId}','${safeDocType}')"><i class="fas fa-upload"></i> Ajouter</button>
                         </div>
                     `;
                     docsUl.appendChild(li);
@@ -1658,20 +1720,20 @@
 
                 console.log('🔄 Validation de l\'étape pour l\'opportunité:', opportunityId);
                 const resp = await authenticatedFetch(`${API_BASE_URL}/workflow/validate-stage/${opportunityId}`, { method: 'POST' });
-                
+
                 if (!resp.ok) {
                     const errorText = await resp.text();
                     console.error('❌ Erreur HTTP:', resp.status, errorText);
                     throw new Error(`Erreur serveur (${resp.status}): ${errorText}`);
                 }
-                
+
                 const json = await resp.json();
                 console.log('📊 Réponse API:', json);
-                
+
                 if (!json.success) {
                     throw new Error(json.error || json.message || 'Erreur de validation inconnue');
                 }
-                
+
                 if (json.data?.reason === 'requirements_not_met') {
                     const details = json.data.details;
                     let message = "Exigences non satisfaites: ";
@@ -1805,15 +1867,15 @@
                 const items = [];
                 actions.forEach(a => items.push({
                     ts: a.performed_at,
-                    html: `<i class=\"fas fa-check-circle text-success me-2\"></i>Action <strong>${ACTION_LABELS[a.action_type] || a.action_type}</strong>${a.stage_id===currentStageId?' <span class=\"badge bg-info ms-1\">Étape courante</span>':''} — ${a.description||''}`
+                    html: `<i class=\"fas fa-check-circle text-success me-2\"></i>Action <strong>${ACTION_LABELS[a.action_type] || a.action_type}</strong>${a.stage_id === currentStageId ? ' <span class=\"badge bg-info ms-1\">Étape courante</span>' : ''} — ${a.description || ''}`
                 }));
                 documents.forEach(d => items.push({
                     ts: d.uploaded_at,
-                    html: `<i class=\"fas fa-file-arrow-up text-primary me-2\"></i>Document <strong>${d.document_type}</strong>${d.stage_id===currentStageId?' <span class=\"badge bg-info ms-1\">Étape courante</span>':''} — ${d.file_name||''} ${d.validation_status?`<span class=\"badge ms-1 ${d.validation_status==='validated'?'bg-primary':'bg-warning text-dark'}\">${d.validation_status}</span>`:''}`
+                    html: `<i class=\"fas fa-file-arrow-up text-primary me-2\"></i>Document <strong>${d.document_type}</strong>${d.stage_id === currentStageId ? ' <span class=\"badge bg-info ms-1\">Étape courante</span>' : ''} — ${d.file_name || ''} ${d.validation_status ? `<span class=\"badge ms-1 ${d.validation_status === 'validated' ? 'bg-primary' : 'bg-warning text-dark'}\">${d.validation_status}</span>` : ''}`
                 }));
-                items.sort((a,b) => new Date(b.ts) - new Date(a.ts));
+                items.sort((a, b) => new Date(b.ts) - new Date(a.ts));
                 const ul = document.getElementById('history-list');
-                ul.innerHTML = items.length? items.map(it => `<li class=\"list-group-item\">${it.html}<span class=\"text-muted small float-end\">${new Date(it.ts).toLocaleString('fr-FR')}</span></li>`).join('') : '<li class="list-group-item text-muted">Aucun historique</li>';
+                ul.innerHTML = items.length ? items.map(it => `<li class=\"list-group-item\">${it.html}<span class=\"text-muted small float-end\">${new Date(it.ts).toLocaleString('fr-FR')}</span></li>`).join('') : '<li class="list-group-item text-muted">Aucun historique</li>';
             } catch (e) {
                 console.error(e);
             }
@@ -1835,10 +1897,10 @@
                 const documents = (json.data.documents || []).filter(d => d.stage_id === currentStageId && !reqDocSet.has(d.document_type));
 
                 const aUl = document.getElementById('extra-actions-list');
-                aUl.innerHTML = actions.length ? actions.map(a => `<li class=\"list-group-item d-flex justify-content-between align-items-center\"><div><strong>${ACTION_LABELS[a.action_type] || a.action_type}</strong> — ${a.description||''}</div><span class=\"text-muted small\">${new Date(a.performed_at).toLocaleString('fr-FR')}</span></li>`).join('') : '<li class=\"list-group-item text-muted\">Aucune action additionnelle</li>';
+                aUl.innerHTML = actions.length ? actions.map(a => `<li class=\"list-group-item d-flex justify-content-between align-items-center\"><div><strong>${ACTION_LABELS[a.action_type] || a.action_type}</strong> — ${a.description || ''}</div><span class=\"text-muted small\">${new Date(a.performed_at).toLocaleString('fr-FR')}</span></li>`).join('') : '<li class=\"list-group-item text-muted\">Aucune action additionnelle</li>';
 
                 const dUl = document.getElementById('extra-docs-list');
-                dUl.innerHTML = documents.length ? documents.map(d => `<li class=\"list-group-item d-flex justify-content-between align-items-center\"><div><strong>${DOC_LABELS[d.document_type] || d.document_type}</strong> — ${d.file_name||''} ${d.file_path?`<a href=\"${d.file_path}\" target=\"_blank\" class=\"ms-2\"><i class=\"fas fa-link\"></i></a>`:''}</div><span class=\"badge ${d.validation_status==='validated'?'bg-primary':'bg-warning text-dark'}\">${d.validation_status||'pending'}</span></li>`).join('') : '<li class=\"list-group-item text-muted\">Aucun document additionnel</li>';
+                dUl.innerHTML = documents.length ? documents.map(d => `<li class=\"list-group-item d-flex justify-content-between align-items-center\"><div><strong>${DOC_LABELS[d.document_type] || d.document_type}</strong> — ${d.file_name || ''} ${d.file_path ? `<a href=\"${d.file_path}\" target=\"_blank\" class=\"ms-2\"><i class=\"fas fa-link\"></i></a>` : ''}</div><span class=\"badge ${d.validation_status === 'validated' ? 'bg-primary' : 'bg-warning text-dark'}\">${d.validation_status || 'pending'}</span></li>`).join('') : '<li class=\"list-group-item text-muted\">Aucun document additionnel</li>';
             } catch (e) {
                 console.error(e);
             }
@@ -1875,9 +1937,9 @@
             const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${oppId}/workflow?t=${Date.now()}`);
             const json = await resp.json();
             const currentStageId = window.__lastRequirements?.stage?.id;
-            const items = (json.data.actions||[]).filter(a => a.action_type === actionType && a.stage_id === currentStageId)
-              .map(a => `<li class=\"list-group-item d-flex justify-content-between align-items-start\"><div class=\"description-text\">${a.description||''}</div><span class=\"text-muted small timestamp\">${new Date(a.performed_at).toLocaleString('fr-FR')}</span></li>`)
-              .join('') || '<li class="list-group-item text-muted">Aucune saisie</li>';
+            const items = (json.data.actions || []).filter(a => a.action_type === actionType && a.stage_id === currentStageId)
+                .map(a => `<li class=\"list-group-item d-flex justify-content-between align-items-start\"><div class=\"description-text\">${a.description || ''}</div><span class=\"text-muted small timestamp\">${new Date(a.performed_at).toLocaleString('fr-FR')}</span></li>`)
+                .join('') || '<li class="list-group-item text-muted">Aucune saisie</li>';
             openViewModal(`Actions: ${ACTION_LABELS[actionType] || actionType}`, items);
         }
 
@@ -1886,19 +1948,23 @@
             const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${oppId}/workflow?t=${Date.now()}`);
             const json = await resp.json();
             const currentStageId = window.__lastRequirements?.stage?.id;
-            const items = (json.data.documents||[])
-              .filter(d => d.document_type === documentType && d.stage_id === currentStageId)
-              .map(d => `<li class=\"list-group-item d-flex justify-content-between align-items-start\">`
-                + `<div class=\"file-info\">${d.file_name||''} ${d.file_path?`<a href=\"${d.file_path}\" target=\"_blank\" class=\"ms-2\"><i class=\"fas fa-link\"></i></a>`:''}</div>`
-                + `<div class=\"d-flex align-items-center gap-2\">`
-                + `<span class=\"badge ${d.validation_status==='validated'?'bg-primary':'bg-warning text-dark'}\">${d.validation_status||'pending'}</span>`
-                + `<div class=\"btn-group btn-group-sm\">`
-                + `<button class=\"btn btn-outline-primary\" ${d.validation_status==='validated'?'disabled':''} onclick=\"setDocumentStatus('${d.id}','validated','${documentType}')\"><i class=\"fas fa-check\"></i></button>`
-                + `<button class=\"btn btn-outline-danger\" ${d.validation_status==='rejected'?'disabled':''} onclick=\"setDocumentStatus('${d.id}','rejected','${documentType}')\"><i class=\"fas fa-times\"></i></button>`
-                + `</div>`
-                + `</div>`
-                + `</li>`)
-              .join('') || '<li class="list-group-item text-muted">Aucun document</li>';
+
+            // Escape single quotes for onclick attribute
+            const safeDocumentType = documentType.replace(/'/g, "\\'");
+
+            const items = (json.data.documents || [])
+                .filter(d => d.document_type === documentType && d.stage_id === currentStageId)
+                .map(d => `<li class=\"list-group-item d-flex justify-content-between align-items-start\">`
+                    + `<div class=\"file-info\">${d.file_name || ''} ${d.file_path ? `<a href=\"${d.file_path}\" target=\"_blank\" class=\"ms-2\"><i class=\"fas fa-link\"></i></a>` : ''}</div>`
+                    + `<div class=\"d-flex align-items-center gap-2\">`
+                    + `<span class=\"badge ${d.validation_status === 'validated' ? 'bg-primary' : 'bg-warning text-dark'}\">${d.validation_status || 'pending'}</span>`
+                    + `<div class=\"btn-group btn-group-sm\">`
+                    + `<button class=\"btn btn-outline-primary\" ${d.validation_status === 'validated' ? 'disabled' : ''} onclick=\"setDocumentStatus('${d.id}','validated','${safeDocumentType}')\"><i class=\"fas fa-check\"></i></button>`
+                    + `<button class=\"btn btn-outline-danger\" ${d.validation_status === 'rejected' ? 'disabled' : ''} onclick=\"setDocumentStatus('${d.id}','rejected','${safeDocumentType}')\"><i class=\"fas fa-times\"></i></button>`
+                    + `</div>`
+                    + `</div>`
+                    + `</li>`)
+                .join('') || '<li class="list-group-item text-muted">Aucun document</li>';
             openViewModal(`Documents: ${DOC_LABELS[documentType] || documentType}`, items);
         }
 
@@ -1930,26 +1996,30 @@
             const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${oppId}/workflow?t=${Date.now()}`);
             const json = await resp.json();
             const currentStageId = window.__lastRequirements?.stage?.id;
-            const items = (json.data.documents||[])
-              .filter(d => d.document_type === documentType && d.stage_id === currentStageId)
-              .map(d => `<li class=\"list-group-item d-flex justify-content-between align-items-start\">`
-                + `<div class=\"file-info\">${d.file_name||''} ${d.file_path?`<a href=\"${d.file_path}\" target=\"_blank\" class=\"ms-2\"><i class=\"fas fa-link\"></i></a>`:''}</div>`
-                + `<div class=\"d-flex align-items-center gap-2\">`
-                + `<span class=\"badge ${d.validation_status==='validated'?'bg-primary':'bg-warning text-dark'}\">${d.validation_status||'pending'}</span>`
-                + `<div class=\"btn-group btn-group-sm\">`
-                + `<button class=\"btn btn-outline-primary\" ${d.validation_status==='validated'?'disabled':''} onclick=\"setDocumentStatus('${d.id}','validated','${documentType}')\"><i class=\"fas fa-check\"></i></button>`
-                + `<button class=\"btn btn-outline-danger\" ${d.validation_status==='rejected'?'disabled':''} onclick=\"setDocumentStatus('${d.id}','rejected','${documentType}')\"><i class=\"fas fa-times\"></i></button>`
-                + `</div>`
-                + `</div>`
-                + `</li>`)
-              .join('') || '<li class="list-group-item text-muted">Aucun document</li>';
+
+            // Escape single quotes for onclick attribute
+            const safeDocumentType = documentType.replace(/'/g, "\\'");
+
+            const items = (json.data.documents || [])
+                .filter(d => d.document_type === documentType && d.stage_id === currentStageId)
+                .map(d => `<li class=\"list-group-item d-flex justify-content-between align-items-start\">`
+                    + `<div class=\"file-info\">${d.file_name || ''} ${d.file_path ? `<a href=\"${d.file_path}\" target=\"_blank\" class=\"ms-2\"><i class=\"fas fa-link\"></i></a>` : ''}</div>`
+                    + `<div class=\"d-flex align-items-center gap-2\">`
+                    + `<span class=\"badge ${d.validation_status === 'validated' ? 'bg-primary' : 'bg-warning text-dark'}\">${d.validation_status || 'pending'}</span>`
+                    + `<div class=\"btn-group btn-group-sm\">`
+                    + `<button class=\"btn btn-outline-primary\" ${d.validation_status === 'validated' ? 'disabled' : ''} onclick=\"setDocumentStatus('${d.id}','validated','${safeDocumentType}')\"><i class=\"fas fa-check\"></i></button>`
+                    + `<button class=\"btn btn-outline-danger\" ${d.validation_status === 'rejected' ? 'disabled' : ''} onclick=\"setDocumentStatus('${d.id}','rejected','${safeDocumentType}')\"><i class=\"fas fa-times\"></i></button>`
+                    + `</div>`
+                    + `</div>`
+                    + `</li>`)
+                .join('') || '<li class="list-group-item text-muted">Aucun document</li>';
             const list = modalEl.querySelector('#view-items-list');
             if (list) list.innerHTML = items;
         }
 
         // Planification (due_date, notes)
         function openSchedule(stageId, dueDate, notes) {
-            const newDue = prompt("Nouvelle échéance (YYYY-MM-DD)", (dueDate || '').substring(0,10));
+            const newDue = prompt("Nouvelle échéance (YYYY-MM-DD)", (dueDate || '').substring(0, 10));
             if (newDue === null) return;
             const newNotes = prompt("Notes (optionnel)", notes || '');
             updateSchedule(stageId, newDue, newNotes);
@@ -1999,9 +2069,9 @@
                 const oppId = getOpportunityIdFromUrl();
                 const resp = await authenticatedFetch(`${API_BASE_URL}/opportunities/${oppId}/history?t=${Date.now()}`);
                 const json = await resp.json();
-                
+
                 if (!json.success) throw new Error(json.error || 'Erreur');
-                
+
                 const history = json.data;
                 displayCompleteHistoryModal(history);
             } catch (e) {
@@ -2082,14 +2152,14 @@
                     </div>
                 </div>
             `;
-            
+
             document.body.appendChild(modal);
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
-            
+
             // Stocker les données pour l'utilisation dans les fonctions
             window.__historyData = history;
-            
+
             modal.addEventListener('hidden.bs.modal', () => {
                 document.body.removeChild(modal);
                 window.__historyData = null;
@@ -2097,7 +2167,7 @@
         }
 
         function getStatusBadgeColor(status) {
-            switch(status) {
+            switch (status) {
                 case 'GAGNEE': return 'success';
                 case 'PERDUE': return 'danger';
                 case 'EN_COURS': return 'warning';
@@ -2120,7 +2190,7 @@
                 const statusIcon = getStageStatusIcon(stage.status);
                 const statusColor = getStageStatusColor(stage.status);
                 const isActive = stage.status === 'IN_PROGRESS';
-                
+
                 return `
                     <div class="stage-nav-item mb-2 ${isActive ? 'active' : ''}" onclick="showStageDetails('${stage.id}')">
                         <div class="card border-${statusColor} ${isActive ? 'border-3' : 'border-1'} h-100">
@@ -2154,10 +2224,10 @@
             if (!stage) return;
 
             // Filtrer les actions et documents pour cette étape
-            const stageActions = history.timeline.filter(item => 
+            const stageActions = history.timeline.filter(item =>
                 item.stage_order === stage.stage_order && item.type === 'action'
             );
-            const stageDocuments = history.timeline.filter(item => 
+            const stageDocuments = history.timeline.filter(item =>
                 item.stage_order === stage.stage_order && item.type === 'document'
             );
 
@@ -2239,7 +2309,7 @@
             if (userNamesCache[userId]) {
                 return userNamesCache[userId];
             }
-            
+
             // Vérifier d'abord si c'est l'utilisateur connecté (depuis localStorage)
             try {
                 const userData = localStorage.getItem('user');
@@ -2254,7 +2324,7 @@
             } catch (error) {
                 console.warn('Erreur lors de la lecture des données utilisateur locales:', error);
             }
-            
+
             // Si ce n'est pas l'utilisateur connecté, faire un appel API
             try {
                 const response = await authenticatedFetch(`/api/users/${userId}`);
@@ -2267,7 +2337,7 @@
             } catch (error) {
                 console.error('Erreur lors de la récupération du nom utilisateur:', error);
             }
-            
+
             return userId; // Retourner l'ID si on ne peut pas récupérer le nom
         }
 
@@ -2277,14 +2347,14 @@
             }
 
             const actionsHTML = [];
-            
+
             for (const action of actions) {
                 const date = new Date(action.date).toLocaleString('fr-FR');
                 const actionLabel = ACTION_LABELS[action.data.action_type] || action.data.action_type;
-                
+
                 // Debug: afficher la structure des données
                 console.log('Action data structure:', action);
-                
+
                 // Essayer différentes structures possibles pour la description
                 let actionDescription = 'Aucune description';
                 if (action.data && action.data.action_description) {
@@ -2296,13 +2366,13 @@
                 } else if (action.data && typeof action.data === 'string') {
                     actionDescription = action.data;
                 }
-                
+
                 // Récupérer le nom de l'utilisateur
                 let performerName = 'Utilisateur inconnu';
                 if (action.data.performed_by) {
                     performerName = await getUserName(action.data.performed_by);
                 }
-                
+
                 actionsHTML.push(`
                     <div class="action-item border-bottom pb-3 mb-3">
                         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -2317,7 +2387,7 @@
                     </div>
                 `);
             }
-            
+
             return actionsHTML.join('');
         }
 
@@ -2329,10 +2399,10 @@
             return documents.map(doc => {
                 const date = new Date(doc.date).toLocaleString('fr-FR');
                 const validationStatus = doc.data.validation_status;
-                const statusColor = validationStatus === 'validated' ? 'success' : 
-                                  validationStatus === 'rejected' ? 'danger' : 'warning';
+                const statusColor = validationStatus === 'validated' ? 'success' :
+                    validationStatus === 'rejected' ? 'danger' : 'warning';
                 const documentLabel = DOC_LABELS[doc.data.document_type] || doc.data.document_type;
-                
+
                 return `
                     <div class="document-item border-bottom pb-3 mb-3">
                         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -2362,7 +2432,7 @@
 
         function generateStageTimelineHTML(stage, timeline) {
             const stageEvents = timeline.filter(item => item.stage_order === stage.stage_order);
-            
+
             if (stageEvents.length === 0) {
                 return '<div class="text-muted text-center py-4">Aucun événement pour cette étape</div>';
             }
@@ -2371,16 +2441,16 @@
                 const date = new Date(event.date).toLocaleString('fr-FR');
                 const icon = getTimelineIcon(event.type);
                 const color = getTimelineColor(event.type);
-                
+
                 // Générer le titre et la description selon le type d'événement
                 let title, description;
-                
+
                 if (event.type === 'action') {
                     title = ACTION_LABELS[event.data.action_type] || event.data.action_type;
-                    
+
                     // Debug: afficher la structure des données
                     console.log('Timeline action data structure:', event);
-                    
+
                     // Essayer différentes structures possibles pour la description
                     let actionDescription = 'Aucune description';
                     if (event.data && event.data.action_description) {
@@ -2392,7 +2462,7 @@
                     } else if (event.data && typeof event.data === 'string') {
                         actionDescription = event.data;
                     }
-                    
+
                     description = actionDescription;
                 } else if (event.type === 'document') {
                     title = `Document ${DOC_LABELS[event.data.document_type] || event.data.document_type}`;
@@ -2407,7 +2477,7 @@
                     title = event.title || 'Événement';
                     description = event.description || 'Aucune description';
                 }
-                
+
                 return `
                     <div class="timeline-item d-flex align-items-start mb-3">
                         <div class="timeline-icon me-3">
@@ -2426,7 +2496,7 @@
         }
 
         function getTimelineIcon(type) {
-            switch(type) {
+            switch (type) {
                 case 'action': return 'fa-tasks';
                 case 'document': return 'fa-file-alt';
                 case 'stage_start': return 'fa-play-circle';
@@ -2436,7 +2506,7 @@
         }
 
         function getTimelineColor(type) {
-            switch(type) {
+            switch (type) {
                 case 'action': return 'primary';
                 case 'document': return 'info';
                 case 'stage_start': return 'warning';
@@ -2447,7 +2517,7 @@
 
         // Fonctions utilitaires pour les statuts des étapes
         function getStageStatusIcon(status) {
-            switch(status) {
+            switch (status) {
                 case 'COMPLETED': return 'fa-check-circle';
                 case 'IN_PROGRESS': return 'fa-play-circle';
                 case 'PENDING': return 'fa-clock';
@@ -2456,7 +2526,7 @@
         }
 
         function getStageStatusColor(status) {
-            switch(status) {
+            switch (status) {
                 case 'COMPLETED': return 'success';
                 case 'IN_PROGRESS': return 'warning';
                 case 'PENDING': return 'secondary';
@@ -2465,7 +2535,7 @@
         }
 
         function getStageStatusLabel(status) {
-            switch(status) {
+            switch (status) {
                 case 'COMPLETED': return 'Terminée';
                 case 'IN_PROGRESS': return 'En cours';
                 case 'PENDING': return 'En attente';
@@ -2704,5 +2774,6 @@
 
     <!-- SessionManager pour la gestion centralisée des sessions -->
     <script src="/js/session-manager.js"></script>
-    </body>
+</body>
+
 </html>

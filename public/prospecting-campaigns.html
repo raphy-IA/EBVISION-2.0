@@ -1,30 +1,31 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EBVISION 2.0 - Prospection - Campagnes</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
+
     <!-- CSS pour le titre de l'application -->
     <link rel="stylesheet" href="css/app-title.css">
-    
+
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
     <script src="js/menu-permissions.js"></script>
     <script src="/js/page-permissions.js"></script>
-                
+
     <!-- Scripts de zone utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
     <script src="js/user-modals.js"></script>
-    
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -34,13 +35,14 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
-            overflow-x: hidden; /* Empêche le défilement horizontal */
+            overflow-x: hidden;
+            /* Empêche le défilement horizontal */
         }
-        
+
         /* Le conteneur principal de la page qui contient la sidebar et le contenu */
         .page-wrapper {
             display: flex;
@@ -49,38 +51,43 @@
 
         /* Styles pour le contenu principal */
         .main-content-area {
-            flex-grow: 1; /* Prend l'espace restant */
+            flex-grow: 1;
+            /* Prend l'espace restant */
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
         }
-        
+
         .required-field::after {
             content: " *";
             color: #dc3545;
         }
+
         .form-text {
             font-size: 0.875em;
             color: #6c757d;
         }
+
         .card.bg-light {
             border: 1px solid #dee2e6;
         }
+
         .text-primary {
             color: #0d6efd !important;
         }
+
         .fw-bold {
             font-weight: 600 !important;
         }
@@ -88,9 +95,10 @@
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column; /* Empile la sidebar et le contenu */
+                flex-direction: column;
+                /* Empile la sidebar et le contenu */
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
@@ -99,10 +107,11 @@
 
     <script src="js/global-auth.js"></script>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -126,19 +135,28 @@
                     </div>
                     <!-- Notification Dropdown -->
                     <div class="dropdown ms-3">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false" onclick="openNotificationsModal()">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="notificationsDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false" onclick="openNotificationsModal()">
                             <i class="fas fa-bell"></i>
                             <span class="badge bg-danger rounded-pill" id="notificationBadge">0</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
-                            <li><h6 class="dropdown-header">Notifications</h6></li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <h6 class="dropdown-header">Notifications</h6>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <div id="notificationsContainer" class="list-group list-group-flush">
                                 <!-- Notifications will be loaded here -->
                             </div>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-center" href="#" onclick="markAllAsRead()">Marquer tout comme lu</a></li>
-                            <li><a class="dropdown-item text-center text-danger" href="#" onclick="clearReadNotifications()">Supprimer les lues</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-center" href="#" onclick="markAllAsRead()">Marquer tout
+                                    comme lu</a></li>
+                            <li><a class="dropdown-item text-center text-danger" href="#"
+                                    onclick="clearReadNotifications()">Supprimer les lues</a></li>
                         </ul>
                     </div>
                 </div>
@@ -204,15 +222,17 @@
                             <div class="col-md-6">
                                 <label for="campName" class="form-label required-field">Nom de la campagne *</label>
                                 <input id="campName" class="form-control" placeholder="Généré automatiquement" readonly>
-                                <div class="form-text">Le nom est généré automatiquement selon le format : NomModèle-YY-MM-QNumeroSemaine-NumeroOrdre</div>
-                    </div>
+                                <div class="form-text">Le nom est généré automatiquement selon le format :
+                                    NomModèle-YY-MM-QNumeroSemaine-NumeroOrdre</div>
+                            </div>
                             <div class="col-md-6">
-                                <label for="campResponsible" class="form-label required-field">Responsable de la campagne *</label>
+                                <label for="campResponsible" class="form-label required-field">Responsable de la
+                                    campagne *</label>
                                 <select id="campResponsible" class="form-select" required>
                                     <option value="">Sélectionnez un responsable</option>
-                        </select>
-                    </div>
-                    </div>
+                                </select>
+                            </div>
+                        </div>
 
                         <!-- Sélection du modèle -->
                         <div class="mb-3">
@@ -270,9 +290,9 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="campDate" class="form-label">Date de lancement planifiée</label>
-                        <input id="campDate" type="date" class="form-control">
+                                <input id="campDate" type="date" class="form-control">
                                 <div class="form-text">Laissez vide pour lancer immédiatement</div>
-                    </div>
+                            </div>
                             <div class="col-md-6">
                                 <label for="campPriority" class="form-label">Priorité</label>
                                 <select id="campPriority" class="form-select">
@@ -286,8 +306,8 @@
                         <!-- Description -->
                         <div class="mb-3">
                             <label for="campDescription" class="form-label">Description de la campagne</label>
-                            <textarea id="campDescription" class="form-control" rows="3" 
-                                      placeholder="Décrivez l'objectif et le contexte de cette campagne..."></textarea>
+                            <textarea id="campDescription" class="form-control" rows="3"
+                                placeholder="Décrivez l'objectif et le contexte de cette campagne..."></textarea>
                         </div>
                     </form>
                 </div>
@@ -333,19 +353,22 @@
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <label class="form-label">Secteur d'activité</label>
-                                                <select id="filterIndustry" class="form-select form-select-sm" onchange="applyFilters()">
+                                                <select id="filterIndustry" class="form-select form-select-sm"
+                                                    onchange="applyFilters()">
                                                     <option value="">Tous les secteurs</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">Ville</label>
-                                                <select id="filterCity" class="form-select form-select-sm" onchange="applyFilters()">
+                                                <select id="filterCity" class="form-select form-select-sm"
+                                                    onchange="applyFilters()">
                                                     <option value="">Toutes les villes</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">Taille</label>
-                                                <select id="filterSize" class="form-select form-select-sm" onchange="applyFilters()">
+                                                <select id="filterSize" class="form-select form-select-sm"
+                                                    onchange="applyFilters()">
                                                     <option value="">Toutes les tailles</option>
                                                 </select>
                                             </div>
@@ -356,8 +379,10 @@
                                     <div class="mb-3">
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                            <input type="text" id="companySearch" class="form-control" placeholder="Rechercher une entreprise..." oninput="filterCompanies()">
-                                            <button class="btn btn-outline-secondary" type="button" onclick="clearFilters()">
+                                            <input type="text" id="companySearch" class="form-control"
+                                                placeholder="Rechercher une entreprise..." oninput="filterCompanies()">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                onclick="clearFilters()">
                                                 <i class="fas fa-times"></i>
                                             </button>
                                         </div>
@@ -367,34 +392,42 @@
                                     <div class="mb-3 flex-grow-1">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <small class="text-muted">
-                                                Entreprises de la source 
+                                                Entreprises de la source
                                                 <span id="companiesCount" class="badge bg-secondary ms-2">0</span>
                                             </small>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="selectAllSource" onchange="toggleSelectAllSource()">
-                                                <label class="form-check-label" for="selectAllSource">Tout sélectionner</label>
+                                                <input class="form-check-input" type="checkbox" id="selectAllSource"
+                                                    onchange="toggleSelectAllSource()">
+                                                <label class="form-check-label" for="selectAllSource">Tout
+                                                    sélectionner</label>
                                             </div>
                                         </div>
-                                        <div id="sourceCompaniesList" style="height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem;">
+                                        <div id="sourceCompaniesList"
+                                            style="height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem;">
                                             <div class="text-center py-4">
                                                 <i class="fas fa-database fa-2x text-muted"></i>
-                                                <p class="text-muted mt-2">Sélectionnez une source pour voir les entreprises</p>
+                                                <p class="text-muted mt-2">Sélectionnez une source pour voir les
+                                                    entreprises</p>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Pagination -->
-                                        <div class="d-flex justify-content-between align-items-center mt-2" id="paginationSection" style="display: none;">
+                                        <div class="d-flex justify-content-between align-items-center mt-2"
+                                            id="paginationSection" style="display: none;">
                                             <div class="d-flex align-items-center">
                                                 <span class="text-muted me-2">Page</span>
-                                                <select id="pageSelect" class="form-select form-select-sm" style="width: auto;" onchange="goToPage()">
+                                                <select id="pageSelect" class="form-select form-select-sm"
+                                                    style="width: auto;" onchange="goToPage()">
                                                 </select>
                                                 <span class="text-muted ms-2">sur <span id="totalPages">0</span></span>
                                             </div>
                                             <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-secondary" onclick="previousPage()" id="prevBtn">
+                                                <button class="btn btn-outline-secondary" onclick="previousPage()"
+                                                    id="prevBtn">
                                                     <i class="fas fa-chevron-left"></i>
                                                 </button>
-                                                <button class="btn btn-outline-secondary" onclick="nextPage()" id="nextBtn">
+                                                <button class="btn btn-outline-secondary" onclick="nextPage()"
+                                                    id="nextBtn">
                                                     <i class="fas fa-chevron-right"></i>
                                                 </button>
                                             </div>
@@ -402,7 +435,8 @@
                                     </div>
 
                                     <!-- Bouton d'ajout -->
-                                    <button class="btn btn-primary w-100" onclick="addSelectedCompanies()" id="addCompaniesBtn" disabled>
+                                    <button class="btn btn-primary w-100" onclick="addSelectedCompanies()"
+                                        id="addCompaniesBtn" disabled>
                                         <i class="fas fa-plus me-2"></i>Ajouter les entreprises sélectionnées
                                     </button>
                                 </div>
@@ -416,10 +450,12 @@
                                 <div class="col-12 mb-3">
                                     <div class="card">
                                         <div class="card-header">
-                                            <h6 class="mb-0"><i class="fas fa-clock me-2"></i>À ajouter (<span id="selectedCount">0</span>)</h6>
+                                            <h6 class="mb-0"><i class="fas fa-clock me-2"></i>À ajouter (<span
+                                                    id="selectedCount">0</span>)</h6>
                                         </div>
                                         <div class="card-body">
-                                            <div id="selectedCompaniesList" style="max-height: 200px; overflow-y: auto;">
+                                            <div id="selectedCompaniesList"
+                                                style="max-height: 200px; overflow-y: auto;">
                                                 <div class="text-center py-3">
                                                     <i class="fas fa-list fa-2x text-muted"></i>
                                                     <p class="text-muted mt-2">Aucune entreprise sélectionnée</p>
@@ -433,7 +469,8 @@
                                 <div class="col-12 flex-grow-1">
                                     <div class="card h-100">
                                         <div class="card-header">
-                                            <h6 class="mb-0"><i class="fas fa-check me-2"></i>Déjà affectées (<span id="assignedCount">0</span>)</h6>
+                                            <h6 class="mb-0"><i class="fas fa-check me-2"></i>Déjà affectées (<span
+                                                    id="assignedCount">0</span>)</h6>
                                         </div>
                                         <div class="card-body">
                                             <div id="assignedCompaniesList" style="height: 300px; overflow-y: auto;">
@@ -477,32 +514,32 @@
 
         async function loadCampaigns() {
             try {
-            console.log('🔍 [DEBUG] Chargement des campagnes...');
-            const res = await fetch(`${API}/campaigns`, { headers: getAuthHeader() });
-            console.log('🔍 [DEBUG] Réponse API:', res.status, res.statusText);
-            
-            // Vérifier si le token est invalide
-            if (res.status === 401) {
-                console.log('❌ [DEBUG] Token invalide, redirection vers la page de connexion');
-                localStorage.removeItem('authToken');
-                window.location.href = '/login.html';
-                return;
-            }
-            
-            // Vérifier si il y a une erreur serveur
-            if (res.status === 500) {
-                console.log('❌ [DEBUG] Erreur serveur 500');
-                const errorData = await res.json();
-                console.log('❌ [DEBUG] Détails de l\'erreur:', errorData);
-                alert('Erreur serveur: ' + (errorData.message || 'Erreur inconnue'));
-                return;
-            }
-            
-            const data = await res.json();
-            console.log('🔍 [DEBUG] Données reçues:', data);
-            const tbody = document.getElementById('campaignsTable');
-            if (tbody) tbody.innerHTML = '';
-                
+                console.log('🔍 [DEBUG] Chargement des campagnes...');
+                const res = await fetch(`${API}/campaigns`, { headers: getAuthHeader() });
+                console.log('🔍 [DEBUG] Réponse API:', res.status, res.statusText);
+
+                // Vérifier si le token est invalide
+                if (res.status === 401) {
+                    console.log('❌ [DEBUG] Token invalide, redirection vers la page de connexion');
+                    localStorage.removeItem('authToken');
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                // Vérifier si il y a une erreur serveur
+                if (res.status === 500) {
+                    console.log('❌ [DEBUG] Erreur serveur 500');
+                    const errorData = await res.json();
+                    console.log('❌ [DEBUG] Détails de l\'erreur:', errorData);
+                    alert('Erreur serveur: ' + (errorData.message || 'Erreur inconnue'));
+                    return;
+                }
+
+                const data = await res.json();
+                console.log('🔍 [DEBUG] Données reçues:', data);
+                const tbody = document.getElementById('campaignsTable');
+                if (tbody) tbody.innerHTML = '';
+
                 if (!data.success || !data.data || data.data.length === 0) {
                     if (tbody) {
                         tbody.innerHTML = `
@@ -516,29 +553,29 @@
                     }
                     return;
                 }
-                
-            console.log('🔍 [DEBUG] Traitement de', (data.data || []).length, 'campagnes');
-            (data.data || []).forEach(c => {
-                const tr = document.createElement('tr');
+
+                console.log('🔍 [DEBUG] Traitement de', (data.data || []).length, 'campagnes');
+                (data.data || []).forEach(c => {
+                    const tr = document.createElement('tr');
                     // Utiliser validation_statut au lieu de status
                     const validationStatus = c.validation_statut;
                     const statusClass = getValidationStatusBadgeClass(validationStatus);
                     const channelClass = c.channel === 'EMAIL' ? 'info' : 'secondary';
                     const createdDate = c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '-';
                     const scheduledDate = c.scheduled_date ? new Date(c.scheduled_date).toLocaleDateString('fr-FR') : '-';
-                    
+
                     // Type de contenu du template
-                    const templateType = c.template_type === 'PRESENTATION_GENERALE' ? 'Présentation générale' : 
-                                       c.template_type === 'SERVICE_SPECIFIQUE' ? 'Service spécifique' : '-';
-                    
+                    const templateType = c.template_type === 'PRESENTATION_GENERALE' ? 'Présentation générale' :
+                        c.template_type === 'SERVICE_SPECIFIQUE' ? 'Service spécifique' : '-';
+
                     // BU
                     const businessUnit = c.business_unit_name || '-';
-                    
+
                     // Responsable
-                    const responsible = c.responsible_nom && c.responsible_prenom ? 
-                                      `${c.responsible_prenom} ${c.responsible_nom}` : '-';
-                    
-                tr.innerHTML = `
+                    const responsible = c.responsible_nom && c.responsible_prenom ?
+                        `${c.responsible_prenom} ${c.responsible_nom}` : '-';
+
+                    tr.innerHTML = `
                         <td><strong>${c.name}</strong></td>
                         <td><span class="badge bg-${channelClass}">${c.channel}</span></td>
                         <td><span class="badge ${statusClass}">${getValidationStatusText(validationStatus)}</span></td>
@@ -550,40 +587,40 @@
                         <td><small class="text-muted">${createdDate}</small></td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                                ${validationStatus === 'EN_VALIDATION' ? 
-                                    `<button class="btn btn-outline-secondary" disabled title="Affectation non autorisée - Campagne en validation">
+                                ${validationStatus === 'EN_VALIDATION' ?
+                            `<button class="btn btn-outline-secondary" disabled title="Affectation non autorisée - Campagne en validation">
                                         <i class="fas fa-users"></i> Affecter
                                     </button>` :
-                                    validationStatus === 'VALIDE' ?
-                                    `<button class="btn btn-outline-success" onclick="executeCampaign('${c.id}')" title="Exécuter la campagne">
+                            validationStatus === 'VALIDE' ?
+                                `<button class="btn btn-outline-success" onclick="executeCampaign('${c.id}')" title="Exécuter la campagne">
                                         <i class="fas fa-play"></i> Exécuter
                                     </button>` :
-                                    `<button class="btn btn-outline-primary" onclick="assignCompanies('${c.id}')" title="Affecter des entreprises">
+                                `<button class="btn btn-outline-primary" onclick="assignCompanies('${c.id}')" title="Affecter des entreprises">
                                         <i class="fas fa-users"></i> Affecter
                                     </button>`
-                                }
+                        }
                                 <a class="btn btn-outline-info" href="prospecting-campaign-summary.html?id=${c.id}" title="Voir récapitulatif">
                                     <i class="fas fa-eye"></i> Récap
                                 </a>
-                                ${validationStatus === 'EN_VALIDATION' || validationStatus === 'VALIDE' ? 
-                                    `<button class="btn btn-outline-secondary" disabled title="Modification non autorisée - Campagne en validation">
+                                ${validationStatus === 'EN_VALIDATION' || validationStatus === 'VALIDE' ?
+                            `<button class="btn btn-outline-secondary" disabled title="Modification non autorisée - Campagne en validation">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="btn btn-outline-secondary" disabled title="Suppression non autorisée - Campagne en validation">
                                         <i class="fas fa-trash"></i>
                                     </button>` :
-                                    `<button class="btn btn-outline-warning" onclick="editCampaign('${c.id}')" title="Modifier">
+                            `<button class="btn btn-outline-warning" onclick="editCampaign('${c.id}')" title="Modifier">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="btn btn-outline-danger" onclick="deleteCampaign('${c.id}')" title="Supprimer">
                                         <i class="fas fa-trash"></i>
                                     </button>`
-                                }
+                        }
                         </div>
                     </td>
                 `;
-                if (tbody) tbody.appendChild(tr);
-            });
+                    if (tbody) tbody.appendChild(tr);
+                });
             } catch (error) {
                 console.error('Erreur chargement campagnes:', error);
                 const campaignsTable = document.getElementById('campaignsTable');
@@ -623,7 +660,7 @@
         }
 
         function getValidationStatusText(validationStatus) {
-            switch(validationStatus) {
+            switch (validationStatus) {
                 case 'BROUILLON': return 'Brouillon';
                 case 'EN_VALIDATION': return 'En attente de validation';
                 case 'VALIDE': return 'Validée';
@@ -633,7 +670,7 @@
         }
 
         function getValidationStatusBadgeClass(validationStatus) {
-            switch(validationStatus) {
+            switch (validationStatus) {
                 case 'BROUILLON': return 'bg-secondary';
                 case 'EN_VALIDATION': return 'bg-warning';
                 case 'VALIDE': return 'bg-success';
@@ -648,22 +685,22 @@
         async function loadTemplates() {
             try {
                 const res = await fetch(`${API}/templates`, { headers: getAuthHeader() });
-            const data = await res.json();
-                
+                const data = await res.json();
+
                 // Stocker les modèles globalement
                 templates = data.data || [];
-                
-            const sel = document.getElementById('campTemplate');
+
+                const sel = document.getElementById('campTemplate');
                 if (sel) {
                     sel.innerHTML = '<option value="">Sélectionnez un modèle</option>';
-                    
+
                     templates.forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t.id;
+                        const opt = document.createElement('option');
+                        opt.value = t.id;
                         const channelText = t.channel === 'EMAIL' ? 'Email' : 'Courrier physique';
                         opt.textContent = `${t.name} (${channelText})`;
-                sel.appendChild(opt);
-            });
+                        sel.appendChild(opt);
+                    });
                 }
             } catch (error) {
                 console.error('Erreur chargement modèles:', error);
@@ -675,117 +712,118 @@
             const templateSelect = document.getElementById('campTemplate');
             const dateInput = document.getElementById('campDate');
             const nameInput = document.getElementById('campName');
-            
+
             if (!templateSelect || !nameInput) return;
-            
+
             const selectedTemplateId = templateSelect.value;
             const selectedDate = dateInput.value;
-            
+
             if (!selectedTemplateId) {
                 nameInput.value = '';
                 return;
             }
-            
+
             try {
                 // Récupérer le nom du modèle
                 const templateRes = await fetch(`${API}/templates/${selectedTemplateId}`, { headers: getAuthHeader() });
                 const templateData = await templateRes.json();
-                
+
                 if (!templateRes.ok || !templateData.data) {
                     console.error('Erreur lors de la récupération du modèle');
                     return;
                 }
-                
+
                 const templateName = templateData.data.name;
-                
+
                 // Utiliser la date sélectionnée ou la date actuelle
                 const launchDate = selectedDate ? new Date(selectedDate) : new Date();
-                
+
                 // Extraire YY et MM
                 const year = launchDate.getFullYear().toString().slice(-2); // YY
                 const month = (launchDate.getMonth() + 1).toString().padStart(2, '0'); // MM
-                
+
                 // Calculer le numéro de semaine dans le mois
                 const firstDayOfMonth = new Date(launchDate.getFullYear(), launchDate.getMonth(), 1);
                 const dayOfWeek = firstDayOfMonth.getDay();
                 const weekNumber = Math.ceil((launchDate.getDate() + dayOfWeek) / 7);
-                
+
                 // Construire le nom de base
                 const baseName = `${templateName}-${year}-${month}-Q${weekNumber}`;
-                
+
                 // Trouver le prochain numéro d'ordre
                 const orderNumber = await findNextCampaignOrderNumber(baseName);
-                
+
                 // Générer le nom final
                 const finalName = `${baseName}-${orderNumber.toString().padStart(2, '0')}`;
-                
+
                 nameInput.value = finalName;
-                
+
             } catch (error) {
                 console.error('Erreur lors de la génération du nom:', error);
             }
         }
-        
+
         // Fonction pour trouver le prochain numéro d'ordre
         async function findNextCampaignOrderNumber(baseName) {
             try {
                 const response = await fetch(`${API}/campaigns`, { headers: getAuthHeader() });
                 const data = await response.json();
                 const campaigns = data.data || data || [];
-                
+
                 // Filtrer les campagnes qui commencent par le même nom de base
-                const matchingCampaigns = campaigns.filter(campaign => 
+                const matchingCampaigns = campaigns.filter(campaign =>
                     campaign.name && campaign.name.startsWith(baseName)
                 );
-                
+
                 if (matchingCampaigns.length === 0) {
                     return 1; // Premier numéro
                 }
-                
+
                 // Extraire les numéros d'ordre existants
                 const orderNumbers = matchingCampaigns.map(campaign => {
                     const match = campaign.name.match(/-(\d{2})$/);
                     return match ? parseInt(match[1]) : 0;
                 });
-                
+
                 // Trouver le prochain numéro disponible
                 const maxOrder = Math.max(...orderNumbers, 0);
                 return maxOrder + 1;
-                
+
             } catch (error) {
                 console.error('Erreur lors de la recherche du numéro d\'ordre:', error);
                 return 1; // Retourner 1 en cas d'erreur
             }
         }
-        
+
         // Fonction pour filtrer les responsables par Business Unit
         async function filterResponsiblesByBU(businessUnitId) {
             const responsibleSelect = document.getElementById('campResponsible');
             if (!responsibleSelect) return;
-            
+
             // Vider la liste actuelle
             responsibleSelect.innerHTML = '<option value="">Sélectionnez un responsable</option>';
-            
+
             if (!businessUnitId) {
                 console.log('🔍 [DEBUG] Aucune BU sélectionnée, pas de filtrage des responsables');
                 return;
             }
-            
+
             try {
                 console.log('🔍 [DEBUG] Filtrage des responsables pour BU:', businessUnitId);
-                
+
                 // Récupérer tous les collaborateurs
                 const response = await fetch('/api/collaborateurs', { headers: getAuthHeader() });
                 const data = await response.json();
                 const collaborateurs = data.data || data || [];
-                
+
                 // Filtrer par Business Unit
-                const filteredCollaborateurs = collaborateurs.filter(collab => 
-                    collab.business_unit_id === businessUnitId
+                const filteredCollaborateurs = collaborateurs.filter(collab =>
+                    // Utiliser == pour comparer car les types peuvent être string ou number
+                    collab.business_unit_id == businessUnitId
                 );
-                
-                console.log('🔍 [DEBUG] Collaborateurs filtrés:', filteredCollaborateurs.length);
-                
+
+                console.log(`🔍 [DEBUG] Collaborateurs après filtre BU ${businessUnitId}: ${filteredCollaborateurs.length}/${collaborateurs.length}`);
+
                 // Ajouter les options filtrées
                 filteredCollaborateurs.forEach(collab => {
                     const option = document.createElement('option');
@@ -793,7 +831,7 @@
                     option.textContent = `${collab.nom} ${collab.prenom}`;
                     responsibleSelect.appendChild(option);
                 });
-                
+
                 if (filteredCollaborateurs.length === 0) {
                     const noOption = document.createElement('option');
                     noOption.value = '';
@@ -801,12 +839,12 @@
                     noOption.disabled = true;
                     responsibleSelect.appendChild(noOption);
                 }
-                
+
             } catch (error) {
                 console.error('❌ Erreur lors du filtrage des responsables:', error);
             }
         }
-        
+
         // Fonction pour réinitialiser la liste des responsables
         function resetResponsiblesList() {
             const responsibleSelect = document.getElementById('campResponsible');
@@ -829,33 +867,33 @@
             const campDate = document.getElementById('campDate');
             const campPriority = document.getElementById('campPriority');
             const campDescription = document.getElementById('campDescription');
-            
+
             if (campName) campName.value = '';
             if (campResponsible) campResponsible.value = '';
             if (campTemplate) campTemplate.value = '';
             if (campDate) campDate.value = '';
             if (campPriority) campPriority.value = 'NORMAL';
             if (campDescription) campDescription.value = '';
-            
+
             // Réinitialiser l'affichage automatique
             const autoChannel = document.getElementById('autoChannel');
             const autoBU = document.getElementById('autoBU');
             const autoDivision = document.getElementById('autoDivision');
-            
+
             if (autoChannel) autoChannel.textContent = '-';
             if (autoBU) autoBU.textContent = '-';
             if (autoDivision) autoDivision.textContent = '-';
-            
+
             // Remettre le titre et le bouton en mode création
             const modalTitle = document.querySelector('#campaignModal .modal-title');
             const saveBtn = document.querySelector('#campaignModal .btn-primary');
-            
+
             if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>Nouvelle campagne';
             if (saveBtn) {
                 saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Créer la campagne';
                 saveBtn.onclick = createCampaign;
             }
-            
+
             // Réinitialiser la liste des responsables
             resetResponsiblesList();
         }
@@ -887,26 +925,26 @@
                 // Récupérer les informations du modèle sélectionné
                 const templateRes = await fetch(`${API}/templates/${template_id}`, { headers: getAuthHeader() });
                 const templateData = await templateRes.json();
-                
+
                 if (!templateRes.ok || !templateData.data) {
                     alert('Erreur lors de la récupération du modèle');
                     return;
                 }
 
                 const template = templateData.data;
-                
+
                 // Récupérer les informations de l'utilisateur connecté
                 const userRes = await fetch('/api/auth/me', { headers: getAuthHeader() });
                 const userData = await userRes.json();
-                
+
                 if (!userRes.ok || !userData.data) {
                     alert('Erreur lors de la récupération des informations utilisateur');
                     return;
                 }
-                
+
                 const currentUser = userData.data;
                 const currentDate = new Date().toISOString();
-                
+
                 const campaignData = {
                     name,
                     template_id,
@@ -954,10 +992,10 @@
             try {
                 const res = await fetch(`${API}/campaigns/${campaignId}`, { headers: getAuthHeader() });
                 const data = await res.json();
-                
+
                 if (res.ok && data.data) {
                     const campaign = data.data;
-                    
+
                     // Remplir le formulaire avec les données existantes
                     document.getElementById('campName').value = campaign.name;
                     document.getElementById('campResponsible').value = campaign.responsible_id || '';
@@ -965,18 +1003,18 @@
                     document.getElementById('campDate').value = campaign.scheduled_date || '';
                     document.getElementById('campPriority').value = campaign.priority || 'NORMAL';
                     document.getElementById('campDescription').value = campaign.description || '';
-                    
+
                     // Mettre à jour l'affichage automatique
                     updateAutoConfig();
-                    
+
                     // Changer le titre du modal
                     document.querySelector('#campaignModal .modal-title').innerHTML = '<i class="fas fa-edit me-2"></i>Modifier la campagne';
-                    
+
                     // Changer le bouton
                     const saveBtn = document.querySelector('#campaignModal .btn-primary');
                     saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Mettre à jour';
                     saveBtn.onclick = () => updateCampaign(campaignId);
-                    
+
                     // Afficher le modal
                     if (!campaignModal) campaignModal = new bootstrap.Modal(document.getElementById('campaignModal'));
                     campaignModal.show();
@@ -1017,14 +1055,14 @@
                 // Récupérer les informations du modèle sélectionné
                 const templateRes = await fetch(`${API}/templates/${template_id}`, { headers: getAuthHeader() });
                 const templateData = await templateRes.json();
-                
+
                 if (!templateRes.ok || !templateData.data) {
                     alert('Erreur lors de la récupération du modèle');
                     return;
                 }
 
                 const template = templateData.data;
-                
+
                 const campaignData = {
                     name,
                     template_id,
@@ -1043,7 +1081,7 @@
                     headers: getAuthHeader(),
                     body: JSON.stringify(campaignData)
                 });
-                
+
                 if (res.ok) {
                     campaignModal.hide();
                     await loadCampaigns();
@@ -1063,13 +1101,13 @@
             if (!confirm('Êtes-vous sûr de vouloir supprimer cette campagne ? Cette action est irréversible.')) {
                 return;
             }
-            
+
             try {
                 const res = await fetch(`${API}/campaigns/${campaignId}`, {
                     method: 'DELETE',
                     headers: getAuthHeader()
                 });
-                
+
                 if (res.ok) {
                     await loadCampaigns();
                     alert('Campagne supprimée avec succès !');
@@ -1086,7 +1124,7 @@
 
 
         // ===== FONCTIONS DU MODAL D'AFFECTATION =====
-        
+
         let assignModal;
         let currentCampaignId;
         let currentSourceCompanies = [];
@@ -1098,16 +1136,16 @@
             currentCampaignId = campaignId;
             selectedCompanies.clear();
             assignedCompanies.clear();
-            
+
             // Réinitialiser l'interface
             resetAssignModal();
-            
+
             // Charger les sources et les entreprises déjà affectées
             await Promise.all([
                 loadSources(),
                 loadAssignedCompanies()
             ]);
-            
+
             // Afficher le modal
             if (!assignModal) {
                 assignModal = new bootstrap.Modal(document.getElementById('assignModal'));
@@ -1121,18 +1159,18 @@
             document.getElementById('companySearch').value = '';
             document.getElementById('selectAllSource').checked = false;
             document.getElementById('addCompaniesBtn').disabled = true;
-            
+
             // Réinitialiser les filtres
             document.getElementById('filterIndustry').value = '';
             document.getElementById('filterCity').value = '';
             document.getElementById('filterSize').value = '';
             document.getElementById('filtersSection').style.display = 'none';
-            
+
             // Réinitialiser la pagination
             currentPage = 1;
             allSourceCompanies = [];
             filteredCompanies = [];
-            
+
             // Vider les listes
             document.getElementById('sourceCompaniesList').innerHTML = `
                 <div class="text-center py-4">
@@ -1140,10 +1178,10 @@
                     <p class="text-muted mt-2">Sélectionnez une source pour voir les entreprises</p>
                 </div>
             `;
-            
+
             // Masquer la pagination
             document.getElementById('paginationSection').style.display = 'none';
-            
+
             updateSelectedCompaniesList();
             updateCounts();
         }
@@ -1154,21 +1192,21 @@
                 console.log('🔍 [DEBUG] Chargement des sources...');
                 const res = await fetch(`${API}/sources`, { headers: getAuthHeader() });
                 console.log('🔍 [DEBUG] Réponse sources:', res.status, res.statusText);
-                
+
                 const data = await res.json();
                 console.log('🔍 [DEBUG] Données sources:', data);
-                
+
                 const select = document.getElementById('sourceSelect');
-                
+
                 // Garder l'option par défaut et ajouter "Toutes les sources"
                 select.innerHTML = '<option value="">Sélectionnez une source...</option>';
-                
+
                 // Ajouter l'option "Toutes les sources"
                 const allSourcesOption = document.createElement('option');
                 allSourcesOption.value = 'all';
                 allSourcesOption.textContent = '📋 Toutes les sources';
                 select.appendChild(allSourcesOption);
-                
+
                 if (data.data && data.data.length > 0) {
                     console.log('🔍 [DEBUG] Sources trouvées:', data.data.length);
                     data.data.forEach(source => {
@@ -1189,7 +1227,7 @@
         async function loadSourceCompanies() {
             const sourceId = document.getElementById('sourceSelect').value;
             console.log('🔍 [DEBUG] Chargement entreprises pour source:', sourceId);
-            
+
             if (!sourceId) {
                 console.log('🔍 [DEBUG] Aucune source sélectionnée');
                 resetSourceCompaniesList();
@@ -1207,16 +1245,16 @@
                     console.log('🔍 [DEBUG] Appel API:', `${API}/sources/${sourceId}/companies`);
                     apiUrl = `${API}/sources/${sourceId}/companies`;
                 }
-                
+
                 const res = await fetch(apiUrl, { headers: getAuthHeader() });
                 console.log('🔍 [DEBUG] Réponse entreprises:', res.status, res.statusText);
-                
+
                 const data = await res.json();
                 console.log('🔍 [DEBUG] Données entreprises:', data);
                 console.log('🔍 [DEBUG] Structure data:', Object.keys(data));
                 console.log('🔍 [DEBUG] data.data type:', typeof data.data);
                 console.log('🔍 [DEBUG] data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
-                
+
                 // Adapter selon l'API utilisée
                 if (sourceId === 'all') {
                     allSourceCompanies = data.data || [];
@@ -1225,19 +1263,19 @@
                     allSourceCompanies = data.data || [];
                     console.log('🔍 [DEBUG] Mode source spécifique - entreprises trouvées:', allSourceCompanies.length);
                 }
-                
+
                 currentSourceCompanies = allSourceCompanies;
                 console.log('🔍 [DEBUG] Nombre d\'entreprises trouvées:', allSourceCompanies.length);
-                
+
                 // Réinitialiser la pagination
                 currentPage = 1;
-                
+
                 // Charger les filtres
                 loadFilters();
-                
+
                 // Afficher les entreprises
                 renderSourceCompanies(currentSourceCompanies);
-                
+
                 // Afficher la section des filtres si il y a des entreprises
                 if (allSourceCompanies.length > 0) {
                     document.getElementById('filtersSection').style.display = 'block';
@@ -1257,7 +1295,7 @@
         // Afficher les entreprises de la source
         function renderSourceCompanies(companies) {
             const container = document.getElementById('sourceCompaniesList');
-            
+
             if (companies.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-4">
@@ -1398,7 +1436,7 @@
             const sizeFilter = document.getElementById('filterSize').value;
 
             filteredCompanies = allSourceCompanies.filter(company => {
-                const matchesSearch = !searchTerm || 
+                const matchesSearch = !searchTerm ||
                     company.name.toLowerCase().includes(searchTerm) ||
                     (company.sigle && company.sigle.toLowerCase().includes(searchTerm)) ||
                     (company.industry && company.industry.toLowerCase().includes(searchTerm)) ||
@@ -1427,7 +1465,7 @@
             document.getElementById('filterIndustry').value = '';
             document.getElementById('filterCity').value = '';
             document.getElementById('filterSize').value = '';
-            
+
             currentSourceCompanies = allSourceCompanies;
             currentPage = 1;
             renderSourceCompanies(currentSourceCompanies);
@@ -1446,7 +1484,7 @@
                 paginationSection.style.display = 'none';
                 return;
             }
-            
+
             paginationSection.style.display = 'flex';
             totalPagesSpan.textContent = totalPages;
 
@@ -1481,9 +1519,9 @@
                 currentPage--;
                 renderSourceCompanies(currentSourceCompanies);
             }
-            }
-            
-            // Page suivante
+        }
+
+        // Page suivante
         function nextPage() {
             const totalPages = Math.ceil(currentSourceCompanies.length / companiesPerPage);
             if (currentPage < totalPages) {
@@ -1496,7 +1534,7 @@
         function toggleSelectAllSource() {
             const selectAll = document.getElementById('selectAllSource');
             const checkboxes = document.querySelectorAll('#sourceCompaniesList input[type="checkbox"]:not([style*="display: none"])');
-            
+
             checkboxes.forEach(checkbox => {
                 checkbox.checked = selectAll.checked;
                 if (selectAll.checked) {
@@ -1505,7 +1543,7 @@
                     selectedCompanies.delete(checkbox.value);
                 }
             });
-            
+
             updateSelectedCompaniesList();
             updateCounts();
             updateAddButton();
@@ -1518,7 +1556,7 @@
             } else {
                 selectedCompanies.add(companyId);
             }
-            
+
             updateSelectedCompaniesList();
             updateCounts();
             updateAddButton();
@@ -1527,7 +1565,7 @@
         // Mettre à jour la liste des entreprises sélectionnées
         function updateSelectedCompaniesList() {
             const container = document.getElementById('selectedCompaniesList');
-            
+
             if (selectedCompanies.size === 0) {
                 container.innerHTML = `
                     <div class="text-center py-3">
@@ -1537,11 +1575,11 @@
                 `;
                 return;
             }
-            
+
             container.innerHTML = Array.from(selectedCompanies).map(companyId => {
                 const company = currentSourceCompanies.find(c => c.id === companyId);
                 if (!company) return '';
-                
+
                 return `
                     <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
                         <div>
@@ -1559,11 +1597,11 @@
         // Supprimer une entreprise de la sélection
         function removeSelectedCompany(companyId) {
             selectedCompanies.delete(companyId);
-            
+
             // Décocher la checkbox correspondante
             const checkbox = document.getElementById(`company_${companyId}`);
             if (checkbox) checkbox.checked = false;
-            
+
             updateSelectedCompaniesList();
             updateCounts();
             updateAddButton();
@@ -1572,18 +1610,18 @@
         // Ajouter les entreprises sélectionnées
         function addSelectedCompanies() {
             if (selectedCompanies.size === 0) return;
-            
+
             // Ajouter aux entreprises assignées et stocker leurs détails
             selectedCompanies.forEach(companyId => {
                 assignedCompanies.add(companyId);
-                
+
                 // Suivre les ajouts
                 if (!originalAssignedCompanies.has(companyId)) {
                     addedCompanies.add(companyId);
                 }
                 // Si l'entreprise était marquée comme supprimée, la retirer de cette liste
                 removedCompanies.delete(companyId);
-                
+
                 // Trouver les détails de l'entreprise dans currentSourceCompanies
                 const companyDetails = currentSourceCompanies.find(c => c.id === companyId);
                 if (companyDetails) {
@@ -1594,16 +1632,16 @@
                     window.assignedCompaniesDetails.push(companyDetails);
                 }
             });
-            
+
             // Vider la sélection
             selectedCompanies.clear();
-            
+
             // Mettre à jour l'interface
             updateSelectedCompaniesList();
             updateAssignedCompaniesList();
             updateCounts();
             updateAddButton();
-            
+
             // Décocher toutes les checkboxes
             document.querySelectorAll('#sourceCompaniesList input[type="checkbox"]').forEach(cb => {
                 cb.checked = false;
@@ -1616,20 +1654,20 @@
             try {
                 const res = await fetch(`${API}/campaigns/${currentCampaignId}/companies`, { headers: getAuthHeader() });
                 const data = await res.json();
-                
+
                 assignedCompanies.clear();
                 originalAssignedCompanies.clear();
                 addedCompanies.clear();
                 removedCompanies.clear();
-                
+
                 // Stocker les détails complets des entreprises assignées
                 window.assignedCompaniesDetails = data.data || [];
-                
+
                 (data.data || []).forEach(company => {
                     assignedCompanies.add(company.id);
                     originalAssignedCompanies.add(company.id); // Garder une copie des entreprises originales
                 });
-                
+
                 updateAssignedCompaniesList();
                 updateCounts();
             } catch (error) {
@@ -1640,7 +1678,7 @@
         // Mettre à jour la liste des entreprises assignées
         function updateAssignedCompaniesList() {
             const container = document.getElementById('assignedCompaniesList');
-            
+
             if (assignedCompanies.size === 0) {
                 container.innerHTML = `
                     <div class="text-center py-3">
@@ -1671,19 +1709,19 @@
         // Supprimer une entreprise assignée
         function removeAssignedCompany(companyId) {
             assignedCompanies.delete(companyId);
-            
+
             // Suivre les suppressions
             if (originalAssignedCompanies.has(companyId)) {
                 removedCompanies.add(companyId);
             }
             // Si l'entreprise était marquée comme ajoutée, la retirer de cette liste
             addedCompanies.delete(companyId);
-            
+
             // Supprimer aussi des détails
             if (window.assignedCompaniesDetails) {
                 window.assignedCompaniesDetails = window.assignedCompaniesDetails.filter(c => c.id !== companyId);
             }
-            
+
             updateAssignedCompaniesList();
             updateCounts();
         }
@@ -1700,7 +1738,7 @@
             btn.disabled = selectedCompanies.size === 0;
         }
 
-                // Variables pour suivre les modifications
+        // Variables pour suivre les modifications
         let originalAssignedCompanies = new Set();
         let addedCompanies = new Set();
         let removedCompanies = new Set();
@@ -1711,11 +1749,11 @@
                 const res = await fetch(`/api/collaborateurs`, { headers: getAuthHeader() });
                 const data = await res.json();
                 const collaborateurs = data.data || [];
-                
+
                 const responsibleSel = document.getElementById('campResponsible');
                 if (responsibleSel) {
                     responsibleSel.innerHTML = '<option value="">Sélectionnez un responsable</option>';
-                    
+
                     collaborateurs.forEach(collab => {
                         const opt = document.createElement('option');
                         opt.value = collab.id;
@@ -1732,49 +1770,49 @@
         async function updateAutoConfig() {
             const templateSel = document.getElementById('campTemplate');
             const selectedTemplateId = templateSel.value;
-            
+
             console.log('🔍 [DEBUG] updateAutoConfig - Template ID sélectionné:', selectedTemplateId);
             console.log('🔍 [DEBUG] updateAutoConfig - Templates disponibles:', templates);
-            
+
             if (selectedTemplateId) {
                 // Trouver le modèle sélectionné dans la liste des modèles
                 const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
                 console.log('🔍 [DEBUG] updateAutoConfig - Modèle trouvé:', selectedTemplate);
-                
+
                 if (selectedTemplate) {
                     const autoChannel = document.getElementById('autoChannel');
                     const autoBU = document.getElementById('autoBU');
                     const autoDivision = document.getElementById('autoDivision');
-                    
+
                     if (autoChannel) autoChannel.textContent = selectedTemplate.channel === 'EMAIL' ? 'Email' : 'Courrier physique';
                     if (autoBU) autoBU.textContent = selectedTemplate.business_unit_name || '-';
                     if (autoDivision) autoDivision.textContent = selectedTemplate.division_name || '-';
-                    
+
                     console.log('🔍 [DEBUG] updateAutoConfig - Valeurs mises à jour:', {
                         channel: selectedTemplate.channel === 'EMAIL' ? 'Email' : 'Courrier physique',
                         business_unit: selectedTemplate.business_unit_name || '-',
                         division: selectedTemplate.division_name || '-'
                     });
-                    
+
                     // Filtrer les responsables par Business Unit
                     await filterResponsiblesByBU(selectedTemplate.business_unit_id);
                 }
-                
+
                 // Mettre à jour le nom de la campagne automatiquement
                 await updateCampaignName();
             } else {
                 const autoChannel = document.getElementById('autoChannel');
                 const autoBU = document.getElementById('autoBU');
                 const autoDivision = document.getElementById('autoDivision');
-                
+
                 if (autoChannel) autoChannel.textContent = '-';
                 if (autoBU) autoBU.textContent = '-';
                 if (autoDivision) autoDivision.textContent = '-';
-                
+
                 // Vider le nom de la campagne
                 const nameInput = document.getElementById('campName');
                 if (nameInput) nameInput.value = '';
-                
+
                 // Réinitialiser la liste des responsables
                 resetResponsiblesList();
             }
@@ -1809,12 +1847,12 @@
                     body: JSON.stringify(data)
                 });
 
-            if (res.ok) {
+                if (res.ok) {
                     const result = await res.json();
                     const message = [];
                     if (addedCompanies.size > 0) message.push(`${addedCompanies.size} entreprise(s) ajoutée(s)`);
                     if (removedCompanies.size > 0) message.push(`${removedCompanies.size} entreprise(s) supprimée(s)`);
-                    
+
                     alert(`Modifications sauvegardées avec succès !\n${message.join('\n')}`);
                     assignModal.hide();
                     await loadCampaigns(); // Recharger la liste des campagnes
@@ -1837,12 +1875,12 @@
                 day: 'numeric'
             });
             document.getElementById('current-date').textContent = currentDate;
-            
+
             // Charger les données
             await loadCampaigns();
             await loadTemplates();
             await loadCollaborateurs();
-            
+
             // Ajouter l'event listener pour la date de lancement
             const dateInput = document.getElementById('campDate');
             if (dateInput) {
@@ -1860,10 +1898,10 @@
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
+
             const container = document.querySelector('.main-content-area');
             container.insertBefore(alertDiv, container.firstChild);
-            
+
             // Auto-dismiss after 5 seconds
             setTimeout(() => {
                 if (alertDiv.parentNode) {
@@ -1902,6 +1940,5 @@
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
 </body>
+
 </html>
-
-

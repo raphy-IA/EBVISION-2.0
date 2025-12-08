@@ -1,32 +1,33 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Opportunites</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-    
+
+
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
-    
+
     <!-- Script de gestion des permissions de menu -->
     <script src="js/menu-permissions.js"></script>
     <script src="/js/page-permissions.js"></script>
-                
-                <!-- Scripts de zone utilisateur -->
-                <script src="js/user-header.js"></script>
+
+    <!-- Scripts de zone utilisateur -->
+    <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
-                <!-- <script src="js/user-modals.js"></script> -->
-    
+    <!-- <script src="js/user-modals.js"></script> -->
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -36,13 +37,13 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
             overflow-x: hidden;
         }
-        
+
         .page-wrapper {
             display: flex;
             min-height: 100vh;
@@ -53,35 +54,35 @@
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
         .stat-card.success {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
-        
+
         .stat-card.warning {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
-        
+
         .stat-card.info {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
-        
+
         .stat-number {
             font-size: 2.5rem;
             font-weight: bold;
         }
-        
+
         .table thead th {
             background-color: var(--primary-color);
             color: white;
@@ -91,26 +92,27 @@
             .page-wrapper {
                 flex-direction: column;
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
         }
     </style>
 
-        <script src="js/global-auth.js"></script>
+    <script src="js/global-auth.js"></script>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -130,7 +132,7 @@
                     <i class="fas fa-plus me-2"></i>Nouvelle Opportunite
                 </button>
             </div>
-            
+
             <!-- Statistics Cards -->
             <div class="row mb-4">
                 <div class="col-md-3 mb-3">
@@ -170,7 +172,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Filtres avances -->
             <div class="card mb-4">
                 <div class="card-header">
@@ -185,12 +187,6 @@
                             <label for="filter-status" class="form-label">Statut</label>
                             <select class="form-select" id="filter-status" onchange="applyFilters()">
                                 <option value="">Tous les statuts</option>
-                                <option value="EN_COURS">En Cours</option>
-                                <option value="GAGNEE">Gagnee</option>
-                                <option value="PERDUE">Perdue</option>
-                                <option value="OPEN">Ouverte</option>
-                                <option value="WON">Gagnee</option>
-                                <option value="LOST">Perdue</option>
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">
@@ -207,25 +203,25 @@
                         </div>
                         <div class="col-md-3 mb-3">
                             <label for="filter-search" class="form-label">Recherche</label>
-                            <input type="text" class="form-control" id="filter-search" 
-                                   placeholder="Nom, client..." onkeyup="applyFilters()">
+                            <input type="text" class="form-control" id="filter-search" placeholder="Nom, client..."
+                                onkeyup="applyFilters()">
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-md-3 mb-3">
                             <label for="filter-montant-min" class="form-label">Montant min</label>
-                            <input type="number" class="form-control" id="filter-montant-min" 
-                                   placeholder="0" onchange="applyFilters()">
+                            <input type="number" class="form-control" id="filter-montant-min" placeholder="0"
+                                onchange="applyFilters()">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label for="filter-montant-max" class="form-label">Montant max</label>
-                            <input type="number" class="form-control" id="filter-montant-max" 
-                                   placeholder="1000000" onchange="applyFilters()">
+                            <input type="number" class="form-control" id="filter-montant-max" placeholder="1000000"
+                                onchange="applyFilters()">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label for="filter-probabilite" class="form-label">Probabilite min</label>
-                            <input type="number" class="form-control" id="filter-probabilite" 
-                                   placeholder="0" min="0" max="100" onchange="applyFilters()">
+                            <input type="number" class="form-control" id="filter-probabilite" placeholder="0" min="0"
+                                max="100" onchange="applyFilters()">
                         </div>
                         <div class="col-md-3 mb-3 d-flex align-items-end">
                             <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
@@ -235,7 +231,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Header avec bouton Actualiser -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -279,16 +275,18 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Modal de visualisation des opportunites -->
-    <div class="modal fade" id="viewOpportunityModal" tabindex="-1" aria-labelledby="viewOpportunityModalLabel" aria-hidden="true">
+    <div class="modal fade" id="viewOpportunityModal" tabindex="-1" aria-labelledby="viewOpportunityModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="viewOpportunityModalLabel">
                         <i class="fas fa-eye me-2"></i>Details de l'Opportunite
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="viewOpportunityModalBody">
                     <div class="text-center">
@@ -308,9 +306,10 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Modal d'edition des opportunites -->
-    <div class="modal fade" id="editOpportunityModal" tabindex="-1" aria-labelledby="editOpportunityModalLabel" aria-hidden="true">
+    <div class="modal fade" id="editOpportunityModal" tabindex="-1" aria-labelledby="editOpportunityModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header bg-warning text-dark">
@@ -325,26 +324,26 @@
                             <!-- Informations principales -->
                             <div class="col-md-6">
                                 <h6 class="text-primary mb-3">Informations principales</h6>
-                                
+
                                 <div class="mb-3">
                                     <label for="edit-nom" class="form-label">Nom de l'opportunite *</label>
                                     <input type="text" class="form-control" id="edit-nom" name="nom" required>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="edit-client" class="form-label">Client</label>
                                     <select class="form-select" id="edit-client" name="client_id">
                                         <option value="">Selectionner un client</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="edit-business-unit" class="form-label">Business Unit</label>
                                     <select class="form-select" id="edit-business-unit" name="business_unit_id">
                                         <option value="">Selectionner une BU</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="edit-responsable" class="form-label">Responsable</label>
                                     <select class="form-select" id="edit-responsable" name="collaborateur_id">
@@ -352,16 +351,18 @@
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <!-- Informations financieres -->
                             <div class="col-md-6">
                                 <h6 class="text-success mb-3">Informations financieres</h6>
-                                
+
                                 <div class="mb-3">
                                     <label for="edit-montant" class="form-label">Montant estime</label>
                                     <div class="input-group">
-                                        <input type="number" class="form-control" id="edit-montant" name="montant_estime" step="0.01" min="0">
-                                        <select class="form-select" id="edit-devise" name="devise" style="max-width: 100px;">
+                                        <input type="number" class="form-control" id="edit-montant"
+                                            name="montant_estime" step="0.01" min="0">
+                                        <select class="form-select" id="edit-devise" name="devise"
+                                            style="max-width: 100px;">
                                             <option value="XAF">XAF (FCFA)</option>
                                             <option value="EUR">EUR (€)</option>
                                             <option value="USD">USD ($)</option>
@@ -370,17 +371,19 @@
                                         </select>
                                     </div>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="edit-probabilite" class="form-label">Probabilite (%)</label>
-                                    <input type="number" class="form-control" id="edit-probabilite" name="probabilite" min="0" max="100">
+                                    <input type="number" class="form-control" id="edit-probabilite" name="probabilite"
+                                        min="0" max="100">
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="edit-date-fermeture" class="form-label">Date fermeture prevue</label>
-                                    <input type="date" class="form-control" id="edit-date-fermeture" name="date_fermeture_prevue">
+                                    <input type="date" class="form-control" id="edit-date-fermeture"
+                                        name="date_fermeture_prevue">
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="edit-statut" class="form-label">Statut</label>
                                     <select class="form-select" id="edit-statut" name="statut">
@@ -393,12 +396,12 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Informations supplementaires -->
                         <div class="row mt-3">
                             <div class="col-12">
                                 <h6 class="text-info mb-3">Informations supplementaires</h6>
-                                
+
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
@@ -427,14 +430,15 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="edit-description" class="form-label">Description</label>
-                                    <textarea class="form-control" id="edit-description" name="description" rows="4"></textarea>
+                                    <textarea class="form-control" id="edit-description" name="description"
+                                        rows="4"></textarea>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Messages d'erreur/succes -->
                         <div id="edit-form-messages"></div>
                     </form>
@@ -450,9 +454,10 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Modal de suppression -->
-    <div class="modal fade" id="deleteOpportunityModal" tabindex="-1" aria-labelledby="deleteOpportunityModalLabel" aria-hidden="true">
+    <div class="modal fade" id="deleteOpportunityModal" tabindex="-1" aria-labelledby="deleteOpportunityModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
@@ -460,7 +465,8 @@
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         Confirmer la suppression
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="text-center mb-3">
@@ -484,9 +490,10 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Modal de création d'opportunité -->
-    <div class="modal fade" id="newOpportunityModal" tabindex="-1" aria-labelledby="newOpportunityModalLabel" aria-hidden="true">
+    <div class="modal fade" id="newOpportunityModal" tabindex="-1" aria-labelledby="newOpportunityModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
@@ -494,7 +501,8 @@
                         <i class="fas fa-plus me-2"></i>
                         Nouvelle Opportunité
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="newOpportunityForm">
@@ -511,8 +519,8 @@
                                             <label for="new-opportunity-name" class="form-label">
                                                 <i class="fas fa-tag me-1"></i>Nom de l'Opportunité *
                                             </label>
-                                            <input type="text" class="form-control" id="new-opportunity-name" 
-                                                   name="nom" required placeholder="Ex: Développement application mobile">
+                                            <input type="text" class="form-control" id="new-opportunity-name" name="nom"
+                                                required placeholder="Ex: Développement application mobile">
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label for="new-opportunity-source" class="form-label">
@@ -529,7 +537,8 @@
                                                 <option value="Radio/Télé">Radio/Télé</option>
                                                 <option value="Contact de proximité">Contact de proximité</option>
                                                 <option value="Besoin direct">Besoin direct</option>
-                                                <option value="Suivi événement/séminaire">Suivi événement/séminaire</option>
+                                                <option value="Suivi événement/séminaire">Suivi événement/séminaire
+                                                </option>
                                                 <option value="Réunion business">Réunion business</option>
                                                 <option value="Autre">Autre</option>
                                             </select>
@@ -548,7 +557,8 @@
                                             <label for="new-opportunity-client" class="form-label">
                                                 <i class="fas fa-building me-1"></i>Client *
                                             </label>
-                                            <select class="form-select" id="new-opportunity-client" name="client_id" required>
+                                            <select class="form-select" id="new-opportunity-client" name="client_id"
+                                                required>
                                                 <option value="">Sélectionner un client</option>
                                             </select>
                                         </div>
@@ -556,7 +566,8 @@
                                             <label for="new-opportunity-collaborateur" class="form-label">
                                                 <i class="fas fa-user-tie me-1"></i>Responsable *
                                             </label>
-                                            <select class="form-select" id="new-opportunity-collaborateur" name="collaborateur_id" required>
+                                            <select class="form-select" id="new-opportunity-collaborateur"
+                                                name="collaborateur_id" required>
                                                 <option value="">Sélectionner un collaborateur</option>
                                             </select>
                                         </div>
@@ -574,7 +585,8 @@
                                             <label for="new-opportunity-business-unit" class="form-label">
                                                 <i class="fas fa-briefcase me-1"></i>Business Unit *
                                             </label>
-                                            <select class="form-select" id="new-opportunity-business-unit" name="business_unit_id" required>
+                                            <select class="form-select" id="new-opportunity-business-unit"
+                                                name="business_unit_id" required>
                                                 <option value="">Sélectionner une Business Unit</option>
                                             </select>
                                         </div>
@@ -582,7 +594,8 @@
                                             <label for="new-opportunity-type" class="form-label">
                                                 <i class="fas fa-layer-group me-1"></i>Type d'Opportunité *
                                             </label>
-                                            <select class="form-select" id="new-opportunity-type" name="type_opportunite" required>
+                                            <select class="form-select" id="new-opportunity-type"
+                                                name="type_opportunite" required>
                                                 <option value="">Sélectionner un type</option>
                                             </select>
                                         </div>
@@ -601,9 +614,10 @@
                                                 <i class="fas fa-euro-sign me-1"></i>Montant Estimé
                                             </label>
                                             <div class="input-group">
-                                                <input type="number" class="form-control" id="new-opportunity-amount" 
-                                                       name="montant_estime" min="0" step="0.01" placeholder="0.00">
-                                                <select class="form-select" id="new-opportunity-currency" name="devise" style="max-width: 100px;">
+                                                <input type="number" class="form-control" id="new-opportunity-amount"
+                                                    name="montant_estime" min="0" step="0.01" placeholder="0.00">
+                                                <select class="form-select" id="new-opportunity-currency" name="devise"
+                                                    style="max-width: 100px;">
                                                     <option value="XAF">XAF (FCFA)</option>
                                                     <option value="EUR">EUR (€)</option>
                                                     <option value="USD">USD ($)</option>
@@ -617,8 +631,8 @@
                                                 <i class="fas fa-percentage me-1"></i>Probabilité de Succès
                                             </label>
                                             <div class="input-group">
-                                                <input type="range" class="form-range" id="new-opportunity-probability" 
-                                                       name="probabilite" min="0" max="100" value="50">
+                                                <input type="range" class="form-range" id="new-opportunity-probability"
+                                                    name="probabilite" min="0" max="100" value="50">
                                                 <span class="input-group-text" id="probability-value">50%</span>
                                             </div>
                                         </div>
@@ -636,8 +650,8 @@
                                             <label for="new-opportunity-closing-date" class="form-label">
                                                 <i class="fas fa-calendar-check me-1"></i>Date de Fermeture Prévue
                                             </label>
-                                            <input type="date" class="form-control" id="new-opportunity-closing-date" 
-                                                   name="date_fermeture_prevue">
+                                            <input type="date" class="form-control" id="new-opportunity-closing-date"
+                                                name="date_fermeture_prevue">
                                         </div>
                                     </div>
                                 </div>
@@ -648,9 +662,9 @@
                                         <i class="fas fa-align-left me-2"></i>
                                         Description
                                     </h6>
-                                    <textarea class="form-control" id="new-opportunity-description" 
-                                              name="description" rows="4" 
-                                              placeholder="Décrivez l'opportunité, les enjeux, les objectifs..."></textarea>
+                                    <textarea class="form-control" id="new-opportunity-description" name="description"
+                                        rows="4"
+                                        placeholder="Décrivez l'opportunité, les enjeux, les objectifs..."></textarea>
                                 </div>
                             </div>
 
@@ -680,7 +694,7 @@
                                                 <small>Estimez le montant et la probabilité</small>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="alert alert-info">
                                             <i class="fas fa-info-circle me-2"></i>
                                             <strong>Note :</strong> Les champs marqués d'un * sont obligatoires.
@@ -702,7 +716,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Script d'authentification déjà inclus plus haut -->
@@ -725,7 +739,7 @@
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            
+
             return fetch(url, {
                 ...options,
                 headers: {
@@ -734,17 +748,17 @@
                 }
             });
         }
-        
-        document.addEventListener('DOMContentLoaded', async function() {
+
+        document.addEventListener('DOMContentLoaded', async function () {
             console.log('Page opportunities.html chargee');
             await loadFilterData(); // Charger d'abord les données de référence
             loadOpportunities(); // Puis charger les opportunités
         });
-        
+
         async function loadFilterData() {
             try {
                 console.log('🔄 Chargement des données de référence...');
-                
+
                 // Charger les clients
                 console.log('📋 Chargement des clients...');
                 const clientsResponse = await authenticatedFetch(`${API_BASE_URL}/clients`);
@@ -754,7 +768,7 @@
                     console.log(`✅ ${clients.length} clients chargés`);
                     populateClientFilter();
                 }
-                
+
                 // Charger les Business Units
                 console.log('🏢 Chargement des Business Units...');
                 const buResponse = await authenticatedFetch(`${API_BASE_URL}/business-units`);
@@ -765,10 +779,10 @@
                     console.log(`✅ ${businessUnits.length} Business Units chargées`);
                     populateBusinessUnitFilter();
                 }
-                
+
                 // Charger les collaborateurs
                 console.log('👥 Chargement des collaborateurs...');
-                const collabResponse = await authenticatedFetch(`${API_BASE_URL}/collaborateurs`);
+                const collabResponse = await authenticatedFetch(`${API_BASE_URL}/collaborateurs?limit=0`);
                 const collabData = await collabResponse.json();
                 if (collabData.success) {
                     // L'API retourne data directement comme un tableau
@@ -776,7 +790,7 @@
                     console.log(`✅ ${collaborateurs.length} collaborateurs chargés`);
                     populateCollaborateurFilter();
                 }
-                
+
                 // Charger les types d'opportunités
                 console.log('📊 Chargement des types d\'opportunités...');
                 try {
@@ -790,23 +804,49 @@
                 } catch (error) {
                     console.warn('⚠️ Impossible de charger les types d\'opportunités:', error);
                 }
-                
+
+                // Charger les données du formulaire pour les statuts
+                console.log('📋 Chargement des données de formulaire...');
+                const formDataResponse = await authenticatedFetch(`${API_BASE_URL}/opportunities/form-data`);
+                const formData = await formDataResponse.json();
+                if (formData.success && formData.data.statuts) {
+                    populateStatusFilter(formData.data.statuts);
+                }
+
                 console.log('✅ Toutes les données de référence chargées');
             } catch (error) {
                 console.error('❌ Erreur lors du chargement des données de filtres:', error);
             }
         }
-        
+
+
+
+        function populateStatusFilter(statuts) {
+            const select = document.getElementById('filter-status');
+            if (!select) return;
+
+            // Garder l'option par défaut
+            select.innerHTML = '<option value="">Tous les statuts</option>';
+
+            statuts.forEach(statut => {
+                const option = document.createElement('option');
+                option.value = statut;
+                // Formater le statut pour l'affichage (ex: EN_COURS -> En Cours)
+                option.textContent = statut.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+                select.appendChild(option);
+            });
+        }
+
         function populateBusinessUnitFilter() {
             const select = document.getElementById('filter-business-unit');
             const editSelect = document.getElementById('edit-business-unit');
-            
+
             // Vérifier que businessUnits est défini et non vide
             if (!businessUnits || !Array.isArray(businessUnits)) {
                 console.warn('⚠️ businessUnits n\'est pas défini ou n\'est pas un tableau');
                 return;
             }
-            
+
             // Remplir le select des filtres
             if (select) {
                 console.log('🏢 Remplissage du select BU filtres avec', businessUnits.length, 'BU');
@@ -817,7 +857,7 @@
                     select.appendChild(option);
                 });
             }
-            
+
             // Remplir le select du modal d'edition
             if (editSelect) {
                 console.log('🏢 Remplissage du select BU edition avec', businessUnits.length, 'BU');
@@ -833,16 +873,16 @@
                 console.warn('⚠️ Element edit-business-unit non trouve');
             }
         }
-        
+
         function populateClientFilter() {
             const editSelect = document.getElementById('edit-client');
-            
+
             // Vérifier que clients est défini et non vide
             if (!clients || !Array.isArray(clients)) {
                 console.warn('⚠️ clients n\'est pas défini ou n\'est pas un tableau');
                 return;
             }
-            
+
             if (editSelect) {
                 console.log('📋 Remplissage du select client avec', clients.length, 'clients');
                 editSelect.innerHTML = '<option value="">Selectionner un client</option>';
@@ -857,17 +897,17 @@
                 console.warn('⚠️ Element edit-client non trouve');
             }
         }
-        
+
         function populateCollaborateurFilter() {
             const select = document.getElementById('filter-collaborateur');
             const editSelect = document.getElementById('edit-responsable');
-            
+
             // Vérifier que collaborateurs est défini et non vide
             if (!collaborateurs || !Array.isArray(collaborateurs)) {
                 console.warn('⚠️ collaborateurs n\'est pas défini ou n\'est pas un tableau');
                 return;
             }
-            
+
             // Remplir le select des filtres
             if (select) {
                 console.log('👥 Remplissage du select collaborateur filtres avec', collaborateurs.length, 'collaborateurs');
@@ -878,7 +918,7 @@
                     select.appendChild(option);
                 });
             }
-            
+
             // Remplir le select du modal d'edition
             if (editSelect) {
                 console.log('👥 Remplissage du select collaborateur edition avec', collaborateurs.length, 'collaborateurs');
@@ -894,16 +934,16 @@
                 console.warn('⚠️ Element edit-responsable non trouve');
             }
         }
-        
+
         async function loadOpportunities() {
             showLoading(true);
             try {
                 console.log('Chargement des opportunites...');
                 const response = await authenticatedFetch(`${API_BASE_URL}/opportunities`);
                 const data = await response.json();
-                
+
                 console.log('Reponse API:', data);
-                
+
                 if (data.success) {
                     allOpportunities = data.data.opportunities; // Stocker toutes les opportunites
                     opportunities = allOpportunities; // Initialiser avec toutes les opportunites
@@ -919,27 +959,27 @@
                 showLoading(false);
             }
         }
-        
+
         function displayOpportunities() {
             const tbody = document.getElementById('opportunities-table');
             tbody.innerHTML = '';
-            
+
             if (opportunities.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="9" class="text-center">Aucune opportunite trouvee</td></tr>';
                 updateStatistics();
                 return;
             }
-            
+
             opportunities.forEach(opp => {
                 const row = document.createElement('tr');
-                
+
                 const montant = opp.montant_estime ? formatCurrency(opp.montant_estime, opp.devise || "EUR") : '-';
                 const probabilite = opp.probabilite ? `${opp.probabilite}%` : '-';
                 const responsable = opp.collaborateur_nom ? `${opp.collaborateur_nom} ${opp.collaborateur_prenom}` : '-';
                 const dateFermeture = opp.date_fermeture_prevue ? new Date(opp.date_fermeture_prevue).toLocaleDateString('fr-FR') : '-';
                 const statusClass = getStatusClass(opp.statut);
                 const statusLabel = getStatusLabel(opp.statut);
-                
+
                 row.innerHTML = `
                     <td><strong>${opp.nom}</strong></td>
                     <td>${opp.client_nom || '-'}</td>
@@ -971,31 +1011,31 @@
                 `;
                 tbody.appendChild(row);
             });
-            
+
             updateStatistics();
             console.log('Opportunites affichees');
         }
-        
+
         function updateStatistics() {
             const total = opportunities.length;
-            const enCours = opportunities.filter(opp => 
+            const enCours = opportunities.filter(opp =>
                 opp.statut === 'EN_COURS' || opp.statut === 'OPEN'
             ).length;
-            const gagnees = opportunities.filter(opp => 
+            const gagnees = opportunities.filter(opp =>
                 opp.statut === 'GAGNEE' || opp.statut === 'WON'
             ).length;
-            const perdues = opportunities.filter(opp => 
+            const perdues = opportunities.filter(opp =>
                 opp.statut === 'PERDUE' || opp.statut === 'LOST'
             ).length;
-            
+
             document.getElementById('total-opportunities').textContent = total;
             document.getElementById('en-cours-opportunities').textContent = enCours;
             document.getElementById('gagnees-opportunities').textContent = gagnees;
             document.getElementById('perdues-opportunities').textContent = perdues;
-            
+
             console.log('Statistiques mises a jour:', { total, enCours, gagnees, perdues });
         }
-        
+
         function applyFilters() {
             const statusFilter = document.getElementById('filter-status').value;
             const buFilter = document.getElementById('filter-business-unit').value;
@@ -1004,42 +1044,42 @@
             const montantMin = parseFloat(document.getElementById('filter-montant-min').value) || 0;
             const montantMax = parseFloat(document.getElementById('filter-montant-max').value) || Infinity;
             const probabiliteMin = parseFloat(document.getElementById('filter-probabilite').value) || 0;
-            
+
             opportunities = allOpportunities.filter(opp => {
                 // Filtre par statut
                 if (statusFilter && opp.statut !== statusFilter) return false;
-                
+
                 // Filtre par Business Unit
                 if (buFilter && opp.business_unit_id != buFilter) return false;
-                
+
                 // Filtre par collaborateur
                 if (collabFilter && opp.collaborateur_id != collabFilter) return false;
-                
+
                 // Filtre par recherche (nom, client)
                 if (searchFilter) {
                     const searchText = `${opp.nom} ${opp.client_nom || ''}`.toLowerCase();
                     if (!searchText.includes(searchFilter)) return false;
                 }
-                
+
                 // Filtre par montant
                 if (opp.montant_estime) {
                     const montant = parseFloat(opp.montant_estime);
                     if (montant < montantMin || montant > montantMax) return false;
                 }
-                
+
                 // Filtre par probabilite
                 if (opp.probabilite) {
                     const probabilite = parseFloat(opp.probabilite);
                     if (probabilite < probabiliteMin) return false;
                 }
-                
+
                 return true;
             });
-            
+
             displayOpportunities();
             console.log('Filtres appliques:', opportunities.length, 'opportunites affichees');
         }
-        
+
         function clearFilters() {
             document.getElementById('filter-status').value = '';
             document.getElementById('filter-business-unit').value = '';
@@ -1048,23 +1088,23 @@
             document.getElementById('filter-montant-min').value = '';
             document.getElementById('filter-montant-max').value = '';
             document.getElementById('filter-probabilite').value = '';
-            
+
             opportunities = allOpportunities;
             displayOpportunities();
             console.log('Filtres effaces');
         }
-        
+
         function formatCurrency(value, currency = 'EUR') {
             try {
-                return new Intl.NumberFormat('fr-FR', { 
-                    style: 'currency', 
-                    currency: currency 
+                return new Intl.NumberFormat('fr-FR', {
+                    style: 'currency',
+                    currency: currency
                 }).format(value);
             } catch (error) {
                 return `${value} ${currency}`;
             }
         }
-        
+
         function getStatusClass(status) {
             const classes = {
                 'EN_COURS': 'bg-primary',
@@ -1076,7 +1116,7 @@
             };
             return classes[status] || 'bg-secondary';
         }
-        
+
         function getStatusLabel(status) {
             const labels = {
                 'EN_COURS': 'En Cours',
@@ -1088,12 +1128,12 @@
             };
             return labels[status] || status;
         }
-        
+
         function showLoading(show) {
             document.getElementById('opportunities-loading').style.display = show ? 'block' : 'none';
             document.getElementById('opportunities-content').style.display = show ? 'none' : 'block';
         }
-        
+
         function showError(message) {
             const content = document.getElementById('opportunities-content');
             content.style.display = 'block';
@@ -1104,7 +1144,7 @@
                 </div>
             `;
         }
-        
+
         function goToStages(id) {
             window.location.href = `/opportunity-stages.html?opportunity_id=${id}`;
         }
@@ -1116,29 +1156,29 @@
         // Fonctions CRUD (a enrichir progressivement)
         async function newOpportunity() {
             console.log('➕ Ouverture du modal nouvelle opportunité');
-            
+
             // Réinitialiser le formulaire
             document.getElementById('newOpportunityForm').reset();
-            
+
             // Charger les données de référence si pas encore fait
             await ensureNewOpportunityDataLoaded();
-            
+
             // Configurer les événements
             setupNewOpportunityEvents();
-            
+
             // Afficher le modal
             const modal = new bootstrap.Modal(document.getElementById('newOpportunityModal'));
             modal.show();
         }
-        
+
         async function ensureNewOpportunityDataLoaded() {
             console.log('🔍 Vérification des données de référence pour nouvelle opportunité...');
-            
+
             // Charger les clients si pas encore fait
             if (!window.clients) {
                 console.log('🏢 Chargement des clients pour nouvelle opportunité...');
                 try {
-                    const clientsResponse = await authenticatedFetch(`${API_BASE_URL}/clients`);
+                    const clientsResponse = await authenticatedFetch(`${API_BASE_URL}/clients?limit=0`);
                     const clientsData = await clientsResponse.json();
                     if (clientsData.success) {
                         window.clients = clientsData.data.clients;
@@ -1152,7 +1192,7 @@
                 console.log(`✅ ${window.clients.length} clients déjà chargés`);
                 populateNewOpportunityClientSelect();
             }
-            
+
             // Charger les business units si pas encore fait
             if (!window.businessUnits) {
                 console.log('🏢 Chargement des business units pour nouvelle opportunité...');
@@ -1171,12 +1211,12 @@
                 console.log(`✅ ${window.businessUnits.length} business units déjà chargées`);
                 populateNewOpportunityBusinessUnitSelect();
             }
-            
+
             // Charger les collaborateurs si pas encore fait
             if (!window.collaborateurs) {
                 console.log('👥 Chargement des collaborateurs pour nouvelle opportunité...');
                 try {
-                    const collabResponse = await authenticatedFetch(`${API_BASE_URL}/collaborateurs`);
+                    const collabResponse = await authenticatedFetch(`${API_BASE_URL}/collaborateurs?limit=0`);
                     const collabData = await collabResponse.json();
                     if (collabData.success) {
                         window.collaborateurs = collabData.data;
@@ -1190,7 +1230,7 @@
                 console.log(`✅ ${window.collaborateurs.length} collaborateurs déjà chargés`);
                 populateNewOpportunityCollaborateurSelect();
             }
-            
+
             // Charger les types d'opportunités si pas encore fait
             if (!window.opportunityTypes) {
                 console.log('📊 Chargement des types d\'opportunités pour nouvelle opportunité...');
@@ -1209,10 +1249,10 @@
                 console.log(`✅ ${window.opportunityTypes.length} types d'opportunités déjà chargés`);
                 populateNewOpportunityTypeSelect();
             }
-            
+
             console.log('✅ Toutes les données de référence sont prêtes pour nouvelle opportunité');
         }
-        
+
         function populateNewOpportunityClientSelect() {
             const select = document.getElementById('new-opportunity-client');
             if (select && window.clients) {
@@ -1227,7 +1267,7 @@
                 console.log('✅ Select client rempli avec', select.options.length, 'options');
             }
         }
-        
+
         function populateNewOpportunityBusinessUnitSelect() {
             const select = document.getElementById('new-opportunity-business-unit');
             if (select && window.businessUnits) {
@@ -1242,7 +1282,7 @@
                 console.log('✅ Select business unit rempli avec', select.options.length, 'options');
             }
         }
-        
+
         function populateNewOpportunityCollaborateurSelect() {
             const select = document.getElementById('new-opportunity-collaborateur');
             if (select && window.collaborateurs) {
@@ -1257,7 +1297,7 @@
                 console.log('✅ Select collaborateur rempli avec', select.options.length, 'options');
             }
         }
-        
+
         function populateNewOpportunityTypeSelect() {
             const select = document.getElementById('new-opportunity-type');
             if (select && window.opportunityTypes) {
@@ -1272,34 +1312,34 @@
                 console.log('✅ Select type rempli avec', select.options.length, 'options');
             }
         }
-        
+
         function setupNewOpportunityEvents() {
             // Événement pour le slider de probabilité
             const probabilitySlider = document.getElementById('new-opportunity-probability');
             const probabilityValue = document.getElementById('probability-value');
-            
+
             if (probabilitySlider && probabilityValue) {
-                probabilitySlider.addEventListener('input', function() {
+                probabilitySlider.addEventListener('input', function () {
                     probabilityValue.textContent = this.value + '%';
                     console.log('📊 Probabilité mise à jour:', this.value + '%');
                 });
             }
         }
-        
+
         async function saveNewOpportunity() {
             console.log('💾 Sauvegarde de la nouvelle opportunité...');
-            
+
             // Récupérer les données du formulaire
             const form = document.getElementById('newOpportunityForm');
             const formData = new FormData(form);
-            
+
             // Validation côté client
-            if (!formData.get('nom') || !formData.get('client_id') || !formData.get('collaborateur_id') || 
+            if (!formData.get('nom') || !formData.get('client_id') || !formData.get('collaborateur_id') ||
                 !formData.get('business_unit_id') || !formData.get('type_opportunite')) {
                 showErrorMessage('Veuillez remplir tous les champs obligatoires');
                 return;
             }
-            
+
             // Préparer les données
             const opportunityData = {
                 nom: formData.get('nom'),
@@ -1314,9 +1354,9 @@
                 date_fermeture_prevue: formData.get('date_fermeture_prevue') || null,
                 description: formData.get('description') || null
             };
-            
+
             console.log('📋 Données de l\'opportunité:', opportunityData);
-            
+
             try {
                 const response = await authenticatedFetch(`${API_BASE_URL}/opportunities`, {
                     method: 'POST',
@@ -1325,22 +1365,22 @@
                     },
                     body: JSON.stringify(opportunityData)
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     console.log('✅ Opportunité créée avec succès:', data.data.opportunity);
-                    
+
                     // Fermer le modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('newOpportunityModal'));
                     modal.hide();
-                    
+
                     // Afficher un message de succès
                     showSuccessMessage('Opportunité créée avec succès');
-                    
+
                     // Recharger la liste des opportunités
                     loadOpportunities();
-                    
+
                     // Réinitialiser le formulaire
                     form.reset();
                 } else {
@@ -1352,23 +1392,23 @@
                 showErrorMessage('Erreur de connexion lors de la création');
             }
         }
-        
+
         async function viewOpportunity(id) {
             console.log('Visualisation de l\'opportunite:', id);
-            
+
             // Afficher le modal avec loading
             const modal = new bootstrap.Modal(document.getElementById('viewOpportunityModal'));
             modal.show();
-            
+
             try {
                 // Charger les details de l'opportunite
                 const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${id}`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     const opportunity = data.data.opportunity;
                     displayOpportunityDetails(opportunity);
-                    
+
                     // Stocker l'ID pour le bouton Modifier
                     document.getElementById('editOpportunityBtn').setAttribute('data-opportunity-id', id);
                 } else {
@@ -1379,10 +1419,10 @@
                 showModalError('Erreur de connexion');
             }
         }
-        
+
         function displayOpportunityDetails(opportunity) {
             const modalBody = document.getElementById('viewOpportunityModalBody');
-            
+
             const montant = opportunity.montant_estime ? formatCurrency(opportunity.montant_estime, opportunity.devise || "EUR") : '-';
             const probabilite = opportunity.probabilite ? `${opportunity.probabilite}%` : '-';
             const responsable = opportunity.collaborateur_nom ? `${opportunity.collaborateur_nom} ${opportunity.collaborateur_prenom}` : '-';
@@ -1390,7 +1430,7 @@
             const dateCreation = opportunity.created_at ? new Date(opportunity.created_at).toLocaleDateString('fr-FR') : '-';
             const statusClass = getStatusClass(opportunity.statut);
             const statusLabel = getStatusLabel(opportunity.statut);
-            
+
             modalBody.innerHTML = `
                 <div class="row">
                     <div class="col-md-8">
@@ -1451,7 +1491,7 @@
                 </div>
             `;
         }
-        
+
         function showModalError(message) {
             const modalBody = document.getElementById('viewOpportunityModalBody');
             modalBody.innerHTML = `
@@ -1461,42 +1501,42 @@
                 </div>
             `;
         }
-        
+
         function editFromView() {
             const opportunityId = document.getElementById('editOpportunityBtn').getAttribute('data-opportunity-id');
             if (opportunityId) {
                 // Fermer le modal de visualisation
                 const modal = bootstrap.Modal.getInstance(document.getElementById('viewOpportunityModal'));
                 modal.hide();
-                
+
                 // Ouvrir le modal d'edition
                 editOpportunity(opportunityId);
             }
         }
-        
+
         async function editOpportunity(id) {
             console.log('🔄 Édition de l\'opportunité:', id);
             currentEditOpportunityId = id;
-            
+
             try {
                 // S'assurer que les donnees de reference sont chargees AVANT d'ouvrir le modal
                 console.log('📋 Chargement des données de référence...');
                 await ensureEditDataLoaded();
-                
+
                 // Charger les details de l'opportunite
                 console.log('📊 Chargement des détails de l\'opportunité...');
                 const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${id}`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     const opportunity = data.data.opportunity;
                     console.log('✅ Détails de l\'opportunité chargés:', opportunity);
-                    
+
                     // Afficher le modal d'edition APRÈS avoir chargé les données
                     const modal = new bootstrap.Modal(document.getElementById('editOpportunityModal'));
                     modal.show();
                     console.log('✅ Modal d\'édition affiché');
-                    
+
                     // Remplir le formulaire après un court délai pour s'assurer que le modal est visible
                     setTimeout(() => {
                         console.log('⏰ Début du remplissage du formulaire...');
@@ -1511,10 +1551,10 @@
                 showEditFormError('Erreur de connexion');
             }
         }
-        
+
         async function ensureEditDataLoaded() {
             console.log('🔍 Vérification des données de référence pour édition...');
-            
+
             // Charger les clients si pas encore fait
             if (!clients || clients.length === 0) {
                 console.log('📋 Chargement des clients pour édition...');
@@ -1528,7 +1568,7 @@
             } else {
                 console.log(`✅ ${clients.length} clients déjà chargés`);
             }
-            
+
             // Charger les Business Units si pas encore fait
             if (!businessUnits || businessUnits.length === 0) {
                 console.log('🏢 Chargement des Business Units pour édition...');
@@ -1543,7 +1583,7 @@
             } else {
                 console.log(`✅ ${businessUnits.length} Business Units déjà chargées`);
             }
-            
+
             // Charger les collaborateurs si pas encore fait
             if (!collaborateurs || collaborateurs.length === 0) {
                 console.log('👥 Chargement des collaborateurs pour édition...');
@@ -1558,7 +1598,7 @@
             } else {
                 console.log(`✅ ${collaborateurs.length} collaborateurs déjà chargés`);
             }
-            
+
             // Charger les types d'opportunites si pas encore fait
             if (!window.opportunityTypes) {
                 console.log('📊 Chargement des types d\'opportunites pour édition...');
@@ -1576,13 +1616,13 @@
             } else {
                 console.log(`✅ ${window.opportunityTypes.length} types d'opportunités déjà chargés`);
             }
-            
+
             console.log('✅ Toutes les données de référence sont prêtes pour édition');
         }
-        
+
         function populateOpportunityTypeFilter() {
             const editSelect = document.getElementById('edit-type');
-            
+
             if (editSelect && window.opportunityTypes) {
                 console.log('📊 Remplissage du select type avec', window.opportunityTypes.length, 'types');
                 editSelect.innerHTML = '<option value="">Selectionner un type</option>';
@@ -1598,14 +1638,14 @@
                 console.warn('⚠️ Element edit-type non trouve ou types non charges');
             }
         }
-        
+
         function populateEditForm(opportunity) {
             console.log('🔄 Remplissage du formulaire avec:', opportunity);
-            
+
             // Attendre que les selects soient remplis avant de definir les valeurs
             setTimeout(() => {
                 console.log('⏰ Début du remplissage des champs...');
-                
+
                 // Remplir le formulaire avec les donnees de l'opportunite
                 const nomField = document.getElementById('edit-nom');
                 const clientField = document.getElementById('edit-client');
@@ -1619,15 +1659,15 @@
                 const typeField = document.getElementById('edit-type');
                 const sourceField = document.getElementById('edit-source');
                 const descriptionField = document.getElementById('edit-description');
-                
+
                 // Vérifier que tous les champs existent
-                if (!nomField || !clientField || !buField || !responsableField || !montantField || 
-                    !deviseField || !probabiliteField || !dateField || !statutField || 
+                if (!nomField || !clientField || !buField || !responsableField || !montantField ||
+                    !deviseField || !probabiliteField || !dateField || !statutField ||
                     !typeField || !sourceField || !descriptionField) {
                     console.error('❌ Un ou plusieurs champs du formulaire sont manquants');
                     return;
                 }
-                
+
                 // Remplir les champs
                 nomField.value = opportunity.nom || '';
                 clientField.value = opportunity.client_id || '';
@@ -1638,7 +1678,7 @@
                 probabiliteField.value = opportunity.probabilite || '';
                 dateField.value = opportunity.date_fermeture_prevue ? opportunity.date_fermeture_prevue.split('T')[0] : '';
                 statutField.value = opportunity.statut || 'EN_COURS';
-                
+
                 // Gérer le type d'opportunité (utiliser le nouveau champ opportunity_type_id)
                 if (opportunity.opportunity_type_id) {
                     typeField.value = opportunity.opportunity_type_id;
@@ -1649,7 +1689,7 @@
                         typeField.value = opportunity.type_opportunite;
                     } else {
                         // Si c'est un nom, chercher l'ID correspondant
-                        const typeOption = Array.from(typeField.options).find(option => 
+                        const typeOption = Array.from(typeField.options).find(option =>
                             option.textContent === opportunity.type_opportunite
                         );
                         if (typeOption) {
@@ -1661,10 +1701,10 @@
                 } else {
                     typeField.value = '';
                 }
-                
+
                 sourceField.value = opportunity.source || '';
                 descriptionField.value = opportunity.description || '';
-                
+
                 // Debug: afficher les valeurs pour verification
                 console.log('📋 Valeurs remplies:');
                 console.log('- Nom:', opportunity.nom, '->', nomField.value);
@@ -1680,7 +1720,7 @@
                 console.log('- Type (nouveau):', opportunity.opportunity_type_id, '->', typeField.value);
                 console.log('- Source:', opportunity.source, '->', sourceField.value);
                 console.log('- Description:', opportunity.description, '->', descriptionField.value);
-                
+
                 // Verification des selects
                 console.log('🔍 Verification des selects:');
                 console.log('- Client select options:', clientField.options.length);
@@ -1688,7 +1728,7 @@
                 console.log('- Collaborateur select options:', responsableField.options.length);
                 console.log('- Type select options:', typeField.options.length);
                 console.log('- Source select options:', sourceField.options.length);
-                
+
                 // Vérifier si les valeurs sont bien sélectionnées
                 console.log('✅ Vérification des sélections:');
                 console.log('- Client sélectionné:', clientField.value, '->', clientField.options[clientField.selectedIndex]?.text);
@@ -1696,20 +1736,20 @@
                 console.log('- Collaborateur sélectionné:', responsableField.value, '->', responsableField.options[responsableField.selectedIndex]?.text);
                 console.log('- Type sélectionné:', typeField.value, '->', typeField.options[typeField.selectedIndex]?.text);
                 console.log('- Source sélectionnée:', sourceField.value, '->', sourceField.options[sourceField.selectedIndex]?.text);
-                
+
                 // Effacer les messages d'erreur
                 clearEditFormMessages();
-                
+
                 console.log('✅ Formulaire rempli avec succès');
             }, 300); // Délai plus long pour s'assurer que les selects sont remplis
         }
-        
+
         async function saveOpportunityChanges() {
             if (!currentEditOpportunityId) {
                 showEditFormError('ID de l\'opportunite manquant');
                 return;
             }
-            
+
             // Recuperer les donnees du formulaire
             const formData = new FormData(document.getElementById('editOpportunityForm'));
             const opportunityData = {
@@ -1726,7 +1766,7 @@
                 source: formData.get('source'),
                 description: formData.get('description')
             };
-            
+
             try {
                 // Envoyer les modifications
                 const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${currentEditOpportunityId}`, {
@@ -1736,17 +1776,17 @@
                     },
                     body: JSON.stringify(opportunityData)
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     showEditFormSuccess('Opportunite modifiee avec succes');
-                    
+
                     // Fermer le modal apres un delai
                     setTimeout(() => {
                         const modal = bootstrap.Modal.getInstance(document.getElementById('editOpportunityModal'));
                         modal.hide();
-                        
+
                         // Recharger les opportunites
                         loadOpportunities();
                     }, 1500);
@@ -1758,7 +1798,7 @@
                 showEditFormError('Erreur de connexion');
             }
         }
-        
+
         function showEditFormError(message) {
             const messagesDiv = document.getElementById('edit-form-messages');
             messagesDiv.innerHTML = `
@@ -1768,7 +1808,7 @@
                 </div>
             `;
         }
-        
+
         function showEditFormSuccess(message) {
             const messagesDiv = document.getElementById('edit-form-messages');
             messagesDiv.innerHTML = `
@@ -1778,18 +1818,18 @@
                 </div>
             `;
         }
-        
+
         function clearEditFormMessages() {
             const messagesDiv = document.getElementById('edit-form-messages');
             messagesDiv.innerHTML = '';
         }
-        
+
         let currentDeleteOpportunityId = null;
         let currentDeleteOpportunityName = null;
-        
+
         function deleteOpportunity(id) {
             console.log('🗑️ Demande de suppression de l\'opportunité:', id);
-            
+
             // Trouver l'opportunité dans la liste
             const opportunity = opportunities.find(opp => opp.id === id);
             if (!opportunity) {
@@ -1797,30 +1837,30 @@
                 alert('Erreur: Opportunité non trouvée');
                 return;
             }
-            
+
             // Stocker les informations pour la confirmation
             currentDeleteOpportunityId = id;
             currentDeleteOpportunityName = opportunity.nom || 'Opportunité sans nom';
-            
+
             // Afficher le nom de l'opportunité dans le modal
             const nameElement = document.getElementById('delete-opportunity-name');
             if (nameElement) {
                 nameElement.textContent = `"${currentDeleteOpportunityName}"`;
             }
-            
+
             // Afficher le modal de confirmation
             const modal = new bootstrap.Modal(document.getElementById('deleteOpportunityModal'));
             modal.show();
         }
-        
+
         async function confirmDeleteOpportunity() {
             if (!currentDeleteOpportunityId) {
                 console.error('❌ ID d\'opportunité manquant pour la suppression');
                 return;
             }
-            
+
             console.log('🗑️ Confirmation de suppression pour l\'opportunité:', currentDeleteOpportunityId);
-            
+
             try {
                 // Appel API pour supprimer l'opportunité
                 const response = await authenticatedFetch(`${API_BASE_URL}/opportunities/${currentDeleteOpportunityId}`, {
@@ -1829,22 +1869,22 @@
                         'Content-Type': 'application/json'
                     }
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     console.log('✅ Opportunité supprimée avec succès');
-                    
+
                     // Fermer le modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('deleteOpportunityModal'));
                     modal.hide();
-                    
+
                     // Afficher un message de succès
                     showSuccessMessage('Opportunité supprimée avec succès');
-                    
+
                     // Recharger la liste des opportunités
                     loadOpportunities();
-                    
+
                     // Réinitialiser les variables
                     currentDeleteOpportunityId = null;
                     currentDeleteOpportunityName = null;
@@ -1857,7 +1897,7 @@
                 showErrorMessage('Erreur de connexion lors de la suppression');
             }
         }
-        
+
         function showSuccessMessage(message) {
             // Créer un toast ou une alerte Bootstrap
             const alertDiv = document.createElement('div');
@@ -1869,7 +1909,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
             document.body.appendChild(alertDiv);
-            
+
             // Supprimer automatiquement après 3 secondes
             setTimeout(() => {
                 if (alertDiv.parentNode) {
@@ -1877,7 +1917,7 @@
                 }
             }, 3000);
         }
-        
+
         function showErrorMessage(message) {
             // Créer un toast ou une alerte Bootstrap
             const alertDiv = document.createElement('div');
@@ -1889,7 +1929,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
             document.body.appendChild(alertDiv);
-            
+
             // Supprimer automatiquement après 5 secondes
             setTimeout(() => {
                 if (alertDiv.parentNode) {
@@ -1899,5 +1939,6 @@
         }
 
     </script>
-    </body>
+</body>
+
 </html>

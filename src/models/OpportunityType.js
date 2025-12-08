@@ -168,40 +168,7 @@ class OpportunityType {
                 const stage = result.rows[0];
                 stages.push(stage);
 
-                // Créer automatiquement les actions requises pour cette étape
-                if (template.required_actions && template.required_actions.length > 0) {
-                    for (const actionType of template.required_actions) {
-                        const actionQuery = `
-                            INSERT INTO opportunity_actions (
-                                opportunity_id, stage_id, action_type, description, 
-                                is_validating, performed_at, created_at
-                            ) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                        `;
-                        await pool.query(actionQuery, [
-                            opportunityId,
-                            stage.id,
-                            actionType,
-                            `Action requise: ${actionType}`,
-                            true
-                        ]);
-                    }
-                }
-
-                // Créer automatiquement les documents requis pour cette étape
-                if (template.required_documents && template.required_documents.length > 0) {
-                    for (const documentType of template.required_documents) {
-                        const documentQuery = `
-                            INSERT INTO opportunity_documents (
-                                opportunity_id, stage_id, document_type, created_at
-                            ) VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-                        `;
-                        await pool.query(documentQuery, [
-                            opportunityId,
-                            stage.id,
-                            documentType
-                        ]);
-                    }
-                }
+                // (Logic removed: Do not auto-create performed actions or documents from requirements)
             }
 
             return stages;

@@ -31,32 +31,30 @@ router.get('/', authenticateToken, async (req, res) => {
         let paramIndex = 1;
         let extraJoins = ""; // Pour les jointures conditionnelles
 
-        // 0. Filtres "Vue Rapide" (View Scoping)
-        if (options.view === 'my_scope') {
-            const userRoles = user.roles || [];
-            const isSuperAdmin = userRoles.some(r => ['SUPER_ADMIN', 'ADMIN', 'SENIOR_PARTNER', 'DIRECTOR'].includes(r));
+        const userRoles = user.roles || [];
+        const isSuperAdmin = userRoles.some(r => ['SUPER_ADMIN', 'ADMIN', 'SENIOR_PARTNER', 'DIRECTOR'].includes(r));
 
-            if (!isSuperAdmin) {
-                // Si pas admin, on filtre sur ce que l'utilisateur peut voir
-                // Il faut s'assurer qu'on peut filtrer sur le user courant.
-                // On peut utiliser req.user.id directement si collaborateur_id est lié, ou utiliser collaborateur_id
-                // On suppose ici que req.user a collaborateur_id (populé par le middleware auth ou via login)
-                // Sinon, on filtre par created_by ou via jointure users
+        // 0. Sécurisation globale : 
+        // - Non-SuperAdmins voient uniquement leur périmètre (BU + Affectations)
+        // - SuperAdmins voient tout, SAUF si le filtre 'my_scope' est activé explicite
+        if (!isSuperAdmin || options.view === 'my_scope') {
+            extraJoins += ` LEFT JOIN users u_req ON u_req.id = $${paramIndex} `;
+            queryParams.push(user.id);
+            paramIndex++;
+            // Join collaborateurs to get BU info safely
+            extraJoins += ` LEFT JOIN collaborateurs col_req ON u_req.collaborateur_id = col_req.id `;
 
-                // Pour sécurité, on joint users pour l'utilisateur courant afin d'avoir ses droits à jour
-                extraJoins += ` LEFT JOIN users u_req ON u_req.id = $${paramIndex} `;
-                queryParams.push(user.id);
-                paramIndex++;
-
-                whereConditions.push(`(
-                    m.collaborateur_id = u_req.collaborateur_id OR
-                    m.associe_id = u_req.collaborateur_id OR
-                    bu.responsable_principal_id = u_req.collaborateur_id OR
-                    bu.responsable_adjoint_id = u_req.collaborateur_id
-                )`);
-            }
+            whereConditions.push(`(
+                m.collaborateur_id = u_req.collaborateur_id OR
+                m.associe_id = u_req.collaborateur_id OR
+                bu.responsable_principal_id = u_req.collaborateur_id OR
+                bu.responsable_adjoint_id = u_req.collaborateur_id OR
+                m.business_unit_id = col_req.business_unit_id
+            )`);
         }
-        else if (options.view === 'active') {
+
+        // Filtres de Vues Spécifiques
+        if (options.view === 'active') {
             whereConditions.push(`m.statut = 'EN_COURS'`);
         }
         else if (options.view === 'finished') {
@@ -115,12 +113,6 @@ router.get('/', authenticateToken, async (req, res) => {
             ${whereClause}
         `;
 
-        // Debug: journaliser les filtres et la clause WHERE
-        try {
-            console.log('🔎 [GET /api/missions] filters', options);
-            console.log('🔎 [GET /api/missions] where', whereClause, 'params=', queryParams);
-        } catch (_) { }
-
         const countResult = await pool.query(countQuery, queryParams);
         const total = parseInt(countResult.rows[0].total);
 
@@ -144,9 +136,6 @@ router.get('/', authenticateToken, async (req, res) => {
 
         queryParams.push(options.limit, offset);
         const result = await pool.query(dataQuery, queryParams);
-        try {
-            console.log('📄 [GET /api/missions] rows', result.rows.length);
-        } catch (_) { }
 
         res.json({
             success: true,
@@ -183,26 +172,81 @@ router.get('/stats', authenticateToken, async (req, res) => {
             LEFT JOIN business_units bu ON m.business_unit_id = bu.id
         `;
 
-        // Logique de scoping identique à Invoice.js / Missions GET
         const userRoles = user.roles || [];
         const isSuperAdmin = userRoles.some(r => ['SUPER_ADMIN', 'ADMIN', 'SENIOR_PARTNER', 'DIRECTOR'].includes(r));
 
-        if (!isSuperAdmin) {
-            if (user.collaborateur_id) {
-                conditions.push(`(
-                    m.collaborateur_id = $${valueIndex} OR
-                    m.associe_id = $${valueIndex} OR
-                    bu.responsable_principal_id = $${valueIndex} OR
-                    bu.responsable_adjoint_id = $${valueIndex}
-                )`);
-                values.push(user.collaborateur_id);
-                valueIndex++;
-            } else {
-                // Fallback: created_by
-                conditions.push(`m.created_by = $${valueIndex}`);
-                values.push(user.id);
-                valueIndex++;
-            }
+        if (!isSuperAdmin || req.query.view === 'my_scope') {
+            // Join users to get current user data explicitly like in GET /
+            joins += ` LEFT JOIN users u_req ON u_req.id = $${valueIndex} `;
+            values.push(user.id);
+            valueIndex++;
+            // Join collaborateurs to get BU info safely
+            joins += ` LEFT JOIN collaborateurs col_req ON u_req.collaborateur_id = col_req.id `;
+
+            conditions.push(`(
+                m.collaborateur_id = u_req.collaborateur_id OR
+                m.associe_id = u_req.collaborateur_id OR
+                bu.responsable_principal_id = u_req.collaborateur_id OR
+                bu.responsable_adjoint_id = u_req.collaborateur_id OR
+                m.business_unit_id = col_req.business_unit_id
+            )`);
+        }
+
+        // Apply standard filters
+        if (req.query.view === 'active') {
+            conditions.push(`m.statut = 'EN_COURS'`);
+        }
+        else if (req.query.view === 'finished') {
+            conditions.push(`m.statut IN ('TERMINEE', 'ARCHIVEE')`);
+        }
+
+        if (req.query.client_id) {
+            conditions.push(`m.client_id = $${valueIndex++}`);
+            values.push(req.query.client_id);
+        }
+
+        if (req.query.statut) {
+            conditions.push(`m.statut = $${valueIndex++}`);
+            values.push(req.query.statut);
+        }
+
+        if (req.query.business_unit_id) {
+            conditions.push(`m.business_unit_id = $${valueIndex++}`);
+            values.push(req.query.business_unit_id);
+        }
+
+        if (req.query.division_id) {
+            conditions.push(`m.division_id = $${valueIndex++}`);
+            values.push(req.query.division_id);
+        }
+
+        if (req.query.code) {
+            conditions.push(`m.code ILIKE $${valueIndex++}`);
+            values.push(`%${req.query.code}%`);
+        }
+
+        if (req.query.search) {
+            // Need to join clients if not already joined?
+            // The query already has `LEFT JOIN clients c ON m.client_id = c.id`?
+            // Wait, the original query in /stats ONLY joins BU (line 183).
+            // I need to add Client join if I want to search by client name, like in GET /
+            joins += ` LEFT JOIN clients c ON m.client_id = c.id `;
+            conditions.push(`(
+                m.nom ILIKE $${valueIndex} OR 
+                m.description ILIKE $${valueIndex} OR
+                c.nom ILIKE $${valueIndex}
+            )`);
+            values.push(`%${req.query.search}%`);
+            // The placeholder $valueIndex is reused 3 times, which PG supports?
+            // Actually, node-postgres usually expects distinct placeholders like $1, $2 if the value is passed once?
+            // "paramIndex" in GET / uses `queryParams.push(...)` for each placeholder.
+            // Let's look at GET / implementation again.
+            // GET /: 
+            // whereConditions.push(`(m.nom ILIKE $${paramIndex} OR ... c.nom ILIKE $${paramIndex})`);
+            // queryParams.push(`%${options.search}%`);
+            // paramIndex++;
+            // YES, if we pass the value ONCE in the array at index (paramIndex-1), we can refer to it as $paramIndex multiple times in the query.
+            valueIndex++;
         }
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -1512,6 +1556,6 @@ router.get('/:missionId/planned-tasks', authenticateToken, async (req, res) => {
     }
 });
 
-module.exports = router; 
+module.exports = router;
 
 

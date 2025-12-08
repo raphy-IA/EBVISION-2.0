@@ -233,12 +233,19 @@ class Collaborateur {
                 AND th.date_effet <= CURRENT_DATE
             LEFT JOIN users u ON c.user_id = u.id
             ${whereClause}
+            ${whereClause}
             ORDER BY c.nom, c.prenom
-            LIMIT $${paramIndex++} OFFSET $${paramIndex++}
         `;
 
-        queryParams.push(limit, offset);
-        const result = await pool.query(dataQuery, queryParams);
+        // Ajouter LIMIT et OFFSET seulement si limit > 0
+        let finalDataQuery = dataQuery;
+
+        if (limit > 0) {
+            finalDataQuery += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+            queryParams.push(limit, offset);
+        }
+
+        const result = await pool.query(finalDataQuery, queryParams);
 
         return {
             data: result.rows.map(row => new Collaborateur(row)),

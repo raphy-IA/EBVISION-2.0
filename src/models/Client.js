@@ -17,6 +17,7 @@ class Client {
         this.sous_secteur_activite_id = data.sous_secteur_activite_id;
         this.taille_entreprise = data.taille_entreprise;
         this.statut = data.statut;
+        this.type = data.type; // New field
         this.source_prospection = data.source_prospection;
         this.notes = data.notes;
         this.created_at = data.created_at;
@@ -61,6 +62,7 @@ class Client {
             page = 1,
             limit = 10,
             statut,
+            type, // New filter
             collaborateur_id,
             secteur_activite,
             search,
@@ -77,6 +79,11 @@ class Client {
         if (statut) {
             conditions.push(`c.statut = $${paramIndex++}`);
             params.push(statut);
+        }
+
+        if (type) {
+            conditions.push(`c.type = $${paramIndex++}`);
+            params.push(type);
         }
 
         if (collaborateur_id) {
@@ -101,7 +108,7 @@ class Client {
         const query = `
             SELECT 
                 c.id, c.nom, c.sigle, c.email, c.telephone, c.adresse, c.ville, c.code_postal, c.pays,
-                c.secteur_activite, c.taille_entreprise, c.statut, c.source_prospection, c.notes,
+                c.secteur_activite, c.taille_entreprise, c.statut, c.type, c.source_prospection, c.notes,
                 c.created_at, c.updated_at, c.date_derniere_activite, c.collaborateur_id, c.created_by, c.updated_by,
                 c.numero_contribuable, c.forme_juridique, c.effectif, c.chiffre_affaires, c.resultat_net,
                 c.notation, c.risque_client, c.groupe_id, c.est_filiale, c.latitude, c.longitude,
@@ -117,8 +124,16 @@ class Client {
             LEFT JOIN sous_secteurs_activite ssa ON c.sous_secteur_activite_id = ssa.id
             ${whereClause}
             ORDER BY c.${sortBy} ${sortOrder}
-            LIMIT $${paramIndex++} OFFSET $${paramIndex++}
         `;
+
+        // Ajouter LIMIT et OFFSET seulement si limit > 0
+        let finalQuery = query;
+        let finalParams = [...params];
+
+        if (limit > 0) {
+            finalQuery += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+            finalParams.push(limit, offset);
+        }
 
         const countQuery = `
             SELECT COUNT(*) as total
@@ -130,7 +145,7 @@ class Client {
         `;
 
         const [result, countResult] = await Promise.all([
-            pool.query(query, [...params, limit, offset]),
+            pool.query(finalQuery, finalParams),
             pool.query(countQuery, params)
         ]);
 
@@ -153,7 +168,7 @@ class Client {
         const query = `
             SELECT 
                 c.id, c.nom, c.sigle, c.email, c.telephone, c.adresse, c.ville, c.code_postal, c.pays,
-                c.secteur_activite, c.taille_entreprise, c.statut, c.source_prospection, c.notes,
+                c.secteur_activite, c.taille_entreprise, c.statut, c.type, c.source_prospection, c.notes,
                 c.created_at, c.updated_at, c.date_derniere_activite, c.collaborateur_id, c.created_by, c.updated_by,
                 c.numero_contribuable, c.forme_juridique, c.effectif, c.chiffre_affaires, c.resultat_net,
                 c.notation, c.risque_client, c.groupe_id, c.est_filiale, c.latitude, c.longitude,
@@ -178,7 +193,7 @@ class Client {
     static async create(clientData) {
         const {
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
-            secteur_activite, taille_entreprise, statut, source_prospection,
+            secteur_activite, taille_entreprise, statut, type, source_prospection,
             notes, collaborateur_id, created_by, pays_id, secteur_activite_id,
             sous_secteur_activite_id, forme_juridique, effectif
         } = clientData;
@@ -186,16 +201,16 @@ class Client {
         const query = `
             INSERT INTO clients (
                 nom, sigle, email, telephone, adresse, ville, code_postal, pays,
-                secteur_activite, taille_entreprise, statut, source_prospection,
+                secteur_activite, taille_entreprise, statut, type, source_prospection,
                 notes, collaborateur_id, created_by, pays_id, secteur_activite_id,
                 sous_secteur_activite_id, forme_juridique, effectif
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
             RETURNING *
         `;
 
         const values = [
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
-            secteur_activite, taille_entreprise, statut, source_prospection,
+            secteur_activite, taille_entreprise, statut, type, source_prospection,
             notes, collaborateur_id, created_by, pays_id, secteur_activite_id,
             sous_secteur_activite_id, forme_juridique, effectif
         ];
@@ -213,7 +228,7 @@ class Client {
     async update(updateData) {
         const {
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
-            secteur_activite, taille_entreprise, statut, source_prospection,
+            secteur_activite, taille_entreprise, statut, type, source_prospection,
             notes, collaborateur_id, updated_by, pays_id, secteur_activite_id,
             sous_secteur_activite_id, forme_juridique, effectif
         } = updateData;
@@ -231,23 +246,24 @@ class Client {
                 secteur_activite = COALESCE($9, secteur_activite),
                 taille_entreprise = COALESCE($10, taille_entreprise),
                 statut = COALESCE($11, statut),
-                source_prospection = COALESCE($12, source_prospection),
-                notes = COALESCE($13, notes),
-                collaborateur_id = COALESCE($14, collaborateur_id),
-                pays_id = COALESCE($15, pays_id),
-                secteur_activite_id = COALESCE($16, secteur_activite_id),
-                sous_secteur_activite_id = COALESCE($17, sous_secteur_activite_id),
-                forme_juridique = COALESCE($18, forme_juridique),
-                effectif = COALESCE($19, effectif),
-                updated_by = $20,
+                type = COALESCE($12, type),
+                source_prospection = COALESCE($13, source_prospection),
+                notes = COALESCE($14, notes),
+                collaborateur_id = COALESCE($15, collaborateur_id),
+                pays_id = COALESCE($16, pays_id),
+                secteur_activite_id = COALESCE($17, secteur_activite_id),
+                sous_secteur_activite_id = COALESCE($18, sous_secteur_activite_id),
+                forme_juridique = COALESCE($19, forme_juridique),
+                effectif = COALESCE($20, effectif),
+                updated_by = $21,
                 date_derniere_activite = CURRENT_TIMESTAMP
-            WHERE id = $21
+            WHERE id = $22
             RETURNING *
         `;
 
         const values = [
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
-            secteur_activite, taille_entreprise, statut, source_prospection,
+            secteur_activite, taille_entreprise, statut, type, source_prospection,
             notes, collaborateur_id, pays_id, secteur_activite_id, sous_secteur_activite_id,
             forme_juridique, effectif, updated_by, this.id
         ];
@@ -385,8 +401,12 @@ class Client {
             errors.push('Format d\'email invalide');
         }
 
-        if (data.statut && !['PROSPECT', 'CLIENT', 'CLIENT_FIDELE', 'ACTIF', 'INACTIF', 'ABANDONNE'].includes(data.statut)) {
+        if (data.statut && !['ACTIF', 'INACTIF', 'ABANDONNE'].includes(data.statut)) {
             errors.push('Statut invalide');
+        }
+
+        if (data.type && !['PROSPECT', 'CLIENT', 'CLIENT_FIDELE'].includes(data.type)) {
+            errors.push('Type invalide');
         }
 
         return errors;
