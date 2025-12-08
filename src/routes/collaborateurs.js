@@ -24,7 +24,8 @@ router.get('/', authenticateToken, async (req, res) => {
     try {
         const options = {
             page: parseInt(req.query.page) || 1,
-            limit: parseInt(req.query.limit) || 20,
+            limit: (req.query.limit !== undefined && req.query.limit !== '') ? parseInt(req.query.limit) : 20,
+            grade: req.query.grade,
             grade: req.query.grade,
             statut: req.query.statut,
             division_id: req.query.division_id,

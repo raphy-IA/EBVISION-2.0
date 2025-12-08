@@ -1,31 +1,42 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prospection - Sources & Entreprises</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-	<style>
-		/* Mise en page cohérente avec les autres pages (sidebar à gauche, contenu à droite) */
-		.page-wrapper {
-			display: flex;
-			min-height: 100vh;
-		}
-		.main-content-area {
-			flex-grow: 1;
-			padding: 2rem;
-		}
-		@media (max-width: 768px) {
-			.page-wrapper { flex-direction: column; }
-			.main-content-area { padding: 1rem; }
-			.sidebar-container.open { transform: translateX(0); }
-		}
-	</style>
-    
-    
-    
+
+    <style>
+        /* Mise en page cohérente avec les autres pages (sidebar à gauche, contenu à droite) */
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+
+            .main-content-area {
+                padding: 1rem;
+            }
+
+            .sidebar-container.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
+
+
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -36,11 +47,12 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <button class="sidebar-toggle d-md-none">
         <i class="fas fa-bars"></i>
@@ -58,13 +70,16 @@
                     <div class="card-body">
                         <div class="row g-2">
                             <div class="col-md-4">
-                                <input id="sourceName" class="form-control" placeholder="Nom de la source (ex: DGE, CSI_EPA Global)">
+                                <input id="sourceName" class="form-control"
+                                    placeholder="Nom de la source (ex: DGE, CSI_EPA Global)">
                             </div>
                             <div class="col-md-6">
-                                <input id="sourceDescription" class="form-control" placeholder="Description (optionnel)">
+                                <input id="sourceDescription" class="form-control"
+                                    placeholder="Description (optionnel)">
                             </div>
                             <div class="col-md-2 d-grid">
-                                <button type="button" id="btnCreateSource" class="btn btn-primary" onclick="createSource()">
+                                <button type="button" id="btnCreateSource" class="btn btn-primary"
+                                    onclick="createSource()">
                                     <i class="fas fa-plus me-1"></i>Créer
                                 </button>
                             </div>
@@ -77,11 +92,11 @@
                         Liste des sources
                         <div class="float-end">
                             <small class="text-muted">
-                                <i class="fas fa-building"></i> Nombre d'entreprises | 
-                                <i class="fas fa-upload"></i> Importer | 
-                                <i class="fas fa-eye"></i> Voir | 
-                                <i class="fas fa-edit"></i> Modifier | 
-                                <i class="fas fa-trash"></i> Supprimer source | 
+                                <i class="fas fa-building"></i> Nombre d'entreprises |
+                                <i class="fas fa-upload"></i> Importer |
+                                <i class="fas fa-eye"></i> Voir |
+                                <i class="fas fa-edit"></i> Modifier |
+                                <i class="fas fa-trash"></i> Supprimer source |
                                 <i class="fas fa-trash-alt"></i> Supprimer entreprises
                             </small>
                         </div>
@@ -104,23 +119,27 @@
 
                         <div class="mt-4" id="companiesSection" style="display:none;">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5><i class="fas fa-building me-2"></i>Entreprises de la source: <span id="currentSourceName"></span></h5>
+                                <h5><i class="fas fa-building me-2"></i>Entreprises de la source: <span
+                                        id="currentSourceName"></span></h5>
                                 <div>
                                     <button class="btn btn-sm btn-success me-2" onclick="showCreateCompanyModal()">
                                         <i class="fas fa-plus me-1"></i>Créer une entreprise
                                     </button>
-                                    <button class="btn btn-sm btn-danger" id="btnDeleteSelected" onclick="deleteSelectedCompanies()" style="display:none;">
-                                        <i class="fas fa-trash me-1"></i>Supprimer sélection (<span id="selectedCount">0</span>)
+                                    <button class="btn btn-sm btn-danger" id="btnDeleteSelected"
+                                        onclick="deleteSelectedCompanies()" style="display:none;">
+                                        <i class="fas fa-trash me-1"></i>Supprimer sélection (<span
+                                            id="selectedCount">0</span>)
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <!-- Filtres et recherche -->
                             <div class="card mb-3">
                                 <div class="card-body">
                                     <div class="row g-2">
                                         <div class="col-md-3">
-                                            <input id="searchCompanies" class="form-control form-control-sm" placeholder="Rechercher entreprises...">
+                                            <input id="searchCompanies" class="form-control form-control-sm"
+                                                placeholder="Rechercher entreprises...">
                                         </div>
                                         <div class="col-md-2">
                                             <select id="filterIndustry" class="form-select form-select-sm">
@@ -147,7 +166,8 @@
                                             </select>
                                         </div>
                                         <div class="col-md-2">
-                                            <button class="btn btn-sm btn-primary w-100" onclick="searchAndFilterCompanies()">
+                                            <button class="btn btn-sm btn-primary w-100"
+                                                onclick="searchAndFilterCompanies()">
                                                 <i class="fas fa-search me-1"></i>Filtrer
                                             </button>
                                         </div>
@@ -160,7 +180,8 @@
                                     <thead>
                                         <tr>
                                             <th style="width: 30px;">
-                                                <input type="checkbox" id="selectAllCompanies" onchange="toggleSelectAll()">
+                                                <input type="checkbox" id="selectAllCompanies"
+                                                    onchange="toggleSelectAll()">
                                             </th>
                                             <th style="min-width: 200px;">Nom</th>
                                             <th style="min-width: 80px;">Sigle</th>
@@ -178,7 +199,7 @@
                                     <tbody id="companiesTable"></tbody>
                                 </table>
                             </div>
-                            
+
                             <div class="d-flex justify-content-between align-items-center mt-3">
                                 <div class="text-muted small">
                                     <span id="companiesCount">0</span> entreprise(s) trouvée(s)
@@ -193,7 +214,8 @@
     </div>
 
     <!-- Modal pour voir les détails d'une entreprise -->
-    <div class="modal fade" id="companyDetailsModal" tabindex="-1" aria-labelledby="companyDetailsModalLabel" aria-hidden="true">
+    <div class="modal fade" id="companyDetailsModal" tabindex="-1" aria-labelledby="companyDetailsModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -211,11 +233,26 @@
                                 </div>
                                 <div class="card-body">
                                     <table class="table table-sm table-borderless">
-                                        <tr><td><strong>Nom :</strong></td><td id="detail-name"></td></tr>
-                                        <tr><td><strong>Sigle :</strong></td><td id="detail-sigle"></td></tr>
-                                        <tr><td><strong>Secteur :</strong></td><td id="detail-industry"></td></tr>
-                                        <tr><td><strong>Taille :</strong></td><td id="detail-size"></td></tr>
-                                        <tr><td><strong>SIRET :</strong></td><td id="detail-siret"></td></tr>
+                                        <tr>
+                                            <td><strong>Nom :</strong></td>
+                                            <td id="detail-name"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Sigle :</strong></td>
+                                            <td id="detail-sigle"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Secteur :</strong></td>
+                                            <td id="detail-industry"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Taille :</strong></td>
+                                            <td id="detail-size"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>SIRET :</strong></td>
+                                            <td id="detail-siret"></td>
+                                        </tr>
                                     </table>
                                 </div>
                             </div>
@@ -227,9 +264,18 @@
                                 </div>
                                 <div class="card-body">
                                     <table class="table table-sm table-borderless">
-                                        <tr><td><strong>Adresse :</strong></td><td id="detail-address"></td></tr>
-                                        <tr><td><strong>Ville :</strong></td><td id="detail-city"></td></tr>
-                                        <tr><td><strong>Pays :</strong></td><td id="detail-country"></td></tr>
+                                        <tr>
+                                            <td><strong>Adresse :</strong></td>
+                                            <td id="detail-address"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Ville :</strong></td>
+                                            <td id="detail-city"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Pays :</strong></td>
+                                            <td id="detail-country"></td>
+                                        </tr>
                                     </table>
                                 </div>
                             </div>
@@ -239,7 +285,8 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h6 class="mb-0"><i class="fas fa-phone me-2"></i>Contact</h6>
+                                    <h6 class="mb-0"><i class="fas fa-address-book me-2"></i>Coordonnées de l'entreprise
+                                    </h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -256,6 +303,55 @@
                                             <span id="detail-website"></span>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-user me-2"></i>Contact Principal</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td><strong>Nom :</strong></td>
+                                            <td id="detail-contact-nom"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Email :</strong></td>
+                                            <td id="detail-contact-email"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Tél :</strong></td>
+                                            <td id="detail-contact-tel"></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-user-tie me-2"></i>Administrateur</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td><strong>Nom :</strong></td>
+                                            <td id="detail-admin-nom"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Email :</strong></td>
+                                            <td id="detail-admin-email"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Contact :</strong></td>
+                                            <td id="detail-admin-contact"></td>
+                                        </tr>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -311,7 +407,7 @@
             const data = await res.json();
             const tbody = document.getElementById('sourcesTable');
             tbody.innerHTML = '';
-            
+
             (data.data || []).forEach(src => {
                 const companiesCount = src.companies_count || 0;
                 const tr = document.createElement('tr');
@@ -345,69 +441,69 @@
             const name = document.getElementById('sourceName').value.trim();
             const description = document.getElementById('sourceDescription').value.trim();
             if (!name) { alert('Nom requis'); return; }
-			
-			console.log('[Prospecting] API URL:', API);
-			console.log('[Prospecting] Auth header:', getAuthHeader());
-			console.log('[Prospecting] Request body:', { name, description });
-			
-			let timeoutId;
-			const controller = new AbortController();
-			try {
-				const btn = document.getElementById('btnCreateSource');
-				if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Créer'; }
-				console.log('[Prospecting] POST /sources start');
-				timeoutId = setTimeout(() => {
-					console.warn('[Prospecting] Aborting request after 8s timeout');
-					controller.abort();
-				}, 8000);
-				
-				const url = `${API}/sources`;
-				const options = {
-                method: 'POST',
-                headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
-					body: JSON.stringify({ name, description }),
-					signal: controller.signal
-				};
-				
-				console.log('[Prospecting] Fetch URL:', url);
-				console.log('[Prospecting] Fetch options:', options);
-				
-				const res = await fetch(url, options);
-				clearTimeout(timeoutId);
-				console.log('[Prospecting] POST /sources response received, status:', res.status);
-				
-            if (res.ok) {
-					const data = await res.json();
-					console.log('[Prospecting] Success response:', data);
-                document.getElementById('sourceName').value = '';
-                document.getElementById('sourceDescription').value = '';
-                await loadSources();
-					alert('Source créée avec succès !');
-            } else {
-					console.error('[Prospecting] Error response status:', res.status);
-                const d = await res.json().catch(() => ({}));
-					console.error('[Prospecting] Error response body:', d);
-                alert('Erreur: ' + (d.message || d.error || res.status));
-				}
-			} catch (e) {
-				console.error('[Prospecting] Exception caught:', e);
-				if (e.name === 'AbortError') {
-					alert('Délai dépassé lors de la création de la source (timeout)');
-					console.warn('[Prospecting] POST /sources aborted (timeout)');
-				} else if (e.name === 'TypeError' && e.message.includes('fetch')) {
-					alert('Erreur de connexion au serveur. Vérifiez que le serveur est démarré.');
-					console.error('[Prospecting] Network error:', e.message);
-				} else {
-					alert('Erreur inattendue lors de la création de la source');
-					console.error('[Prospecting] Unexpected error:', e);
-				}
-			} finally {
-				if (timeoutId) clearTimeout(timeoutId);
-				const btn = document.getElementById('btnCreateSource');
-				if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-plus me-1"></i>Créer'; }
-				console.log('[Prospecting] createSource finally block executed');
-			}
-		}
+
+            console.log('[Prospecting] API URL:', API);
+            console.log('[Prospecting] Auth header:', getAuthHeader());
+            console.log('[Prospecting] Request body:', { name, description });
+
+            let timeoutId;
+            const controller = new AbortController();
+            try {
+                const btn = document.getElementById('btnCreateSource');
+                if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Créer'; }
+                console.log('[Prospecting] POST /sources start');
+                timeoutId = setTimeout(() => {
+                    console.warn('[Prospecting] Aborting request after 8s timeout');
+                    controller.abort();
+                }, 8000);
+
+                const url = `${API}/sources`;
+                const options = {
+                    method: 'POST',
+                    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description }),
+                    signal: controller.signal
+                };
+
+                console.log('[Prospecting] Fetch URL:', url);
+                console.log('[Prospecting] Fetch options:', options);
+
+                const res = await fetch(url, options);
+                clearTimeout(timeoutId);
+                console.log('[Prospecting] POST /sources response received, status:', res.status);
+
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log('[Prospecting] Success response:', data);
+                    document.getElementById('sourceName').value = '';
+                    document.getElementById('sourceDescription').value = '';
+                    await loadSources();
+                    alert('Source créée avec succès !');
+                } else {
+                    console.error('[Prospecting] Error response status:', res.status);
+                    const d = await res.json().catch(() => ({}));
+                    console.error('[Prospecting] Error response body:', d);
+                    alert('Erreur: ' + (d.message || d.error || res.status));
+                }
+            } catch (e) {
+                console.error('[Prospecting] Exception caught:', e);
+                if (e.name === 'AbortError') {
+                    alert('Délai dépassé lors de la création de la source (timeout)');
+                    console.warn('[Prospecting] POST /sources aborted (timeout)');
+                } else if (e.name === 'TypeError' && e.message.includes('fetch')) {
+                    alert('Erreur de connexion au serveur. Vérifiez que le serveur est démarré.');
+                    console.error('[Prospecting] Network error:', e.message);
+                } else {
+                    alert('Erreur inattendue lors de la création de la source');
+                    console.error('[Prospecting] Unexpected error:', e);
+                }
+            } finally {
+                if (timeoutId) clearTimeout(timeoutId);
+                const btn = document.getElementById('btnCreateSource');
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-plus me-1"></i>Créer'; }
+                console.log('[Prospecting] createSource finally block executed');
+            }
+        }
 
         // Exposer immédiatement pour l'attribut onclick, sans attendre DOMContentLoaded
         window.createSource = createSource;
@@ -430,10 +526,10 @@
                     `❌ ${d.data?.errors || 0} erreurs\n` +
                     `📊 Total traité: ${d.data?.total || 0}`;
                 alert(message);
-                
+
                 // Rafraîchir le compteur d'entreprises de la source
                 await refreshSourceCompaniesCount(sourceId);
-                
+
                 await viewCompanies(sourceId, sourceNameEnc);
             } else {
                 alert('Import échoué: ' + (d.message || d.error || res.status));
@@ -446,15 +542,15 @@
         async function viewCompanies(sourceId, sourceNameEnc) {
             currentSourceId = sourceId;
             document.getElementById('currentSourceName').textContent = decodeURIComponent(sourceNameEnc);
-            
+
             console.log('[DEBUG] Chargement entreprises pour source:', sourceId);
-            
+
             // D'abord, essayer la méthode simple pour vérifier la persistance
             try {
                 const directRes = await fetch(`${API}/sources/${sourceId}/companies`, { headers: getAuthHeader() });
                 const directData = await directRes.json();
                 console.log('[DEBUG] Entreprises trouvées via route directe:', directData.data?.length || 0);
-                
+
                 if (directData.data && directData.data.length > 0) {
                     // Les données existent, utiliser la nouvelle interface avec filtres
                     await loadCompanyFilters();
@@ -469,7 +565,7 @@
                 console.error('[DEBUG] Erreur chargement entreprises:', e);
                 alert('Erreur lors du chargement des entreprises');
             }
-            
+
             document.getElementById('companiesSection').style.display = 'block';
         }
 
@@ -477,7 +573,7 @@
             try {
                 const res = await fetch(`${API}/companies/filters`, { headers: getAuthHeader() });
                 const data = await res.json();
-                
+
                 // Remplir les filtres secteur
                 const industrySelect = document.getElementById('filterIndustry');
                 industrySelect.innerHTML = '<option value="">Tous secteurs</option>';
@@ -487,7 +583,7 @@
                     option.textContent = industry;
                     industrySelect.appendChild(option);
                 });
-                
+
                 // Remplir les filtres ville
                 const citySelect = document.getElementById('filterCity');
                 citySelect.innerHTML = '<option value="">Toutes villes</option>';
@@ -509,7 +605,7 @@
                 console.error('[DEBUG] currentSourceId manquant');
                 return;
             }
-            
+
             const q = document.getElementById('searchCompanies').value.trim();
             const industry = document.getElementById('filterIndustry').value;
             const city = document.getElementById('filterCity').value;
@@ -517,7 +613,7 @@
             const sort_order = document.getElementById('sortOrder').value;
             const limit = 20;
             const offset = (page - 1) * limit;
-            
+
             try {
                 const params = new URLSearchParams({
                     source_id: currentSourceId,
@@ -526,20 +622,20 @@
                     sort_by,
                     sort_order
                 });
-                
+
                 if (q) params.append('q', q);
                 if (industry) params.append('industry', industry);
                 if (city) params.append('city', city);
-                
+
                 console.log('[DEBUG] Recherche avec params:', params.toString());
                 const res = await fetch(`${API}/companies/search?${params}`, { headers: getAuthHeader() });
                 const data = await res.json();
-                
+
                 console.log('[DEBUG] Résultat recherche:', data);
-                
+
                 renderCompaniesTable(data.data || []);
                 renderPagination(data.pagination || {}, page);
-                
+
                 document.getElementById('companiesCount').textContent = data.pagination?.total || 0;
             } catch (e) {
                 console.error('[DEBUG] Erreur recherche entreprises:', e);
@@ -549,7 +645,7 @@
         function renderCompaniesTable(companies) {
             const tbody = document.getElementById('companiesTable');
             tbody.innerHTML = '';
-            
+
             companies.forEach(c => {
                 const tr = document.createElement('tr');
                 const isSelected = selectedCompanyIds.has(c.id);
@@ -593,34 +689,34 @@
             const container = document.getElementById('companiesPagination');
             const { total = 0, limit = 20 } = pagination;
             const totalPages = Math.ceil(total / limit);
-            
+
             if (totalPages <= 1) {
                 container.innerHTML = '';
                 return;
             }
-            
+
             let html = '<nav><ul class="pagination pagination-sm mb-0">';
-            
+
             // Page précédente
             html += `<li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
                 <a class="page-link" href="#" onclick="searchAndFilterCompanies(${currentPage - 1})">Précédent</a>
             </li>`;
-            
+
             // Pages numérotées (afficher max 5 pages)
             const startPage = Math.max(1, currentPage - 2);
             const endPage = Math.min(totalPages, startPage + 4);
-            
+
             for (let i = startPage; i <= endPage; i++) {
                 html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
                     <a class="page-link" href="#" onclick="searchAndFilterCompanies(${i})">${i}</a>
                 </li>`;
             }
-            
+
             // Page suivante
             html += `<li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
                 <a class="page-link" href="#" onclick="searchAndFilterCompanies(${currentPage + 1})">Suivant</a>
             </li>`;
-            
+
             html += '</ul></nav>';
             container.innerHTML = html;
         }
@@ -637,7 +733,7 @@
         function toggleSelectAll() {
             const checkbox = document.getElementById('selectAllCompanies');
             const checkboxes = document.querySelectorAll('#companiesTable input[type="checkbox"]');
-            
+
             checkboxes.forEach(cb => {
                 cb.checked = checkbox.checked;
                 const companyId = cb.value;
@@ -655,12 +751,12 @@
             document.getElementById('selectedCount').textContent = count;
             const deleteBtn = document.getElementById('btnDeleteSelected');
             deleteBtn.style.display = count > 0 ? 'block' : 'none';
-            
+
             // Mettre à jour le checkbox "tout sélectionner"
             const allCheckboxes = document.querySelectorAll('#companiesTable input[type="checkbox"]');
             const checkedCheckboxes = document.querySelectorAll('#companiesTable input[type="checkbox"]:checked');
             const selectAllCheckbox = document.getElementById('selectAllCompanies');
-            
+
             if (allCheckboxes.length === 0) {
                 selectAllCheckbox.indeterminate = false;
                 selectAllCheckbox.checked = false;
@@ -678,24 +774,24 @@
 
         async function deleteSelectedCompanies() {
             if (selectedCompanyIds.size === 0) return;
-            
+
             if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedCompanyIds.size} entreprise(s) ?`)) return;
-            
+
             try {
                 const res = await fetch(`${API}/companies`, {
                     method: 'DELETE',
                     headers: getAuthHeader(),
                     body: JSON.stringify({ ids: Array.from(selectedCompanyIds) })
                 });
-                
+
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     alert(data.message);
                     selectedCompanyIds.clear();
                     updateSelectionUI();
                     await searchAndFilterCompanies();
-                    
+
                     // Rafraîchir le compteur d'entreprises de la source
                     if (currentSourceId) {
                         await refreshSourceCompaniesCount(currentSourceId);
@@ -721,25 +817,25 @@
 
         async function deleteCompany(companyId) {
             if (!confirm('Êtes-vous sûr de vouloir supprimer cette entreprise ?')) return;
-            
+
             try {
                 const res = await fetch(`${API}/companies/${companyId}`, {
                     method: 'DELETE',
                     headers: getAuthHeader()
                 });
-                
+
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     selectedCompanyIds.delete(companyId);
                     updateSelectionUI();
                     await searchAndFilterCompanies();
-                    
+
                     // Rafraîchir le compteur d'entreprises de la source
                     if (currentSourceId) {
                         await refreshSourceCompaniesCount(currentSourceId);
                     }
-                    
+
                     alert('Entreprise supprimée');
                 } else {
                     // Gérer les erreurs de dépendances
@@ -765,34 +861,43 @@
             try {
                 const res = await fetch(`${API}/companies/${companyId}`, { headers: getAuthHeader() });
                 const data = await res.json();
-                
+
                 if (data.success) {
                     const company = data.data;
                     currentCompanyId = companyId;
-                    
+
                     // Remplir les détails dans le modal
                     document.getElementById('detail-name').textContent = company.name || 'N/A';
                     document.getElementById('detail-sigle').innerHTML = company.sigle ? `<span class="badge bg-primary">${company.sigle}</span>` : 'N/A';
                     document.getElementById('detail-industry').innerHTML = company.industry ? `<span class="badge bg-secondary">${company.industry}</span>` : 'N/A';
                     document.getElementById('detail-size').innerHTML = company.size_label ? `<span class="badge bg-info">${company.size_label}</span>` : 'N/A';
                     document.getElementById('detail-siret').textContent = company.siret || 'N/A';
-                    
+
                     document.getElementById('detail-address').textContent = company.address || 'N/A';
                     document.getElementById('detail-city').textContent = company.city || 'N/A';
                     document.getElementById('detail-country').textContent = company.country || 'N/A';
-                    
-                    document.getElementById('detail-email').innerHTML = company.email ? 
+
+                    document.getElementById('detail-email').innerHTML = company.email ?
                         `<a href="mailto:${company.email}">${company.email}</a>` : 'N/A';
-                    document.getElementById('detail-phone').innerHTML = company.phone ? 
+                    document.getElementById('detail-phone').innerHTML = company.phone ?
                         `<a href="tel:${company.phone}">${company.phone}</a>` : 'N/A';
-                    document.getElementById('detail-website').innerHTML = company.website ? 
+                    document.getElementById('detail-website').innerHTML = company.website ?
                         `<a href="${company.website}" target="_blank">${company.website}</a>` : 'N/A';
-                    
-                    document.getElementById('detail-created').textContent = company.created_at ? 
+
+                    document.getElementById('detail-created').textContent = company.created_at ?
                         new Date(company.created_at).toLocaleString('fr-FR') : 'N/A';
-                    document.getElementById('detail-updated').textContent = company.updated_at ? 
+                    document.getElementById('detail-updated').textContent = company.updated_at ?
                         new Date(company.updated_at).toLocaleString('fr-FR') : 'N/A';
-                    
+
+                    // Nouveaux champs Contact et Admin
+                    document.getElementById('detail-contact-nom').textContent = company.contact_nom || 'N/A';
+                    document.getElementById('detail-contact-email').innerHTML = company.contact_email ? `<a href="mailto:${company.contact_email}">${company.contact_email}</a>` : 'N/A';
+                    document.getElementById('detail-contact-tel').innerHTML = company.contact_tel ? `<a href="tel:${company.contact_tel}">${company.contact_tel}</a>` : 'N/A';
+
+                    document.getElementById('detail-admin-nom').textContent = company.admin_nom || 'N/A';
+                    document.getElementById('detail-admin-email').innerHTML = company.admin_email ? `<a href="mailto:${company.admin_email}">${company.admin_email}</a>` : 'N/A';
+                    document.getElementById('detail-admin-contact').innerHTML = company.admin_contact ? `<a href="tel:${company.admin_contact}">${company.admin_contact}</a>` : 'N/A';
+
                     // Ouvrir le modal
                     const modal = new bootstrap.Modal(document.getElementById('companyDetailsModal'));
                     modal.show();
@@ -810,40 +915,36 @@
                 // Fermer le modal des détails
                 const modal = bootstrap.Modal.getInstance(document.getElementById('companyDetailsModal'));
                 modal.hide();
-                
+
                 // Ouvrir la fonction d'édition
                 editCompany(currentCompanyId);
             }
         }
 
-        function editCompany(companyId) {
-            // Pour l'instant, simple prompt - à améliorer avec un modal d'édition
-            alert('Fonction de modification à implémenter. ID: ' + companyId);
-            // TODO: Créer un modal d'édition avec formulaire
-        }
+
 
         // Fonction pour modifier une source
         async function editSource(sourceId, sourceNameEnc, sourceDescriptionEnc) {
             const sourceName = decodeURIComponent(sourceNameEnc);
             const sourceDescription = decodeURIComponent(sourceDescriptionEnc);
-            
+
             const newName = prompt('Nouveau nom de la source:', sourceName);
             if (!newName || newName.trim() === '') return;
-            
+
             const newDescription = prompt('Nouvelle description (optionnel):', sourceDescription);
-            
+
             try {
                 const res = await fetch(`${API}/sources/${sourceId}`, {
                     method: 'PUT',
                     headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        name: newName.trim(), 
-                        description: newDescription || null 
+                    body: JSON.stringify({
+                        name: newName.trim(),
+                        description: newDescription || null
                     })
                 });
-                
+
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     alert('Source modifiée avec succès !');
                     await loadSources();
@@ -859,19 +960,19 @@
         // Fonction pour supprimer une source
         async function deleteSource(sourceId, sourceNameEnc) {
             const sourceName = decodeURIComponent(sourceNameEnc);
-            
+
             if (!confirm(`Êtes-vous sûr de vouloir supprimer la source "${sourceName}" ?\n\nCette action ne peut être annulée.`)) {
                 return;
             }
-            
+
             try {
                 const res = await fetch(`${API}/sources/${sourceId}`, {
                     method: 'DELETE',
                     headers: getAuthHeader()
                 });
-                
+
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     alert('Source supprimée avec succès !');
                     await loadSources();
@@ -891,26 +992,26 @@
         // Fonction pour supprimer toutes les entreprises d'une source
         async function deleteAllCompaniesFromSource(sourceId, sourceNameEnc) {
             const sourceName = decodeURIComponent(sourceNameEnc);
-            
+
             if (!confirm(`Êtes-vous sûr de vouloir supprimer TOUTES les entreprises de la source "${sourceName}" ?\n\n⚠️ ATTENTION: Seules les entreprises non associées aux campagnes seront supprimées.\n\nCette action ne peut être annulée.`)) {
                 return;
             }
-            
+
             try {
                 const res = await fetch(`${API}/sources/${sourceId}/companies`, {
                     method: 'DELETE',
                     headers: getAuthHeader()
                 });
-                
+
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     const message = `Suppression terminée:\n` +
                         `✅ ${data.data.deleted} entreprises supprimées\n` +
                         `⚠️ ${data.data.remaining} entreprises conservées (associées aux campagnes)\n` +
                         `📊 Total initial: ${data.data.total}`;
                     alert(message);
-                    
+
                     // Recharger les sources et les entreprises si on est sur cette source
                     await loadSources();
                     if (currentSourceId === sourceId) {
@@ -931,7 +1032,7 @@
                 const res = await fetch(`${API}/sources`, { headers: getAuthHeader() });
                 const data = await res.json();
                 const source = (data.data || []).find(s => s.id === sourceId);
-                
+
                 if (source) {
                     const companiesCount = source.companies_count || 0;
                     const badgeElement = document.querySelector(`tr[data-source-id="${sourceId}"] .badge.bg-info`);
@@ -948,24 +1049,92 @@
             }
         }
 
+        let isEditMode = false;
+        let editingCompanyId = null;
+
         // Fonction pour afficher le modal de création d'entreprise
         function showCreateCompanyModal() {
             if (!currentSourceId) {
                 alert('Veuillez d\'abord sélectionner une source d\'entreprises.');
                 return;
             }
-            
-            // Réinitialiser le formulaire
+
+            isEditMode = false;
+            editingCompanyId = null;
+
+            // Réinitialiser le formulaire et l'interface
             document.getElementById('createCompanyForm').reset();
             document.getElementById('companyCountry').value = 'Cameroun';
-            
+            document.getElementById('createCompanyModalLabel').innerHTML = '<i class="fas fa-plus me-2"></i>Créer une nouvelle entreprise';
+            const btnSave = document.getElementById('btnSaveCompany');
+            if (btnSave) {
+                btnSave.innerHTML = '<i class="fas fa-save me-1"></i>Créer l\'entreprise';
+                btnSave.onclick = saveCompany; // S'assurer que le handler est correct
+            }
+
             // Afficher le modal
             const modal = new bootstrap.Modal(document.getElementById('createCompanyModal'));
             modal.show();
         }
 
-        // Fonction pour créer une entreprise
-        async function createCompany() {
+        async function editCompany(companyId) {
+            try {
+                // Charger les données de l'entreprise si nécessaire
+                // On peut réutiliser l'API viewCompanyDetails ou le faire ici
+                const res = await fetch(`${API}/companies/${companyId}`, { headers: getAuthHeader() });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    alert('Erreur lors du chargement de l\'entreprise: ' + (data.error || 'Erreur inconnue'));
+                    return;
+                }
+
+                const company = data.data;
+
+                isEditMode = true;
+                editingCompanyId = companyId;
+
+                // Remplir le formulaire
+                document.getElementById('companyName').value = company.name || '';
+                document.getElementById('companySigle').value = company.sigle || '';
+                document.getElementById('companyIndustry').value = company.industry || '';
+                document.getElementById('companySize').value = company.size_label || '';
+                document.getElementById('companyEmail').value = company.email || '';
+                document.getElementById('companyPhone').value = company.phone || '';
+                document.getElementById('companyWebsite').value = company.website || '';
+                document.getElementById('companySiret').value = company.siret || '';
+                document.getElementById('companyCountry').value = company.country || 'Cameroun';
+                document.getElementById('companyCity').value = company.city || '';
+                document.getElementById('companyAddress').value = company.address || '';
+
+                // Nouveaux champs
+                document.getElementById('companyContactNom').value = company.contact_nom || '';
+                document.getElementById('companyContactEmail').value = company.contact_email || '';
+                document.getElementById('companyContactTel').value = company.contact_tel || '';
+                document.getElementById('companyAdminNom').value = company.admin_nom || '';
+                document.getElementById('companyAdminEmail').value = company.admin_email || '';
+                document.getElementById('companyAdminContact').value = company.admin_contact || '';
+
+                // Mettre à jour l'interface du modal
+                document.getElementById('createCompanyModalLabel').innerHTML = '<i class="fas fa-edit me-2"></i>Modifier l\'entreprise';
+                const btnSave = document.getElementById('btnSaveCompany');
+                if (btnSave) {
+                    btnSave.innerHTML = '<i class="fas fa-save me-1"></i>Enregistrer les modifications';
+                    btnSave.onclick = saveCompany;
+                }
+
+                // Afficher le modal
+                const modal = new bootstrap.Modal(document.getElementById('createCompanyModal'));
+                modal.show();
+
+            } catch (e) {
+                console.error('Erreur editCompany:', e);
+                alert('Erreur lors du chargement pour modification');
+            }
+        }
+
+        // Fonction unifiée pour créer ou modifier une entreprise
+        async function saveCompany() {
             // Récupérer les données du formulaire
             const formData = {
                 name: document.getElementById('companyName').value.trim(),
@@ -978,7 +1147,15 @@
                 siret: document.getElementById('companySiret').value.trim() || null,
                 country: document.getElementById('companyCountry').value.trim() || null,
                 city: document.getElementById('companyCity').value.trim() || null,
-                address: document.getElementById('companyAddress').value.trim() || null
+                address: document.getElementById('companyAddress').value.trim() || null,
+
+                // Nouveaux champs
+                contact_nom: document.getElementById('companyContactNom').value.trim() || null,
+                contact_email: document.getElementById('companyContactEmail').value.trim() || null,
+                contact_tel: document.getElementById('companyContactTel').value.trim() || null,
+                admin_nom: document.getElementById('companyAdminNom').value.trim() || null,
+                admin_email: document.getElementById('companyAdminEmail').value.trim() || null,
+                admin_contact: document.getElementById('companyAdminContact').value.trim() || null
             };
 
             // Validation
@@ -988,20 +1165,30 @@
             }
 
             try {
-                // Afficher un indicateur de chargement
-                const createBtn = document.querySelector('#createCompanyModal .btn-primary');
-                const originalText = createBtn.innerHTML;
-                createBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Création...';
-                createBtn.disabled = true;
+                const btnSave = document.getElementById('btnSaveCompany');
+                const originalText = btnSave.innerHTML;
+                btnSave.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Traitement...';
+                btnSave.disabled = true;
 
-                // Appel API pour créer l'entreprise
-                const res = await fetch(`${API}/companies`, {
-                    method: 'POST',
-                    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
+                let url, method, body;
+
+                if (isEditMode) {
+                    url = `${API}/companies/${editingCompanyId}`;
+                    method = 'PUT';
+                    body = JSON.stringify(formData);
+                } else {
+                    url = `${API}/companies`;
+                    method = 'POST';
+                    body = JSON.stringify({
                         ...formData,
                         source_id: currentSourceId
-                    })
+                    });
+                }
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+                    body: body
                 });
 
                 const data = await res.json();
@@ -1011,25 +1198,31 @@
                     const modal = bootstrap.Modal.getInstance(document.getElementById('createCompanyModal'));
                     modal.hide();
 
-                    // Afficher le message de succès
-                    alert(`Entreprise "${formData.name}" créée avec succès !`);
+                    const action = isEditMode ? 'modifiée' : 'créée';
+                    alert(`Entreprise "${formData.name}" ${action} avec succès !`);
 
                     // Recharger les données
                     await loadSources();
                     if (currentSourceId) {
                         await searchAndFilterCompanies();
                     }
+
+                    // Mettre à jour les détails si le modal de détails est ouvert (ou le rafraîchir à la prochaine ouverture)
+                    // Rien à faire ici car on recharge les données à l'ouverture du modal de détails
+
                 } else {
                     alert('Erreur: ' + (data.message || data.error || res.status));
                 }
             } catch (error) {
-                console.error('Erreur création entreprise:', error);
-                alert('Erreur lors de la création de l\'entreprise');
+                console.error('Erreur sauvegarde entreprise:', error);
+                alert('Erreur lors de la sauvegarde de l\'entreprise');
             } finally {
                 // Restaurer le bouton
-                const createBtn = document.querySelector('#createCompanyModal .btn-primary');
-                createBtn.innerHTML = '<i class="fas fa-save me-1"></i>Créer l\'entreprise';
-                createBtn.disabled = false;
+                const btnSave = document.getElementById('btnSaveCompany');
+                if (btnSave) {
+                    btnSave.innerHTML = isEditMode ? '<i class="fas fa-save me-1"></i>Enregistrer les modifications' : '<i class="fas fa-save me-1"></i>Créer l\'entreprise';
+                    btnSave.disabled = false;
+                }
             }
         }
 
@@ -1040,7 +1233,8 @@
     <script src="js/session-manager.js"></script>
 
     <!-- Modal de création d'entreprise -->
-    <div class="modal fade" id="createCompanyModal" tabindex="-1" aria-labelledby="createCompanyModalLabel" aria-hidden="true">
+    <div class="modal fade" id="createCompanyModal" tabindex="-1" aria-labelledby="createCompanyModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1054,24 +1248,26 @@
                         <div class="row g-3">
                             <!-- Informations principales -->
                             <div class="col-md-12">
-                                <h6 class="text-primary mb-3"><i class="fas fa-building me-2"></i>Informations principales</h6>
+                                <h6 class="text-primary mb-3"><i class="fas fa-building me-2"></i>Informations
+                                    principales</h6>
                             </div>
-                            
+
                             <div class="col-md-8">
                                 <label for="companyName" class="form-label">Nom de l'entreprise *</label>
                                 <input type="text" class="form-control" id="companyName" required>
                             </div>
-                            
+
                             <div class="col-md-4">
                                 <label for="companySigle" class="form-label">Sigle</label>
                                 <input type="text" class="form-control" id="companySigle" placeholder="Ex: UBA, CDC">
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="companyIndustry" class="form-label">Secteur d'activité</label>
-                                <input type="text" class="form-control" id="companyIndustry" placeholder="Ex: Banque, Commerce">
+                                <input type="text" class="form-control" id="companyIndustry"
+                                    placeholder="Ex: Banque, Commerce">
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="companySize" class="form-label">Taille</label>
                                 <select class="form-select" id="companySize">
@@ -1082,50 +1278,92 @@
                                     <option value="ETI">ETI (Entreprise de Taille Intermédiaire)</option>
                                 </select>
                             </div>
-                            
-                            <!-- Contact -->
+
+                            <!-- Contact Général -->
                             <div class="col-md-12">
-                                <h6 class="text-primary mb-3"><i class="fas fa-address-book me-2"></i>Contact</h6>
+                                <h6 class="text-primary mb-3"><i class="fas fa-address-book me-2"></i>Coordonnées de
+                                    l'entreprise</h6>
                             </div>
-                            
+
                             <div class="col-md-6">
-                                <label for="companyEmail" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="companyEmail" placeholder="contact@entreprise.com">
+                                <label for="companyEmail" class="form-label">Email Entreprise</label>
+                                <input type="email" class="form-control" id="companyEmail"
+                                    placeholder="contact@entreprise.com">
                             </div>
-                            
+
                             <div class="col-md-6">
-                                <label for="companyPhone" class="form-label">Téléphone</label>
-                                <input type="tel" class="form-control" id="companyPhone" placeholder="+237 XXX XXX XXX">
+                                <label for="companyPhone" class="form-label">Téléphone Entreprise</label>
+                                <input type="tel" class="form-control" id="companyPhone" placeholder="+237 ...">
                             </div>
-                            
-                            <div class="col-md-6">
+
+                            <div class="col-md-12">
                                 <label for="companyWebsite" class="form-label">Site web</label>
-                                <input type="url" class="form-control" id="companyWebsite" placeholder="https://www.entreprise.com">
+                                <input type="url" class="form-control" id="companyWebsite"
+                                    placeholder="https://www.entreprise.com">
                             </div>
-                            
+
+                            <!-- Personne Contact Principal -->
+                            <div class="col-md-12 mt-3">
+                                <h6 class="text-primary mb-3"><i class="fas fa-user me-2"></i>Contact Principal</h6>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="companyContactNom" class="form-label">Nom complet</label>
+                                <input type="text" class="form-control" id="companyContactNom">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="companyContactEmail" class="form-label">Email personnel</label>
+                                <input type="email" class="form-control" id="companyContactEmail">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="companyContactTel" class="form-label">Téléphone direct</label>
+                                <input type="tel" class="form-control" id="companyContactTel">
+                            </div>
+
+                            <!-- Administrateur -->
+                            <div class="col-md-12 mt-3">
+                                <h6 class="text-primary mb-3"><i class="fas fa-user-tie me-2"></i>Administrateur
+                                    (DG/PDG)</h6>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="companyAdminNom" class="form-label">Nom complet</label>
+                                <input type="text" class="form-control" id="companyAdminNom">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="companyAdminEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="companyAdminEmail">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="companyAdminContact" class="form-label">Contact</label>
+                                <input type="tel" class="form-control" id="companyAdminContact">
+                            </div>
+
                             <div class="col-md-6">
                                 <label for="companySiret" class="form-label">SIRET/NIU</label>
-                                <input type="text" class="form-control" id="companySiret" placeholder="Numéro d'identification">
+                                <input type="text" class="form-control" id="companySiret"
+                                    placeholder="Numéro d'identification">
                             </div>
-                            
+
                             <!-- Localisation -->
                             <div class="col-md-12">
-                                <h6 class="text-primary mb-3"><i class="fas fa-map-marker-alt me-2"></i>Localisation</h6>
+                                <h6 class="text-primary mb-3"><i class="fas fa-map-marker-alt me-2"></i>Localisation
+                                </h6>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="companyCountry" class="form-label">Pays</label>
                                 <input type="text" class="form-control" id="companyCountry" value="Cameroun">
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="companyCity" class="form-label">Ville</label>
-                                <input type="text" class="form-control" id="companyCity" placeholder="Ex: Douala, Yaoundé">
+                                <input type="text" class="form-control" id="companyCity"
+                                    placeholder="Ex: Douala, Yaoundé">
                             </div>
-                            
+
                             <div class="col-md-12">
                                 <label for="companyAddress" class="form-label">Adresse</label>
-                                <textarea class="form-control" id="companyAddress" rows="2" placeholder="Adresse complète de l'entreprise"></textarea>
+                                <textarea class="form-control" id="companyAddress" rows="2"
+                                    placeholder="Adresse complète de l'entreprise"></textarea>
                             </div>
                         </div>
                     </form>
@@ -1134,7 +1372,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times me-1"></i>Annuler
                     </button>
-                    <button type="button" class="btn btn-primary" onclick="createCompany()">
+                    <button type="button" class="btn btn-primary" id="btnSaveCompany" onclick="saveCompany()">
                         <i class="fas fa-save me-1"></i>Créer l'entreprise
                     </button>
                 </div>
@@ -1142,6 +1380,5 @@
         </div>
     </div>
 </body>
+
 </html>
-
-

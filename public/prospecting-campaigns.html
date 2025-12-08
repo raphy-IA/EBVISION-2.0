@@ -24,7 +24,6 @@
     <!-- Scripts de zone utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
-    <script src="js/user-modals.js"></script>
 
     <style>
         :root {
@@ -811,10 +810,13 @@
             try {
                 console.log('🔍 [DEBUG] Filtrage des responsables pour BU:', businessUnitId);
 
-                // Récupérer tous les collaborateurs
-                const response = await fetch('/api/collaborateurs', { headers: getAuthHeader() });
-                const data = await response.json();
-                const collaborateurs = data.data || data || [];
+                console.log('🔍 [DEBUG] Filtrage des responsables pour BU:', businessUnitId);
+                console.log('🔍 [DEBUG] Nombre total de collaborateurs disponibles:', collaborateurs.length);
+
+                // Utiliser la variable globale collaborateurs déjà chargée
+                // const response = await fetch('/api/collaborateurs', { headers: getAuthHeader() });
+                // const data = await response.json();
+                // const collaborateurs = data.data || data || [];
 
                 // Filtrer par Business Unit
                 const filteredCollaborateurs = collaborateurs.filter(collab =>
@@ -1746,9 +1748,10 @@
         // Chargement des collaborateurs (responsables)
         async function loadCollaborateurs() {
             try {
-                const res = await fetch(`/api/collaborateurs`, { headers: getAuthHeader() });
+                const res = await fetch(`/api/collaborateurs?limit=0`, { headers: getAuthHeader() });
                 const data = await res.json();
-                const collaborateurs = data.data || [];
+                collaborateurs = data.data || []; // Utiliser la variable globale
+                console.log(`🔍 [DEBUG] loadCollaborateurs: Chargé ${collaborateurs.length} collaborateurs`);
 
                 const responsibleSel = document.getElementById('campResponsible');
                 if (responsibleSel) {

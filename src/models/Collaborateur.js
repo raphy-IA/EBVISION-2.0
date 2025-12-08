@@ -233,7 +233,6 @@ class Collaborateur {
                 AND th.date_effet <= CURRENT_DATE
             LEFT JOIN users u ON c.user_id = u.id
             ${whereClause}
-            ${whereClause}
             ORDER BY c.nom, c.prenom
         `;
 
