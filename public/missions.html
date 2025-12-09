@@ -153,7 +153,7 @@
                 padding: 1rem;
             }
         }
-        }
+
 
         /* Table Layout Improvements */
         .table-responsive {
@@ -244,6 +244,9 @@
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
+    <!-- Scripts de gestion des devises -->
+    <script src="js/currency-config.js"></script>
+    <script src="js/currency-context.js"></script>
 </head>
 
 <body>
@@ -1144,13 +1147,7 @@
             return new Date(dateString).toLocaleDateString('fr-FR');
         }
 
-        function formatCurrency(amount) {
-            if (!amount) return 'N/A';
-            return new Intl.NumberFormat('fr-FR', {
-                style: 'currency',
-                currency: 'EUR'
-            }).format(amount);
-        }
+
 
         // Gestion du modal
         document.getElementById('addMissionModal').addEventListener('hidden.bs.modal', function () {
