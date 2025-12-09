@@ -20,19 +20,19 @@ async function authenticatedFetch(url) {
 }
 
 // Initialisation du dashboard
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('🚀 Initialisation du Dashboard Personnel...');
-    
+
     // Charger les données du dashboard
     loadDashboardData();
-    
+
     // Initialiser les graphiques
     initializeCharts();
-    
+
     // Écouter les changements de période
     const periodFilter = document.getElementById('period-filter');
     if (periodFilter) {
-        periodFilter.addEventListener('change', function() {
+        periodFilter.addEventListener('change', function () {
             currentPeriod = parseInt(this.value);
             refreshDashboard();
         });
@@ -43,17 +43,17 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadDashboardData() {
     try {
         console.log('📊 Chargement des données du dashboard personnel...');
-        
+
         // Supprimer les alertes d'erreur existantes
         const existingAlerts = document.querySelectorAll('.alert-danger');
         existingAlerts.forEach(alert => alert.remove());
-        
+
         // Construire les paramètres de requête
         const queryParams = `period=${currentPeriod}`;
-        
+
         // Charger les statistiques personnelles
         const response = await authenticatedFetch(`${API_BASE_URL}/personal-performance?${queryParams}`);
-        
+
         if (!response.ok) {
             console.error('❌ Erreur API:', response.status);
             showError(
@@ -62,9 +62,9 @@ async function loadDashboardData() {
             );
             return;
         }
-        
+
         const result = await response.json();
-        
+
         if (!result.success) {
             console.error('❌ Réponse API sans succès:', result);
             showError(
@@ -73,13 +73,20 @@ async function loadDashboardData() {
             );
             return;
         }
-        
+
         console.log('✅ Données reçues:', result.data);
         updateUserInfo(result.data.profil);
         updateKPIs(result.data.kpis);
         updateMissionsActives(result.data.missions_actives);
         updateTimelineChart(result.data.evolution_temporelle);
-        
+
+        // Mettre à jour les nouvelles sections
+        populateOpportunitiesManaged(result.data.opportunities_managed, result.data.kpis.opportunities_managed_count);
+        populateOpportunitiesCreated(result.data.opportunities_created, result.data.kpis.opportunities_created_count);
+        populateCampaignsManaged(result.data.campaigns_managed, result.data.kpis.campaigns_managed_count);
+        populateCampaignsCreated(result.data.campaigns_created, result.data.kpis.campaigns_created_count);
+        populateTasksWorked(result.data.tasks_worked);
+
     } catch (error) {
         console.error('❌ Erreur lors du chargement des données:', error);
         showError(
@@ -93,7 +100,7 @@ async function loadDashboardData() {
 function showError(title, message) {
     const mainContent = document.querySelector('.main-content-area');
     if (!mainContent) return;
-    
+
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-danger alert-dismissible fade show mb-4';
     alertDiv.setAttribute('role', 'alert');
@@ -112,10 +119,10 @@ function showError(title, message) {
             </button>
         </div>
     `;
-    
+
     // Insérer l'alerte en haut du contenu
     mainContent.insertBefore(alertDiv, mainContent.firstChild);
-    
+
     // Auto-scroll vers l'alerte
     alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -123,22 +130,29 @@ function showError(title, message) {
 // Mettre à jour les informations utilisateur
 function updateUserInfo(profil) {
     console.log('👤 Mise à jour profil:', profil);
-    
+
+    if (!profil) {
+        console.warn('⚠️ Objet profil manquant ou vide');
+        return;
+    }
+
     const userNameElement = document.getElementById('user-name');
     if (userNameElement) {
-        userNameElement.textContent = `${profil.prenom} ${profil.nom}`;
+        userNameElement.textContent = (profil.prenom && profil.nom)
+            ? `${profil.prenom} ${profil.nom}`
+            : (profil.nom || profil.prenom || 'Utilisateur inconnu');
     }
-    
+
     const gradeElement = document.getElementById('user-grade');
     if (gradeElement) {
         gradeElement.textContent = profil.grade || 'Non défini';
     }
-    
+
     const divisionElement = document.getElementById('user-division');
     if (divisionElement) {
         divisionElement.textContent = profil.division || 'Non définie';
     }
-    
+
     const buElement = document.getElementById('user-bu');
     if (buElement) {
         buElement.textContent = profil.business_unit || 'Non définie';
@@ -148,37 +162,43 @@ function updateUserInfo(profil) {
 // Mettre à jour les KPIs
 function updateKPIs(data) {
     console.log('📈 Mise à jour des KPIs:', data);
-    
+
+    // Fonction helper pour parser en float de manière sécurisée
+    const safeFloat = (val) => {
+        const parsed = parseFloat(val);
+        return isNaN(parsed) ? 0 : parsed;
+    };
+
     // Total heures
     const heuresElement = document.getElementById('total-heures');
     if (heuresElement) {
-        heuresElement.textContent = (data.total_heures || 0).toFixed(1) + 'h';
+        heuresElement.textContent = safeFloat(data.total_heures).toFixed(1) + 'h';
     }
-    
+
     // Heures facturables
     const facturablesElement = document.getElementById('heures-facturables');
     if (facturablesElement) {
-        facturablesElement.textContent = (data.heures_facturables || 0).toFixed(1) + 'h';
+        facturablesElement.textContent = safeFloat(data.heures_facturables).toFixed(1) + 'h';
     }
-    
+
     // Taux de chargeabilité
     const chargeabiliteElement = document.getElementById('taux-chargeabilite');
     if (chargeabiliteElement) {
-        chargeabiliteElement.textContent = (data.taux_chargeabilite || 0).toFixed(1) + '%';
+        chargeabiliteElement.textContent = safeFloat(data.taux_chargeabilite).toFixed(1) + '%';
     }
-    
+
     // Missions travaillées
     const missionsElement = document.getElementById('missions-travaillees');
     if (missionsElement) {
         missionsElement.textContent = data.missions_travaillees || 0;
     }
-    
+
     // Temps validés
     const validesElement = document.getElementById('temps-valides');
     if (validesElement) {
         validesElement.textContent = data.temps_valides || 0;
     }
-    
+
     // Temps en attente
     const attenteElement = document.getElementById('temps-en-attente');
     if (attenteElement) {
@@ -189,7 +209,7 @@ function updateKPIs(data) {
 // Initialiser les graphiques
 function initializeCharts() {
     console.log('📊 Initialisation des graphiques...');
-    
+
     // Graphique d'évolution temporelle
     const timelineCtx = document.getElementById('timelineChart');
     if (timelineCtx) {
@@ -242,7 +262,7 @@ function initializeCharts() {
             }
         });
     }
-    
+
     // Graphique de répartition
     const typeCtx = document.getElementById('typeChart');
     if (typeCtx) {
@@ -279,13 +299,13 @@ function initializeCharts() {
 // Mettre à jour le graphique de timeline
 function updateTimelineChart(evolution) {
     console.log('📊 Mise à jour timeline:', evolution);
-    
+
     // Vérifier si les graphiques existent
     if (!hoursChart) {
         console.warn('⚠️ Graphique timeline non initialisé');
         return;
     }
-    
+
     // Gérer le cas où il n'y a pas de données
     if (!evolution || evolution.length === 0) {
         console.log('📊 Aucune donnée temporelle, affichage du message');
@@ -293,27 +313,27 @@ function updateTimelineChart(evolution) {
         showEmptyChartMessage('typeChart', 'Aucune donnée disponible', 'Les heures saisies apparaîtront ici');
         return;
     }
-    
+
     // Masquer les messages vides si présents
     hideEmptyChartMessages();
-    
+
     const labels = evolution.map(e => {
         const date = new Date(e.jour);
         return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
     });
     const totalHeures = evolution.map(e => e.total_heures || 0);
     const heuresFacturables = evolution.map(e => e.heures_facturables || 0);
-    
+
     hoursChart.data.labels = labels;
     hoursChart.data.datasets[0].data = totalHeures;
     hoursChart.data.datasets[1].data = heuresFacturables;
     hoursChart.update();
-    
+
     // Mettre à jour le graphique de type
     if (typeChart && totalHeures.length > 0) {
         const totalFact = heuresFacturables.reduce((a, b) => a + b, 0);
         const totalNonFact = totalHeures.reduce((a, b) => a + b, 0) - totalFact;
-        
+
         typeChart.data.datasets[0].data = [totalFact, totalNonFact];
         typeChart.update();
     }
@@ -323,17 +343,17 @@ function updateTimelineChart(evolution) {
 function showEmptyChartMessage(chartId, title, subtitle) {
     const chartCanvas = document.getElementById(chartId);
     if (!chartCanvas) return;
-    
+
     const chartContainer = chartCanvas.closest('.chart-container');
     if (!chartContainer) return;
-    
+
     // Masquer le canvas
     chartCanvas.style.display = 'none';
-    
+
     // Vérifier si un message existe déjà
     let emptyMessage = chartContainer.querySelector('.empty-chart-message');
     if (emptyMessage) return; // Message déjà affiché
-    
+
     // Créer le message
     emptyMessage = document.createElement('div');
     emptyMessage.className = 'empty-chart-message text-center text-muted py-5';
@@ -342,7 +362,7 @@ function showEmptyChartMessage(chartId, title, subtitle) {
         <p class="fw-bold mb-1">${title}</p>
         <small class="text-muted">${subtitle}</small>
     `;
-    
+
     chartContainer.appendChild(emptyMessage);
 }
 
@@ -350,7 +370,7 @@ function showEmptyChartMessage(chartId, title, subtitle) {
 function hideEmptyChartMessages() {
     const emptyMessages = document.querySelectorAll('.empty-chart-message');
     emptyMessages.forEach(msg => msg.remove());
-    
+
     // Réafficher les canvas
     const chartCanvases = document.querySelectorAll('canvas[id$="Chart"]');
     chartCanvases.forEach(canvas => canvas.style.display = 'block');
@@ -359,19 +379,19 @@ function hideEmptyChartMessages() {
 // Mettre à jour les missions actives
 function updateMissionsActives(missions) {
     console.log('📋 Mise à jour missions actives:', missions);
-    
+
     const tbody = document.getElementById('missions-tbody');
     if (!tbody) return;
-    
+
     if (!missions || missions.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Aucune mission active</td></tr>';
         return;
     }
-    
+
     const rows = missions.map(mission => {
         const statut = mission.statut || 'EN_COURS';
         const statutBadge = statut === 'EN_COURS' ? 'primary' : 'warning';
-        
+
         return `
             <tr>
                 <td>${mission.mission_nom || 'Sans nom'}</td>
@@ -379,12 +399,12 @@ function updateMissionsActives(missions) {
                 <td class="text-center">
                     <span class="badge bg-${statutBadge}">${statut}</span>
                 </td>
-                <td class="text-end">${(mission.heures_passees || 0).toFixed(1)}h</td>
+                <td class="text-end">${parseFloat(mission.heures_passees || 0).toFixed(1)}h</td>
                 <td>${formatDate(mission.date_fin)}</td>
             </tr>
         `;
     }).join('');
-    
+
     tbody.innerHTML = rows;
 }
 
@@ -411,3 +431,165 @@ window.dashboardPersonnel = {
     updateKPIs,
     currentPeriod
 };
+
+// Mettre à jour le tableau des opportunités gérées
+function populateOpportunitiesManaged(opportunities, count) {
+    const tbody = document.getElementById('opp-managed-tbody');
+    const badge = document.getElementById('opp-managed-count');
+
+    if (badge) badge.textContent = count || 0;
+    if (!tbody) return;
+
+    if (!opportunities || opportunities.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Aucune opportunité en charge</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = opportunities.map(opp => `
+        <tr>
+            <td><a href="/opportunities.html?id=${opp.id}" class="text-decoration-none fw-bold">${opp.nom || 'Sans nom'}</a></td>
+            <td>${opp.client_nom || 'Non défini'}</td>
+            <td>${formatOpportunityStatus(opp.statut)}</td>
+            <td class="text-end fw-bold">${formatCurrency(opp.montant_estime)}</td>
+        </tr>
+    `).join('');
+}
+
+// Mettre à jour le tableau des opportunités créées
+function populateOpportunitiesCreated(opportunities, count) {
+    const tbody = document.getElementById('opp-created-tbody');
+    const badge = document.getElementById('opp-created-count');
+
+    if (badge) badge.textContent = count || 0;
+    if (!tbody) return;
+
+    if (!opportunities || opportunities.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Aucune opportunité créée</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = opportunities.map(opp => `
+        <tr>
+            <td><a href="/opportunities.html?id=${opp.id}" class="text-decoration-none fw-bold">${opp.nom || 'Sans nom'}</a></td>
+            <td>${opp.client_nom || 'Non défini'}</td>
+            <td>${formatOpportunityStatus(opp.statut)}</td>
+            <td>${formatDate(opp.created_at)}</td>
+        </tr>
+    `).join('');
+}
+
+// Mettre à jour le tableau des campagnes suivies
+function populateCampaignsManaged(campaigns, count) {
+    const tbody = document.getElementById('camp-managed-tbody');
+    const badge = document.getElementById('camp-managed-count');
+
+    if (badge) badge.textContent = count || 0;
+    if (!tbody) return;
+
+    if (!campaigns || campaigns.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Aucune campagne suivie</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = campaigns.map(camp => `
+        <tr>
+            <td><a href="/campaign-execution.html?id=${camp.id}" class="text-decoration-none fw-bold">${camp.name || 'Sans nom'}</a></td>
+            <td>${formatCampaignChannel(camp.channel)}</td>
+            <td>${formatCampaignStatus(camp.status)}</td>
+            <td class="text-center"><span class="badge bg-secondary rounded-pill">${camp.companies_count || 0}</span></td>
+        </tr>
+    `).join('');
+}
+
+// Mettre à jour le tableau des campagnes créées
+function populateCampaignsCreated(campaigns, count) {
+    const tbody = document.getElementById('camp-created-tbody');
+    const badge = document.getElementById('camp-created-count');
+
+    if (badge) badge.textContent = count || 0;
+    if (!tbody) return;
+
+    if (!campaigns || campaigns.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Aucune campagne créée</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = campaigns.map(camp => `
+        <tr>
+            <td><a href="/prospecting-campaign-summary.html?id=${camp.id}" class="text-decoration-none fw-bold">${camp.name || 'Sans nom'}</a></td>
+            <td>${formatCampaignChannel(camp.channel)}</td>
+            <td>${formatCampaignStatus(camp.status)}</td>
+            <td>${formatDate(camp.created_at)}</td>
+        </tr>
+    `).join('');
+}
+
+// Formatage du statut d'opportunité
+function formatOpportunityStatus(status) {
+    const styles = {
+        'NOUVELLE': 'bg-info',
+        'EN_COURS': 'bg-primary',
+        'GAGNEE': 'bg-success',
+        'PERDUE': 'bg-danger',
+        'ABANDONNEE': 'bg-secondary'
+    };
+    const label = status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase().replace('_', ' ') : 'Inconnu';
+    return `<span class="badge ${styles[status] || 'bg-light text-dark'}">${label}</span>`;
+}
+
+// Formatage du statut de campagne
+function formatCampaignStatus(status) {
+    const styles = {
+        'DRAFT': 'bg-secondary',
+        'PLANNED': 'bg-info',
+        'IN_PROGRESS': 'bg-primary',
+        'COMPLETED': 'bg-success',
+        'CANCELLED': 'bg-danger'
+    };
+    const labels = {
+        'DRAFT': 'Brouillon',
+        'PLANNED': 'Planifiée',
+        'IN_PROGRESS': 'En cours',
+        'COMPLETED': 'Terminée',
+        'CANCELLED': 'Annulée'
+    };
+    return `<span class="badge ${styles[status] || 'bg-light text-dark'}">${labels[status] || status}</span>`;
+}
+
+// Formatage du canal de campagne
+function formatCampaignChannel(channel) {
+    const icons = {
+        'EMAIL': '<i class="fas fa-envelope text-primary" title="Email"></i>',
+        'LINKEDIN': '<i class="fab fa-linkedin text-info" title="LinkedIn"></i>',
+        'PHONE': '<i class="fas fa-phone text-success" title="Téléphone"></i>'
+    };
+    return icons[channel] || channel || '-';
+}
+
+// Formatage devise
+function formatCurrency(amount) {
+    // Utiliser la config globale si disponible, sinon fallback
+    if (typeof CURRENCY_CONFIG !== 'undefined' && CURRENCY_CONFIG.format) {
+        return CURRENCY_CONFIG.format(amount);
+    }
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(amount || 0); // Default fallback
+}
+
+// Mettre à jour le tableau des tâches travaillées
+function populateTasksWorked(tasks) {
+    const tbody = document.getElementById('tasks-worked-tbody');
+    if (!tbody) return;
+
+    if (!tasks || tasks.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Aucune tâche récente</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = tasks.map(task => `
+        <tr>
+            <td class="fw-bold">${task.task_nom || 'Sans nom'}</td>
+            <td>${task.mission_nom || 'Non défini'}</td>
+            <td class="text-end fw-bold">${parseFloat(task.heures_passees || 0).toFixed(1)}h</td>
+        </tr>
+    `).join('');
+}

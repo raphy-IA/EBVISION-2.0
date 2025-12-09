@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Personnel</title>
-    
+
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%232c3e50'/%3E%3Ccircle cx='50' cy='35' r='12' fill='%23fff'/%3E%3Cpath d='M 50 50 Q 35 50 30 65 Q 28 72 30 80 L 70 80 Q 72 72 70 65 Q 65 50 50 50' fill='%23fff'/%3E%3C/svg%3E">
-    
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%232c3e50'/%3E%3Ccircle cx='50' cy='35' r='12' fill='%23fff'/%3E%3Cpath d='M 50 50 Q 35 50 30 65 Q 28 72 30 80 L 70 80 Q 72 72 70 65 Q 65 50 50 50' fill='%23fff'/%3E%3C/svg%3E">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -17,7 +19,7 @@
     <!-- Custom CSS -->
     <link href="css/modern-sidebar.css" rel="stylesheet">
     <link href="css/app-title.css" rel="stylesheet">
-    
+
     <!-- Scripts d'authentification -->
     <script src="js/auth.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -27,7 +29,7 @@
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
-    
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -37,86 +39,86 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
         }
-        
+
         .page-wrapper {
             display: flex;
             min-height: 100vh;
         }
-        
+
         .main-content-area {
             flex-grow: 1;
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .dashboard-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 2rem;
             border-radius: 15px;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
-        
+
         .kpi-card {
             background: white;
             border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
             border-left: 4px solid #667eea;
             transition: transform 0.3s ease;
         }
-        
+
         .kpi-card:hover {
             transform: translateY(-5px);
         }
-        
+
         .kpi-card.success {
             border-left-color: #27ae60;
         }
-        
+
         .kpi-card.warning {
             border-left-color: #f39c12;
         }
-        
+
         .kpi-card.info {
             border-left-color: #3498db;
         }
-        
+
         .kpi-number {
             font-size: 2.5rem;
             font-weight: bold;
             color: var(--primary-color);
             margin-bottom: 0.5rem;
         }
-        
+
         .kpi-label {
             color: #6c757d;
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .chart-container {
             background: white;
             border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
             height: 400px;
             max-height: 400px;
         }
-        
+
         .chart-container canvas {
             max-height: 300px !important;
         }
-        
+
         .chart-title {
             font-size: 1.2rem;
             font-weight: 600;
@@ -125,16 +127,16 @@
             padding-bottom: 0.5rem;
             border-bottom: 2px solid #e9ecef;
         }
-        
+
         @media (max-width: 768px) {
             .page-wrapper {
                 flex-direction: column;
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
-            
+
             .kpi-number {
                 font-size: 2rem;
             }
@@ -143,17 +145,18 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
         <i class="fas fa-bars"></i>
     </button>
-    
+
     <div class="page-wrapper">
         <!-- Sidebar Container -->
         <div class="sidebar-container">
@@ -180,7 +183,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Profil Utilisateur -->
                 <div class="row mb-4">
                     <div class="col-md-12">
@@ -228,7 +231,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-xl-4 col-md-6">
                         <div class="kpi-card warning">
@@ -298,6 +301,142 @@
                         </div>
                     </div>
                 </div>
+
+
+                <!-- Tâches Récentes -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="chart-container" style="height: auto; max-height: none;">
+                            <div class="chart-title d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-tasks me-2"></i>Mes Tâches Récentes</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Tâche</th>
+                                            <th>Mission</th>
+                                            <th class="text-end">Heures passées</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tasks-worked-tbody">
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted">Chargement...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opportunités -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="chart-container" style="height: auto; max-height: none;">
+                            <div class="chart-title d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-hand-holding-usd me-2"></i>Opportunités en charge</span>
+                                <span class="badge bg-primary" id="opp-managed-count">0</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Client</th>
+                                            <th>Statut</th>
+                                            <th class="text-end">Montant</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="opp-managed-tbody">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted">Chargement...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-container" style="height: auto; max-height: none;">
+                            <div class="chart-title d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-plus-circle me-2"></i>Opportunités créées</span>
+                                <span class="badge bg-info" id="opp-created-count">0</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Client</th>
+                                            <th>Statut</th>
+                                            <th>Date création</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="opp-created-tbody">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted">Chargement...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campagnes -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="chart-container" style="height: auto; max-height: none;">
+                            <div class="chart-title d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-bullhorn me-2"></i>Campagnes suivies</span>
+                                <span class="badge bg-primary" id="camp-managed-count">0</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Canal</th>
+                                            <th>Statut</th>
+                                            <th class="text-center">Entreprises</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="camp-managed-tbody">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted">Chargement...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-container" style="height: auto; max-height: none;">
+                            <div class="chart-title d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-pen-fancy me-2"></i>Campagnes créées</span>
+                                <span class="badge bg-info" id="camp-created-count">0</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Canal</th>
+                                            <th>Statut</th>
+                                            <th>Date création</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="camp-created-tbody">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted">Chargement...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -311,4 +450,5 @@
     <!-- Dashboard Personnel JS -->
     <script src="js/dashboard-personnel.js"></script>
 </body>
+
 </html>

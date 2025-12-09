@@ -1677,34 +1677,44 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
         startDate.setDate(startDate.getDate() - parseInt(period));
 
         // KPIs personnels
-        const personalQuery = `
+        // 1. Récupérer les infos du profil (Indépendant des entrées de temps)
+        const profileQuery = `
             SELECT 
                 COALESCE(c.nom, u.nom) as collaborateur_nom,
                 COALESCE(c.prenom, u.prenom) as collaborateur_prenom,
                 COALESCE(g.nom, 'Administrateur') as grade_nom,
                 COALESCE(d.nom, 'N/A') as division_nom,
-                COALESCE(bu.nom, 'N/A') as business_unit_nom,
-                SUM(te.heures) as total_heures,
-                SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END) as heures_facturables,
-                SUM(CASE WHEN te.type_heures = 'NON_BILLABLE' THEN te.heures ELSE 0 END) as heures_non_facturables,
-                COUNT(DISTINCT te.mission_id) as missions_travaillees,
-                COUNT(CASE WHEN ts.statut = 'VALIDE' THEN 1 END) as temps_valides,
-                COUNT(CASE WHEN ts.statut = 'EN_ATTENTE' THEN 1 END) as temps_en_attente
-            FROM time_entries te
-            LEFT JOIN users u ON te.user_id = u.id
+                COALESCE(bu.nom, 'N/A') as business_unit_nom
+            FROM users u
             LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
             LEFT JOIN divisions d ON c.division_id = d.id
             LEFT JOIN business_units bu ON c.business_unit_id = bu.id
+            WHERE u.id = $1
+        `;
+        const profileResult = await pool.query(profileQuery, [userId]);
+        const profileData = profileResult.rows[0] || {};
+
+        // 2. KPIs personnels (Basé sur les entrées de temps)
+        const statsQuery = `
+            SELECT 
+                SUM(te.heures) as total_heures,
+                SUM(CASE WHEN te.type_heures = 'HC' THEN te.heures ELSE 0 END) as heures_facturables,
+                SUM(CASE WHEN te.type_heures = 'HNC' THEN te.heures ELSE 0 END) as heures_non_facturables,
+                COUNT(DISTINCT te.mission_id) as missions_travaillees,
+                COUNT(CASE WHEN ts.statut = 'VALIDE' THEN 1 END) as temps_valides,
+                COUNT(CASE WHEN ts.statut = 'EN_ATTENTE' THEN 1 END) as temps_en_attente
+            FROM time_entries te
             LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
-            WHERE u.id = $1 
+            WHERE te.user_id = $1 
             AND te.date_saisie >= $2 
             AND te.date_saisie <= $3
-            GROUP BY u.nom, u.prenom, c.nom, c.prenom, g.nom, d.nom, bu.nom
         `;
+        const statsResult = await pool.query(statsQuery, [userId, startDate.toISOString(), endDate.toISOString()]);
+        const kpiData = statsResult.rows[0] || {};
 
-        const personalResult = await pool.query(personalQuery, [userId, startDate.toISOString(), endDate.toISOString()]);
-        const personalData = personalResult.rows[0] || {};
+        // Combiner pour maintenir la structure attendue
+        const personalData = { ...profileData, ...kpiData };
 
         // Taux de chargeabilité personnel
         const tauxChargeabilite = personalData.total_heures > 0 ?
@@ -1752,6 +1762,96 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
 
         const timelineResult = await pool.query(timelineQuery, [userId, startDate.toISOString(), endDate.toISOString()]);
 
+        // 4. Opportunités gérées (Assignées)
+        const opportunitiesManagedQuery = `
+            SELECT 
+                o.id, 
+                o.nom, 
+                c.raison_sociale as client_nom, 
+                o.statut, 
+                o.montant_estime, 
+                o.probabilite,
+                o.date_fermeture_prevue
+            FROM opportunities o
+            LEFT JOIN clients c ON o.client_id = c.id
+            LEFT JOIN collaborateurs col ON o.collaborateur_id = col.id
+            LEFT JOIN users u ON col.user_id = u.id
+            WHERE u.id = $1
+            ORDER BY o.updated_at DESC
+            LIMIT 10
+        `;
+        const oppManagedResult = await pool.query(opportunitiesManagedQuery, [userId]);
+
+        // 5. Opportunités créées
+        const opportunitiesCreatedQuery = `
+            SELECT 
+                o.id, 
+                o.nom, 
+                c.raison_sociale as client_nom, 
+                o.statut, 
+                o.montant_estime, 
+                o.created_at
+            FROM opportunities o
+            LEFT JOIN clients c ON o.client_id = c.id
+            WHERE o.created_by = $1
+            ORDER BY o.created_at DESC
+            LIMIT 10
+        `;
+        const oppCreatedResult = await pool.query(opportunitiesCreatedQuery, [userId]);
+
+        // 6. Campagnes suivies (Responsable)
+        const campaignsManagedQuery = `
+            SELECT 
+                pc.id, 
+                pc.name, 
+                pc.status, 
+                pc.channel, 
+                pc.created_at,
+                (SELECT COUNT(*) FROM prospecting_campaign_companies WHERE campaign_id = pc.id) as companies_count
+            FROM prospecting_campaigns pc
+            LEFT JOIN collaborateurs c ON pc.responsible_id = c.id
+            LEFT JOIN users u ON c.user_id = u.id
+            WHERE u.id = $1
+            ORDER BY pc.created_at DESC
+            LIMIT 10
+        `;
+        const campManagedResult = await pool.query(campaignsManagedQuery, [userId]);
+
+        // 7. Campagnes créées
+        const campaignsCreatedQuery = `
+            SELECT 
+                pc.id, 
+                pc.name, 
+                pc.status, 
+                pc.channel, 
+                pc.created_at,
+                (SELECT COUNT(*) FROM prospecting_campaign_companies WHERE campaign_id = pc.id) as companies_count
+            FROM prospecting_campaigns pc
+            WHERE pc.created_by = $1
+            ORDER BY pc.created_at DESC
+            LIMIT 10
+        `;
+        const campCreatedResult = await pool.query(campaignsCreatedQuery, [userId]);
+
+        // 8. Tâches travaillées
+        const tasksQuery = `
+            SELECT 
+                t.id, 
+                t.libelle as task_nom, 
+                m.nom as mission_nom, 
+                SUM(te.heures) as heures_passees
+            FROM time_entries te
+            JOIN tasks t ON te.task_id = t.id
+            JOIN missions m ON te.mission_id = m.id
+            WHERE te.user_id = $1 
+            AND te.date_saisie >= $2 
+            AND te.date_saisie <= $3
+            GROUP BY t.id, t.libelle, m.nom
+            ORDER BY heures_passees DESC
+            LIMIT 10
+        `;
+        const tasksResult = await pool.query(tasksQuery, [userId, startDate.toISOString(), endDate.toISOString()]);
+
         const responseData = {
             profil: {
                 nom: personalData.collaborateur_nom || '',
@@ -1767,10 +1867,19 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
                 taux_chargeabilite: Math.round(tauxChargeabilite * 10) / 10,
                 missions_travaillees: personalData.missions_travaillees || 0,
                 temps_valides: personalData.temps_valides || 0,
-                temps_en_attente: personalData.temps_en_attente || 0
+                temps_en_attente: personalData.temps_en_attente || 0,
+                opportunities_managed_count: oppManagedResult.rowCount,
+                opportunities_created_count: oppCreatedResult.rowCount,
+                campaigns_managed_count: campManagedResult.rowCount,
+                campaigns_created_count: campCreatedResult.rowCount
             },
             missions_actives: missionsResult.rows,
-            evolution_temporelle: timelineResult.rows
+            tasks_worked: tasksResult.rows,
+            evolution_temporelle: timelineResult.rows,
+            opportunities_managed: oppManagedResult.rows,
+            opportunities_created: oppCreatedResult.rows,
+            campaigns_managed: campManagedResult.rows,
+            campaigns_created: campCreatedResult.rows
         };
 
         res.json({
