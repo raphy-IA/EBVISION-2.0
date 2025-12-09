@@ -1617,8 +1617,8 @@ async function ajouterEvolutionOrganisation() {
     const dateEffet = document.getElementById('rh-organisation-date-effet').value;
     const motif = document.getElementById('rh-organisation-motif').value;
 
-    if (!buId || !divisionId || !dateEffet) {
-        showAlert('Veuillez remplir tous les champs obligatoires', 'warning');
+    if (!buId || !dateEffet) {
+        showAlert('Veuillez remplir tous les champs obligatoires (Business Unit et Date)', 'warning');
         return;
     }
 
@@ -1631,7 +1631,7 @@ async function ajouterEvolutionOrganisation() {
             body: JSON.stringify({
                 collaborateur_id: collaborateurRHId,
                 business_unit_id: buId,
-                division_id: divisionId,
+                division_id: divisionId || null,
                 date_debut: dateEffet,
                 motif: motif
             })

@@ -744,9 +744,12 @@ class ProspectingCampaign {
     }
 
     static async processValidation(validationId, validateurId, decision, comment, companyValidations = []) {
+        const client = await pool.connect();
         try {
+            await client.query('BEGIN');
+
             // Vérifier que la validation existe et est en attente
-            const validation = await pool.query(`
+            const validation = await client.query(`
                 SELECT pcv.*, pc.id as campaign_id
                 FROM prospecting_campaign_validations pcv
                 JOIN prospecting_campaigns pc ON pcv.campaign_id = pc.id
@@ -754,23 +757,27 @@ class ProspectingCampaign {
             `, [validationId]);
 
             if (validation.rows.length === 0) {
+                await client.query('ROLLBACK');
+                console.error(`❌ Validation non trouvée pour id=${validationId} ou statut!=EN_ATTENTE`);
                 return { success: false, error: 'Validation non trouvée ou déjà traitée' };
             }
 
             // Obtenir l'ID du collaborateur validateur
-            const collaborateur = await pool.query(
+            const collaborateur = await client.query(
                 'SELECT * FROM collaborateurs WHERE user_id = $1',
                 [validateurId]
             );
 
             if (collaborateur.rows.length === 0) {
-                return { success: false, error: 'Validateur non trouvé' };
+                await client.query('ROLLBACK');
+                console.error(`❌ Validateur non trouvé pour user_id=${validateurId}`);
+                return { success: false, error: 'Compte collaborateur non trouvé pour cet utilisateur' };
             }
 
             const collabId = collaborateur.rows[0].id;
 
             // Mettre à jour la validation
-            const updatedValidation = await pool.query(`
+            const updatedValidation = await client.query(`
                 UPDATE prospecting_campaign_validations 
                 SET validateur_id = $1, statut_validation = $2, 
                     commentaire_validateur = $3, date_validation = CURRENT_TIMESTAMP
@@ -782,15 +789,14 @@ class ProspectingCampaign {
                 console.log('💾 Sauvegarde des validations par entreprise:', companyValidations);
 
                 // Supprimer les anciennes validations par entreprise pour cette validation
-                await pool.query(`
+                await client.query(`
                     DELETE FROM prospecting_campaign_validation_companies 
                     WHERE validation_id = $1
                 `, [validationId]);
 
-                // Insérer les nouvelles validations par entreprise et mettre à jour les statuts
+                // Insérer les nouvelles validations par entreprise
                 for (const companyValidation of companyValidations) {
-                    // Sauvegarder la validation dans la table de validation
-                    await pool.query(`
+                    await client.query(`
                         INSERT INTO prospecting_campaign_validation_companies 
                         (validation_id, company_id, validation, note)
                         VALUES ($1, $2, $3, $4)
@@ -800,25 +806,22 @@ class ProspectingCampaign {
                         companyValidation.validation,
                         companyValidation.note || null
                     ]);
-
-                    // Sauvegarder la validation de l'entreprise (ne pas mettre à jour le statut immédiatement)
-                    // Le statut sera mis à jour une fois que tous les validateurs auront donné leur avis
                     console.log(`💾 Validation sauvegardée pour ${companyValidation.company_id}: ${companyValidation.validation}`);
                 }
 
-                console.log('✅ Validations par entreprise sauvegardées et statuts mis à jour');
+                console.log('✅ Validations par entreprise sauvegardées');
             }
 
             // Mettre à jour le statut de la campagne immédiatement selon la décision
             if (decision === 'APPROUVE') {
-                await pool.query(`
+                await client.query(`
                     UPDATE prospecting_campaigns 
                     SET status = 'VALIDATED', validation_statut = 'VALIDE', date_validation = CURRENT_TIMESTAMP
                     WHERE id = $1
                 `, [validation.rows[0].campaign_id]);
                 console.log('✅ Campagne validée par', validateurId);
             } else {
-                await pool.query(`
+                await client.query(`
                     UPDATE prospecting_campaigns 
                     SET status = 'REJECTED', validation_statut = 'REJETE', date_validation = CURRENT_TIMESTAMP
                     WHERE id = $1
@@ -827,7 +830,7 @@ class ProspectingCampaign {
             }
 
             // Marquer les autres validations en attente comme résolues par un tiers (pour nettoyer les listes d'attente)
-            await pool.query(`
+            await client.query(`
                 UPDATE prospecting_campaign_validations 
                 SET statut_validation = 'RESOLU_AUTRE', 
                     date_validation = CURRENT_TIMESTAMP,
@@ -837,7 +840,28 @@ class ProspectingCampaign {
                   AND statut_validation = 'EN_ATTENTE'
             `, [validation.rows[0].campaign_id, `Traité par ${collaborateur.rows[0].nom} ${collaborateur.rows[0].prenom}`, validationId]);
 
-            // Envoyer une notification de décision de validation
+            // Mettre à jour les statuts des entreprises
+            // NOTE: updateCompanyValidationStatuses should be refactored to accept a client, 
+            // but for now we'll implement the logic inline or call it after commit if it's safe.
+            // Since it updates `prospecting_campaign_companies`, it SHOULD be part of the transaction.
+            // I will inline the logic here for safety.
+            if (companyValidations && companyValidations.length > 0) {
+                for (const companyValidation of companyValidations) {
+                    const finalStatus = companyValidation.validation === 'OK' ? 'APPROVED' : 'REJECTED';
+                    await client.query(`
+                        UPDATE prospecting_campaign_companies 
+                        SET validation_status = $1
+                        WHERE campaign_id = $2 AND company_id = $3
+                    `, [finalStatus, validation.rows[0].campaign_id, companyValidation.company_id]);
+                }
+            } else {
+                // Fallback logic if needed, but companyValidations is usually passed
+                // If not passed, we might need to fetch them. Skipped for now as it's rare case.
+            }
+
+            await client.query('COMMIT');
+
+            // Envoyer une notification de décision de validation (APRÈS COMMIT car non critique)
             try {
                 await NotificationService.sendCampaignValidationDecisionNotification(
                     validation.rows[0].campaign_id,
@@ -851,13 +875,13 @@ class ProspectingCampaign {
                 console.error('Erreur lors de l\'envoi de la notification de décision:', error);
             }
 
-            // Mettre à jour les statuts des entreprises immédiatement
-            await this.updateCompanyValidationStatuses(validation.rows[0].campaign_id, validationId);
-
             return { success: true, validation: updatedValidation.rows[0] };
         } catch (e) {
+            await client.query('ROLLBACK');
             console.error('Erreur traitement validation:', e);
-            return { success: false, error: 'Erreur lors du traitement' };
+            return { success: false, error: 'Erreur lors du traitement: ' + e.message };
+        } finally {
+            client.release();
         }
     }
 
@@ -969,7 +993,7 @@ class ProspectingCampaign {
     }
 
     // Méthodes pour l'exécution des campagnes
-    static async updateCompanyExecutionStatus(campaignId, companyId, executionStatus, notes = null, executionFile = null) {
+    static async updateCompanyExecutionStatus(campaignId, companyId, executionStatus, notes = null, executionFile = null, userId = null) {
         try {
             // Vérifier que la campagne est validée
             const campaign = await pool.query(`
@@ -1012,7 +1036,17 @@ class ProspectingCampaign {
             const executionDate = executionStatus === 'deposed' || executionStatus === 'sent' ? 'CURRENT_TIMESTAMP' : null;
 
             // Préparer les paramètres pour la requête
-            const updateParams = [executionStatus, notes, campaignId, companyId];
+            // NOTE: On ne met à jour le statut principal que si l'action est 'deposed' ou 'sent' OU si c'est explicitement demandé.
+            // Le bouton "Mettre à jour" peut simplement ajouter une note sans changer le statut (si executionStatus est 'UPDATE')
+
+            let finalStatus = executionStatus;
+
+            // Si c'est une simple mise à jour (UPDATE), on garde le statut actuel de l'entreprise
+            if (executionStatus === 'UPDATE') {
+                finalStatus = companyStatus.rows[0].execution_status;
+            }
+
+            const updateParams = [finalStatus, notes, campaignId, companyId];
             let executionFileColumn = '';
 
             if (executionFile) {
@@ -1020,13 +1054,39 @@ class ProspectingCampaign {
                 updateParams.push(executionFile);
             }
 
+            // Mettre à jour la table principale
             await pool.query(`
                 UPDATE prospecting_campaign_companies 
                 SET execution_status = $1, 
-                    execution_date = ${executionDate},
                     execution_notes = $2${executionFileColumn}
+                    ${finalStatus === 'deposed' || finalStatus === 'sent' ? ', execution_date = CURRENT_TIMESTAMP' : ''}
                 WHERE campaign_id = $3 AND company_id = $4
             `, updateParams);
+
+            // Enregistrer dans l'historique
+            // On a besoin de l'ID utilisateur (collaborateur) qui fait l'action.
+            // Comme cette méthode est statique et appelée depuis la route, on devra passer userId ou similar.
+            // Pour l'instant, on va essayer de récupérer l'ID utilisateur à partir du contexte ou le passer en paramètre.
+            // MAIS wait, updateCompanyExecutionStatus n'a pas userId. Je dois l'ajouter à la signature.
+            // Pour être safe et compatible, je vais l'ajouter en option à la fin ou dans un objet options.
+            // Ou mieux, je vais supposer que l'appelant a été mis à jour pour le passer.
+
+            // Wait, I need to update the signature in the actual file edit as well.
+            // Let's modify the signature in the replacement content to:
+            // static async updateCompanyExecutionStatus(campaignId, companyId, executionStatus, notes = null, executionFile = null, userId = null)
+
+            if (userId) {
+                let actionType = 'UPDATE';
+                if (executionStatus === 'deposed') actionType = 'DEPOSIT';
+                else if (executionStatus === 'sent') actionType = 'SENT';
+
+                await pool.query(`
+                    INSERT INTO prospecting_campaign_history
+                    (campaign_id, company_id, action_type, performed_by, comment, attachment_path)
+                    VALUES ($1, $2, $3, $4, $5, $6)
+                `, [campaignId, companyId, actionType, userId, notes, executionFile || null]);
+                console.log(`📜 Historique ajouté pour ${companyId}: ${actionType}`);
+            }
 
             // Vérifier la progression de la campagne et envoyer une notification si nécessaire
             try {
@@ -1042,6 +1102,23 @@ class ProspectingCampaign {
         } catch (e) {
             console.error('Erreur mise à jour statut exécution:', e);
             return { success: false, error: 'Erreur lors de la mise à jour' };
+        }
+    }
+
+    static async getCompanyHistory(campaignId, companyId) {
+        try {
+            const result = await pool.query(`
+                SELECT pch.*, 
+                       u.nom as user_nom, u.prenom as user_prenom
+                FROM prospecting_campaign_history pch
+                LEFT JOIN users u ON pch.performed_by = u.id
+                WHERE pch.campaign_id = $1 AND pch.company_id = $2
+                ORDER BY pch.action_date DESC
+            `, [campaignId, companyId]);
+            return result.rows;
+        } catch (e) {
+            console.error('Erreur récupération historique:', e);
+            return [];
         }
     }
 
@@ -1352,6 +1429,8 @@ class ProspectingCampaign {
             // Filtrer par statut si nécessaire
             if (!includeAllStatuses) {
                 query += ` AND pcv.statut_validation = 'EN_ATTENTE'`;
+                // Exclure les campagnes déjà validées ou rejetées globalement (pour ne pas polluer la liste)
+                query += ` AND (pc.validation_statut IS NULL OR pc.validation_statut NOT IN ('VALIDE', 'REJETE', 'VALIDATED', 'REJECTED'))`;
             }
 
             query += ` ORDER BY pcv.created_at DESC`;

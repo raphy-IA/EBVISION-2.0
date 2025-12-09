@@ -435,7 +435,7 @@ class Collaborateur {
                 SELECT grade_id, date_debut
                 FROM evolution_grades
                 WHERE collaborateur_id = $1 AND date_fin IS NULL
-                ORDER BY date_debut DESC
+                ORDER BY date_debut DESC, created_at DESC
                 LIMIT 1
             `;
             const gradeResult = await pool.query(gradeQuery, [collaborateurId]);
@@ -446,7 +446,7 @@ class Collaborateur {
                 SELECT poste_id, date_debut
                 FROM evolution_postes
                 WHERE collaborateur_id = $1 AND date_fin IS NULL
-                ORDER BY date_debut DESC
+                ORDER BY date_debut DESC, created_at DESC
                 LIMIT 1
             `;
             const posteResult = await pool.query(posteQuery, [collaborateurId]);
@@ -457,7 +457,7 @@ class Collaborateur {
                 SELECT business_unit_id, division_id, date_debut
                 FROM evolution_organisations
                 WHERE collaborateur_id = $1 AND date_fin IS NULL
-                ORDER BY date_debut DESC
+                ORDER BY date_debut DESC, created_at DESC
                 LIMIT 1
             `;
             const orgResult = await pool.query(orgQuery, [collaborateurId]);

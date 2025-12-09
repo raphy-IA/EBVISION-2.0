@@ -59,10 +59,10 @@ async function checkCampaignAuthorization(campaignId, userId) {
     if (!campaign) {
         return { authorized: false, error: 'Campagne non trouvée' };
     }
-    
+
     // Vérifier si l'utilisateur est le créateur de la campagne
     const isCreator = campaign.created_by === userId;
-    
+
     // Vérifier si l'utilisateur est responsable de la BU/Division
     let isManager = false;
     if (campaign.business_unit_id) {
@@ -77,7 +77,7 @@ async function checkCampaignAuthorization(campaignId, userId) {
             }
         }
     }
-    
+
     if (campaign.division_id) {
         const Manager = require('../models/Manager');
         const divManagers = await Manager.getDivisionManagers(campaign.division_id);
@@ -90,12 +90,12 @@ async function checkCampaignAuthorization(campaignId, userId) {
             }
         }
     }
-    
-    return { 
-        authorized: isCreator || isManager, 
-        isCreator, 
+
+    return {
+        authorized: isCreator || isManager,
+        isCreator,
         isManager,
-        campaign 
+        campaign
     };
 }
 
@@ -138,16 +138,16 @@ router.put('/sources/:id', authenticateToken, async (req, res) => {
         if (!name || name.trim() === '') {
             return res.status(400).json({ success: false, error: 'Nom requis' });
         }
-        
-        const updated = await CompanySource.update(req.params.id, { 
-            name: name.trim(), 
-            description: description || null 
+
+        const updated = await CompanySource.update(req.params.id, {
+            name: name.trim(),
+            description: description || null
         });
-        
+
         if (!updated) {
             return res.status(404).json({ success: false, error: 'Source non trouvée' });
         }
-        
+
         res.json({ success: true, data: updated });
     } catch (e) {
         console.error('Erreur modification source:', e);
@@ -166,7 +166,7 @@ router.delete('/sources/:id', authenticateToken, async (req, res) => {
             'SELECT COUNT(*) as count FROM companies WHERE source_id = $1',
             [req.params.id]
         );
-        
+
         if (parseInt(companiesCount.rows[0].count) > 0) {
             return res.status(400).json({
                 success: false,
@@ -174,12 +174,12 @@ router.delete('/sources/:id', authenticateToken, async (req, res) => {
                 companiesCount: parseInt(companiesCount.rows[0].count)
             });
         }
-        
+
         const deleted = await CompanySource.delete(req.params.id);
         if (!deleted) {
             return res.status(404).json({ success: false, error: 'Source non trouvée' });
         }
-        
+
         res.json({ success: true, message: 'Source supprimée avec succès' });
     } catch (e) {
         console.error('Erreur suppression source:', e);
@@ -195,7 +195,7 @@ router.delete('/sources/:id/companies', authenticateToken, async (req, res) => {
             'SELECT COUNT(*) as count FROM companies WHERE source_id = $1',
             [req.params.id]
         );
-        
+
         // Supprimer seulement les entreprises non associées aux campagnes
         const result = await pool.query(`
             DELETE FROM companies 
@@ -205,10 +205,10 @@ router.delete('/sources/:id/companies', authenticateToken, async (req, res) => {
                 FROM prospecting_campaign_companies
             )
         `, [req.params.id]);
-        
+
         const deletedCount = result.rowCount;
         const remainingCount = parseInt(beforeCount.rows[0].count) - deletedCount;
-        
+
         res.json({
             success: true,
             message: `${deletedCount} entreprises supprimées`,
@@ -229,36 +229,36 @@ router.post('/sources/:sourceId/import', authenticateToken, upload.single('file'
     try {
         console.log('🔥 [CSV] Import démarré pour source:', req.params.sourceId);
         if (!req.file) return res.status(400).json({ success: false, error: 'Fichier manquant' });
-        
+
         console.log('🔥 [CSV] Fichier reçu:', req.file.originalname, 'Taille:', req.file.size);
-        
+
         // Parser CSV amélioré (support ; et , comme séparateurs)
         const content = fs.readFileSync(req.file.path, 'utf8');
         console.log('🔥 [CSV] Contenu brut (100 premiers chars):', content.substring(0, 100));
-        
+
         const lines = content.split(/\r?\n/).filter(l => l.trim().length > 0);
         console.log('🔥 [CSV] Nombre de lignes:', lines.length);
-        
+
         if (lines.length === 0) {
             return res.status(400).json({ success: false, error: 'Fichier vide' });
         }
-        
+
         // Détecter le séparateur (virgule ou point-virgule)
         const firstLine = lines[0];
         const separator = firstLine.includes(';') ? ';' : ',';
         console.log('🔥 [CSV] Séparateur détecté:', separator);
-        
+
         const header = firstLine.split(separator).map(h => h.trim().toLowerCase().replace(/"/g, ''));
         console.log('🔥 [CSV] En-têtes détectés:', header);
-        
+
         const dataLines = lines.slice(1);
         console.log('🔥 [CSV] Lignes de données:', dataLines.length);
-        
+
         const rows = dataLines.map((line, index) => {
             const cols = line.split(separator).map(col => col.trim().replace(/"/g, ''));
             const obj = {};
             header.forEach((h, i) => obj[h] = cols[i] || '');
-            
+
             const mappedRow = {
                 name: obj.raison_sociale || obj.name || obj.nom || obj.company || obj.entreprise || '',
                 industry: obj.activite_principale || obj.industry || obj.secteur || obj.sector || obj.activite || null,
@@ -272,19 +272,19 @@ router.post('/sources/:sourceId/import', authenticateToken, upload.single('file'
                 size_label: obj.regime || obj.forme_juridique || obj.size || obj.effectif || obj.taille || obj.employees || null,
                 sigle: obj.sigle || obj.acronyme || obj.abbreviation || obj.code || null
             };
-            
+
             if (index < 3) { // Log les 3 premières lignes pour debug
                 console.log(`🔥 [CSV] Ligne ${index + 1} mappée:`, mappedRow);
             }
-            
+
             return mappedRow;
         }).filter(r => r.name && r.name.length > 0);
 
         console.log('🔥 [CSV] Lignes valides après filtrage:', rows.length);
-        
+
         if (rows.length === 0) {
-            return res.status(400).json({ 
-                success: false, 
+            return res.status(400).json({
+                success: false,
                 error: 'Aucune entreprise valide trouvée. Vérifiez que le fichier contient une colonne "nom", "name" ou "entreprise"',
                 debug: { header, separator, totalLines: lines.length }
             });
@@ -292,15 +292,15 @@ router.post('/sources/:sourceId/import', authenticateToken, upload.single('file'
 
         const result = await Company.bulkInsertFromRows(req.params.sourceId, rows);
         console.log('🔥 [CSV] Résultat insertion:', result);
-        res.json({ 
-            success: true, 
-            message: result.message, 
-            data: { 
+        res.json({
+            success: true,
+            message: result.message,
+            data: {
                 inserted: result.inserted,
                 skipped: result.skipped,
                 errors: result.errors,
                 total: result.total
-            } 
+            }
         });
     } catch (e) {
         console.error('🔥 [CSV] Import entreprises échoué:', e);
@@ -332,10 +332,10 @@ router.get('/companies/filters', authenticateToken, async (req, res) => {
 
 router.get('/companies/search', authenticateToken, async (req, res) => {
     const { q, source_id, industry, city, limit, offset, sort_by, sort_order } = req.query;
-    const result = await Company.search({ 
-        q, source_id, industry, city, 
-        limit: parseInt(limit)||20, 
-        offset: parseInt(offset)||0,
+    const result = await Company.search({
+        q, source_id, industry, city,
+        limit: parseInt(limit) || 20,
+        offset: parseInt(offset) || 0,
         sort_by,
         sort_order
     });
@@ -364,7 +364,7 @@ router.delete('/companies/:id', authenticateToken, async (req, res) => {
     try {
         const deleted = await Company.delete(req.params.id);
         if (!deleted) return res.status(404).json({ success: false, error: 'Entreprise non trouvée' });
-        
+
         if (deleted.hasDependencies) {
             return res.status(400).json({
                 success: false,
@@ -372,7 +372,7 @@ router.delete('/companies/:id', authenticateToken, async (req, res) => {
                 dependencies: deleted.dependencies
             });
         }
-        
+
         res.json({ success: true, message: 'Entreprise supprimée' });
     } catch (e) {
         console.error('Erreur suppression entreprise:', e);
@@ -383,9 +383,9 @@ router.delete('/companies/:id', authenticateToken, async (req, res) => {
 // Créer une nouvelle entreprise
 router.post('/companies', authenticateToken, async (req, res) => {
     try {
-        const { 
-            name, sigle, industry, size_label, email, phone, website, 
-            siret, country, city, address, source_id 
+        const {
+            name, sigle, industry, size_label, email, phone, website,
+            siret, country, city, address, source_id
         } = req.body;
 
         // Validation des champs obligatoires
@@ -410,9 +410,9 @@ router.post('/companies', authenticateToken, async (req, res) => {
         );
 
         if (existingCompany.rows.length > 0) {
-            return res.status(409).json({ 
-                success: false, 
-                error: 'Une entreprise avec ce nom existe déjà dans cette source' 
+            return res.status(409).json({
+                success: false,
+                error: 'Une entreprise avec ce nom existe déjà dans cette source'
             });
         }
 
@@ -441,9 +441,9 @@ router.post('/companies', authenticateToken, async (req, res) => {
                 CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
             ) RETURNING *
         `, [
-            companyData.source_id, companyData.name, companyData.sigle, 
-            companyData.industry, companyData.size_label, companyData.email, 
-            companyData.phone, companyData.website, companyData.siret, 
+            companyData.source_id, companyData.name, companyData.sigle,
+            companyData.industry, companyData.size_label, companyData.email,
+            companyData.phone, companyData.website, companyData.siret,
             companyData.country, companyData.city, companyData.address
         ]);
 
@@ -451,8 +451,8 @@ router.post('/companies', authenticateToken, async (req, res) => {
 
         console.log(`✅ [CREATE] Entreprise créée: ${newCompany.name} (ID: ${newCompany.id}) dans la source ${source_id}`);
 
-        res.status(201).json({ 
-            success: true, 
+        res.status(201).json({
+            success: true,
             message: 'Entreprise créée avec succès',
             data: newCompany
         });
@@ -471,7 +471,7 @@ router.delete('/companies', authenticateToken, async (req, res) => {
             return res.status(400).json({ success: false, error: 'IDs requis sous forme de tableau' });
         }
         const result = await Company.bulkDelete(ids);
-        
+
         if (result.hasDependencies) {
             return res.status(400).json({
                 success: false,
@@ -480,7 +480,7 @@ router.delete('/companies', authenticateToken, async (req, res) => {
                 deleted: result.deleted
             });
         }
-        
+
         res.json({ success: true, message: `${result.deleted} entreprise(s) supprimée(s)` });
     } catch (e) {
         console.error('Erreur suppression en lot:', e);
@@ -521,18 +521,18 @@ router.get('/campaigns/:id/validations', authenticateToken, async (req, res) => 
 router.post('/campaigns/:id/submit-validation', authenticateToken, async (req, res) => {
     try {
         const { validation_level, comment } = req.body;
-        
+
         if (!['DIVISION', 'BUSINESS_UNIT'].includes(validation_level)) {
             return res.status(400).json({ success: false, error: 'Niveau de validation invalide' });
         }
-        
+
         const result = await ProspectingCampaign.submitForValidation(
-            req.params.id, 
-            req.user.id, 
-            validation_level, 
+            req.params.id,
+            req.user.id,
+            validation_level,
             comment
         );
-        
+
         if (result.success) {
             res.json({ success: true, data: result.validation });
         } else {
@@ -548,18 +548,18 @@ router.post('/campaigns/:id/submit-validation', authenticateToken, async (req, r
 router.post('/campaigns/:id/validate', authenticateToken, async (req, res) => {
     try {
         const { validation_id, decision, comment } = req.body;
-        
+
         if (!['APPROUVE', 'REFUSE'].includes(decision)) {
             return res.status(400).json({ success: false, error: 'Décision invalide' });
         }
-        
+
         const result = await ProspectingCampaign.processValidation(
             validation_id,
             req.user.id,
             decision,
             comment
         );
-        
+
         if (result.success) {
             res.json({ success: true, data: result.validation });
         } else {
@@ -578,7 +578,7 @@ router.delete('/campaigns/:id/validations/:validationId', authenticateToken, asy
             req.params.validationId,
             req.user.id
         );
-        
+
         if (result.success) {
             res.json({ success: true, message: 'Validation annulée' });
         } else {
@@ -668,7 +668,7 @@ router.post('/campaigns', authenticateToken, async (req, res) => {
         if (!name) {
             return res.status(400).json({ success: false, error: 'Nom requis' });
         }
-        if (!channel || !['EMAIL','PHYSIQUE'].includes(channel)) {
+        if (!channel || !['EMAIL', 'PHYSIQUE'].includes(channel)) {
             return res.status(400).json({ success: false, error: 'Canal invalide' });
         }
         const created = await ProspectingCampaign.create({ ...req.body, name, channel, created_by: req.user.id });
@@ -693,26 +693,26 @@ router.put('/campaigns/:id/companies/batch', authenticateToken, async (req, res)
     try {
         const { added_company_ids, removed_company_ids } = req.body;
         const campaignId = req.params.id;
-        
+
         console.log('🔥 [API] PUT /campaigns/:id/companies/batch');
         console.log('🔥 [API] Campaign ID:', campaignId);
         console.log('🔥 [API] Ajouts:', added_company_ids?.length || 0);
         console.log('🔥 [API] Suppressions:', removed_company_ids?.length || 0);
-        
+
         // Vérifier que les données sont valides
         if (!Array.isArray(added_company_ids) || !Array.isArray(removed_company_ids)) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'added_company_ids et removed_company_ids doivent être des tableaux' 
+            return res.status(400).json({
+                success: false,
+                error: 'added_company_ids et removed_company_ids doivent être des tableaux'
             });
         }
-        
+
         // Effectuer les ajouts
         let addedResult = { added: 0 };
         if (added_company_ids.length > 0) {
             addedResult = await ProspectingCampaign.addCompanies(campaignId, added_company_ids);
         }
-        
+
         // Effectuer les suppressions
         let removedResult = { removed: 0 };
         if (removed_company_ids.length > 0) {
@@ -723,9 +723,9 @@ router.put('/campaigns/:id/companies/batch', authenticateToken, async (req, res)
                 }
             }
         }
-        
-        res.json({ 
-            success: true, 
+
+        res.json({
+            success: true,
             data: {
                 added: addedResult.added || 0,
                 removed: removedResult.removed || 0,
@@ -742,12 +742,12 @@ router.put('/campaigns/:id/companies/batch', authenticateToken, async (req, res)
 router.delete('/campaigns/:id/companies/:companyId', authenticateToken, async (req, res) => {
     try {
         const { id: campaignId, companyId } = req.params;
-        
+
         console.log('🔥 [API] DELETE /campaigns/:id/companies/:companyId');
         console.log('🔥 [API] Campaign ID:', campaignId, 'Company ID:', companyId);
-        
+
         const result = await ProspectingCampaign.removeCompany(campaignId, companyId);
-        
+
         if (result.success) {
             res.json({ success: true, message: 'Entreprise retirée avec succès' });
         } else {
@@ -765,9 +765,9 @@ router.get('/campaigns', authenticateToken, async (req, res) => {
         const permissionManager = require('../utils/PermissionManager');
         const userBusinessUnits = await permissionManager.getUserBusinessUnits(req.user.id);
         const userBusinessUnitIds = userBusinessUnits.map(bu => bu.id);
-        
+
         console.log(`🔍 Utilisateur ${req.user.id} a accès aux BU:`, userBusinessUnitIds);
-        
+
         const result = await ProspectingCampaign.findAll({ userBusinessUnitIds });
         res.json({ success: true, data: result.campaigns });
     } catch (e) {
@@ -794,21 +794,21 @@ router.get('/campaigns/:id/companies', authenticateToken, async (req, res) => {
     try {
         const { limit, offset } = req.query;
         const campaignId = req.params.id;
-        
+
         console.log('🔥 [API] GET /campaigns/:id/companies - Campaign ID:', campaignId);
         console.log('🔥 [API] Query params - limit:', limit, 'offset:', offset);
-        
-        const result = await ProspectingCampaign.getCompanies(campaignId, { 
-            limit: parseInt(limit)||50, 
-            offset: parseInt(offset)||0 
+
+        const result = await ProspectingCampaign.getCompanies(campaignId, {
+            limit: parseInt(limit) || 50,
+            offset: parseInt(offset) || 0
         });
-        
+
         console.log('🔥 [API] Résultat getCompanies:', {
             companiesCount: result.companies.length,
             pagination: result.pagination,
             firstCompany: result.companies[0] || 'Aucune'
         });
-        
+
         res.json({ success: true, data: result.companies, pagination: result.pagination });
     } catch (e) {
         console.error('🔥 [API] Erreur récupération entreprises de campagne:', e);
@@ -874,7 +874,7 @@ router.get('/campaigns/:campaignId/companies/:companyId', authenticateToken, asy
 router.put('/campaigns/:id', authenticateToken, async (req, res) => {
     try {
         const { name, template_id, responsible_id, scheduled_date, priority, description } = req.body;
-        
+
         // Validation
         if (!name || !name.trim()) {
             return res.status(400).json({ success: false, error: 'Le nom de la campagne est obligatoire' });
@@ -885,7 +885,7 @@ router.put('/campaigns/:id', authenticateToken, async (req, res) => {
         if (!responsible_id) {
             return res.status(400).json({ success: false, error: 'Le responsable est obligatoire' });
         }
-        
+
         const updated = await ProspectingCampaign.update(req.params.id, {
             name: name.trim(),
             template_id,
@@ -894,11 +894,11 @@ router.put('/campaigns/:id', authenticateToken, async (req, res) => {
             priority,
             description: description?.trim()
         });
-        
+
         if (!updated) {
             return res.status(404).json({ success: false, error: 'Campagne non trouvée' });
         }
-        
+
         res.json({ success: true, data: updated, message: 'Campagne mise à jour avec succès' });
     } catch (e) {
         console.error('Erreur modification campagne:', e);
@@ -909,7 +909,7 @@ router.put('/campaigns/:id', authenticateToken, async (req, res) => {
 router.delete('/campaigns/:id', authenticateToken, async (req, res) => {
     try {
         const result = await ProspectingCampaign.delete(req.params.id);
-        
+
         if (result.success) {
             res.json({ success: true, message: 'Campagne supprimée avec succès' });
         } else {
@@ -936,7 +936,7 @@ router.get('/campaigns/:id/validations', authenticateToken, async (req, res) => 
 router.get('/campaigns/:id/validations/:validationId/details', authenticateToken, async (req, res) => {
     try {
         const { id: campaignId, validationId } = req.params;
-        
+
         // Récupérer la validation
         const validation = await ProspectingCampaign.getValidationById(validationId);
         if (!validation) {
@@ -945,10 +945,10 @@ router.get('/campaigns/:id/validations/:validationId/details', authenticateToken
                 error: 'Validation non trouvée'
             });
         }
-        
+
         // Récupérer les validations par entreprise
         const companyValidations = await ProspectingCampaign.getCompanyValidations(validationId);
-        
+
         res.json({
             success: true,
             data: {
@@ -966,14 +966,14 @@ router.get('/campaigns/:id/validations/:validationId/details', authenticateToken
 router.post('/campaigns/:id/validations/:validationId/process', authenticateToken, async (req, res) => {
     try {
         const { decision, comment, company_validations } = req.body;
-        
+
         if (!decision || !['APPROUVE', 'REFUSE'].includes(decision)) {
             return res.status(400).json({
                 success: false,
                 error: 'Décision invalide (APPROUVE ou REFUSE requis)'
             });
         }
-        
+
         const result = await ProspectingCampaign.processValidation(
             req.params.validationId,
             req.user.id,
@@ -981,7 +981,7 @@ router.post('/campaigns/:id/validations/:validationId/process', authenticateToke
             comment,
             company_validations
         );
-        
+
         if (result.success) {
             res.json({
                 success: true,
@@ -1009,10 +1009,10 @@ router.get('/validations', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
         const includeAllStatuses = req.query.all === 'true';
-        
+
         // Récupérer les campagnes pour ce responsable
         const validations = await ProspectingCampaign.getValidationsForUser(userId, includeAllStatuses);
-        
+
         res.json({
             success: true,
             data: validations
@@ -1100,7 +1100,7 @@ router.get('/reports', authenticateToken, async (req, res) => {
 
         const campaignsResult = await pool.query(campaignsQuery, campaignParams);
         const campaigns = campaignsResult.rows;
-        
+
         console.log('📊 Campagnes trouvées:', campaigns.length);
         console.log('📊 Exemple de campagne:', campaigns[0]);
 
@@ -1140,7 +1140,7 @@ router.get('/reports', authenticateToken, async (req, res) => {
 
         const statsResult = await pool.query(statsQuery, campaignParams);
         const stats = statsResult.rows[0];
-        
+
         console.log('📊 Statistiques brutes:', stats);
 
         // Calculer le taux de réussite
@@ -1156,7 +1156,7 @@ router.get('/reports', authenticateToken, async (req, res) => {
             inProgressCampaigns: parseInt(stats.in_progress_campaigns) || 0,
             completedCampaigns: parseInt(stats.completed_campaigns) || 0,
             completionRate: completionRate,
-            
+
             // Métriques d'exécution des campagnes
             totalCompanies: parseInt(stats.total_companies) || 0,
             totalDeposed: parseInt(stats.total_deposed) || 0,
@@ -1164,24 +1164,24 @@ router.get('/reports', authenticateToken, async (req, res) => {
             totalConverted: parseInt(stats.total_converted) || 0,
             totalNotConverted: parseInt(stats.total_not_converted) || 0,
             totalPendingExecution: parseInt(stats.total_pending_execution) || 0,
-            
+
             // Taux de performance
             avgExecutionRate: parseFloat(stats.avg_execution_rate) || 0,
             avgConversionRate: parseFloat(stats.avg_conversion_rate) || 0,
-            
+
             // Calculs dérivés
             executionRate: stats.total_companies > 0 ? Math.round((parseInt(stats.total_deposed) + parseInt(stats.total_sent)) / parseInt(stats.total_companies) * 100) : 0,
             conversionRate: stats.total_companies > 0 ? Math.round(parseInt(stats.total_converted) / parseInt(stats.total_companies) * 100) : 0,
             deposedRate: stats.total_companies > 0 ? Math.round(parseInt(stats.total_deposed) / parseInt(stats.total_companies) * 100) : 0,
             sentRate: stats.total_companies > 0 ? Math.round(parseInt(stats.total_sent) / parseInt(stats.total_companies) * 100) : 0
         };
-        
+
         console.log('📊 Statistiques finales:', statistics);
 
         res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.set('Pragma', 'no-cache');
         res.set('Expires', '0');
-        
+
         res.json({
             success: true,
             data: {
@@ -1208,7 +1208,7 @@ router.post('/campaigns/:id/submit', authenticateToken, async (req, res) => {
     try {
         const campaignId = req.params.id;
         const userId = req.user.id;
-        
+
         // Vérifier que l'utilisateur est le créateur de la campagne
         const campaign = await ProspectingCampaign.findByIdWithDetails(campaignId);
         if (!campaign) {
@@ -1217,7 +1217,7 @@ router.post('/campaigns/:id/submit', authenticateToken, async (req, res) => {
                 error: 'Campagne non trouvée'
             });
         }
-        
+
         // Vérifier les autorisations
         const auth = await checkCampaignAuthorization(campaignId, userId);
         if (!auth.authorized) {
@@ -1232,10 +1232,10 @@ router.post('/campaigns/:id/submit', authenticateToken, async (req, res) => {
                 error: auth.error || 'Vous n\'êtes pas autorisé à soumettre cette campagne'
             });
         }
-        
+
         // Soumettre la campagne pour validation
         const result = await ProspectingCampaign.submitForValidation(campaignId, userId, 'BUSINESS_UNIT', 'Soumission automatique');
-        
+
         if (result.success) {
             res.json({
                 success: true,
@@ -1267,7 +1267,7 @@ router.put('/campaigns/:campaignId/companies/:companyId/execution', authenticate
         const executionStatus = req.body.executionStatus;
         const notes = req.body.notes;
         const userId = req.user.id;
-        
+
         console.log('🔍 [DEBUG] Données reçues:', {
             executionStatus,
             notes,
@@ -1275,14 +1275,14 @@ router.put('/campaigns/:campaignId/companies/:companyId/execution', authenticate
             body: req.body,
             file: req.file
         });
-        
-        if (!executionStatus || !['pending_execution', 'deposed', 'sent', 'failed'].includes(executionStatus)) {
+
+        if (!executionStatus || !['pending_execution', 'deposed', 'sent', 'failed', 'UPDATE'].includes(executionStatus)) {
             return res.status(400).json({
                 success: false,
                 error: 'Statut d\'exécution invalide'
             });
         }
-        
+
         // Vérifier les autorisations
         const auth = await checkCampaignAuthorization(campaignId, userId);
         if (!auth.authorized) {
@@ -1297,16 +1297,16 @@ router.put('/campaigns/:campaignId/companies/:companyId/execution', authenticate
                 error: auth.error || 'Vous n\'êtes pas autorisé à exécuter cette campagne'
             });
         }
-        
+
         // Gérer l'upload de fichier si présent
         let executionFile = null;
         if (req.file) {
             executionFile = req.file.filename;
             console.log(`📁 Fichier sauvegardé: ${executionFile}`);
         }
-        
-        const result = await ProspectingCampaign.updateCompanyExecutionStatus(campaignId, companyId, executionStatus, notes, executionFile);
-        
+
+        const result = await ProspectingCampaign.updateCompanyExecutionStatus(campaignId, companyId, executionStatus, notes, executionFile, userId);
+
         if (result.success) {
             res.json({
                 success: true,
@@ -1329,6 +1329,30 @@ router.put('/campaigns/:campaignId/companies/:companyId/execution', authenticate
 });
 
 /**
+ * GET /api/prospecting/campaigns/:id/companies/:companyId/history
+ * Récupérer l'historique d'exécution pour une entreprise
+ */
+router.get('/campaigns/:id/companies/:companyId/history', authenticateToken, async (req, res) => {
+    try {
+        const history = await ProspectingCampaign.getCompanyHistory(
+            req.params.id,
+            req.params.companyId
+        );
+
+        res.json({
+            success: true,
+            data: history
+        });
+    } catch (error) {
+        console.error('Erreur récupération historique:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération de l\'historique'
+        });
+    }
+});
+
+/**
  * POST /api/prospecting/campaigns/:campaignId/companies/:companyId/convert
  * Convertir une entreprise en opportunité
  */
@@ -1337,9 +1361,9 @@ router.post('/campaigns/:campaignId/companies/:companyId/convert', authenticateT
         const { campaignId, companyId } = req.params;
         const opportunityData = req.body;
         const userId = req.user.id;
-        
+
         const result = await ProspectingCampaign.convertToOpportunity(campaignId, companyId, opportunityData);
-        
+
         if (result.success) {
             res.json({
                 success: true,
@@ -1369,9 +1393,9 @@ router.get('/campaigns/:id/validators', authenticateToken, async (req, res) => {
     try {
         const campaignId = req.params.id;
         const userId = req.user.id;
-        
+
         const validators = await ProspectingCampaign.getCampaignValidators(campaignId);
-        
+
         res.json({
             success: true,
             data: validators
@@ -1394,17 +1418,17 @@ router.post('/campaigns/:id/validate', authenticateToken, async (req, res) => {
         const campaignId = req.params.id;
         const userId = req.user.id;
         const { action, note, company_validations } = req.body;
-        
+
         if (!action || !['APPROVED', 'REJECTED'].includes(action)) {
             return res.status(400).json({
                 success: false,
                 error: 'Action de validation invalide'
             });
         }
-        
+
         // Valider la campagne
         const result = await ProspectingCampaign.validateCampaign(campaignId, userId, action, note, company_validations);
-        
+
         if (result.success) {
             res.json({
                 success: true,
@@ -1434,10 +1458,10 @@ router.get('/campaigns/:id/validation-details', authenticateToken, async (req, r
     try {
         const campaignId = req.params.id;
         const userId = req.user.id;
-        
+
         // Récupérer les détails de la campagne avec les entreprises
         const details = await ProspectingCampaign.getValidationDetails(campaignId, userId);
-        
+
         if (details.success) {
             res.json({
                 success: true,

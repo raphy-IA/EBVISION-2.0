@@ -1,30 +1,31 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exécution de Campagne - V4</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
+
     <link rel="stylesheet" href="css/app-title.css">
-    
-         <!-- Scripts pour la top bar EBVISION 2.0 -->
-     <script src="js/global-auth.js"></script>
+
+    <!-- Scripts pour la top bar EBVISION 2.0 -->
+    <script src="js/global-auth.js"></script>
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
-     
-     
-     
-    
+
+
+
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -33,26 +34,26 @@
             --warning-color: #f39c12;
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
-            --card-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             --border-radius: 12px;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
             color: #2c3e50;
         }
-        
+
         .page-wrapper {
             display: flex;
             min-height: 100vh;
         }
-        
+
         .main-content-area {
             flex-grow: 1;
             padding: 2rem;
         }
-        
+
         /* Header de la campagne */
         .campaign-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -62,18 +63,18 @@
             margin-bottom: 2rem;
             box-shadow: var(--card-shadow);
         }
-        
+
         .campaign-title {
             font-size: 1.8rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
-        
+
         .campaign-subtitle {
             opacity: 0.9;
             font-size: 1rem;
         }
-        
+
         .status-badge {
             padding: 0.5rem 1rem;
             border-radius: 20px;
@@ -82,12 +83,27 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
-        .status-draft { background: #e9ecef; color: #6c757d; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-validated { background: #d4edda; color: #155724; }
-        .status-rejected { background: #f8d7da; color: #721c24; }
-        
+
+        .status-draft {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-validated {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
         /* Cards principales */
         .info-card {
             background: white;
@@ -97,7 +113,7 @@
             box-shadow: var(--card-shadow);
             border: none;
         }
-        
+
         .info-card h5 {
             color: var(--primary-color);
             font-weight: 600;
@@ -106,11 +122,11 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .info-card h5 i {
             color: var(--secondary-color);
         }
-        
+
         /* Statistiques */
         .stats-grid {
             display: grid;
@@ -118,7 +134,7 @@
             gap: 1rem;
             margin-bottom: 2rem;
         }
-        
+
         .stat-card {
             background: white;
             border-radius: var(--border-radius);
@@ -128,18 +144,18 @@
             border-left: 4px solid var(--secondary-color);
             transition: transform 0.2s ease;
         }
-        
+
         .stat-card:hover {
             transform: translateY(-2px);
         }
-        
+
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
             color: var(--secondary-color);
             display: block;
         }
-        
+
         .stat-label {
             color: #6c757d;
             font-size: 0.9rem;
@@ -147,7 +163,7 @@
             letter-spacing: 0.5px;
             margin-top: 0.5rem;
         }
-        
+
         /* Table des entreprises */
         .company-table {
             background: white;
@@ -155,26 +171,31 @@
             box-shadow: var(--card-shadow);
             overflow: hidden;
         }
-        
+
         .company-table .table {
             margin-bottom: 0;
         }
-        
+
         .company-table th {
-            background-color: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 1rem;
             font-weight: 600;
-            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: none;
+            vertical-align: middle;
+            font-size: 0.85rem;
         }
-        
+
         .company-item {
             transition: background-color 0.2s ease;
         }
-        
+
         .company-item:hover {
             background-color: #f8f9fa;
         }
-        
+
         .company-avatar {
             width: 40px;
             height: 40px;
@@ -186,7 +207,7 @@
             justify-content: center;
             font-weight: bold;
         }
-        
+
         /* Boutons de statut */
         .btn-status {
             transition: all 0.2s ease;
@@ -196,19 +217,19 @@
             letter-spacing: 0.5px;
             font-size: 0.85rem;
         }
-        
+
         .btn-status.active {
             background-color: var(--success-color);
             border-color: var(--success-color);
             color: white;
             transform: scale(1.05);
         }
-        
+
         .btn-status:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
-        
+
         /* Notes */
         .notes-display {
             background-color: #f8f9fa;
@@ -222,23 +243,23 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        
+
         .notes-display:hover {
             background-color: #e9ecef;
             border-color: var(--secondary-color);
         }
-        
+
         .notes-display:empty::before {
             content: "Cliquez pour ajouter des notes...";
             color: #6c757d;
             font-style: italic;
         }
-        
+
         /* Fichiers */
         .file-upload-container {
             margin-top: 0.5rem;
         }
-        
+
         .file-preview {
             margin-top: 0.5rem;
             padding: 0.5rem;
@@ -246,16 +267,16 @@
             border-radius: 4px;
             font-size: 0.85rem;
         }
-        
+
         .file-preview a {
             color: var(--secondary-color);
             text-decoration: none;
         }
-        
+
         .file-preview a:hover {
             text-decoration: underline;
         }
-        
+
         /* Boutons d'action */
         .action-buttons {
             position: sticky;
@@ -263,10 +284,10 @@
             background: white;
             border-radius: var(--border-radius);
             padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             margin-top: 2rem;
         }
-        
+
         .btn-modern {
             border-radius: 8px;
             padding: 0.75rem 1.5rem;
@@ -275,35 +296,35 @@
             letter-spacing: 0.5px;
             transition: all 0.2s ease;
         }
-        
+
         .btn-modern:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
-        
+
         /* Responsive */
         @media (max-width: 768px) {
             .main-content-area {
                 padding: 1rem;
             }
-            
+
             .campaign-header {
                 padding: 1.5rem;
             }
-            
+
             .campaign-title {
                 font-size: 1.5rem;
             }
-            
+
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .table-responsive {
                 font-size: 0.85rem;
             }
         }
-        
+
         /* Loading */
         .loading {
             display: flex;
@@ -312,46 +333,105 @@
             height: 200px;
             color: var(--secondary-color);
         }
-        
+
         /* Alertes */
         .alert-modern {
             border-radius: var(--border-radius);
             border: none;
             box-shadow: var(--card-shadow);
         }
-        
+
         /* Modal */
         .modal-xl {
             max-width: 90%;
         }
-        
-                 .file-input-wrapper {
-             position: relative;
-             display: inline-block;
-         }
-         
-         .file-input-wrapper input[type=file] {
-             position: absolute;
-             left: -9999px;
-             opacity: 0;
-             width: 0;
-             height: 0;
-         }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        /* Timeline Styles */
+        .timeline {
+            position: relative;
+            padding: 1rem 0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 0;
+            bottom: -1.5rem;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .timeline-content {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .timeline-date {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-user {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
     </style>
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
         <i class="fas fa-bars"></i>
     </button>
-    
+
     <div class="page-wrapper">
         <!-- Sidebar Container -->
         <div class="sidebar-container">
@@ -372,12 +452,7 @@
                         </p>
                     </div>
                     <div class="col-md-4 text-end">
-                        <span class="status-badge" id="campaignStatus">...</span>
-                        <div class="mt-3">
-                            <a href="prospecting-campaigns.html" class="btn btn-outline-light btn-modern">
-                                <i class="fas fa-arrow-left me-2"></i>Retour
-                            </a>
-                        </div>
+                        <span class="status-badge fs-5 py-2 px-3 shadow-sm" id="campaignStatus">...</span>
                     </div>
                 </div>
             </div>
@@ -416,7 +491,8 @@
                         <i class="fas fa-building me-2"></i>
                         Entreprises à Exécuter
                     </h5>
-                    <small class="text-muted">Marquez les courriers comme déposés ou envoyés selon le type de campagne</small>
+                    <small class="text-muted">Marquez les courriers comme déposés ou envoyés selon le type de
+                        campagne</small>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
@@ -425,11 +501,12 @@
                                 <th>Entreprise</th>
                                 <th>Industrie</th>
                                 <th>Ville</th>
-                                <th>Statut d'Exécution</th>
+                                <th>Statut</th>
+                                <th>Date D.A</th>
+                                <th>Jours D.A</th>
+                                <th>Total Jours</th>
                                 <th>Actions</th>
-                                <th>Notes</th>
-                                <th>Preuve</th>
-                                <th>Conversion</th>
+                                <th>Dernière Note</th>
                             </tr>
                         </thead>
                         <tbody id="companiesTableBody">
@@ -450,15 +527,11 @@
             <div class="action-buttons">
                 <div class="row">
                     <div class="col-md-6">
-                        <button class="btn btn-secondary btn-modern me-2" onclick="goBack()">
+                        <a href="prospecting-campaigns.html" class="btn btn-outline-secondary btn-modern me-2">
                             <i class="fas fa-arrow-left me-2"></i>Retour
-                        </button>
+                        </a>
                     </div>
-                    <div class="col-md-6 text-end">
-                        <button class="btn btn-success btn-modern" onclick="saveAllExecutions()">
-                            <i class="fas fa-save me-2"></i>Sauvegarder les Exécutions
-                        </button>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -476,34 +549,74 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Actions Rapides -->
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Actions Rapides</label>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                onclick="insertQuickAction('Relance Téléphonique')">
+                                <i class="fas fa-phone me-1"></i>Relance Tél
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-sm"
+                                onclick="insertQuickAction('Relance Email')">
+                                <i class="fas fa-envelope me-1"></i>Relance Mail
+                            </button>
+                            <button type="button" class="btn btn-outline-warning btn-sm"
+                                onclick="insertQuickAction('Passage Physique')">
+                                <i class="fas fa-walking me-1"></i>Passage
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="configMeeting()">
+                                <i class="fas fa-calendar-alt me-1"></i>Rendez-vous
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="configReport()">
+                                <i class="fas fa-file-alt me-1"></i>Compte Rendu
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6">
                             <h6><i class="fas fa-sticky-note me-2"></i>Notes d'exécution</h6>
-                            <textarea class="form-control" id="modalExecutionNotes" rows="6" 
-                                      placeholder="Décrivez les détails de l'exécution..."></textarea>
+                            <textarea class="form-control" id="modalExecutionNotes" rows="6"
+                                placeholder="Décrivez les détails de l'exécution ou utilisez les actions rapides..."></textarea>
                         </div>
                         <div class="col-md-6">
                             <h6><i class="fas fa-paperclip me-2"></i>Preuve d'exécution</h6>
-                                                         <div class="mb-3">
-                                 <label class="form-label">Fichier de preuve (décharge, capture d'écran, etc.)</label>
-                                 <div class="file-input-wrapper">
-                                     <input type="file" id="modalExecutionFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" 
-                                            onchange="handleFileUpload(this)">
-                                     <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('modalExecutionFile').click()">
-                                         <i class="fas fa-upload me-2"></i>Choisir un fichier
-                                     </button>
-                                 </div>
-                                 <small class="text-muted">Formats acceptés: PDF, JPG, PNG, DOC, DOCX (max 5MB)</small>
-                             </div>
+                            <div class="mb-3">
+                                <label class="form-label">Fichier de preuve (décharge, capture d'écran, CR,
+                                    etc.)</label>
+                                <div class="file-input-wrapper">
+                                    <input type="file" id="modalExecutionFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                        onchange="handleFileUpload(this)">
+                                    <button type="button" class="btn btn-outline-primary"
+                                        onclick="document.getElementById('modalExecutionFile').click()">
+                                        <i class="fas fa-upload me-2"></i>Choisir un fichier
+                                    </button>
+                                </div>
+                                <small class="text-muted">Formats acceptés: PDF, JPG, PNG, DOC, DOCX (max 5MB)</small>
+                            </div>
                             <div id="modalFilePreview"></div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-success" onclick="saveExecutionDetails()">
-                        <i class="fas fa-save me-2"></i>Sauvegarder
-                    </button>
+                <div class="modal-footer justify-content-between">
+                    <div>
+                        <button type="button" class="btn btn-outline-danger" id="btnAbandon"
+                            onclick="markAsAbandoned()">
+                            <i class="fas fa-ban me-2"></i>Abandonner
+                        </button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-outline-secondary me-2"
+                            data-bs-dismiss="modal">Fermer</button>
+                        <button type="button" class="btn btn-primary me-2" id="btnExecute" onclick="markAsExecuted()">
+                            <i class="fas fa-paper-plane me-2"></i><span id="btnExecuteText">Marquer comme
+                                Exécuté</span>
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="saveExecutionDetails('UPDATE')">
+                            <i class="fas fa-save me-2"></i>Enregistrer Note
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -523,32 +636,34 @@
                 <div class="modal-body">
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        Vous êtes sur le point de convertir cette entreprise en opportunité. 
+                        Vous êtes sur le point de convertir cette entreprise en opportunité.
                         Cela créera une nouvelle opportunité liée à cette campagne de prospection.
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Entreprise</label>
                         <input type="text" class="form-control" id="convertCompanyName" readonly>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <label class="form-label">Nom de l'opportunité *</label>
-                            <input type="text" class="form-control" id="opportunityName" placeholder="Ex: Opportunité - [Nom entreprise]">
+                            <input type="text" class="form-control" id="opportunityName"
+                                placeholder="Ex: Opportunité - [Nom entreprise]">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Valeur estimée</label>
-                            <input type="number" class="form-control" id="opportunityValue" placeholder="Montant en FCFA">
+                            <input type="number" class="form-control" id="opportunityValue"
+                                placeholder="Montant en FCFA">
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea class="form-control" id="opportunityDescription" rows="3" 
-                                  placeholder="Décrivez l'opportunité..."></textarea>
+                        <textarea class="form-control" id="opportunityDescription" rows="3"
+                            placeholder="Décrivez l'opportunité..."></textarea>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Type d'opportunité *</label>
                         <select class="form-select" id="opportunityTypeSelect" required>
@@ -558,7 +673,7 @@
                             Le type d'opportunité détermine les étapes et tâches à effectuer.
                         </small>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <label class="form-label">Probabilité (%)</label>
@@ -586,15 +701,42 @@
         </div>
     </div>
 
-         <!-- Bootstrap JavaScript -->
-     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-     
-     <script src="js/auth.js"></script>
+    <!-- Modal d'historique -->
+    <div class="modal fade" id="historyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-history me-2"></i>
+                        Historique d'exécution - <span id="historyModalCompanyName"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="historyTimeline" class="timeline">
+                        <!-- Timeline items will be injected here -->
+                        <div class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                            <p class="mt-2 text-muted">Chargement de l'historique...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="js/auth.js"></script>
     <script src="js/menu-permissions.js"></script>
     <script src="/js/page-permissions.js"></script>
-     <script src="js/session-manager.js"></script>
-     <script src="js/sidebar.js" defer></script>
-    
+    <script src="js/session-manager.js"></script>
+    <script src="js/sidebar.js" defer></script>
+
     <script>
         // Variables globales
         let currentCampaignId = null;
@@ -616,7 +758,7 @@
         function showAlert(message, type = 'info') {
             const alertsContainer = document.getElementById('alertsContainer');
             const alertId = 'alert-' + Date.now();
-            
+
             alertsContainer.innerHTML = `
                 <div id="${alertId}" class="alert alert-${type} alert-modern alert-dismissible fade show" role="alert">
                     <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
@@ -624,7 +766,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
-            
+
             setTimeout(() => {
                 const alert = document.getElementById(alertId);
                 if (alert) {
@@ -650,8 +792,8 @@
             const badge = document.getElementById('campaignStatus');
             let className = 'status-draft';
             let text = 'Brouillon';
-            
-            switch(status) {
+
+            switch (status) {
                 case 'DRAFT':
                     className = 'status-draft';
                     text = 'Brouillon';
@@ -672,7 +814,7 @@
                     text = 'Rejetée';
                     break;
             }
-            
+
             badge.className = `status-badge ${className}`;
             badge.textContent = text;
         }
@@ -682,36 +824,36 @@
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 currentCampaignId = urlParams.get('id');
-                
+
                 if (!currentCampaignId) {
                     showAlert('ID de campagne manquant', 'danger');
                     return;
                 }
 
                 console.log('🔍 Chargement de la campagne:', currentCampaignId);
-                
+
                 const response = await fetch(`${API}/campaigns/${currentCampaignId}`, {
                     headers: getAuthHeader()
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     campaignData = result.data;
                     console.log('📋 Campagne chargée:', campaignData);
-                    
+
                     // Mettre à jour les informations de base
                     document.getElementById('campaignName').textContent = campaignData.name;
                     document.getElementById('campaignDescription').innerHTML = `
                         <i class="fas fa-clock me-2"></i>Exécution de la campagne créée le ${new Date(campaignData.created_at).toLocaleDateString('fr-FR')}
                     `;
-                    
+
                     // Statut
                     updateStatusBadge(campaignData.validation_statut || campaignData.status);
-                    
+
                     // Charger les entreprises
                     await loadCompanies();
-                    
+
                 } else {
                     showAlert('Erreur lors du chargement de la campagne: ' + result.error, 'danger');
                 }
@@ -724,25 +866,25 @@
         async function loadCompanies() {
             try {
                 console.log('🔍 Chargement des entreprises de la campagne');
-                
+
                 const response = await fetch(`${API}/campaigns/${currentCampaignId}/companies?limit=1000`, {
                     headers: getAuthHeader()
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     companiesData = result.data || [];
                     console.log('📊 Entreprises chargées:', companiesData.length);
-                    
+
                     // Filtrer seulement les entreprises approuvées
                     companiesData = companiesData.filter(company => company.validation_status === 'APPROVED');
                     console.log('📊 Entreprises après filtrage (APPROVED):', companiesData.length);
-                    
+
                     if (companiesData.length === 0) {
                         showAlert('Aucune entreprise approuvée trouvée dans cette campagne. Seules les entreprises validées peuvent être exécutées.', 'warning');
                     }
-                    
+
                     renderCompanies();
                     updateStats();
                 } else {
@@ -757,11 +899,11 @@
         // Fonctions d'affichage et de gestion des entreprises
         function renderCompanies() {
             const container = document.getElementById('companiesTableBody');
-            
+
             if (companiesData.length === 0) {
                 container.innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-center py-4">
+                        <td colspan="10" class="text-center py-4">
                             <i class="fas fa-inbox fa-2x text-muted"></i>
                             <p class="text-muted mt-2">Aucune entreprise approuvée à exécuter</p>
                         </td>
@@ -769,13 +911,40 @@
                 `;
                 return;
             }
-            
+
             let html = '';
-            
+
             companiesData.forEach((company, index) => {
                 const executionStatus = company.execution_status || 'pending_execution';
                 const canConvert = executionStatus === 'deposed' || executionStatus === 'sent';
-                
+
+                // Calculs des jours
+                const now = new Date();
+
+                // Jours depuis dernière action
+                let daysSinceLastAction = '-';
+                let lastActionColor = '';
+                if (company.execution_date) {
+                    const lastActionDate = new Date(company.execution_date);
+                    const diffTime = Math.abs(now - lastActionDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    daysSinceLastAction = `${diffDays} j`;
+
+                    // Code couleur pour "depuis dernière action" (exemple: > 14j attention, > 30j danger)
+                    if (diffDays > 30) lastActionColor = 'text-danger fw-bold';
+                    else if (diffDays > 14) lastActionColor = 'text-warning fw-bold';
+                    else lastActionColor = 'text-success';
+                }
+
+                // Jours total (depuis ajout à la campagne)
+                let totalDays = '-';
+                if (company.added_at) {
+                    const addedDate = new Date(company.added_at);
+                    const diffTimeTotal = Math.abs(now - addedDate);
+                    const diffDaysTotal = Math.ceil(diffTimeTotal / (1000 * 60 * 60 * 24));
+                    totalDays = `${diffDaysTotal} j`;
+                }
+
                 html += `
                     <tr data-company-id="${company.id}">
                         <td>
@@ -795,59 +964,56 @@
                             <div class="execution-status ${getExecutionStatusClass(executionStatus)}">
                                 ${getExecutionStatusText(executionStatus)}
                             </div>
-                            ${company.execution_date ? `
-                                <small class="text-muted d-block mt-1">
-                                    ${new Date(company.execution_date).toLocaleDateString('fr-FR')}
-                                </small>
-                            ` : ''}
+                        </td>
+                        <!-- Nouvelles colonnes de temps -->
+                        <td>
+                            ${company.execution_date ? new Date(company.execution_date).toLocaleDateString('fr-FR') : '-'}
+                        </td>
+                        <td class="${lastActionColor}">
+                            ${daysSinceLastAction}
                         </td>
                         <td>
-                            <div class="d-flex gap-1 flex-wrap">
-                                <button class="btn btn-outline-primary btn-sm btn-status ${executionStatus === 'deposed' ? 'active' : ''}" 
-                                        onclick="setExecutionStatus('${company.id}', 'deposed')"
-                                        ${executionStatus === 'deposed' ? 'disabled' : ''}>
-                                    <i class="fas fa-hand-holding"></i> Déposé
+                            ${totalDays}
+                        </td>
+                        
+                        <!-- Actions -->
+                        <td class="text-nowrap">
+                            <div class="d-flex gap-1 align-items-center">
+                                <!-- Boutons d'action principaux -->
+                                <!-- Bouton Mise à jour (MAJ) -->
+                                <button class="btn btn-outline-secondary btn-sm" 
+                                        onclick="openUpdateExecutionModal('${company.id}')"
+                                        title="Ajouter une note ou un fichier">
+                                    <i class="fas fa-pen"></i>
                                 </button>
-                                <button class="btn btn-outline-success btn-sm btn-status ${executionStatus === 'sent' ? 'active' : ''}" 
-                                        onclick="setExecutionStatus('${company.id}', 'sent')"
-                                        ${executionStatus === 'sent' ? 'disabled' : ''}>
-                                    <i class="fas fa-paper-plane"></i> Envoyé
+                                
+                                <!-- Bouton Historique -->
+                                <button class="btn btn-outline-dark btn-sm" 
+                                        onclick="openHistoryModal('${company.id}')"
+                                        title="Voir l'historique complet (et preuves)">
+                                    <i class="fas fa-history"></i>
                                 </button>
-                                <button class="btn btn-outline-danger btn-sm btn-status ${executionStatus === 'failed' ? 'active' : ''}" 
-                                        onclick="setExecutionStatus('${company.id}', 'failed')"
-                                        ${executionStatus === 'failed' ? 'disabled' : ''}>
-                                    <i class="fas fa-times"></i> Échec
+
+                                <!-- Convertir -->
+                                <button class="btn btn-outline-info btn-sm" 
+                                        onclick="convertToOpportunity('${company.id}')"
+                                        ${!canConvert || company.converted_to_opportunity ? 'disabled' : ''}
+                                        title="${company.converted_to_opportunity ? 'Déjà convertie' : 'Convertir en opportunité'}">
+                                    <i class="fas fa-exchange-alt"></i>
                                 </button>
                             </div>
                         </td>
+                        
+                        <!-- Notes (Non cliquable, dernière note seulement) -->
                         <td>
-                            <div class="notes-display" onclick="openExecutionDetails('${company.id}')">
-                                ${company.execution_notes || ''}
+                            <div class="notes-display-readonly text-muted fst-italic small">
+                                ${company.execution_notes ? (company.execution_notes.length > 50 ? company.execution_notes.substring(0, 50) + '...' : company.execution_notes) : 'Aucune note'}
                             </div>
-                        </td>
-                        <td>
-                            ${company.execution_file ? `
-                                <div class="file-preview">
-                                    <a href="/uploads/executions/${company.execution_file}" target="_blank">
-                                        <i class="fas fa-file me-1"></i>Voir la preuve
-                                    </a>
-                                </div>
-                            ` : `
-                                <small class="text-muted">Aucune preuve</small>
-                            `}
-                        </td>
-                        <td>
-                            <button class="btn btn-outline-info btn-sm" 
-                                    onclick="convertToOpportunity('${company.id}')"
-                                    ${!canConvert || company.converted_to_opportunity ? 'disabled' : ''}>
-                                <i class="fas fa-exchange-alt me-1"></i>
-                                ${company.converted_to_opportunity ? 'Convertie' : 'Convertir'}
-                            </button>
                         </td>
                     </tr>
                 `;
             });
-            
+
             container.innerHTML = html;
         }
 
@@ -857,7 +1023,7 @@
             const deposed = companiesData.filter(c => c.execution_status === 'deposed').length;
             const sent = companiesData.filter(c => c.execution_status === 'sent').length;
             const converted = companiesData.filter(c => c.converted_to_opportunity).length;
-            
+
             document.getElementById('totalCompanies').textContent = total;
             document.getElementById('pendingExecution').textContent = pending;
             document.getElementById('deposedCount').textContent = deposed;
@@ -889,52 +1055,224 @@
         async function setExecutionStatus(companyId, status) {
             try {
                 console.log(`🔄 Mise à jour statut exécution: ${companyId} -> ${status}`);
-                
-                // Ouvrir le modal pour les détails
+                // Ouvrir le modal pour les détails avec le nouveau statut
                 openExecutionDetails(companyId, status);
-                
             } catch (e) {
                 console.error('Erreur mise à jour statut:', e);
                 showAlert('Erreur lors de la mise à jour du statut', 'danger');
             }
         }
 
+        function openUpdateExecutionModal(companyId) {
+            // Ouvrir le modal en mode 'UPDATE' (ne change pas le statut principal, ajoute juste une entréee d'historique)
+            openExecutionDetails(companyId, 'UPDATE');
+        }
+
         function openExecutionDetails(companyId, newStatus = null) {
             const company = companiesData.find(c => c.id === companyId);
             if (!company) return;
-            
+
             currentEditingCompany = company;
-            
-            // Si un nouveau statut est fourni, le définir
-            if (newStatus) {
-                company.execution_status = newStatus;
+
+            // Gestion de l'affichage des boutons selon le statut actuel
+            const btnExecute = document.getElementById('btnExecute');
+            const btnAbandon = document.getElementById('btnAbandon');
+            const btnExecuteText = document.getElementById('btnExecuteText');
+
+            const currentStatus = company.execution_status || 'pending_execution';
+
+            if (currentStatus === 'pending_execution') {
+                btnExecute.style.display = 'inline-block';
+
+                // Texte du bouton d'exécution
+                btnExecuteText.textContent = (campaignData.channel === 'PHYSIQUE') ? 'Marquer comme Déposé' : 'Marquer comme Envoyé';
+            } else {
+                // Si déjà exécuté (deposed, sent) ou échoué/abandonné, on ne peut pas ré-exécuter
+                btnExecute.style.display = 'none';
             }
-            
-            // Remplir le modal
-            document.getElementById('modalCompanyName').textContent = company.name;
+
+            // Bouton abandonner : Possible tant que ce n'est pas déjà un échec ou converti
+            if (currentStatus !== 'failed' && !company.converted_to_opportunity) {
+                btnAbandon.style.display = 'inline-block';
+            } else {
+                btnAbandon.style.display = 'none';
+            }
+
+            // Si un nouveau statut est fourni, le définir temporairement dans l'objet company
+            if (newStatus && newStatus !== 'UPDATE') {
+                company.temp_execution_status = newStatus;
+            } else if (newStatus === 'UPDATE') {
+                company.temp_execution_status = 'UPDATE';
+            } else {
+                company.temp_execution_status = company.execution_status;
+            }
+
+            // Titre du modal adapté
+            const titleSpan = document.getElementById('modalCompanyName');
+            titleSpan.textContent = company.name;
+
+            // Notes
             document.getElementById('modalExecutionNotes').value = company.execution_notes || '';
-            
+
             // Réinitialiser le fichier
             currentFile = null;
             document.getElementById('modalExecutionFile').value = '';
             document.getElementById('modalFilePreview').innerHTML = '';
-            
+
             // Afficher le modal
             const modal = new bootstrap.Modal(document.getElementById('executionDetailsModal'));
             modal.show();
         }
 
+        function markAsExecuted() {
+            const status = (campaignData.channel === 'PHYSIQUE') ? 'deposed' : 'sent';
+            const actionLabel = (status === 'deposed') ? 'déposé' : 'envoyé';
+
+            // Obliger la preuve de dépôt pour le courrier physique
+            if (status === 'deposed' && !currentFile) {
+                showAlert('Une preuve de dépôt (fichier) est OBLIGATOIRE pour valider ce statut.', 'warning');
+
+                // Mettre en évidence le bouton d'upload
+                const fileBtn = document.querySelector('#modalExecutionFile').nextElementSibling;
+                if (fileBtn) {
+                    fileBtn.classList.add('btn-danger');
+                    fileBtn.classList.add('shake-animation'); // S'assurer que la classe CSS existe ou juste warning visual
+                    setTimeout(() => {
+                        fileBtn.classList.remove('btn-danger');
+                        fileBtn.classList.remove('shake-animation');
+                    }, 2000);
+                }
+                return;
+            }
+
+            if (confirm(`Confirmez-vous que le courrier est ${actionLabel} ?\nCette action changera le statut de manière permanente.`)) {
+                // Ajouter automatiquement la note
+                const actionUpper = actionLabel.toUpperCase();
+                insertQuickAction(actionUpper);
+
+                saveExecutionDetails(status);
+            }
+        }
+
+        function markAsAbandoned() {
+            if (confirm("Voulez-vous vraiment abandonner la prospection pour cette entreprise ?\nLe statut passera à 'Échec'.")) {
+                saveExecutionDetails('failed');
+            }
+        }
+
+        async function openHistoryModal(companyId) {
+            const company = companiesData.find(c => c.id === companyId);
+            if (!company) return;
+
+            document.getElementById('historyModalCompanyName').textContent = company.name;
+            const timelineContainer = document.getElementById('historyTimeline');
+            timelineContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                    <p class="mt-2 text-muted">Chargement de l'historique...</p>
+                </div>
+            `;
+
+            const modal = new bootstrap.Modal(document.getElementById('historyModal'));
+            modal.show();
+
+            await loadHistory(companyId);
+        }
+
+        async function loadHistory(companyId) {
+            try {
+                const response = await fetch(`${API}/campaigns/${currentCampaignId}/companies/${companyId}/history`, {
+                    headers: getAuthHeader()
+                });
+
+                const result = await response.json();
+                const container = document.getElementById('historyTimeline');
+
+                if (result.success && result.data && result.data.length > 0) {
+                    let html = '';
+                    result.data.forEach(item => {
+                        let icon = 'fa-circle';
+                        let color = 'var(--secondary-color)';
+                        let label = 'Action';
+
+                        switch (item.action_type) {
+                            case 'DEPOSIT':
+                                icon = 'fa-hand-holding';
+                                color = 'var(--primary-color)';
+                                label = 'Déposé';
+                                break;
+                            case 'SENT':
+                                icon = 'fa-paper-plane';
+                                color = 'var(--success-color)';
+                                label = 'Envoyé';
+                                break;
+                            case 'UPDATE':
+                                icon = 'fa-pen';
+                                color = 'var(--warning-color)';
+                                label = 'Mise à jour';
+                                break;
+                            case 'CONVERSION':
+                                icon = 'fa-exchange-alt';
+                                color = 'var(--info-color)';
+                                label = 'Conversion';
+                                break;
+                        }
+
+                        html += `
+                            <div class="timeline-item">
+                                <div class="timeline-icon" style="background-color: ${color}">
+                                    <i class="fas ${icon}"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge" style="background-color: ${color}">${label}</span>
+                                        <small class="text-muted"><i class="fas fa-clock me-1"></i>${new Date(item.action_date).toLocaleString()}</small>
+                                    </div>
+                                    <div class="timeline-user mb-1">
+                                        <i class="fas fa-user-circle me-1"></i>${item.user_prenom} ${item.user_nom}
+                                    </div>
+                                    ${item.comment ? `<p class="mb-2">${item.comment}</p>` : ''}
+                                    ${item.attachment_path ? `
+                                        <div class="mt-2">
+                                            <a href="/uploads/executions/${item.attachment_path}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-paperclip me-1"></i>Pièce jointe
+                                            </a>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = `
+                         <div class="text-center py-4">
+                            <i class="fas fa-history fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">Aucun historique disponible pour cette entreprise.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erreur chargement historique:', error);
+                document.getElementById('historyTimeline').innerHTML = `
+                    <div class="alert alert-danger">
+                        Erreur lors du chargement de l'historique.
+                    </div>
+                `;
+            }
+        }
+
         function handleFileUpload(input) {
             const file = input.files[0];
             if (!file) return;
-            
+
             // Vérifier la taille (5MB max)
             if (file.size > 5 * 1024 * 1024) {
                 showAlert('Le fichier est trop volumineux. Taille maximum: 5MB', 'danger');
                 input.value = '';
                 return;
             }
-            
+
             // Vérifier le type
             const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
             if (!allowedTypes.includes(file.type)) {
@@ -942,9 +1280,9 @@
                 input.value = '';
                 return;
             }
-            
+
             currentFile = file;
-            
+
             // Afficher la prévisualisation
             const preview = document.getElementById('modalFilePreview');
             preview.innerHTML = `
@@ -955,27 +1293,36 @@
             `;
         }
 
-        async function saveExecutionDetails() {
+        async function saveExecutionDetails(forcedStatus = null) {
             try {
                 const notes = document.getElementById('modalExecutionNotes').value;
                 const company = currentEditingCompany;
-                
+
                 if (!company) {
                     showAlert('Aucune entreprise sélectionnée', 'danger');
                     return;
                 }
-                
+
                 // Créer FormData pour l'upload de fichier
                 const formData = new FormData();
-                formData.append('executionStatus', company.execution_status || 'pending_execution');
+
+                // Priorité: Status forcé (bouton) > Status temporaire > Status actuel > Defaut
+                // Si forcedStatus est 'UPDATE', c'est explicite pour une mise à jour simple.
+                let statusToSend = forcedStatus;
+
+                if (!statusToSend) {
+                    statusToSend = company.temp_execution_status || company.execution_status || 'pending_execution';
+                }
+
+                formData.append('executionStatus', statusToSend);
                 formData.append('notes', notes);
-                
+
                 if (currentFile) {
                     formData.append('executionFile', currentFile);
                 }
-                
+
                 console.log('💾 Sauvegarde des détails d\'exécution:', company.id);
-                
+
                 const response = await fetch(`${API}/campaigns/${currentCampaignId}/companies/${company.id}/execution`, {
                     method: 'PUT',
                     headers: {
@@ -984,25 +1331,33 @@
                     },
                     body: formData
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     // Mettre à jour les données locales
                     company.execution_notes = notes;
                     company.execution_date = new Date().toISOString();
+
+                    // Si ce n'était pas juste une mise à jour, mettre à jour le statut principal localement
+                    if (statusToSend && statusToSend !== 'UPDATE') {
+                        company.execution_status = statusToSend;
+                        // Nettoyer le status temp
+                        delete company.temp_execution_status;
+                    }
+
                     if (result.execution_file) {
                         company.execution_file = result.execution_file;
                     }
-                    
+
                     // Fermer le modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('executionDetailsModal'));
                     modal.hide();
-                    
+
                     // Recharger l'affichage
                     renderCompanies();
                     updateStats();
-                    
+
                     showAlert('Détails d\'exécution sauvegardés avec succès !', 'success');
                 } else {
                     showAlert('Erreur lors de la sauvegarde: ' + result.error, 'danger');
@@ -1011,6 +1366,56 @@
                 console.error('Erreur sauvegarde détails:', e);
                 showAlert('Erreur lors de la sauvegarde des détails', 'danger');
             }
+        }
+
+        // Fonctions pour les Actions Rapides
+        function insertQuickAction(actionName) {
+            const noteField = document.getElementById('modalExecutionNotes');
+            const now = new Date();
+            const timestamp = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            const prefix = `[${actionName}] ${timestamp} : `;
+
+            // Ajouter au début ou à la fin ? L'utilisateur veut voir le dernier statut.
+            // Si on écrase tout, on perd l'historique non sauvegardé.
+            // Le champ "notes" est écrasé à chaque sauvegarde dans le backend actuel (execution_notes),
+            // mais l'historique garde tout.
+            // On préfixe pour que ce soit visible tout de suite.
+            noteField.value = prefix + " " + noteField.value;
+            noteField.focus();
+            // Positionner le curseur à la fin du préfixe
+            noteField.setSelectionRange(prefix.length + 1, prefix.length + 1);
+        }
+
+        function configMeeting() {
+            // Demander la date
+            const defaultDate = new Date().toISOString().split('T')[0];
+            const dateStr = prompt("Date du rendez-vous ? (JJ/MM/AAAA ou format libre)", new Date().toLocaleDateString('fr-FR'));
+
+            if (dateStr) {
+                const noteField = document.getElementById('modalExecutionNotes');
+                const now = new Date();
+                const timestamp = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const prefix = `[Rendez-vous] ${timestamp} : Prévu le ${dateStr}. `;
+
+                noteField.value = prefix + noteField.value;
+                noteField.focus();
+            }
+        }
+
+        function configReport() {
+            insertQuickAction("Compte Rendu");
+            // Mettre en évidence le bouton d'upload
+            const fileBtn = document.querySelector('#modalExecutionFile').nextElementSibling;
+            if (fileBtn) {
+                fileBtn.classList.add('btn-warning');
+                fileBtn.classList.remove('btn-outline-primary');
+                setTimeout(() => {
+                    fileBtn.classList.remove('btn-warning');
+                    fileBtn.classList.add('btn-outline-primary');
+                }, 1000);
+            }
+            // Trigger click (optionnel, peut être bloqué par le navigateur si pas direct event)
+            // document.getElementById('modalExecutionFile').click();
         }
 
         // Variables globales pour le processus de conversion
@@ -1026,13 +1431,13 @@
         function openOpportunityForEdit(opportunityId, opportunityData) {
             try {
                 console.log('🔄 Ouverture de l\'opportunité en mode modification:', opportunityId);
-                
+
                 // Construire l'URL de l'opportunité
                 const opportunityUrl = `/opportunities.html?id=${opportunityId}&mode=edit`;
-                
+
                 // Ouvrir dans un nouvel onglet
                 window.open(opportunityUrl, '_blank');
-                
+
                 console.log('✅ Opportunité ouverte en mode modification');
             } catch (error) {
                 console.error('❌ Erreur lors de l\'ouverture de l\'opportunité:', error);
@@ -1044,10 +1449,10 @@
         function startConversionProcess(companyId) {
             const company = companiesData.find(c => c.id === companyId);
             if (!company) return;
-            
+
             conversionProcess.companyData = company;
             conversionProcess.currentStep = 1;
-            
+
             // Afficher le modal de sélection du client
             showClientSelectionModal();
         }
@@ -1056,10 +1461,10 @@
         function showClientSelectionModal() {
             // Afficher le nom de l'entreprise à convertir
             document.getElementById('companyToConvertName').textContent = conversionProcess.companyData.name;
-            
+
             // Charger la liste des clients existants
             loadExistingClients();
-            
+
             // Afficher le modal
             const modal = new bootstrap.Modal(document.getElementById('clientSelectionModal'));
             modal.show();
@@ -1072,18 +1477,18 @@
                 const response = await fetch(`/api/clients`, {
                     headers: getAuthHeader()
                 });
-                
+
                 console.log('📡 Réponse API clients:', response.status);
                 const result = await response.json();
                 console.log('📊 Données clients:', result);
-                
+
                 if (result.success) {
                     const clientSelect = document.getElementById('existingClientSelect');
                     clientSelect.innerHTML = '<option value="">-- Sélectionner un client existant --</option>';
-                    
+
                     // L'API retourne les clients dans result.data.clients
                     const clients = result.data && result.data.clients ? result.data.clients : [];
-                    
+
                     if (clients.length > 0) {
                         clients.forEach(client => {
                             const option = document.createElement('option');
@@ -1113,18 +1518,18 @@
                 const response = await fetch(`/api/opportunity-types`, {
                     headers: getAuthHeader()
                 });
-                
+
                 console.log('📡 Réponse API types d\'opportunité:', response.status);
                 const result = await response.json();
                 console.log('📊 Données types d\'opportunité:', result);
-                
+
                 if (result.success) {
                     const typeSelect = document.getElementById('opportunityTypeSelect');
                     typeSelect.innerHTML = '<option value="">-- Sélectionner un type d\'opportunité --</option>';
-                    
+
                     // L'API retourne les types dans result.data.opportunityTypes
                     const types = result.data && result.data.opportunityTypes ? result.data.opportunityTypes : [];
-                    
+
                     if (types.length > 0) {
                         types.forEach(type => {
                             const option = document.createElement('option');
@@ -1151,18 +1556,18 @@
         function continueToNextStep() {
             const selectedClientId = document.getElementById('existingClientSelect').value;
             const createNewClient = document.getElementById('createNewClient').checked;
-            
+
             if (!createNewClient && !selectedClientId) {
                 showAlert('Veuillez sélectionner un client existant ou choisir de créer un nouveau client', 'warning');
                 return;
             }
-            
+
             // Fermer d'abord le modal de sélection du client
             const selectionModal = bootstrap.Modal.getInstance(document.getElementById('clientSelectionModal'));
             if (selectionModal) {
                 selectionModal.hide();
             }
-            
+
             // Attendre un peu que le modal se ferme avant d'afficher le suivant
             setTimeout(() => {
                 if (createNewClient) {
@@ -1189,7 +1594,7 @@
                 const response = await fetch('/api/clients/form-data', {
                     headers: getAuthHeader()
                 });
-                
+
                 if (response.ok) {
                     const result = await response.json();
                     if (result.success) {
@@ -1232,9 +1637,9 @@
                     option.textContent = secteur.nom;
                     select.appendChild(option);
                 });
-                
+
                 // Ajouter l'événement pour mettre à jour les sous-secteurs
-                select.addEventListener('change', function() {
+                select.addEventListener('change', function () {
                     updateSousSecteurs(this.value);
                 });
             }
@@ -1247,7 +1652,7 @@
                 sousSecteurSelect.innerHTML = '<option value="">Sélectionner un sous-secteur</option>';
                 return;
             }
-            
+
             const secteur = secteurs.find(s => s.id === secteurId);
             if (secteur && secteur.sous_secteurs) {
                 sousSecteurSelect.innerHTML = '<option value="">Sélectionner un sous-secteur</option>';
@@ -1279,7 +1684,7 @@
         // Fonction pour afficher le modal de création de nouveau client
         function showNewClientModal() {
             console.log('🔄 Affichage du modal de création de nouveau client');
-            
+
             // Charger les données de formulaire si pas encore fait
             if (!formData) {
                 loadFormData().then(() => {
@@ -1298,13 +1703,13 @@
 
             // Pré-remplir les champs avec les données de l'entreprise
             const company = conversionProcess.companyData;
-            
+
             document.getElementById('newClientName').value = company.name || '';
             document.getElementById('newClientEmail').value = company.email || '';
             document.getElementById('newClientTelephone').value = company.phone || '';
             document.getElementById('newClientVille').value = company.city || '';
             document.getElementById('newClientAdresse').value = company.address || '';
-            
+
             // Peupler les listes de sélection
             populateSecteursOptions('newClientSector', formData.secteurs);
             populatePaysOptions('newClientPays', formData.pays);
@@ -1312,11 +1717,11 @@
             populateSelectOptions('newClientTailleEntreprise', formData.tailles_entreprise);
             populateSelectOptions('newClientSourceProspection', formData.sources_prospection);
             populateSelectOptions('newClientFormeJuridique', formData.formes_juridiques);
-            
+
             // Pré-remplir la source de prospection avec "PROSPECTION"
             const sourceSelect = document.getElementById('newClientSourceProspection');
             if (sourceSelect) {
-                const prospectionOption = Array.from(sourceSelect.options).find(option => 
+                const prospectionOption = Array.from(sourceSelect.options).find(option =>
                     option.textContent.includes('PROSPECTION') || option.value === 'PROSPECTION'
                 );
                 if (prospectionOption) {
@@ -1353,34 +1758,34 @@
                     effectif: document.getElementById('newClientEffectif').value,
                     notes: document.getElementById('newClientNotes').value
                 };
-                
+
                 if (!clientData.nom) {
                     showAlert('Le nom du client est obligatoire', 'danger');
                     return;
                 }
-                
+
                 console.log('📤 Données client à envoyer:', clientData);
-                
+
                 const response = await fetch(`/api/clients`, {
                     method: 'POST',
                     headers: getAuthHeader(),
                     body: JSON.stringify(clientData)
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     conversionProcess.newClientData = result.data;
                     conversionProcess.selectedClientId = result.data.id;
-                    
+
                     // Fermer le modal de création de client
                     const modal = bootstrap.Modal.getInstance(document.getElementById('newClientModal'));
                     modal.hide();
-                    
+
                     // Passer à l'étape 3
                     conversionProcess.currentStep = 3;
                     showOpportunityCreationModal();
-                    
+
                     showAlert('Client créé avec succès !', 'success');
                 } else {
                     showAlert('Erreur lors de la création du client: ' + result.error, 'danger');
@@ -1397,15 +1802,15 @@
             document.getElementById('convertCompanyName').value = conversionProcess.companyData.name;
             document.getElementById('opportunityName').value = `Opportunité - ${conversionProcess.companyData.name}`;
             document.getElementById('opportunityDescription').value = `Opportunité créée à partir de la campagne de prospection "${campaignData.name}"`;
-            
+
             // Date de fermeture par défaut (3 mois)
             const closeDate = new Date();
             closeDate.setMonth(closeDate.getMonth() + 3);
             document.getElementById('opportunityCloseDate').value = closeDate.toISOString().split('T')[0];
-            
+
             // Charger les types d'opportunité
             await loadOpportunityTypes();
-            
+
             // Afficher le modal
             const modal = new bootstrap.Modal(document.getElementById('convertOpportunityModal'));
             modal.show();
@@ -1428,71 +1833,71 @@
                     clientId: conversionProcess.selectedClientId, // Ajouter l'ID du client sélectionné
                     opportunityTypeId: document.getElementById('opportunityTypeSelect').value // Ajouter l'ID du type d'opportunité
                 };
-                
+
                 if (!opportunityData.name) {
                     showAlert('Le nom de l\'opportunité est obligatoire', 'danger');
                     return;
                 }
-                
+
                 if (!opportunityData.clientId) {
                     showAlert('Aucun client sélectionné', 'danger');
                     return;
                 }
-                
+
                 if (!opportunityData.opportunityTypeId) {
                     showAlert('Veuillez sélectionner un type d\'opportunité', 'danger');
                     return;
                 }
-                
+
                 console.log('🔄 Conversion en opportunité:', conversionProcess.companyData.id);
                 console.log('🔄 Client sélectionné:', opportunityData.clientId);
-                
+
                 const response = await fetch(`${API}/campaigns/${currentCampaignId}/companies/${conversionProcess.companyData.id}/convert`, {
                     method: 'POST',
                     headers: getAuthHeader(),
                     body: JSON.stringify(opportunityData)
                 });
-                
+
                 const result = await response.json();
-                
-                               if (result.success) {
-                   // Mettre à jour les données locales
-                   const company = companiesData.find(c => c.id === conversionProcess.companyData.id);
-                   if (company) {
-                       company.converted_to_opportunity = true;
-                       company.opportunity_id = result.opportunityId;
-                   }
-                   
-                   // Fermer le modal
-                   const modal = bootstrap.Modal.getInstance(document.getElementById('convertOpportunityModal'));
-                   modal.hide();
-                   
-                   // Recharger l'affichage
-                   renderCompanies();
-                   updateStats();
-                   
-                   showAlert('Entreprise convertie en opportunité avec succès !', 'success');
-                   
-                   // Ouvrir automatiquement l'opportunité en mode modification
-                   if (result.opportunityId) {
-                       setTimeout(() => {
-                           openOpportunityForEdit(result.opportunityId, result.opportunityData);
-                       }, 1000); // Délai de 1 seconde pour laisser le temps à l'utilisateur de voir le message
-                   }
-               } else {
-                   showAlert('Erreur lors de la conversion: ' + result.error, 'danger');
-               }
+
+                if (result.success) {
+                    // Mettre à jour les données locales
+                    const company = companiesData.find(c => c.id === conversionProcess.companyData.id);
+                    if (company) {
+                        company.converted_to_opportunity = true;
+                        company.opportunity_id = result.opportunityId;
+                    }
+
+                    // Fermer le modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('convertOpportunityModal'));
+                    modal.hide();
+
+                    // Recharger l'affichage
+                    renderCompanies();
+                    updateStats();
+
+                    showAlert('Entreprise convertie en opportunité avec succès !', 'success');
+
+                    // Ouvrir automatiquement l'opportunité en mode modification
+                    if (result.opportunityId) {
+                        setTimeout(() => {
+                            openOpportunityForEdit(result.opportunityId, result.opportunityData);
+                        }, 1000); // Délai de 1 seconde pour laisser le temps à l'utilisateur de voir le message
+                    }
+                } else {
+                    showAlert('Erreur lors de la conversion: ' + result.error, 'danger');
+                }
             } catch (e) {
                 console.error('Erreur conversion:', e);
                 showAlert('Erreur lors de la conversion en opportunité', 'danger');
             }
         }
 
-                 // Initialisation
-         document.addEventListener('DOMContentLoaded', () => {
-             console.log('🚀 Page d\'exécution de campagne initialisée');
-             loadCampaignData();
-         });
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Page d\'exécution de campagne initialisée');
+            loadCampaignData();
+        });
     </script>
 
     <!-- Modal de sélection du client (Étape 1) -->
@@ -1508,7 +1913,7 @@
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>Entreprise à convertir :</strong> <span id="companyToConvertName"></span>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="card">
@@ -1517,7 +1922,8 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <label for="existingClientSelect" class="form-label">Sélectionner un client existant</label>
+                                        <label for="existingClientSelect" class="form-label">Sélectionner un client
+                                            existant</label>
                                         <select class="form-select" id="existingClientSelect">
                                             <option value="">-- Chargement en cours --</option>
                                         </select>
@@ -1525,7 +1931,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
@@ -1533,13 +1939,15 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="clientOption" id="createNewClient" value="new">
+                                        <input class="form-check-input" type="radio" name="clientOption"
+                                            id="createNewClient" value="new">
                                         <label class="form-check-label" for="createNewClient">
                                             Créer un nouveau client à partir de l'entreprise
                                         </label>
                                     </div>
                                     <small class="text-muted">
-                                        Les informations de l'entreprise seront pré-remplies dans le formulaire de création.
+                                        Les informations de l'entreprise seront pré-remplies dans le formulaire de
+                                        création.
                                     </small>
                                 </div>
                             </div>
@@ -1554,121 +1962,124 @@
         </div>
     </div>
 
-           <!-- Modal de création de nouveau client (Étape 2) -->
-       <div class="modal fade" id="newClientModal" tabindex="-1">
-           <div class="modal-dialog modal-xl">
-               <div class="modal-content">
-                   <div class="modal-header">
-                       <h5 class="modal-title">Étape 2: Créer un Nouveau Client</h5>
-                       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                   </div>
-                   <div class="modal-body">
-                       <form id="newClientForm">
-                           <div class="row">
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientName" class="form-label">Nom *</label>
-                                   <input type="text" class="form-control" id="newClientName" required>
-                               </div>
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientSigle" class="form-label">Sigle</label>
-                                   <input type="text" class="form-control" id="newClientSigle" placeholder="Abréviation du nom" maxlength="20">
-                                   <small class="form-text text-muted">Abréviation ou sigle pour identification rapide</small>
-                               </div>
-                           </div>
-                           <div class="row">
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientSector" class="form-label">Secteur d'activité</label>
-                                   <select class="form-select" id="newClientSector">
-                                       <option value="">Sélectionner un secteur</option>
-                                   </select>
-                               </div>
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientSousSector" class="form-label">Sous-secteur d'activité</label>
-                                   <select class="form-select" id="newClientSousSector">
-                                       <option value="">Sélectionner un sous-secteur</option>
-                                   </select>
-                               </div>
-                           </div>
-                           <div class="row">
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientEmail" class="form-label">Email</label>
-                                   <input type="email" class="form-control" id="newClientEmail">
-                               </div>
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientTelephone" class="form-label">Téléphone</label>
-                                   <input type="tel" class="form-control" id="newClientTelephone">
-                               </div>
-                           </div>
-                           <div class="row">
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientAdresse" class="form-label">Adresse</label>
-                                   <textarea class="form-control" id="newClientAdresse" rows="3"></textarea>
-                               </div>
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientStatut" class="form-label">Statut</label>
-                                   <select class="form-select" id="newClientStatut">
-                                       <option value="">Sélectionner...</option>
-                                   </select>
-                               </div>
-                           </div>
-                           <div class="row">
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientVille" class="form-label">Ville</label>
-                                   <input type="text" class="form-control" id="newClientVille">
-                               </div>
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientCodePostal" class="form-label">Code Postal</label>
-                                   <input type="text" class="form-control" id="newClientCodePostal">
-                               </div>
-                           </div>
-                           <div class="row">
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientPays" class="form-label">Pays</label>
-                                   <select class="form-select" id="newClientPays">
-                                       <option value="">Sélectionner un pays</option>
-                                   </select>
-                               </div>
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientTailleEntreprise" class="form-label">Taille Entreprise</label>
-                                   <select class="form-select" id="newClientTailleEntreprise">
-                                       <option value="">Sélectionner une taille</option>
-                                   </select>
-                               </div>
-                           </div>
-                           <div class="row">
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientSourceProspection" class="form-label">Source Prospection</label>
-                                   <select class="form-select" id="newClientSourceProspection">
-                                       <option value="">Sélectionner une source</option>
-                                   </select>
-                               </div>
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientFormeJuridique" class="form-label">Forme Juridique</label>
-                                   <select class="form-select" id="newClientFormeJuridique">
-                                       <option value="">Sélectionner une forme</option>
-                                   </select>
-                               </div>
-                           </div>
-                           <div class="row">
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientEffectif" class="form-label">Effectif</label>
-                                   <input type="number" class="form-control" id="newClientEffectif" min="1">
-                               </div>
-                               <div class="col-md-6 mb-3">
-                                   <label for="newClientNotes" class="form-label">Notes</label>
-                                   <textarea class="form-control" id="newClientNotes" rows="3"></textarea>
-                               </div>
-                           </div>
-                       </form>
-                   </div>
-                   <div class="modal-footer">
-                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                       <button type="button" class="btn btn-primary" onclick="createNewClient()">
-                           <i class="fas fa-save me-2"></i>Créer le Client
-                       </button>
-                   </div>
-               </div>
-           </div>
-       </div>
+    <!-- Modal de création de nouveau client (Étape 2) -->
+    <div class="modal fade" id="newClientModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Étape 2: Créer un Nouveau Client</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newClientForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientName" class="form-label">Nom *</label>
+                                <input type="text" class="form-control" id="newClientName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientSigle" class="form-label">Sigle</label>
+                                <input type="text" class="form-control" id="newClientSigle"
+                                    placeholder="Abréviation du nom" maxlength="20">
+                                <small class="form-text text-muted">Abréviation ou sigle pour identification
+                                    rapide</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientSector" class="form-label">Secteur d'activité</label>
+                                <select class="form-select" id="newClientSector">
+                                    <option value="">Sélectionner un secteur</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientSousSector" class="form-label">Sous-secteur d'activité</label>
+                                <select class="form-select" id="newClientSousSector">
+                                    <option value="">Sélectionner un sous-secteur</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="newClientEmail">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientTelephone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="newClientTelephone">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientAdresse" class="form-label">Adresse</label>
+                                <textarea class="form-control" id="newClientAdresse" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientStatut" class="form-label">Statut</label>
+                                <select class="form-select" id="newClientStatut">
+                                    <option value="">Sélectionner...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientVille" class="form-label">Ville</label>
+                                <input type="text" class="form-control" id="newClientVille">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientCodePostal" class="form-label">Code Postal</label>
+                                <input type="text" class="form-control" id="newClientCodePostal">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientPays" class="form-label">Pays</label>
+                                <select class="form-select" id="newClientPays">
+                                    <option value="">Sélectionner un pays</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientTailleEntreprise" class="form-label">Taille Entreprise</label>
+                                <select class="form-select" id="newClientTailleEntreprise">
+                                    <option value="">Sélectionner une taille</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientSourceProspection" class="form-label">Source Prospection</label>
+                                <select class="form-select" id="newClientSourceProspection">
+                                    <option value="">Sélectionner une source</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientFormeJuridique" class="form-label">Forme Juridique</label>
+                                <select class="form-select" id="newClientFormeJuridique">
+                                    <option value="">Sélectionner une forme</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientEffectif" class="form-label">Effectif</label>
+                                <input type="number" class="form-control" id="newClientEffectif" min="1">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newClientNotes" class="form-label">Notes</label>
+                                <textarea class="form-control" id="newClientNotes" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="createNewClient()">
+                        <i class="fas fa-save me-2"></i>Créer le Client
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
+
 </html>

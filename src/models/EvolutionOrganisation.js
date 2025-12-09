@@ -5,7 +5,7 @@ class EvolutionOrganisation {
         this.id = data.id;
         this.collaborateur_id = data.collaborateur_id;
         this.business_unit_id = data.business_unit_id;
-        this.division_id = data.division_id;
+        this.division_id = data.division_id || null;
         this.date_debut = data.date_debut;
         this.date_fin = data.date_fin;
         this.motif = data.motif;
@@ -23,9 +23,7 @@ class EvolutionOrganisation {
         if (!this.business_unit_id) {
             throw new Error('ID de la Business Unit requis');
         }
-        if (!this.division_id) {
-            throw new Error('ID de la Division requis');
-        }
+        // division_id is now optional
         if (!this.date_debut) {
             throw new Error('Date de début requise');
         }
