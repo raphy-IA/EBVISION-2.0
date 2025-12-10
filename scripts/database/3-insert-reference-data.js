@@ -129,6 +129,20 @@ async function main() {
         await insertObjectiveTypes(client);
         await setupMetricsSources(client);
 
+        // 🏦 PARTIE 10 : Établissements Financiers
+        console.log('\n╔══════════════════════════════════════════════════════════════╗');
+        console.log('║         🏦 ÉTABLISSEMENTS FINANCIERS                         ║');
+        console.log('╚══════════════════════════════════════════════════════════════╝\n');
+
+        await insertFinancialInstitutions(client);
+
+        // 📊 PARTIE 11 : Taxes
+        console.log('\n╔══════════════════════════════════════════════════════════════╗');
+        console.log('║         📊 TAXES USUELLES                                   ║');
+        console.log('╚══════════════════════════════════════════════════════════════╝\n');
+
+        await insertTaxes(client);
+
         console.log('\n╔══════════════════════════════════════════════════════════════╗');
         console.log('║   ✅ TOUTES LES DONNÉES DE RÉFÉRENCE SONT INSÉRÉES !       ║');
         console.log('╚══════════════════════════════════════════════════════════════╝\n');
@@ -1546,4 +1560,48 @@ async function setupMetricsSources(client) {
     }
 
     console.log(`   ✓ ${configured} sources configurées.\n`);
+}
+// ===============================================
+// 🏦 ÉTABLISSEMENTS FINANCIERS
+// ===============================================
+async function insertFinancialInstitutions(client) {
+    console.log('🏦 Insertion des Établissements Financiers...');
+
+    const banks = [
+        { code: 'AFB', name: 'Afriland First Bank', type: 'BANK', country: 'CMR', swift_code: 'AFRICMCA' },
+        { code: 'SGC', name: 'Société Générale Cameroun', type: 'BANK', country: 'CMR', swift_code: 'SOGECMCA' },
+        { code: 'BICEC', name: 'Banque Internationale du Cameroun pour l\'Epargne et le Crédit', type: 'BANK', country: 'CMR', swift_code: 'BICECCMA' },
+        { code: 'UBA', name: 'United Bank for Africa', type: 'BANK', country: 'CMR', swift_code: 'UBACCMXXX' },
+        { code: 'ECO', name: 'Ecobank Cameroun', type: 'BANK', country: 'CMR', swift_code: 'ECOBCMCA' },
+        { code: 'BGFI', name: 'BGFI Bank', type: 'BANK', country: 'CMR', swift_code: 'BGFICMCA' },
+        { code: 'SCB', name: 'SCB Cameroun', type: 'BANK', country: 'CMR', swift_code: 'SCBCMCA' }
+    ];
+
+    let created = 0, updated = 0;
+
+    for (const bank of banks) {
+        // Tenter une mise à jour par code; si aucune ligne affectée, insérer
+        const updateRes = await client.query(`
+            UPDATE financial_institutions 
+            SET name = $1,
+                type = $2,
+                country = $3,
+                swift_code = $4,
+                is_active = true,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE code = $5
+        `, [bank.name, bank.type, bank.country, bank.swift_code, bank.code]);
+
+        if (updateRes.rowCount && updateRes.rowCount > 0) {
+            updated++;
+        } else {
+            await client.query(`
+                INSERT INTO financial_institutions (code, name, type, country, swift_code, is_active)
+                VALUES ($1, $2, $3, $4, $5, true)
+            `, [bank.code, bank.name, bank.type, bank.country, bank.swift_code]);
+            created++;
+        }
+    }
+
+    console.log(`   ✓ ${created} créés, ${updated} mis à jour (Total: ${banks.length})\n`);
 }
