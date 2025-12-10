@@ -222,6 +222,7 @@ router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { force = false } = req.query; // Paramètre pour forcer la suppression
+        console.log(`[DELETE Division] ID: ${id}, Force: ${force}`);
 
         const division = await Division.findById(id);
 
@@ -293,7 +294,8 @@ router.delete('/:id', async (req, res) => {
         console.error('Erreur lors de la suppression de la division:', error);
         res.status(500).json({
             success: false,
-            message: 'Erreur interne du serveur'
+            message: 'Erreur interne du serveur',
+            error: error.message
         });
     }
 });
