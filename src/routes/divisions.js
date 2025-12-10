@@ -2,6 +2,7 @@ const express = require('express');
 const Division = require('../models/Division');
 const BusinessUnit = require('../models/BusinessUnit');
 const { divisionValidation } = require('../utils/validators');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -218,11 +219,13 @@ router.put('/:id', async (req, res) => {
 });
 
 // Supprimer une division
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { force = false } = req.query; // Paramètre pour forcer la suppression
-        console.log(`[DELETE Division] ID: ${id}, Force: ${force}`);
+        const { force } = req.query;
+        const forceDelete = force === 'true' || force === true;
+
+        console.log(`[DELETE Division] ID: ${id}, Force: ${forceDelete} (raw: ${force})`);
 
         const division = await Division.findById(id);
 
@@ -235,10 +238,10 @@ router.delete('/:id', async (req, res) => {
 
         // Vérifier les dépendances
         const dependencies = await Division.checkDependencies(id);
+        const deps = dependencies.dependencies || {};
 
-        if (!dependencies.canDelete && !force) {
+        if (!dependencies.canDelete && !forceDelete) {
             // Construire le message d'erreur détaillé
-            const deps = dependencies.dependencies;
             const reasons = [];
 
             if (deps.active_collaborateurs > 0) reasons.push(`${deps.active_collaborateurs} collaborateur(s) actif(s)`);
@@ -268,15 +271,16 @@ router.delete('/:id', async (req, res) => {
             });
         } else {
             // Désactivation (force = true)
+            console.log(`[DELETE Division] Deactivating division ${id}...`);
             result = await Division.deactivate(id);
 
-            // Re-construct reasons for the message
-            const deps = dependencies.dependencies;
+            // Safer reasons construction
             const reasons = [];
+            const safeDeps = dependencies.dependencies || {};
 
-            if (deps.active_collaborateurs > 0) reasons.push(`${deps.active_collaborateurs} collaborateur(s) actif(s)`);
-            if (deps.prospecting_campaigns > 0) reasons.push(`${deps.prospecting_campaigns} campagne(s) de prospection`);
-            if (deps.time_entries > 0) reasons.push(`${deps.time_entries} saisie(s) de temps`);
+            if (safeDeps.active_collaborateurs > 0) reasons.push(`${safeDeps.active_collaborateurs} collaborateur(s) actif(s)`);
+            if (safeDeps.prospecting_campaigns > 0) reasons.push(`${safeDeps.prospecting_campaigns} campagne(s) de prospection`);
+            if (safeDeps.time_entries > 0) reasons.push(`${safeDeps.time_entries} saisie(s) de temps`);
 
             res.json({
                 success: true,
@@ -285,7 +289,7 @@ router.delete('/:id', async (req, res) => {
                 action: 'deactivated',
                 details: {
                     reasons: reasons,
-                    dependencies: deps
+                    dependencies: safeDeps
                 }
             });
         }
@@ -300,4 +304,4 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-module.exports = router; 
+module.exports = router;
