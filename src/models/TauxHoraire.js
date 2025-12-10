@@ -112,6 +112,9 @@ class TauxHoraire {
         const countQuery = `
             SELECT COUNT(*) as total
             FROM taux_horaires th
+            LEFT JOIN grades g ON th.grade_id = g.id
+            LEFT JOIN divisions d ON th.division_id = d.id
+            LEFT JOIN business_units bu ON d.business_unit_id = bu.id
             ${whereClause}
         `;
         const countResult = await pool.query(countQuery, queryParams);
