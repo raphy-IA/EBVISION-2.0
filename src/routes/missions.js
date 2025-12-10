@@ -32,24 +32,31 @@ router.get('/', authenticateToken, async (req, res) => {
         let extraJoins = ""; // Pour les jointures conditionnelles
 
         const userRoles = user.roles || [];
-        const isSuperAdmin = userRoles.some(r => ['SUPER_ADMIN', 'ADMIN', 'SENIOR_PARTNER', 'DIRECTOR'].includes(r));
+        // SEUL le SUPER_ADMIN voit tout par défaut. Les autres (Admin, Director, etc.) sont restreints à leur périmètre.
+        const isSuperAdmin = userRoles.includes('SUPER_ADMIN');
 
         // 0. Sécurisation globale : 
-        // - Non-SuperAdmins voient uniquement leur périmètre (BU + Affectations)
+        // - Non-SuperAdmins voient uniquement leur périmètre (BU + Affectations + BUs secondaires)
         // - SuperAdmins voient tout, SAUF si le filtre 'my_scope' est activé explicite
         if (!isSuperAdmin || options.view === 'my_scope') {
             extraJoins += ` LEFT JOIN users u_req ON u_req.id = $${paramIndex} `;
             queryParams.push(user.id);
             paramIndex++;
-            // Join collaborateurs to get BU info safely
+
+            // Join collaborateurs to get Primary BU info
             extraJoins += ` LEFT JOIN collaborateurs col_req ON u_req.collaborateur_id = col_req.id `;
+
+            // Join user_business_unit_access for Secondary BUs
+            extraJoins += ` LEFT JOIN user_business_unit_access ubua ON ubua.user_id = u_req.id AND ubua.business_unit_id = m.business_unit_id `;
 
             whereConditions.push(`(
                 m.collaborateur_id = u_req.collaborateur_id OR
                 m.associe_id = u_req.collaborateur_id OR
+                m.manager_id = u_req.collaborateur_id OR
                 bu.responsable_principal_id = u_req.collaborateur_id OR
                 bu.responsable_adjoint_id = u_req.collaborateur_id OR
-                m.business_unit_id = col_req.business_unit_id
+                m.business_unit_id = col_req.business_unit_id OR
+                ubua.business_unit_id IS NOT NULL
             )`);
         }
 
@@ -173,22 +180,29 @@ router.get('/stats', authenticateToken, async (req, res) => {
         `;
 
         const userRoles = user.roles || [];
-        const isSuperAdmin = userRoles.some(r => ['SUPER_ADMIN', 'ADMIN', 'SENIOR_PARTNER', 'DIRECTOR'].includes(r));
+        // SEUL le SUPER_ADMIN voit tout par défaut
+        const isSuperAdmin = userRoles.includes('SUPER_ADMIN');
 
         if (!isSuperAdmin || req.query.view === 'my_scope') {
             // Join users to get current user data explicitly like in GET /
             joins += ` LEFT JOIN users u_req ON u_req.id = $${valueIndex} `;
             values.push(user.id);
             valueIndex++;
-            // Join collaborateurs to get BU info safely
+
+            // Join collaborateurs to get Primary BU info
             joins += ` LEFT JOIN collaborateurs col_req ON u_req.collaborateur_id = col_req.id `;
+
+            // Join user_business_unit_access for Secondary BUs
+            joins += ` LEFT JOIN user_business_unit_access ubua ON ubua.user_id = u_req.id AND ubua.business_unit_id = m.business_unit_id `;
 
             conditions.push(`(
                 m.collaborateur_id = u_req.collaborateur_id OR
                 m.associe_id = u_req.collaborateur_id OR
+                m.manager_id = u_req.collaborateur_id OR
                 bu.responsable_principal_id = u_req.collaborateur_id OR
                 bu.responsable_adjoint_id = u_req.collaborateur_id OR
-                m.business_unit_id = col_req.business_unit_id
+                m.business_unit_id = col_req.business_unit_id OR
+                ubua.business_unit_id IS NOT NULL
             )`);
         }
 
