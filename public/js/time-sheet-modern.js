@@ -12,31 +12,35 @@ let isNavigating = false; // Protection contre les clics multiples
 const API_BASE_URL = '/api';
 
 // Fonction pour obtenir le lundi de la semaine courante (sans timezone)
-function getMondayOfWeek(date = new Date()) {
-    const d = new Date(date);
-    const day = d.getDay();
-
-    // getDay() retourne: 0=Dimanche, 1=Lundi, 2=Mardi, 3=Mercredi, 4=Jeudi, 5=Vendredi, 6=Samedi
-    // Pour aller au lundi de cette semaine:
-    // Si c'est dimanche (0), on recule de 6 jours
-    // Si c'est lundi (1), on reste sur lundi
-    // Si c'est mardi (2), on recule de 1 jour
-    // etc.
-    let daysToSubtract;
-    if (day === 0) { // Dimanche
-        daysToSubtract = 6;
+// Fonction pour obtenir le lundi de la semaine courante (sans timezone)
+// Fonction pour obtenir le lundi de la semaine courante (sans timezone)
+function getMondayOfWeek(dateInput = new Date()) {
+    let d;
+    console.log('📅 getMondayOfWeek input:', dateInput);
+    // Gestion robuste des entrées chaîne "YYYY-MM-DD" pour éviter les décalages UTC
+    if (typeof dateInput === 'string' && dateInput.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        d = new Date(dateInput + 'T12:00:00'); // Midi pour éviter les bords
     } else {
-        daysToSubtract = day - 1;
+        d = new Date(dateInput);
+        d.setHours(12, 0, 0, 0); // Normaliser à midi
     }
+
+    const day = d.getDay(); // 0=Dimanche, 1=Lundi...
+    // Si Dimanche (0) => Reculer de 6 jours. Sinon => Reculer de (day - 1)
+    const daysToSubtract = day === 0 ? 6 : day - 1;
+
+    console.log('📅 jour:', day, 'jours à soustraire:', daysToSubtract);
 
     const monday = new Date(d);
     monday.setDate(d.getDate() - daysToSubtract);
 
-    // Éviter les problèmes de timezone en formatant manuellement
+    // Retourner le format YYYY-MM-DD
     const year = monday.getFullYear();
     const month = String(monday.getMonth() + 1).padStart(2, '0');
     const dayOfMonth = String(monday.getDate()).padStart(2, '0');
-    return `${year}-${month}-${dayOfMonth}`;
+    const result = `${year}-${month}-${dayOfMonth}`;
+    console.log('📅 result:', result);
+    return result;
 }
 
 // Fonction pour obtenir le dimanche de la semaine (lundi + 6 jours)
@@ -158,6 +162,25 @@ function setupEventListeners() {
         });
     } else {
         console.error('❌ Bouton semaine suivante non trouvé');
+    }
+
+
+    // Écouter les changements du sélecteur de date
+    const weekDatePicker = document.getElementById('week-date-picker');
+    if (weekDatePicker) {
+        console.log('✅ Ajout de l\'écouteur pour le sélecteur de date');
+        weekDatePicker.addEventListener('change', async function (e) {
+            const selectedDate = e.target.value;
+            if (selectedDate) {
+                console.log('📅 Date sélectionnée:', selectedDate);
+                // Passer la chaîne directement pour éviter le constructeur new Date(string) qui parse en UTC
+                const newWeekStart = getMondayOfWeek(selectedDate);
+                if (newWeekStart !== currentWeekStart) {
+                    currentWeekStart = newWeekStart;
+                    await loadWeekData();
+                }
+            }
+        });
     }
 }
 
@@ -448,8 +471,8 @@ function updateWeekDisplay() {
 
     try {
         // Toujours utiliser les dates calculées pour garantir l'ordre lundi-dimanche
-        const startDate = new Date(currentWeekStart + 'T00:00:00');
-        const endDate = new Date(getSundayOfWeek(currentWeekStart) + 'T00:00:00');
+        const startDate = new Date(currentWeekStart + 'T12:00:00');
+        const endDate = new Date(getSundayOfWeek(currentWeekStart) + 'T12:00:00');
 
         // Vérifier que les dates sont valides
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
@@ -477,6 +500,12 @@ function updateWeekDisplay() {
         updateDailySummaryHeaders();
 
         console.log('📅 Affichage de la semaine mis à jour avec succès');
+
+        // Mettre à jour la valeur du date picker
+        const weekDatePicker = document.getElementById('week-date-picker');
+        if (weekDatePicker && currentWeekStart) {
+            weekDatePicker.value = currentWeekStart;
+        }
     } catch (error) {
         console.error('❌ Erreur lors de la mise à jour de l\'affichage:', error);
     }
@@ -493,7 +522,7 @@ function updateTableHeaders(weekStartDate) {
     if (weekStartDate instanceof Date) {
         startDate = weekStartDate;
     } else if (typeof weekStartDate === 'string') {
-        startDate = new Date(weekStartDate + 'T00:00:00');
+        startDate = new Date(weekStartDate + 'T12:00:00'); // Midi pour surêté
     } else {
         console.error('❌ Format de date invalide:', weekStartDate);
         return;
@@ -1523,7 +1552,7 @@ function updateDailySummaryHeaders() {
     if (!thead) return;
 
     // Générer les dates pour chaque jour de la semaine
-    const startDate = new Date(currentWeekStart);
+    const startDate = new Date(currentWeekStart + 'T12:00:00');
     const weekDates = weekDays.map((day, index) => {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + index);
@@ -2435,7 +2464,7 @@ async function loadPreviousWeek() {
 
     try {
         // Calculer le lundi de la semaine précédente
-        const currentMonday = new Date(currentWeekStart + 'T00:00:00');
+        const currentMonday = new Date(currentWeekStart + 'T12:00:00');
         const previousMonday = new Date(currentMonday);
         previousMonday.setDate(currentMonday.getDate() - 7);
 
@@ -2483,7 +2512,7 @@ async function loadNextWeek() {
 
     try {
         // Calculer le lundi de la semaine suivante
-        const currentMonday = new Date(currentWeekStart + 'T00:00:00');
+        const currentMonday = new Date(currentWeekStart + 'T12:00:00');
         const nextMonday = new Date(currentMonday);
         nextMonday.setDate(currentMonday.getDate() + 7);
 
