@@ -85,6 +85,7 @@ router.get('/:id/dependencies', async (req, res) => {
         if (deps.active_collaborateurs > 0) reasons.push(`${deps.active_collaborateurs} collaborateur(s) actif(s)`);
         if (deps.prospecting_campaigns > 0) reasons.push(`${deps.prospecting_campaigns} campagne(s) de prospection`);
         if (deps.time_entries > 0) reasons.push(`${deps.time_entries} saisie(s) de temps`);
+        if (deps.taux_horaires > 0) reasons.push(`${deps.taux_horaires} taux horaire(s) défini(s)`);
 
         res.json({
             success: true,
@@ -247,6 +248,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
             if (deps.active_collaborateurs > 0) reasons.push(`${deps.active_collaborateurs} collaborateur(s) actif(s)`);
             if (deps.prospecting_campaigns > 0) reasons.push(`${deps.prospecting_campaigns} campagne(s) de prospection`);
             if (deps.time_entries > 0) reasons.push(`${deps.time_entries} saisie(s) de temps`);
+            if (deps.taux_horaires > 0) reasons.push(`${deps.taux_horaires} taux horaire(s) défini(s)`);
 
             return res.status(400).json({
                 success: false,
@@ -281,6 +283,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
             if (safeDeps.active_collaborateurs > 0) reasons.push(`${safeDeps.active_collaborateurs} collaborateur(s) actif(s)`);
             if (safeDeps.prospecting_campaigns > 0) reasons.push(`${safeDeps.prospecting_campaigns} campagne(s) de prospection`);
             if (safeDeps.time_entries > 0) reasons.push(`${safeDeps.time_entries} saisie(s) de temps`);
+            if (safeDeps.taux_horaires > 0) reasons.push(`${safeDeps.taux_horaires} taux horaire(s) défini(s)`);
 
             res.json({
                 success: true,

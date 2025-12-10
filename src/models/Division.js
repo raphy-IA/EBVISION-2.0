@@ -262,6 +262,7 @@ class Division {
             SELECT 
                 (SELECT COUNT(*) FROM collaborateurs WHERE division_id = $1 AND statut = 'ACTIF') as active_collaborateurs,
                 (SELECT COUNT(*) FROM prospecting_campaigns WHERE division_id = $1) as prospecting_campaigns,
+                (SELECT COUNT(*) FROM taux_horaires WHERE division_id = $1) as taux_horaires,
                 (SELECT COUNT(*) FROM time_entries te 
                  JOIN time_sheets ts ON te.time_sheet_id = ts.id 
                  JOIN users u ON ts.user_id = u.id 
@@ -271,14 +272,15 @@ class Division {
 
         const result = await pool.query(sql, [divisionId]);
         const deps = result.rows[0];
-        
+
         return {
-            canDelete: deps.active_collaborateurs == 0 && deps.prospecting_campaigns == 0 && 
-                      deps.time_entries == 0,
+            canDelete: deps.active_collaborateurs == 0 && deps.prospecting_campaigns == 0 &&
+                deps.time_entries == 0 && deps.taux_horaires == 0,
             dependencies: {
                 active_collaborateurs: parseInt(deps.active_collaborateurs),
                 prospecting_campaigns: parseInt(deps.prospecting_campaigns),
-                time_entries: parseInt(deps.time_entries)
+                time_entries: parseInt(deps.time_entries),
+                taux_horaires: parseInt(deps.taux_horaires)
             }
         };
     }
