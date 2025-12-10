@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     try {
         const { page = 1, limit = 12, search = '', statut = '', business_unit_id = '' } = req.query;
-        
+
         const result = await Division.findAll({
             page: parseInt(page),
             limit: parseInt(limit),
@@ -39,7 +39,7 @@ router.get('/statistics', async (req, res) => {
     try {
         const globalStats = await Division.getGlobalStats();
         const divisions = await Division.findAll();
-        
+
         const statistics = {
             ...globalStats,
             divisions_list: divisions.divisions.map(d => ({
@@ -57,6 +57,45 @@ router.get('/statistics', async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la récupération des statistiques des divisions:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur interne du serveur'
+        });
+    }
+});
+
+// Vérifier les dépendances d'une division (DOIT ÊTRE AVANT /:id)
+router.get('/:id/dependencies', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const division = await Division.findById(id);
+
+        if (!division) {
+            return res.status(404).json({
+                success: false,
+                message: 'Division non trouvée'
+            });
+        }
+
+        const dependencies = await Division.checkDependencies(id);
+        const deps = dependencies.dependencies;
+        const reasons = [];
+
+        if (deps.active_collaborateurs > 0) reasons.push(`${deps.active_collaborateurs} collaborateur(s) actif(s)`);
+        if (deps.prospecting_campaigns > 0) reasons.push(`${deps.prospecting_campaigns} campagne(s) de prospection`);
+        if (deps.time_entries > 0) reasons.push(`${deps.time_entries} saisie(s) de temps`);
+
+        res.json({
+            success: true,
+            data: {
+                canDelete: dependencies.canDelete,
+                reasons: reasons,
+                dependencies: deps
+            }
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la vérification des dépendances:', error);
         res.status(500).json({
             success: false,
             message: 'Erreur interne du serveur'
@@ -144,7 +183,7 @@ router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { error, value } = divisionValidation.update.validate(req.body);
-        
+
         if (error) {
             return res.status(400).json({
                 success: false,
@@ -183,7 +222,7 @@ router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { force = false } = req.query; // Paramètre pour forcer la suppression
-        
+
         const division = await Division.findById(id);
 
         if (!division) {
@@ -195,16 +234,16 @@ router.delete('/:id', async (req, res) => {
 
         // Vérifier les dépendances
         const dependencies = await Division.checkDependencies(id);
-        
+
         if (!dependencies.canDelete && !force) {
             // Construire le message d'erreur détaillé
             const deps = dependencies.dependencies;
             const reasons = [];
-            
+
             if (deps.active_collaborateurs > 0) reasons.push(`${deps.active_collaborateurs} collaborateur(s) actif(s)`);
             if (deps.prospecting_campaigns > 0) reasons.push(`${deps.prospecting_campaigns} campagne(s) de prospection`);
             if (deps.time_entries > 0) reasons.push(`${deps.time_entries} saisie(s) de temps`);
-            
+
             return res.status(400).json({
                 success: false,
                 message: `Impossible de supprimer cette division car elle contient des données liées`,
@@ -229,11 +268,24 @@ router.delete('/:id', async (req, res) => {
         } else {
             // Désactivation (force = true)
             result = await Division.deactivate(id);
+
+            // Re-construct reasons for the message
+            const deps = dependencies.dependencies;
+            const reasons = [];
+
+            if (deps.active_collaborateurs > 0) reasons.push(`${deps.active_collaborateurs} collaborateur(s) actif(s)`);
+            if (deps.prospecting_campaigns > 0) reasons.push(`${deps.prospecting_campaigns} campagne(s) de prospection`);
+            if (deps.time_entries > 0) reasons.push(`${deps.time_entries} saisie(s) de temps`);
+
             res.json({
                 success: true,
                 message: 'Division désactivée avec succès (des données liées existent)',
                 data: result,
-                action: 'deactivated'
+                action: 'deactivated',
+                details: {
+                    reasons: reasons,
+                    dependencies: deps
+                }
             });
         }
 

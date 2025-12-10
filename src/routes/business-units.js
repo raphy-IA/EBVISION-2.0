@@ -70,6 +70,48 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/business-units/:id/dependencies - Vérifier les dépendances d'une business unit
+router.get('/:id/dependencies', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Vérifier si la business unit existe
+        const existingBusinessUnit = await BusinessUnit.findById(id);
+        if (!existingBusinessUnit) {
+            return res.status(404).json({
+                success: false,
+                message: 'Business unit non trouvée'
+            });
+        }
+
+        const dependencies = await BusinessUnit.checkDependencies(id);
+        const deps = dependencies.dependencies;
+        const reasons = [];
+
+        if (deps.active_divisions > 0) reasons.push(`${deps.active_divisions} division(s) active(s)`);
+        if (deps.active_collaborateurs > 0) reasons.push(`${deps.active_collaborateurs} collaborateur(s) actif(s)`);
+        if (deps.opportunities > 0) reasons.push(`${deps.opportunities} opportunité(s)`);
+        if (deps.prospecting_campaigns > 0) reasons.push(`${deps.prospecting_campaigns} campagne(s) de prospection`);
+        if (deps.time_entries > 0) reasons.push(`${deps.time_entries} saisie(s) de temps`);
+
+        res.json({
+            success: true,
+            data: {
+                canDelete: dependencies.canDelete,
+                reasons: reasons,
+                dependencies: deps
+            }
+        });
+    } catch (error) {
+        console.error('Erreur lors de la vérification des dépendances:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la vérification des dépendances',
+            error: error.message
+        });
+    }
+});
+
 // GET /api/business-units/active - Récupérer les business units actives (PUBLIC)
 router.get('/active', async (req, res) => {
     try {
@@ -262,11 +304,26 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         } else {
             // Désactivation (force = true)
             result = await BusinessUnit.deactivate(id);
+
+            // Re-construct reasons for the message
+            const deps = dependencies.dependencies;
+            const reasons = [];
+
+            if (deps.active_divisions > 0) reasons.push(`${deps.active_divisions} division(s) active(s)`);
+            if (deps.active_collaborateurs > 0) reasons.push(`${deps.active_collaborateurs} collaborateur(s) actif(s)`);
+            if (deps.opportunities > 0) reasons.push(`${deps.opportunities} opportunité(s)`);
+            if (deps.prospecting_campaigns > 0) reasons.push(`${deps.prospecting_campaigns} campagne(s) de prospection`);
+            if (deps.time_entries > 0) reasons.push(`${deps.time_entries} saisie(s) de temps`);
+
             res.json({
                 success: true,
                 message: 'Business unit désactivée avec succès (des données liées existent)',
                 data: result,
-                action: 'deactivated'
+                action: 'deactivated',
+                details: {
+                    reasons: reasons,
+                    dependencies: deps
+                }
             });
         }
 

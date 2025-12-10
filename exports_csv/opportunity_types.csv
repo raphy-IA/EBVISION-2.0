@@ -1,0 +1,5 @@
+id;name;description;default_probability;default_duration_days;is_active;created_at;updated_at;nom;code;couleur
+3f2eda0a-d6fa-4d06-ae88-579021a5e7db;Vente standard;Pipeline commercial standard (identification → décision);10;30;true;Sun Dec 07 2025 18:12:08 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:17:49 GMT-0500 (UTC−05:00);Vente standard;VENTE_STD;#3b82f6
+594d1a58-467d-44a7-b0b4-22805bc9b0c6;Audit Comptable;Pipeline standard pour missions d'audit comptable;50;30;true;Sun Dec 07 2025 18:12:08 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:17:49 GMT-0500 (UTC−05:00);Audit Comptable;AUDIT-COMP;#f97316
+03d4c690-35da-4def-8545-06518d56f250;Conseil en Management;Pipeline standard pour missions de conseil en management;50;30;true;Sun Dec 07 2025 18:12:08 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:17:49 GMT-0500 (UTC−05:00);Conseil en Management;CONSEIL-MGT;#22c55e
+18e4c5a6-89e9-4b14-8c8a-2321600f0014;Expertise Juridique;Pipeline standard pour missions d'expertise juridique;50;30;true;Sun Dec 07 2025 18:12:08 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:17:49 GMT-0500 (UTC−05:00);Expertise Juridique;EXP-JURID;#a855f7

@@ -1,0 +1,2 @@
+id;stage_id;action_type;action_title;action_description;action_date;performed_by;duration_minutes;outcome;notes;attachments;created_at
+7c405356-e0d4-4f94-98b0-d5ad1e79eab9;c3685485-10e9-4253-bc73-1aa0316b4c17;STAGE_COMPLETE;Étape terminée;L'étape ""Décision"" a été terminée (résultat: gagnée);Mon Dec 08 2025 21:32:54 GMT-0500 (UTC−05:00);02ce1bf8-ac3d-40c9-ad98-ddd682dddd53;;SUCCESS;;;Mon Dec 08 2025 21:32:54 GMT-0500 (UTC−05:00)

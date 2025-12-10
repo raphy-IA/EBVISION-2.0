@@ -1,0 +1,32 @@
+id;name;description;is_active;created_at;updated_at;code
+20f1dc0a-b99c-4e28-87a4-adfc32278f4d;Bureau;Travail au bureau;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);BUR
+ce204971-0057-4c04-b343-1cfe8d4865c2;Congés;Congés payés;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);CGE
+84e05062-993c-4678-b41b-1ae1c4658baa;Maladie;Congé maladie;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);MAL
+a0ebfebd-9aaf-4197-be95-649440db3848;Formation;Formation interne;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);FOR
+07cd2950-3cbe-4210-af08-1bd56bec707f;Promotion;Promotion;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);PROMOTION
+6cfcbe66-e31a-4ae7-83fd-a1a4f9c9b011;Rédaction de Propositions;Rédaction de Propositions;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);PROP
+b18698c9-b534-432a-9b74-709737dcfef1;Formations;Formations;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);FORMATIONS
+d0873c4d-cf48-40a0-a403-d2e22c506b4d;Administration;Administration;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);ADMINISTRA
+ba3926b5-be79-4c6e-9f25-80d331ca2d09;Autres Temps Disponibles;Autres Temps Disponibles;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);AUT
+0269c9dd-526a-424d-b4f3-d34fe879f1c7;Risk Management;Risk Management;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);RISK_MANAG
+14690568-1be1-460a-9deb-6b1718102e79;Planification;Planification;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);PLANIFICAT
+81ec1b3f-5f88-4161-af6e-c5ccadc8056a;Ressources Humaines;Ressources Humaines;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);RESSOURCES
+17e2a69d-1cd6-471f-b554-868ab46ca307;Information Technology;Information Technology;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);INFORMATIO
+6002aea1-f501-4bd7-8558-349d6e42e651;Fériés;Fériés;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);FER
+a993ea68-5da1-4201-aeb6-2fb9190bbb93;Absence Autorisée;Absence Autorisée;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);ABSENCE_AU
+d19e5e41-83c7-438e-ad08-3a5c9a4a0488;Prospection et développement du portefeuille client;Prospection et développement du portefeuille client;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);PROSPECTIO
+31647f01-0e1c-4dce-b6c6-84d3504e4878;Cotation et négociation des offres d’assurances;Cotation et négociation des offres d’assurances;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);COTATION_E
+31b2bc44-14fe-4178-acc7-48a80b349cbb;Conseil et accompagnement client;Conseil et accompagnement client;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);CONSEIL_ET
+cf852339-bcbf-4b21-89ed-d174251705f2;Gestion administrative;Gestion administrative;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);GESTION_AD
+f8691f9d-9926-4bb5-b0ea-269379c5a01e;Gestion des contrats d’assurances;Gestion des contrats d’assurances;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);GESTION_DE
+660fdd80-4f9c-4fa3-bb05-1cbcdf4547b2;Suivi et gestion des sinistres;Suivi et gestion des sinistres;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);SUIVI_ET_G
+cd2a1a09-d21b-43ed-b6a3-fe1e1216e061;Production d’assurances;Production d’assurances;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);PRODUCTION
+c1de15b3-ee9b-4cd7-a183-b98861b86b92;Activités inter BU/GROUP;Activités inter BU/GROUP;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);ACTIVIT_S_
+6e4680dc-4d3c-4338-b748-1e1bb53c48f2;Recrutement;Recrutement;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);RECRUTEMEN
+8bac8e62-ddd4-47d7-b84b-c76b003898e2;Travaux Inter BU / GROUP;Travaux Inter BU / GROUP;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);TRAVAUX_IN
+08eb232b-528f-47e5-baa6-742beda549e0;Voyages;Voyages;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);VOYAGES
+e1e9bb97-d3a8-4891-9660-a7f08d7c1b54;SITES WEB ( mises à jour, control, sécurité et conceptions);SITES WEB ( mises à jour, control, sécurité et conceptions);true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);SITES_WEB_
+b459db70-7bc3-4659-8bec-57425e85fe6b;Réseaux sociaux (booste, publication, control des commentaires et messages);Réseaux sociaux (booste, publication, control des commentaires et messages);true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);R_SEAUX_SO
+01eb83d8-cb19-436b-8bb4-5d566a6ef511;Courses et commissions;Courses et commissions;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);COURSES_ET
+2090ab11-b42e-46ab-b74e-8b25ea97f642;Graphisme (Documents internes -  3D -  Vidéo );Graphisme (Documents internes -  3D -  Vidéo );true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);GRAPHISME_
+e160414e-f9f2-49cb-badf-000db1a1e0f0;IT Support;IT Support;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);IT_SUPPORT

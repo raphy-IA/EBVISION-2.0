@@ -1,0 +1,1 @@
+id;invoice_id;description;quantite;unite;prix_unitaire;montant_ht;taux_tva;montant_tva;montant_ttc;task_id;created_at;updated_at

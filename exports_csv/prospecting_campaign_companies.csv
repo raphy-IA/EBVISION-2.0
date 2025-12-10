@@ -1,0 +1,14 @@
+campaign_id;company_id;status;sent_at;response_at;notes;validation_status;execution_status;converted_to_opportunity;opportunity_id;execution_date;execution_notes;execution_file
+c7cbd0a0-2611-4524-9596-109606d984a3;025499a2-30d9-4b35-b8a9-95e83c196801;PENDING;;;;PENDING;pending_execution;false;;;;
+c7cbd0a0-2611-4524-9596-109606d984a3;2f5479c6-2322-4f42-93a9-7aeb9e041dbb;PENDING;;;;PENDING;pending_execution;false;;;;
+c7cbd0a0-2611-4524-9596-109606d984a3;d77bd569-7d10-459e-ae0c-cdf14542a62f;PENDING;;;;PENDING;pending_execution;false;;;;
+c7cbd0a0-2611-4524-9596-109606d984a3;12b9d258-1d2e-43a2-bad9-016e77e197c0;PENDING;;;;PENDING;pending_execution;false;;;;
+c7cbd0a0-2611-4524-9596-109606d984a3;9db5b21a-d567-4d7d-a6cc-1f3305288c39;PENDING;;;;PENDING;pending_execution;false;;;;
+342741a9-629b-476b-9e02-8c579f1bfac6;ba872b1e-00ba-4ded-b6ed-2a5e08ebb71f;PENDING;;;;PENDING;pending_execution;false;;;;
+342741a9-629b-476b-9e02-8c579f1bfac6;91014511-0ffa-4a7c-b3d2-c9c9d12e7890;PENDING;;;;PENDING;pending_execution;false;;;;
+342741a9-629b-476b-9e02-8c579f1bfac6;c6ab00af-5178-4f35-a82b-fff83147ccb2;PENDING;;;;PENDING;pending_execution;false;;;;
+4eee8396-2978-4d54-ba90-b773bf94d80f;2f5479c6-2322-4f42-93a9-7aeb9e041dbb;PENDING;;;;REJECTED;pending_execution;false;;;;
+4eee8396-2978-4d54-ba90-b773bf94d80f;43d84dbb-937b-48dc-9510-5eb46c94ef4a;PENDING;;;;APPROVED;pending_execution;false;;;;
+4eee8396-2978-4d54-ba90-b773bf94d80f;696b1d42-7779-46cd-be38-22ec317434b4;PENDING;;;;APPROVED;deposed;false;;Mon Dec 08 2025 20:30:58 GMT-0500 (UTC−05:00);[Relance Email] 08/12/2025 20:15 :  courrier déposé;execution_4eee8396-2978-4d54-ba90-b773bf94d80f_696b1d42-7779-46cd-be38-22ec317434b4_1765241215353.jpeg
+4eee8396-2978-4d54-ba90-b773bf94d80f;d77bd569-7d10-459e-ae0c-cdf14542a62f;PENDING;;;;APPROVED;deposed;false;;Mon Dec 08 2025 20:40:11 GMT-0500 (UTC−05:00);[DÉPOSÉ] 08/12/2025 20:40 :  ;execution_4eee8396-2978-4d54-ba90-b773bf94d80f_d77bd569-7d10-459e-ae0c-cdf14542a62f_1765244411149.jpeg
+4eee8396-2978-4d54-ba90-b773bf94d80f;12b9d258-1d2e-43a2-bad9-016e77e197c0;PENDING;;;;APPROVED;deposed;false;;Mon Dec 08 2025 20:43:19 GMT-0500 (UTC−05:00);[DÉPOSÉ] 08/12/2025 20:43 :  ;execution_4eee8396-2978-4d54-ba90-b773bf94d80f_12b9d258-1d2e-43a2-bad9-016e77e197c0_1765244599495.jpeg

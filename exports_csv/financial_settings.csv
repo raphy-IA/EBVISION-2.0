@@ -1,0 +1,8 @@
+key;value;description;type;updated_at;updated_by
+active_currencies;[""XAF"", ""EUR"", ""USD""];Devises disponibles;json;Thu Dec 04 2025 00:34:24 GMT-0500 (UTC−05:00);
+default_currency;XAF;Devise par défaut de l'application;string;Thu Dec 04 2025 00:34:24 GMT-0500 (UTC−05:00);
+default_payment_terms;30;Délai de paiement par défaut (jours);number;Thu Dec 04 2025 00:34:24 GMT-0500 (UTC−05:00);
+default_tva;19.25;Taux de TVA par défaut (%);number;Thu Dec 04 2025 00:34:24 GMT-0500 (UTC−05:00);
+invoice_footer;Société Anonyme au capital de 10.000.000 FCFA - RC: XXXXX - NUI: XXXXX;Pied de page des factures (Mentions légales);string;Thu Dec 04 2025 00:34:24 GMT-0500 (UTC−05:00);
+invoice_notes_default;Merci de votre confiance.;Notes par défaut sur les factures;string;Thu Dec 04 2025 00:34:24 GMT-0500 (UTC−05:00);
+invoice_prefix;FACT-;Préfixe des numéros de facture;string;Thu Dec 04 2025 00:34:24 GMT-0500 (UTC−05:00);

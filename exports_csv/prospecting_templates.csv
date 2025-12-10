@@ -1,0 +1,3 @@
+id;name;channel;type_courrier;business_unit_id;division_id;subject;body_template;created_at;updated_at
+c06e0fd9-8fae-417e-b804-7ceb11e07e54;EB-TAX&LAW-Courrier-GeneralServices-01;PHYSIQUE;PRESENTATION_GENERALE;aa244e38-ccd6-43b7-9486-fe5721e2d12c;;;fdfdsf;Mon Dec 08 2025 16:15:00 GMT-0500 (UTC−05:00);Mon Dec 08 2025 16:15:00 GMT-0500 (UTC−05:00)
+e8fbe9bf-f54f-4291-a885-d61b47bdd11a;EB-TAX&LAW-Email-Juridique-01;EMAIL;SERVICE_SPECIFIQUE;aa244e38-ccd6-43b7-9486-fe5721e2d12c;;sqdsqd;qsddsqd;Mon Dec 08 2025 16:47:42 GMT-0500 (UTC−05:00);Mon Dec 08 2025 16:47:42 GMT-0500 (UTC−05:00)

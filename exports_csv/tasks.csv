@@ -1,0 +1,2 @@
+id;code;libelle;description;duree_estimee;priorite;actif;created_at;updated_at;obligatoire
+fd8f0984-6883-4222-9c21-a7bbab4038a0;GT;Task;Def;0;MOYENNE;true;Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);Mon Dec 08 2025 10:23:24 GMT-0500 (UTC−05:00);false

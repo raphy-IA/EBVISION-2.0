@@ -1,0 +1,14 @@
+id;name;description;is_system_role;created_at;updated_at;badge_bg_class;badge_text_class;badge_hex_color;badge_priority
+e71c5857-266c-4c3c-a000-a91d65abee0f;SUPER_USER;Super utilisateur - Accès avancé pour les power users;true;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);primary;white;#0066cc;80
+568c2598-4980-463c-9736-0b1e4367f85b;ADMIN_IT;Administrateur IT - Gestion technique et maintenance;true;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);dark;white;#212529;95
+09b06712-e4d0-4cd8-bca7-2acc66219f81;ADMIN_METIER;Administrateur métier - Gestion métier et configuration;true;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);primary;white;#0d6efd;90
+ba3e0ea2-d904-440d-afbf-187260c26b7d;COLLABORATOR;Collaborator - Accès limité aux données de sa BU;false;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);info;white;#17a2b8;50
+aae4c6cc-e823-422a-9e54-ace0208d8cb8;CONSULTANT;Consultant - Utilisateur standard avec accès complet aux données;true;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);success;white;#198754;60
+5eba27a1-46c9-483a-83eb-a941c4710a07;DIRECTOR;Director - Permissions et rôles pour les directeurs;true;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);warning;dark;#ffc107;82
+f3831383-2243-4f30-a9a7-fb1fb0885ce7;IT;Technicien IT - Support technique et maintenance;true;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);secondary;white;#6c757d;92
+853d6e58-ce51-4f2b-872d-cedea1d6babc;MANAGER;Manager - Gestion d'équipe et supervision;true;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);info;white;#0dcaf0;70
+42f7f6f4-d9a0-41b2-b835-c2b4bbc07f24;PARTNER;Partner - Associé de haut niveau;true;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);warning;dark;#ffc107;86
+58b34002-a571-4f81-9644-dd479b340bdd;RESPONSABLE_RH;Responsable RH - Gestion des ressources humaines;true;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);info;white;#17a2b8;78
+78b98c58-c282-489d-9d36-7584f990821e;SENIOR_PARTNER;Senior Partner - Direction stratégique;true;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);warning;dark;#ff9800;88
+4feabcf4-96ad-4d04-a1b1-baa1278f8c4b;SUPERVISOR;Supervisor - Permissions pour superviseurs;false;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);info;white;#17a2b8;65
+fdb4c82f-3cb4-4bf7-b7a0-0114b5011389;SUPER_ADMIN;Super administrateur - Accès total à toutes les fonctionnalités;true;Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);Sun Dec 07 2025 18:10:09 GMT-0500 (UTC−05:00);danger;white;#dc3545;100

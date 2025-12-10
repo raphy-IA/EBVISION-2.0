@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Business Units</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
-    
+
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -22,13 +23,14 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
-            overflow-x: hidden; /* Empêche le défilement horizontal */
+            overflow-x: hidden;
+            /* Empêche le défilement horizontal */
         }
-        
+
         /* Le conteneur principal de la page qui contient la sidebar et le contenu */
         .page-wrapper {
             display: flex;
@@ -37,99 +39,115 @@
 
         /* Styles pour le contenu principal */
         .main-content-area {
-            flex-grow: 1; /* Prend l'espace restant */
+            flex-grow: 1;
+            /* Prend l'espace restant */
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
         .stat-card.success {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
-        
+
         .stat-card.warning {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
-        
+
         .stat-card.info {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
-        
+
         .stat-number {
             font-size: 2.5rem;
             font-weight: bold;
         }
-        
+
         .table thead th {
             background-color: var(--primary-color);
             color: white;
         }
-        
+
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
         }
-        
-        .status-saisie { background-color: #e3f2fd; color: #1976d2; }
-        .status-soumise { background-color: #fff3e0; color: #f57c00; }
-        .status-validee { background-color: #e8f5e8; color: #388e3c; }
-        .status-rejetee { background-color: #ffebee; color: #d32f2f; }
-        
+
+        .status-saisie {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-soumise {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-validee {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .status-rejetee {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+
         .loading {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 200px;
         }
-        
+
         .chart-container {
             position: relative;
             height: 300px;
         }
-        
+
         /* Styles pour la gestion des responsables */
         .manager-card {
             background: white;
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 1rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             border: 1px solid #e9ecef;
             transition: all 0.3s ease;
         }
-        
+
         .manager-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
-        
+
         .manager-card.has-managers {
             border-left: 4px solid #28a745;
         }
-        
+
         .manager-card.no-managers {
             border-left: 4px solid #dc3545;
         }
-        
+
         .manager-info {
             display: flex;
             align-items: center;
             gap: 1rem;
             margin-bottom: 1rem;
         }
-        
+
         .manager-avatar {
             width: 50px;
             height: 50px;
@@ -142,47 +160,47 @@
             font-weight: bold;
             font-size: 1.2rem;
         }
-        
+
         .manager-details h6 {
             margin-bottom: 0.25rem;
             color: #495057;
         }
-        
+
         .manager-details p {
             margin-bottom: 0;
             color: #6c757d;
             font-size: 0.9rem;
         }
-        
+
         .manager-badges {
             display: flex;
             gap: 0.5rem;
             margin-top: 0.5rem;
         }
-        
+
         .manager-badge {
             padding: 0.25rem 0.5rem;
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 600;
         }
-        
+
         .badge-principal {
             background-color: #d1ecf1;
             color: #0c5460;
         }
-        
+
         .badge-adjoint {
             background-color: #fff3cd;
             color: #856404;
         }
-        
+
         .manager-actions {
             display: flex;
             gap: 0.5rem;
             margin-top: 1rem;
         }
-        
+
         .no-managers-alert {
             background-color: #f8d7da;
             border: 1px solid #f5c6cb;
@@ -191,27 +209,27 @@
             border-radius: 8px;
             text-align: center;
         }
-        
+
         .filters-active {
             background-color: #e3f2fd;
             border: 1px solid #2196f3;
         }
-        
+
         /* Styles pour les badges de statut */
         .badge.bg-success {
             background-color: #28a745 !important;
             color: white !important;
         }
-        
+
         .badge.bg-secondary {
             background-color: #6c757d !important;
             color: white !important;
         }
-        
+
         .badge i {
             font-size: 0.8em;
         }
-        
+
         .filters-active .card-title {
             color: #1976d2;
         }
@@ -219,14 +237,15 @@
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
-                flex-direction: column; /* Empile la sidebar et le contenu */
+                flex-direction: column;
+                /* Empile la sidebar et le contenu */
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
         }
-    
+
         /* Styles pour la sidebar unifiée */
         .main-content-wrapper {
             margin-left: 300px;
@@ -234,11 +253,11 @@
             min-height: 100vh;
             padding: 0;
         }
-        
+
         .main-content {
             padding: 2rem;
         }
-        
+
         @media (max-width: 768px) {
             .main-content-wrapper {
                 margin-left: 0;
@@ -247,16 +266,16 @@
             .sidebar-container.open {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 padding: 1rem;
             }
         }
     </style>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
-    
-    
-    
+
+
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -267,11 +286,12 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -303,17 +323,23 @@
                     <div class="card-header">
                         <ul class="nav nav-tabs card-header-tabs" id="businessUnitsTabs" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button" role="tab" aria-controls="list" aria-selected="true">
+                                <button class="nav-link active" id="list-tab" data-bs-toggle="tab"
+                                    data-bs-target="#list" type="button" role="tab" aria-controls="list"
+                                    aria-selected="true">
                                     <i class="fas fa-list me-2"></i>Liste des Business Units
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="activities-tab" data-bs-toggle="tab" data-bs-target="#activities" type="button" role="tab" aria-controls="activities" aria-selected="false">
+                                <button class="nav-link" id="activities-tab" data-bs-toggle="tab"
+                                    data-bs-target="#activities" type="button" role="tab" aria-controls="activities"
+                                    aria-selected="false">
                                     <i class="fas fa-cogs me-2"></i>Configuration Activités Internes
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="managers-tab" data-bs-toggle="tab" data-bs-target="#managers" type="button" role="tab" aria-controls="managers" aria-selected="false">
+                                <button class="nav-link" id="managers-tab" data-bs-toggle="tab"
+                                    data-bs-target="#managers" type="button" role="tab" aria-controls="managers"
+                                    aria-selected="false">
                                     <i class="fas fa-users-cog me-2"></i>Gestion des Responsables
                                 </button>
                             </li>
@@ -348,15 +374,17 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Onglet Configuration Activités Internes -->
                             <div class="tab-pane fade" id="activities" role="tabpanel" aria-labelledby="activities-tab">
                                 <div id="activities-config-section">
                                     <!-- Header de la configuration -->
                                     <div class="d-flex justify-content-between align-items-center mb-4">
                                         <div>
-                                            <h5><i class="fas fa-cogs me-2"></i>Configuration Activités Internes par Business Unit</h5>
-                                            <p class="text-muted mb-0">Configurez les activités internes pour chaque Business Unit</p>
+                                            <h5><i class="fas fa-cogs me-2"></i>Configuration Activités Internes par
+                                                Business Unit</h5>
+                                            <p class="text-muted mb-0">Configurez les activités internes pour chaque
+                                                Business Unit</p>
                                         </div>
                                         <button class="btn btn-primary" onclick="saveAllActivityConfigurations()">
                                             <i class="fas fa-save me-2"></i>Sauvegarder Tout
@@ -368,7 +396,8 @@
                                         <div class="col-md-3">
                                             <div class="card text-center">
                                                 <div class="card-body">
-                                                    <i class="fas fa-building text-primary" style="font-size: 2rem;"></i>
+                                                    <i class="fas fa-building text-primary"
+                                                        style="font-size: 2rem;"></i>
                                                     <div class="stats-number" id="totalBusinessUnitsConfig">0</div>
                                                     <div class="stats-label">Business Units</div>
                                                 </div>
@@ -395,7 +424,8 @@
                                         <div class="col-md-3">
                                             <div class="card text-center">
                                                 <div class="card-body">
-                                                    <i class="fas fa-check-circle text-info" style="font-size: 2rem;"></i>
+                                                    <i class="fas fa-check-circle text-info"
+                                                        style="font-size: 2rem;"></i>
                                                     <div class="stats-number" id="configuredUnitsConfig">0</div>
                                                     <div class="stats-label">BU Configurées</div>
                                                 </div>
@@ -417,7 +447,8 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" id="showConfiguredOnly">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            id="showConfiguredOnly">
                                                         <label class="form-check-label" for="showConfiguredOnly">
                                                             Afficher seulement les BU configurées
                                                         </label>
@@ -433,15 +464,17 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Onglet Gestion des Responsables -->
                             <div class="tab-pane fade" id="managers" role="tabpanel" aria-labelledby="managers-tab">
                                 <div id="managers-section">
                                     <!-- Header de la gestion des responsables -->
                                     <div class="d-flex justify-content-between align-items-center mb-4">
                                         <div>
-                                            <h5><i class="fas fa-users-cog me-2"></i>Gestion des Responsables BU et Divisions</h5>
-                                            <p class="text-muted mb-0">Assignez les responsables principaux et adjoints pour chaque Business Unit et Division</p>
+                                            <h5><i class="fas fa-users-cog me-2"></i>Gestion des Responsables BU et
+                                                Divisions</h5>
+                                            <p class="text-muted mb-0">Assignez les responsables principaux et adjoints
+                                                pour chaque Business Unit et Division</p>
                                         </div>
                                     </div>
 
@@ -450,7 +483,8 @@
                                         <div class="col-md-3">
                                             <div class="card text-center">
                                                 <div class="card-body">
-                                                    <i class="fas fa-building text-primary" style="font-size: 2rem;"></i>
+                                                    <i class="fas fa-building text-primary"
+                                                        style="font-size: 2rem;"></i>
                                                     <div class="stats-number" id="totalBusinessUnitsManagers">0</div>
                                                     <div class="stats-label">Business Units</div>
                                                 </div>
@@ -468,7 +502,8 @@
                                         <div class="col-md-3">
                                             <div class="card text-center">
                                                 <div class="card-body">
-                                                    <i class="fas fa-user-check text-warning" style="font-size: 2rem;"></i>
+                                                    <i class="fas fa-user-check text-warning"
+                                                        style="font-size: 2rem;"></i>
                                                     <div class="stats-number" id="assignedManagers">0</div>
                                                     <div class="stats-label">Responsables Assignés</div>
                                                 </div>
@@ -477,7 +512,8 @@
                                         <div class="col-md-3">
                                             <div class="card text-center">
                                                 <div class="card-body">
-                                                    <i class="fas fa-exclamation-triangle text-danger" style="font-size: 2rem;"></i>
+                                                    <i class="fas fa-exclamation-triangle text-danger"
+                                                        style="font-size: 2rem;"></i>
                                                     <div class="stats-number" id="unassignedUnits">0</div>
                                                     <div class="stats-label">Sans Responsable</div>
                                                 </div>
@@ -492,13 +528,15 @@
                                                 <h6 class="card-title mb-0">
                                                     <i class="fas fa-filter me-2"></i>Filtres
                                                 </h6>
-                                                <button class="btn btn-sm btn-outline-secondary" onclick="resetManagersFilters()">
+                                                <button class="btn btn-sm btn-outline-secondary"
+                                                    onclick="resetManagersFilters()">
                                                     <i class="fas fa-undo me-1"></i>Réinitialiser
                                                 </button>
                                             </div>
                                             <div class="row">
                                                 <div class="col-md-4">
-                                                    <label for="entityTypeFilter" class="form-label">Type d'entité</label>
+                                                    <label for="entityTypeFilter" class="form-label">Type
+                                                        d'entité</label>
                                                     <select class="form-select" id="entityTypeFilter">
                                                         <option value="">Toutes les entités</option>
                                                         <option value="business-unit">Business Units</option>
@@ -506,7 +544,8 @@
                                                     </select>
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <label for="managerStatusFilter" class="form-label">Statut des responsables</label>
+                                                    <label for="managerStatusFilter" class="form-label">Statut des
+                                                        responsables</label>
                                                     <select class="form-select" id="managerStatusFilter">
                                                         <option value="">Tous les statuts</option>
                                                         <option value="assigned">Avec responsable</option>
@@ -515,7 +554,8 @@
                                                 </div>
                                                 <div class="col-md-4">
                                                     <div class="form-check mt-4">
-                                                        <input class="form-check-input" type="checkbox" id="showOnlyUnassigned">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            id="showOnlyUnassigned">
                                                         <label class="form-check-label" for="showOnlyUnassigned">
                                                             Afficher seulement les entités sans responsable
                                                         </label>
@@ -620,19 +660,22 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Êtes-vous sûr de vouloir supprimer cette Business Unit ?</p>
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Note :</strong> Si la Business Unit contient des données liées (collaborateurs, activités, etc.), elle sera désactivée au lieu d'être supprimée définitivement.
+                    <div id="delete-confirm-details">
+                        <p>Êtes-vous sûr de vouloir supprimer cette Business Unit ?</p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note :</strong> Si la Business Unit contient des données liées (collaborateurs,
+                            activités, etc.), elle sera désactivée au lieu d'être supprimée définitivement.
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-warning" onclick="confirmDelete(false)">
+                    <button type="button" class="btn btn-warning" onclick="confirmDelete(false)" id="btn-deactivate-bu">
                         <i class="fas fa-ban me-1"></i>
                         Désactiver
                     </button>
-                    <button type="button" class="btn btn-danger" onclick="confirmDelete(true)">
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete(true)" id="btn-delete-bu">
                         <i class="fas fa-trash me-1"></i>
                         Supprimer définitivement
                     </button>
@@ -755,19 +798,25 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Êtes-vous sûr de vouloir supprimer cette Division ?</p>
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Note :</strong> Si la Division contient des données liées (collaborateurs, activités, etc.), elle sera désactivée au lieu d'être supprimée définitivement.
+                    <div id="delete-division-confirm-details">
+                        <p>Êtes-vous sûr de vouloir supprimer cette Division ?</p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note :</strong> Si la Division contient des données liées (collaborateurs,
+                            activités,
+                            etc.), elle sera désactivée au lieu d'être supprimée définitivement.
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-warning" onclick="confirmDeleteDivision(false)">
+                    <button type="button" class="btn btn-warning" onclick="confirmDeleteDivision(false)"
+                        id="btn-deactivate-division">
                         <i class="fas fa-ban me-1"></i>
                         Désactiver
                     </button>
-                    <button type="button" class="btn btn-danger" onclick="confirmDeleteDivision(true)">
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteDivision(true)"
+                        id="btn-delete-division">
                         <i class="fas fa-trash me-1"></i>
                         Supprimer définitivement
                     </button>
@@ -791,7 +840,7 @@
                     <form id="managersForm">
                         <input type="hidden" id="entityId">
                         <input type="hidden" id="entityType">
-                        
+
                         <!-- Responsable Principal -->
                         <div class="card mb-3">
                             <div class="card-header">
@@ -808,7 +857,8 @@
                                     </select>
                                     <div class="form-text">
                                         <i class="fas fa-info-circle me-1"></i>
-                                        Seuls les collaborateurs de cette entité sont éligibles. Le responsable principal sera le premier contact pour les validations.
+                                        Seuls les collaborateurs de cette entité sont éligibles. Le responsable
+                                        principal sera le premier contact pour les validations.
                                     </div>
                                 </div>
                             </div>
@@ -830,7 +880,8 @@
                                     </select>
                                     <div class="form-text">
                                         <i class="fas fa-info-circle me-1"></i>
-                                        Seuls les collaborateurs de cette entité sont éligibles. Le responsable adjoint remplacera le principal en cas d'absence.
+                                        Seuls les collaborateurs de cette entité sont éligibles. Le responsable adjoint
+                                        remplacera le principal en cas d'absence.
                                     </div>
                                 </div>
                             </div>
@@ -839,8 +890,9 @@
                         <!-- Alerte si aucun collaborateur éligible -->
                         <div class="alert alert-warning" id="noEligibleCollaboratorsAlert" style="display: none;">
                             <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Attention :</strong> Aucun collaborateur actif n'est assigné à cette entité. 
-                            Vous devez d'abord assigner des collaborateurs à cette Business Unit/Division avant de pouvoir désigner des responsables.
+                            <strong>Attention :</strong> Aucun collaborateur actif n'est assigné à cette entité.
+                            Vous devez d'abord assigner des collaborateurs à cette Business Unit/Division avant de
+                            pouvoir désigner des responsables.
                         </div>
 
                         <!-- Informations sur les responsables actuels -->
@@ -883,7 +935,7 @@
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            
+
             return fetch(url, {
                 ...options,
                 headers: {
@@ -898,7 +950,7 @@
         let currentBuId = null;
         let businessUnits = []; // Variable globale pour les business units
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadBusinessUnits();
         });
 
@@ -910,7 +962,7 @@
                 const response = await authenticatedFetch(`${API_BASE_URL}/business-units?limit=100`);
                 const data = await response.json();
                 console.log('📊 Réponse API:', data);
-                
+
                 if (data.success) {
                     console.log(`✅ ${data.data.length} Business Units chargées`);
                     businessUnits = data.data; // Stocker dans la variable globale
@@ -934,7 +986,7 @@
                 console.error('❌ Élément bu-table non trouvé');
                 return;
             }
-            
+
             tbody.innerHTML = '';
             if (bus.length === 0) {
                 console.log('📭 Aucune Business Unit à afficher');
@@ -974,9 +1026,14 @@
                             <button class="btn btn-outline-warning" onclick="editBusinessUnit('${bu.id}')" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-outline-danger" onclick="deleteBusinessUnit('${bu.id}')" title="Supprimer">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            ${bu.statut === 'ACTIF' ?
+                        `<button class="btn btn-outline-danger" onclick="deleteBusinessUnit('${bu.id}')" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>` :
+                        `<button class="btn btn-outline-success" onclick="activateBusinessUnit('${bu.id}')" title="Activer">
+                                    <i class="fas fa-check"></i>
+                                </button>`
+                    }
                         </div>
                     </td>
                 `;
@@ -1054,8 +1111,75 @@
             }
         }
 
-        function deleteBusinessUnit(id) {
+
+
+        async function activateBusinessUnit(id) {
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/business-units/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ statut: 'ACTIF' })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Business Unit activée avec succès', 'success');
+                    loadBusinessUnits();
+                } else {
+                    showAlert(data.message || 'Erreur lors de l\'activation', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur de connexion', 'danger');
+            }
+        }
+
+
+
+        async function deleteBusinessUnit(id) {
             buToDelete = id;
+
+            // Pré-vérifier les dépendances
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/business-units/${id}/dependencies`);
+                const data = await response.json();
+
+                const detailsContainer = document.getElementById('delete-confirm-details');
+                const btnDelete = document.getElementById('btn-delete-bu');
+                const btnDeactivate = document.getElementById('btn-deactivate-bu');
+
+                if (data.success && !data.data.canDelete) {
+                    // Cannot delete, show reasons and only allow deactivate
+                    const reasonsHtml = data.data.reasons.map(r => `<li>${r}</li>`).join('');
+                    detailsContainer.innerHTML = `
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading"><i class="fas fa-ban me-2"></i>Suppression définitive impossible</h6>
+                            <p>Cette Business Unit contient des données liées :</p>
+                            <ul>${reasonsHtml}</ul>
+                            <hr>
+                            <p class="mb-0">Vous pouvez uniquement <strong>désactiver</strong> cette Business Unit pour conserver l'intégrité des données.</p>
+                        </div>
+                    `;
+                    btnDelete.style.display = 'none';
+                    btnDeactivate.classList.replace('btn-warning', 'btn-primary'); // Make deactivate primary
+                } else {
+                    // Standard delete message
+                    detailsContainer.innerHTML = `
+                        <p>Êtes-vous sûr de vouloir supprimer cette Business Unit ?</p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note :</strong> Cette action est irréversible si aucune donnée n'est liée.
+                        </div>
+                    `;
+                    btnDelete.style.display = 'inline-block';
+                    btnDeactivate.classList.replace('btn-primary', 'btn-warning');
+                }
+            } catch (error) {
+                console.error('Erreur vérification dépendances:', error);
+                // Fallback to standard message if check fails
+                document.getElementById('delete-confirm-details').innerHTML = `<p>Êtes-vous sûr de vouloir supprimer cette Business Unit ?</p>`;
+            }
+
             new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
         }
 
@@ -1063,18 +1187,26 @@
             if (!buToDelete) return;
 
             try {
-                const url = force ? 
-                    `${API_BASE_URL}/business-units/${buToDelete}?force=true` : 
+                const url = force ?
+                    `${API_BASE_URL}/business-units/${buToDelete}?force=true` :
                     `${API_BASE_URL}/business-units/${buToDelete}`;
-                
+
                 const response = await authenticatedFetch(url, {
                     method: 'DELETE'
                 });
                 const data = await response.json();
-                
+
                 if (data.success) {
                     const action = data.action === 'deleted' ? 'supprimée définitivement' : 'désactivée';
-                    showAlert(`Business Unit ${action} avec succès`, 'success');
+
+                    if (data.action === 'deactivated' && data.details) {
+                        const reasons = data.details.reasons.join(', ');
+                        const message = `La Business Unit a été désactivée car elle ne peut pas être supprimée.\n\nRaisons :\n- ${data.details.reasons.join('\n- ')}`;
+                        showAlert(message, 'warning');
+                    } else {
+                        showAlert(`Business Unit ${action} avec succès`, 'success');
+                    }
+
                     bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
                     loadBusinessUnits();
                 } else {
@@ -1099,30 +1231,30 @@
             try {
                 // Stocker l'ID de la BU courante
                 currentBuId = buId;
-                
+
                 // Afficher le nom de la BU dans le modal
                 document.getElementById('bu-name-display').textContent = buName;
-                
+
                 // Afficher le loading
                 showDivisionsLoading(true);
-                
+
                 // Charger les divisions de cette BU
                 const response = await authenticatedFetch(`${API_BASE_URL}/divisions?business_unit_id=${buId}`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     displayDivisions(data.data);
                 } else {
                     showAlert('Erreur lors du chargement des divisions', 'danger');
                 }
-                
+
                 // Afficher le modal (éviter de le ré-ouvrir si déjà affiché)
                 const divisionsModalEl = document.getElementById('divisionsModal');
                 const existingModal = bootstrap.Modal.getInstance(divisionsModalEl) || new bootstrap.Modal(divisionsModalEl);
                 if (!divisionsModalEl.classList.contains('show')) {
                     existingModal.show();
                 }
-                
+
             } catch (error) {
                 console.error('Erreur lors du chargement des divisions:', error);
                 showAlert('Erreur de connexion', 'danger');
@@ -1151,7 +1283,7 @@
         function displayDivisions(divisions) {
             const tbody = document.getElementById('divisions-table');
             tbody.innerHTML = '';
-            
+
             if (divisions.length === 0) {
                 tbody.innerHTML = `
                     <tr>
@@ -1175,9 +1307,14 @@
                             <button class="btn btn-outline-warning" onclick="editDivision('${division.id}')" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-outline-danger" onclick="deleteDivision('${division.id}')" title="Supprimer">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            ${division.statut === 'ACTIF' ?
+                        `<button class="btn btn-outline-danger" onclick="deleteDivision('${division.id}')" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>` :
+                        `<button class="btn btn-outline-success" onclick="activateDivision('${division.id}')" title="Activer">
+                                    <i class="fas fa-check"></i>
+                                </button>`
+                    }
                         </div>
                     </td>
                 `;
@@ -1216,10 +1353,10 @@
         function showAlert(message, type) {
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-            
+
             // Convertir les retours à la ligne en <br>
             const formattedMessage = message.replace(/\n/g, '<br>');
-            
+
             alertDiv.innerHTML = `
                 <div class="d-flex align-items-start">
                     <div class="flex-grow-1">
@@ -1228,14 +1365,14 @@
                     <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
                 </div>
             `;
-            
+
             const container = document.querySelector('.main-content-area');
             if (container) {
                 container.insertBefore(alertDiv, container.firstChild);
             } else {
                 document.body.appendChild(alertDiv);
             }
-            
+
             // Auto-dismiss after 8 seconds for warning/error messages
             const timeout = type === 'warning' || type === 'danger' ? 8000 : 5000;
             setTimeout(() => {
@@ -1317,8 +1454,74 @@
             }
         }
 
-        function deleteDivision(id) {
+
+
+        async function activateDivision(id) {
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ statut: 'ACTIF' })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Division activée avec succès', 'success');
+                    await reloadDivisionsForCurrentBu();
+                } else {
+                    showAlert(data.message || 'Erreur lors de l\'activation', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showAlert('Erreur de connexion', 'danger');
+            }
+        }
+
+
+
+        async function deleteDivision(id) {
             divisionToDelete = id;
+
+            // Pré-vérifier les dépendances
+            try {
+                const response = await authenticatedFetch(`${API_BASE_URL}/divisions/${id}/dependencies`);
+                const data = await response.json();
+
+                const detailsContainer = document.getElementById('delete-division-confirm-details');
+                const btnDelete = document.getElementById('btn-delete-division');
+                const btnDeactivate = document.getElementById('btn-deactivate-division');
+
+                if (data.success && !data.data.canDelete) {
+                    // Cannot delete, show reasons and only allow deactivate
+                    const reasonsHtml = data.data.reasons.map(r => `<li>${r}</li>`).join('');
+                    detailsContainer.innerHTML = `
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading"><i class="fas fa-ban me-2"></i>Suppression définitive impossible</h6>
+                            <p>Cette Division contient des données liées :</p>
+                            <ul>${reasonsHtml}</ul>
+                            <hr>
+                            <p class="mb-0">Vous pouvez uniquement <strong>désactiver</strong> cette Division pour conserver l'intégrité des données.</p>
+                        </div>
+                    `;
+                    btnDelete.style.display = 'none';
+                    btnDeactivate.classList.replace('btn-warning', 'btn-primary');
+                } else {
+                    // Standard delete message
+                    detailsContainer.innerHTML = `
+                        <p>Êtes-vous sûr de vouloir supprimer cette Division ?</p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note :</strong> Cette action est irréversible si aucune donnée n'est liée.
+                        </div>
+                    `;
+                    btnDelete.style.display = 'inline-block';
+                    btnDeactivate.classList.replace('btn-primary', 'btn-warning');
+                }
+            } catch (error) {
+                console.error('Erreur vérification dépendances:', error);
+                document.getElementById('delete-division-confirm-details').innerHTML = `<p>Êtes-vous sûr de vouloir supprimer cette Division ?</p>`;
+            }
+
             new bootstrap.Modal(document.getElementById('deleteDivisionConfirmModal')).show();
         }
 
@@ -1326,18 +1529,26 @@
             if (!divisionToDelete) return;
 
             try {
-                const url = force ? 
-                    `${API_BASE_URL}/divisions/${divisionToDelete}?force=true` : 
+                const url = force ?
+                    `${API_BASE_URL}/divisions/${divisionToDelete}?force=true` :
                     `${API_BASE_URL}/divisions/${divisionToDelete}`;
-                
+
                 const response = await authenticatedFetch(url, {
                     method: 'DELETE'
                 });
                 const data = await response.json();
-                
+
                 if (data.success) {
                     const action = data.action === 'deleted' ? 'supprimée définitivement' : 'désactivée';
-                    showAlert(`Division ${action} avec succès`, 'success');
+
+                    if (data.action === 'deactivated' && data.details) {
+                        const reasons = data.details.reasons.join(', ');
+                        const message = `La Division a été désactivée car elle ne peut pas être supprimée.\n\nRaisons :\n- ${data.details.reasons.join('\n- ')}`;
+                        showAlert(message, 'warning');
+                    } else {
+                        showAlert(`Division ${action} avec succès`, 'success');
+                    }
+
                     bootstrap.Modal.getInstance(document.getElementById('deleteDivisionConfirmModal')).hide();
                     // Recharger les divisions de la BU courante sans ré-ouvrir le modal
                     await reloadDivisionsForCurrentBu();
@@ -1360,13 +1571,13 @@
         }
 
         // ===== CONFIGURATION DES ACTIVITÉS INTERNES =====
-        
+
         // Variables globales pour la configuration des activités
         let activitiesConfig = [];
         let assignmentsConfig = {};
 
         // Charger les données de configuration quand l'onglet est activé
-        document.getElementById('activities-tab').addEventListener('click', function() {
+        document.getElementById('activities-tab').addEventListener('click', function () {
             loadActivitiesConfig();
         });
 
@@ -1378,7 +1589,7 @@
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     activitiesConfig = data.data;
@@ -1396,7 +1607,7 @@
         // Charger les affectations existantes pour la configuration
         async function loadAssignmentsConfig() {
             assignmentsConfig = {};
-            
+
             for (const bu of businessUnits) {
                 try {
                     const response = await fetch(`/api/internal-activities/business-unit/${bu.id}`, {
@@ -1404,7 +1615,7 @@
                             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                         }
                     });
-                    
+
                     if (response.ok) {
                         const data = await response.json();
                         assignmentsConfig[bu.id] = data.data.map(activity => activity.id);
@@ -1414,10 +1625,10 @@
                     assignmentsConfig[bu.id] = [];
                 }
             }
-            
+
             displayBusinessUnitsConfig();
             updateConfigStatistics();
-            
+
             // Initialiser le statut "sauvegardé" pour toutes les BU après un délai pour laisser le DOM se charger
             setTimeout(() => {
                 businessUnits.forEach(bu => {
@@ -1441,10 +1652,10 @@
 
                 const card = document.createElement('div');
                 card.className = 'card mb-3';
-                
+
                 const assignedActivities = assignmentsConfig[bu.id] || [];
                 const assignedCount = assignedActivities.length;
-                
+
                 card.innerHTML = `
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -1466,8 +1677,8 @@
                             <h6><i class="fas fa-list me-2"></i>Activités Internes</h6>
                             <div class="row">
                                 ${activitiesConfig.map(activity => {
-                                    const isAssigned = assignedActivities.includes(activity.id);
-                                    return `
+                    const isAssigned = assignedActivities.includes(activity.id);
+                    return `
                                         <div class="col-md-6 mb-2">
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" 
@@ -1482,7 +1693,7 @@
                                             </div>
                                         </div>
                                     `;
-                                }).join('')}
+                }).join('')}
                             </div>
                         </div>
                         
@@ -1497,7 +1708,7 @@
                         </div>
                     </div>
                 `;
-                
+
                 container.appendChild(card);
             });
         }
@@ -1507,7 +1718,7 @@
             if (!assignmentsConfig[businessUnitId]) {
                 assignmentsConfig[businessUnitId] = [];
             }
-            
+
             if (isAssigned) {
                 if (!assignmentsConfig[businessUnitId].includes(activityId)) {
                     assignmentsConfig[businessUnitId].push(activityId);
@@ -1515,7 +1726,7 @@
             } else {
                 assignmentsConfig[businessUnitId] = assignmentsConfig[businessUnitId].filter(id => id !== activityId);
             }
-            
+
             // Mettre à jour le statut pour indiquer qu'il y a des modifications non sauvegardées
             updateBusinessUnitStatus(businessUnitId, false);
             updateConfigStatistics();
@@ -1525,7 +1736,7 @@
         function updateBusinessUnitStatus(businessUnitId, isSaved = false) {
             const statusElement = document.getElementById(`status_${businessUnitId}`);
             const saveButton = document.getElementById(`save_btn_${businessUnitId}`);
-            
+
             if (statusElement && saveButton) {
                 if (isSaved) {
                     statusElement.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i>Sauvegardé';
@@ -1548,13 +1759,13 @@
             try {
                 const activityIds = assignmentsConfig[businessUnitId] || [];
                 const saveButton = document.getElementById(`save_btn_${businessUnitId}`);
-                
+
                 // Désactiver le bouton pendant la sauvegarde
                 if (saveButton) {
                     saveButton.disabled = true;
                     saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Sauvegarde...';
                 }
-                
+
                 // Si aucune activité n'est assignée, supprimer toutes les affectations
                 if (activityIds.length === 0) {
                     // Supprimer toutes les affectations existantes pour cette BU
@@ -1564,7 +1775,7 @@
                             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                         }
                     });
-                    
+
                     if (response.ok) {
                         updateBusinessUnitStatus(businessUnitId, true);
                         showAlert(`Configuration de la BU sauvegardée avec succès`, 'success');
@@ -1585,10 +1796,10 @@
                             })
                         })
                     );
-                    
+
                     const responses = await Promise.all(promises);
                     const allSuccessful = responses.every(response => response.ok);
-                    
+
                     if (allSuccessful) {
                         updateBusinessUnitStatus(businessUnitId, true);
                         showAlert(`Configuration de la BU sauvegardée avec succès`, 'success');
@@ -1596,11 +1807,11 @@
                         throw new Error('Erreur lors de la sauvegarde des affectations');
                     }
                 }
-                
+
             } catch (error) {
                 console.error('Erreur lors de la sauvegarde:', error);
                 showAlert('Erreur lors de la sauvegarde', 'danger');
-                
+
                 // Réactiver le bouton en cas d'erreur
                 const saveButton = document.getElementById(`save_btn_${businessUnitId}`);
                 if (saveButton) {
@@ -1613,7 +1824,7 @@
         // Sauvegarder toutes les configurations d'activités (fonction existante)
         async function saveAllActivityConfigurations() {
             const promises = [];
-            
+
             for (const [businessUnitId, activityIds] of Object.entries(assignmentsConfig)) {
                 if (activityIds.length > 0) {
                     promises.push(
@@ -1630,7 +1841,7 @@
                     );
                 }
             }
-            
+
             try {
                 await Promise.all(promises);
                 showAlert('Configurations sauvegardées avec succès', 'success');
@@ -1645,7 +1856,7 @@
         async function viewActivityDetails(businessUnitId) {
             const bu = businessUnits.find(b => b.id === businessUnitId);
             const assignedActivities = assignmentsConfig[businessUnitId] || [];
-            
+
             const modalBody = document.getElementById('activityDetailsModalBody');
             modalBody.innerHTML = `
                 <div class="row">
@@ -1657,16 +1868,16 @@
                     </div>
                     <div class="col-md-6">
                         <h6>Activités assignées</h6>
-                        ${assignedActivities.length > 0 
-                            ? activitiesConfig.filter(a => assignedActivities.includes(a.id))
-                                .map(activity => `<span class="badge bg-primary me-1">${activity.name}</span>`)
-                                .join('')
-                            : '<p class="text-muted">Aucune activité assignée</p>'
-                        }
+                        ${assignedActivities.length > 0
+                    ? activitiesConfig.filter(a => assignedActivities.includes(a.id))
+                        .map(activity => `<span class="badge bg-primary me-1">${activity.name}</span>`)
+                        .join('')
+                    : '<p class="text-muted">Aucune activité assignée</p>'
+                }
                     </div>
                 </div>
             `;
-            
+
             const modal = new bootstrap.Modal(document.getElementById('activityDetailsModal'));
             modal.show();
         }
@@ -1675,10 +1886,10 @@
         function updateConfigStatistics() {
             document.getElementById('totalBusinessUnitsConfig').textContent = businessUnits.length;
             document.getElementById('totalActivitiesConfig').textContent = activitiesConfig.length;
-            
+
             const totalAssignments = Object.values(assignmentsConfig).reduce((sum, ids) => sum + ids.length, 0);
             document.getElementById('totalAssignmentsConfig').textContent = totalAssignments;
-            
+
             const configuredUnits = Object.values(assignmentsConfig).filter(ids => ids.length > 0).length;
             document.getElementById('configuredUnitsConfig').textContent = configuredUnits;
         }
@@ -1687,7 +1898,7 @@
         function populateConfigFilter() {
             const select = document.getElementById('businessUnitFilter');
             select.innerHTML = '<option value="">Toutes les Business Units</option>';
-            
+
             businessUnits.forEach(bu => {
                 const option = document.createElement('option');
                 option.value = bu.id;
@@ -1776,7 +1987,7 @@
         // Afficher les Business Units avec leurs responsables
         function displayBusinessUnitsManagers() {
             const container = document.getElementById('businessUnitsManagersContainer');
-            
+
             if (managersData.businessUnits.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-4">
@@ -1791,7 +2002,7 @@
             managersData.businessUnits.forEach(bu => {
                 const hasManagers = bu.managers && (bu.managers.principal_id || bu.managers.adjoint_id);
                 const cardClass = hasManagers ? 'manager-card has-managers' : 'manager-card no-managers';
-                
+
                 html += `
                     <div class="${cardClass}">
                         <div class="d-flex justify-content-between align-items-start">
@@ -1852,14 +2063,14 @@
                     </div>
                 `;
             });
-            
+
             container.innerHTML = html;
         }
 
         // Afficher les Divisions avec leurs responsables
         function displayDivisionsManagers() {
             const container = document.getElementById('divisionsManagersContainer');
-            
+
             if (managersData.divisions.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-4">
@@ -1875,7 +2086,7 @@
                 const hasManagers = div.managers && (div.managers.principal_id || div.managers.adjoint_id);
                 const cardClass = hasManagers ? 'manager-card has-managers' : 'manager-card no-managers';
                 const buName = getBusinessUnitName(div.business_unit_id);
-                
+
                 html += `
                     <div class="${cardClass}">
                         <div class="d-flex justify-content-between align-items-start">
@@ -1938,7 +2149,7 @@
                     </div>
                 `;
             });
-            
+
             container.innerHTML = html;
         }
 
@@ -1946,10 +2157,10 @@
         function updateManagersStatistics() {
             const totalBU = managersData.businessUnits.length;
             const totalDiv = managersData.divisions.length;
-            
+
             let assignedManagers = 0;
             let unassignedUnits = 0;
-            
+
             // Compter les BU avec responsables
             managersData.businessUnits.forEach(bu => {
                 if (bu.managers && (bu.managers.principal_id || bu.managers.adjoint_id)) {
@@ -1958,7 +2169,7 @@
                     unassignedUnits++;
                 }
             });
-            
+
             // Compter les Divisions avec responsables
             managersData.divisions.forEach(div => {
                 if (div.managers && (div.managers.principal_id || div.managers.adjoint_id)) {
@@ -1967,7 +2178,7 @@
                     unassignedUnits++;
                 }
             });
-            
+
             document.getElementById('totalBusinessUnitsManagers').textContent = totalBU;
             document.getElementById('totalDivisionsManagers').textContent = totalDiv;
             document.getElementById('assignedManagers').textContent = assignedManagers;
@@ -1997,11 +2208,11 @@
         // Compter les collaborateurs éligibles pour une entité
         function getEligibleCollaboratorsCount(entityId, entityType) {
             if (entityType === 'business-unit') {
-                return managersData.collaborators.filter(collab => 
+                return managersData.collaborators.filter(collab =>
                     collab.business_unit_id === entityId && collab.statut === 'ACTIF'
                 ).length;
             } else if (entityType === 'division') {
-                return managersData.collaborators.filter(collab => 
+                return managersData.collaborators.filter(collab =>
                     collab.division_id === entityId && collab.statut === 'ACTIF'
                 ).length;
             }
@@ -2014,10 +2225,10 @@
                 document.getElementById('entityId').value = entityId;
                 document.getElementById('entityType').value = entityType;
                 document.getElementById('entity-name-display').textContent = entityName;
-                
+
                 // Peupler les listes de collaborateurs
                 populateManagerSelects();
-                
+
                 // Vérifier s'il y a des collaborateurs éligibles et ajuster le bouton de sauvegarde
                 const eligibleCount = getEligibleCollaboratorsCount(entityId, entityType);
                 const saveButton = document.querySelector('#managersModal .btn-primary');
@@ -2028,23 +2239,23 @@
                     saveButton.disabled = false;
                     saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Enregistrer les Responsables';
                 }
-                
+
                 // Charger les responsables actuels
-                const endpoint = entityType === 'business-unit' ? 
+                const endpoint = entityType === 'business-unit' ?
                     `/api/managers/business-units/${entityId}/managers` :
                     `/api/managers/divisions/${entityId}/managers`;
-                    
+
                 const managersRes = await fetch(endpoint, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
                 const managersData = await managersRes.json();
-                
+
                 if (managersData.success && managersData.data) {
                     document.getElementById('principalManager').value = managersData.data.principal_id || '';
                     document.getElementById('adjointManager').value = managersData.data.adjoint_id || '';
-                    
+
                     // Afficher les informations actuelles
                     displayCurrentManagersInfo(managersData.data);
                 } else {
@@ -2052,10 +2263,10 @@
                     document.getElementById('adjointManager').value = '';
                     document.getElementById('currentManagersInfo').style.display = 'none';
                 }
-                
+
                 const modal = new bootstrap.Modal(document.getElementById('managersModal'));
                 modal.show();
-                
+
             } catch (error) {
                 console.error('Erreur ouverture modal responsables:', error);
                 showAlert('Erreur lors de l\'ouverture du modal', 'danger');
@@ -2068,39 +2279,39 @@
             const adjointSelect = document.getElementById('adjointManager');
             const entityId = document.getElementById('entityId').value;
             const entityType = document.getElementById('entityType').value;
-            
+
             // Vider les listes
             principalSelect.innerHTML = '<option value="">Sélectionnez un responsable principal</option>';
             adjointSelect.innerHTML = '<option value="">Sélectionnez un responsable adjoint (optionnel)</option>';
-            
+
             // Filtrer les collaborateurs selon le type d'entité
             let eligibleCollaborators = [];
-            
+
             if (entityType === 'business-unit') {
                 // Pour une Business Unit, prendre les collaborateurs de cette BU
-                eligibleCollaborators = managersData.collaborators.filter(collab => 
+                eligibleCollaborators = managersData.collaborators.filter(collab =>
                     collab.business_unit_id === entityId && collab.statut === 'ACTIF'
                 );
             } else if (entityType === 'division') {
                 // Pour une Division, prendre les collaborateurs de cette division
-                eligibleCollaborators = managersData.collaborators.filter(collab => 
+                eligibleCollaborators = managersData.collaborators.filter(collab =>
                     collab.division_id === entityId && collab.statut === 'ACTIF'
                 );
             }
-            
+
             // Ajouter les collaborateurs éligibles
             eligibleCollaborators.forEach(collab => {
                 const option1 = document.createElement('option');
                 option1.value = collab.id;
                 option1.textContent = `${collab.prenom} ${collab.nom} (${collab.email})`;
                 principalSelect.appendChild(option1);
-                
+
                 const option2 = document.createElement('option');
                 option2.value = collab.id;
                 option2.textContent = `${collab.prenom} ${collab.nom} (${collab.email})`;
                 adjointSelect.appendChild(option2);
             });
-            
+
             // Afficher un message si aucun collaborateur éligible
             if (eligibleCollaborators.length === 0) {
                 const noOption1 = document.createElement('option');
@@ -2108,13 +2319,13 @@
                 noOption1.textContent = "Aucun collaborateur éligible trouvé";
                 noOption1.disabled = true;
                 principalSelect.appendChild(noOption1);
-                
+
                 const noOption2 = document.createElement('option');
                 noOption2.value = "";
                 noOption2.textContent = "Aucun collaborateur éligible trouvé";
                 noOption2.disabled = true;
                 adjointSelect.appendChild(noOption2);
-                
+
                 // Afficher l'alerte
                 document.getElementById('noEligibleCollaboratorsAlert').style.display = 'block';
             } else {
@@ -2127,10 +2338,10 @@
         function displayCurrentManagersInfo(managers) {
             const container = document.getElementById('currentManagersContent');
             const infoDiv = document.getElementById('currentManagersInfo');
-            
+
             if (managers.principal_id || managers.adjoint_id) {
                 let html = '<div class="row">';
-                
+
                 if (managers.principal_id) {
                     html += `
                         <div class="col-md-6">
@@ -2147,7 +2358,7 @@
                         </div>
                     `;
                 }
-                
+
                 if (managers.adjoint_id) {
                     html += `
                         <div class="col-md-6">
@@ -2164,7 +2375,7 @@
                         </div>
                     `;
                 }
-                
+
                 html += '</div>';
                 container.innerHTML = html;
                 infoDiv.style.display = 'block';
@@ -2180,29 +2391,29 @@
                 const entityType = document.getElementById('entityType').value;
                 const principalId = document.getElementById('principalManager').value || null;
                 const adjointId = document.getElementById('adjointManager').value || null;
-                
+
                 // Vérifier s'il y a des collaborateurs éligibles
                 const eligibleCount = getEligibleCollaboratorsCount(entityId, entityType);
                 if (eligibleCount === 0) {
                     showAlert('Aucun collaborateur éligible pour cette entité. Impossible de sauvegarder.', 'warning');
                     return;
                 }
-                
+
                 // Validation
                 if (!principalId) {
                     showAlert('Veuillez sélectionner un responsable principal', 'warning');
                     return;
                 }
-                
+
                 if (principalId && adjointId && principalId === adjointId) {
                     showAlert('Le responsable principal et l\'adjoint doivent être des personnes différentes', 'warning');
                     return;
                 }
-                
-                const endpoint = entityType === 'business-unit' ? 
+
+                const endpoint = entityType === 'business-unit' ?
                     `/api/managers/business-units/${entityId}/managers` :
                     `/api/managers/divisions/${entityId}/managers`;
-                
+
                 const response = await fetch(endpoint, {
                     method: 'PUT',
                     headers: {
@@ -2214,23 +2425,23 @@
                         adjoint_id: adjointId
                     })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     showAlert('Responsables assignés avec succès !', 'success');
-                    
+
                     // Fermer le modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('managersModal'));
                     modal.hide();
-                    
+
                     // Recharger les données
                     await loadManagersData();
-                    
+
                 } else {
                     showAlert('Erreur: ' + (result.error || 'Erreur lors de l\'assignation'), 'danger');
                 }
-                
+
             } catch (error) {
                 console.error('Erreur sauvegarde responsables:', error);
                 showAlert('Erreur lors de la sauvegarde des responsables', 'danger');
@@ -2247,59 +2458,59 @@
             const entityTypeFilter = document.getElementById('entityTypeFilter').value;
             const managerStatusFilter = document.getElementById('managerStatusFilter').value;
             const showOnlyUnassigned = document.getElementById('showOnlyUnassigned').checked;
-            
+
             // Indicateur visuel des filtres actifs
             const filtersCard = document.querySelector('#managers .card');
             const hasActiveFilters = entityTypeFilter || managerStatusFilter || showOnlyUnassigned;
-            
+
             if (hasActiveFilters) {
                 filtersCard.classList.add('filters-active');
             } else {
                 filtersCard.classList.remove('filters-active');
             }
-            
+
             // Filtrer les Business Units
             let filteredBusinessUnits = managersData.businessUnits;
-            
+
             // Filtre par statut des responsables
             if (managerStatusFilter === 'assigned') {
-                filteredBusinessUnits = filteredBusinessUnits.filter(bu => 
+                filteredBusinessUnits = filteredBusinessUnits.filter(bu =>
                     bu.managers && (bu.managers.principal_id || bu.managers.adjoint_id)
                 );
             } else if (managerStatusFilter === 'unassigned') {
-                filteredBusinessUnits = filteredBusinessUnits.filter(bu => 
+                filteredBusinessUnits = filteredBusinessUnits.filter(bu =>
                     !bu.managers || (!bu.managers.principal_id && !bu.managers.adjoint_id)
                 );
             }
-            
+
             // Filtre pour afficher seulement les non assignées
             if (showOnlyUnassigned) {
-                filteredBusinessUnits = filteredBusinessUnits.filter(bu => 
+                filteredBusinessUnits = filteredBusinessUnits.filter(bu =>
                     !bu.managers || (!bu.managers.principal_id && !bu.managers.adjoint_id)
                 );
             }
-            
+
             // Filtrer les Divisions
             let filteredDivisions = managersData.divisions;
-            
+
             // Filtre par statut des responsables
             if (managerStatusFilter === 'assigned') {
-                filteredDivisions = filteredDivisions.filter(div => 
+                filteredDivisions = filteredDivisions.filter(div =>
                     div.managers && (div.managers.principal_id || div.managers.adjoint_id)
                 );
             } else if (managerStatusFilter === 'unassigned') {
-                filteredDivisions = filteredDivisions.filter(div => 
+                filteredDivisions = filteredDivisions.filter(div =>
                     !div.managers || (!div.managers.principal_id && !div.managers.adjoint_id)
                 );
             }
-            
+
             // Filtre pour afficher seulement les non assignées
             if (showOnlyUnassigned) {
-                filteredDivisions = filteredDivisions.filter(div => 
+                filteredDivisions = filteredDivisions.filter(div =>
                     !div.managers || (!div.managers.principal_id && !div.managers.adjoint_id)
                 );
             }
-            
+
             // Afficher selon le filtre de type d'entité
             if (entityTypeFilter === 'business-unit') {
                 displayFilteredBusinessUnitsManagers(filteredBusinessUnits);
@@ -2322,7 +2533,7 @@
                 displayFilteredBusinessUnitsManagers(filteredBusinessUnits);
                 displayFilteredDivisionsManagers(filteredDivisions);
             }
-            
+
             // Mettre à jour les statistiques filtrées
             updateFilteredStatistics(filteredBusinessUnits, filteredDivisions);
         }
@@ -2330,7 +2541,7 @@
         // Afficher les Business Units filtrées
         function displayFilteredBusinessUnitsManagers(businessUnits) {
             const container = document.getElementById('businessUnitsManagersContainer');
-            
+
             if (businessUnits.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-4">
@@ -2345,7 +2556,7 @@
             businessUnits.forEach(bu => {
                 const hasManagers = bu.managers && (bu.managers.principal_id || bu.managers.adjoint_id);
                 const cardClass = hasManagers ? 'manager-card has-managers' : 'manager-card no-managers';
-                
+
                 html += `
                     <div class="${cardClass}">
                         <div class="d-flex justify-content-between align-items-start">
@@ -2406,14 +2617,14 @@
                     </div>
                 `;
             });
-            
+
             container.innerHTML = html;
         }
 
         // Afficher les Divisions filtrées
         function displayFilteredDivisionsManagers(divisions) {
             const container = document.getElementById('divisionsManagersContainer');
-            
+
             if (divisions.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-4">
@@ -2429,7 +2640,7 @@
                 const hasManagers = div.managers && (div.managers.principal_id || div.managers.adjoint_id);
                 const cardClass = hasManagers ? 'manager-card has-managers' : 'manager-card no-managers';
                 const buName = getBusinessUnitName(div.business_unit_id);
-                
+
                 html += `
                     <div class="${cardClass}">
                         <div class="d-flex justify-content-between align-items-start">
@@ -2492,7 +2703,7 @@
                     </div>
                 `;
             });
-            
+
             container.innerHTML = html;
         }
 
@@ -2501,11 +2712,11 @@
             document.getElementById('entityTypeFilter').value = '';
             document.getElementById('managerStatusFilter').value = '';
             document.getElementById('showOnlyUnassigned').checked = false;
-            
+
             // Retirer l'indicateur visuel des filtres
             const filtersCard = document.querySelector('#managers .card');
             filtersCard.classList.remove('filters-active');
-            
+
             // Afficher toutes les données
             displayBusinessUnitsManagers();
             displayDivisionsManagers();
@@ -2516,10 +2727,10 @@
         function updateFilteredStatistics(filteredBusinessUnits, filteredDivisions) {
             const totalBU = filteredBusinessUnits.length;
             const totalDiv = filteredDivisions.length;
-            
+
             let assignedManagers = 0;
             let unassignedUnits = 0;
-            
+
             // Compter les BU avec responsables
             filteredBusinessUnits.forEach(bu => {
                 if (bu.managers && (bu.managers.principal_id || bu.managers.adjoint_id)) {
@@ -2528,7 +2739,7 @@
                     unassignedUnits++;
                 }
             });
-            
+
             // Compter les Divisions avec responsables
             filteredDivisions.forEach(div => {
                 if (div.managers && (div.managers.principal_id || div.managers.adjoint_id)) {
@@ -2537,7 +2748,7 @@
                     unassignedUnits++;
                 }
             });
-            
+
             document.getElementById('totalBusinessUnitsManagers').textContent = totalBU;
             document.getElementById('totalDivisionsManagers').textContent = totalDiv;
             document.getElementById('assignedManagers').textContent = assignedManagers;
@@ -2552,5 +2763,6 @@
 
     <!-- SessionManager pour la gestion centralisée des sessions -->
     <script src="js/session-manager.js"></script>
-    </body>
+</body>
+
 </html>

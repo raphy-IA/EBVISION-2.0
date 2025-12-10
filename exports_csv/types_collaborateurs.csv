@@ -1,0 +1,6 @@
+id;nom;code;description;statut;created_at;updated_at
+fb550ca4-62b0-4d09-88d3-ee15f3fd201f;Administratif;ADM;Personnel administratif et gestion;ACTIF;Sun Dec 07 2025 12:12:08 GMT-0500 (UTC−05:00);Sun Dec 07 2025 12:17:49 GMT-0500 (UTC−05:00)
+b5820497-98c7-42f0-a796-861716ee7e27;Consultant;CONS;Consultant en gestion et stratégie d'entreprise;ACTIF;Sun Dec 07 2025 12:12:08 GMT-0500 (UTC−05:00);Sun Dec 07 2025 12:17:49 GMT-0500 (UTC−05:00)
+ab8e37db-0594-434c-94d8-1c2bf18f289e;Stagiaire;STG;;ACTIF;Wed Nov 26 2025 05:22:54 GMT-0500 (UTC−05:00);Wed Nov 26 2025 05:23:59 GMT-0500 (UTC−05:00)
+0c396d50-3962-40c9-b23e-46c9ef11869d;Support;SUP;Personnel de support et assistance;ACTIF;Sun Dec 07 2025 12:12:08 GMT-0500 (UTC−05:00);Sun Dec 07 2025 12:17:49 GMT-0500 (UTC−05:00)
+6d3a6495-76c7-4671-8521-64fea4fd44ef;Technique;TEC;Personnel technique (IT, maintenance, infrastructure);ACTIF;Sun Dec 07 2025 12:12:08 GMT-0500 (UTC−05:00);Sun Dec 07 2025 12:17:49 GMT-0500 (UTC−05:00)
