@@ -568,6 +568,21 @@
                 selectedOpportunity = JSON.parse(opportunityData);
                 selectedMissionType = JSON.parse(missionTypeData);
 
+                // Récupérer les détails complets de l'opportunité (notamment business_unit_id)
+                try {
+                    const response = await authenticatedFetch(`/api/opportunities/${selectedOpportunity.id}`);
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success && result.data) {
+                            console.log('✅ Détails complets opportunité chargés');
+                            // Fusionner les nouvelles données mais garder les infos de base
+                            selectedOpportunity = { ...selectedOpportunity, ...result.data };
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Impossible de charger les détails complets de l\'opportunité:', err);
+                }
+
                 console.log('✅ Opportunité chargée:', selectedOpportunity);
                 console.log('✅ Type de mission chargé:', selectedMissionType);
 
@@ -586,7 +601,15 @@
         async function loadCollaborateurs() {
             try {
                 console.log('👥 Chargement des collaborateurs...');
-                const response = await authenticatedFetch('/api/collaborateurs');
+
+                let url = '/api/collaborateurs?limit=1000'; // Sans restriction de nombre (max 1000)
+
+                if (selectedOpportunity && selectedOpportunity.business_unit_id) {
+                    url += `&business_unit_id=${selectedOpportunity.business_unit_id}`;
+                    console.log(`🔍 Filtrage par Business Unit: ${selectedOpportunity.business_unit_id}`);
+                }
+
+                const response = await authenticatedFetch(url);
                 const data = await response.json();
 
                 if (data.success) {

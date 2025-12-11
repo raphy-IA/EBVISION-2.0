@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Consolidé</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -14,7 +15,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
     <link rel="stylesheet" href="css/app-title.css">
-    
+
     <!-- Scripts d'authentification -->
     <script src="js/auth.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -24,7 +25,7 @@
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
-    
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -34,98 +35,98 @@
             --danger-color: #e74c3c;
             --light-bg: #f8f9fa;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
         }
-        
+
         .page-wrapper {
             display: flex;
             min-height: 100vh;
         }
-        
+
         .main-content-area {
             flex-grow: 1;
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .dashboard-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 2rem;
             border-radius: 15px;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
-        
+
         .kpi-card {
             background: white;
             border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
             border-left: 4px solid #667eea;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .kpi-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
         }
-        
+
         .kpi-card.success {
             border-left-color: #27ae60;
         }
-        
+
         .kpi-card.warning {
             border-left-color: #f39c12;
         }
-        
+
         .kpi-card.danger {
             border-left-color: #e74c3c;
         }
-        
+
         .kpi-card.info {
             border-left-color: #3498db;
         }
-        
+
         .kpi-number {
             font-size: 2.5rem;
             font-weight: bold;
             color: var(--primary-color);
             margin-bottom: 0.5rem;
         }
-        
+
         .kpi-label {
             color: #6c757d;
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .kpi-trend {
             font-size: 0.9rem;
             margin-top: 0.5rem;
         }
-        
+
         .kpi-trend.positive {
             color: #27ae60;
         }
-        
+
         .kpi-trend.negative {
             color: #e74c3c;
         }
-        
+
         .chart-container {
             background: white;
             border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
         }
-        
+
         .chart-title {
             font-size: 1.2rem;
             font-weight: 600;
@@ -134,7 +135,7 @@
             padding-bottom: 0.5rem;
             border-bottom: 2px solid #e9ecef;
         }
-        
+
         .section-title {
             font-size: 1.5rem;
             font-weight: 600;
@@ -143,45 +144,50 @@
             padding-bottom: 0.5rem;
             border-bottom: 3px solid #667eea;
         }
-        
+
         .filter-section {
             background: white;
             border-radius: 15px;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
-        
+
         .loading {
             text-align: center;
             padding: 3rem;
             color: #6c757d;
         }
-        
+
         .loading i {
             font-size: 3rem;
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
-        
+
         /* Empêcher le graphique Top Collaborateurs de s étirer indéfiniment */
         #collaborateursChart {
             max-height: 260px;
         }
-        
+
         @media (max-width: 768px) {
             .page-wrapper {
                 flex-direction: column;
             }
-            
+
             .main-content-area {
                 padding: 1rem;
             }
-            
+
             .kpi-number {
                 font-size: 2rem;
             }
@@ -190,7 +196,7 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
@@ -198,12 +204,13 @@
     <!-- Configuration des devises -->
     <script src="js/currency-config.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
         <i class="fas fa-bars"></i>
     </button>
-    
+
     <div class="page-wrapper">
         <!-- Sidebar Container -->
         <div class="sidebar-container">
@@ -250,14 +257,14 @@
                                 <i class="fas fa-sync-alt me-2"></i>Actualiser
                             </button>
                         </div>
-        </div>
-    </div>
+                    </div>
+                </div>
 
                 <!-- KPIs Principaux -->
                 <div class="section-title">
                     <i class="fas fa-tachometer-alt me-2"></i>Indicateurs Clés
                 </div>
-                
+
                 <div class="row">
                     <div class="col-xl-3 col-md-6">
                         <div class="kpi-card">
@@ -301,41 +308,41 @@
                 <div class="section-title">
                     <i class="fas fa-chart-bar me-2"></i>Analyses
                 </div>
-                
+
                 <div class="row">
                     <div class="col-xl-6">
-                        <div class="chart-container">
+                        <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
                             <div class="chart-title">
                                 <i class="fas fa-calendar-alt me-2"></i>Évolution Temporelle
                             </div>
-                            <canvas id="timelineChart" height="250"></canvas>
+                            <canvas id="timelineChart"></canvas>
                         </div>
                     </div>
                     <div class="col-xl-6">
-                        <div class="chart-container">
+                        <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
                             <div class="chart-title">
                                 <i class="fas fa-chart-pie me-2"></i>Répartition par Statut
                             </div>
-                            <canvas id="statusChart" height="250"></canvas>
+                            <canvas id="statusChart"></canvas>
                         </div>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-xl-6">
-                        <div class="chart-container">
+                        <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
                             <div class="chart-title">
                                 <i class="fas fa-users me-2"></i>Top Collaborateurs
                             </div>
-                            <canvas id="collaborateursChart" height="250"></canvas>
+                            <canvas id="collaborateursChart"></canvas>
                         </div>
                     </div>
                     <div class="col-xl-6">
-                        <div class="chart-container">
+                        <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
                             <div class="chart-title">
                                 <i class="fas fa-briefcase me-2"></i>Missions Actives
                             </div>
-                            <canvas id="missionsChart" height="250"></canvas>
+                            <canvas id="missionsChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -353,7 +360,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Sidebar JS -->
     <script src="js/sidebar.js"></script>
-    
+
     <!-- Script du Dashboard -->
     <script>
         const API_BASE_URL = '/api/analytics';
@@ -361,13 +368,13 @@
         let financialDefaultCurrency = (typeof CURRENCY_CONFIG !== 'undefined' && CURRENCY_CONFIG.defaultCurrency)
             ? CURRENCY_CONFIG.defaultCurrency
             : 'XAF';
-        
+
         // Fonction d'authentification
         function getAuthHeader() {
             const token = localStorage.getItem('authToken');
             return { 'Authorization': `Bearer ${token}` };
         }
-        
+
         async function authenticatedFetch(url) {
             return fetch(url, { headers: getAuthHeader() });
         }
@@ -387,7 +394,7 @@
                 console.warn('Impossible de charger les paramètres financiers (dashboard optimisé):', error);
             }
         }
-        
+
         // Charger les filtres
         async function loadFilters() {
             try {
@@ -404,7 +411,7 @@
                         buSelect.appendChild(option);
                     });
                 }
-                
+
                 // Charger Divisions
                 const divResponse = await authenticatedFetch('/api/divisions');
                 if (divResponse.ok) {
@@ -422,56 +429,56 @@
                 console.error('Erreur chargement filtres:', error);
             }
         }
-        
+
         // Charger toutes les données
         async function loadAllData() {
             const loadingState = document.getElementById('loadingState');
             loadingState.style.display = 'block';
-            
+
             try {
                 const period = document.getElementById('periodFilter').value;
                 const businessUnit = document.getElementById('businessUnitFilter').value;
                 const division = document.getElementById('divisionFilter').value;
-                
+
                 let queryParams = `period=${period}`;
                 if (businessUnit) queryParams += `&businessUnit=${businessUnit}`;
                 if (division) queryParams += `&division=${division}`;
-                
+
                 // Charger KPIs
                 const kpisResponse = await authenticatedFetch(`${API_BASE_URL}/dashboard-kpis?${queryParams}`);
                 if (kpisResponse.ok) {
                     const kpisData = await kpisResponse.json();
                     updateKPIs(kpisData.data);
                 }
-                
+
                 // Charger distribution des heures
                 const hoursResponse = await authenticatedFetch(`${API_BASE_URL}/hours-distribution?${queryParams}`);
                 if (hoursResponse.ok) {
                     const hoursData = await hoursResponse.json();
                     updateTimelineChart(hoursData.data);
                 }
-                
+
                 // Charger statut validation
                 const statusResponse = await authenticatedFetch(`${API_BASE_URL}/time-validation-status?${queryParams}`);
                 if (statusResponse.ok) {
                     const statusData = await statusResponse.json();
                     updateStatusChart(statusData.data);
                 }
-                
+
                 // Charger top collaborateurs
                 const collabResponse = await authenticatedFetch(`${API_BASE_URL}/top-collaborateurs?${queryParams}`);
                 if (collabResponse.ok) {
                     const collabData = await collabResponse.json();
                     updateCollaborateursChart(collabData.data);
                 }
-                
+
                 // Charger missions
                 const missionsResponse = await authenticatedFetch(`${API_BASE_URL}/missions-progress?${queryParams}`);
                 if (missionsResponse.ok) {
                     const missionsData = await missionsResponse.json();
                     updateMissionsChart(missionsData.data);
                 }
-                
+
             } catch (error) {
                 console.error('Erreur chargement données:', error);
                 alert('Erreur lors du chargement des données. Veuillez réessayer.');
@@ -479,28 +486,28 @@
                 loadingState.style.display = 'none';
             }
         }
-        
+
         // Mettre à jour les KPIs
         function updateKPIs(data) {
             document.getElementById('kpi-total-heures').textContent = (data.total_heures || 0).toFixed(1) + 'h';
             document.getElementById('kpi-validees').textContent = (data.heures_validees || 0).toFixed(1) + 'h';
             document.getElementById('kpi-ca').textContent = formatCurrency(data.chiffre_affaires || 0);
             document.getElementById('kpi-rentabilite').textContent = (data.taux_rentabilite || 0).toFixed(1) + '%';
-            
+
             // Mettre à jour les tendances
             updateTrend('trend-heures', data.heures_trend || 0);
             updateTrend('trend-validees', data.validees_trend || 0);
             updateTrend('trend-ca', data.chiffre_affaires_trend || 0);
             updateTrend('trend-rentabilite', data.rentabilite_trend || 0);
         }
-        
+
         function updateTrend(elementId, value) {
             const element = document.getElementById(elementId);
             const isPositive = value >= 0;
             element.className = `kpi-trend ${isPositive ? 'positive' : 'negative'}`;
             element.innerHTML = `<i class="fas fa-arrow-${isPositive ? 'up' : 'down'}"></i> ${Math.abs(value).toFixed(1)}%`;
         }
-        
+
         function formatCurrency(value, currencyCode) {
             const numeric = Number(value || 0);
             const code = currencyCode || financialDefaultCurrency || 'XAF';
@@ -520,15 +527,17 @@
                 return `${numeric} ${code}`;
             }
         }
-        
+
         // Mettre à jour le graphique de timeline
         function updateTimelineChart(data) {
             const ctx = document.getElementById('timelineChart');
             if (charts.timeline) charts.timeline.destroy();
-            
+
             const labels = data.map(d => new Date(d.period).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }));
             const values = data.map(d => d.total_heures);
-            
+
+            // Fix Chart.js infinite resize loop is now handled by CSS container
+
             charts.timeline = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -556,12 +565,14 @@
                 }
             });
         }
-        
+
         // Mettre à jour le graphique de statut
         function updateStatusChart(data) {
             const ctx = document.getElementById('statusChart');
             if (charts.status) charts.status.destroy();
-            
+
+            // Fix Chart.js infinite resize loop is now handled by CSS container
+
             charts.status = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
@@ -590,21 +601,22 @@
                 }
             });
         }
-        
+
         // Mettre à jour le graphique des collaborateurs
         function updateCollaborateursChart(data) {
             const ctx = document.getElementById('collaborateursChart');
             if (charts.collaborateurs) charts.collaborateurs.destroy();
-            
+
             const topCollabs = data.slice(0, 10);
             const labels = topCollabs.map(c => `${c.prenom} ${c.nom}`);
             const values = topCollabs.map(c => c.total_heures);
-            
-            // Fixer une hauteur stable pour éviter l étirement progressif
+
+            // Fixer une hauteur stable pour éviter l'étirement progressif
             if (ctx && ctx.parentElement) {
-                ctx.parentElement.style.height = '260px';
+                ctx.parentElement.style.height = '260px'; // Force height
+                ctx.parentElement.style.position = 'relative'; // Mandatory for Chart.js 
             }
-            
+
             charts.collaborateurs = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -612,29 +624,30 @@
                     datasets: [{
                         label: 'Heures',
                         data: values,
-                        backgroundColor: '#667eea'
+                        backgroundColor: '#6c5ce7',
+                        borderRadius: 5
                     }]
                 },
                 options: {
+                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    indexAxis: 'y',
                     plugins: {
                         legend: { display: false }
                     }
                 }
             });
         }
-        
+
         // Mettre à jour le graphique des missions
         function updateMissionsChart(data) {
             const ctx = document.getElementById('missionsChart');
             if (charts.missions) charts.missions.destroy();
-            
+
             const topMissions = data.slice(0, 10);
             const labels = topMissions.map(m => m.mission_nom || 'Sans nom');
             const values = topMissions.map(m => m.progression || 0);
-            
+
             charts.missions = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -661,9 +674,9 @@
                 }
             });
         }
-        
+
         // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadFinancialSettingsForDashboardOptimise()
                 .catch(err => console.warn('Erreur chargement paramètres financiers (dashboard optimisé):', err))
                 .finally(() => {
@@ -673,23 +686,5 @@
         });
     </script>
 </body>
+
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

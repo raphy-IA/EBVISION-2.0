@@ -54,6 +54,14 @@ class Client {
         this.secteur_couleur = data.secteur_couleur;
         this.sous_secteur_nom = data.sous_secteur_nom;
         this.sous_secteur_code = data.sous_secteur_code;
+
+        // Informations Administrateur/Contact
+        this.administrateur_nom = data.administrateur_nom;
+        this.administrateur_email = data.administrateur_email;
+        this.administrateur_telephone = data.administrateur_telephone;
+        this.contact_interne_nom = data.contact_interne_nom;
+        this.contact_interne_email = data.contact_interne_email;
+        this.contact_interne_telephone = data.contact_interne_telephone;
     }
 
     // Récupérer tous les clients avec pagination et filtres
@@ -177,7 +185,9 @@ class Client {
                 c.pays_id, c.secteur_activite_id, c.sous_secteur_activite_id,
                 p.nom as pays_nom, p.code_pays as pays_code,
                 sa.nom as secteur_nom, sa.code as secteur_code, sa.couleur as secteur_couleur,
-                ssa.nom as sous_secteur_nom, ssa.code as sous_secteur_code
+                ssa.nom as sous_secteur_nom, ssa.code as sous_secteur_code,
+                c.administrateur_nom, c.administrateur_email, c.administrateur_telephone,
+                c.contact_interne_nom, c.contact_interne_email, c.contact_interne_telephone
             FROM clients c
             LEFT JOIN pays p ON c.pays_id = p.id
             LEFT JOIN secteurs_activite sa ON c.secteur_activite_id = sa.id
@@ -195,7 +205,9 @@ class Client {
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
             secteur_activite, taille_entreprise, statut, type, source_prospection,
             notes, collaborateur_id, created_by, pays_id, secteur_activite_id,
-            sous_secteur_activite_id, forme_juridique, effectif
+            sous_secteur_activite_id, forme_juridique, effectif,
+            administrateur_nom, administrateur_email, administrateur_telephone,
+            contact_interne_nom, contact_interne_email, contact_interne_telephone
         } = clientData;
 
         const query = `
@@ -203,8 +215,10 @@ class Client {
                 nom, sigle, email, telephone, adresse, ville, code_postal, pays,
                 secteur_activite, taille_entreprise, statut, type, source_prospection,
                 notes, collaborateur_id, created_by, pays_id, secteur_activite_id,
-                sous_secteur_activite_id, forme_juridique, effectif
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+                sous_secteur_activite_id, forme_juridique, effectif,
+                administrateur_nom, administrateur_email, administrateur_telephone,
+                contact_interne_nom, contact_interne_email, contact_interne_telephone
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)
             RETURNING *
         `;
 
@@ -212,7 +226,9 @@ class Client {
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
             secteur_activite, taille_entreprise, statut, type, source_prospection,
             notes, collaborateur_id, created_by, pays_id, secteur_activite_id,
-            sous_secteur_activite_id, forme_juridique, effectif
+            sous_secteur_activite_id, forme_juridique, effectif,
+            administrateur_nom, administrateur_email, administrateur_telephone,
+            contact_interne_nom, contact_interne_email, contact_interne_telephone
         ];
 
         try {
@@ -230,7 +246,9 @@ class Client {
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
             secteur_activite, taille_entreprise, statut, type, source_prospection,
             notes, collaborateur_id, updated_by, pays_id, secteur_activite_id,
-            sous_secteur_activite_id, forme_juridique, effectif
+            sous_secteur_activite_id, forme_juridique, effectif,
+            administrateur_nom, administrateur_email, administrateur_telephone,
+            contact_interne_nom, contact_interne_email, contact_interne_telephone
         } = updateData;
 
         const query = `
@@ -255,9 +273,15 @@ class Client {
                 sous_secteur_activite_id = COALESCE($18, sous_secteur_activite_id),
                 forme_juridique = COALESCE($19, forme_juridique),
                 effectif = COALESCE($20, effectif),
-                updated_by = $21,
+                administrateur_nom = COALESCE($21, administrateur_nom),
+                administrateur_email = COALESCE($22, administrateur_email),
+                administrateur_telephone = COALESCE($23, administrateur_telephone),
+                contact_interne_nom = COALESCE($24, contact_interne_nom),
+                contact_interne_email = COALESCE($25, contact_interne_email),
+                contact_interne_telephone = COALESCE($26, contact_interne_telephone),
+                updated_by = $27,
                 date_derniere_activite = CURRENT_TIMESTAMP
-            WHERE id = $22
+            WHERE id = $28
             RETURNING *
         `;
 
@@ -265,7 +289,10 @@ class Client {
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
             secteur_activite, taille_entreprise, statut, type, source_prospection,
             notes, collaborateur_id, pays_id, secteur_activite_id, sous_secteur_activite_id,
-            forme_juridique, effectif, updated_by, this.id
+            forme_juridique, effectif,
+            administrateur_nom, administrateur_email, administrateur_telephone,
+            contact_interne_nom, contact_interne_email, contact_interne_telephone,
+            updated_by, this.id
         ];
 
         try {
@@ -413,4 +440,4 @@ class Client {
     }
 }
 
-module.exports = Client; 
+module.exports = Client;

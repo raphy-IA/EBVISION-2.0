@@ -52,14 +52,15 @@ router.get('/dashboard-kpis', authenticateToken, async (req, res) => {
         const hoursQuery = `
             SELECT 
                 SUM(te.heures) as total_heures,
-                SUM(CASE WHEN te.status = 'saved' THEN te.heures ELSE 0 END) as heures_validees,
-                SUM(CASE WHEN te.status = 'submitted' THEN te.heures ELSE 0 END) as heures_soumises,
-                SUM(CASE WHEN te.status = 'draft' THEN te.heures ELSE 0 END) as heures_saisie,
+                SUM(CASE WHEN ts.statut = 'validé' THEN te.heures ELSE 0 END) as heures_validees,
+                SUM(CASE WHEN ts.statut = 'soumis' THEN te.heures ELSE 0 END) as heures_soumises,
+                SUM(CASE WHEN ts.statut = 'sauvegardé' THEN te.heures ELSE 0 END) as heures_saisie,
                 COUNT(DISTINCT te.user_id) as collaborateurs_actifs,
                 SUM(COALESCE(m.montant_honoraires, 0)) as chiffre_affaires,
                 SUM(COALESCE(te.heures * COALESCE(g.taux_horaire_default, 0), 0)) as cout_total,
                 COUNT(DISTINCT c.id) * 8 * 30 as heures_disponibles
             FROM time_entries te
+            LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
             LEFT JOIN users u ON te.user_id = u.id
             LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
@@ -109,8 +110,9 @@ router.get('/dashboard-kpis', authenticateToken, async (req, res) => {
         const previousHoursQuery = `
             SELECT 
                 SUM(te.heures) as total_heures,
-                SUM(CASE WHEN te.status = 'saved' THEN te.heures ELSE 0 END) as heures_validees
+                SUM(CASE WHEN ts.statut = 'validé' THEN te.heures ELSE 0 END) as heures_validees
             FROM time_entries te
+            LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
             LEFT JOIN users u ON te.user_id = u.id
             LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
             LEFT JOIN divisions d ON c.division_id = d.id
@@ -177,9 +179,10 @@ router.get('/top-collaborateurs', authenticateToken, async (req, res) => {
                 c.prenom,
                 bu.nom as business_unit_nom,
                 SUM(te.heures) as heures_total,
-                SUM(CASE WHEN te.status = 'saved' THEN te.heures ELSE 0 END) as heures_validees,
+                SUM(CASE WHEN ts.statut = 'validé' THEN te.heures ELSE 0 END) as heures_validees,
                 COUNT(DISTINCT te.mission_id) as missions_count
             FROM time_entries te
+            LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
             LEFT JOIN users u ON te.user_id = u.id
             LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
             LEFT JOIN divisions d ON c.division_id = d.id
@@ -2027,6 +2030,163 @@ router.get('/collections', authenticateToken, async (req, res) => {
             success: false,
             error: 'Erreur lors de la récupération des données de recouvrement'
         });
+    }
+});
+
+// ===================== AJOUT: Dashboard Optimisé =====================
+
+// GET /api/analytics/hours-distribution - Distribution des heures pour le graphique temporel
+router.get('/hours-distribution', authenticateToken, async (req, res) => {
+    try {
+        const { period = 90, businessUnit, division } = req.query;
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(period));
+
+        let params = [startDate.toISOString()];
+        let paramIndex = 2;
+        let whereConditions = ['te.date_saisie >= $1'];
+
+        if (businessUnit) {
+            whereConditions.push(`d.business_unit_id = $${paramIndex++}`);
+            params.push(businessUnit);
+        }
+        if (division) {
+            whereConditions.push(`d.id = $${paramIndex++}`);
+            params.push(division);
+        }
+
+        const whereClause = whereConditions.join(' AND ');
+
+        const query = `
+            SELECT 
+                DATE_TRUNC('month', te.date_saisie) as period,
+                SUM(te.heures) as total_heures
+            FROM time_entries te
+            LEFT JOIN users u ON te.user_id = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN divisions d ON c.division_id = d.id
+            WHERE ${whereClause}
+            GROUP BY DATE_TRUNC('month', te.date_saisie)
+            ORDER BY period ASC
+        `;
+
+        const result = await pool.query(query, params);
+
+        res.json({
+            success: true,
+            data: result.rows
+        });
+    } catch (error) {
+        console.error('Erreur hours-distribution:', error);
+        res.status(500).json({ success: false, error: 'Erreur lors de la récupération de la distribution des heures' });
+    }
+});
+
+// GET /api/analytics/time-validation-status - Statut de validation des heures
+router.get('/time-validation-status', authenticateToken, async (req, res) => {
+    try {
+        const { period = 90, businessUnit, division } = req.query;
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(period));
+
+        let params = [startDate.toISOString()];
+        let paramIndex = 2;
+        let whereConditions = ['te.date_saisie >= $1'];
+
+        if (businessUnit) {
+            whereConditions.push(`d.business_unit_id = $${paramIndex++}`);
+            params.push(businessUnit);
+        }
+        if (division) {
+            whereConditions.push(`d.id = $${paramIndex++}`);
+            params.push(division);
+        }
+
+        const whereClause = whereConditions.join(' AND ');
+
+        const query = `
+            SELECT 
+                SUM(CASE WHEN ts.statut = 'validé' THEN te.heures ELSE 0 END) as validees,
+                SUM(CASE WHEN ts.statut = 'soumis' THEN te.heures ELSE 0 END) as soumises,
+                SUM(CASE WHEN ts.statut = 'sauvegardé' THEN te.heures ELSE 0 END) as en_attente
+            FROM time_entries te
+            LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
+            LEFT JOIN users u ON te.user_id = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN divisions d ON c.division_id = d.id
+            WHERE ${whereClause}
+        `;
+
+        const result = await pool.query(query, params);
+
+        res.json({
+            success: true,
+            data: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Erreur time-validation-status:', error);
+        res.status(500).json({ success: false, error: 'Erreur lors de la récupération du statut de validation' });
+    }
+});
+
+// GET /api/analytics/missions-progress - Progression des missions actives
+router.get('/missions-progress', authenticateToken, async (req, res) => {
+    try {
+        const { period = 90, businessUnit, division } = req.query;
+        // Note: For missions, we might check all active missions regardless of period, 
+        // or filter by those active within the period. Here we select active missions.
+
+        // Simulating filters support through joins if needed, but primarily filtering by mission status
+        let params = [];
+        let paramIndex = 1;
+        let whereConditions = ["m.statut = 'EN_COURS'"];
+
+        if (businessUnit) {
+            whereConditions.push(`m.business_unit_id = $${paramIndex++}`);
+            params.push(businessUnit);
+        }
+        if (division) {
+            whereConditions.push(`m.division_id = $${paramIndex++}`);
+            params.push(division);
+        }
+
+        const whereClause = whereConditions.join(' AND ');
+
+        // Calculated progress based on time spent vs estimated/budgeted if available
+        // Fallback to simple calculation or mock if needed. 
+        // Assuming we can compare hours spent (cost) vs fees (budget) strictly for progress estimation or use internal field if exists
+
+        const query = `
+            SELECT 
+                m.id,
+                m.nom as mission_nom,
+                COALESCE(
+                    CASE 
+                        WHEN m.montant_honoraires > 0 THEN 
+                            (SUM(te.heures * COALESCE(g.taux_horaire_default, 0)) / m.montant_honoraires) * 100
+                        ELSE 0 
+                    END, 0
+                ) as progression
+            FROM missions m
+            LEFT JOIN time_entries te ON m.id = te.mission_id
+            LEFT JOIN users u ON te.user_id = u.id
+            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN grades g ON c.grade_actuel_id = g.id
+            WHERE ${whereClause}
+            GROUP BY m.id, m.nom, m.montant_honoraires
+            ORDER BY progression DESC
+            LIMIT 10
+        `;
+
+        const result = await pool.query(query, params);
+
+        res.json({
+            success: true,
+            data: result.rows
+        });
+    } catch (error) {
+        console.error('Erreur missions-progress:', error);
+        res.status(500).json({ success: false, error: 'Erreur lors de la récupération de la progression des missions' });
     }
 });
 

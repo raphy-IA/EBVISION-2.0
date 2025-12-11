@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
     <link href="css/modern-sidebar.css" rel="stylesheet">
-    
-    
+
+
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
     <script src="js/menu-permissions.js"></script>
@@ -19,9 +20,9 @@
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
-    
-    
-    
+
+
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -32,107 +33,124 @@
             --light-bg: #f8f9fa;
             --dark-bg: #343a40;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light-bg);
             margin: 0;
             padding: 0;
         }
-        
+
         .main-content-area {
             flex-grow: 1;
             padding: 2rem;
             background-color: var(--light-bg);
         }
-        
+
         .page-wrapper {
             display: flex;
             min-height: 100vh;
         }
-        
+
         .sidebar-container {
             width: 300px;
             flex-shrink: 0;
         }
-        
+
         .badge-status {
             font-size: 0.8em;
         }
-        
+
         .badge-priority {
             font-size: 0.75em;
             font-weight: 600;
         }
-        
+
         .badge-priority.critique {
             background-color: #dc3545;
             color: white;
         }
-        
+
         .badge-priority.haute {
             background-color: #fd7e14;
             color: white;
         }
-        
+
         .badge-priority.moyenne {
             background-color: #ffc107;
             color: #212529;
         }
-        
+
         .badge-priority.basse {
             background-color: #28a745;
             color: white;
         }
+
         /* Amélioration de l'entête et positionnement du bouton Nouveau Type */
-        .header { margin-bottom: 1.25rem; }
+        .header {
+            margin-bottom: 1.25rem;
+        }
+
         .header .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 1rem;
         }
-        .header .header-actions { display: flex; align-items: center; }
-        .header .header-actions .btn { white-space: nowrap; }
+
+        .header .header-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .header .header-actions .btn {
+            white-space: nowrap;
+        }
 
         .table-responsive {
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .card-stats {
             transition: transform 0.2s;
         }
+
         .card-stats:hover {
             transform: translateY(-2px);
         }
+
         .btn-action {
             margin: 0 2px;
         }
+
         .modal-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
+
         .form-label {
             font-weight: 600;
             color: #495057;
         }
+
         .alert {
             border-radius: 8px;
             border: none;
         }
-        
+
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
-        
+
         .page-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -140,17 +158,17 @@
             border-radius: 15px;
             margin-bottom: 2rem;
         }
-        
+
         .page-header h1 {
             margin: 0;
             font-weight: 700;
         }
-        
+
         .page-header p {
             margin: 0.5rem 0 0 0;
             opacity: 0.9;
         }
-        
+
         .badge-priority {
             font-size: 0.75em;
             padding: 0.35em 0.65em;
@@ -171,31 +189,44 @@
         .badge-priority.basse {
             background-color: #27ae60;
         }
-        
+
         @media (max-width: 768px) {
             .page-wrapper {
                 flex-direction: column;
             }
+
             .sidebar-container {
                 width: 100%;
                 height: auto;
             }
+
             .main-content-area {
                 padding: 1rem;
             }
-            .header .header-content { flex-direction: column; align-items: stretch; }
-            .header .header-actions { width: 100%; }
-            .header .header-actions .btn { width: 100%; }
+
+            .header .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header .header-actions {
+                width: 100%;
+            }
+
+            .header .header-actions .btn {
+                width: 100%;
+            }
         }
     </style>
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <button class="sidebar-toggle d-md-none"><i class="fas fa-bars"></i></button>
     <div class="page-wrapper">
@@ -206,152 +237,153 @@
 
         <!-- Main Content Area -->
         <div class="main-content-area">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1><i class="fas fa-tag"></i> Types de Mission</h1>
-                <div class="header-actions">
-                    <button class="btn btn-primary" onclick="openCreateModal()">
-                        <i class="fas fa-plus"></i> Nouveau Type
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Statistics Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card card-stats bg-primary text-white">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6 class="card-title">Total Types</h6>
-                                <h3 id="totalTypes">-</h3>
-                            </div>
-                            <div class="align-self-center">
-                                <i class="fas fa-tags fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-stats bg-success text-white">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6 class="card-title">Types Actifs</h6>
-                                <h3 id="activeTypes">-</h3>
-                            </div>
-                            <div class="align-self-center">
-                                <i class="fas fa-check-circle fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-stats bg-info text-white">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6 class="card-title">Avec Division</h6>
-                                <h3 id="withDivision">-</h3>
-                            </div>
-                            <div class="align-self-center">
-                                <i class="fas fa-sitemap fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-stats bg-warning text-white">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6 class="card-title">Sans Division</h6>
-                                <h3 id="withoutDivision">-</h3>
-                            </div>
-                            <div class="align-self-center">
-                                <i class="fas fa-exclamation-triangle fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <label for="filterDivision" class="form-label">Division</label>
-                        <select class="form-select" id="filterDivision">
-                            <option value="">Toutes les divisions</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="filterStatus" class="form-label">Statut</label>
-                        <select class="form-select" id="filterStatus">
-                            <option value="">Tous les statuts</option>
-                            <option value="true">Actif</option>
-                            <option value="false">Inactif</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="searchInput" class="form-label">Recherche</label>
-                        <input type="text" class="form-control" id="searchInput" placeholder="Rechercher par codification ou libellé...">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">&nbsp;</label>
-                        <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
-                            <i class="fas fa-times"></i> Effacer
+            <!-- Header -->
+            <header class="header">
+                <div class="header-content">
+                    <h1><i class="fas fa-tag"></i> Types de Mission</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openCreateModal()">
+                            <i class="fas fa-plus"></i> Nouveau Type
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
+            </header>
 
-        <!-- Alert Messages -->
-        <div id="alertContainer"></div>
-
-        <!-- Data Table -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-list"></i> Liste des Types de Mission
-                </h5>
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card card-stats bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Total Types</h6>
+                                    <h3 id="totalTypes">-</h3>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-tags fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-stats bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Types Actifs</h6>
+                                    <h3 id="activeTypes">-</h3>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-check-circle fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-stats bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Avec Division</h6>
+                                    <h3 id="withDivision">-</h3>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-sitemap fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-stats bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Sans Division</h6>
+                                    <h3 id="withoutDivision">-</h3>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover" id="missionTypesTable">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Codification</th>
-                                <th>Libellé</th>
-                                <th>Description</th>
-                                <th>Division</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="missionTypesTableBody">
-                            <tr>
-                                <td colspan="6" class="text-center">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Chargement...</span>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="filterDivision" class="form-label">Division</label>
+                            <select class="form-select" id="filterDivision">
+                                <option value="">Toutes les divisions</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterStatus" class="form-label">Statut</label>
+                            <select class="form-select" id="filterStatus">
+                                <option value="">Tous les statuts</option>
+                                <option value="true">Actif</option>
+                                <option value="false">Inactif</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="searchInput" class="form-label">Recherche</label>
+                            <input type="text" class="form-control" id="searchInput"
+                                placeholder="Rechercher par codification ou libellé...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                                <i class="fas fa-times"></i> Effacer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alert Messages -->
+            <div id="alertContainer"></div>
+
+            <!-- Data Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list"></i> Liste des Types de Mission
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="missionTypesTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Codification</th>
+                                    <th>Libellé</th>
+                                    <th>Description</th>
+                                    <th>Division</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="missionTypesTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Chargement...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-        </div>
     </div>
 
     <!-- Create Modal -->
@@ -368,7 +400,8 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="createCodification" class="form-label">Codification *</label>
-                                    <input type="text" class="form-control" id="createCodification" required maxlength="20">
+                                    <input type="text" class="form-control" id="createCodification" required
+                                        maxlength="20">
                                     <div class="form-text">Code unique (ex: AUDIT, CONSEIL)</div>
                                 </div>
                             </div>
@@ -382,6 +415,13 @@
                         <div class="mb-3">
                             <label for="createDescription" class="form-label">Description</label>
                             <textarea class="form-control" id="createDescription" rows="3" maxlength="500"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="createBusinessUnit" class="form-label">Business Unit</label>
+                            <select class="form-select" id="createBusinessUnit"
+                                onchange="filterDivisionsByBU('createBusinessUnit', 'createDivision')">
+                                <option value="">Toutes les Business Units</option>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="createDivision" class="form-label">Division</label>
@@ -416,7 +456,8 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="editCodification" class="form-label">Codification *</label>
-                                    <input type="text" class="form-control" id="editCodification" required maxlength="20">
+                                    <input type="text" class="form-control" id="editCodification" required
+                                        maxlength="20">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -429,6 +470,13 @@
                         <div class="mb-3">
                             <label for="editDescription" class="form-label">Description</label>
                             <textarea class="form-control" id="editDescription" rows="3" maxlength="500"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editBusinessUnit" class="form-label">Business Unit</label>
+                            <select class="form-select" id="editBusinessUnit"
+                                onchange="filterDivisionsByBU('editBusinessUnit', 'editDivision')">
+                                <option value="">Toutes les Business Units</option>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="editDivision" class="form-label">Division</label>
@@ -465,7 +513,8 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Êtes-vous sûr de vouloir supprimer le type de mission <strong id="deleteMissionTypeName"></strong> ?</p>
+                    <p>Êtes-vous sûr de vouloir supprimer le type de mission <strong
+                            id="deleteMissionTypeName"></strong> ?</p>
                     <p class="text-muted">Cette action ne peut pas être annulée.</p>
                 </div>
                 <div class="modal-footer">
@@ -495,7 +544,7 @@
                             <i class="fas fa-plus"></i> Ajouter une tâche
                         </button>
                     </div>
-                    
+
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead class="table-dark">
@@ -641,7 +690,7 @@
                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                 'Content-Type': 'application/json'
             };
-            
+
             const defaultOptions = {
                 headers: {
                     ...authHeaders,
@@ -653,15 +702,16 @@
         }
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Vérifier l'authentification
             if (!localStorage.getItem('authToken')) {
                 console.log('❌ Aucun token d\'authentification trouvé, redirection vers la page de connexion');
                 window.location.href = '/login.html';
                 return;
             }
-            
+
             loadMissionTypes();
+            loadBusinessUnits();
             loadDivisions();
             setupEventListeners();
         });
@@ -677,7 +727,7 @@
         async function loadMissionTypes() {
             try {
                 const response = await apiCall('/api/mission-types');
-                
+
                 if (response.status === 401) {
                     console.log('❌ Token d\'authentification invalide ou expiré');
                     showAlert('Session expirée. Veuillez vous reconnecter.', 'warning');
@@ -686,13 +736,13 @@
                     }, 2000);
                     return;
                 }
-                
+
                 if (!response.ok) {
                     throw new Error(`Erreur de connexion: ${response.status}`);
                 }
-                
+
                 const result = await response.json();
-                
+
                 // Gérer la nouvelle structure de réponse
                 if (result.success && result.data && result.data.missionTypes) {
                     missionTypes = result.data.missionTypes;
@@ -703,7 +753,7 @@
                     console.error('Structure de réponse inattendue:', result);
                     throw new Error('Format de réponse invalide');
                 }
-                
+
                 displayMissionTypes(missionTypes);
                 loadStats();
             } catch (error) {
@@ -712,14 +762,111 @@
             }
         }
 
+        // Charger les Business Units
+        async function loadBusinessUnits() {
+            try {
+                const response = await apiCall('/api/business-units');
+                if (!response.ok) throw new Error('Erreur de connexion');
+
+                const result = await response.json();
+
+                // Robust extraction of BU array
+                // The API can return { data: [Array] } or { data: { businessUnits: [Array] } }
+                if (result.success && result.data) {
+                    if (Array.isArray(result.data)) {
+                        businessUnits = result.data;
+                    } else if (result.data.businessUnits && Array.isArray(result.data.businessUnits)) {
+                        businessUnits = result.data.businessUnits;
+                    } else {
+                        console.warn('Format de données Business Units inattendu:', result.data);
+                        businessUnits = [];
+                    }
+                } else if (Array.isArray(result)) {
+                    businessUnits = result;
+                } else {
+                    businessUnits = [];
+                }
+
+                populateBusinessUnitSelects();
+            } catch (error) {
+                console.error('Erreur chargement Business Units:', error);
+                businessUnits = [];
+            }
+        }
+
+        // Remplir les selects de Business Unit
+        function populateBusinessUnitSelects() {
+            const selects = ['createBusinessUnit', 'editBusinessUnit'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    select.innerHTML = '<option value="">Toutes les Business Units</option>';
+                    if (Array.isArray(businessUnits)) {
+                        businessUnits.forEach(bu => {
+                            const option = document.createElement('option');
+                            option.value = bu.id;
+                            option.textContent = bu.nom;
+                            select.appendChild(option);
+                        });
+                    }
+                }
+            });
+        }
+
+        // Filtrer les divisions par Business Unit
+        function filterDivisionsByBU(buSelectId, divSelectId) {
+            const buSelect = document.getElementById(buSelectId);
+            const divSelect = document.getElementById(divSelectId);
+            const selectedBU = buSelect.value;
+
+            if (!divSelect) return;
+
+            // Sauvegarder la sélection actuelle si possible
+            const currentDivValue = divSelect.value;
+
+            // Si aucune BU n'est sélectionnée, on désactive la division
+            if (!selectedBU) {
+                divSelect.innerHTML = '<option value="">Sélectionner d\'abord une Business Unit</option>';
+                divSelect.disabled = true;
+                return;
+            }
+
+            divSelect.disabled = false;
+
+            divSelect.innerHTML = '<option value="">Sélectionner une division</option>';
+
+            if (Array.isArray(divisions)) {
+                // Filtrer strictement par BU
+                const filteredDivisions = divisions.filter(d => d.business_unit_id == selectedBU);
+
+                filteredDivisions.forEach(division => {
+                    const option = document.createElement('option');
+                    option.value = division.id;
+                    option.textContent = division.nom;
+                    option.dataset.bu = division.business_unit_id; // Stocker l'ID BU
+                    divSelect.appendChild(option);
+                });
+            }
+
+            if (currentDivValue) {
+                // Vérifier si la valeur existe dans les nouvelles options
+                const optionExists = Array.from(divSelect.options).some(opt => opt.value === currentDivValue);
+                if (optionExists) {
+                    divSelect.value = currentDivValue;
+                } else {
+                    divSelect.value = "";
+                }
+            }
+        }
+
         // Charger les divisions
         async function loadDivisions() {
             try {
                 const response = await apiCall('/api/divisions');
                 if (!response.ok) throw new Error('Erreur de connexion');
-                
+
                 const result = await response.json();
-                
+
                 // Gérer la structure de réponse des divisions
                 if (result.success && result.data) {
                     divisions = result.data;
@@ -731,7 +878,7 @@
                     console.error('Structure de réponse divisions inattendue:', result);
                     divisions = [];
                 }
-                
+
                 populateDivisionSelects();
             } catch (error) {
                 console.error('Erreur:', error);
@@ -739,23 +886,29 @@
             }
         }
 
-        // Remplir les selects de division
+        // Remplir les selects de division (UNIQUEMENT FILTRE GLOBAL)
         function populateDivisionSelects() {
-            const selects = ['createDivision', 'editDivision', 'filterDivision'];
-            selects.forEach(selectId => {
-                const select = document.getElementById(selectId);
-                if (select) {
-                    select.innerHTML = '<option value="">Sélectionner une division</option>';
-                    if (Array.isArray(divisions)) {
-                        divisions.forEach(division => {
-                            const option = document.createElement('option');
-                            option.value = division.id;
-                            option.textContent = division.nom;
-                            select.appendChild(option);
-                        });
-                    } else {
-                        console.warn('Divisions non disponibles:', divisions);
-                    }
+            // 1. Filtre global : toutes les divisions
+            const selectId = 'filterDivision';
+            const select = document.getElementById(selectId);
+            if (select) {
+                select.innerHTML = '<option value="">Toutes les divisions</option>';
+                if (Array.isArray(divisions)) {
+                    divisions.forEach(division => {
+                        const option = document.createElement('option');
+                        option.value = division.id;
+                        option.textContent = division.nom;
+                        select.appendChild(option);
+                    });
+                }
+            }
+
+            // 2. Modals : Initialiser à vide / désactivé en attendant sélection BU
+            ['createDivision', 'editDivision'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.innerHTML = '<option value="">Sélectionner d\'abord une Business Unit</option>';
+                    el.disabled = true;
                 }
             });
         }
@@ -808,10 +961,10 @@
             const statusFilter = document.getElementById('filterStatus').value;
 
             const filtered = missionTypes.filter(type => {
-                const matchesSearch = !searchTerm || 
+                const matchesSearch = !searchTerm ||
                     type.codification.toLowerCase().includes(searchTerm) ||
                     type.libelle.toLowerCase().includes(searchTerm);
-                
+
                 const matchesDivision = !divisionFilter || type.division_id === divisionFilter;
                 const matchesStatus = !statusFilter || type.actif.toString() === statusFilter;
 
@@ -834,7 +987,7 @@
             try {
                 const response = await apiCall('/api/mission-types/stats/stats');
                 if (!response.ok) throw new Error('Erreur de connexion');
-                
+
                 const stats = await response.json();
                 document.getElementById('totalTypes').textContent = stats.total_types || 0;
                 document.getElementById('activeTypes').textContent = stats.types_actifs || 0;
@@ -882,7 +1035,7 @@
                 missionTypes.push(newType);
                 displayMissionTypes(missionTypes);
                 loadStats();
-                
+
                 bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
                 showAlert('Type de mission créé avec succès', 'success');
             } catch (error) {
@@ -896,7 +1049,7 @@
             try {
                 const response = await apiCall(`/api/mission-types/${id}`);
                 if (!response.ok) throw new Error('Erreur de connexion');
-                
+
                 const type = await response.json();
                 currentEditId = id;
 
@@ -904,8 +1057,24 @@
                 document.getElementById('editCodification').value = type.codification;
                 document.getElementById('editLibelle').value = type.libelle;
                 document.getElementById('editDescription').value = type.description || '';
-                document.getElementById('editDivision').value = type.division_id || '';
                 document.getElementById('editActif').checked = type.actif;
+
+                // Gérer la Business Unit et la Division
+                if (type.division_id) {
+                    const division = divisions.find(d => d.id === type.division_id);
+                    if (division && division.business_unit_id) {
+                        document.getElementById('editBusinessUnit').value = division.business_unit_id;
+                        filterDivisionsByBU('editBusinessUnit', 'editDivision');
+                    } else {
+                        document.getElementById('editBusinessUnit').value = "";
+                        filterDivisionsByBU('editBusinessUnit', 'editDivision');
+                    }
+                    document.getElementById('editDivision').value = type.division_id;
+                } else {
+                    document.getElementById('editBusinessUnit').value = "";
+                    document.getElementById('editDivision').value = "";
+                    filterDivisionsByBU('editBusinessUnit', 'editDivision');
+                }
 
                 // Rendre tous les champs éditables
                 document.getElementById('editCodification').readOnly = false;
@@ -917,10 +1086,10 @@
                 // Restaurer le titre et les boutons du modal
                 const modalTitle = document.querySelector('#editModal .modal-title');
                 modalTitle.innerHTML = '<i class="fas fa-edit"></i> Modifier le Type de Mission';
-                
+
                 const updateBtn = document.querySelector('#editModal .btn-primary');
                 updateBtn.style.display = 'inline-block';
-                
+
                 const cancelBtn = document.querySelector('#editModal .btn-secondary');
                 cancelBtn.textContent = 'Annuler';
 
@@ -964,10 +1133,10 @@
                 if (index !== -1) {
                     missionTypes[index] = updatedType;
                 }
-                
+
                 displayMissionTypes(missionTypes);
                 loadStats();
-                
+
                 bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
                 showAlert('Type de mission mis à jour avec succès', 'success');
             } catch (error) {
@@ -999,7 +1168,7 @@
                 missionTypes = missionTypes.filter(t => t.id !== currentDeleteId);
                 displayMissionTypes(missionTypes);
                 loadStats();
-                
+
                 bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
                 showAlert('Type de mission supprimé avec succès', 'success');
             } catch (error) {
@@ -1013,31 +1182,48 @@
             try {
                 const response = await apiCall(`/api/mission-types/${id}`);
                 if (!response.ok) throw new Error('Erreur de connexion');
-                
+
                 const type = await response.json();
-                
+
                 // Remplir le modal avec les données en lecture seule
                 document.getElementById('editId').value = type.id;
                 document.getElementById('editCodification').value = type.codification;
                 document.getElementById('editLibelle').value = type.libelle;
                 document.getElementById('editDescription').value = type.description || '';
-                document.getElementById('editDivision').value = type.division_id || '';
                 document.getElementById('editActif').checked = type.actif;
+
+                // Gérer la Business Unit et la Division
+                if (type.division_id) {
+                    const division = divisions.find(d => d.id === type.division_id);
+                    if (division && division.business_unit_id) {
+                        document.getElementById('editBusinessUnit').value = division.business_unit_id;
+                        filterDivisionsByBU('editBusinessUnit', 'editDivision');
+                    } else {
+                        document.getElementById('editBusinessUnit').value = "";
+                        filterDivisionsByBU('editBusinessUnit', 'editDivision');
+                    }
+                    document.getElementById('editDivision').value = type.division_id;
+                } else {
+                    document.getElementById('editBusinessUnit').value = "";
+                    document.getElementById('editDivision').value = "";
+                    filterDivisionsByBU('editBusinessUnit', 'editDivision');
+                }
 
                 // Rendre tous les champs en lecture seule
                 document.getElementById('editCodification').readOnly = true;
                 document.getElementById('editLibelle').readOnly = true;
                 document.getElementById('editDescription').readOnly = true;
+                document.getElementById('editBusinessUnit').disabled = true; // Disable BU
                 document.getElementById('editDivision').disabled = true;
                 document.getElementById('editActif').disabled = true;
 
                 // Changer le titre et les boutons du modal
                 const modalTitle = document.querySelector('#editModal .modal-title');
                 modalTitle.innerHTML = '<i class="fas fa-eye"></i> Détails du Type de Mission';
-                
+
                 const updateBtn = document.querySelector('#editModal .btn-primary');
                 updateBtn.style.display = 'none';
-                
+
                 const cancelBtn = document.querySelector('#editModal .btn-secondary');
                 cancelBtn.textContent = 'Fermer';
 
@@ -1073,19 +1259,19 @@
                 // Stocker l'ID et le code du type de mission actuel pour les opérations CRUD
                 currentMissionTypeId = missionTypeId;
                 currentMissionTypeCode = missionTypeCode;
-                
+
                 // Charger les tâches associées à ce type de mission
                 const response = await apiCall(`/api/tasks?mission_type_id=${missionTypeId}`);
                 if (!response.ok) throw new Error('Erreur de connexion');
-                
+
                 const tasks = await response.json();
-                
+
                 // Remplir le modal avec les données
                 document.getElementById('tasksModalTitle').textContent = `Tâches pour ${missionTypeCode}`;
-                
+
                 const tbody = document.getElementById('tasksModalTableBody');
                 tbody.innerHTML = '';
-                
+
                 if (tasks.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Aucune tâche associée à ce type de mission</td></tr>';
                 } else {
@@ -1118,7 +1304,7 @@
                         tbody.appendChild(row);
                     });
                 }
-                
+
                 const modal = new bootstrap.Modal(document.getElementById('tasksModal'));
                 modal.show();
             } catch (error) {
@@ -1130,34 +1316,34 @@
         // Ouvrir le modal d'ajout de tâche
         async function openAddTaskModal() {
             document.getElementById('addTaskForm').reset();
-            
+
             // Charger les tâches disponibles (non associées à ce type de mission)
             try {
                 const response = await apiCall('/api/tasks');
                 if (!response.ok) throw new Error('Erreur de connexion');
-                
+
                 const allTasks = await response.json();
-                
+
                 // Récupérer les tâches déjà associées à ce type de mission
                 const associatedResponse = await apiCall(`/api/tasks?mission_type_id=${currentMissionTypeId}`);
                 if (!associatedResponse.ok) throw new Error('Erreur de connexion');
-                
+
                 const associatedTasks = await associatedResponse.json();
                 const associatedTaskIds = associatedTasks.map(task => task.id);
-                
+
                 // Filtrer pour ne garder que les tâches non associées
                 const availableTasks = allTasks.filter(task => !associatedTaskIds.includes(task.id));
-                
+
                 const select = document.getElementById('addTaskSelect');
                 select.innerHTML = '<option value="">Sélectionner une tâche...</option>';
-                
+
                 availableTasks.forEach(task => {
                     const option = document.createElement('option');
                     option.value = task.id;
                     option.textContent = `${task.code} - ${task.libelle}`;
                     select.appendChild(option);
                 });
-                
+
                 if (availableTasks.length === 0) {
                     select.innerHTML = '<option value="">Aucune tâche disponible</option>';
                     select.disabled = true;
@@ -1166,7 +1352,7 @@
                 console.error('Erreur:', error);
                 showAlert('Erreur lors du chargement des tâches', 'danger');
             }
-            
+
             const modal = new bootstrap.Modal(document.getElementById('addTaskModal'));
             modal.show();
         }
@@ -1203,7 +1389,7 @@
 
                 // Recharger les tâches pour le type de mission actuel
                 await viewTasksForMissionType(currentMissionTypeId, currentMissionTypeCode);
-                
+
                 bootstrap.Modal.getInstance(document.getElementById('addTaskModal')).hide();
                 showAlert('Tâche ajoutée avec succès', 'success');
             } catch (error) {
@@ -1217,21 +1403,21 @@
             try {
                 // Fermer le modal des tâches
                 bootstrap.Modal.getInstance(document.getElementById('tasksModal')).hide();
-                
+
                 // Charger les données de la tâche à éditer
                 const response = await apiCall(`/api/tasks/${taskId}`);
                 if (!response.ok) throw new Error('Erreur de connexion');
-                
+
                 const task = await response.json();
-                
+
                 // Remplir le modal d'édition avec les informations de la tâche
                 document.getElementById('editTaskId').value = task.id;
                 document.getElementById('editTaskInfo').textContent = `${task.code} - ${task.libelle}`;
-                
+
                 // Récupérer le statut obligatoire actuel pour ce type de mission
                 const associatedResponse = await apiCall(`/api/tasks?mission_type_id=${currentMissionTypeId}`);
                 if (!associatedResponse.ok) throw new Error('Erreur de connexion');
-                
+
                 const associatedTasks = await associatedResponse.json();
                 const currentTask = associatedTasks.find(t => t.id === taskId);
                 document.getElementById('editTaskObligatoire').checked = currentTask ? currentTask.obligatoire : false;
@@ -1271,7 +1457,7 @@
 
                 // Recharger les tâches pour le type de mission actuel
                 await viewTasksForMissionType(currentMissionTypeId, currentMissionTypeCode);
-                
+
                 bootstrap.Modal.getInstance(document.getElementById('editTaskModal')).hide();
                 showAlert('Statut de la tâche mis à jour avec succès', 'success');
             } catch (error) {
@@ -1295,15 +1481,15 @@
                 const response = await apiCall(`/api/tasks/${currentDeleteId}/mission-types/${currentMissionTypeId}`, {
                     method: 'DELETE'
                 });
-                
+
                 if (response.ok) {
                     // Fermer le modal de confirmation
                     const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteTaskModal'));
                     deleteModal.hide();
-                    
+
                     // Recharger la liste des tâches pour ce type de mission
                     await viewTasksForMissionType(currentMissionTypeId, currentMissionTypeCode);
-                    
+
                     // Afficher un message de succès
                     showAlert('Association supprimée avec succès', 'success');
                 } else {
@@ -1317,4 +1503,5 @@
         }
     </script>
 </body>
+
 </html>

@@ -269,7 +269,9 @@ function populateMissionSelect() {
     missions.forEach(mission => {
         const option = document.createElement('option');
         option.value = mission.id;
-        option.textContent = mission.nom;
+        // Afficher le couple "Nom Client - Nom Mission" pour désambiguïser
+        const clientName = mission.client_nom || 'Client inconnu';
+        option.textContent = `${clientName} - ${mission.nom}`;
         select.appendChild(option);
     });
 }
