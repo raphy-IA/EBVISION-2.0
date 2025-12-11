@@ -24,14 +24,14 @@ class User {
 
         // Générer un login basé sur les initiales si non fourni, avec gestion de l'unicité
         let userLogin = login || (nom.substring(0, 1) + prenom.substring(0, 1)).toLowerCase();
-        
+
         // Vérifier l'unicité du login et ajouter un numéro si nécessaire
         if (!login) {
             // Si le login n'a pas été fourni explicitement, vérifier l'unicité
             const baseLogin = userLogin;
             let counter = 1;
             let isUnique = false;
-            
+
             while (!isUnique) {
                 const checkResult = await query('SELECT id FROM users WHERE login = $1', [userLogin]);
                 if (checkResult.rows.length === 0) {
@@ -108,7 +108,7 @@ class User {
                    p.nom as poste_nom, p.code as poste_code,
                    c.email as collaborateur_email
             FROM users u
-            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN collaborateurs c ON c.user_id = u.id OR c.id = u.collaborateur_id
             LEFT JOIN business_units bu ON c.business_unit_id = bu.id
             LEFT JOIN divisions d ON c.division_id = d.id
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
@@ -195,12 +195,12 @@ class User {
                 `;
                 const userRolesResult = await query(userRolesQuery, [currentUserId]);
                 const userRoles = userRolesResult.rows.map(r => r.name);
-                
+
                 // Vérifier également le rôle principal (legacy)
                 const userQuery = `SELECT role FROM users WHERE id = $1`;
                 const userResult = await query(userQuery, [currentUserId]);
                 const principalRole = userResult.rows[0]?.role;
-                
+
                 isSuperAdmin = userRoles.includes('SUPER_ADMIN') || principalRole === 'SUPER_ADMIN';
             } catch (error) {
                 console.error('Erreur lors de la vérification du rôle SUPER_ADMIN:', error);
@@ -257,7 +257,7 @@ class User {
                 const rolesResult = await query(rolesQuery, [user.id]);
                 const roles = rolesResult.rows.map(row => row.name);
                 const rolesWithColors = rolesResult.rows; // Conserver toutes les infos des rôles
-                
+
                 return {
                     ...user,
                     roles: roles, // Noms des rôles (pour compatibilité)
@@ -293,7 +293,7 @@ class User {
 
         // Construire la requête de mise à jour dynamiquement
         let paramIndex = 2; // Commencer à $2 car $1 est l'ID
-        
+
         // Gérer le mot de passe séparément
         if (updateData.password) {
             const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
@@ -428,14 +428,14 @@ class User {
     static async getRoles(userId) {
         console.log('🔍 [User.getRoles] Début de la méthode');
         console.log(`📋 User ID: ${userId}`);
-        
+
         const sql = `
             SELECT r.id, r.name, r.description
             FROM user_roles ur
             JOIN roles r ON ur.role_id = r.id
             WHERE ur.user_id = $1
         `;
-        
+
         console.log('🔄 Exécution de la requête SQL...');
         console.log('📝 SQL:', sql.trim());
         console.log('📊 Paramètres:', [userId]);

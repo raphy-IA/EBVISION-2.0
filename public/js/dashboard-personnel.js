@@ -75,7 +75,10 @@ async function loadDashboardData() {
         }
 
         console.log('✅ Données reçues:', result.data);
-        updateUserInfo(result.data.profil);
+
+        // Charger le profil via SessionManager pour garantir les bonnes infos (cache)
+        loadUserProfileFromSession();
+
         updateKPIs(result.data.kpis);
         updateMissionsActives(result.data.missions_actives);
         updateTimelineChart(result.data.evolution_temporelle);
@@ -128,36 +131,77 @@ function showError(title, message) {
 }
 
 // Mettre à jour les informations utilisateur
-function updateUserInfo(profil) {
-    console.log('👤 Mise à jour profil:', profil);
+function updateDashboardUserInfo(profil) {
+    console.error('👤 [DEBUG FORCE] updateDashboardUserInfo called with:', JSON.stringify(profil, null, 2));
 
     if (!profil) {
         console.warn('⚠️ Objet profil manquant ou vide');
         return;
     }
 
-    const userNameElement = document.getElementById('user-name');
-    if (userNameElement) {
-        userNameElement.textContent = (profil.prenom && profil.nom)
-            ? `${profil.prenom} ${profil.nom}`
-            : (profil.nom || profil.prenom || 'Utilisateur inconnu');
-    }
+    const updateElement = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) {
+            console.log(`✅ Élément #${id} trouvé. Ancienne valeur: "${el.textContent}", Nouvelle valeur: "${value}"`);
+            el.textContent = value || 'Non défini';
+        } else {
+            console.error(`❌ Élément #${id} NON TROUVÉ dans le DOM`);
+        }
+    };
 
-    const gradeElement = document.getElementById('user-grade');
-    if (gradeElement) {
-        gradeElement.textContent = profil.grade || 'Non défini';
-    }
+    updateElement('user-name', (profil.prenom && profil.nom) ? `${profil.prenom} ${profil.nom}` : (profil.nom || profil.prenom || 'Utilisateur inconnu'));
+    updateElement('user-grade', profil.grade);
+    updateElement('user-division', profil.division);
+    updateElement('user-bu', profil.business_unit);
+}
 
-    const divisionElement = document.getElementById('user-division');
-    if (divisionElement) {
-        divisionElement.textContent = profil.division || 'Non définie';
-    }
+// ... existing code ...
 
-    const buElement = document.getElementById('user-bu');
-    if (buElement) {
-        buElement.textContent = profil.business_unit || 'Non définie';
+// Charger le profil utilisateur depuis SessionManager
+async function loadUserProfileFromSession() {
+    try {
+        // Attendre l'initialisation du SessionManager s'il existe
+        if (typeof window.sessionManager !== 'undefined') {
+            await window.sessionManager.initialize();
+
+            const collab = window.sessionManager.getCollaborateur();
+            const user = window.sessionManager.getUser();
+
+            console.warn('🔍 [DEBUG] SessionManager - collab brut:', JSON.stringify(collab, null, 2));
+            console.warn('🔍 [DEBUG] SessionManager - user brut:', JSON.stringify(user, null, 2));
+
+            if (collab) {
+                console.warn('✅ [DEBUG] Utilisation des données collaborateur');
+                updateUserInfo({
+                    nom: collab.nom || user?.nom,
+                    prenom: collab.prenom || user?.prenom,
+                    grade: collab.grade_nom,
+                    division: collab.division_nom,
+                    business_unit: collab.business_unit_nom
+                });
+                console.log('👤 Profil chargé depuis SessionManager');
+                return;
+            } else if (user) {
+                console.warn('✅ [DEBUG] Utilisation des données user (fallback)');
+                // Utilisateur sans collaborateur (ex: admin pur)
+                updateUserInfo({
+                    nom: user.nom,
+                    prenom: user.prenom,
+                    grade: user.grade_nom || 'Administrateur',
+                    division: user.division_nom || 'N/A',
+                    business_unit: user.business_unit_nom || 'N/A'
+                });
+                console.log('👤 Profil chargé depuis user (sans collaborateur)');
+                return;
+            }
+        }
+
+        console.warn('⚠️ SessionManager non disponible ou données manquantes');
+    } catch (e) {
+        console.warn('⚠️ Impossible de charger le profil utilisateur:', e);
     }
 }
+
 
 // Mettre à jour les KPIs
 function updateKPIs(data) {
@@ -592,4 +636,49 @@ function populateTasksWorked(tasks) {
             <td class="text-end fw-bold">${parseFloat(task.heures_passees || 0).toFixed(1)}h</td>
         </tr>
     `).join('');
+}
+
+// Charger le profil utilisateur depuis SessionManager
+async function loadUserProfileFromSession() {
+    try {
+        // Attendre l'initialisation du SessionManager s'il existe
+        if (typeof window.sessionManager !== 'undefined') {
+            await window.sessionManager.initialize();
+
+            const collab = window.sessionManager.getCollaborateur();
+            const user = window.sessionManager.getUser();
+
+            console.warn('🔍 [DEBUG] SessionManager - collab brut:', JSON.stringify(collab, null, 2));
+            console.warn('🔍 [DEBUG] SessionManager - user brut:', JSON.stringify(user, null, 2));
+
+            if (collab) {
+                console.warn('✅ [DEBUG] Utilisation des données collaborateur');
+                updateDashboardUserInfo({
+                    nom: collab.nom || user?.nom,
+                    prenom: collab.prenom || user?.prenom,
+                    grade: collab.grade_nom,
+                    division: collab.division_nom,
+                    business_unit: collab.business_unit_nom
+                });
+                console.log('👤 Profil chargé depuis SessionManager');
+                return;
+            } else if (user) {
+                console.warn('✅ [DEBUG] Utilisation des données user (fallback)');
+                // Utilisateur sans collaborateur (ex: admin pur)
+                updateDashboardUserInfo({
+                    nom: user.nom,
+                    prenom: user.prenom,
+                    grade: user.grade_nom || 'Administrateur',
+                    division: user.division_nom || 'N/A',
+                    business_unit: user.business_unit_nom || 'N/A'
+                });
+                console.log('👤 Profil chargé depuis user (sans collaborateur)');
+                return;
+            }
+        }
+
+        console.warn('⚠️ SessionManager non disponible ou données manquantes');
+    } catch (e) {
+        console.warn('⚠️ Impossible de charger le profil utilisateur:', e);
+    }
 }

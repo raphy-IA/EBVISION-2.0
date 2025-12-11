@@ -1689,7 +1689,7 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
                 COALESCE(d.nom, 'N/A') as division_nom,
                 COALESCE(bu.nom, 'N/A') as business_unit_nom
             FROM users u
-            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
+            LEFT JOIN collaborateurs c ON c.user_id = u.id OR c.id = u.collaborateur_id
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
             LEFT JOIN divisions d ON c.division_id = d.id
             LEFT JOIN business_units bu ON c.business_unit_id = bu.id
@@ -1728,7 +1728,7 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
             SELECT 
                 m.id,
                 m.nom as mission_nom,
-                c.raison_sociale as client_nom,
+                c.nom as client_nom,
                 m.statut,
                 m.date_debut,
                 m.date_fin,
@@ -1742,7 +1742,7 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
                 WHERE te2.mission_id = m.id 
                 AND te2.user_id = $1
             )
-            GROUP BY m.id, m.nom, c.raison_sociale, m.statut, m.date_debut, m.date_fin
+            GROUP BY m.id, m.nom, c.nom, m.statut, m.date_debut, m.date_fin
             ORDER BY m.date_debut DESC
             LIMIT 10
         `;
