@@ -453,6 +453,45 @@
                             </div>
                         </div>
                         <div class="row">
+                            <div class="col-md-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3 mt-2">Informations Administrateur</h6>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="clientAdminNom" class="form-label">Nom Administrateur</label>
+                                <input type="text" class="form-control" id="clientAdminNom">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="clientAdminEmail" class="form-label">Email Administrateur</label>
+                                <input type="email" class="form-control" id="clientAdminEmail">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="clientAdminPhone" class="form-label">Tél. Administrateur</label>
+                                <input type="tel" class="form-control" id="clientAdminPhone">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3 mt-2">Contact Interne</h6>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="clientInternalNom" class="form-label">Nom Contact</label>
+                                <input type="text" class="form-control" id="clientInternalNom">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="clientInternalEmail" class="form-label">Email Contact</label>
+                                <input type="email" class="form-control" id="clientInternalEmail">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="clientInternalPhone" class="form-label">Tél. Contact</label>
+                                <input type="tel" class="form-control" id="clientInternalPhone">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3 mt-2">Autres Informations</h6>
+                            </div>
                             <div class="col-md-6 mb-3">
                                 <label for="clientEffectif" class="form-label">Effectif</label>
                                 <input type="number" class="form-control" id="clientEffectif" min="1">
@@ -468,6 +507,29 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="button" class="btn btn-primary" onclick="saveClient()">
                         <i class="fas fa-save me-2"></i>Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Détails Client -->
+    <div class="modal fade" id="viewClientModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>Détails du Client
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="viewClientContent">
+                    <!-- Contenu généré dynamiquement -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" id="btnEditFromView">
+                        <i class="fas fa-edit me-2"></i>Modifier
                     </button>
                 </div>
             </div>
@@ -836,7 +898,10 @@
                             <span class="status-badge status-${client.statut?.toLowerCase()}">${client.statut || 'N/A'}</span>
                         </td>
                         <td class="text-end">
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editClient('${client.id}')">
+                            <button class="btn btn-sm btn-outline-info me-1" onclick="viewClientDetails('${client.id}')" title="Voir détails">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editClient('${client.id}')" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-danger" onclick="deleteClient('${client.id}')">
@@ -882,7 +947,15 @@
                 taille_entreprise: document.getElementById('clientTailleEntreprise').value,
                 source_prospection: document.getElementById('clientSourceProspection').value,
                 forme_juridique: document.getElementById('clientFormeJuridique').value,
-                effectif: document.getElementById('clientEffectif').value
+                forme_juridique: document.getElementById('clientFormeJuridique').value,
+                effectif: document.getElementById('clientEffectif').value,
+                // Nouveaux champs
+                administrateur_nom: document.getElementById('clientAdminNom').value,
+                administrateur_email: document.getElementById('clientAdminEmail').value,
+                administrateur_telephone: document.getElementById('clientAdminPhone').value,
+                contact_interne_nom: document.getElementById('clientInternalNom').value,
+                contact_interne_email: document.getElementById('clientInternalEmail').value,
+                contact_interne_telephone: document.getElementById('clientInternalPhone').value
             };
 
             try {
@@ -943,7 +1016,16 @@
                 document.getElementById('clientTailleEntreprise').value = client.taille_entreprise || '';
                 document.getElementById('clientSourceProspection').value = client.source_prospection || '';
                 document.getElementById('clientFormeJuridique').value = client.forme_juridique || '';
+                document.getElementById('clientFormeJuridique').value = client.forme_juridique || '';
                 document.getElementById('clientEffectif').value = client.effectif || '';
+
+                // Nouveaux champs
+                document.getElementById('clientAdminNom').value = client.administrateur_nom || '';
+                document.getElementById('clientAdminEmail').value = client.administrateur_email || '';
+                document.getElementById('clientAdminPhone').value = client.administrateur_telephone || '';
+                document.getElementById('clientInternalNom').value = client.contact_interne_nom || '';
+                document.getElementById('clientInternalEmail').value = client.contact_interne_email || '';
+                document.getElementById('clientInternalPhone').value = client.contact_interne_telephone || '';
 
                 new bootstrap.Modal(document.getElementById('addClientModal')).show();
             }
@@ -1045,6 +1127,135 @@
                 });
             }
         });
+        // Voir les détails d'un client
+        function viewClientDetails(clientId) {
+            const client = clients.find(c => c.id === clientId);
+            if (!client) return;
+
+            // Configurer le bouton modifier
+            const btnEdit = document.getElementById('btnEditFromView');
+            btnEdit.onclick = function () {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('viewClientModal'));
+                modal.hide();
+                editClient(clientId);
+            };
+
+            const content = document.getElementById('viewClientContent');
+
+            // Format des dates
+            const dateCreation = client.created_at ? new Date(client.created_at).toLocaleDateString() : 'N/A';
+            const dateActivite = client.date_derniere_activite ? new Date(client.date_derniere_activite).toLocaleDateString() : 'N/A';
+
+            content.innerHTML = `
+                <div class="row mb-4">
+                    <div class="col-md-12 d-flex align-items-center">
+                        <span class="sigle-badge me-3" style="font-size: 1.2rem; padding: 0.5rem 1rem;">${client.sigle || 'N/A'}</span>
+                        <div>
+                            <h4 class="mb-0">${client.nom}</h4>
+                            <span class="badge bg-${client.statut === 'ACTIF' ? 'success' : 'secondary'} mt-1">${client.statut || 'N/A'}</span>
+                            <span class="badge bg-info text-dark mt-1 ms-1">${client.type || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav nav-tabs mb-3" id="clientDetailsTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">Général</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="contacts-tab" data-bs-toggle="tab" data-bs-target="#contacts" type="button" role="tab">Contacts</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab">Activité</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="clientDetailsTabContent">
+                    <!-- Onglet Général -->
+                    <div class="tab-pane fade show active" id="general" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Secteur :</strong> <br>
+                                ${client.secteur_activite || client.secteur_nom || 'N/A'} 
+                                ${client.sous_secteur_nom ? ` <small class="text-muted">(${client.sous_secteur_nom})</small>` : ''}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Localisation :</strong> <br>
+                                ${client.adresse ? client.adresse + '<br>' : ''}
+                                ${client.code_postal || ''} ${client.ville || ''} <br>
+                                ${client.pays_nom || client.pays || ''}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Contact Principal :</strong> <br>
+                                <i class="fas fa-envelope me-1"></i> ${client.email || 'N/A'} <br>
+                                <i class="fas fa-phone me-1"></i> ${client.telephone || 'N/A'}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Infos Entreprise :</strong> <br>
+                                Forme Juridique : ${client.forme_juridique || 'N/A'} <br>
+                                Taille : ${client.taille_entreprise || 'N/A'} <br>
+                                Effectif : ${client.effectif || 'N/A'}
+                            </div>
+                            <div class="col-md-12">
+                                <strong>Notes :</strong> <br>
+                                <p class="text-muted border p-2 rounded bg-light">${client.notes || 'Aucune note'}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Onglet Contacts -->
+                    <div class="tab-pane fade" id="contacts" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3 border-primary h-100">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0">Administrateur</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-1"><strong>Nom :</strong> ${client.administrateur_nom || 'N/A'}</p>
+                                        <p class="mb-1"><strong>Email :</strong> ${client.administrateur_email ? `<a href="mailto:${client.administrateur_email}">${client.administrateur_email}</a>` : 'N/A'}</p>
+                                        <p class="mb-0"><strong>Tél :</strong> ${client.administrateur_telephone || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card mb-3 border-info h-100">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="mb-0">Contact Interne</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-1"><strong>Nom :</strong> ${client.contact_interne_nom || 'N/A'}</p>
+                                        <p class="mb-1"><strong>Email :</strong> ${client.contact_interne_email ? `<a href="mailto:${client.contact_interne_email}">${client.contact_interne_email}</a>` : 'N/A'}</p>
+                                        <p class="mb-0"><strong>Tél :</strong> ${client.contact_interne_telephone || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Onglet Activité -->
+                    <div class="tab-pane fade" id="activity" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Date de création :</strong> <br>
+                                ${dateCreation}
+                            </div>
+                             <div class="col-md-6 mb-3">
+                                <strong>Dernière activité :</strong> <br>
+                                ${dateActivite}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Source Prospection :</strong> <br>
+                                ${client.source_prospection || 'N/A'}
+                            </div>
+                            <!-- Possibilité d'ajouter ici la liste des missions/factures récentes -->
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            new bootstrap.Modal(document.getElementById('viewClientModal')).show();
+        }
     </script>
 </body>
 

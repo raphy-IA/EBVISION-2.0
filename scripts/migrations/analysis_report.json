@@ -1,0 +1,553 @@
+{
+  "total_entries": 106,
+  "missing_clients": [
+    "RECYCLED-PP STRAPPING"
+  ],
+  "missing_bus": [],
+  "missing_divisions": [],
+  "missions_to_create": [
+    {
+      "line": 9,
+      "mission": "Assistance � r�gularisation des op�rations d'importation des logiciels, cartes et chequiers",
+      "client": "SOCIETE COMMERCIALE DE BANQUE CAMEROUN S.A",
+      "bu": "EB-DOUANE",
+      "div": "N/A"
+    },
+    {
+      "line": 10,
+      "mission": "Assistance � contr�le et contentieux douaniers",
+      "client": "CFAO RETAIL CAMEROUN",
+      "bu": "EB-DOUANE",
+      "div": "N/A"
+    },
+    {
+      "line": 11,
+      "mission": "Assistance fiscale et douani�re",
+      "client": "EVERWELL  CAMEROON CABLES AND ENGINEERING S.A",
+      "bu": "EB-DOUANE",
+      "div": "N/A"
+    },
+    {
+      "line": 12,
+      "mission": "Assistance � l'�laboration d'un manuel de proc�dures-Douane",
+      "client": "AMT CAMEROUN S.A",
+      "bu": "EB-DOUANE",
+      "div": "N/A"
+    },
+    {
+      "line": 13,
+      "mission": "Assistance � obtention des facilit�s douani�res dans le cadre des APEC",
+      "client": "CHINA HARBOUR ENGINEERING COMPANY LTD",
+      "bu": "EB-DOUANE",
+      "div": "N/A"
+    },
+    {
+      "line": 15,
+      "mission": "Assistance � controle et contentieux douanier",
+      "client": "SHOW OFF ASSURANCE",
+      "bu": "EB-DOUANE",
+      "div": "N/A"
+    },
+    {
+      "line": 16,
+      "mission": "Assistance � contr�le douanier",
+      "client": "CFAO RETAIL CAMEROUN",
+      "bu": "EB-DOUANE",
+      "div": "N/A"
+    },
+    {
+      "line": 18,
+      "mission": "Assistance douani�re permanente",
+      "client": "LONGSTAR EQUIPMENT CAMEROUN",
+      "bu": "EB-DOUANE",
+      "div": "N/A"
+    },
+    {
+      "line": 19,
+      "mission": "Assistance � controle douanier",
+      "client": "ADIALEA CAMEROUN S.A",
+      "bu": "EB-DOUANE",
+      "div": "N/A"
+    },
+    {
+      "line": 20,
+      "mission": "Assistance � contr�le et contentieux douaniers",
+      "client": "TRACTAFRIC EQUIPMENT CAMEROUN",
+      "bu": "EB-DOUANE",
+      "div": "N/A"
+    },
+    {
+      "line": 21,
+      "mission": "Assistance � contr�le douanier � post�riori",
+      "client": "TRACTAFRIC EQUIPMENT CAMEROUN",
+      "bu": "EB-DOUANE",
+      "div": "N/A"
+    },
+    {
+      "line": 33,
+      "mission": "Transfert � l'international",
+      "client": "AZA Finance",
+      "bu": "EXFIN EOLIS",
+      "div": "N/A"
+    },
+    {
+      "line": 34,
+      "mission": "Assistance � la recherche de financement",
+      "client": "AMT CAMEROUN S.A",
+      "bu": "EXFIN EOLIS",
+      "div": "N/A"
+    },
+    {
+      "line": 35,
+      "mission": "Assistance � recherche de financement",
+      "client": "CAMEROON INTERNATIONALE TRADE SARL",
+      "bu": "EXFIN EOLIS",
+      "div": "N/A"
+    },
+    {
+      "line": 36,
+      "mission": "Assistance � recherche de financement",
+      "client": "CAMEROON INTERNATIONALE TRADE SARL",
+      "bu": "EXFIN EOLIS",
+      "div": "N/A"
+    },
+    {
+      "line": 37,
+      "mission": "Assistance � recherche de financement",
+      "client": "CAMFISH",
+      "bu": "EXFIN EOLIS",
+      "div": "N/A"
+    },
+    {
+      "line": 38,
+      "mission": "Finances - Assistance du dossier API",
+      "client": "SITRAB-CAM",
+      "bu": "EXFIN EOLIS",
+      "div": "N/A"
+    },
+    {
+      "line": 39,
+      "mission": "Finances - Assistance � recherche de financement",
+      "client": "MERMO OIL",
+      "bu": "EXFIN EOLIS",
+      "div": "N/A"
+    },
+    {
+      "line": 40,
+      "mission": "Assistance au d�veloppement",
+      "client": "CAMLAIT",
+      "bu": "EXFIN EOLIS",
+      "div": "N/A"
+    },
+    {
+      "line": 41,
+      "mission": "Assistance � recherche de financement",
+      "client": "Societ� d'Expliotation Industrielle Agricole",
+      "bu": "EXFIN EOLIS",
+      "div": "N/A"
+    },
+    {
+      "line": 42,
+      "mission": "Assistance � recherche de financement",
+      "client": "J2N CONSEIL SARL",
+      "bu": "EXFIN EOLIS",
+      "div": "N/A"
+    },
+    {
+      "line": 44,
+      "mission": "Assistance � secr�tariat juridique",
+      "client": "TSG CAMEROUN S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Legal"
+    },
+    {
+      "line": 45,
+      "mission": "Mise � disposition et gestion de la paie du personnel d�tach� pr�s des entit�s locales d'ADDAX PETROLEUM",
+      "client": "AMT CAMEROUN S.A",
+      "bu": "EB-RH",
+      "div": "N/A"
+    },
+    {
+      "line": 47,
+      "mission": "Assistance � VGC 2020 � 2022",
+      "client": "LA REGIONALE BANK S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 50,
+      "mission": "Gestion de la paie des Expatri�s",
+      "client": "SOCIETE ANONYME DES BOISSONS DU CAMEROUN",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 51,
+      "mission": "Gestion de la paie des expatri�s",
+      "client": "GUINNESS CAMEROUN S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 52,
+      "mission": "Assistance juridique et fiscale permanente compl�mentaire",
+      "client": "KIKOT-MBEBE HYDRO POWER COMPANY",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 56,
+      "mission": "Assistance � VGC des exercices 2020, 2021 et 2022",
+      "client": "LOXEA S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 57,
+      "mission": "Assistance � contr�le CNPS de l'exercice 2023",
+      "client": "LA REGIONALE BANK S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 60,
+      "mission": "Assistance � �valuation de la d�pense fiscale de l'exercice 2024",
+      "client": "NACHTIGAL HYDRO POWER COMPANY",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 61,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "AMT CAMEROUN S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 62,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "ACCESS BANK PLC",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 63,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "ATTIJARI SECURITIES CENTRAL AFRICA",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 64,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "CECEC SA",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 65,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "BRIGHT POINT LOGISTICS SARL",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 66,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "ENEO CAMEROUN",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 67,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "NACHTIGAL HYDRO POWER COMPANY",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 68,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "SOCIETE GENERAL CAMEROUN",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 69,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "AFRICA VISION DEVELOPMENT SARL",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 70,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "OCEAN PETROLEUM SARL",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 71,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "TOTALENERGIES MARKETING CAMEROUN S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 72,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "CFAO RETAIL CAMEROUN",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 73,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "ENGINE OIL COMPANY SA",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 74,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "COMPAGNY OF TRANSPORT AND FAIR TRADE",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 75,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "HEVEA CAMEROUN S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 76,
+      "mission": "EVERWELL  CAMEROON CABLES AND ENGINEERING S.A",
+      "client": "EVERWELL  CAMEROON CABLES AND ENGINEERING S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 77,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "TELCAR COCOA LIMITED",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 78,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "TRACTAFRIC EQUIPMENT CAMEROUN",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 79,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "KIKOT-MBEBE HYDRO POWER COMPANY",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 80,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "SOCIETE ANONYME DES BOISSONS DU CAMEROUN",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 81,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "MEDECINS SANS FRONTIERES",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 82,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "MA�TRE CHEMOU",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 83,
+      "mission": "Participation au s�minaire de la loi de finances 2025",
+      "client": "LOXEA S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 85,
+      "mission": "Assistance � VGC des exercices 2021 et 2022",
+      "client": "LA REGIONALE BANK S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 86,
+      "mission": "Assistance � l'optimisation de la paie",
+      "client": "KIKOT-MBEBE HYDRO POWER COMPANY",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 87,
+      "mission": "Assistance � VGC des exercices 2020, 2021 et 2022",
+      "client": "ACCESS BANK PLC",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 88,
+      "mission": "Assistance � contr�le sur pi�ces des exercices 2019, 2020 et 2021",
+      "client": "LOXEA S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 89,
+      "mission": "Assistance � VGC des exercices 2020 2021 et 2022",
+      "client": "DHL EXPRESS",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 91,
+      "mission": "Assistance � obtention Carte de S�jour expatri�",
+      "client": "KIKOT-MBEBE HYDRO POWER COMPANY",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 94,
+      "mission": "Assistance � l'�valuation de la d�pense fiscale de la soci�t� NHPC au titre de l'exercice 2023",
+      "client": "NACHTIGAL HYDRO POWER COMPANY",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 95,
+      "mission": "Assistance � obtention des visas de contrats de travail des expatri�s",
+      "client": "SOCIETE ANONYME DES BOISSONS DU CAMEROUN",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 96,
+      "mission": "Assistance � VGC des exercices 2021 et 2022",
+      "client": "DHL GLOBAL FORWARDING CAMEROUN PLC",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 97,
+      "mission": "Assistance � contr�le sur pi�ces des exercices 2019, 2020 et 2021",
+      "client": "DHL GLOBAL FORWARDING CAMEROUN PLC",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 98,
+      "mission": "Assistance � contentieux fiscal des exercices 2021 & 2022",
+      "client": "DHL GLOBAL FORWARDING CAMEROUN PLC",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 99,
+      "mission": "Assistance � contentieux fiscal des exercices 2021 & 2022",
+      "client": "DHL GLOBAL FORWARDING CAMEROUN PLC",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 100,
+      "mission": "Assistance au montage et � la revue de la DSF de l'exercice 2024",
+      "client": "MEDECINS SANS FRONTIERES",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 101,
+      "mission": "Assistance � r�daction des actes juridiques",
+      "client": "TSG CAMEROUN S.A",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 102,
+      "mission": "Assistance � insertion dans la liste des entreprises habilit�es � op�rer la retenue � la source de la TVA et de l�AIR au titre de l�exercice 2025",
+      "client": "DHL EXPRESS",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 103,
+      "mission": "Assistance � d�claration pr�remplie de l�imp�t sur les Soci�t�s et l�Imp�t sur le Revenu des Personnes Physiques",
+      "client": "MONSIEUR BAHA Robert",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 104,
+      "mission": "Assistance � obtention d'une remise totale ou d'une mod�ration des p�nalit�s et int�r�ts de retard",
+      "client": "PORT AUTONOME DE DOUALA",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 106,
+      "mission": "Revue fiscale des op�rations des exercices non prescrits (2021_2024)",
+      "client": "EMRALD SECURITIES SERVICES BOURSE SA",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    },
+    {
+      "line": 107,
+      "mission": "Assistance � contr�le et contentieux fiscal",
+      "client": "CFAO RETAIL CAMEROUN",
+      "bu": "EB-TAX&LAW",
+      "div": "Global Tax"
+    }
+  ],
+  "missions_to_update": [],
+  "missions_ok": [
+    "ASSISTANCE COMPTABLE",
+    "ASSISTANCE COMPTABLE",
+    "ASSISTANCE COMPTABLE",
+    "Commissariat Aux comptes",
+    "AUDIT DES CREANCES",
+    "DSF 2023",
+    "DSF & ANALYSE DES COMPTES",
+    "Assistance for Post Clearance Control",
+    "Assistance permanente-Douane",
+    "DEDOUANEMENT DE TROIS CONTENEUR FRIGORIFIQUE P/C MSF",
+    "DEDOUANEMENT DE DEUX CONTENEUR FRIGORIFIQUE P/C MSF",
+    "DEDOUANEMENT D'UN CONTENEUR FRIGORIFIQUE P/C MSF",
+    "DEDOUANEMENT D'1 VEHICULE TIGGO 9 DANS TC 20'",
+    "APUREMENT ATN PAR MACATN",
+    "DEDOUANEMENT TOYOTA HIGHLANDER 2020",
+    "DEDOUANEMENT D'1 CAMION PLATEAU MERCEDES BENZ AVEC GRUE ANNEE: 1977 PAR UNE MISE A LA CONSOMMATION",
+    "DEDOUANEMENT D'1 D7H ANNEE: 1986 + 1 PORTE-ENGINSANNEE: 1974 + 1 TRACTEUR ROUTIER ANNEE: 2007",
+    "DEDOUANEMENT D'UN CONTENEUR 20' DE CARREAUX",
+    "DEDOUANEMENT D'UN CAMION BENNE SHACMAN",
+    "Assistance juridique",
+    "Veille fiscale permanente et audit fiscal trimestriel",
+    "Assistance juridique et fiscale permanente",
+    "Assistance juridique et fiscale permanente",
+    "Assistance juridique et fiscale permanente",
+    "Assistance fiscale, juridique et sociale permanente",
+    "Assistance juridique et fiscale permanente",
+    "Revue de la liasse fiscale annuelle (DSF) de l'exercice 2024",
+    "Assistance fiscale et sociale permanente",
+    "Assistance juridique et fiscale permanente",
+    "Assistance juridique et fiscale permanente",
+    "Revue de la liasse fiscale annuelle (DSF) de l'exercice 2024",
+    "Assistance fiscale",
+    "Assistance juridique"
+  ],
+  "errors": [
+    "Line 32: Client 'RECYCLED-PP STRAPPING' not found in DB."
+  ]
+}

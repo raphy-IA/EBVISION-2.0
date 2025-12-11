@@ -394,10 +394,13 @@ router.put('/:id', async (req, res) => {
         });
     } catch (error) {
         console.error('Erreur lors de la mise à jour du client:', error);
+        console.error('Stack:', error.stack);
+        console.error('Request body:', JSON.stringify(req.body, null, 2));
         res.status(500).json({
             success: false,
             message: 'Erreur lors de la mise à jour du client',
-            error: error.message
+            error: error.message,
+            details: process.env.NODE_ENV !== 'production' ? error.stack : undefined
         });
     }
 });

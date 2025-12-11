@@ -285,11 +285,14 @@ class Client {
             RETURNING *
         `;
 
+        // Convert empty strings to null for integer fields
+        const effectifValue = effectif === '' || effectif === undefined ? null : effectif;
+
         const values = [
             nom, sigle, email, telephone, adresse, ville, code_postal, pays,
             secteur_activite, taille_entreprise, statut, type, source_prospection,
             notes, collaborateur_id, pays_id, secteur_activite_id, sous_secteur_activite_id,
-            forme_juridique, effectif,
+            forme_juridique, effectifValue,
             administrateur_nom, administrateur_email, administrateur_telephone,
             contact_interne_nom, contact_interne_email, contact_interne_telephone,
             updated_by, this.id

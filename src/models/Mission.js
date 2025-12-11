@@ -213,7 +213,7 @@ class Mission {
         const {
             titre, description, client_id, statut, type_mission,
             date_debut, date_fin_prevue, budget_prevue, priorite,
-            division_id, responsable_id, manager_id, notes, created_by, fiscal_year_id
+            division_id, business_unit_id, responsable_id, manager_id, notes, created_by, fiscal_year_id
         } = missionData;
 
         // Si aucune année fiscale n'est spécifiée, utiliser l'année active
@@ -226,17 +226,17 @@ class Mission {
 
         const query = `
             INSERT INTO missions (
-                titre, description, client_id, statut, type_mission,
+                nom, description, client_id, statut, type_mission,
                 date_debut, date_fin_prevue, budget_prevue, priorite,
-                division_id, collaborateur_id, manager_id, notes, created_by, fiscal_year_id
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                division_id, business_unit_id, collaborateur_id, manager_id, notes, created_by, fiscal_year_id
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
             RETURNING *
         `;
 
         const values = [
             titre, description, client_id, statut, type_mission,
             date_debut, date_fin_prevue, budget_prevue, priorite,
-            division_id, responsable_id, manager_id, notes, created_by, finalFiscalYearId
+            division_id, business_unit_id, responsable_id, manager_id, notes, created_by, finalFiscalYearId
         ];
 
         try {
@@ -254,13 +254,13 @@ class Mission {
             titre, description, statut, type_mission,
             date_debut, date_fin_prevue, date_fin_reelle,
             budget_prevue, budget_reel, taux_horaire_moyen,
-            montant_total, priorite, division_id, responsable_id, manager_id,
+            montant_total, priorite, division_id, business_unit_id, responsable_id, manager_id,
             notes, updated_by
         } = updateData;
 
         const query = `
             UPDATE missions SET
-                titre = COALESCE($1, titre),
+                nom = COALESCE($1, nom),
                 description = COALESCE($2, description),
                 statut = COALESCE($3, statut),
                 type_mission = COALESCE($4, type_mission),
@@ -273,11 +273,12 @@ class Mission {
                 montant_total = COALESCE($11, montant_total),
                 priorite = COALESCE($12, priorite),
                 division_id = COALESCE($13, division_id),
-                collaborateur_id = COALESCE($14, responsable_id),
-                manager_id = COALESCE($15, manager_id),
-                notes = COALESCE($16, notes),
-                updated_by = $17
-            WHERE id = $18
+                business_unit_id = COALESCE($14, business_unit_id),
+                collaborateur_id = COALESCE($15, collaborateur_id),
+                manager_id = COALESCE($16, manager_id),
+                notes = COALESCE($17, notes),
+                updated_by = $18
+            WHERE id = $19
             RETURNING *
         `;
 
@@ -285,7 +286,7 @@ class Mission {
             titre, description, statut, type_mission,
             date_debut, date_fin_prevue, date_fin_reelle,
             budget_prevue, budget_reel, taux_horaire_moyen,
-            montant_total, priorite, division_id, responsable_id, manager_id,
+            montant_total, priorite, division_id, business_unit_id, responsable_id, manager_id,
             notes, updated_by, this.id
         ];
 
