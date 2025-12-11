@@ -269,9 +269,10 @@ function populateMissionSelect() {
     missions.forEach(mission => {
         const option = document.createElement('option');
         option.value = mission.id;
-        // Afficher le couple "Nom Client - Nom Mission" pour désambiguïser
-        const clientName = mission.client_nom || 'Client inconnu';
-        option.textContent = `${clientName} - ${mission.nom}`;
+        // Afficher le couple "Sigle Client - Nom Mission" pour désambiguïser
+        // Priorité au sigle, sinon le nom, sinon "Client inconnu"
+        const clientRef = mission.client_sigle || mission.client_nom || 'Client inconnu';
+        option.textContent = `${clientRef} - ${mission.nom}`;
         select.appendChild(option);
     });
 }
@@ -785,7 +786,7 @@ function organizeEntriesByWeek(entries) {
                 mission_id: entry.mission_id,
                 task_id: entry.task_id,
                 internal_activity_id: entry.internal_activity_id,
-                mission_name: entry.mission_nom || getMissionName(entry.mission_id),
+                mission_name: getMissionName(entry.mission_id) || entry.mission_nom || 'Mission inconnue',
                 task_name: entry.task_nom || getTaskName(entry.task_id),
                 activity_name: entry.internal_activity_nom || getInternalActivityName(entry.internal_activity_id),
                 days: {
@@ -1329,7 +1330,9 @@ function getDateForDay(day) {
 // Obtenir le nom d'une mission
 function getMissionName(missionId) {
     const mission = missions.find(m => m.id === missionId);
-    return mission ? mission.nom : 'Mission inconnue';
+    if (!mission) return null;
+    const clientRef = mission.client_sigle || mission.client_nom || 'Client inconnu';
+    return `${clientRef} - ${mission.nom}`;
 }
 
 // Obtenir le nom d'une tâche
@@ -1810,7 +1813,7 @@ function isChargeableRowExists(missionId, taskId) {
 
                 if (missionCell && taskCell) {
                     const mission = missions.find(m => m.id === missionId);
-                    const missionName = mission ? mission.nom : 'Mission inconnue';
+                    const missionName = getMissionName(missionId) || (mission ? mission.nom : 'Mission inconnue');
 
                     if (missionCell.textContent.trim() === missionName) {
                         // Vérifier si c'est la même tâche
@@ -1878,8 +1881,7 @@ function addChargeableRow(missionId, taskId, customRowId = null) {
 
     // Vérifier si la combinaison existe déjà
     if (isChargeableRowExists(missionId, taskId)) {
-        const mission = missions.find(m => m.id === missionId);
-        const missionName = mission ? mission.nom : 'Mission inconnue';
+        const missionName = getMissionName(missionId) || 'Mission inconnue';
 
         // Récupérer le nom de la tâche pour un message plus précis
         let taskName = 'cette tâche';
@@ -1931,7 +1933,7 @@ function addChargeableRow(missionId, taskId, customRowId = null) {
     newRow.className = 'time-entry-row';
     newRow.setAttribute('data-entry-id', rowId);
     newRow.innerHTML = `
-        <td>${mission ? mission.nom : 'Mission inconnue'}</td>
+        <td>${getMissionName(missionId) || (mission ? mission.nom : 'Mission inconnue')}</td>
         <td>${taskDisplayName}</td>
         <td><input type="number" class="form-control form-control-sm hours-input" value="0" step="0.25" min="0" max="24" data-entry-id="${rowId}" data-day="monday"></td>
         <td><input type="number" class="form-control form-control-sm hours-input" value="0" step="0.25" min="0" max="24" data-entry-id="${rowId}" data-day="tuesday"></td>

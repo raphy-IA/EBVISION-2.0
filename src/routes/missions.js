@@ -301,7 +301,8 @@ router.get('/planned', authenticateToken, async (req, res) => {
                 m.id, 
                 m.nom, 
                 m.code, 
-                c.nom as client_nom
+                c.nom as client_nom,
+                c.sigle as client_sigle
             FROM missions m
             JOIN mission_tasks mt ON m.id = mt.mission_id
             JOIN task_assignments ta ON mt.id = ta.mission_task_id
