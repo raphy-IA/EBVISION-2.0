@@ -504,7 +504,8 @@
         // Charger les collaborateurs
         async function loadCollaborators() {
             try {
-                const response = await fetch('/api/collaborateurs', {
+                // Ajouter limit=0 pour charger TOUS les collaborateurs (pas de pagination)
+                const response = await fetch('/api/collaborateurs?limit=0', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
@@ -513,6 +514,7 @@
                 if (response.ok) {
                     const result = await response.json();
                     collaborators = result.data || result;
+                    console.log(`✅ ${collaborators.length} collaborateur(s) chargé(s)`);
                 }
             } catch (error) {
                 console.error('Erreur lors du chargement des collaborateurs:', error);
