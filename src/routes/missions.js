@@ -1014,6 +1014,7 @@ router.get('/:id/planning', authenticateToken, async (req, res) => {
         const tasksQuery = `
             SELECT 
                 mt.id as mission_task_id,
+                mt.task_id,
                 t.code,
                 t.libelle,
                 t.description,
@@ -1030,28 +1031,40 @@ router.get('/:id/planning', authenticateToken, async (req, res) => {
 
         const tasksResult = await pool.query(tasksQuery, [req.params.id]);
 
-        // 2. Pour chaque tâche, récupérer les affectations
+        // 2. Pour chaque tâche, récupérer les affectations avec heures saisies
         const tasksWithAssignments = [];
 
         for (const task of tasksResult.rows) {
             const assignmentsQuery = `
                 SELECT 
                     ta.id,
+                    ta.collaborateur_id,
                     c.nom,
                     c.prenom,
                     g.nom as grade_nom,
                     g.taux_horaire_default,
                     ta.heures_planifiees,
-                    ta.heures_effectuees,
                     ta.taux_horaire,
-                    ta.statut
+                    ta.statut,
+                    COALESCE(SUM(te.heures), 0) as heures_saisies
                 FROM task_assignments ta
                 LEFT JOIN collaborateurs c ON ta.collaborateur_id = c.id
                 LEFT JOIN grades g ON c.grade_actuel_id = g.id
+                LEFT JOIN time_entries te ON te.mission_id = $2 
+                    AND te.task_id = $3 
+                    AND te.user_id = c.user_id
+                    AND te.type_heures = 'HC'
                 WHERE ta.mission_task_id = $1
+                GROUP BY ta.id, ta.collaborateur_id, c.nom, c.prenom, g.nom, 
+                         g.taux_horaire_default, ta.heures_planifiees, ta.taux_horaire, ta.statut
+                ORDER BY c.nom, c.prenom
             `;
 
-            const assignmentsResult = await pool.query(assignmentsQuery, [task.mission_task_id]);
+            const assignmentsResult = await pool.query(assignmentsQuery, [
+                task.mission_task_id,
+                req.params.id,
+                task.task_id
+            ]);
 
             tasksWithAssignments.push({
                 ...task,
@@ -1063,11 +1076,16 @@ router.get('/:id/planning', authenticateToken, async (req, res) => {
         const summaryQuery = `
             SELECT 
                 SUM(ta.heures_planifiees) as total_heures_planifiees,
-                SUM(ta.heures_effectuees) as total_heures_effectuees,
+                COALESCE(SUM(te.heures), 0) as total_heures_saisies,
                 COUNT(DISTINCT ta.collaborateur_id) as nombre_collaborateurs,
                 COUNT(DISTINCT mt.id) as nombre_taches
             FROM task_assignments ta
             LEFT JOIN mission_tasks mt ON ta.mission_task_id = mt.id
+            LEFT JOIN collaborateurs c ON ta.collaborateur_id = c.id
+            LEFT JOIN time_entries te ON te.mission_id = $1 
+                AND te.task_id = mt.task_id 
+                AND te.user_id = c.user_id
+                AND te.type_heures = 'HC'
             WHERE mt.mission_id = $1
         `;
 
@@ -1087,6 +1105,9 @@ router.get('/:id/planning', authenticateToken, async (req, res) => {
         });
     }
 });
+
+
+
 
 
 

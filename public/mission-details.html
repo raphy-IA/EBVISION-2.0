@@ -506,6 +506,9 @@
             document.getElementById('missionStatus').textContent = currentMission.statut || 'N/A';
             document.getElementById('missionStatus').className = `status-badge status-${(currentMission.statut || '').toLowerCase()}`;
 
+            // Mettre à jour la devise de la mission
+            updateCurrencySymbols(currentMission.devise || 'XAF');
+
             // Onglet Informations
             document.getElementById('missionClient').textContent = currentMission.client_nom || 'N/A';
             document.getElementById('missionType').textContent = currentMission.mission_type_nom || currentMission.type_mission || 'N/A';
@@ -670,11 +673,32 @@
                     `;
                 }
 
-                // Charger les tâches
-                const tasksResponse = await authenticatedFetch(`/api/missions/${missionId}/tasks`);
-                if (tasksResponse.ok) {
-                    const tasksData = await tasksResponse.json();
-                    displayTasksData(tasksData.data);
+                // Charger les tâches - utiliser l'endpoint /planning pour avoir TOUTES les tâches
+                const planningResponse = await authenticatedFetch(`/api/missions/${missionId}/planning`);
+                if (planningResponse.ok) {
+                    const planningData = await planningResponse.json();
+                    // Transformer les données du planning pour le format attendu
+                    const tasksData = planningData.tasks.map(task => ({
+                        ...task,
+                        task_libelle: task.libelle,
+                        task_description: task.description,
+                        // Calculer les heures saisies et validées depuis les affectations
+                        heures_saisies: task.assignments.reduce((sum, a) => sum + (parseFloat(a.heures_saisies) || 0), 0),
+                        heures_validees: 0, // À calculer si nécessaire
+                        // Transformer les affectations
+                        collaborateurs_affectes: task.assignments.map(a => ({
+                            id: a.collaborateur_id,
+                            nom: a.nom,
+                            prenom: a.prenom,
+                            grade_nom: a.grade_nom,
+                            heures_planifiees: a.heures_planifiees,
+                            heures_saisies: a.heures_saisies,
+                            heures_validees: 0,
+                            taux_horaire: a.taux_horaire,
+                            statut: a.statut
+                        }))
+                    }));
+                    displayTasksData(tasksData);
                 } else {
                     document.getElementById('missionTasks').innerHTML = `
                         <div class="text-muted">
@@ -758,6 +782,11 @@
 
             initMissionTasksFilter();
             renderMissionTasks();
+
+            // Mettre à jour les symboles de devise après le rendu
+            if (currentMission && currentMission.devise) {
+                updateCurrencySymbols(currentMission.devise);
+            }
         }
 
         function initMissionTasksFilter() {
@@ -1436,6 +1465,27 @@
             // Ouvrir l'éditeur de planning dans une nouvelle fenêtre
             const planningUrl = `edit-mission-planning.html?mission_id=${missionId}`;
             window.open(planningUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+        }
+
+        // Fonction pour mettre à jour les symboles de devise
+        function updateCurrencySymbols(currencyCode) {
+            if (typeof CURRENCY_CONFIG === 'undefined') {
+                console.warn('CURRENCY_CONFIG non chargé');
+                return;
+            }
+
+            const currency = CURRENCY_CONFIG.currencies[currencyCode];
+            if (!currency) {
+                console.warn(`Devise ${currencyCode} non trouvée dans CURRENCY_CONFIG`);
+                return;
+            }
+
+            console.log(`💰 Mise à jour de la devise: ${currencyCode} (${currency.symbol})`);
+
+            // Mettre à jour tous les symboles de devise
+            document.querySelectorAll('.currency-symbol').forEach(el => {
+                el.textContent = currency.symbol;
+            });
         }
     </script>
 </body>

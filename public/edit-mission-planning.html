@@ -115,6 +115,66 @@
             font-size: 0.875rem;
         }
 
+        /* Styles pour les tâches et affectations avec heures saisies */
+        .task-card.has-time-entries {
+            border-left: 4px solid #ffc107;
+        }
+
+        .assignment-row.has-time-entries {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+
+        .assignment-row.has-time-entries select:disabled,
+        .assignment-row.has-time-entries input:disabled {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        .task-stats {
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .task-stats div {
+            margin-bottom: 0.25rem;
+        }
+
+        .progress {
+            height: 20px;
+            font-size: 0.75rem;
+        }
+
+        .btn-remove-assignment:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Validation feedback */
+        .is-invalid {
+            border-color: #dc3545;
+        }
+
+        .invalid-feedback {
+            display: block;
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Collaborator info display */
+        .collaborateur-info {
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+
+        .collaborateur-info strong {
+            color: #2c3e50;
+            font-size: 0.95rem;
+        }
+
         /* Ajustements pour les petits écrans */
         @media (max-width: 768px) {
             .page-wrapper {
@@ -376,6 +436,9 @@
                     document.getElementById('missionTitle').textContent = missionData.nom || 'Mission sans titre';
                     document.getElementById('missionDescription').textContent = missionData.description || 'Aucune description';
                     document.getElementById('missionStatus').textContent = missionData.statut || 'N/A';
+
+                    // Mettre à jour la devise de la mission
+                    updateCurrencySymbols(missionData.devise || 'XAF');
                 }
             } catch (error) {
                 console.error('Erreur lors du chargement des données de mission:', error);
@@ -488,14 +551,14 @@
             let totalTasks = currentTasks.length;
             let totalCollaborators = 0;
             let totalPlannedHours = 0;
-            let totalCompletedHours = 0;
+            let totalLoggedHours = 0;
 
             currentTasks.forEach(task => {
                 if (task.assignments) {
                     totalCollaborators += task.assignments.length;
                     task.assignments.forEach(assignment => {
                         totalPlannedHours += parseFloat(assignment.heures_planifiees) || 0;
-                        totalCompletedHours += parseFloat(assignment.heures_effectuees) || 0;
+                        totalLoggedHours += parseFloat(assignment.heures_saisies) || 0;
                     });
                 }
             });
@@ -503,8 +566,8 @@
             // Mettre à jour l'affichage
             document.getElementById('totalTasks').textContent = totalTasks;
             document.getElementById('totalCollaborators').textContent = totalCollaborators;
-            document.getElementById('totalPlannedHours').textContent = totalPlannedHours + 'h';
-            document.getElementById('totalCompletedHours').textContent = totalCompletedHours + 'h';
+            document.getElementById('totalPlannedHours').textContent = totalPlannedHours.toFixed(1) + 'h';
+            document.getElementById('totalCompletedHours').textContent = totalLoggedHours.toFixed(1) + 'h';
 
             summaryContainer.style.display = 'block';
         }
@@ -530,30 +593,44 @@
             currentTasks.forEach((task, taskIndex) => {
                 // Calculer les totaux pour cette tâche
                 const totalHeuresPlanifiees = task.assignments ? task.assignments.reduce((sum, a) => sum + (parseFloat(a.heures_planifiees) || 0), 0) : 0;
-                const totalHeuresEffectuees = task.assignments ? task.assignments.reduce((sum, a) => sum + (parseFloat(a.heures_effectuees) || 0), 0) : 0;
+                const totalHeuresSaisies = task.assignments ? task.assignments.reduce((sum, a) => sum + (parseFloat(a.heures_saisies) || 0), 0) : 0;
                 const nombreCollaborateurs = task.assignments ? task.assignments.length : 0;
+                const tauxRealisation = totalHeuresPlanifiees > 0 ? Math.round((totalHeuresSaisies / totalHeuresPlanifiees) * 100) : 0;
+                const hasTimeEntries = totalHeuresSaisies > 0;
 
                 html += `
-                    <div class="task-card">
-                        <div class="task-header d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">${task.libelle}</h6>
-                                <small class="text-muted">${task.code}</small>
-                                <div class="mt-1">
-                                    <small class="text-primary">
-                                        <i class="fas fa-users me-1"></i>${nombreCollaborateurs} collaborateur(s) assigné(s)
-                                    </small>
-                                    <br>
-                                    <small class="text-muted">
-                                        <i class="fas fa-clock me-1"></i>${totalHeuresPlanifiees}h planifiées - ${totalHeuresEffectuees}h effectuées
-                                    </small>
+                    <div class="task-card ${hasTimeEntries ? 'has-time-entries' : ''}">
+                        <div class="task-header">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="mb-1">
+                                        <i class="fas fa-tasks me-2"></i>${task.libelle}
+                                    </h6>
+                                    <small class="text-muted">${task.code}</small>
+                                    <div class="mt-2">
+                                        <span class="badge bg-${getStatusColor(task.statut)}">${task.statut}</span>
+                                        ${hasTimeEntries ? '<span class="badge bg-warning ms-2"><i class="fas fa-clock me-1"></i>Heures saisies</span>' : ''}
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="task-actions">
-                                <span class="badge bg-${getStatusColor(task.statut)} task-status">${task.statut}</span>
-                                <button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeTask(${taskIndex})">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                <div class="col-md-4">
+                                    <div class="task-stats text-end">
+                                        <div><i class="fas fa-users me-1 text-primary"></i><strong>${nombreCollaborateurs}</strong> collaborateur(s)</div>
+                                        <div><i class="fas fa-calendar-check me-1 text-info"></i><strong>${totalHeuresPlanifiees}h</strong> planifiées</div>
+                                        <div><i class="fas fa-clock me-1 text-warning"></i><strong>${totalHeuresSaisies}h</strong> saisies</div>
+                                        <div class="mt-1">
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar ${getProgressBarColor(tauxRealisation)}" 
+                                                     role="progressbar" 
+                                                     style="width: ${tauxRealisation}%"
+                                                     aria-valuenow="${tauxRealisation}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    ${tauxRealisation}%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="card-body">
@@ -617,59 +694,106 @@
         // Créer une ligne d'affectation
         function createAssignmentRow(taskIndex, assignmentIndex, assignment = null) {
             const collaborateurId = assignment ? assignment.collaborateur_id : '';
-            const heuresPlanifiees = assignment ? assignment.heures_planifiees : 0;
-            const heuresEffectuees = assignment ? assignment.heures_effectuees : 0;
-            const tauxHoraire = assignment ? assignment.taux_horaire : 0;
+            const heuresPlanifiees = assignment ? (assignment.heures_planifiees || 0) : 0;
+            const heuresSaisies = assignment ? (assignment.heures_saisies || 0) : 0;
+            const tauxHoraire = assignment ? (assignment.taux_horaire || 0) : 0;
             const nom = assignment ? assignment.nom : '';
             const prenom = assignment ? assignment.prenom : '';
             const gradeNom = assignment ? assignment.grade_nom : '';
+            const statut = assignment ? assignment.statut : 'PLANIFIE';
+
+            const hasTimeEntries = heuresSaisies > 0;
+            const progression = heuresPlanifiees > 0 ? Math.round((heuresSaisies / heuresPlanifiees) * 100) : 0;
+            const isInvalid = heuresPlanifiees < heuresSaisies;
+            const isExisting = assignment && assignment.id; // Affectation existante
+
+            // Pour les affectations existantes, afficher le nom en lecture seule
+            let collaborateurField = '';
+            if (isExisting) {
+                collaborateurField = `
+                    <div class="collaborateur-info">
+                        <strong>${prenom} ${nom}</strong>
+                        ${gradeNom ? `<br><small class="text-muted">${gradeNom}</small>` : ''}
+                    </div>
+                `;
+            } else {
+                // Pour les nouvelles affectations, afficher le select
+                collaborateurField = `
+                    <select class="form-select collaborateur-select" 
+                            onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'collaborateur_id', this.value)">
+                        <option value="">Sélectionner...</option>
+                        ${collaborators.map(collab => `
+                            <option value="${collab.id}" ${collab.id === collaborateurId ? 'selected' : ''}>
+                                ${collab.nom} ${collab.prenom}
+                            </option>
+                        `).join('')}
+                    </select>
+                `;
+            }
 
             return `
-                <div class="assignment-row">
+                <div class="assignment-row ${hasTimeEntries ? 'has-time-entries' : ''}">
                     <div class="row align-items-center">
                         <div class="col-md-3">
                             <label class="form-label">Collaborateur</label>
-                            <select class="form-select collaborateur-select" onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'collaborateur_id', this.value)">
-                                <option value="">Sélectionner...</option>
-                                ${collaborators.map(collab => `
-                                    <option value="${collab.id}" ${collab.id === collaborateurId ? 'selected' : ''}>
-                                        ${collab.nom} ${collab.prenom}
-                                    </option>
-                                `).join('')}
-                            </select>
-                            ${assignment && nom ? `
-                                <small class="text-muted">
-                                    <i class="fas fa-user me-1"></i>${prenom} ${nom}
-                                    ${gradeNom ? `(${gradeNom})` : ''}
+                            ${collaborateurField}
+                            ${hasTimeEntries ? `
+                                <small class="text-warning d-block mt-1">
+                                    <i class="fas fa-lock me-1"></i>
+                                    ${heuresSaisies}h déjà saisies - Suppression bloquée
                                 </small>
                             ` : ''}
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Heures planifiées</label>
-                            <input type="number" class="form-control hours-input" value="${heuresPlanifiees}" 
+                            <input type="number" 
+                                   class="form-control hours-input ${isInvalid ? 'is-invalid' : ''}" 
+                                   value="${heuresPlanifiees}" 
+                                   min="${heuresSaisies}"
+                                   step="0.5"
                                    onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'heures_planifiees', this.value)">
+                            ${isInvalid ? `
+                                <div class="invalid-feedback">
+                                    Minimum: ${heuresSaisies}h (heures déjà saisies)
+                                </div>
+                            ` : ''}
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label">Heures effectuées</label>
-                            <input type="number" class="form-control hours-input" value="${heuresEffectuees}" 
-                                   onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'heures_effectuees', this.value)">
+                            <label class="form-label">Heures saisies</label>
+                            <input type="number" 
+                                   class="form-control hours-input bg-light" 
+                                   value="${heuresSaisies}" 
+                                   disabled
+                                   title="Heures réellement saisies dans les feuilles de temps">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Progression</label>
+                            <div class="progress" style="height: 30px;">
+                                <div class="progress-bar ${getProgressBarColor(progression)}" 
+                                     role="progressbar" 
+                                     style="width: ${progression}%"
+                                     aria-valuenow="${progression}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    ${progression}%
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Taux horaire (<span class="currency-symbol">€</span>)</label>
-                            <input type="number" step="0.01" class="form-control rate-input" value="${tauxHoraire}" 
+                            <input type="number" 
+                                   step="0.01" 
+                                   class="form-control rate-input" 
+                                   value="${tauxHoraire}" 
                                    onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'taux_horaire', this.value)">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Statut</label>
-                            <select class="form-select" onchange="updateAssignment(${taskIndex}, ${assignmentIndex}, 'statut', this.value)">
-                                <option value="PLANIFIE" ${assignment && assignment.statut === 'PLANIFIE' ? 'selected' : ''}>Planifié</option>
-                                <option value="EN_COURS" ${assignment && assignment.statut === 'EN_COURS' ? 'selected' : ''}>En cours</option>
-                                <option value="TERMINE" ${assignment && assignment.statut === 'TERMINE' ? 'selected' : ''}>Terminé</option>
-                            </select>
                         </div>
                         <div class="col-md-1">
                             <label class="form-label">&nbsp;</label>
-                            <button type="button" class="btn btn-remove-assignment" onclick="removeAssignment(${taskIndex}, ${assignmentIndex})">
+                            <button type="button" 
+                                    class="btn btn-remove-assignment" 
+                                    ${hasTimeEntries ? 'disabled' : ''}
+                                    ${hasTimeEntries ? `title="Suppression bloquée - ${heuresSaisies}h déjà saisies"` : ''}
+                                    onclick="removeAssignment(${taskIndex}, ${assignmentIndex})">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -746,6 +870,17 @@
 
         // Supprimer une affectation
         function removeAssignment(taskIndex, assignmentIndex) {
+            const assignment = currentTasks[taskIndex].assignments[assignmentIndex];
+            const heuresSaisies = parseFloat(assignment.heures_saisies) || 0;
+
+            // Bloquer la suppression si des heures ont été saisies
+            if (heuresSaisies > 0) {
+                alert(`❌ Impossible de supprimer cette affectation.\n\n` +
+                    `${assignment.prenom} ${assignment.nom} a déjà saisi ${heuresSaisies}h sur cette tâche.\n\n` +
+                    `Les affectations avec des heures saisies ne peuvent pas être supprimées.`);
+                return;
+            }
+
             if (confirm('Êtes-vous sûr de vouloir supprimer cette affectation ?')) {
                 currentTasks[taskIndex].assignments.splice(assignmentIndex, 1);
                 renderCurrentTasks();
@@ -775,6 +910,21 @@
                 currentTasks[taskIndex].assignments[assignmentIndex] = {};
             }
 
+            // Validation spéciale pour les heures planifiées
+            if (field === 'heures_planifiees') {
+                const heuresSaisies = parseFloat(currentTasks[taskIndex].assignments[assignmentIndex].heures_saisies) || 0;
+                const newHeuresPlanifiees = parseFloat(value) || 0;
+
+                if (newHeuresPlanifiees < heuresSaisies) {
+                    alert(`❌ Validation échouée\n\n` +
+                        `Les heures planifiées (${newHeuresPlanifiees}h) ne peuvent pas être inférieures ` +
+                        `aux heures déjà saisies (${heuresSaisies}h).`);
+                    // Restaurer la valeur précédente
+                    renderCurrentTasks();
+                    return;
+                }
+            }
+
             currentTasks[taskIndex].assignments[assignmentIndex][field] = value;
         }
 
@@ -794,9 +944,57 @@
             }
         }
 
+        // Fonction pour déterminer la couleur de la barre de progression
+        function getProgressBarColor(percentage) {
+            if (percentage >= 100) return 'bg-success';
+            if (percentage >= 75) return 'bg-info';
+            if (percentage >= 50) return 'bg-warning';
+            if (percentage >= 25) return 'bg-primary';
+            return 'bg-secondary';
+        }
+
+        // Valider le planning avant sauvegarde
+        function validatePlanning() {
+            const errors = [];
+
+            currentTasks.forEach((task, taskIndex) => {
+                if (!task.assignments || task.assignments.length === 0) {
+                    return; // Pas d'erreur si pas d'affectations
+                }
+
+                task.assignments.forEach((assignment, assignmentIndex) => {
+                    const heuresPlanifiees = parseFloat(assignment.heures_planifiees) || 0;
+                    const heuresSaisies = parseFloat(assignment.heures_saisies) || 0;
+
+                    if (heuresPlanifiees < heuresSaisies) {
+                        errors.push(
+                            `Tâche "${task.libelle}" - ${assignment.prenom} ${assignment.nom}:\n` +
+                            `  Heures planifiées (${heuresPlanifiees}h) < Heures saisies (${heuresSaisies}h)`
+                        );
+                    }
+
+                    if (!assignment.collaborateur_id) {
+                        errors.push(
+                            `Tâche "${task.libelle}":\n` +
+                            `  Affectation #${assignmentIndex + 1} sans collaborateur sélectionné`
+                        );
+                    }
+                });
+            });
+
+            return errors;
+        }
+
         // Sauvegarder le planning
         async function savePlanning() {
             try {
+                // Valider d'abord
+                const errors = validatePlanning();
+                if (errors.length > 0) {
+                    alert('❌ Erreurs de validation:\n\n' + errors.join('\n\n'));
+                    return;
+                }
+
                 console.log('Sauvegarde du planning:', currentTasks);
 
                 const response = await fetch(`/api/missions/${missionId}/planning`, {
@@ -813,7 +1011,7 @@
                 if (response.ok) {
                     const result = await response.json();
                     if (result.success) {
-                        alert('Planning sauvegardé avec succès !');
+                        alert('✅ Planning sauvegardé avec succès !');
                         // Rafraîchir la page parent si elle existe
                         if (window.opener && !window.opener.closed) {
                             window.opener.location.reload();
@@ -830,7 +1028,31 @@
                 alert('Erreur lors de la sauvegarde: ' + error.message);
             }
         }
+
+        // Fonction pour mettre à jour les symboles de devise
+        function updateCurrencySymbols(currencyCode) {
+            if (typeof CURRENCY_CONFIG === 'undefined') {
+                console.warn('CURRENCY_CONFIG non chargé');
+                return;
+            }
+
+            const currency = CURRENCY_CONFIG.currencies[currencyCode];
+            if (!currency) {
+                console.warn(`Devise ${currencyCode} non trouvée dans CURRENCY_CONFIG`);
+                return;
+            }
+
+            console.log(`💰 Mise à jour de la devise: ${currencyCode} (${currency.symbol})`);
+
+            // Mettre à jour tous les symboles de devise
+            document.querySelectorAll('.currency-symbol').forEach(el => {
+                el.textContent = currency.symbol;
+            });
+        }
     </script>
+
+    <!-- Script de configuration des devises -->
+    <script src="/js/currency-config.js"></script>
 </body>
 
 </html>
