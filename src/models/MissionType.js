@@ -5,9 +5,12 @@ class MissionType {
         const query = `
             SELECT 
                 mt.*,
-                d.nom as division_nom
+                d.nom as division_nom,
+                COALESCE(bu_direct.nom, bu_div.nom) as business_unit_nom
             FROM mission_types mt
             LEFT JOIN divisions d ON mt.division_id = d.id
+            LEFT JOIN business_units bu_div ON d.business_unit_id = bu_div.id
+            LEFT JOIN business_units bu_direct ON mt.business_unit_id = bu_direct.id
             ORDER BY mt.codification
         `;
         const result = await pool.query(query);
@@ -18,9 +21,12 @@ class MissionType {
         const query = `
             SELECT 
                 mt.*,
-                d.nom as division_nom
+                d.nom as division_nom,
+                COALESCE(bu_direct.nom, bu_div.nom) as business_unit_nom
             FROM mission_types mt
             LEFT JOIN divisions d ON mt.division_id = d.id
+            LEFT JOIN business_units bu_div ON d.business_unit_id = bu_div.id
+            LEFT JOIN business_units bu_direct ON mt.business_unit_id = bu_direct.id
             WHERE mt.id = $1
         `;
         const result = await pool.query(query, [id]);
@@ -31,9 +37,12 @@ class MissionType {
         const query = `
             SELECT 
                 mt.*,
-                d.nom as division_nom
+                d.nom as division_nom,
+                COALESCE(bu_direct.nom, bu_div.nom) as business_unit_nom
             FROM mission_types mt
             LEFT JOIN divisions d ON mt.division_id = d.id
+            LEFT JOIN business_units bu_div ON d.business_unit_id = bu_div.id
+            LEFT JOIN business_units bu_direct ON mt.business_unit_id = bu_direct.id
             WHERE mt.codification = $1 AND mt.actif = true
         `;
         const result = await pool.query(query, [codification]);
@@ -41,25 +50,26 @@ class MissionType {
     }
 
     static async create(data) {
-        const { codification, libelle, description, division_id } = data;
+        const { codification, libelle, description, division_id, business_unit_id } = data;
         const query = `
-            INSERT INTO mission_types (codification, libelle, description, division_id)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO mission_types (codification, libelle, description, division_id, business_unit_id)
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING *
         `;
-        const result = await pool.query(query, [codification, libelle, description, division_id]);
+        const result = await pool.query(query, [codification, libelle, description, division_id, business_unit_id]);
         return result.rows[0];
     }
 
     static async update(id, data) {
-        const { codification, libelle, description, division_id, actif } = data;
+        const { codification, libelle, description, division_id, business_unit_id, actif } = data;
         const query = `
             UPDATE mission_types 
-            SET codification = $1, libelle = $2, description = $3, division_id = $4, actif = $5, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $6
+            SET codification = $1, libelle = $2, description = $3, division_id = $4, 
+                business_unit_id = $5, actif = $6, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $7
             RETURNING *
         `;
-        const result = await pool.query(query, [codification, libelle, description, division_id, actif, id]);
+        const result = await pool.query(query, [codification, libelle, description, division_id, business_unit_id, actif, id]);
         return result.rows[0];
     }
 
@@ -79,9 +89,12 @@ class MissionType {
         const query = `
             SELECT 
                 mt.*,
-                d.nom as division_nom
+                d.nom as division_nom,
+                COALESCE(bu_direct.nom, bu_div.nom) as business_unit_nom
             FROM mission_types mt
             LEFT JOIN divisions d ON mt.division_id = d.id
+            LEFT JOIN business_units bu_div ON d.business_unit_id = bu_div.id
+            LEFT JOIN business_units bu_direct ON mt.business_unit_id = bu_direct.id
             WHERE mt.division_id = $1 AND mt.actif = true
             ORDER BY mt.codification
         `;

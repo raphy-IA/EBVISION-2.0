@@ -290,6 +290,71 @@
             font-size: 1.2rem;
         }
 
+        /* Nouveaux styles pour l'affectation du personnel */
+        .personnel-assignment-container {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .collaborateurs-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+        }
+
+        .collaborateur-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .collaborateur-item:hover {
+            border-color: var(--secondary-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .collaborateur-item.selected {
+            border-color: var(--success-color);
+            background-color: #e8f5e8;
+        }
+
+        .selected-collaborateurs-area {
+            min-height: 200px;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+        }
+
+        .selected-collab-card {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .selected-collab-card .remove-btn {
+            cursor: pointer;
+            color: var(--danger-color);
+            transition: all 0.2s ease;
+        }
+
+        .selected-collab-card .remove-btn:hover {
+            color: #c0392b;
+            transform: scale(1.1);
+        }
+
         /* Styles spécifiques pour la sidebar (si non gérés par modern-sidebar.css) */
         .sidebar-container {
             width: 300px;
@@ -527,6 +592,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js" defer></script>
     <script src="/js/sidebar.js" defer></script>
+    <script src="/js/personnel-assignment.js"></script>
     <script>
         // Variables globales
         let selectedOpportunity = null;
@@ -535,8 +601,11 @@
         let financialData = null;
         let tasks = [];
         let collaborateurs = [];
+        let businessUnits = [];
+        let filteredCollaborateurs = [];
         let selectedTasks = [];
         let assignments = {};
+        let taskFilters = {}; // Filtres par tâche: { taskId: { buFilter: '', searchQuery: '' } }
 
         // Fonction utilitaire pour les appels API authentifiés
         async function authenticatedFetch(url, options = {}) {
@@ -653,29 +722,43 @@
         async function loadCollaborateurs() {
             try {
                 console.log('👥 Chargement des collaborateurs...');
-                const response = await authenticatedFetch('/api/collaborateurs');
+
+                // Charger TOUS les collaborateurs (sans limite)
+                const response = await authenticatedFetch('/api/collaborateurs?limit=1000');
                 const data = await response.json();
 
                 if (data.success) {
-                    // L'API retourne directement data.data (tableau de collaborateurs)
-                    console.log('📊 Données brutes des collaborateurs:', data.data);
-                    console.log('📊 Statuts des collaborateurs:', data.data.map(c => ({ nom: c.nom, statut: c.statut })));
-
                     // Filtrer seulement les collaborateurs actifs
                     collaborateurs = data.data.filter(collab => collab.statut === 'ACTIF');
+                    filteredCollaborateurs = [...collaborateurs];
                     console.log(`✅ ${collaborateurs.length} collaborateurs actifs chargés`);
-                    console.log('Collaborateurs actifs:', collaborateurs);
-                    console.log('📊 Taux horaires des collaborateurs:', collaborateurs.map(c => ({
-                        nom: c.nom,
-                        taux_horaire: c.taux_horaire,
-                        grade: c.grade_nom,
-                        business_unit: c.business_unit_nom
-                    })));
                 } else {
                     console.error('❌ Erreur lors du chargement des collaborateurs:', data.error);
                 }
+
+                // Charger les Business Units
+                await loadBusinessUnits();
+
             } catch (error) {
                 console.error('❌ Erreur lors du chargement des collaborateurs:', error);
+            }
+        }
+
+        // Charger les Business Units
+        async function loadBusinessUnits() {
+            try {
+                console.log('🏢 Chargement des Business Units...');
+                const response = await authenticatedFetch('/api/business-units');
+                const data = await response.json();
+
+                if (data.success) {
+                    businessUnits = data.data;
+                    console.log(`✅ ${businessUnits.length} Business Units chargées`);
+                } else {
+                    console.error('❌ Erreur lors du chargement des BU:', data.error);
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des BU:', error);
             }
         }
 
@@ -748,7 +831,7 @@
             `;
 
             // Mettre à jour l'affichage des affectations après avoir sélectionné les tâches obligatoires
-            displayAssignments();
+            displayAssignmentsNew();
             updateBudgetCalculator();
         }
 
@@ -779,7 +862,7 @@
                 };
             }
 
-            displayAssignments();
+            displayAssignmentsNew();
             updateBudgetCalculator();
         }
 
@@ -970,7 +1053,7 @@
             console.log(`  - assignments[${taskId}].collaborateurs after:`, assignments[taskId].collaborateurs);
 
             // Mettre à jour l'affichage basé sur l'état des assignments
-            displayAssignments(); // Recréer les éléments DOM d'abord
+            displayAssignmentsNew(); // Recréer les éléments DOM d'abord
             // Attendre un peu que les éléments DOM soient créés
             setTimeout(() => {
                 updateCollaborateurHeuresDisplay(); // Puis mettre à jour l'affichage
@@ -982,19 +1065,19 @@
         function updateCollaborateurHeures(taskId, collaborateurId, heures) {
             if (assignments[taskId] && assignments[taskId].collaborateurs[collaborateurId]) {
                 const heuresValue = parseFloat(heures) || 0;
-                const tauxHoraire = assignments[taskId].collaborateurs[collaborateurId].taux_horaire || 0;
+                const tauxHoraire = assignments[taskId].collaborateurs[collaborateurId].taux || 0;
                 const cout = heuresValue * tauxHoraire;
 
                 assignments[taskId].collaborateurs[collaborateurId].heures = heuresValue;
                 assignments[taskId].collaborateurs[collaborateurId].cout = cout;
 
-                // Mettre à jour l'affichage du coût en temps réel
-                const coutDiv = document.getElementById(`cout_${taskId}_${collaborateurId}`);
+                // Mettre à jour l'affichage du coût en temps réel (nouveau format d'ID)
+                const coutDiv = document.getElementById(`cout-${taskId}-${collaborateurId}`);
                 if (coutDiv) {
                     coutDiv.textContent = formatCurrency(cout);
                 }
 
-                updateTaskTotalHeures(taskId);
+                updateTaskTotals(taskId);
                 updateBudgetCalculator();
             }
         }
@@ -1189,15 +1272,18 @@
                         const taskAssignment = assignments[taskId] || { collaborateurs: {} };
 
                         // Convertir les collaborateurs assignés en tableau
-                        const assignmentsArray = Object.values(taskAssignment.collaborateurs || {}).map(collab => ({
-                            collaborateur_id: collab.id,
-                            heures_prevues: collab.heures || 0,
-                            taux_horaire: collab.taux_horaire || 0,
-                            montant_prevue: collab.cout || 0,
+                        // La clé est le collaborateur_id, la valeur contient {heures, taux, cout}
+                        const assignmentsArray = Object.entries(taskAssignment.collaborateurs || {}).map(([collabId, collabData]) => ({
+                            collaborateur_id: collabId,
+                            heures_prevues: collabData.heures || 0,
+                            taux_horaire: collabData.taux || 0,
+                            montant_prevue: collabData.cout || 0,
                             date_debut: missionData.date_debut,
                             date_fin: missionData.date_fin_prevue,
-                            statut: 'planifie'
+                            statut: 'PLANIFIE'
                         }));
+
+                        console.log(`📋 Tâche ${task.code}: ${assignmentsArray.length} collaborateurs`, assignmentsArray);
 
                         return {
                             task_id: taskId,
@@ -1207,7 +1293,7 @@
                             date_debut_prevue: missionData.date_debut,
                             date_fin_prevue: missionData.date_fin_prevue,
                             heures_prevues: task.duree_estimee || 0,
-                            statut: 'en_cours',
+                            statut: 'EN_COURS',
                             assignments: assignmentsArray
                         };
                     })

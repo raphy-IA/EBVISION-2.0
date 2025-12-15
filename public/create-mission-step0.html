@@ -306,8 +306,8 @@
         // Chargement des données pour les sélecteurs
         async function loadFormData() {
             try {
-                // Charger les clients
-                const clientsResponse = await authenticatedFetch('/api/clients');
+                // Charger les clients - Ajouter limit=1000 pour récupérer tous les clients
+                const clientsResponse = await authenticatedFetch('/api/clients?limit=1000');
                 const clientsData = await clientsResponse.json();
                 if (clientsData.data && clientsData.data.clients) {
                     clients = clientsData.data.clients;
@@ -330,8 +330,8 @@
                 divisions = divData.data || divData;
                 populateDivisions();
 
-                // Charger les collaborateurs
-                const collabResponse = await authenticatedFetch('/api/collaborateurs');
+                // Charger les collaborateurs - Ajouter limit=1000 pour récupérer tous les collaborateurs
+                const collabResponse = await authenticatedFetch('/api/collaborateurs?limit=1000');
                 const collabData = await collabResponse.json();
                 collaborateurs = collabData.data || collabData;
                 populateResponsables();
@@ -363,6 +363,11 @@
                 option.textContent = bu.nom || bu.name;
                 select.appendChild(option);
             });
+
+            // Ajouter un écouteur pour filtrer les responsables quand la BU change
+            select.addEventListener('change', function () {
+                filterResponsablesByBU(this.value);
+            });
         }
 
         // Remplir le sélecteur de Divisions
@@ -379,12 +384,44 @@
         // Remplir le sélecteur de Responsables
         function populateResponsables() {
             const select = document.getElementById('responsableSelect');
+            // Stocker tous les collaborateurs pour le filtrage ultérieur
+            select.innerHTML = '<option value="">Sélectionner un responsable</option>';
             collaborateurs.forEach(collab => {
                 const option = document.createElement('option');
                 option.value = collab.id;
                 option.textContent = `${collab.nom} ${collab.prenom}`;
+                option.dataset.businessUnitId = collab.business_unit_id || '';
                 select.appendChild(option);
             });
+        }
+
+        // Filtrer les responsables par Business Unit
+        function filterResponsablesByBU(businessUnitId) {
+            const select = document.getElementById('responsableSelect');
+            const currentValue = select.value;
+
+            // Réinitialiser le select
+            select.innerHTML = '<option value="">Sélectionner un responsable</option>';
+
+            // Filtrer et afficher uniquement les collaborateurs de la BU sélectionnée
+            const filteredCollabs = businessUnitId
+                ? collaborateurs.filter(c => c.business_unit_id === businessUnitId)
+                : collaborateurs;
+
+            filteredCollabs.forEach(collab => {
+                const option = document.createElement('option');
+                option.value = collab.id;
+                option.textContent = `${collab.nom} ${collab.prenom}`;
+                option.dataset.businessUnitId = collab.business_unit_id || '';
+                select.appendChild(option);
+            });
+
+            // Restaurer la valeur si elle est toujours dans la liste filtrée
+            if (currentValue && filteredCollabs.some(c => c.id === currentValue)) {
+                select.value = currentValue;
+            }
+
+            console.log(`✅ Filtré ${filteredCollabs.length} responsables pour la BU ${businessUnitId || 'toutes'}`);
         }
 
         // Continuer vers l'étape 1

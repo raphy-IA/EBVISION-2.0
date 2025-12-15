@@ -543,7 +543,11 @@
                             <h6 class="card-title mt-2">${type.codification} - ${type.libelle}</h6>
                             <p class="card-text text-muted">${type.description || 'Aucune description'}</p>
                             <div class="row">
-                                <div class="col-12">
+                                <div class="col-6">
+                                    <small class="text-muted">Business Unit</small><br>
+                                    <strong>${type.business_unit_nom || 'Non assignée'}</strong>
+                                </div>
+                                <div class="col-6">
                                     <small class="text-muted">Division</small><br>
                                     <strong>${type.division_nom || 'Non assignée'}</strong>
                                 </div>

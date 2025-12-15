@@ -1388,219 +1388,242 @@ router.get('/pipeline-summary', authenticateToken, async (req, res) => {
 // ===== ENDPOINTS POUR DASHBOARD ÉQUIPE =====
 
 // GET /api/analytics/team-performance - Performance d'équipe
+// Removed outer duplicate wrapper
+// Endpoint: Performance de l'équipe (Scope Unifié)
 router.get('/team-performance', authenticateToken, async (req, res) => {
     try {
+        const { period = 30, scopeType = 'GLOBAL', scopeId, memberId } = req.query; // scopeType: 'GLOBAL', 'BU', 'DIVISION', 'SUPERVISOR'
         const userId = req.user.id;
-        const { period = 90, businessUnit, division } = req.query;
 
-        // 1. Récupérer le collaborateur_id de l'utilisateur
-        const collaborateurQuery = `SELECT id FROM collaborateurs WHERE user_id = $1`;
-        const collabResult = await pool.query(collaborateurQuery, [userId]);
+        // 1. Identifier le collaborateur lié
+        const userQuery = `SELECT id, collaborateur_id, role FROM users WHERE id = $1`;
+        const userResult = await pool.query(userQuery, [userId]);
 
-        if (collabResult.rows.length === 0) {
-            return res.status(403).json({
-                success: false,
-                error: 'Vous devez être un collaborateur pour accéder à ce dashboard'
-            });
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Utilisateur non trouvé' });
         }
 
-        const collaborateurId = collabResult.rows[0].id;
+        const user = userResult.rows[0];
+        const collaborateurId = user.collaborateur_id;
+        const isSuperAdmin = user.role === 'SUPER_ADMIN';
+        const isAdmin = user.role === 'ADMIN';
 
-        // 2. Vérifier les rôles de l'utilisateur (SUPER_ADMIN, ADMIN, etc. ont accès total)
-        const rolesQuery = `
-            SELECT r.name
-            FROM user_roles ur
-            JOIN roles r ON ur.role_id = r.id
-            WHERE ur.user_id = $1
-        `;
-        const rolesResult = await pool.query(rolesQuery, [userId]);
-        const userRoles = rolesResult.rows.map(r => r.name);
+        // 2. Définir le scope (Qui peut-on voir ?)
+        let whereConditions = [];
+        let params = [];
+        let paramIndex = 1;
 
-        const isAdmin = userRoles.includes('SUPER_ADMIN') ||
-            userRoles.includes('ADMIN') ||
-            userRoles.includes('DIRECTEUR') ||
-            userRoles.includes('ASSOCIE');
-
-        // 3. Si pas admin, vérifier les autorisations managériales
-        let authorizedBusinessUnit = businessUnit;
-        let authorizedDivision = division;
-
-        if (!isAdmin) {
-            const Manager = require('../models/Manager');
-
-            // Vérifier autorisation pour Business Unit demandée
-            if (businessUnit) {
-                const isAuthorizedBU = await Manager.isBusinessUnitManager(collaborateurId, businessUnit);
-                if (!isAuthorizedBU) {
-                    return res.status(403).json({
-                        success: false,
-                        error: 'Vous n\'êtes pas autorisé à voir les données de cette Business Unit'
-                    });
-                }
+        if (isSuperAdmin || isAdmin) {
+            // Admin voit tout, sauf si un scope spécifique est demandé
+            if (scopeType === 'BU' && scopeId) {
+                whereConditions.push(`d.business_unit_id = '${scopeId}'`);
+            } else if (scopeType === 'DIVISION' && scopeId) {
+                whereConditions.push(`c.division_id = '${scopeId}'`);
+            } else {
+                whereConditions.push('1 = 1');
+            }
+        } else {
+            if (!collaborateurId) {
+                return res.status(403).json({ success: false, error: 'Compte non lié à un collaborateur' });
             }
 
-            // Vérifier autorisation pour Division demandée
-            if (division) {
-                const isAuthorizedDiv = await Manager.isDivisionManager(collaborateurId, division);
-                if (!isAuthorizedDiv) {
-                    return res.status(403).json({
-                        success: false,
-                        error: 'Vous n\'êtes pas autorisé à voir les données de cette Division'
-                    });
-                }
-            }
+            const scopeConditions = [];
 
-            // Si aucun filtre spécifié, charger la première équipe gérée
-            if (!businessUnit && !division) {
-                // Récupérer les BU gérées
-                const managedBUsQuery = `
-                    SELECT id FROM business_units
-                    WHERE responsable_principal_id = $1 OR responsable_adjoint_id = $1
-                    ORDER BY nom
-                    LIMIT 1
-                `;
-                const managedBUs = await pool.query(managedBUsQuery, [collaborateurId]);
+            console.log('DEBUG team-performance START:', { userId, collaborateurId, scopeType, scopeId });
 
-                // Récupérer les Divisions gérées
-                const managedDivsQuery = `
-                    SELECT id FROM divisions
-                    WHERE responsable_principal_id = $1 OR responsable_adjoint_id = $1
-                    ORDER BY name
-                    LIMIT 1
-                `;
-                const managedDivs = await pool.query(managedDivsQuery, [collaborateurId]);
-
-                // Priorité aux divisions
-                if (managedDivs.rows.length > 0) {
-                    authorizedDivision = managedDivs.rows[0].id;
-                } else if (managedBUs.rows.length > 0) {
-                    authorizedBusinessUnit = managedBUs.rows[0].id;
+            // Logique de filtrage selon le scopeType demandé
+            if (scopeType === 'BU' && scopeId) {
+                // Vérifier si le user gère cette BU
+                const checkBU = await pool.query('SELECT id FROM business_units WHERE id = $1 AND manager_id = $2', [scopeId, collaborateurId]);
+                if (checkBU.rows.length > 0) {
+                    scopeConditions.push(`d.business_unit_id = '${scopeId}'`);
                 } else {
-                    return res.status(403).json({
-                        success: false,
-                        error: 'Vous ne gérez aucune équipe'
-                    });
+                    return res.status(403).json({ success: false, error: 'Accès non autorisé à cette Business Unit' });
                 }
+            }
+            else if (scopeType === 'DIVISION' && scopeId) {
+                // Vérifier si le user gère cette Division
+                const checkDiv = await pool.query('SELECT id FROM divisions WHERE id = $1 AND (responsable_principal_id = $2 OR responsable_adjoint_id = $2)', [scopeId, collaborateurId]);
+                if (checkDiv.rows.length > 0) {
+                    scopeConditions.push(`c.division_id = '${scopeId}'`);
+                } else {
+                    return res.status(403).json({ success: false, error: 'Accès non autorisé à cette Division' });
+                }
+            }
+            else if (scopeType === 'SUPERVISOR') {
+                // Uniquement mes collaborateurs directs
+                const supervisedQuery = `SELECT collaborateur_id FROM time_sheet_supervisors WHERE supervisor_id = $1`;
+                const supervisedRest = await pool.query(supervisedQuery, [collaborateurId]);
+                if (supervisedRest.rows.length > 0) {
+                    const collabIds = supervisedRest.rows.map(r => r.collaborateur_id);
+                    scopeConditions.push(`c.id IN (${collabIds.join(',')})`);
+                } else {
+                    scopeConditions.push('1 = 0');
+                }
+            }
+            else {
+                // GLOBAL (Défaut): Vue unifiée
+
+                // A. Divisions gérées
+                const managedDivsQuery = `
+                        SELECT id FROM divisions 
+                        WHERE responsable_principal_id = $1 OR responsable_adjoint_id = $1
+                    `;
+                const managedDivs = await pool.query(managedDivsQuery, [collaborateurId]);
+                if (managedDivs.rows.length > 0) {
+                    const divIds = managedDivs.rows.map(r => `'${r.id}'`);
+                    scopeConditions.push(`c.division_id IN (${divIds.join(',')})`);
+                }
+
+                // B. Business Units gérées
+                const managedBUsQuery = `
+                        SELECT id FROM business_units 
+                        WHERE manager_id = $1
+                    `;
+                const managedBUs = await pool.query(managedBUsQuery, [collaborateurId]);
+                if (managedBUs.rows.length > 0) {
+                    const buIds = managedBUs.rows.map(r => `'${r.id}'`);
+                    scopeConditions.push(`d.business_unit_id IN (${buIds.join(',')})`);
+                }
+
+                // C. Collaborateurs supervisés
+                const supervisedQuery = `
+                        SELECT collaborateur_id FROM time_sheet_supervisors WHERE supervisor_id = $1
+                    `;
+                const supervisedRest = await pool.query(supervisedQuery, [collaborateurId]);
+                if (supervisedRest.rows.length > 0) {
+                    const collabIds = supervisedRest.rows.map(r => `'${r.collaborateur_id}'`);
+                    scopeConditions.push(`c.id IN (${collabIds.join(',')})`);
+                }
+            }
+
+            if (scopeConditions.length > 0) {
+                whereConditions.push(`(${scopeConditions.join(' OR ')})`);
+            } else {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Vous ne gérez aucune équipe, division ou collaborateur pour le scope demandé.'
+                });
             }
         }
 
-        // 4. Calculer les dates
+        // 3. Filtre Temporel (Time Entries)
+        // Note: On filtre les TimeEntries dans le JOIN, pas dans le WHERE principal pour garder tous les membres
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(period));
 
-        // 5. Construire les conditions WHERE (en utilisant authorizedBusinessUnit et authorizedDivision)
-        let whereConditions = ['te.date_saisie >= $1 AND te.date_saisie <= $2'];
-        let params = [startDate.toISOString(), endDate.toISOString()];
-        let paramIndex = 3;
+        // Paramètres pour les dates (toujours les derniers params)
+        const dateParams = [startDate.toISOString(), endDate.toISOString()];
 
-        if (authorizedBusinessUnit) {
-            whereConditions.push(`bu.id = $${paramIndex++}`);
-            params.push(authorizedBusinessUnit);
-        }
-
-        if (authorizedDivision) {
-            whereConditions.push(`d.id = $${paramIndex++}`);
-            params.push(authorizedDivision);
+        // 4. Filtre Membre Spécifique (Optionnel)
+        if (memberId) {
+            whereConditions.push(`c.id = $${paramIndex++}`);
+            params.push(memberId);
         }
 
         const whereClause = whereConditions.join(' AND ');
+        console.log('DEBUG team-performance whereClause:', whereClause);
+        console.log('DEBUG team-performance params:', params);
+
+        // 5. Exécution des requêtes
+        // On sépare params (pour le WHERE) et dateParams (pour le JOIN)
+        // SQL Injection safe: on concatène les valeurs statiques (IDs validés) dans le IN, 
+        // et on utilise $ pour memberId.
 
         // KPIs de l'équipe
         const teamQuery = `
-            SELECT 
-                COUNT(DISTINCT c.id) as total_membres,
-                SUM(te.heures) as total_heures,
-                AVG(te.heures) as moyenne_heures,
-                SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END) as heures_facturables,
-                SUM(CASE WHEN te.type_heures = 'NON_BILLABLE' THEN te.heures ELSE 0 END) as heures_non_facturables,
-                COUNT(DISTINCT m.id) as missions_actives
-            FROM time_entries te
-            LEFT JOIN users u ON te.user_id = u.id
-            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
-            LEFT JOIN divisions d ON c.division_id = d.id
-            LEFT JOIN business_units bu ON d.business_unit_id = bu.id
-            LEFT JOIN missions m ON te.mission_id = m.id
-            WHERE ${whereClause}
-        `;
+                SELECT 
+                    COUNT(DISTINCT c.id) as total_membres,
+                    COALESCE(SUM(te.heures), 0) as total_heures,
+                    COALESCE(AVG(te.heures), 0) as moyenne_heures,
+                    COALESCE(SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END), 0) as heures_facturables,
+                    COALESCE(SUM(CASE WHEN te.type_heures = 'NON_BILLABLE' THEN te.heures ELSE 0 END), 0) as heures_non_facturables,
+                    COUNT(DISTINCT m.id) as missions_actives
+                FROM collaborateurs c
+                LEFT JOIN users u ON c.user_id = u.id OR c.id = u.collaborateur_id
+                LEFT JOIN time_entries te ON u.id = te.user_id AND te.date_saisie >= '${dateParams[0]}' AND te.date_saisie <= '${dateParams[1]}'
+                LEFT JOIN divisions d ON c.division_id = d.id
+                LEFT JOIN business_units bu ON d.business_unit_id = bu.id
+                LEFT JOIN missions m ON te.mission_id = m.id
+                WHERE ${whereClause}
+            `;
 
         const teamResult = await pool.query(teamQuery, params);
         const teamData = teamResult.rows[0];
 
-        // Taux de chargeabilité de l'équipe
+        // Taux de chargeabilité
         const tauxChargeabilite = teamData.total_heures > 0 ?
             (teamData.heures_facturables / teamData.total_heures) * 100 : 0;
 
-        // Performance par collaborateur
+        // Liste des collaborateurs
         const collabQuery = `
-            SELECT 
-                c.id,
-                c.nom,
-                c.prenom,
-                g.nom as grade_nom,
-                SUM(te.heures) as total_heures,
-                SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END) as heures_facturables,
-                COUNT(DISTINCT m.id) as missions_assignees,
-                CASE 
-                    WHEN SUM(te.heures) > 0 
-                    THEN (SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END) / SUM(te.heures)) * 100
-                    ELSE 0 
-                END as taux_chargeabilite
-            FROM time_entries te
-            LEFT JOIN users u ON te.user_id = u.id
-            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
-            LEFT JOIN grades g ON c.grade_actuel_id = g.id
-            LEFT JOIN divisions d ON c.division_id = d.id
-            LEFT JOIN business_units bu ON d.business_unit_id = bu.id
-            LEFT JOIN missions m ON te.mission_id = m.id
-            WHERE ${whereClause}
-            GROUP BY c.id, c.nom, c.prenom, g.nom
-            ORDER BY total_heures DESC
-        `;
+                SELECT 
+                    c.id,
+                    c.nom,
+                    c.prenom,
+                    g.nom as grade_nom,
+                    COALESCE(SUM(te.heures), 0) as total_heures,
+                    COALESCE(SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END), 0) as heures_facturables,
+                    COALESCE(SUM(CASE WHEN te.type_heures = 'NON_BILLABLE' THEN te.heures ELSE 0 END), 0) as heures_non_facturables,
+                    CASE 
+                        WHEN SUM(te.heures) > 0 
+                        THEN (SUM(CASE WHEN te.type_heures = 'BILLABLE' THEN te.heures ELSE 0 END) / SUM(te.heures)) * 100
+                        ELSE 0 
+                    END as taux_chargeabilite,
+                     COUNT(DISTINCT m.id) as missions_assignees
+                FROM collaborateurs c
+                LEFT JOIN users u ON c.user_id = u.id OR c.id = u.collaborateur_id
+                LEFT JOIN time_entries te ON u.id = te.user_id AND te.date_saisie >= '${dateParams[0]}' AND te.date_saisie <= '${dateParams[1]}'
+                LEFT JOIN grades g ON c.grade_actuel_id = g.id
+                LEFT JOIN divisions d ON c.division_id = d.id
+                LEFT JOIN business_units bu ON d.business_unit_id = bu.id
+                LEFT JOIN missions m ON te.mission_id = m.id
+                WHERE ${whereClause}
+                GROUP BY c.id, c.nom, c.prenom, g.nom
+                ORDER BY total_heures DESC NULLS LAST, c.nom ASC
+            `;
 
         const collabQueryResult = await pool.query(collabQuery, params);
 
         // Distribution par grade
         const gradeQuery = `
-            SELECT 
-                g.nom as grade_nom,
-                COUNT(DISTINCT c.id) as nombre,
-                SUM(te.heures) as total_heures,
-                AVG(te.heures) as moyenne_heures
-            FROM time_entries te
-            LEFT JOIN users u ON te.user_id = u.id
-            LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
-            LEFT JOIN grades g ON c.grade_actuel_id = g.id
-            LEFT JOIN divisions d ON c.division_id = d.id
-            LEFT JOIN business_units bu ON d.business_unit_id = bu.id
-            WHERE ${whereClause}
-            GROUP BY g.nom
-            ORDER BY total_heures DESC
-        `;
+                SELECT 
+                    g.nom as grade_nom,
+                    COUNT(DISTINCT c.id) as nombre,
+                    COALESCE(SUM(te.heures), 0) as total_heures
+                FROM collaborateurs c
+                LEFT JOIN users u ON c.user_id = u.id OR c.id = u.collaborateur_id
+                LEFT JOIN time_entries te ON u.id = te.user_id AND te.date_saisie >= '${dateParams[0]}' AND te.date_saisie <= '${dateParams[1]}'
+                LEFT JOIN grades g ON c.grade_actuel_id = g.id
+                LEFT JOIN divisions d ON c.division_id = d.id
+                LEFT JOIN business_units bu ON d.business_unit_id = bu.id
+                WHERE ${whereClause}
+                GROUP BY g.nom
+                ORDER BY nombre DESC
+            `;
 
         const gradeResult = await pool.query(gradeQuery, params);
 
-        const responseData = {
-            kpis: {
-                total_membres: teamData.total_membres || 0,
-                total_heures: teamData.total_heures || 0,
-                moyenne_heures: teamData.moyenne_heures || 0,
-                heures_facturables: teamData.heures_facturables || 0,
-                heures_non_facturables: teamData.heures_non_facturables || 0,
-                taux_chargeabilite: Math.round(tauxChargeabilite * 10) / 10,
-                missions_actives: teamData.missions_actives || 0
-            },
-            collaborateurs: collabQueryResult.rows,
-            distribution_grades: gradeResult.rows
-        };
-
         res.json({
             success: true,
-            data: responseData
+            data: {
+                kpis: {
+                    total_membres: teamData.total_membres || 0,
+                    total_heures: teamData.total_heures || 0,
+                    moyenne_heures: teamData.moyenne_heures || 0,
+                    heures_facturables: teamData.heures_facturables || 0,
+                    heures_non_facturables: teamData.heures_non_facturables || 0,
+                    taux_chargeabilite: Math.round(tauxChargeabilite * 10) / 10,
+                    missions_actives: teamData.missions_actives || 0
+                },
+                collaborateurs: collabQueryResult.rows,
+                distribution_grades: gradeResult.rows
+            }
         });
 
     } catch (error) {
-        console.error('Erreur team-performance:', error);
+        console.error('Erreur API Team Performance (DETAILS):', error);
         res.status(500).json({
             success: false,
             error: 'Erreur lors de la récupération de la performance équipe'
@@ -1623,6 +1646,7 @@ router.get('/managed-teams', authenticateToken, async (req, res) => {
                 data: {
                     business_units: [],
                     divisions: [],
+                    supervised_count: 0,
                     is_manager: false
                 }
             });
@@ -1644,16 +1668,26 @@ router.get('/managed-teams', authenticateToken, async (req, res) => {
             SELECT id, nom, code, description, business_unit_id
             FROM divisions
             WHERE responsable_principal_id = $1 OR responsable_adjoint_id = $1
-            ORDER BY name
+            ORDER BY nom
         `;
         const divsResult = await pool.query(divsQuery, [collaborateurId]);
+
+        // Récupérer le nombre de supervisés directs
+        const supQuery = `
+                    SELECT COUNT(*) as count 
+                    FROM time_sheet_supervisors 
+                    WHERE supervisor_id = $1
+                `;
+        const supResult = await pool.query(supQuery, [collaborateurId]);
+        const supervisedCount = parseInt(supResult.rows[0].count) || 0;
 
         res.json({
             success: true,
             data: {
                 business_units: busResult.rows,
                 divisions: divsResult.rows,
-                is_manager: busResult.rows.length > 0 || divsResult.rows.length > 0
+                supervised_count: supervisedCount,
+                is_manager: busResult.rows.length > 0 || divsResult.rows.length > 0 || supervisedCount > 0
             }
         });
 

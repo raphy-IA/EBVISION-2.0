@@ -740,10 +740,33 @@ router.get('/:id/available-tasks', authenticateToken, async (req, res) => {
 /**
  * GET /api/missions/:id/tasks
  * Récupérer les tâches configurées d'une mission avec les collaborateurs affectés
+ * Filtre pour ne retourner que les tâches où l'utilisateur connecté est assigné
  */
 router.get('/:id/tasks', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
+        const userId = req.user.id;
+
+        console.log(`[API] Fetching tasks for mission ${req.params.id} and user ${userId}`);
+
+        // Récupérer le collaborateur_id de l'utilisateur connecté
+        const userQuery = `
+            SELECT collaborateur_id 
+            FROM users 
+            WHERE id = $1
+        `;
+        const userResult = await pool.query(userQuery, [userId]);
+
+        if (userResult.rows.length === 0 || !userResult.rows[0].collaborateur_id) {
+            console.log(`[API] User ${userId} has no associated collaborateur`);
+            return res.json({
+                success: true,
+                data: []
+            });
+        }
+
+        const collaborateurId = userResult.rows[0].collaborateur_id;
+        console.log(`[API] User ${userId} is collaborateur ${collaborateurId}`);
 
         const query = `
             SELECT 
@@ -767,7 +790,7 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND (ts.statut IN ('soumis', 'submitted') OR ts.statut IN ('sauvegard�', 'saved'))),
+                     AND (ts.statut IN ('soumis', 'submitted') OR ts.statut IN ('sauvegardé', 'saved'))),
                     0
                 ) as heures_saisies,
                 -- Heures validées (approved - réellement validées)
@@ -777,7 +800,7 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND ts.statut IN ('valid�', 'approved')),
+                     AND ts.statut IN ('validé', 'approved')),
                     0
                 ) as heures_validees,
                 -- Duree reelle = priorité aux validées, sinon saisies/brouillons
@@ -787,13 +810,13 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND ts.statut IN ('valid�', 'approved')),
+                     AND ts.statut IN ('validé', 'approved')),
                     (SELECT SUM(te.heures)
                      FROM time_entries te
                      JOIN time_sheets ts ON te.time_sheet_id = ts.id
                      WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
                      AND te.mission_id = mt.mission_id
-                     AND (ts.statut IN ('soumis', 'submitted') OR ts.statut IN ('sauvegard�', 'saved'))),
+                     AND (ts.statut IN ('soumis', 'submitted') OR ts.statut IN ('sauvegardé', 'saved'))),
                     0
                 ) as duree_reelle,
                 mt.notes,
@@ -830,7 +853,7 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                                  WHERE te.task_id = mt.task_id
                                  AND te.mission_id = mt.mission_id
                                  AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
-                                 AND ts.statut IN ('valid�', 'approved')),
+                                 AND ts.statut IN ('validé', 'approved')),
                                 0
                             ),
                             'heures_effectuees', COALESCE(
@@ -840,7 +863,7 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
                                  WHERE te.task_id = mt.task_id
                                  AND te.mission_id = mt.mission_id
                                  AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
-                                 AND ts.statut IN ('valid�', 'approved')),
+                                 AND ts.statut IN ('validé', 'approved')),
                                 (SELECT SUM(te.heures)
                                  FROM time_entries te
                                  JOIN time_sheets ts ON te.time_sheet_id = ts.id
@@ -863,10 +886,19 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
             FROM mission_tasks mt
             LEFT JOIN tasks t ON mt.task_id = t.id
             WHERE mt.mission_id = $1
+            -- Filtrer pour ne retourner que les tâches où le collaborateur connecté est assigné
+            AND EXISTS (
+                SELECT 1 
+                FROM task_assignments ta 
+                WHERE ta.mission_task_id = mt.id 
+                AND ta.collaborateur_id = $2
+            )
             ORDER BY mt.date_debut, t.libelle
         `;
 
-        const result = await pool.query(query, [req.params.id]);
+        const result = await pool.query(query, [req.params.id, collaborateurId]);
+
+        console.log(`[API] Found ${result.rows.length} tasks for collaborateur ${collaborateurId} on mission ${req.params.id}`);
 
         res.json({
             success: true,

@@ -639,6 +639,7 @@
             const mtInfo = document.getElementById('selected-mission-type-info');
             mtInfo.innerHTML = `
                 <div class="info-badge mb-2">${selectedMissionType.codification} - ${selectedMissionType.libelle}</div>
+                <p class="mb-1"><strong>Business Unit:</strong> ${selectedMissionType.business_unit_nom || 'Non assignée'}</p>
                 <p class="mb-1"><strong>Division:</strong> ${selectedMissionType.division_nom || 'Non assignée'}</p>
                 <p class="mb-1"><strong>Description:</strong> ${selectedMissionType.description || 'Aucune description'}</p>
             `;

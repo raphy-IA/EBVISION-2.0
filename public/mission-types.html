@@ -318,6 +318,12 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3">
+                            <label for="filterBusinessUnit" class="form-label">Business Unit</label>
+                            <select class="form-select" id="filterBusinessUnit">
+                                <option value="">Toutes les Business Units</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
                             <label for="filterDivision" class="form-label">Division</label>
                             <select class="form-select" id="filterDivision">
                                 <option value="">Toutes les divisions</option>
@@ -364,6 +370,7 @@
                                     <th>Codification</th>
                                     <th>Libellé</th>
                                     <th>Description</th>
+                                    <th>Business Unit</th>
                                     <th>Division</th>
                                     <th>Statut</th>
                                     <th>Actions</th>
@@ -371,7 +378,7 @@
                             </thead>
                             <tbody id="missionTypesTableBody">
                                 <tr>
-                                    <td colspan="6" class="text-center">
+                                    <td colspan="7" class="text-center">
                                         <div class="spinner-border text-primary" role="status">
                                             <span class="visually-hidden">Chargement...</span>
                                         </div>
@@ -417,10 +424,10 @@
                             <textarea class="form-control" id="createDescription" rows="3" maxlength="500"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="createBusinessUnit" class="form-label">Business Unit</label>
-                            <select class="form-select" id="createBusinessUnit"
+                            <label for="createBusinessUnit" class="form-label">Business Unit *</label>
+                            <select class="form-select" id="createBusinessUnit" required
                                 onchange="filterDivisionsByBU('createBusinessUnit', 'createDivision')">
-                                <option value="">Toutes les Business Units</option>
+                                <option value="">Sélectionner une Business Unit</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -472,10 +479,10 @@
                             <textarea class="form-control" id="editDescription" rows="3" maxlength="500"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="editBusinessUnit" class="form-label">Business Unit</label>
-                            <select class="form-select" id="editBusinessUnit"
+                            <label for="editBusinessUnit" class="form-label">Business Unit *</label>
+                            <select class="form-select" id="editBusinessUnit" required
                                 onchange="filterDivisionsByBU('editBusinessUnit', 'editDivision')">
-                                <option value="">Toutes les Business Units</option>
+                                <option value="">Sélectionner une Business Unit</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -719,6 +726,10 @@
         // Configuration des événements
         function setupEventListeners() {
             document.getElementById('searchInput').addEventListener('input', filterMissionTypes);
+            document.getElementById('filterBusinessUnit').addEventListener('change', function () {
+                filterDivisionsByBU('filterBusinessUnit', 'filterDivision');
+                filterMissionTypes();
+            });
             document.getElementById('filterDivision').addEventListener('change', filterMissionTypes);
             document.getElementById('filterStatus').addEventListener('change', filterMissionTypes);
         }
@@ -886,9 +897,23 @@
             }
         }
 
-        // Remplir les selects de division (UNIQUEMENT FILTRE GLOBAL)
+        // Remplir les selects de division et BU (UNIQUEMENT FILTRE GLOBAL)
         function populateDivisionSelects() {
-            // 1. Filtre global : toutes les divisions
+            // 1. Filtre global BU : toutes les BU
+            const buSelect = document.getElementById('filterBusinessUnit');
+            if (buSelect) {
+                buSelect.innerHTML = '<option value="">Toutes les Business Units</option>';
+                if (Array.isArray(businessUnits)) {
+                    businessUnits.forEach(bu => {
+                        const option = document.createElement('option');
+                        option.value = bu.id;
+                        option.textContent = bu.nom;
+                        buSelect.appendChild(option);
+                    });
+                }
+            }
+
+            // 2. Filtre global division : toutes les divisions
             const selectId = 'filterDivision';
             const select = document.getElementById(selectId);
             if (select) {
@@ -919,7 +944,7 @@
             tbody.innerHTML = '';
 
             if (types.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Aucun type de mission trouvé</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Aucun type de mission trouvé</td></tr>';
                 return;
             }
 
@@ -929,6 +954,7 @@
                     <td><strong>${type.codification}</strong></td>
                     <td>${type.libelle}</td>
                     <td>${type.description || '-'}</td>
+                    <td><span class="badge bg-primary">${type.business_unit_nom || '-'}</span></td>
                     <td>${type.division_nom || '-'}</td>
                     <td>
                         <span class="badge ${type.actif ? 'bg-success' : 'bg-secondary'} badge-status">
@@ -957,6 +983,7 @@
         // Filtrer les types de mission
         function filterMissionTypes() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const buFilter = document.getElementById('filterBusinessUnit').value;
             const divisionFilter = document.getElementById('filterDivision').value;
             const statusFilter = document.getElementById('filterStatus').value;
 
@@ -965,10 +992,11 @@
                     type.codification.toLowerCase().includes(searchTerm) ||
                     type.libelle.toLowerCase().includes(searchTerm);
 
+                const matchesBU = !buFilter || type.business_unit_id === buFilter;
                 const matchesDivision = !divisionFilter || type.division_id === divisionFilter;
                 const matchesStatus = !statusFilter || type.actif.toString() === statusFilter;
 
-                return matchesSearch && matchesDivision && matchesStatus;
+                return matchesSearch && matchesBU && matchesDivision && matchesStatus;
             });
 
             displayMissionTypes(filtered);
@@ -977,9 +1005,10 @@
         // Effacer les filtres
         function clearFilters() {
             document.getElementById('searchInput').value = '';
+            document.getElementById('filterBusinessUnit').value = '';
             document.getElementById('filterDivision').value = '';
             document.getElementById('filterStatus').value = '';
-            displayMissionTypes(missionTypes);
+            filterMissionTypes();
         }
 
         // Charger les statistiques
@@ -1017,6 +1046,7 @@
                 codification: document.getElementById('createCodification').value,
                 libelle: document.getElementById('createLibelle').value,
                 description: document.getElementById('createDescription').value,
+                business_unit_id: document.getElementById('createBusinessUnit').value || null,
                 division_id: document.getElementById('createDivision').value || null
             };
 
@@ -1113,6 +1143,7 @@
                 codification: document.getElementById('editCodification').value,
                 libelle: document.getElementById('editLibelle').value,
                 description: document.getElementById('editDescription').value,
+                business_unit_id: document.getElementById('editBusinessUnit').value || null,
                 division_id: document.getElementById('editDivision').value || null,
                 actif: document.getElementById('editActif').checked
             };

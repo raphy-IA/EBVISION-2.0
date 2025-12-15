@@ -17,9 +17,9 @@ router.get('/', authenticateToken, async (req, res) => {
         });
     } catch (error) {
         console.error('Erreur lors de la récupération des types de mission:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            error: 'Erreur serveur' 
+            error: 'Erreur serveur'
         });
     }
 });
@@ -41,11 +41,15 @@ router.get('/:id', async (req, res) => {
 // POST /api/mission-types - Créer un nouveau type de mission
 router.post('/', async (req, res) => {
     try {
-        const { codification, libelle, description, division_id } = req.body;
+        const { codification, libelle, description, division_id, business_unit_id } = req.body;
 
         // Validation des données
         if (!codification || !libelle) {
             return res.status(400).json({ error: 'Codification et libellé sont requis' });
+        }
+
+        if (!business_unit_id) {
+            return res.status(400).json({ error: 'Business Unit est requise' });
         }
 
         // Vérifier si la codification existe déjà
@@ -66,7 +70,8 @@ router.post('/', async (req, res) => {
             codification: codification.toUpperCase(),
             libelle,
             description,
-            division_id
+            division_id,
+            business_unit_id
         });
 
         res.status(201).json(newMissionType);
@@ -79,11 +84,15 @@ router.post('/', async (req, res) => {
 // PUT /api/mission-types/:id - Mettre à jour un type de mission
 router.put('/:id', async (req, res) => {
     try {
-        const { codification, libelle, description, division_id, actif } = req.body;
+        const { codification, libelle, description, division_id, business_unit_id, actif } = req.body;
 
         // Validation des données
         if (!codification || !libelle) {
             return res.status(400).json({ error: 'Codification et libellé sont requis' });
+        }
+
+        if (!business_unit_id) {
+            return res.status(400).json({ error: 'Business Unit est requise' });
         }
 
         // Vérifier si le type de mission existe
@@ -111,6 +120,7 @@ router.put('/:id', async (req, res) => {
             libelle,
             description,
             division_id,
+            business_unit_id,
             actif: actif !== undefined ? actif : true
         });
 
@@ -125,7 +135,7 @@ router.put('/:id', async (req, res) => {
 router.get('/:id/tasks', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         const query = `
             SELECT 
                 t.id,
@@ -141,9 +151,9 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
             WHERE tmt.mission_type_id = $1 AND t.actif = true
             ORDER BY tmt.ordre, t.libelle
         `;
-        
+
         const result = await pool.query(query, [req.params.id]);
-        
+
         res.json({
             success: true,
             tasks: result.rows
