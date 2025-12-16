@@ -51,6 +51,7 @@ const supervisorsRoutes = require('./src/routes/supervisors');
 const timeSheetApprovalsRoutes = require('./src/routes/time-sheet-approvals');
 const dashboardAnalyticsRoutes = require('./src/routes/dashboard-analytics');
 const analyticsRoutes = require('./src/routes/analytics');
+const teamAnalyticsRoutes = require('./src/routes/team-analytics');
 const notificationSettingsRoutes = require('./src/routes/notification-settings');
 const financialSettingsRoutes = require('./src/routes/financial-settings');
 const prospectingRoutes = require('./src/routes/prospecting');
@@ -257,6 +258,7 @@ app.use('/api/supervisors', supervisorsRoutes);
 app.use('/api/time-sheet-approvals', timeSheetApprovalsRoutes);
 app.use('/api/analytics', dashboardAnalyticsRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/analytics/team', teamAnalyticsRoutes);
 app.use('/api/prospecting', prospectingRoutes);
 app.use('/api/permissions', authenticateToken, permissionsRoutes);
 app.use('/api/page-permissions', pagePermissionsRoutes); // Changed from /api/auth to avoid conflict

@@ -98,7 +98,7 @@ class PagePermissionsManager {
                                 <button class="btn btn-primary" onclick="window.history.back()">
                                     <i class="fas fa-arrow-left me-2"></i>Retour
                                 </button>
-                                <button class="btn btn-secondary ms-2" onclick="window.location.href='/dashboard.html'">
+                                <button class="btn btn-secondary ms-2" onclick="window.location.href='/dashboard-personnel.html'">
                                     <i class="fas fa-home me-2"></i>Tableau de bord
                                 </button>
                             </div>

@@ -1,6 +1,6 @@
 // Dashboard Recouvrement - Scripts
 const API_BASE_URL = '/api/analytics';
-let agingChart, monthlyChart;
+let agingChart, clientsChart;
 
 // Devise par défaut pour le recouvrement
 let financialDefaultCurrency = (typeof CURRENCY_CONFIG !== 'undefined' && CURRENCY_CONFIG.defaultCurrency)
@@ -35,24 +35,30 @@ async function authenticatedFetch(url) {
 }
 
 // Initialisation
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('🚀 Initialisation Dashboard Recouvrement');
-    
+
     // Event listeners pour les filtres
     const periodSelect = document.getElementById('period-select');
     if (periodSelect) {
         periodSelect.addEventListener('change', loadData);
     }
-    
+
     const refreshBtn = document.getElementById('refresh-btn');
     if (refreshBtn) {
         refreshBtn.addEventListener('click', loadData);
     }
-    
+
+    // Event listener pour la recherche
+    const searchInput = document.getElementById('search-client');
+    if (searchInput) {
+        searchInput.addEventListener('input', filterClientsTable);
+    }
+
     // Initialiser les graphiques
     initializeCharts();
-    
-    // Charger d abord la configuration financière puis les données
+
+    // Charger d'abord la configuration financière puis les données
     loadFinancialSettingsForDashboardRecouvrement()
         .catch(err => console.warn('Erreur chargement paramètres financiers (recouvrement):', err))
         .finally(() => {
@@ -85,53 +91,57 @@ function initializeCharts() {
                 plugins: {
                     legend: {
                         position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.label || '';
+                                const value = formatCurrency(context.parsed);
+                                return label + ': ' + value;
+                            }
+                        }
                     }
                 }
             }
         });
     }
-    
-    // Graphique mensuel
-    const monthlyCtx = document.getElementById('monthlyChart');
-    if (monthlyCtx) {
-        monthlyChart = new Chart(monthlyCtx, {
-            type: 'line',
+
+    // Graphique Top Clients
+    const clientsCtx = document.getElementById('clientsChart');
+    if (clientsCtx) {
+        clientsChart = new Chart(clientsCtx, {
+            type: 'bar',
             data: {
                 labels: [],
-                datasets: [
-                    {
-                        label: 'Facturé',
-                        data: [],
-                        borderColor: '#3498db',
-                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Encaissé',
-                        data: [],
-                        borderColor: '#27ae60',
-                        backgroundColor: 'rgba(39, 174, 96, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    }
-                ]
+                datasets: [{
+                    label: 'Montant en retard',
+                    data: [],
+                    backgroundColor: '#dc3545',
+                    borderColor: '#c82333',
+                    borderWidth: 1
+                }]
             },
             options: {
+                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'top'
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return formatCurrency(context.parsed.x);
+                            }
+                        }
                     }
                 },
                 scales: {
-                    y: {
+                    x: {
                         beginAtZero: true,
                         ticks: {
-                            callback: function(value) {
+                            callback: function (value) {
                                 return formatCurrency(value);
                             }
                         }
@@ -146,50 +156,52 @@ function initializeCharts() {
 async function loadData() {
     try {
         const period = document.getElementById('period-select')?.value || 90;
-        
+
         console.log(`📊 Chargement données recouvrement (période: ${period} jours)`);
-        
+
         const response = await authenticatedFetch(`${API_BASE_URL}/collections?period=${period}`);
-        
+
         if (response.ok) {
             const result = await response.json();
             if (result.success) {
                 console.log('✅ Données reçues:', result.data);
                 updateKPIs(result.data.kpis);
                 updateAgingChart(result.data.aging_analysis);
-                updateMonthlyChart(result.data.evolution_mensuelle);
-                updateInvoicesTable(result.data.factures_retard);
+                updateClientsChart(result.data.top_clients_retard);
+                updateClientsTable(result.data.top_clients_retard);
             }
         } else {
             console.error('❌ Erreur API:', response.status);
+            showError('Erreur lors du chargement des données');
         }
     } catch (error) {
         console.error('❌ Erreur chargement données:', error);
+        showError('Erreur de connexion au serveur');
     }
 }
 
 // Mettre à jour les KPIs
 function updateKPIs(kpis) {
     console.log('📈 Mise à jour KPIs:', kpis);
-    
+
     // Facturé période
     const factureElement = document.getElementById('kpi-facture');
     if (factureElement) {
         factureElement.textContent = formatCurrency(kpis.facture_periode || 0);
     }
-    
+
     // Encaissé période
     const encaisseElement = document.getElementById('kpi-encaisse');
     if (encaisseElement) {
         encaisseElement.textContent = formatCurrency(kpis.encaisse_periode || 0);
     }
-    
+
     // DSO
     const dsoElement = document.getElementById('kpi-dso');
     if (dsoElement) {
         dsoElement.textContent = kpis.dso_moyen || 0;
     }
-    
+
     // Montant en retard
     const retardElement = document.getElementById('kpi-retard');
     if (retardElement) {
@@ -200,66 +212,101 @@ function updateKPIs(kpis) {
 // Mettre à jour le graphique aging
 function updateAgingChart(aging) {
     console.log('📊 Mise à jour aging chart:', aging);
-    
-    if (!agingChart || !aging || aging.length === 0) return;
-    
+
+    if (!agingChart || !aging || aging.length === 0) {
+        if (agingChart) {
+            agingChart.data.labels = ['Aucune donnée'];
+            agingChart.data.datasets[0].data = [1];
+            agingChart.update();
+        }
+        return;
+    }
+
     const labels = aging.map(a => a.tranche);
-    const data = aging.map(a => a.montant_total || 0);
-    
+    const data = aging.map(a => parseFloat(a.montant_total) || 0);
+
     agingChart.data.labels = labels;
     agingChart.data.datasets[0].data = data;
     agingChart.update();
 }
 
-// Mettre à jour le graphique mensuel
-function updateMonthlyChart(monthly) {
-    console.log('📊 Mise à jour monthly chart:', monthly);
-    
-    if (!monthlyChart || !monthly || monthly.length === 0) return;
-    
-    const labels = monthly.map(m => {
-        const date = new Date(m.mois);
-        return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
-    });
-    const facture = monthly.map(m => m.facture || 0);
-    const encaisse = monthly.map(m => m.encaisse || 0);
-    
-    monthlyChart.data.labels = labels;
-    monthlyChart.data.datasets[0].data = facture;
-    monthlyChart.data.datasets[1].data = encaisse;
-    monthlyChart.update();
-}
+// Mettre à jour le graphique des top clients
+function updateClientsChart(clients) {
+    console.log('📊 Mise à jour clients chart:', clients);
 
-// Mettre à jour la table des factures
-function updateInvoicesTable(invoices) {
-    console.log('📋 Mise à jour table factures:', invoices);
-    
-    const tbody = document.getElementById('invoices-table-body');
-    if (!tbody) return;
-    
-    if (!invoices || invoices.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Aucune facture en retard</td></tr>';
+    if (!clientsChart || !clients || clients.length === 0) {
+        if (clientsChart) {
+            clientsChart.data.labels = ['Aucune donnée'];
+            clientsChart.data.datasets[0].data = [0];
+            clientsChart.update();
+        }
         return;
     }
-    
-    const rows = invoices.map(invoice => {
-        const joursRetard = invoice.jours_retard || 0;
-        const badgeClass = joursRetard > 90 ? 'danger' : joursRetard > 60 ? 'warning' : 'info';
-        
+
+    const labels = clients.map(c => c.client_sigle || c.client_nom || 'Non défini');
+    const data = clients.map(c => parseFloat(c.montant_retard) || 0);
+
+    clientsChart.data.labels = labels;
+    clientsChart.data.datasets[0].data = data;
+    clientsChart.update();
+}
+
+// Mettre à jour la table des clients
+let allClientsData = [];
+
+function updateClientsTable(clients) {
+    console.log('📋 Mise à jour table clients:', clients);
+
+    allClientsData = clients || [];
+    renderClientsTable(allClientsData);
+}
+
+function renderClientsTable(clients) {
+    const tbody = document.getElementById('clients-table');
+    if (!tbody) return;
+
+    if (!clients || clients.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Aucun client en retard</td></tr>';
+        return;
+    }
+
+    const rows = clients.map(client => {
+        const retardMoyen = client.retard_moyen || 0;
+        const badgeClass = retardMoyen > 90 ? 'danger' : retardMoyen > 60 ? 'warning' : 'info';
+        const clientDisplay = client.client_sigle || client.client_nom || 'Non défini';
+
         return `
             <tr>
-                <td>${invoice.numero_facture || '-'}</td>
-                <td>${invoice.client_nom || 'Non défini'}</td>
-                <td class="text-end">${formatCurrency(invoice.montant_total || 0)}</td>
-                <td>${formatDate(invoice.date_echeance)}</td>
-                <td class="text-center">
-                    <span class="badge bg-${badgeClass}">${joursRetard}j</span>
+                <td><strong>${clientDisplay}</strong></td>
+                <td class="text-end"><strong>${formatCurrency(client.montant_retard || 0)}</strong></td>
+                <td class="text-end">
+                    <span class="badge bg-${badgeClass}">${retardMoyen}j</span>
                 </td>
             </tr>
         `;
     }).join('');
-    
+
     tbody.innerHTML = rows;
+}
+
+function filterClientsTable() {
+    const searchInput = document.getElementById('search-client');
+    if (!searchInput) return;
+
+    const searchTerm = searchInput.value.toLowerCase();
+
+    if (!searchTerm) {
+        renderClientsTable(allClientsData);
+        return;
+    }
+
+    const filtered = allClientsData.filter(client => {
+        const clientName = (client.client_nom || '').toLowerCase();
+        const clientSigle = (client.client_sigle || '').toLowerCase();
+        return clientName.includes(searchTerm) || clientSigle.includes(searchTerm);
+    });
+
+    renderClientsTable(filtered);
 }
 
 // Fonctions utilitaires
@@ -279,7 +326,7 @@ function formatCurrency(value, currencyCode) {
             maximumFractionDigits: 0
         }).format(numeric);
     } catch (e) {
-        return `${numeric} ${code}`;
+        return `${numeric.toLocaleString('fr-FR')} ${code}`;
     }
 }
 
@@ -289,11 +336,17 @@ function formatDate(dateString) {
     return date.toLocaleDateString('fr-FR');
 }
 
+function showError(message) {
+    console.error('❌', message);
+    // TODO: Afficher une notification d'erreur à l'utilisateur
+}
+
 // Rafraîchir automatiquement toutes les 5 minutes
 setInterval(loadData, 5 * 60 * 1000);
 
 // Exposer pour le débogage
 window.dashboardRecouvrement = {
     loadData,
-    updateKPIs
+    updateKPIs,
+    formatCurrency
 };

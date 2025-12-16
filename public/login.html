@@ -1,22 +1,23 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="page-title">EBVISION 2.0 - Connexion</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- CSS pour le titre de l'application -->
     <link rel="stylesheet" href="css/app-title.css">
-    
+
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Script de chargement du branding (DOIT être chargé AVANT les styles) -->
     <script src="js/branding-loader.js"></script>
-    
+
     <style>
         :root {
             --primary-color: var(--brand-primary, #2c3e50);
@@ -177,15 +178,15 @@
         .forgot-password a:hover {
             text-decoration: underline;
         }
-
     </style>
-    
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
 </head>
+
 <body>
     <div class="login-container">
         <div class="login-card">
@@ -193,7 +194,7 @@
                 <h1><i class="fas fa-eye me-2"></i><span id="login-app-name">EWM</span></h1>
                 <p id="login-app-tagline">Intelligent Resource Management</p>
             </div>
-            
+
             <div class="login-body">
                 <!-- Alert Container -->
                 <div id="alertContainer"></div>
@@ -206,7 +207,7 @@
                         <input type="email" class="form-control" id="email" placeholder="Email" required>
                         <label for="email">Email</label>
                     </div>
-                    
+
                     <div class="form-floating position-relative">
                         <input type="password" class="form-control" id="password" placeholder="Mot de passe" required>
                         <label for="password">Mot de passe</label>
@@ -232,7 +233,7 @@
                     </button>
                 </form>
             </div>
-            
+
             <div class="login-footer">
                 <p id="login-footer-copyright">&copy; 2024 EWM</p>
                 <p><a href="#" onclick="showHelp()">Aide</a> | <a href="#" onclick="showContact()">Contact</a></p>
@@ -280,11 +281,11 @@
                 <div class="modal-body">
                     <h6>Comment se connecter ?</h6>
                     <p>Utilisez vos identifiants fournis par votre administrateur système.</p>
-                    
+
                     <h6>Identifiants de démonstration</h6>
                     <p>Contactez votre administrateur système pour obtenir vos identifiants de connexion.</p>
                     <p><strong>⚠️ Sécurité :</strong> Ne jamais utiliser de mots de passe par défaut en production.</p>
-                    
+
                     <h6>Fonctionnalités principales</h6>
                     <ul>
                         <li><strong>Dashboard:</strong> Vue d'ensemble des activités</li>
@@ -315,7 +316,7 @@
                     <p><strong>Support technique:</strong></p>
                     <p><i class="fas fa-envelope me-2"></i>support@trs.com</p>
                     <p><i class="fas fa-phone me-2"></i>+33 1 23 45 67 89</p>
-                    
+
                     <p><strong>Administrateur système:</strong></p>
                     <p><i class="fas fa-envelope me-2"></i>[EMAIL_SUPPRIMÉ_POUR_SÉCURITÉ]</p>
                 </div>
@@ -328,42 +329,42 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
         // Appliquer le branding dès que la configuration est chargée
-        window.whenBrandingReady(function(config) {
+        window.whenBrandingReady(function (config) {
             console.log('🎨 Application du branding à la page de login...');
-            
+
             // Titre de la page
             const pageTitle = document.getElementById('page-title');
             if (pageTitle && config.app?.name) {
                 pageTitle.textContent = config.app.name + ' - Connexion';
             }
-            
+
             // Nom de l'application dans le header
             const appName = document.getElementById('login-app-name');
             if (appName && config.ui?.loginTitle) {
                 appName.textContent = config.ui.loginTitle;
             }
-            
+
             // Tagline
             const appTagline = document.getElementById('login-app-tagline');
             if (appTagline && config.ui?.loginSubtitle) {
                 appTagline.textContent = config.ui.loginSubtitle;
             }
-            
+
             // Footer copyright
             const footerCopyright = document.getElementById('login-footer-copyright');
             if (footerCopyright && config.ui?.footer?.copyright) {
                 footerCopyright.textContent = config.ui.footer.copyright;
             }
-            
+
             // Nom dans le modal d'aide
             const helpAppName = document.getElementById('help-app-name');
             if (helpAppName && config.app?.name) {
                 helpAppName.textContent = config.app.name;
             }
-            
+
             // Ajouter la bannière démo si nécessaire
             if (config.demo?.mode && config.demo?.bannerText) {
                 const demoBanner = document.createElement('div');
@@ -385,27 +386,27 @@
                     z-index: 1030;
                 `;
                 document.body.insertBefore(demoBanner, document.body.firstChild);
-                
+
                 // Ajuster le padding du container
                 const loginContainer = document.querySelector('.login-container');
                 if (loginContainer) {
                     loginContainer.style.paddingTop = '60px';
                 }
             }
-            
+
             console.log('✅ Branding login appliqué');
         });
     </script>
-    
+
     <script>
         // Configuration
         const API_BASE_URL = '/api';
-        
+
         // Fonction pour basculer la visibilité du mot de passe
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const passwordIcon = document.getElementById('passwordIcon');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 passwordIcon.className = 'fas fa-eye-slash';
@@ -414,7 +415,7 @@
                 passwordIcon.className = 'fas fa-eye';
             }
         }
-        
+
         // Fonction utilitaire pour les appels API authentifiés
         async function authenticatedFetch(url, options = {}) {
             const token = localStorage.getItem('authToken');
@@ -422,7 +423,7 @@
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            
+
             return fetch(url, {
                 ...options,
                 headers: {
@@ -435,7 +436,7 @@
         let isAuthenticated = false;
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             checkAuthentication();
             setupEventListeners();
         });
@@ -452,7 +453,7 @@
         // Configuration des événements
         function setupEventListeners() {
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            
+
             // Auto-remplissage des identifiants de démo - SUPPRIMÉ POUR RAISONS DE SÉCURITÉ
             // Ne jamais exposer d'identifiants dans le code source
         }
@@ -460,18 +461,18 @@
         // Gestion de la connexion
         async function handleLogin(event) {
             event.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('rememberMe').checked;
-            
+
             if (!email || !password) {
                 showAlert('Veuillez remplir tous les champs', 'warning');
                 return;
             }
-            
+
             setLoading(true);
-            
+
             try {
                 console.log('[Login] submit', { email });
                 const response = await authenticatedFetch(`${API_BASE_URL}/auth/login`, {
@@ -484,30 +485,30 @@
                 console.log('[Login] status', response.status);
                 const data = await response.json().catch(() => ({}));
                 console.log('[Login] response body', data);
-                
+
                 if (data.success) {
                     // Stocker le token (dans data.data.token)
                     const token = data.data.token;
                     const user = data.data.user;
-                    
+
                     localStorage.setItem('authToken', token);
                     localStorage.setItem('user', JSON.stringify(user));
-                    
+
                     if (rememberMe) {
                         localStorage.setItem('rememberMe', 'true');
                     }
-                    
+
                     showAlert('Connexion réussie ! Redirection...', 'success');
-                    
+
                     // Redirection vers le dashboard
                     setTimeout(() => {
-                        window.location.href = '/dashboard.html';
+                        window.location.href = '/dashboard-personnel.html';
                     }, 1000);
-                    
+
                 } else {
                     showAlert(data.message || 'Erreur de connexion', 'danger');
                 }
-                
+
             } catch (error) {
                 console.error('Erreur de connexion:', error);
                 showAlert('Erreur de connexion au serveur', 'danger');
@@ -525,16 +526,16 @@
                         'Authorization': `Bearer ${token}`
                     }
                 });
-                
+
                 if (response.ok) {
                     // Token valide, rediriger vers le dashboard
-                    window.location.href = '/dashboard.html';
+                    window.location.href = '/dashboard-personnel.html';
                 } else {
                     // Token invalide, le supprimer
                     localStorage.removeItem('authToken');
                     localStorage.removeItem('user');
                 }
-                
+
             } catch (error) {
                 console.error('Erreur de vérification du token:', error);
                 localStorage.removeItem('authToken');
@@ -553,12 +554,12 @@
         // Envoyer l'email de réinitialisation
         async function sendResetEmail() {
             const email = document.getElementById('resetEmail').value;
-            
+
             if (!email) {
                 showAlert('Veuillez entrer votre adresse email', 'warning');
                 return;
             }
-            
+
             try {
                 const response = await authenticatedFetch(`${API_BASE_URL}/auth/forgot-password`, {
                     method: 'POST',
@@ -567,16 +568,16 @@
                     },
                     body: JSON.stringify({ email })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     showAlert('Email de réinitialisation envoyé !', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('forgotPasswordModal')).hide();
                 } else {
                     showAlert(data.message || 'Erreur lors de l\'envoi', 'danger');
                 }
-                
+
             } catch (error) {
                 console.error('Erreur:', error);
                 showAlert('Erreur de connexion au serveur', 'danger');
@@ -600,7 +601,7 @@
             const loginBtn = document.getElementById('loginBtn');
             const spinner = loginBtn.querySelector('.loading-spinner');
             const btnText = loginBtn.querySelector('.btn-text');
-            
+
             if (loading) {
                 loginBtn.disabled = true;
                 spinner.style.display = 'inline-block';
@@ -616,7 +617,7 @@
         function showAlert(message, type) {
             const alertContainer = document.getElementById('alertContainer');
             const alertId = 'alert-' + Date.now();
-            
+
             const alertHTML = `
                 <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
                     <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'} me-2"></i>
@@ -624,9 +625,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
-            
+
             alertContainer.innerHTML = alertHTML;
-            
+
             // Auto-remove after 5 seconds
             setTimeout(() => {
                 const alert = document.getElementById(alertId);
@@ -637,7 +638,7 @@
         }
 
         // Gestion des erreurs de clavier
-        document.addEventListener('keydown', function(event) {
+        document.addEventListener('keydown', function (event) {
             if (event.key === 'Enter' && event.target.tagName !== 'TEXTAREA') {
                 const activeElement = document.activeElement;
                 if (activeElement && activeElement.form) {
@@ -647,4 +648,5 @@
         });
     </script>
 </body>
-</html> 
+
+</html>

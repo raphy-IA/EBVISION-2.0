@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="page-title">Déconnexion - EWM</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
     <style>
@@ -18,6 +19,7 @@
             justify-content: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
         .logout-card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -27,11 +29,13 @@
             max-width: 400px;
             width: 100%;
         }
+
         .logout-icon {
             font-size: 4rem;
             color: #e74c3c;
             margin-bottom: 20px;
         }
+
         .btn-logout {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             border: none;
@@ -41,22 +45,24 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
+
         .btn-logout:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
             color: white;
         }
     </style>
-    
+
     <!-- Script de chargement du branding (doit être chargé en premier) -->
     <script src="js/branding-loader.js"></script>
-    
+
     <!-- Script pour la gestion utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/tasks.js"></script>
 </head>
+
 <body>
     <div class="logout-card">
         <div class="logout-icon">
@@ -64,13 +70,13 @@
         </div>
         <h3 class="mb-3">Déconnexion</h3>
         <p class="text-muted mb-4">Êtes-vous sûr de vouloir vous déconnecter ?</p>
-        
+
         <div class="d-grid gap-2">
             <button class="btn btn-logout" onclick="performLogout()">
                 <i class="fas fa-sign-out-alt me-2"></i>
                 Se déconnecter
             </button>
-            <a href="/dashboard.html" class="btn btn-outline-secondary">
+            <a href="/dashboard-personnel.html" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-2"></i>
                 Retour au dashboard
             </a>
@@ -79,15 +85,15 @@
 
     <script>
         // Appliquer le branding dès que la configuration est chargée
-        window.whenBrandingReady(function(config) {
+        window.whenBrandingReady(function (config) {
             console.log('🎨 Application du branding à la page de déconnexion...');
-            
+
             // Titre de la page
             const pageTitle = document.getElementById('page-title');
             if (pageTitle && config.app?.name) {
                 pageTitle.textContent = 'Déconnexion - ' + config.app.name;
             }
-            
+
             // Ajouter la bannière démo si nécessaire
             if (config.demo?.mode && config.demo?.bannerText) {
                 const demoBanner = document.createElement('div');
@@ -110,25 +116,25 @@
                 `;
                 document.body.insertBefore(demoBanner, document.body.firstChild);
             }
-            
+
             console.log('✅ Branding logout appliqué');
         });
-    
+
         function performLogout() {
             // Supprimer le token et les données utilisateur
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
             localStorage.removeItem('user');
-            
+
             // Afficher un message de confirmation
             alert('Vous avez été déconnecté avec succès !');
-            
+
             // Rediriger vers la page de connexion
             window.location.href = '/';
         }
-        
+
         // Vérifier si l'utilisateur est connecté
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const token = localStorage.getItem('authToken');
             if (!token) {
                 // Si pas de token, rediriger vers la page de connexion
@@ -137,4 +143,5 @@
         });
     </script>
 </body>
-</html> 
+
+</html>

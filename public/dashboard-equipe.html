@@ -6,10 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Équipe</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%234facfe'/%3E%3Ccircle cx='35' cy='35' r='8' fill='%23fff'/%3E%3Cpath d='M 35 45 Q 28 45 25 54 Q 24 58 25 62 L 45 62 Q 46 58 45 54 Q 42 45 35 45' fill='%23fff'/%3E%3Ccircle cx='65' cy='35' r='8' fill='%23fff'/%3E%3Cpath d='M 65 45 Q 58 45 55 54 Q 54 58 55 62 L 75 62 Q 76 58 75 54 Q 72 45 65 45' fill='%23fff'/%3E%3Ccircle cx='50' cy='50' r='9' fill='%23fff'/%3E%3Cpath d='M 50 62 Q 42 62 38 72 Q 37 76 38 82 L 62 82 Q 63 76 62 72 Q 58 62 50 62' fill='%23fff'/%3E%3C/svg%3E">
-
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -20,12 +16,30 @@
     <link href="css/modern-sidebar.css" rel="stylesheet">
     <link href="css/app-title.css" rel="stylesheet">
 
+    <!-- Scripts d'authentification -->
+    <script src="js/auth.js"></script>
+    <script src="js/menu-permissions.js"></script>
+    <script src="/js/page-permissions.js"></script>
+    <script src="js/global-auth.js"></script>
+    <script src="js/user-header.js"></script>
+    <script src="js/profile-menu.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/tasks.js"></script>
+
     <style>
-        .dashboard-header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
+        :root {
+            --light-bg: #f8f9fa;
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: var(--light-bg);
         }
 
         .kpi-card {
@@ -34,18 +48,18 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            border-left: 4px solid #4facfe;
-            transition: transform 0.3s ease;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
         }
 
         .kpi-card:hover {
             transform: translateY(-5px);
         }
 
-        .kpi-number {
+        .kpi-value {
             font-size: 2.5rem;
             font-weight: bold;
-            color: #4facfe;
+            color: var(--primary-color);
             margin-bottom: 0.5rem;
         }
 
@@ -56,151 +70,42 @@
             letter-spacing: 0.5px;
         }
 
-        .kpi-trend {
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
-        }
-
-        .kpi-trend.positive {
-            color: #28a745;
-        }
-
-        .kpi-trend.negative {
-            color: #dc3545;
-        }
-
         .chart-container {
             background: white;
             border-radius: 15px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
+            height: 400px;
         }
 
-        .team-member-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 1rem;
+        .chart-container canvas {
+            max-height: 320px !important;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
             margin-bottom: 1rem;
-            border-left: 4px solid #28a745;
-            transition: transform 0.2s ease;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
         }
 
-        .team-member-card:hover {
-            transform: translateX(5px);
-        }
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
 
-        .team-member-card.warning {
-            border-left-color: #ffc107;
-        }
+            .main-content-area {
+                padding: 1rem;
+            }
 
-        .team-member-card.danger {
-            border-left-color: #dc3545;
-        }
-
-        .performance-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-
-        .performance-excellent {
-            background-color: #28a745;
-        }
-
-        .performance-good {
-            background-color: #17a2b8;
-        }
-
-        .performance-average {
-            background-color: #ffc107;
-        }
-
-        .performance-poor {
-            background-color: #dc3545;
-        }
-
-        .progress-custom {
-            height: 8px;
-            border-radius: 4px;
-            background-color: #e9ecef;
-        }
-
-        .progress-custom .progress-bar {
-            border-radius: 4px;
-        }
-
-        .alert-card {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            color: white;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .success-card {
-            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
-            color: white;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .info-card {
-            background: linear-gradient(135deg, #74c0fc 0%, #339af0 100%);
-            color: white;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .filter-section {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .main-content {
-            padding: 2rem !important;
-            padding-top: 2rem !important;
-            padding-left: 3rem !important;
-            background-color: #f8f9fa;
-            margin-left: 0 !important;
-        }
-
-        /* Override Bootstrap column padding */
-        .col-md-9.main-content,
-        .col-lg-10.main-content {
-            padding-left: 3rem !important;
-            padding-right: 2rem !important;
-        }
-
-        .container-fluid {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-        }
-
-        .container-fluid>.row {
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-        }
-
-        /* Ensure sidebar has no right padding */
-        .col-md-3.px-0,
-        .col-lg-2.px-0 {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
+            .kpi-value {
+                font-size: 2rem;
+            }
         }
     </style>
-    <!-- Script pour la gestion utilisateur -->
-    <script src="js/user-header.js"></script>
-    <script src="js/profile-menu.js"></script>
-    <script src="js/notifications.js"></script>
-    <script src="js/tasks.js"></script>
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
@@ -211,227 +116,135 @@
 </head>
 
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 px-0">
-                <div class="sidebar-container" id="sidebar-container">
-                    <!-- Le contenu de la sidebar sera chargé dynamiquement -->
-                </div>
-            </div>
+    <!-- Bouton toggle sidebar mobile -->
+    <button class="sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+    </button>
 
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content">
-                <!-- Dashboard Header -->
-                <div class="dashboard-header">
-                    <div class="container-fluid">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h1><i class="fas fa-users me-3"></i>Dashboard Équipe</h1>
-                                <p class="mb-0">Performance collective et gestion des équipes</p>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <div class="d-flex align-items-center justify-content-end">
-                                    <div class="me-3">
-                                        <small>Superviseur</small><br>
-                                        <strong id="supervisor-name">Chargement...</strong>
-                                    </div>
-                                    <img src="https://ui-avatars.com/api/?name=Supervisor&background=4facfe&color=fff"
-                                        alt="Avatar" class="rounded-circle" width="50" height="50">
-                                </div>
-                            </div>
-                        </div>
+    <div class="page-wrapper">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container">
+            <!-- La sidebar sera générée par JavaScript -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <div class="container-fluid">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-users me-2"></i>Dashboard Équipe</h2>
+                    <div class="d-flex gap-2">
+                        <select id="period-select" class="form-select form-select-sm" style="width: 150px;">
+                            <option value="7">7 jours</option>
+                            <option value="30" selected>30 jours</option>
+                            <option value="90">90 jours</option>
+                        </select>
+                        <button class="btn btn-primary btn-sm" id="refresh-btn">
+                            <i class="fas fa-sync-alt me-1"></i>Actualiser
+                        </button>
                     </div>
                 </div>
 
-                <!-- Filtres -->
-                <div class="container-fluid">
-                    <div class="filter-section">
-                        <div class="row align-items-center">
-                            <div class="col-md-3">
-                                <label for="period-filter" class="form-label">Période</label>
-                                <select class="form-select" id="period-filter">
-                                    <option value="7">7 derniers jours</option>
-                                    <option value="30" selected>30 derniers jours</option>
-                                    <option value="90">3 derniers mois</option>
-                                    <option value="365">12 derniers mois</option>
+                <!-- Sélecteurs d'équipe -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="team-type-select" class="form-label">
+                                    <i class="fas fa-layer-group me-1"></i>Type d'équipe
+                                </label>
+                                <select id="team-type-select" class="form-select">
+                                    <option value="">Chargement...</option>
                                 </select>
                             </div>
-                            <div class="col-md-3">
-                                <label for="scope-filter" class="form-label">Équipe (Scope)</label>
-                                <select class="form-select" id="scope-filter">
-                                    <option value="GLOBAL">Vue d'ensemble</option>
+                            <div class="col-md-4" id="team-instance-container" style="display: none;">
+                                <label for="team-instance-select" class="form-label">
+                                    <i class="fas fa-briefcase me-1"></i>Sélectionner
+                                </label>
+                                <select id="team-instance-select" class="form-select">
+                                    <option value="">Sélectionner...</option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
-                                <label for="member-filter" class="form-label">Filtrer par Collaborateur</label>
-                                <select class="form-select" id="member-filter">
-                                    <option value="">Tous les collaborateurs</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-primary mt-4" onclick="refreshDashboard()">
-                                    <i class="fas fa-sync-alt me-2"></i>Actualiser
-                                </button>
-                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- KPIs Principaux -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="kpi-card">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="kpi-number" id="total-heures">0h</div>
-                                        <div class="kpi-label">Heures Totales</div>
-                                        <div class="kpi-trend positive" id="heures-trend">
-                                            <i class="fas fa-arrow-up"></i> +8.5%
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-clock fa-2x text-muted"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="kpi-card">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="kpi-number" id="taux-chargeabilite">0%</div>
-                                        <div class="kpi-label">Taux Chargeabilité</div>
-                                        <div class="kpi-trend positive" id="facturation-trend">
-                                            <i class="fas fa-arrow-up"></i> +3.2%
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-percentage fa-2x text-muted"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="kpi-card">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="kpi-number" id="productivite">0%</div>
-                                        <div class="kpi-label">Productivité Moyenne</div>
-                                        <div class="kpi-trend positive" id="productivite-trend">
-                                            <i class="fas fa-arrow-up"></i> +5.8%
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-chart-line fa-2x text-muted"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="kpi-card">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="kpi-number" id="satisfaction">0%</div>
-                                        <div class="kpi-label">Satisfaction Équipe</div>
-                                        <div class="kpi-trend positive" id="satisfaction-trend">
-                                            <i class="fas fa-arrow-up"></i> +2.1%
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-smile fa-2x text-muted"></i>
-                                </div>
-                            </div>
+                <!-- KPIs Équipe -->
+                <div class="row">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="kpi-card">
+                            <div class="kpi-value" id="kpi-total-hours">-</div>
+                            <div class="kpi-label">Heures totales équipe</div>
                         </div>
                     </div>
-
-                    <!-- Graphiques et Analyses -->
-                    <div class="row mb-4">
-                        <div class="col-md-8">
-                            <div class="chart-container">
-                                <h5 id="team-performance-label"><i class="fas fa-chart-line me-2"></i>Performance de
-                                    l'Équipe (30 derniers jours)</h5>
-                                <canvas id="teamPerformanceChart" height="100"></canvas>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="chart-container">
-                                <h5><i class="fas fa-chart-pie me-2"></i>Répartition par Grade</h5>
-                                <canvas id="teamDistributionChart" height="200"></canvas>
-                            </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="kpi-card">
+                            <div class="kpi-value" id="kpi-members">-</div>
+                            <div class="kpi-label">Membres équipe</div>
                         </div>
                     </div>
-
-                    <!-- Performance des Membres et Alertes -->
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="chart-container">
-                                <h5><i class="fas fa-user-friends me-2"></i>Performance des Membres d'Équipe</h5>
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle">
-                                        <thead>
-                                            <tr>
-                                                <th>Collaborateur</th>
-                                                <th>Grade</th>
-                                                <th class="text-end">Heures</th>
-                                                <th class="text-end">Facturables</th>
-                                                <th class="text-center">Chargeabilité</th>
-                                                <th class="text-center">Missions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="collaborateurs-tbody">
-                                            <!-- Les membres d'équipe seront chargés dynamiquement -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="chart-container">
-                                <h5><i class="fas fa-bell me-2"></i>Alertes Équipe</h5>
-                                <div id="team-alerts-list">
-                                    <!-- Les alertes seront chargées dynamiquement -->
-                                </div>
-                            </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="kpi-card">
+                            <div class="kpi-value" id="kpi-active-missions">-</div>
+                            <div class="kpi-label">Missions actives</div>
                         </div>
                     </div>
-
-                    <!-- Objectifs Équipe et Missions -->
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <h5><i class="fas fa-target me-2"></i>Objectifs Équipe</h5>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="text-center">
-                                            <h6>Objectif Heures</h6>
-                                            <div class="progress progress-custom mb-2">
-                                                <div class="progress-bar bg-success" id="objectif-heures-progress"
-                                                    style="width: 85%"></div>
-                                            </div>
-                                            <small><span id="objectif-heures-actuel">850</span>h / <span
-                                                    id="objectif-heures-cible">1000</span>h</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="text-center">
-                                            <h6>Objectif Facturation</h6>
-                                            <div class="progress progress-custom mb-2">
-                                                <div class="progress-bar bg-info" id="objectif-facturation-progress"
-                                                    style="width: 78%"></div>
-                                            </div>
-                                            <small><span id="objectif-facturation-actuel">78</span>% / <span
-                                                    id="objectif-facturation-cible">85</span>%</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="kpi-card">
+                            <div class="kpi-value" id="kpi-4-value">-</div>
+                            <div class="kpi-label" id="kpi-4-label">Taux chargeabilité</div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <h5><i class="fas fa-briefcase me-2"></i>Missions en Cours</h5>
-                                <div id="active-missions-list">
-                                    <!-- Les missions actives seront chargées dynamiquement -->
-                                </div>
+                <!-- Graphiques -->
+                <div class="row">
+                    <div class="col-xl-6">
+                        <div class="chart-container">
+                            <div class="chart-title">
+                                <i class="fas fa-chart-bar me-2"></i>Heures par membre
                             </div>
+                            <canvas id="membersChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-xl-6">
+                        <div class="chart-container">
+                            <div class="chart-title">
+                                <i class="fas fa-chart-line me-2"></i>Évolution / Chargeabilité
+                            </div>
+                            <canvas id="evolutionChart"></canvas>
+                            <canvas id="chargeabiliteChart" style="display: none;"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tableau des membres -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-users me-2"></i>Membres de l'équipe
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Collaborateur</th>
+                                        <th class="text-end">Heures totales</th>
+                                        <th class="text-end">Heures facturables</th>
+                                        <th class="text-end">Taux chargeabilité</th>
+                                        <th class="text-center">Missions actives</th>
+                                        <th class="text-center">Tâches en cours</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="members-table-body">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">Chargement...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -439,18 +252,13 @@
         </div>
     </div>
 
-    <!-- Container masqué pour éviter les erreurs JS de notifications.js -->
-    <div id="notificationsContainer" class="d-none"></div>
-
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="js/auth.js"></script>
-    <script src="js/menu-permissions.js"></script>
-    <script src="/js/page-permissions.js"></script>
+    <!-- Sidebar JS -->
     <script src="js/sidebar.js"></script>
-    <!-- SessionManager pour la gestion centralisée des sessions -->
+    <!-- SessionManager -->
     <script src="js/session-manager.js"></script>
+    <!-- Dashboard Équipe JS -->
     <script src="js/dashboard-equipe.js"></script>
 </body>
 

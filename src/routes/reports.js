@@ -43,7 +43,7 @@ router.get('/timeEntries', authenticateToken, async (req, res) => {
                 c.nom as collaborateur_nom,
                 c.prenom as collaborateur_prenom,
                 m.nom as mission_titre,
-                cl.raison_sociale as client_nom,
+                COALESCE(cl.sigle, cl.nom) as client_nom,
                 ts.statut as time_sheet_status,
                 bu.id as business_unit_id,
                 bu.nom as business_unit_nom,
@@ -358,7 +358,7 @@ router.get('/export', async (req, res) => {
                 c.nom as collaborateur_nom,
                 c.prenom as collaborateur_prenom,
                 m.nom as mission_nom,
-                cl.raison_sociale as client_nom
+                COALESCE(cl.sigle, cl.nom) as client_nom
             FROM time_entries te
             LEFT JOIN time_sheets ts ON te.time_sheet_id = ts.id
             JOIN collaborateurs c ON te.user_id = c.id

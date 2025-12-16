@@ -129,6 +129,7 @@ router.get('/', authenticateToken, async (req, res) => {
             SELECT 
                 m.*,
                 c.nom as client_nom,
+                c.sigle as client_sigle,
                 bu.nom as business_unit_nom,
                 d.nom as division_nom
             FROM missions m
@@ -1140,7 +1141,10 @@ router.put('/:id/planning', authenticateToken, async (req, res) => {
         `;
         await client.query(deleteTasksQuery, [missionId]);
 
-        // 3. Créer les nouvelles tâches et affectations
+        // 3. Collecter tous les collaborateurs uniques qui seront planifiés
+        const collaborateursSet = new Set();
+
+        // 4. Créer les nouvelles tâches et affectations
         if (tasks && Array.isArray(tasks)) {
             for (const task of tasks) {
                 // Créer la tâche de mission
@@ -1164,6 +1168,9 @@ router.put('/:id/planning', authenticateToken, async (req, res) => {
                 if (task.assignments && Array.isArray(task.assignments)) {
                     for (const assignment of task.assignments) {
                         if (assignment.collaborateur_id) {
+                            // Ajouter le collaborateur au Set
+                            collaborateursSet.add(assignment.collaborateur_id);
+
                             const assignmentQuery = `
                                 INSERT INTO task_assignments (
                                     mission_task_id, collaborateur_id, heures_planifiees,
@@ -1182,11 +1189,33 @@ router.put('/:id/planning', authenticateToken, async (req, res) => {
             }
         }
 
+        // 5. Ajouter automatiquement les collaborateurs à equipes_mission
+        // Récupérer les membres actuels de l'équipe
+        const currentMembersQuery = `
+            SELECT collaborateur_id FROM equipes_mission WHERE mission_id = $1
+        `;
+        const currentMembersResult = await client.query(currentMembersQuery, [missionId]);
+        const currentMemberIds = new Set(currentMembersResult.rows.map(r => r.collaborateur_id));
+
+        // Ajouter les nouveaux collaborateurs qui ne sont pas déjà dans l'équipe
+        for (const collaborateurId of collaborateursSet) {
+            if (!currentMemberIds.has(collaborateurId)) {
+                const addMemberQuery = `
+                    INSERT INTO equipes_mission (
+                        mission_id, collaborateur_id, role, date_creation
+                    ) VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+                    ON CONFLICT (mission_id, collaborateur_id) DO NOTHING
+                `;
+                await client.query(addMemberQuery, [missionId, collaborateurId, 'Membre']);
+            }
+        }
+
         await client.query('COMMIT');
 
         res.json({
             success: true,
-            message: 'Planning mis à jour avec succès'
+            message: 'Planning mis à jour avec succès',
+            collaborateurs_ajoutes: collaborateursSet.size - currentMemberIds.size
         });
     } catch (error) {
         await client.query('ROLLBACK');

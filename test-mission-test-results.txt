@@ -1,0 +1,62 @@
+﻿­ƒöì Test d├®taill├® de la mission "mission_Test"
+
+================================================================================
+
+1´©ÅÔâú Recherche de la mission "mission_Test"...
+­ƒöù Nouvelle connexion ├®tablie
+Ô£à Mission trouv├®e:
+   ID: 8619f1dd-0544-48fb-8968-14be333f9c3e
+   Nom: mission_Test
+   Statut: EN_COURS
+   Responsable ID: 068b6de3-15e7-44f7-9681-a58629dc6b71
+   Manager ID: null
+   Associ├® ID: e0e81bea-f49a-4df1-9d45-1bdadb615af0
+
+2´©ÅÔâú V├®rification Alvine Oum...
+Ô£à Alvine Oum trouv├®e:
+   Collaborateur ID: e0e81bea-f49a-4df1-9d45-1bdadb615af0
+   User ID: cd64343c-36ee-4acb-b402-feebe47c7f81
+   Email: aoum@eb-partnersgroup.cm
+   Ô£à CONFIRM├ë: Alvine est ASSOCI├ëE de cette mission
+
+3´©ÅÔâú Membres dans equipes_mission...
+Membres trouv├®s: 0
+
+4´©ÅÔâú T├óches planifi├®es...
+node : ÔØî Erreur: error: la relation ┬½ 
+mission_task_assignments ┬╗ n'existe pas
+Au caractère Ligne:1 : 1
++ node test-mission-test.js 2>&1 | Out-File 
+-FilePath test-mission-test ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ÔØî Er 
+   reur: err...┬╗ n'existe pas:String) [], RemoteE  
+  xception
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    at D:\10. Programmation\Projets\EB-Vision 
+2.0\node_modules\pg-pool\index.js:45:11
+    at process.processTicksAndRejections 
+(node:internal/process/task_queues:105:5)
+    at async testMissionTest (D:\10. 
+Programmation\Projets\EB-Vision 
+2.0\test-mission-test.js:99:29) {
+  length: 130,
+  severity: 'ERREUR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '318',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1452',
+  routine: 'parserOpenTable'
+}
+­ƒöî Connexion retir├®e du pool

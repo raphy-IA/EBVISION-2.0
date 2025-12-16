@@ -1,35 +1,37 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Force Reload</title>
-    
+
     <!-- CSS Bootstrap et FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/vendor/fontawesome/css/all.min.css" rel="stylesheet">
-    
+
     <!-- CSS de la sidebar moderne -->
     <link rel="stylesheet" href="css/modern-sidebar.css">
-    
+
     <!-- Script d'authentification -->
     <script src="js/auth.js"></script>
-    
+
     <!-- Script de gestion des permissions de menu -->
     <script src="js/menu-permissions.js"></script>
     <script src="/js/page-permissions.js"></script>
-                
+
     <!-- Scripts de zone utilisateur -->
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <!-- Bouton toggle sidebar mobile -->
     <button class="sidebar-toggle d-md-none">
@@ -44,71 +46,71 @@
         <!-- Main Content Area -->
         <div class="main-content-area">
             <div class="reload-card">
-        <div class="spinner"></div>
-        <h2><i class="fas fa-sync-alt me-2"></i>Nettoyage du Cache</h2>
-        <p class="text-muted">Vidage complet du cache du navigateur...</p>
-        
-        <div id="status" class="alert alert-info">
-            <i class="fas fa-cog fa-spin me-2"></i>
-            Nettoyage en cours...
-        </div>
-        
-        <div class="mt-4">
-            <button class="btn btn-reload" onclick="forceReload()">
-                <i class="fas fa-sync me-2"></i>
-                Forcer le Rechargement
-            </button>
-        </div>
-    </div>
+                <div class="spinner"></div>
+                <h2><i class="fas fa-sync-alt me-2"></i>Nettoyage du Cache</h2>
+                <p class="text-muted">Vidage complet du cache du navigateur...</p>
 
-    <script>
-        async function clearAllCaches() {
-            const status = document.getElementById('status');
-            
-            try {
-                // 1. Vider le cache du navigateur
-                status.innerHTML = '<i class="fas fa-trash me-2"></i>Vidage du cache du navigateur...';
-                
-                // 2. Vider le cache des service workers
-                if ('caches' in window) {
-                    const cacheNames = await caches.keys();
-                    for (const cacheName of cacheNames) {
-                        await caches.delete(cacheName);
+                <div id="status" class="alert alert-info">
+                    <i class="fas fa-cog fa-spin me-2"></i>
+                    Nettoyage en cours...
+                </div>
+
+                <div class="mt-4">
+                    <button class="btn btn-reload" onclick="forceReload()">
+                        <i class="fas fa-sync me-2"></i>
+                        Forcer le Rechargement
+                    </button>
+                </div>
+            </div>
+
+            <script>
+                async function clearAllCaches() {
+                    const status = document.getElementById('status');
+
+                    try {
+                        // 1. Vider le cache du navigateur
+                        status.innerHTML = '<i class="fas fa-trash me-2"></i>Vidage du cache du navigateur...';
+
+                        // 2. Vider le cache des service workers
+                        if ('caches' in window) {
+                            const cacheNames = await caches.keys();
+                            for (const cacheName of cacheNames) {
+                                await caches.delete(cacheName);
+                            }
+                        }
+
+                        // 3. Vider le localStorage et sessionStorage
+                        status.innerHTML = '<i class="fas fa-database me-2"></i>Vidage du stockage local...';
+                        localStorage.clear();
+                        sessionStorage.clear();
+
+                        // 4. Forcer le rechargement de tous les scripts
+                        status.innerHTML = '<i class="fas fa-code me-2"></i>Rechargement des scripts...';
+
+                        // 5. Attendre un peu puis rediriger
+                        status.innerHTML = '<i class="fas fa-check me-2"></i>Cache vidé ! Redirection...';
+
+                        setTimeout(() => {
+                            // Rediriger vers le dashboard avec un timestamp unique
+                            const timestamp = new Date().getTime();
+                            window.location.href = `/dashboard-personnel.html?reload=${timestamp}`;
+                        }, 2000);
+
+                    } catch (error) {
+                        status.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>Erreur: ${error.message}`;
                     }
                 }
-                
-                // 3. Vider le localStorage et sessionStorage
-                status.innerHTML = '<i class="fas fa-database me-2"></i>Vidage du stockage local...';
-                localStorage.clear();
-                sessionStorage.clear();
-                
-                // 4. Forcer le rechargement de tous les scripts
-                status.innerHTML = '<i class="fas fa-code me-2"></i>Rechargement des scripts...';
-                
-                // 5. Attendre un peu puis rediriger
-                status.innerHTML = '<i class="fas fa-check me-2"></i>Cache vidé ! Redirection...';
-                
-                setTimeout(() => {
-                    // Rediriger vers le dashboard avec un timestamp unique
-                    const timestamp = new Date().getTime();
-                    window.location.href = `/dashboard.html?reload=${timestamp}`;
-                }, 2000);
-                
-            } catch (error) {
-                status.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>Erreur: ${error.message}`;
-            }
-        }
-        
-        function forceReload() {
-            // Méthode alternative : rechargement forcé
-            window.location.reload(true);
-        }
-        
-        // Démarrer automatiquement le nettoyage
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(clearAllCaches, 1000);
-        });
-    </script>
+
+                function forceReload() {
+                    // Méthode alternative : rechargement forcé
+                    window.location.reload(true);
+                }
+
+                // Démarrer automatiquement le nettoyage
+                document.addEventListener('DOMContentLoaded', function () {
+                    setTimeout(clearAllCaches, 1000);
+                });
+            </script>
         </div>
     </div>
 
@@ -121,4 +123,5 @@
     <script src="/js/notifications.js" defer></script>
     <script src="js/tasks.js" defer></script>
 </body>
+
 </html>

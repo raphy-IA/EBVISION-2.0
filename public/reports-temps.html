@@ -951,13 +951,21 @@
 
             // Client chart (top 10)
             const clientHours = {};
-            entries.filter(e => e.client !== '-').forEach(e => {
+            const clientEntries = entries.filter(e => e.client && e.client !== '-' && e.client.trim() !== '');
+            console.log(`📊 Entrées avec client: ${clientEntries.length} sur ${entries.length}`);
+            if (clientEntries.length > 0) {
+                console.log('📋 Exemple de client:', clientEntries[0].client);
+            }
+
+            clientEntries.forEach(e => {
                 const client = e.client;
                 clientHours[client] = (clientHours[client] || 0) + e.heures;
             });
             const topClients = Object.entries(clientHours)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10);
+
+            console.log(`📊 Top clients trouvés: ${topClients.length}`);
 
             if (charts.clientChart) charts.clientChart.destroy();
             const ctx4 = document.getElementById('clientChart').getContext('2d');

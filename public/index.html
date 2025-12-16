@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,10 +16,12 @@
             height: 100vh;
             margin: 0;
         }
+
         .container {
             text-align: center;
             padding: 2rem;
         }
+
         .spinner {
             border: 4px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
@@ -28,13 +31,21 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 1rem;
         }
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
+
         h1 {
             margin-bottom: 1rem;
         }
+
         p {
             opacity: 0.9;
         }
@@ -47,22 +58,23 @@
 
     <!-- CSS des variables de branding dynamiques -->
     <link rel="stylesheet" href="/config/themes/brand-variables.css">
-    
+
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
 </head>
+
 <body>
     <div class="container">
         <div class="spinner"></div>
-                        <h1>EBVISION 2.0</h1>
+        <h1>EBVISION 2.0</h1>
         <p>Redirection vers la page de connexion...</p>
     </div>
 
     <script>
         // Vérifier si l'utilisateur est déjà connecté
         const token = localStorage.getItem('authToken');
-        
+
         if (token) {
             // Vérifier la validité du token
             fetch('/api/auth/verify', {
@@ -72,27 +84,28 @@
                     'Content-Type': 'application/json'
                 }
             })
-            .then(response => {
-                if (response.ok) {
-                    // Token valide, rediriger vers le dashboard
-                    window.location.href = '/dashboard.html';
-                } else {
-                    // Token invalide, rediriger vers la page de connexion
+                .then(response => {
+                    if (response.ok) {
+                        // Token valide, rediriger vers le dashboard
+                        window.location.href = '/dashboard-personnel.html';
+                    } else {
+                        // Token invalide, rediriger vers la page de connexion
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('user');
+                        window.location.href = '/login.html';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la vérification du token:', error);
                     localStorage.removeItem('authToken');
                     localStorage.removeItem('user');
                     window.location.href = '/login.html';
-                }
-            })
-            .catch(error => {
-                console.error('Erreur lors de la vérification du token:', error);
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('user');
-                window.location.href = '/login.html';
-            });
+                });
         } else {
             // Pas de token, rediriger vers la page de connexion
             window.location.href = '/login.html';
         }
     </script>
 </body>
-</html> 
+
+</html>

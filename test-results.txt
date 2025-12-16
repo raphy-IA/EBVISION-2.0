@@ -1,0 +1,771 @@
+﻿­ƒöì Test complet des membres de missions
+
+================================================================================
+
+­ƒôè Analyse de toutes les missions EN_COURS...
+
+­ƒöù Nouvelle connexion ├®tablie
+Missions trouv├®es: 20
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance juridique et fiscale permanente
+   ID: 4d51f6a2-4ef1-4691-acc1-cfc363aec93e
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 11
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (11):
+      Ô£à Franck Dibandjo (Membre) - fdibandjo@eb-partnersgroup.cm
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Corinne Enyegue (Membre) - cenyegue@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      Ô£à Marlyse Melombi (Membre) - mmelombi@eb-partnersgroup.cm
+      ÔØî Jean Michel Meyanga (Membre) - Pas de compte user
+      Ô£à lydie Mone (Membre) - lmone@eb-partnersgroup.cm
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+      Ô£à Alvine Oum (Membre) - aoum@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Samson Bilangna
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 14 membres
+      ÔÇó Samson Bilangna (ASSOCIE)
+      ÔÇó Franck Dibandjo (Membre)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Corinne Enyegue (Membre)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó Marlyse Melombi (Membre)
+      ÔÇó Jean Michel Meyanga (Membre)
+      ÔÇó lydie Mone (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+      ÔÇó Alvine Oum (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Veille fiscale permanente et audit fiscal trimestriel
+   ID: 701fde16-6545-46f7-92e2-7028a9845620
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 11
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (11):
+      Ô£à Franck Dibandjo (Membre) - fdibandjo@eb-partnersgroup.cm
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      Ô£à Marlyse Melombi (Membre) - mmelombi@eb-partnersgroup.cm
+      ÔØî Jean Michel Meyanga (Membre) - Pas de compte user
+      Ô£à lydie Mone (Membre) - lmone@eb-partnersgroup.cm
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+      Ô£à Gr├®goire Ododi (Membre) - gododi@eb-partnersgroup.cm
+      Ô£à Alvine Oum (Membre) - aoum@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 14 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Franck Dibandjo (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó Marlyse Melombi (Membre)
+      ÔÇó Jean Michel Meyanga (Membre)
+      ÔÇó lydie Mone (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+      ÔÇó Gr├®goire Ododi (Membre)
+      ÔÇó Alvine Oum (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance fiscale et sociale permanente
+   ID: 927acb5c-fc9b-4b01-b9f4-491ccafaea80
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 10
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (10):
+      Ô£à Franck Dibandjo (Membre) - fdibandjo@eb-partnersgroup.cm
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      Ô£à Marlyse Melombi (Membre) - mmelombi@eb-partnersgroup.cm
+      ÔØî Jean Michel Meyanga (Membre) - Pas de compte user
+      Ô£à lydie Mone (Membre) - lmone@eb-partnersgroup.cm
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+      Ô£à Alvine Oum (Membre) - aoum@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 13 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Franck Dibandjo (Membre)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó Marlyse Melombi (Membre)
+      ÔÇó Jean Michel Meyanga (Membre)
+      ÔÇó lydie Mone (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+      ÔÇó Alvine Oum (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Revue fiscale des op├®rations des exercices non prescrits (2021_2024)
+   ID: e80d344d-41b1-470c-b268-3442de4ec4d0
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 10
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (10):
+      Ô£à Franck Dibandjo (Membre) - fdibandjo@eb-partnersgroup.cm
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      Ô£à Marlyse Melombi (Membre) - mmelombi@eb-partnersgroup.cm
+      ÔØî Jean Michel Meyanga (Membre) - Pas de compte user
+      Ô£à lydie Mone (Membre) - lmone@eb-partnersgroup.cm
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+      Ô£à Alvine Oum (Membre) - aoum@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 13 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Franck Dibandjo (Membre)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó Marlyse Melombi (Membre)
+      ÔÇó Jean Michel Meyanga (Membre)
+      ÔÇó lydie Mone (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+      ÔÇó Alvine Oum (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance ├á VGC des exercices 2020 2021 et 2022
+   ID: b10f0796-53d2-4399-a3bf-b2c36d12d2ee
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 9
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (9):
+      Ô£à Franck Dibandjo (Membre) - fdibandjo@eb-partnersgroup.cm
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      ÔØî Jean Michel Meyanga (Membre) - Pas de compte user
+      Ô£à lydie Mone (Membre) - lmone@eb-partnersgroup.cm
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+      Ô£à Alvine Oum (Membre) - aoum@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 12 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Franck Dibandjo (Membre)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó Jean Michel Meyanga (Membre)
+      ÔÇó lydie Mone (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+      ÔÇó Alvine Oum (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance fiscale, juridique et sociale permanente
+   ID: 86f9b4f9-5fbb-4b71-b799-c5c6c749bbbd
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 9
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (9):
+      Ô£à Franck Dibandjo (Membre) - fdibandjo@eb-partnersgroup.cm
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      Ô£à Marlyse Melombi (Membre) - mmelombi@eb-partnersgroup.cm
+      ÔØî Jean Michel Meyanga (Membre) - Pas de compte user
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+      Ô£à Gr├®goire Ododi (Membre) - gododi@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 12 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Franck Dibandjo (Membre)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó Marlyse Melombi (Membre)
+      ÔÇó Jean Michel Meyanga (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+      ÔÇó Gr├®goire Ododi (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance ├á VGC des exercices 2020, 2021 et 2022
+   ID: 9e3903b0-a8f7-4f61-8fd9-6eda5f0e73e1
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 7
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (7):
+      Ô£à Franck Dibandjo (Membre) - fdibandjo@eb-partnersgroup.cm
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+      Ô£à Alvine Oum (Membre) - aoum@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 10 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Franck Dibandjo (Membre)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+      ÔÇó Alvine Oum (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance juridique et fiscale permanente
+   ID: de74a098-5a14-4150-9f77-587ac29bfc30
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 7
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (7):
+      Ô£à Franck Dibandjo (Membre) - fdibandjo@eb-partnersgroup.cm
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+      Ô£à Alvine Oum (Membre) - aoum@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 10 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Franck Dibandjo (Membre)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+      ÔÇó Alvine Oum (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance ├á VGC des exercices 2020, 2021 et 2022
+   ID: 9a5260ab-9526-4dad-af85-6b0ccb3fcd0c
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 6
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (6):
+      Ô£à Franck Dibandjo (Membre) - fdibandjo@eb-partnersgroup.cm
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      ÔØî Jean Michel Meyanga (Membre) - Pas de compte user
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 9 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Franck Dibandjo (Membre)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó Jean Michel Meyanga (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance ├á VGC des exercices 2021 et 2022
+   ID: b9a95074-5b68-456b-9545-d9cf29d17be5
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 6
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 2
+
+   ­ƒæÑ Membres equipes_mission (6):
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      ÔØî Jean Michel Meyanga (Membre) - Pas de compte user
+      Ô£à lydie Mone (Membre) - lmone@eb-partnersgroup.cm
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 8 membres
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Jean Michel Meyanga (Membre)
+      ÔÇó lydie Mone (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance juridique et fiscale permanente
+   ID: 175bbc90-d202-47a9-9e16-c06e90ea782d
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 6
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (6):
+      Ô£à Franck Dibandjo (Membre) - fdibandjo@eb-partnersgroup.cm
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      Ô£à Marlyse Melombi (Membre) - mmelombi@eb-partnersgroup.cm
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 9 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Franck Dibandjo (Membre)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó Marlyse Melombi (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance ├á obtention des visas de contrats de travail des expatri├®s
+   ID: 0d09eb21-407e-4117-85de-196f5c8f9a8b
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 5
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (5):
+      Ô£à Corinne Enyegue (Membre) - cenyegue@eb-partnersgroup.cm
+      Ô£à Marlyse Melombi (Membre) - mmelombi@eb-partnersgroup.cm
+      Ô£à lydie Mone (Membre) - lmone@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+      Ô£à Alvine Oum (Membre) - aoum@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 8 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Corinne Enyegue (Membre)
+      ÔÇó Marlyse Melombi (Membre)
+      ÔÇó lydie Mone (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+      ÔÇó Alvine Oum (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance juridique et fiscale permanente
+   ID: 76dfbffd-5561-4941-94a8-e5d8b0ce6f83
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 5
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (5):
+      Ô£à Franck Dibandjo (Membre) - fdibandjo@eb-partnersgroup.cm
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      Ô£à Gr├®goire Ododi (Membre) - gododi@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 8 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Franck Dibandjo (Membre)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó Gr├®goire Ododi (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Gestion de la paie des Expatri├®s
+   ID: 12557f7f-4e00-46f6-a0d0-8b2296f8f69e
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 5
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (5):
+      Ô£à Corinne Enyegue (Membre) - cenyegue@eb-partnersgroup.cm
+      Ô£à Marlyse Melombi (Membre) - mmelombi@eb-partnersgroup.cm
+      Ô£à lydie Mone (Membre) - lmone@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+      Ô£à Alvine Oum (Membre) - aoum@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 8 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Corinne Enyegue (Membre)
+      ÔÇó Marlyse Melombi (Membre)
+      ÔÇó lydie Mone (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+      ÔÇó Alvine Oum (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance ├á contentieux fiscal des exercices 2021 & 2022
+   ID: ce964bda-8d7b-4240-b9d1-16d6ee43a3d0
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 4
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (4):
+      Ô£à Franck Dibandjo (Membre) - fdibandjo@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      Ô£à Marlyse Melombi (Membre) - mmelombi@eb-partnersgroup.cm
+      Ô£à Steves Tchatcheu (Membre) - stchatcheu@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 7 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Franck Dibandjo (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó Marlyse Melombi (Membre)
+      ÔÇó Steves Tchatcheu (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance ├á contr├┤le CNPS de l'exercice 2023
+   ID: ad53ffce-4d91-4c54-b427-14f1157c7890
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 4
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (4):
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Marlyse Melombi (Membre) - mmelombi@eb-partnersgroup.cm
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 7 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Marlyse Melombi (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance ├á l'optimisation de la paie
+   ID: 3339625d-64d5-4ccb-a6da-cbed5acc65e7
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 4
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (4):
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à lydie Mone (Membre) - lmone@eb-partnersgroup.cm
+      Ô£à Emma Ngo Hagbe (Membre) - ehagbe@eb-partnersgroup.cm
+      Ô£à Alvine Oum (Membre) - aoum@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 7 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó lydie Mone (Membre)
+      ÔÇó Emma Ngo Hagbe (Membre)
+      ÔÇó Alvine Oum (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance ├á VGC 2020 ├á 2022
+   ID: a1ccc70f-0e13-44a5-80f0-868fa5bf7684
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 4
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (4):
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      ÔØî Jean Michel Meyanga (Membre) - Pas de compte user
+      Ô£à Joseph Ndoumbe (Membre) - jndoumbe@eb-partnersgroup.cm
+      Ô£à Alvine Oum (Membre) - aoum@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 7 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Jean Michel Meyanga (Membre)
+      ÔÇó Joseph Ndoumbe (Membre)
+      ÔÇó Alvine Oum (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Assistance juridique et fiscale permanente compl├®mentaire
+   ID: 1d827113-2ebb-4cc6-9a41-4758e085c0f8
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 4
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (4):
+      Ô£à Ashley Elang  (Membre) - aelang@eb-partnersgroup.cm
+      Ô£à Stive Mba  (Membre) - smba@eb-partnersgroup.cm
+      Ô£à lydie Mone (Membre) - lmone@eb-partnersgroup.cm
+      Ô£à Gr├®goire Ododi (Membre) - gododi@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Ashley Elang 
+      ÔÇó MANAGER: Ashley Elang 
+      ÔÇó ASSOCIE: Emile Bitoungui
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 7 membres
+      ÔÇó Emile Bitoungui (ASSOCIE)
+      ÔÇó Ashley Elang  (MANAGER)
+      ÔÇó Ashley Elang  (Membre)
+      ÔÇó Ashley Elang  (RESPONSABLE)
+      ÔÇó Stive Mba  (Membre)
+      ÔÇó lydie Mone (Membre)
+      ÔÇó Gr├®goire Ododi (Membre)
+
+   Ô£à Nombre de membres correct!
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+­ƒôï Mission: Commissariat Aux comptes
+   ID: 2f300303-88b2-47f0-a543-9a13b275831e
+   Statut: EN_COURS
+
+   ­ƒôè Statistiques:
+      ÔÇó Membres dans equipes_mission: 4
+      ÔÇó Leaders (RESPONSABLE/MANAGER/ASSOCIE): 0
+      ÔÇó Membres via colonnes missions: 3
+
+   ­ƒæÑ Membres equipes_mission (4):
+      Ô£à Emilie Beutchom (Membre) - ebeutchom@eb-partnersgroup.cm
+      ÔØî Cyrille Djiki (Membre) - Pas de compte user
+      Ô£à Irene Lowe (Membre) - ilowe@eb-partnersgroup.cm
+      Ô£à Alyssa Molom (Membre) - amolom@eb-partnersgroup.cm
+
+   ­ƒæö Membres via colonnes missions:
+      ÔÇó RESPONSABLE: Cyrille Djiki
+      ÔÇó MANAGER: Cyrille Djiki
+      ÔÇó ASSOCIE: Brian Metuge
+
+   ­ƒÄ» R├®sultat requ├¬te Dashboard CTE: 7 membres
+      ÔÇó Emilie Beutchom (Membre)
+      ÔÇó Cyrille Djiki (MANAGER)
+      ÔÇó Cyrille Djiki (Membre)
+      ÔÇó Cyrille Djiki (RESPONSABLE)
+      ÔÇó Irene Lowe (Membre)
+      ÔÇó Brian Metuge (ASSOCIE)
+      ÔÇó Alyssa Molom (Membre)
+
+   Ô£à Nombre de membres correct!
+
+================================================================================
+­ƒöî Connexion retir├®e du pool

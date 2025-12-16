@@ -7,33 +7,33 @@ const { pool } = require('../utils/database');
 router.get('/opportunities', authenticateToken, async (req, res) => {
     try {
         const { period = 30, business_unit_id, opportunity_type_id, collaborateur_id } = req.query;
-        
+
         // Calculer la date de début basée sur la période
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(period));
-        
+
         // Construire les conditions WHERE
         let whereConditions = ['o.created_at >= $1'];
         let params = [startDate.toISOString()];
         let paramIndex = 2;
-        
+
         if (business_unit_id) {
             whereConditions.push(`o.business_unit_id = $${paramIndex++}`);
             params.push(business_unit_id);
         }
-        
+
         if (opportunity_type_id) {
             whereConditions.push(`o.opportunity_type_id = $${paramIndex++}`);
             params.push(opportunity_type_id);
         }
-        
+
         if (collaborateur_id) {
             whereConditions.push(`o.collaborateur_id = $${paramIndex++}`);
             params.push(collaborateur_id);
         }
-        
+
         const whereClause = whereConditions.join(' AND ');
-        
+
         // KPIs principaux
         const kpisQuery = `
             SELECT 
@@ -47,10 +47,10 @@ router.get('/opportunities', authenticateToken, async (req, res) => {
             FROM opportunities o
             WHERE ${whereClause}
         `;
-        
+
         const kpisResult = await pool.query(kpisQuery, params);
         const kpis = kpisResult.rows[0];
-        
+
         // Calculer les tendances (simulation pour l'instant)
         const kpisData = {
             conversion_rate: kpis.total_opportunities > 0 ? (kpis.won_opportunities / kpis.total_opportunities) * 100 : 0,
@@ -62,7 +62,7 @@ router.get('/opportunities', authenticateToken, async (req, res) => {
             duration_trend: -3.1, // Simulation
             active_trend: 8.5 // Simulation
         };
-        
+
         // Timeline des opportunités
         const timelineQuery = `
             SELECT 
@@ -74,9 +74,9 @@ router.get('/opportunities', authenticateToken, async (req, res) => {
             GROUP BY DATE(o.created_at)
             ORDER BY date
         `;
-        
+
         const timelineResult = await pool.query(timelineQuery, params);
-        
+
         // Répartition par statut
         const statusQuery = `
             SELECT 
@@ -87,9 +87,9 @@ router.get('/opportunities', authenticateToken, async (req, res) => {
             GROUP BY o.statut
             ORDER BY count DESC
         `;
-        
+
         const statusResult = await pool.query(statusQuery, params);
-        
+
         // Performance par business unit
         const businessUnitQuery = `
             SELECT 
@@ -103,9 +103,9 @@ router.get('/opportunities', authenticateToken, async (req, res) => {
             GROUP BY bu.id, bu.nom
             ORDER BY revenue DESC
         `;
-        
+
         const businessUnitResult = await pool.query(businessUnitQuery, params);
-        
+
         // Top collaborateurs
         const collaborateursQuery = `
             SELECT 
@@ -120,9 +120,9 @@ router.get('/opportunities', authenticateToken, async (req, res) => {
             ORDER BY won_opportunities DESC
             LIMIT 10
         `;
-        
+
         const collaborateursResult = await pool.query(collaborateursQuery, params);
-        
+
         // Métriques détaillées
         const detailedMetrics = {
             total_opportunities: kpis.total_opportunities || 0,
@@ -130,7 +130,7 @@ router.get('/opportunities', authenticateToken, async (req, res) => {
             lost_opportunities: kpis.lost_opportunities || 0,
             avg_probability: kpis.avg_probability || 0
         };
-        
+
         res.json({
             success: true,
             data: {
@@ -172,9 +172,9 @@ router.get('/overdue-stages', authenticateToken, async (req, res) => {
             ORDER BY os.due_date ASC
             LIMIT 10
         `;
-        
+
         const result = await pool.query(query);
-        
+
         res.json({
             success: true,
             data: {
@@ -216,9 +216,9 @@ router.get('/risky-opportunities', authenticateToken, async (req, res) => {
             ORDER BY o.probabilite ASC, o.montant_estime DESC
             LIMIT 10
         `;
-        
+
         const result = await pool.query(query);
-        
+
         res.json({
             success: true,
             data: {
@@ -249,9 +249,9 @@ router.get('/stage-performance', authenticateToken, async (req, res) => {
             GROUP BY ost.id, ost.nom, ost.stage_order
             ORDER BY ost.stage_order
         `;
-        
+
         const result = await pool.query(query);
-        
+
         res.json({
             success: true,
             data: {
@@ -271,11 +271,11 @@ router.get('/stage-performance', authenticateToken, async (req, res) => {
 router.get('/export', authenticateToken, async (req, res) => {
     try {
         const { format = 'json', period = 30 } = req.query;
-        
+
         // Calculer la date de début
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(period));
-        
+
         // Récupérer toutes les opportunités pour la période
         const query = `
             SELECT 
@@ -292,9 +292,9 @@ router.get('/export', authenticateToken, async (req, res) => {
             WHERE o.created_at >= $1
             ORDER BY o.created_at DESC
         `;
-        
+
         const result = await pool.query(query, [startDate.toISOString()]);
-        
+
         if (format === 'csv') {
             // TODO: Implémenter l'export CSV
             res.setHeader('Content-Type', 'text/csv');
@@ -315,6 +315,249 @@ router.get('/export', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Erreur lors de l\'export des données'
+        });
+    }
+});
+
+// GET /api/analytics/collections - Analytics de recouvrement
+router.get('/collections', authenticateToken, async (req, res) => {
+    try {
+        const { period = 90, business_unit_id, division_id } = req.query;
+
+        // Calculer la date de début basée sur la période
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(period));
+
+        console.log(`📊 Analytics recouvrement - Période: ${period} jours`);
+
+        // Construire les conditions WHERE pour les filtres
+        let invoiceWhereConditions = [];
+        let params = [];
+        let paramIndex = 1;
+
+        if (business_unit_id) {
+            invoiceWhereConditions.push(`m.business_unit_id = $${paramIndex++}`);
+            params.push(business_unit_id);
+        }
+
+        if (division_id) {
+            invoiceWhereConditions.push(`m.division_id = $${paramIndex++}`);
+            params.push(division_id);
+        }
+
+        const invoiceWhereClause = invoiceWhereConditions.length > 0
+            ? 'AND ' + invoiceWhereConditions.join(' AND ')
+            : '';
+
+        // ===== KPI 1: Facturé période =====
+        const factureQuery = `
+            SELECT COALESCE(SUM(i.montant_ttc), 0) as facture_periode
+            FROM invoices i
+            LEFT JOIN missions m ON i.mission_id = m.id
+            WHERE i.statut IN ('EMISE', 'PAYEE_PARTIELLEMENT', 'PAYEE')
+              AND i.date_emission >= $${paramIndex}
+              AND i.date_emission <= CURRENT_DATE
+              ${invoiceWhereClause}
+        `;
+        params.push(startDate.toISOString());
+        const factureResult = await pool.query(factureQuery, params);
+
+        // ===== KPI 2: Encaissé période =====
+        const encaisseQuery = `
+            SELECT COALESCE(SUM(pa.allocated_amount), 0) as encaisse_periode
+            FROM payment_allocations pa
+            JOIN payments p ON pa.payment_id = p.id
+            JOIN invoices i ON pa.invoice_id = i.id
+            LEFT JOIN missions m ON i.mission_id = m.id
+            WHERE p.payment_date >= $${paramIndex}
+              AND p.payment_date <= CURRENT_DATE
+              ${invoiceWhereClause}
+        `;
+        const encaisseResult = await pool.query(encaisseQuery, params);
+
+        // ===== KPI 3: Montant en retard =====
+        const retardQuery = `
+            SELECT COALESCE(SUM(i.montant_restant), 0) as montant_retard
+            FROM invoices i
+            LEFT JOIN missions m ON i.mission_id = m.id
+            WHERE i.statut IN ('EMISE', 'PAYEE_PARTIELLEMENT')
+              AND i.date_echeance < CURRENT_DATE
+              AND i.montant_restant > 0
+              ${invoiceWhereClause}
+        `;
+        const retardResult = await pool.query(retardQuery, params.slice(0, params.length - 1));
+
+        // ===== KPI 4: DSO (Days Sales Outstanding) =====
+        // Créances en cours
+        const creancesQuery = `
+            SELECT COALESCE(SUM(i.montant_restant), 0) as creances_en_cours
+            FROM invoices i
+            LEFT JOIN missions m ON i.mission_id = m.id
+            WHERE i.statut IN ('EMISE', 'PAYEE_PARTIELLEMENT')
+              AND i.montant_restant > 0
+              ${invoiceWhereClause}
+        `;
+        const creancesResult = await pool.query(creancesQuery, params.slice(0, params.length - 1));
+
+        // CA journalier moyen
+        const caJournalier = parseFloat(factureResult.rows[0].facture_periode) / parseInt(period);
+        const dsoMoyen = caJournalier > 0
+            ? Math.round(parseFloat(creancesResult.rows[0].creances_en_cours) / caJournalier)
+            : 0;
+
+        // ===== KPI 5: Taux de recouvrement =====
+        const tauxRecouvrement = parseFloat(factureResult.rows[0].facture_periode) > 0
+            ? Math.round((parseFloat(encaisseResult.rows[0].encaisse_periode) / parseFloat(factureResult.rows[0].facture_periode)) * 100)
+            : 0;
+
+        // ===== Aging Analysis (Analyse par ancienneté) =====
+        const agingQuery = `
+            SELECT 
+                CASE 
+                    WHEN CURRENT_DATE - i.date_echeance <= 30 THEN '0-30 jours'
+                    WHEN CURRENT_DATE - i.date_echeance <= 60 THEN '31-60 jours'
+                    WHEN CURRENT_DATE - i.date_echeance <= 90 THEN '61-90 jours'
+                    ELSE '90+ jours'
+                END as tranche,
+                COALESCE(SUM(i.montant_restant), 0) as montant_total,
+                COUNT(*) as nb_factures
+            FROM invoices i
+            LEFT JOIN missions m ON i.mission_id = m.id
+            WHERE i.statut IN ('EMISE', 'PAYEE_PARTIELLEMENT')
+              AND i.date_echeance < CURRENT_DATE
+              AND i.montant_restant > 0
+              ${invoiceWhereClause}
+            GROUP BY tranche
+            ORDER BY 
+                CASE tranche
+                    WHEN '0-30 jours' THEN 1
+                    WHEN '31-60 jours' THEN 2
+                    WHEN '61-90 jours' THEN 3
+                    ELSE 4
+                END
+        `;
+        const agingResult = await pool.query(agingQuery, params.slice(0, params.length - 1));
+
+        // ===== Top Clients par Retard =====
+        const topClientsQuery = `
+            SELECT 
+                c.id as client_id,
+                c.nom as client_nom,
+                c.sigle as client_sigle,
+                COALESCE(SUM(i.montant_restant), 0) as montant_retard,
+                COUNT(i.id) as nb_factures,
+                COALESCE(AVG(CURRENT_DATE - i.date_echeance), 0)::INTEGER as retard_moyen
+            FROM invoices i
+            JOIN clients c ON i.client_id = c.id
+            LEFT JOIN missions m ON i.mission_id = m.id
+            WHERE i.statut IN ('EMISE', 'PAYEE_PARTIELLEMENT')
+              AND i.date_echeance < CURRENT_DATE
+              AND i.montant_restant > 0
+              ${invoiceWhereClause}
+            GROUP BY c.id, c.nom, c.sigle
+            ORDER BY montant_retard DESC
+            LIMIT 10
+        `;
+        const topClientsResult = await pool.query(topClientsQuery, params.slice(0, params.length - 1));
+
+        // ===== Factures en Retard (Détails) =====
+        const facturesRetardQuery = `
+            SELECT 
+                i.id,
+                i.numero_facture,
+                c.nom as client_nom,
+                c.sigle as client_sigle,
+                i.montant_ttc,
+                i.montant_restant,
+                i.date_echeance,
+                CURRENT_DATE - i.date_echeance as jours_retard,
+                i.statut
+            FROM invoices i
+            JOIN clients c ON i.client_id = c.id
+            LEFT JOIN missions m ON i.mission_id = m.id
+            WHERE i.statut IN ('EMISE', 'PAYEE_PARTIELLEMENT')
+              AND i.date_echeance < CURRENT_DATE
+              AND i.montant_restant > 0
+              ${invoiceWhereClause}
+            ORDER BY jours_retard DESC
+            LIMIT 50
+        `;
+        const facturesRetardResult = await pool.query(facturesRetardQuery, params.slice(0, params.length - 1));
+
+        // ===== Évolution Mensuelle (12 derniers mois) =====
+        const evolutionQuery = `
+            WITH mois_serie AS (
+                SELECT 
+                    TO_CHAR(DATE_TRUNC('month', CURRENT_DATE - (n || ' months')::INTERVAL), 'YYYY-MM') as mois
+                FROM generate_series(0, 11) n
+            ),
+            facture_mois AS (
+                SELECT 
+                    TO_CHAR(DATE_TRUNC('month', i.date_emission), 'YYYY-MM') as mois,
+                    COALESCE(SUM(i.montant_ttc), 0) as facture
+                FROM invoices i
+                LEFT JOIN missions m ON i.mission_id = m.id
+                WHERE i.statut IN ('EMISE', 'PAYEE_PARTIELLEMENT', 'PAYEE')
+                  AND i.date_emission >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '11 months')
+                  ${invoiceWhereClause}
+                GROUP BY TO_CHAR(DATE_TRUNC('month', i.date_emission), 'YYYY-MM')
+            ),
+            encaisse_mois AS (
+                SELECT 
+                    TO_CHAR(DATE_TRUNC('month', p.payment_date), 'YYYY-MM') as mois,
+                    COALESCE(SUM(pa.allocated_amount), 0) as encaisse
+                FROM payment_allocations pa
+                JOIN payments p ON pa.payment_id = p.id
+                JOIN invoices i ON pa.invoice_id = i.id
+                LEFT JOIN missions m ON i.mission_id = m.id
+                WHERE p.payment_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '11 months')
+                  ${invoiceWhereClause}
+                GROUP BY TO_CHAR(DATE_TRUNC('month', p.payment_date), 'YYYY-MM')
+            )
+            SELECT 
+                ms.mois,
+                COALESCE(fm.facture, 0) as facture,
+                COALESCE(em.encaisse, 0) as encaisse
+            FROM mois_serie ms
+            LEFT JOIN facture_mois fm ON ms.mois = fm.mois
+            LEFT JOIN encaisse_mois em ON ms.mois = em.mois
+            ORDER BY ms.mois
+        `;
+        const evolutionResult = await pool.query(evolutionQuery, params.slice(0, params.length - 1));
+
+        // Construire la réponse
+        const response = {
+            success: true,
+            data: {
+                kpis: {
+                    facture_periode: parseFloat(factureResult.rows[0].facture_periode),
+                    encaisse_periode: parseFloat(encaisseResult.rows[0].encaisse_periode),
+                    dso_moyen: dsoMoyen,
+                    montant_retard: parseFloat(retardResult.rows[0].montant_retard),
+                    taux_recouvrement: tauxRecouvrement
+                },
+                aging_analysis: agingResult.rows,
+                top_clients_retard: topClientsResult.rows,
+                factures_retard: facturesRetardResult.rows,
+                evolution_mensuelle: evolutionResult.rows
+            }
+        };
+
+        console.log('✅ Analytics recouvrement calculés:', {
+            facture: response.data.kpis.facture_periode,
+            encaisse: response.data.kpis.encaisse_periode,
+            dso: response.data.kpis.dso_moyen,
+            retard: response.data.kpis.montant_retard
+        });
+
+        res.json(response);
+
+    } catch (error) {
+        console.error('❌ Erreur analytics recouvrement:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération des analytics de recouvrement',
+            details: error.message
         });
     }
 });

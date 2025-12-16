@@ -180,6 +180,53 @@
                 <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filtres</h5>
                 <div class="row g-3">
                     <div class="col-md-3">
+                        <label for="businessUnitFilter" class="form-label">Business Unit</label>
+                        <select class="form-select" id="businessUnitFilter">
+                            <option value="">Toutes</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="divisionFilter" class="form-label">Division</label>
+                        <select class="form-select" id="divisionFilter">
+                            <option value="">Toutes</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="clientFilter" class="form-label">Client</label>
+                        <select class="form-select" id="clientFilter">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="typeFilter" class="form-label">Type de mission</label>
+                        <select class="form-select" id="typeFilter">
+                            <option value="">Tous</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-md-3">
+                        <label for="statusFilter" class="form-label">Statut</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">Tous</option>
+                            <option value="EN_COURS">En cours</option>
+                            <option value="TERMINE">Terminée</option>
+                            <option value="EN_ATTENTE">En attente</option>
+                            <option value="ANNULE">Annulée</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="minBudgetPrevue" class="form-label">Budget prévu min (<span
+                                class="currency-symbol">€</span>)</label>
+                        <input type="number" class="form-control" id="minBudgetPrevue" placeholder="0">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="minBudgetReel" class="form-label">Budget réalisé min (<span
+                                class="currency-symbol">€</span>)</label>
+                        <input type="number" class="form-control" id="minBudgetReel" placeholder="0">
+                    </div>
+                    <div class="col-md-3">
                         <label for="periodFilter" class="form-label">Période</label>
                         <select class="form-select" id="periodFilter">
                             <option value="all">Toutes les périodes</option>
@@ -192,28 +239,6 @@
                             <option value="quarter">Ce trimestre</option>
                             <option value="year">Cette année</option>
                             <option value="custom">Période personnalisée</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="businessUnitFilter" class="form-label">Business Unit</label>
-                        <select class="form-select" id="businessUnitFilter">
-                            <option value="">Toutes</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="clientFilter" class="form-label">Client</label>
-                        <select class="form-select" id="clientFilter">
-                            <option value="">Tous</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="statusFilter" class="form-label">Statut</label>
-                        <select class="form-select" id="statusFilter">
-                            <option value="">Tous</option>
-                            <option value="EN_COURS">En cours</option>
-                            <option value="TERMINE">Terminée</option>
-                            <option value="EN_ATTENTE">En attente</option>
-                            <option value="ANNULE">Annulée</option>
                         </select>
                     </div>
                 </div>
@@ -231,26 +256,6 @@
                 </div>
 
                 <div class="row g-3 mt-2">
-                    <div class="col-md-3">
-                        <label for="typeFilter" class="form-label">Type de mission</label>
-                        <select class="form-select" id="typeFilter">
-                            <option value="">Tous</option>
-                            <option value="PROJET">Projet</option>
-                            <option value="MAINTENANCE">Maintenance</option>
-                            <option value="CONSULTING">Consulting</option>
-                            <option value="FORMATION">Formation</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="minBudgetPrevue" class="form-label">Budget prévu min (<span
-                                class="currency-symbol">€</span>)</label>
-                        <input type="number" class="form-control" id="minBudgetPrevue" placeholder="0">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="minBudgetReel" class="form-label">Budget réalisé min (<span
-                                class="currency-symbol">€</span>)</label>
-                        <input type="number" class="form-control" id="minBudgetReel" placeholder="0">
-                    </div>
                     <div class="col-12">
                         <button class="btn btn-primary" onclick="applyFilters()">
                             <i class="fas fa-search me-1"></i> Appliquer les filtres
@@ -300,7 +305,10 @@
 
             <!-- Table -->
             <div class="table-card">
-                <h5 class="mb-3"><i class="fas fa-table me-2"></i>Liste des missions</h5>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0"><i class="fas fa-table me-2"></i>Liste des missions</h5>
+                    <div class="text-muted" id="tableInfo">0 missions</div>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="table-dark">
@@ -323,6 +331,22 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-3" id="paginationControls"
+                    style="display: none !important;">
+                    <div>
+                        <select class="form-select form-select-sm d-inline-block w-auto" id="itemsPerPage">
+                            <option value="25">25 par page</option>
+                            <option value="50" selected>50 par page</option>
+                            <option value="100">100 par page</option>
+                            <option value="200">200 par page</option>
+                        </select>
+                    </div>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0" id="paginationButtons">
+                        </ul>
+                    </nav>
+                </div>
             </div>
         </div>
     </div>
@@ -343,6 +367,9 @@
         const API_BASE_URL = '/api';
         let charts = {};
         let allMissions = [];
+        let filteredMissions = []; // Pour la pagination
+        let currentPage = 1;
+        let itemsPerPage = 50;
         let financialDefaultCurrency = (typeof CURRENCY_CONFIG !== 'undefined' && CURRENCY_CONFIG.defaultCurrency) ? CURRENCY_CONFIG.defaultCurrency : 'XAF';
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -365,11 +392,21 @@
                     }
                 });
             }
+
+            // Event listener for Business Unit filter - cascade to divisions and mission types
+            const buFilter = document.getElementById('businessUnitFilter');
+            if (buFilter) {
+                buFilter.addEventListener('change', function () {
+                    updateDependentFilters(this.value);
+                });
+            }
         });
 
         // Stockage des données de filtres (pour cohérence, pas de dépendances fortes ici)
         let allBusinessUnits = [];
+        let allDivisions = [];
         let allClients = [];
+        let allMissionTypes = [];
 
         async function loadFilters() {
             try {
@@ -381,6 +418,8 @@
                 if (buResponse.ok) {
                     const buData = await buResponse.json();
                     allBusinessUnits = buData.data.businessUnits || buData.data || [];
+                    // Trier par ordre alphabétique
+                    allBusinessUnits.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
                     console.log('✅ Business Units chargées:', allBusinessUnits.length);
                     const select = document.getElementById('businessUnitFilter');
                     allBusinessUnits.forEach(bu => {
@@ -391,11 +430,34 @@
                     });
                 }
 
+                // Load Divisions
+                const divResponse = await fetch(`${API_BASE_URL}/divisions?limit=1000`, { headers });
+                if (divResponse.ok) {
+                    const divData = await divResponse.json();
+                    allDivisions = divData.data || [];
+                    // Trier par ordre alphabétique
+                    allDivisions.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
+                    console.log('✅ Divisions chargées:', allDivisions.length);
+                    const select = document.getElementById('divisionFilter');
+                    allDivisions.forEach(div => {
+                        const option = document.createElement('option');
+                        option.value = div.id;
+                        option.textContent = div.nom;
+                        select.appendChild(option);
+                    });
+                }
+
                 // Load clients
                 const clientResponse = await fetch(`${API_BASE_URL}/clients?limit=1000`, { headers });
                 if (clientResponse.ok) {
                     const clientData = await clientResponse.json();
                     allClients = clientData.data.clients || clientData.data || [];
+                    // Trier par ordre alphabétique
+                    allClients.sort((a, b) => {
+                        const nameA = a.raison_sociale || a.nom || '';
+                        const nameB = b.raison_sociale || b.nom || '';
+                        return nameA.localeCompare(nameB);
+                    });
                     console.log('✅ Clients chargés:', allClients.length);
                     const select = document.getElementById('clientFilter');
                     allClients.forEach(client => {
@@ -406,10 +468,94 @@
                     });
                 }
 
-                console.log('✅ Filtres missions initialisés (pas de dépendances croisées)');
+                // Load mission types
+                console.log('🔍 Chargement des types de mission...');
+                const mtResponse = await fetch(`${API_BASE_URL}/mission-types?limit=1000`, { headers });
+                console.log('📡 Réponse API mission-types:', mtResponse.status);
+                if (mtResponse.ok) {
+                    const mtData = await mtResponse.json();
+                    console.log('📦 Données brutes mission-types:', mtData);
+                    console.log('📦 mtData.data:', mtData.data);
+                    console.log('📦 mtData.data.missionTypes:', mtData.data?.missionTypes);
+                    allMissionTypes = mtData.data?.missionTypes || [];
+                    // Trier par ordre alphabétique
+                    allMissionTypes.sort((a, b) => {
+                        const nameA = a.nom || a.name || a.libelle || a.codification || '';
+                        const nameB = b.nom || b.name || b.libelle || b.codification || '';
+                        return nameA.localeCompare(nameB);
+                    });
+                    console.log('✅ Types de mission chargés:', allMissionTypes.length);
+                    console.log('📋 Exemple type mission:', allMissionTypes[0]);
+                    console.log('📋 Structure complète:', JSON.stringify(allMissionTypes[0], null, 2));
+                    const select = document.getElementById('typeFilter');
+                    if (select) {
+                        allMissionTypes.forEach(mt => {
+                            const option = document.createElement('option');
+                            option.value = mt.id;
+                            // Essayer différentes propriétés possibles
+                            option.textContent = mt.nom || mt.name || mt.libelle || mt.codification || 'Sans nom';
+                            select.appendChild(option);
+                            console.log('➕ Option ajoutée:', option.textContent, '(id:', mt.id, ')');
+                        });
+                    } else {
+                        console.error('❌ Element typeFilter introuvable!');
+                    }
+                } else {
+                    console.error('❌ Erreur API mission-types:', mtResponse.status);
+                }
+
+                console.log('✅ Filtres missions initialisés');
             } catch (error) {
                 console.error('Erreur chargement filtres:', error);
             }
+        }
+
+        // Fonction pour mettre à jour les filtres dépendants en fonction de la BU sélectionnée
+        function updateDependentFilters(selectedBuId) {
+            console.log('🔄 Mise à jour des filtres dépendants pour BU:', selectedBuId);
+
+            // Filtrer les divisions
+            const divisionSelect = document.getElementById('divisionFilter');
+            divisionSelect.innerHTML = '<option value="">Toutes</option>';
+
+            let filteredDivisions = allDivisions;
+            if (selectedBuId) {
+                filteredDivisions = allDivisions.filter(div =>
+                    String(div.business_unit_id) === String(selectedBuId)
+                );
+            }
+
+            filteredDivisions.forEach(div => {
+                const option = document.createElement('option');
+                option.value = div.id;
+                option.textContent = div.nom;
+                divisionSelect.appendChild(option);
+            });
+            console.log('✅ Divisions filtrées:', filteredDivisions.length);
+
+            // Filtrer les types de mission
+            const typeSelect = document.getElementById('typeFilter');
+            typeSelect.innerHTML = '<option value="">Tous</option>';
+
+            let filteredMissionTypes = allMissionTypes;
+            if (selectedBuId) {
+                filteredMissionTypes = allMissionTypes.filter(mt => {
+                    // Un type de mission peut avoir une BU directe ou via sa division
+                    const hasDirectBu = mt.business_unit_id && String(mt.business_unit_id) === String(selectedBuId);
+                    const hasBuViaDivision = mt.division_id && allDivisions.some(div =>
+                        div.id === mt.division_id && String(div.business_unit_id) === String(selectedBuId)
+                    );
+                    return hasDirectBu || hasBuViaDivision;
+                });
+            }
+
+            filteredMissionTypes.forEach(mt => {
+                const option = document.createElement('option');
+                option.value = mt.id;
+                option.textContent = mt.nom || mt.name || mt.libelle || mt.codification || 'Sans nom';
+                typeSelect.appendChild(option);
+            });
+            console.log('✅ Types de mission filtrés:', filteredMissionTypes.length);
         }
 
         // Get Date Range based on period filter
@@ -527,21 +673,23 @@
         function applyFilters() {
             const dateRange = getDateRange();
             const buFilter = document.getElementById('businessUnitFilter').value;
+            const divisionFilter = document.getElementById('divisionFilter').value;
             const clientFilter = document.getElementById('clientFilter').value;
             const statusFilter = document.getElementById('statusFilter').value;
             const typeFilter = document.getElementById('typeFilter').value;
             const minBudgetPrevue = parseFloat(document.getElementById('minBudgetPrevue').value) || 0;
             const minBudgetReel = parseFloat(document.getElementById('minBudgetReel').value) || 0;
 
-            console.log('Filtres appliqués:', { dateRange, buFilter, clientFilter, statusFilter, typeFilter, minBudgetPrevue, minBudgetReel });
+            console.log('Filtres appliqués:', { dateRange, buFilter, divisionFilter, clientFilter, statusFilter, typeFilter, minBudgetPrevue, minBudgetReel });
 
             // Debug: afficher un échantillon de données
             if (allMissions.length > 0) {
                 console.log('Échantillon mission:', {
                     business_unit_id: allMissions[0].business_unit_id,
+                    division_id: allMissions[0].division_id,
                     client_id: allMissions[0].client_id,
                     statut: allMissions[0].statut,
-                    type_mission: allMissions[0].type_mission,
+                    mission_type_id: allMissions[0].mission_type_id,
                     budget_prevue: allMissions[0].budget_prevue,
                     budget_reel: allMissions[0].budget_reel,
                     created_at: allMissions[0].created_at
@@ -564,6 +712,13 @@
                     }
                 }
 
+                // Filtre Division
+                if (divisionFilter) {
+                    if (!mission.division_id || String(mission.division_id) !== String(divisionFilter)) {
+                        return false;
+                    }
+                }
+
                 // Filtre Client
                 if (clientFilter) {
                     if (!mission.client_id || String(mission.client_id) !== String(clientFilter)) {
@@ -577,7 +732,7 @@
                 }
 
                 // Filtre Type de mission
-                if (typeFilter && mission.type_mission !== typeFilter) {
+                if (typeFilter && String(mission.mission_type_id) !== String(typeFilter)) {
                     return false;
                 }
 
@@ -689,7 +844,8 @@
             // Client chart (top 10 by budget)
             const clientBudgets = {};
             missions.forEach(m => {
-                const client = m.client_nom || 'Non défini';
+                // Utiliser le sigle du client si disponible, sinon le nom
+                const client = m.client_sigle || m.client_nom || 'Non défini';
                 clientBudgets[client] = (clientBudgets[client] || 0) + (parseFloat(m.budget_prevue) || 0);
             });
             const topClients = Object.entries(clientBudgets)
@@ -744,15 +900,32 @@
         }
 
         function updateTable(missions) {
+            filteredMissions = missions;
+            currentPage = 1;
+            renderTable();
+        }
+
+        function renderTable() {
             const tbody = document.getElementById('missionsTable');
+            const tableInfo = document.getElementById('tableInfo');
+            const paginationControls = document.getElementById('paginationControls');
+
             tbody.innerHTML = '';
 
-            if (missions.length === 0) {
+            if (filteredMissions.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="9" class="text-center">Aucune mission trouvée</td></tr>';
+                tableInfo.textContent = '0 missions';
+                paginationControls.style.display = 'none';
                 return;
             }
 
-            missions.slice(0, 50).forEach(m => {
+            // Calculer les indices de pagination
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredMissions.length);
+            const pageMissions = filteredMissions.slice(startIndex, endIndex);
+
+            // Afficher les missions de la page actuelle
+            pageMissions.forEach(m => {
                 const row = document.createElement('tr');
                 const budgetPrevue = m.budget_prevue ?
                     formatAmount(m.budget_prevue, m.devise) : '-';
@@ -765,9 +938,12 @@
                     m.statut === 'EN_COURS' ? 'primary' :
                         m.statut === 'ANNULE' ? 'danger' : 'secondary';
 
+                // Utiliser le sigle du client si disponible
+                const clientDisplay = m.client_sigle || m.client_nom || '-';
+
                 row.innerHTML = `
                     <td><strong>${m.titre || m.nom || '-'}</strong></td>
-                    <td>${m.client_nom || '-'}</td>
+                    <td>${clientDisplay}</td>
                     <td>${m.business_unit_nom || '-'}</td>
                     <td>${m.type_mission || '-'}</td>
                     <td><span class="badge bg-${statusClass}">${m.statut || 'N/A'}</span></td>
@@ -779,12 +955,98 @@
                 tbody.appendChild(row);
             });
 
-            if (missions.length > 50) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="9" class="text-center text-muted">... et ${missions.length - 50} autres missions</td>`;
-                tbody.appendChild(row);
+            // Mettre à jour les infos
+            tableInfo.textContent = `${startIndex + 1}-${endIndex} sur ${filteredMissions.length} missions`;
+
+            // Afficher/masquer la pagination
+            if (filteredMissions.length > itemsPerPage) {
+                paginationControls.style.display = 'flex';
+                renderPagination();
+            } else {
+                paginationControls.style.display = 'none';
             }
         }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredMissions.length / itemsPerPage);
+            const paginationButtons = document.getElementById('paginationButtons');
+            paginationButtons.innerHTML = '';
+
+            // Bouton Précédent
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">Précédent</a>`;
+            paginationButtons.appendChild(prevLi);
+
+            // Boutons de pages
+            const maxButtons = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+            if (endPage - startPage < maxButtons - 1) {
+                startPage = Math.max(1, endPage - maxButtons + 1);
+            }
+
+            if (startPage > 1) {
+                const li = document.createElement('li');
+                li.className = 'page-item';
+                li.innerHTML = `<a class="page-link" href="#" onclick="changePage(1); return false;">1</a>`;
+                paginationButtons.appendChild(li);
+
+                if (startPage > 2) {
+                    const li = document.createElement('li');
+                    li.className = 'page-item disabled';
+                    li.innerHTML = `<span class="page-link">...</span>`;
+                    paginationButtons.appendChild(li);
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>`;
+                paginationButtons.appendChild(li);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const li = document.createElement('li');
+                    li.className = 'page-item disabled';
+                    li.innerHTML = `<span class="page-link">...</span>`;
+                    paginationButtons.appendChild(li);
+                }
+
+                const li = document.createElement('li');
+                li.className = 'page-item';
+                li.innerHTML = `<a class="page-link" href="#" onclick="changePage(${totalPages}); return false;">${totalPages}</a>`;
+                paginationButtons.appendChild(li);
+            }
+
+            // Bouton Suivant
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">Suivant</a>`;
+            paginationButtons.appendChild(nextLi);
+        }
+
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredMissions.length / itemsPerPage);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderTable();
+        }
+
+        // Event listener pour le changement de nombre d'items par page
+        document.addEventListener('DOMContentLoaded', function () {
+            const itemsPerPageSelect = document.getElementById('itemsPerPage');
+            if (itemsPerPageSelect) {
+                itemsPerPageSelect.addEventListener('change', function () {
+                    itemsPerPage = parseInt(this.value);
+                    currentPage = 1;
+                    renderTable();
+                });
+            }
+        });
 
         function resetFilters() {
             document.getElementById('periodFilter').value = 'all';
@@ -792,6 +1054,7 @@
             document.getElementById('endDate').value = '';
             document.getElementById('customPeriodRow').style.display = 'none';
             document.getElementById('businessUnitFilter').value = '';
+            document.getElementById('divisionFilter').value = '';
             document.getElementById('clientFilter').value = '';
             document.getElementById('statusFilter').value = '';
             document.getElementById('typeFilter').value = '';

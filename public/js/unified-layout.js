@@ -9,34 +9,34 @@ class UnifiedLayoutManager {
         this.userPermissions = [];
         this.isInitialized = false;
         this.menuPermissionsManager = null;
-        
+
         this.init();
     }
 
     async init() {
         try {
             console.log('🔧 Initialisation du layout unifié...');
-            
+
             // Attendre que l'authentification soit prête
             await this.waitForAuth();
-            
+
             // Charger les informations utilisateur
             await this.loadUserInfo();
-            
+
             // Initialiser le gestionnaire de permissions de menu existant
             await this.initializeMenuPermissions();
-            
+
             // Générer le header utilisateur unifié
             await this.generateUserHeader();
-            
+
             // Configurer les événements
             this.setupEventListeners();
-            
+
             // Marquer comme initialisé
             this.isInitialized = true;
-            
+
             console.log('✅ Layout unifié initialisé avec succès');
-            
+
         } catch (error) {
             console.error('❌ Erreur lors de l\'initialisation du layout unifié:', error);
         }
@@ -76,9 +76,9 @@ class UnifiedLayoutManager {
             const data = await response.json();
             this.currentUser = data.user;
             this.userPermissions = data.permissions || [];
-            
+
             console.log('👤 Informations utilisateur chargées:', this.currentUser);
-            
+
         } catch (error) {
             console.error('❌ Erreur lors du chargement des informations utilisateur:', error);
             // Rediriger vers la page de connexion
@@ -90,7 +90,7 @@ class UnifiedLayoutManager {
         try {
             // Attendre que le système de sidebar existant soit chargé
             await this.waitForSidebarLoad();
-            
+
             // Initialiser le gestionnaire de permissions de menu existant
             if (typeof MenuPermissionsManager !== 'undefined') {
                 this.menuPermissionsManager = new MenuPermissionsManager();
@@ -98,7 +98,7 @@ class UnifiedLayoutManager {
             } else {
                 console.warn('⚠️ MenuPermissionsManager non trouvé - permissions de menu non appliquées');
             }
-            
+
         } catch (error) {
             console.error('❌ Erreur lors de l\'initialisation des permissions de menu:', error);
         }
@@ -129,7 +129,7 @@ class UnifiedLayoutManager {
 
         const headerHTML = this.createUserHeaderHTML();
         headerContainer.innerHTML = headerHTML;
-        
+
         console.log('👤 Header utilisateur généré avec succès');
     }
 
@@ -141,7 +141,7 @@ class UnifiedLayoutManager {
 
         return `
             <div class="user-header-left">
-                <a href="/dashboard.html" class="app-logo">
+                <a href="/dashboard-personnel.html" class="app-logo">
                     <i class="fas fa-chart-line"></i>
                     EBVISION 2.0
                 </a>
@@ -216,9 +216,9 @@ class UnifiedLayoutManager {
         document.addEventListener('click', (e) => {
             const sidebar = document.getElementById('sidebar-container');
             const sidebarToggle = document.querySelector('.sidebar-toggle');
-            
-            if (window.innerWidth <= 768 && 
-                !sidebar.contains(e.target) && 
+
+            if (window.innerWidth <= 768 &&
+                !sidebar.contains(e.target) &&
                 !sidebarToggle?.contains(e.target)) {
                 sidebar.classList.remove('show');
             }
@@ -238,7 +238,7 @@ class UnifiedLayoutManager {
                 // Nettoyer le localStorage
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('user');
-                
+
                 // Rediriger vers la page de connexion
                 window.location.href = '/login.html';
             } else {
