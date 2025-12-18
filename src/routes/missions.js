@@ -413,7 +413,11 @@ router.post('/', authenticateToken, async (req, res) => {
             business_unit_id,
 
             // Tâches et affectations
-            tasks
+            tasks,
+
+            // Documents
+            kyc_path,
+            contract_path
         } = req.body;
 
         // 1. Créer la mission
@@ -424,9 +428,9 @@ router.post('/', authenticateToken, async (req, res) => {
                 fiscal_year_id, opportunity_id, mission_type_id, montant_honoraires,
                 description_honoraires, montant_debours, description_debours,
                 conditions_paiement, pourcentage_avance, business_unit_id, associe_id,
-                division_id
+                division_id, kyc_path, contract_path
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28
             ) RETURNING *
         `;
 
@@ -446,7 +450,7 @@ router.post('/', authenticateToken, async (req, res) => {
             fiscal_year_id, opportunity_id, mission_type_id, montant_honoraires,
             description_honoraires, montant_debours, description_debours,
             conditions_paiement ? JSON.stringify(conditions_paiement) : null, pourcentage_avance, business_unit_id, associe_id,
-            division_id
+            division_id, kyc_path, contract_path
         ]);
 
         const mission = missionResult.rows[0];

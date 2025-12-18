@@ -513,17 +513,23 @@
         let collaborateurs = [];
 
         // Fonction utilitaire pour les appels API authentifiés
-        async function authenticatedFetch(url, options = {}) {
+        async function missionStep2Fetch(url, options = {}) {
             const token = localStorage.getItem('authToken');
-            const defaultHeaders = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+            // Headers de base avec token
+            const headers = {
+                'Authorization': `Bearer ${token}`
             };
+
+            // Ajouter Content-Type: application/json seulement si ce n'est pas du FormData
+            // Pour FormData, le navigateur définit automatiquement le Content-Type avec le boundary correct
+            if (!(options.body instanceof FormData)) {
+                headers['Content-Type'] = 'application/json';
+            }
 
             return fetch(url, {
                 ...options,
                 headers: {
-                    ...defaultHeaders,
+                    ...headers,
                     ...options.headers
                 }
             });
@@ -570,7 +576,7 @@
 
                 // Récupérer les détails complets de l'opportunité (notamment business_unit_id)
                 try {
-                    const response = await authenticatedFetch(`/api/opportunities/${selectedOpportunity.id}`);
+                    const response = await missionStep2Fetch(`/api/opportunities/${selectedOpportunity.id}`);
                     if (response.ok) {
                         const result = await response.json();
                         if (result.success && result.data) {
@@ -609,7 +615,7 @@
                     console.log(`🔍 Filtrage par Business Unit: ${selectedOpportunity.business_unit_id}`);
                 }
 
-                const response = await authenticatedFetch(url);
+                const response = await missionStep2Fetch(url);
                 const data = await response.json();
 
                 if (data.success) {
@@ -764,10 +770,23 @@
             });
 
             // Bouton suivant
-            document.getElementById('btn-next').addEventListener('click', function () {
+            document.getElementById('btn-next').addEventListener('click', async function () {
                 if (validateForm()) {
-                    saveMissionData();
-                    window.location.href = 'create-mission-step3.html';
+                    try {
+                        const btn = this;
+                        const originalText = btn.innerHTML;
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Traitement...';
+
+                        await saveMissionData();
+                        window.location.href = 'create-mission-step3.html';
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de la sauvegarde: ' + error.message);
+                        const btn = document.getElementById('btn-next');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-arrow-right me-2"></i>Continuer vers l\'Étape 3';
+                    }
                 }
             });
 
@@ -931,10 +950,61 @@
         }
 
         // Sauvegarder les données de la mission
-        function saveMissionData() {
+        // Fonction pour uploader un fichier
+        async function uploadFile(file) {
+            if (!file) return null;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await missionStep2Fetch('/api/documents/upload', {
+                method: 'POST',
+                // Ne pas définir Content-Type, le navigateur le fera pour FormData
+                headers: {},
+                body: formData
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Erreur lors de l\'upload');
+            }
+
+            const result = await response.json();
+            return result.data.path;
+        }
+
+        // Sauvegarder les données de la mission
+        async function saveMissionData() {
             // Préparer les fichiers pour le stockage
-            const kycFile = document.getElementById('kycFile').files[0];
-            const contractFile = document.getElementById('contractFile').files[0];
+            const kycFileInput = document.getElementById('kycFile');
+            const contractFileInput = document.getElementById('contractFile');
+
+            let kycPath = null;
+            let contractPath = null;
+
+            // Upload des fichiers
+            if (kycFileInput.files.length > 0) {
+                console.log('Upload du KYC...');
+                kycPath = await uploadFile(kycFileInput.files[0]);
+            } else {
+                // Si pas de nouveau fichier, vérifier si on a déjà un path (retour arrière)
+                const oldData = sessionStorage.getItem('missionData');
+                if (oldData) {
+                    const parsed = JSON.parse(oldData);
+                    kycPath = parsed.kyc_path;
+                }
+            }
+
+            if (contractFileInput.files.length > 0) {
+                console.log('Upload du Contrat...');
+                contractPath = await uploadFile(contractFileInput.files[0]);
+            } else {
+                const oldData = sessionStorage.getItem('missionData');
+                if (oldData) {
+                    const parsed = JSON.parse(oldData);
+                    contractPath = parsed.contract_path;
+                }
+            }
 
             const missionData = {
                 code: document.getElementById('missionCode').value,
@@ -953,10 +1023,10 @@
                 division_id: selectedMissionType.division_id || null,
                 opportunity_id: selectedOpportunity.id,
                 mission_type_id: selectedMissionType.id,
-                // Documents
-                kyc_file: kycFile,
+                // Documents (chemins)
+                kyc_path: kycPath,
                 kyc_date: document.getElementById('kycDate').value,
-                contract_file: contractFile,
+                contract_path: contractPath,
                 contract_date: document.getElementById('contractDate').value
             };
 

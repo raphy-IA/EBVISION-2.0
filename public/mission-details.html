@@ -243,6 +243,14 @@
                                             </p>
                                         </div>
                                     </div>
+
+                                    <!-- Documents -->
+                                    <h5 class="mt-4">Documents</h5>
+                                    <div class="card">
+                                        <div class="card-body" id="missionDocuments">
+                                            <span class="text-muted">Aucun document disponible</span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <h5>Dates et durée</h5>
@@ -525,6 +533,32 @@
             document.getElementById('missionRealEndDate').textContent = formatDate(currentMission.date_fin_reelle);
             document.getElementById('missionDuration').textContent = calculateDuration(currentMission.date_debut, currentMission.date_fin_reelle || currentMission.date_fin_prevue || currentMission.date_fin);
             document.getElementById('missionDescription').textContent = currentMission.description || 'Aucune description disponible';
+
+            // Documents
+            const docsHtml = [];
+            if (currentMission.kyc_path) {
+                docsHtml.push(`
+                    <a href="${currentMission.kyc_path}" target="_blank" class="btn btn-outline-primary btn-sm mb-2 w-100 text-start">
+                        <i class="fas fa-file-pdf me-2"></i>Télécharger KYC
+                    </a>
+                `);
+            }
+            if (currentMission.contract_path) {
+                docsHtml.push(`
+                    <a href="${currentMission.contract_path}" target="_blank" class="btn btn-outline-primary btn-sm mb-2 w-100 text-start">
+                        <i class="fas fa-file-signature me-2"></i>Télécharger Contrat
+                    </a>
+                `);
+            }
+
+            const docsContainer = document.getElementById('missionDocuments');
+            if (docsContainer) {
+                if (docsHtml.length > 0) {
+                    docsContainer.innerHTML = docsHtml.join('');
+                } else {
+                    docsContainer.innerHTML = '<span class="text-muted">Aucun document disponible</span>';
+                }
+            }
 
             // Onglet Paramètres financiers
             displayFinancialData();

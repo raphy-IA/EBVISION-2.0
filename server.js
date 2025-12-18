@@ -63,6 +63,7 @@ const invoiceWorkflowRoutes = require('./src/routes/invoice-workflow');
 const financialInstitutionsRoutes = require('./src/routes/financial-institutions');
 const bankAccountsRoutes = require('./src/routes/bank-accounts');
 const paymentsRoutes = require('./src/routes/payments');
+const documentsRoutes = require('./src/routes/documents');
 const { authenticateToken } = require('./src/middleware/auth');
 
 // Import des middlewares
@@ -268,6 +269,7 @@ app.use('/api/invoices', invoiceWorkflowRoutes); // Workflow routes (mounted aft
 app.use('/api/financial-institutions', financialInstitutionsRoutes);
 app.use('/api/bank-accounts', bankAccountsRoutes);
 app.use('/api/payments', paymentsRoutes);
+app.use('/api/documents', documentsRoutes);
 
 // Route de synchronisation des permissions et menus
 // Route de synchronisation des permissions et menus
