@@ -74,15 +74,16 @@ class MissionType {
     }
 
     static async delete(id) {
-        // Soft delete - marquer comme inactif
-        const query = `
-            UPDATE mission_types 
-            SET actif = false, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $1
-            RETURNING *
-        `;
+        // Hard delete car on a vérifié qu'il n'est pas utilisé
+        const query = 'DELETE FROM mission_types WHERE id = $1 RETURNING *';
         const result = await pool.query(query, [id]);
         return result.rows[0];
+    }
+
+    static async countMissions(id) {
+        const query = 'SELECT COUNT(*) as count FROM missions WHERE mission_type_id = $1';
+        const result = await pool.query(query, [id]);
+        return parseInt(result.rows[0].count);
     }
 
     static async findByDivision(divisionId) {

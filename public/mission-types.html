@@ -125,7 +125,8 @@
             margin: 0 2px;
         }
 
-        .modal-header {
+        /* Apply purple gradient only if no specific color class is present */
+        .modal-header:not(.bg-danger):not(.bg-success):not(.bg-warning):not(.bg-info) {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
@@ -517,8 +518,8 @@
         </div>
     </div>
 
-    <!-- Delete Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1">
+    <!-- Delete Mission Type Modal -->
+    <div class="modal fade" id="deleteMissionTypeModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
@@ -532,8 +533,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-danger" onclick="deleteMissionType()">
-                        <i class="fas fa-trash"></i> Supprimer
+                    <button type="button" class="btn btn-danger" onclick="processMissionTypeDeletion()"
+                        style="display: inline-flex !important; align-items: center; justify-content: center;">
+                        <i class="fas fa-trash me-2"></i> Supprimer
                     </button>
                 </div>
             </div>
@@ -977,7 +979,7 @@
                         <button class="btn btn-sm btn-outline-primary btn-action" onclick="viewTasksForMissionType('${type.id}', '${type.codification}')" title="Tâches">
                             <i class="fas fa-tasks"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger btn-action" onclick="confirmDelete('${type.id}', '${type.libelle}')" title="Supprimer">
+                        <button class="btn btn-sm btn-danger custom-delete-btn" onclick="event.stopPropagation(); confirmDeleteMissionType('${type.id}', '${type.libelle}')" title="Supprimer définitivement">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -1204,15 +1206,22 @@
         }
 
         // Confirmer la suppression
-        function confirmDelete(id, name) {
+        function confirmDeleteMissionType(id, name) {
+            console.log('🗑️ confirmDeleteMissionType appelé pour:', id, name);
             currentDeleteId = id;
             document.getElementById('deleteMissionTypeName').textContent = name;
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+            // Forcer la création d'une nouvelle instance pour éviter les problèmes de cache d'instance Bootstrap
+            const modalEl = document.getElementById('deleteMissionTypeModal');
+            let modal = bootstrap.Modal.getInstance(modalEl);
+            if (!modal) {
+                modal = new bootstrap.Modal(modalEl);
+            }
             modal.show();
         }
 
         // Supprimer un type de mission
-        async function deleteMissionType() {
+        async function processMissionTypeDeletion() {
             try {
                 const response = await apiCall(`/api/mission-types/${currentDeleteId}`, {
                     method: 'DELETE'
@@ -1220,17 +1229,31 @@
 
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.error || 'Erreur de connexion');
+                    // Fermer le modal de confirmation
+                    const modalEl = document.getElementById('deleteMissionTypeModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+
+                    // Afficher l'erreur spécifique
+                    showAlert(error.error || 'Erreur de connexion', 'danger');
+                    return; // Stop here
                 }
 
                 missionTypes = missionTypes.filter(t => t.id !== currentDeleteId);
                 displayMissionTypes(missionTypes);
                 loadStats();
 
-                bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                const modalEl = document.getElementById('deleteMissionTypeModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
                 showAlert('Type de mission supprimé avec succès', 'success');
             } catch (error) {
                 console.error('Erreur:', error);
+                // Fermer le modal au cas où
+                const modalEl = document.getElementById('deleteMissionTypeModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+
                 showAlert(error.message, 'danger');
             }
         }

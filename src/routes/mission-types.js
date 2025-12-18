@@ -188,6 +188,15 @@ router.delete('/:id', async (req, res) => {
             return res.status(404).json({ error: 'Type de mission non trouvé' });
         }
 
+        // Vérifier si le type de mission est utilisé
+        const usageCount = await MissionType.countMissions(req.params.id);
+        if (usageCount > 0) {
+            return res.status(409).json({
+                error: `Ce type de mission est utilisé par ${usageCount} mission(s). Impossible de le supprimer.`,
+                count: usageCount
+            });
+        }
+
         await MissionType.delete(req.params.id);
         res.json({ message: 'Type de mission supprimé avec succès' });
     } catch (error) {
