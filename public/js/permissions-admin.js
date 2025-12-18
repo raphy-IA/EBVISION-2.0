@@ -149,6 +149,8 @@ class PermissionsAdmin {
         const nonMenuPermissions = allPermissions.filter(p => !p.code.startsWith('menu.'));
         const nonMenuGrantedPermissions = permissions.filter(p => !p.code.startsWith('menu.'));
 
+        const categories = this.groupPermissionsByCategory(nonMenuPermissions, nonMenuGrantedPermissions);
+
         container.innerHTML = `
             <div class="mb-3">
                 <h6>Rôle: ${role.name}</h6>
@@ -159,41 +161,120 @@ class PermissionsAdmin {
                 </div>
             </div>
             <div class="row">
-                ${this.groupPermissionsByCategory(nonMenuPermissions, nonMenuGrantedPermissions).map(category => `
-                    <div class="col-md-6 mb-3">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0">${category.name}</h6>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <button type="button" class="btn btn-outline-primary btn-sm" 
-                                            onclick="permissionsAdmin.selectAllInCategory('${role.id}', '${category.name}', true)"
-                                            title="Tout sélectionner">
-                                        <i class="fas fa-check-square me-1"></i>Tout
-                                    </button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" 
-                                            onclick="permissionsAdmin.selectAllInCategory('${role.id}', '${category.name}', false)"
-                                            title="Tout désélectionner">
-                                        <i class="fas fa-square me-1"></i>Aucun
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-body" data-category="${category.name}">
-                                ${category.permissions.map(perm => `
-                                    <div class="form-check">
-                                        <input class="form-check-input permission-checkbox" 
-                                               type="checkbox" 
-                                               id="perm-${perm.id}" 
-                                               data-perm-id="${perm.id}"
-                                               data-category="${category.name}"
-                                               ${perm.granted ? 'checked' : ''}
-                                               onchange="permissionsAdmin.toggleRolePermission('${role.id}', '${perm.id}', this.checked)">
-                                        <label class="form-check-label" for="perm-${perm.id}">
-                                            ${perm.name}
-                                        </label>
-                                    </div>
-                                `).join('')}
-                            </div>
+                ${categories.map(category => this.renderCategoryCard(category, role.id)).join('')}
+            </div>
+        `;
+    }
+
+    renderCategoryCard(category, roleId) {
+        const entities = Object.values(category.entities);
+        const hasEntities = entities.length > 0;
+        const hasStandalone = category.standalone.length > 0;
+
+        // Catégories qui doivent toujours utiliser la liste (pas de CRUD)
+        const alwaysListCategories = ['navigation', 'dashboard'];
+        const forceList = alwaysListCategories.includes(category.name.toLowerCase());
+
+        return `
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">${category.name}</h6>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary btn-sm" 
+                                    onclick="permissionsAdmin.selectAllInCategory('${roleId}', '${category.name}', true)"
+                                    title="Tout sélectionner">
+                                <i class="fas fa-check-square me-1"></i>Tout
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                    onclick="permissionsAdmin.selectAllInCategory('${roleId}', '${category.name}', false)"
+                                    title="Tout désélectionner">
+                                <i class="fas fa-square me-1"></i>Aucun
+                            </button>
                         </div>
+                    </div>
+                    <div class="card-body p-0" data-category="${category.name}">
+                        ${!forceList && hasEntities ? this.renderPermissionsMatrix(entities, roleId) : ''}
+                        ${hasStandalone || forceList ? this.renderStandalonePermissions(forceList ? category.permissions : category.standalone, roleId) : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    renderPermissionsMatrix(entities, roleId) {
+        return `
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0 permissions-matrix">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 40%">Entité</th>
+                            <th class="text-center" style="width: 15%" title="Voir/Lire">
+                                <i class="fas fa-eye"></i>
+                            </th>
+                            <th class="text-center" style="width: 15%" title="Créer">
+                                <i class="fas fa-plus"></i>
+                            </th>
+                            <th class="text-center" style="width: 15%" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </th>
+                            <th class="text-center" style="width: 15%" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${entities.map(entity => this.renderEntityRow(entity, roleId)).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    renderEntityRow(entity, roleId) {
+        const actions = ['view', 'create', 'edit', 'delete'];
+
+        return `
+            <tr>
+                <td><strong>${this.formatEntityName(entity.name)}</strong></td>
+                ${actions.map(action => {
+            const perm = entity.actions[action];
+            return `
+                        <td class="text-center">
+                            ${perm ? `
+                                <input type="checkbox" 
+                                       class="form-check-input permission-checkbox"
+                                       id="perm-${perm.id}"
+                                       data-perm-id="${perm.id}"
+                                       data-category="${perm.category}"
+                                       ${perm.granted ? 'checked' : ''}
+                                       onchange="permissionsAdmin.toggleRolePermission('${roleId}', '${perm.id}', this.checked)">
+                            ` : '<span class="text-muted">-</span>'}
+                        </td>
+                    `;
+        }).join('')}
+            </tr>
+        `;
+    }
+
+    renderStandalonePermissions(permissions, roleId) {
+        if (permissions.length === 0) return '';
+
+        return `
+            <div class="p-3 ${permissions.length > 10 ? 'border-top' : ''}">
+                ${permissions.length > 10 ? '<h6 class="text-muted mb-2 small">Autres permissions</h6>' : ''}
+                ${permissions.map(perm => `
+                    <div class="form-check">
+                        <input class="form-check-input permission-checkbox" 
+                               type="checkbox" 
+                               id="perm-${perm.id}" 
+                               data-perm-id="${perm.id}"
+                               data-category="${perm.category}"
+                               ${perm.granted ? 'checked' : ''}
+                               onchange="permissionsAdmin.toggleRolePermission('${roleId}', '${perm.id}', this.checked)">
+                        <label class="form-check-label" for="perm-${perm.id}">
+                            ${perm.name}
+                        </label>
                     </div>
                 `).join('')}
             </div>
@@ -210,20 +291,108 @@ class PermissionsAdmin {
             if (!categories[perm.category]) {
                 categories[perm.category] = {
                     name: perm.category.charAt(0).toUpperCase() + perm.category.slice(1),
-                    permissions: []
+                    permissions: [],
+                    entities: {},
+                    standalone: []
                 };
             }
 
             // Comparer les IDs en les convertissant en string pour éviter les problèmes de type
             const granted = grantedIds.has(String(perm.id));
+            const permWithGrant = { ...perm, granted };
 
-            categories[perm.category].permissions.push({
-                ...perm,
-                granted
-            });
+            // Ajouter à la liste complète
+            categories[perm.category].permissions.push(permWithGrant);
+
+            // Analyser pour groupement CRUD
+            const match = perm.code.match(/^([^.:]+)[.:](.+)$/);
+            if (match) {
+                const [_, entity, action] = match;
+
+                // Mapper les actions CRUD
+                const actionMap = {
+                    'view': 'view', 'read': 'view',
+                    'create': 'create',
+                    'edit': 'edit', 'update': 'edit',
+                    'delete': 'delete', 'remove': 'delete'
+                };
+
+                const mappedAction = actionMap[action];
+
+                if (mappedAction) {
+                    // C'est une permission CRUD
+                    if (!categories[perm.category].entities[entity]) {
+                        categories[perm.category].entities[entity] = {
+                            name: entity,
+                            actions: {}
+                        };
+                    }
+                    categories[perm.category].entities[entity].actions[mappedAction] = permWithGrant;
+                } else {
+                    // Permission standalone
+                    categories[perm.category].standalone.push(permWithGrant);
+                }
+            } else {
+                // Pas de pattern reconnu
+                categories[perm.category].standalone.push(permWithGrant);
+            }
         });
 
         return Object.values(categories);
+    }
+
+    formatEntityName(entityCode) {
+        // Convertir le code d'entité en nom lisible
+        const nameMap = {
+            'clients': 'Clients',
+            'missions': 'Missions',
+            'opportunities': 'Opportunités',
+            'collaborateurs': 'Collaborateurs',
+            'users': 'Utilisateurs',
+            'invoices': 'Factures',
+            'payments': 'Paiements',
+            'tasks': 'Tâches',
+            'activities': 'Activités',
+            'time_entries': 'Saisies de temps',
+            'feuilles_temps': 'Feuilles de temps',
+            'reports': 'Rapports',
+            'evaluations': 'Évaluations',
+            'objectives': 'Objectifs',
+            'notifications': 'Notifications',
+            'campaigns': 'Campagnes',
+            'prospecting': 'Prospection',
+            'business_units': 'Business Units',
+            'divisions': 'Divisions',
+            'grades': 'Grades',
+            'postes': 'Postes',
+            'taux_horaires': 'Taux horaires',
+            'fiscal_years': 'Années fiscales',
+            'mission_types': 'Types de mission',
+            'opportunity_types': 'Types d\'opportunité',
+            'opportunity_stages': 'Étapes d\'opportunité',
+            'pays': 'Pays',
+            'secteurs_activite': 'Secteurs d\'activité',
+            'types_collaborateurs': 'Types de collaborateurs',
+            'evolution_grades': 'Évolution grades',
+            'evolution_postes': 'Évolution postes',
+            'evolution_organisations': 'Évolution organisations',
+            'notification_settings': 'Paramètres notifications',
+            'financial_settings': 'Paramètres financiers',
+            'bank_accounts': 'Comptes bancaires',
+            'financial_institutions': 'Institutions financières',
+            'workflow': 'Workflow',
+            'permissions': 'Permissions',
+            'branding': 'Branding',
+            'managers': 'Managers',
+            'supervisors': 'Superviseurs',
+            'time_sheet_supervisors': 'Superviseurs feuilles de temps',
+            'time_sheet_approvals': 'Approbations feuilles de temps',
+            'internalActivities': 'Activités internes',
+            'stage_actions': 'Actions d\'étapes',
+            'sync_permissions': 'Synchronisation permissions'
+        };
+
+        return nameMap[entityCode] || entityCode.charAt(0).toUpperCase() + entityCode.slice(1).replace(/_/g, ' ');
     }
 
     async toggleRolePermission(roleId, permissionId, granted) {

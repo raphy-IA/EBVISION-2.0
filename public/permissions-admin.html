@@ -383,6 +383,77 @@
         .section-title {
             font-weight: 600;
         }
+
+        /* Styles pour la matrice de permissions */
+        .permissions-matrix {
+            font-size: 0.9rem;
+        }
+
+        .permissions-matrix thead th {
+            font-weight: 600;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .permissions-matrix thead th:first-child {
+            text-align: left;
+        }
+
+        .permissions-matrix tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .permissions-matrix tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .permissions-matrix .form-check-input {
+            cursor: pointer;
+            width: 1.2rem;
+            height: 1.2rem;
+            margin: 0;
+        }
+
+        .permissions-matrix td {
+            vertical-align: middle;
+            padding: 0.75rem;
+        }
+
+        .permissions-matrix td:not(:first-child) {
+            text-align: center;
+        }
+
+        .permissions-matrix tbody td:first-child {
+            font-weight: 500;
+        }
+
+        /* Icônes d'en-tête de la matrice */
+        .permissions-matrix thead i {
+            font-size: 1.1em;
+            margin-right: 0.25rem;
+        }
+
+        /* Responsive pour petits écrans */
+        @media (max-width: 768px) {
+            .permissions-matrix {
+                font-size: 0.8rem;
+            }
+
+            .permissions-matrix thead th {
+                padding: 0.5rem 0.25rem;
+            }
+
+            .permissions-matrix td {
+                padding: 0.5rem 0.25rem;
+            }
+
+            .permissions-matrix .form-check-input {
+                width: 1rem;
+                height: 1rem;
+            }
+        }
     </style>
 
     <script src="js/profile-menu.js"></script>

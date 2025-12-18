@@ -24,6 +24,18 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/mission-types/stats/stats - Récupérer les statistiques
+// IMPORTANT: Cette route doit être AVANT /:id pour éviter que "stats" soit interprété comme un ID
+router.get('/stats/stats', async (req, res) => {
+    try {
+        const stats = await MissionType.getStats();
+        res.json(stats);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des statistiques:', error);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
 // GET /api/mission-types/:id - Récupérer un type de mission par ID
 router.get('/:id', async (req, res) => {
     try {
@@ -195,15 +207,4 @@ router.get('/division/:divisionId', async (req, res) => {
     }
 });
 
-// GET /api/mission-types/stats/stats - Récupérer les statistiques
-router.get('/stats/stats', async (req, res) => {
-    try {
-        const stats = await MissionType.getStats();
-        res.json(stats);
-    } catch (error) {
-        console.error('Erreur lors de la récupération des statistiques:', error);
-        res.status(500).json({ error: 'Erreur serveur' });
-    }
-});
-
-module.exports = router; 
+module.exports = router;
