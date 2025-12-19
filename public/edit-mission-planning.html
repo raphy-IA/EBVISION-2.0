@@ -329,6 +329,11 @@
                                             <i class="fas fa-plus me-2"></i>
                                             Ajouter
                                         </button>
+                                        <button type="button" class="btn btn-outline-secondary ms-1"
+                                            onclick="openCreateTaskModal()"
+                                            title="Créer une nouvelle tâche qui n'existe pas dans la liste">
+                                            <i class="fas fa-magic"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -349,6 +354,56 @@
         </div>
     </div>
     </div>
+    </div>
+    </div>
+
+    <!-- Modal Nouvelle Tâche -->
+    <div class="modal fade" id="createTaskModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Nouvelle Tâche Personnalisée</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createTaskForm">
+                        <div class="mb-3">
+                            <label class="form-label">Code <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="newTaskCode" placeholder="ex: MIS-05" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Libellé <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="newTaskLibelle" placeholder="Titre de la tâche"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="newTaskDescription" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Durée estimée (h)</label>
+                                <input type="number" class="form-control" id="newTaskDuree" value="0" min="0"
+                                    step="0.5">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Priorité</label>
+                                <select class="form-select" id="newTaskPriorite">
+                                    <option value="BASSE">Basse</option>
+                                    <option value="MOYENNE" selected>Moyenne</option>
+                                    <option value="HAUTE">Haute</option>
+                                    <option value="CRITIQUE">Critique</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="saveNewTask()">Créer et Sélectionner</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -1050,6 +1105,75 @@
             document.querySelectorAll('.currency-symbol').forEach(el => {
                 el.textContent = currency.symbol;
             });
+        }
+
+        // --- GESTION DES NOUVELLES TÂCHES ---
+
+        function openCreateTaskModal() {
+            // Réinitialiser le formulaire
+            document.getElementById('createTaskForm').reset();
+
+            // Suggérer un code basé sur le nom de la mission ou aléatoire
+            const randomCode = 'TASK-' + Math.floor(Math.random() * 1000);
+            document.getElementById('newTaskCode').value = randomCode;
+
+            new bootstrap.Modal(document.getElementById('createTaskModal')).show();
+        }
+
+        async function saveNewTask() {
+            const code = document.getElementById('newTaskCode').value;
+            const libelle = document.getElementById('newTaskLibelle').value;
+            const description = document.getElementById('newTaskDescription').value;
+            const duree = document.getElementById('newTaskDuree').value;
+            const priorite = document.getElementById('newTaskPriorite').value;
+
+            if (!code || !libelle) {
+                alert('Le Code et le Libellé sont obligatoires.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/mission-types/${missionData.mission_type_id}/tasks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({
+                        code,
+                        libelle,
+                        description,
+                        duree_estimee: duree,
+                        priorite,
+                        mission_name: missionData.nom // Pour append dans la description
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('Tâche créée avec succès !');
+
+                        // Fermer le modal
+                        const modalEl = document.getElementById('createTaskModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        modal.hide();
+
+                        // Recharger les tâches disponibles et sélectionner la nouvelle
+                        await loadAvailableTasks();
+                        document.getElementById('availableTasks').value = result.data.id;
+                    } else {
+                        alert('Erreur: ' + result.error);
+                    }
+                } else {
+                    const err = await response.json();
+                    alert('Erreur API: ' + (err.error || err.message));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Erreur de connexion lors de la création de la tâche');
+            }
         }
     </script>
 

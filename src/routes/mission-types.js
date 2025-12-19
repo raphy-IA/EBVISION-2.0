@@ -145,6 +145,8 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+const Task = require('../models/Task');
+
 // GET /api/mission-types/:id/tasks - Récupérer les tâches d'un type de mission
 router.get('/:id/tasks', authenticateToken, async (req, res) => {
     try {
@@ -178,6 +180,75 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
             success: false,
             error: 'Erreur lors de la récupération des tâches',
             details: error.message
+        });
+    }
+});
+
+// POST /api/mission-types/:id/tasks - Créer une tâche et l'associer au type de mission
+router.post('/:id/tasks', authenticateToken, async (req, res) => {
+    try {
+        const { code, libelle, description, duree_estimee, priorite, mission_name } = req.body;
+        const missionTypeId = req.params.id;
+        const user = req.user;
+
+        // Validation
+        if (!code || !libelle) {
+            return res.status(400).json({
+                success: false,
+                error: 'Code et libellé sont requis'
+            });
+        }
+
+        // Vérifier si le code existe déjà
+        const existingTask = await Task.findByCode(code);
+        if (existingTask) {
+            return res.status(400).json({
+                success: false,
+                error: 'Ce code de tâche existe déjà'
+            });
+        }
+
+        // Vérifier si le type de mission existe
+        const missionType = await MissionType.findById(missionTypeId);
+        if (!missionType) {
+            return res.status(404).json({
+                success: false,
+                error: 'Type de mission non trouvé'
+            });
+        }
+
+        // Construire la description enrichie
+        let enrichedDescription = description || '';
+        if (user && mission_name) {
+            const authorName = `${user.prenom} ${user.nom}`.trim();
+            const creationNote = `\n\n(Créé par ${authorName} depuis la mission "${mission_name}")`;
+            enrichedDescription += creationNote;
+        }
+
+        // Créer la tâche
+        const task = await Task.create({
+            code,
+            libelle,
+            description: enrichedDescription,
+            duree_estimee: duree_estimee || 0,
+            priorite: priorite || 'MOYENNE'
+        });
+
+        // Associer au type de mission (Optionnelle = obligatoire: false)
+        // On met un ordre élevé par défaut (ou 0 pour l'instant)
+        await Task.addToMissionType(task.id, missionTypeId, 999, false);
+
+        res.status(201).json({
+            success: true,
+            message: 'Tâche personnalisée créée avec succès',
+            data: task
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la création de la tâche personnalisée:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur serveur'
         });
     }
 });
