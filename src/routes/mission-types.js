@@ -53,7 +53,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/mission-types - Créer un nouveau type de mission
 router.post('/', async (req, res) => {
     try {
-        const { codification, libelle, description, division_id, business_unit_id } = req.body;
+        const { codification, libelle, description, division_id, business_unit_id, default_folder_structure } = req.body;
 
         // Validation des données
         if (!codification || !libelle) {
@@ -83,7 +83,8 @@ router.post('/', async (req, res) => {
             libelle,
             description,
             division_id,
-            business_unit_id
+            business_unit_id,
+            default_folder_structure
         });
 
         res.status(201).json(newMissionType);
@@ -96,7 +97,7 @@ router.post('/', async (req, res) => {
 // PUT /api/mission-types/:id - Mettre à jour un type de mission
 router.put('/:id', async (req, res) => {
     try {
-        const { codification, libelle, description, division_id, business_unit_id, actif } = req.body;
+        const { codification, libelle, description, division_id, business_unit_id, actif, default_folder_structure } = req.body;
 
         // Validation des données
         if (!codification || !libelle) {
@@ -133,7 +134,8 @@ router.put('/:id', async (req, res) => {
             description,
             division_id,
             business_unit_id,
-            actif: actif !== undefined ? actif : true
+            actif: actif !== undefined ? actif : true,
+            default_folder_structure
         });
 
         res.json(updatedMissionType);

@@ -50,26 +50,26 @@ class MissionType {
     }
 
     static async create(data) {
-        const { codification, libelle, description, division_id, business_unit_id } = data;
+        const { codification, libelle, description, division_id, business_unit_id, default_folder_structure } = data;
         const query = `
-            INSERT INTO mission_types (codification, libelle, description, division_id, business_unit_id)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO mission_types (codification, libelle, description, division_id, business_unit_id, default_folder_structure)
+            VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *
         `;
-        const result = await pool.query(query, [codification, libelle, description, division_id, business_unit_id]);
+        const result = await pool.query(query, [codification, libelle, description, division_id, business_unit_id, default_folder_structure || '[]']);
         return result.rows[0];
     }
 
     static async update(id, data) {
-        const { codification, libelle, description, division_id, business_unit_id, actif } = data;
+        const { codification, libelle, description, division_id, business_unit_id, actif, default_folder_structure } = data;
         const query = `
             UPDATE mission_types 
             SET codification = $1, libelle = $2, description = $3, division_id = $4, 
-                business_unit_id = $5, actif = $6, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $7
+                business_unit_id = $5, actif = $6, default_folder_structure = $7, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $8
             RETURNING *
         `;
-        const result = await pool.query(query, [codification, libelle, description, division_id, business_unit_id, actif, id]);
+        const result = await pool.query(query, [codification, libelle, description, division_id, business_unit_id, actif, default_folder_structure, id]);
         return result.rows[0];
     }
 

@@ -438,10 +438,18 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="createDivision" class="form-label">Division</label>
                             <select class="form-select" id="createDivision">
                                 <option value="">Sélectionner une division</option>
                             </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="createDefaultFolderStructure" class="form-label">Structure de dossier par défaut
+                                (JSON) <i class="fas fa-info-circle"
+                                    title="Format JSON pour l'arborescence des documents"></i></label>
+                            <textarea class="form-control font-monospace" id="createDefaultFolderStructure" rows="10"
+                                placeholder='[{"name": "Dossier", "type": "folder", "children": []}]'></textarea>
+                            <div class="form-text">Définissez l'arborescence des dossiers qui sera créée automatiquement
+                                pour chaque nouvelle mission de ce type.</div>
                         </div>
                     </form>
                 </div>
@@ -493,10 +501,15 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="editDivision" class="form-label">Division</label>
                             <select class="form-select" id="editDivision">
                                 <option value="">Sélectionner une division</option>
                             </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDefaultFolderStructure" class="form-label">Structure de dossier par défaut
+                                (JSON)</label>
+                            <textarea class="form-control font-monospace" id="editDefaultFolderStructure"
+                                rows="10"></textarea>
                         </div>
                         <div class="mb-3">
                             <div class="form-check">
@@ -1079,6 +1092,16 @@
                 division_id: document.getElementById('createDivision').value || null
             };
 
+            const defaultStructure = document.getElementById('createDefaultFolderStructure').value;
+            if (defaultStructure) {
+                try {
+                    data.default_folder_structure = JSON.parse(defaultStructure);
+                } catch (e) {
+                    showAlert('Le format JSON de la structure par défaut est invalide.', 'danger');
+                    return;
+                }
+            }
+
             try {
                 const response = await apiCall('/api/mission-types', {
                     method: 'POST',
@@ -1135,6 +1158,9 @@
                     filterDivisionsByBU('editBusinessUnit', 'editDivision');
                 }
 
+                // Charger la structure par défaut
+                document.getElementById('editDefaultFolderStructure').value = type.default_folder_structure ? JSON.stringify(type.default_folder_structure, null, 2) : '[]';
+
                 // Rendre tous les champs éditables
                 document.getElementById('editCodification').readOnly = false;
                 document.getElementById('editLibelle').readOnly = false;
@@ -1176,6 +1202,16 @@
                 division_id: document.getElementById('editDivision').value || null,
                 actif: document.getElementById('editActif').checked
             };
+
+            const defaultStructure = document.getElementById('editDefaultFolderStructure').value;
+            if (defaultStructure) {
+                try {
+                    data.default_folder_structure = JSON.parse(defaultStructure);
+                } catch (e) {
+                    showAlert('Le format JSON de la structure par défaut est invalide.', 'danger');
+                    return;
+                }
+            }
 
             try {
                 const response = await apiCall(`/api/mission-types/${currentEditId}`, {

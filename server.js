@@ -64,6 +64,7 @@ const financialInstitutionsRoutes = require('./src/routes/financial-institutions
 const bankAccountsRoutes = require('./src/routes/bank-accounts');
 const paymentsRoutes = require('./src/routes/payments');
 const documentsRoutes = require('./src/routes/documents');
+const missionDocumentsRoutes = require('./src/routes/mission-documents');
 const { authenticateToken } = require('./src/middleware/auth');
 
 // Import des middlewares
@@ -249,6 +250,8 @@ app.use('/api/evolution-grades', evolutionGradesRoutes);
 app.use('/api/evolution-postes', evolutionPostesRoutes);
 app.use('/api/evolution-organisations', evolutionOrganisationsRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/documents', documentsRoutes);
+app.use('/api/mission-documents', missionDocumentsRoutes);
 app.use('/api/notification-settings', notificationSettingsRoutes);
 app.use('/api/financial-settings', financialSettingsRoutes);
 app.use('/api/invoices', invoiceRoutes);

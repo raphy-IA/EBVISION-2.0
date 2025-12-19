@@ -127,6 +127,24 @@
             color: white;
             text-decoration: none;
         }
+
+        /* Tree View Styles */
+        .tree-view {
+            margin-left: 0;
+            padding-left: 0;
+        }
+
+        .tree-node {
+            list-style: none;
+        }
+
+        .tree-node .node-content:hover {
+            background-color: #f0f2f5;
+        }
+
+        .tree-node .node-actions {
+            opacity: 1;
+        }
     </style>
     <!-- Scripts pour la top bar EBVISION 2.0 -->
 
@@ -144,6 +162,7 @@
     <!-- Scripts de branding -->
     <script src="js/branding-loader.js"></script>
     <script src="js/sidebar-branding.js"></script>
+    <script src="js/mission-execution.js"></script>
 </head>
 
 <body>
@@ -214,6 +233,12 @@
                                 <i class="fas fa-chart-line me-2"></i>Évolution
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="execution-tab" data-bs-toggle="tab" data-bs-target="#execution"
+                                type="button" role="tab" onclick="initExecutionTab(missionId)">
+                                <i class="fas fa-folder-tree me-2"></i>Travaux
+                            </button>
+                        </li>
                     </ul>
                 </div>
                 <div class="card-body">
@@ -281,11 +306,17 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="card">
-                                        <div class="card-header">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
                                             <h6>Configuration des honoraires</h6>
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                onclick="openFinancialEditor()">
+                                                <i class="fas fa-edit me-1"></i>Modifier
+                                            </button>
                                         </div>
                                         <div class="card-body">
-                                            <p><strong>Montant:</strong> <span id="honorairesMontant">...</span></p>
+                                            <p><strong>Budget Estimé:</strong> <span id="missionBudget">...</span></p>
+                                            <p><strong>Montant Honoraires:</strong> <span
+                                                    id="honorairesMontant">...</span></p>
                                             <p><strong>Devise:</strong> <span id="honorairesDevise">...</span></p>
                                             <p><strong>Description:</strong> <span id="honorairesDescription">...</span>
                                             </p>
@@ -442,6 +473,38 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Onglet Exécution -->
+                        <div class="tab-pane fade" id="execution" role="tabpanel">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5><i class="fas fa-folder-tree me-2"></i>Documents & Travaux</h5>
+                                        <div>
+                                            <button class="btn btn-outline-primary btn-sm me-2"
+                                                onclick="loadMissionDocuments()">
+                                                <i class="fas fa-sync"></i> Actualiser
+                                            </button>
+                                            <button class="btn btn-primary btn-sm"
+                                                onclick="createNewNode(null, 'folder')">
+                                                <i class="fas fa-plus"></i> Nouveau dossier racine
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card bg-white border">
+                                        <div class="card-body p-0">
+                                            <div id="documentTreeContainer" style="min-height: 300px; padding: 1rem;">
+                                                <!-- L'arborescence sera chargée ici -->
+                                            </div>
+                                        </div>
+                                        <div class="card-footer bg-light text-muted small">
+                                            <i class="fas fa-info-circle"></i> Glissez-déposez des fichiers dans les
+                                            dossiers pour les télécharger.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -575,10 +638,12 @@
 
         // Affichage des données financières
         function displayFinancialData() {
+            const budget = currentMission.budget_estime || currentMission.budget_prevue || 0;
             const honoraires = currentMission.montant_honoraires || 0;
             const debours = currentMission.montant_debours || 0;
             const devise = currentMission.devise || 'XAF';
 
+            document.getElementById('missionBudget').textContent = formatCurrency(budget, devise);
             document.getElementById('honorairesMontant').textContent = formatCurrency(honoraires, devise);
             document.getElementById('honorairesDevise').textContent = devise;
             document.getElementById('honorairesDescription').textContent = currentMission.description_honoraires || 'N/A';
