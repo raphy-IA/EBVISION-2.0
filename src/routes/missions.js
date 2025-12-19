@@ -561,7 +561,9 @@ router.put('/:id', authenticateToken, async (req, res) => {
             type_mission: columns.includes('type_mission') ? 'type_mission' : null,
             business_unit_id: columns.includes('business_unit_id') ? 'business_unit_id' : null,
             division_id: columns.includes('division_id') ? 'division_id' : null,
-            conditions_paiement: columns.includes('conditions_paiement') ? 'conditions_paiement' : null
+            conditions_paiement: columns.includes('conditions_paiement') ? 'conditions_paiement' : null,
+            montant_honoraires: columns.includes('montant_honoraires') ? 'montant_honoraires' : null,
+            montant_debours: columns.includes('montant_debours') ? 'montant_debours' : null
         };
 
         const setClauses = [];

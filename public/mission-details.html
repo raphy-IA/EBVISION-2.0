@@ -512,6 +512,81 @@
     </div>
     </div>
 
+    <!-- Financial Editor Modal -->
+    <div class="modal fade" id="financialEditorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier les paramètres financiers</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="financialEditorForm">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="editBudget" class="form-label">Budget Estimé</label>
+                                <input type="number" class="form-control" id="editBudget" step="0.01"
+                                    oninput="validateGlobalAmounts()">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="editGlobalHon" class="form-label">Total Honoraires</label>
+                                <input type="number" class="form-control" id="editGlobalHon" step="0.01"
+                                    oninput="calculateRowAmounts(); validateGlobalAmounts()">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="editGlobalDeb" class="form-label">Total Débours</label>
+                                <input type="number" class="form-control" id="editGlobalDeb" step="0.01"
+                                    oninput="calculateRowAmounts(); validateGlobalAmounts()">
+                            </div>
+                        </div>
+                        <div id="globalAmountWarning" class="alert alert-danger d-none py-1 mb-2 small">
+                            La somme (Honoraires + Débours) dépasse le Budget !
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Echéancier de paiement (Calculé sur %)</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered" id="conditionsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>% Hon.</th>
+                                            <th>Mnt Hon.</th>
+                                            <th>% Déb.</th>
+                                            <th>Mnt Déb.</th>
+                                            <th>Date</th>
+                                            <th>Détails</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="conditionsTableBody">
+                                        <!-- Rows will be added here -->
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-light fw-bold" style="font-size: 0.9em;">
+                                            <td id="totalPctHon">0%</td>
+                                            <td id="totalRowHon">0.00</td>
+                                            <td id="totalPctDeb">0%</td>
+                                            <td id="totalRowDeb">0.00</td>
+                                            <td colspan="3"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-success" onclick="addConditionRow()">
+                                <i class="fas fa-plus"></i> Ajouter une ligne
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary"
+                        onclick="handleSaveFinancial(event)">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/sidebar.js" defer></script>
@@ -1585,6 +1660,272 @@
             document.querySelectorAll('.currency-symbol').forEach(el => {
                 el.textContent = currency.symbol;
             });
+        }
+
+
+        // Functions for Financial Editor
+        let conditionsRows = [];
+
+        async function openFinancialEditor() {
+            if (!currentMission) return;
+            document.getElementById('editBudget').value = currentMission.budget_estime || currentMission.budget_prevue || 0;
+            document.getElementById('editGlobalHon').value = currentMission.montant_honoraires || 0;
+            document.getElementById('editGlobalDeb').value = currentMission.montant_debours || 0;
+
+            // Populate Conditions Table
+            const tbody = document.getElementById('conditionsTableBody');
+            tbody.innerHTML = '';
+            conditionsRows = [];
+
+            let parsedConditions = [];
+            const rawConditions = currentMission.conditions_paiement;
+
+            if (rawConditions) {
+                try {
+                    if (typeof rawConditions === 'object') {
+                        parsedConditions = rawConditions;
+                    } else if (typeof rawConditions === 'string') {
+                        try {
+                            parsedConditions = JSON.parse(rawConditions);
+                        } catch (e) {
+                            parsedConditions = [];
+                        }
+                        if (typeof parsedConditions === 'string') {
+                            try { parsedConditions = JSON.parse(parsedConditions); } catch (e) { }
+                        }
+                    }
+
+                    if (!Array.isArray(parsedConditions)) {
+                        if (parsedConditions && typeof parsedConditions === 'object') {
+                            parsedConditions = Object.values(parsedConditions);
+                        } else {
+                            parsedConditions = [];
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Failed to parse existing conditions for editor', e);
+                }
+            }
+
+            if (parsedConditions.length === 0) {
+                addConditionRow();
+            } else {
+                parsedConditions.forEach(cond => addConditionRow(cond));
+            }
+
+            new bootstrap.Modal(document.getElementById('financialEditorModal')).show();
+            calculateRowAmounts(); // Initial calculation
+            validateGlobalAmounts();
+        }
+
+        function addConditionRow(data = {}) {
+            const tbody = document.getElementById('conditionsTableBody');
+            const rowId = 'cond-row-' + Date.now() + Math.random().toString(36).substr(2, 5);
+
+            // Handle both snake_case and camelCase
+            const pctHon = data.pourcentage_honoraires ?? data.pourcentageHonoraires ?? 0;
+            // Amounts are re-calculated, but let's grab what we have or 0
+            const mntHon = data.montant_honoraires ?? data.montantHonoraires ?? 0;
+            const pctDeb = data.pourcentage_debours ?? data.pourcentageDebours ?? 0;
+            const mntDeb = data.montant_debours ?? data.montantDebours ?? 0;
+            const dateVal = data.date ?? data.datePrevisionnelle ?? '';
+            const detailsVal = data.details || '';
+
+            const tr = document.createElement('tr');
+            tr.id = rowId;
+            tr.innerHTML = `
+                <td><input type="number" class="form-control form-control-sm" name="pct_hon" value="${pctHon}" step="0.1" style="width: 60px;" oninput="calculateRowAmounts()"></td>
+                <td><input type="number" class="form-control form-control-sm bg-light" name="mnt_hon" value="${mntHon}" style="width: 80px;" readonly></td>
+                <td><input type="number" class="form-control form-control-sm" name="pct_deb" value="${pctDeb}" step="0.1" style="width: 60px;" oninput="calculateRowAmounts()"></td>
+                <td><input type="number" class="form-control form-control-sm bg-light" name="mnt_deb" value="${mntDeb}" style="width: 80px;" readonly></td>
+                <td><input type="date" class="form-control form-control-sm" name="date" value="${dateVal ? dateVal.split('T')[0] : ''}" style="width: 110px;"></td>
+                <td><input type="text" class="form-control form-control-sm" name="details" value="${detailsVal}" placeholder="Description"></td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeConditionRow('${rowId}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            calculateRowAmounts(); // Update amounts immediately
+        }
+
+        function removeConditionRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                calculateRowAmounts();
+            }
+        }
+
+        function calculateRowAmounts() {
+            const globalHon = parseFloat(document.getElementById('editGlobalHon').value) || 0;
+            const globalDeb = parseFloat(document.getElementById('editGlobalDeb').value) || 0;
+
+            const rows = document.querySelectorAll('#conditionsTableBody tr');
+            let sumPctHon = 0;
+            let sumRowHon = 0;
+            let sumPctDeb = 0;
+            let sumRowDeb = 0;
+
+            rows.forEach(row => {
+                // Read percentages
+                const pctHon = parseFloat(row.querySelector('[name="pct_hon"]').value) || 0;
+                const pctDeb = parseFloat(row.querySelector('[name="pct_deb"]').value) || 0;
+
+                // Calculate amounts
+                const mntHon = (globalHon * pctHon) / 100;
+                const mntDeb = (globalDeb * pctDeb) / 100;
+
+                // Update inputs
+                row.querySelector('[name="mnt_hon"]').value = mntHon.toFixed(2);
+                row.querySelector('[name="mnt_deb"]').value = mntDeb.toFixed(2);
+
+                // Sums
+                sumPctHon += pctHon;
+                sumRowHon += mntHon;
+                sumPctDeb += pctDeb;
+                sumRowDeb += mntDeb;
+            });
+
+            // Update Footer with Totals
+            const devise = currentMission.devise || 'XAF';
+            document.getElementById('totalPctHon').textContent = sumPctHon.toFixed(1) + '%';
+            document.getElementById('totalRowHon').textContent = formatCurrency(sumRowHon, devise);
+            document.getElementById('totalPctDeb').textContent = sumPctDeb.toFixed(1) + '%';
+            document.getElementById('totalRowDeb').textContent = formatCurrency(sumRowDeb, devise);
+
+            // Color indicators for 100% check
+            document.getElementById('totalPctHon').className = (Math.abs(sumPctHon - 100) < 0.1) ? 'text-success fw-bold' : 'text-danger fw-bold';
+            document.getElementById('totalPctDeb').className = (Math.abs(sumPctDeb - 100) < 0.1) ? 'text-success fw-bold' : 'text-danger fw-bold';
+        }
+
+        function validateGlobalAmounts() {
+            const budget = parseFloat(document.getElementById('editBudget').value) || 0;
+            const globalHon = parseFloat(document.getElementById('editGlobalHon').value) || 0;
+            const globalDeb = parseFloat(document.getElementById('editGlobalDeb').value) || 0;
+
+            const warningEl = document.getElementById('globalAmountWarning');
+            if ((globalHon + globalDeb) > budget) {
+                warningEl.textContent = `Attention: Total (${formatCurrency(globalHon + globalDeb, 'XAF')}) > Budget (${formatCurrency(budget, 'XAF')})`;
+                warningEl.className = 'alert alert-danger py-1 mb-2 small'; // show
+                return false;
+            } else {
+                warningEl.className = 'd-none'; // hide
+                return true;
+            }
+        }
+
+        async function handleSaveFinancial(event) {
+            if (event) event.preventDefault();
+
+            console.log("handleSaveFinancial triggered");
+
+            if (!validateGlobalAmounts()) {
+                console.warn("Global Amount Validation failed. Blocking save.");
+                alert("Le budget est dépassé par le total des honoraires et débours. Veuillez corriger avant de sauvegarder.");
+                return false;
+            }
+
+            // Double check strict
+            const budget = parseFloat(document.getElementById('editBudget').value) || 0;
+            const globalHon = parseFloat(document.getElementById('editGlobalHon').value) || 0;
+            const globalDeb = parseFloat(document.getElementById('editGlobalDeb').value) || 0;
+
+            if ((globalHon + globalDeb) > budget + 0.01) { // Epsilon for float
+                alert("Le budget est dépassé (Double Check). Sauvegarde annulée.");
+                return false;
+            }
+
+            // Build JSON from table and check percentages / mandatory fields
+            const rows = document.querySelectorAll('#conditionsTableBody tr');
+            let sumPctHon = 0;
+            let sumPctDeb = 0;
+            let missingFields = false;
+
+            const conditionsArray = Array.from(rows).map((row, index) => {
+                const pctHon = parseFloat(row.querySelector('[name="pct_hon"]').value) || 0;
+                const pctDeb = parseFloat(row.querySelector('[name="pct_deb"]').value) || 0;
+
+                const dateVal = row.querySelector('[name="date"]').value;
+                const detailsVal = row.querySelector('[name="details"]').value;
+
+                // Mandatory Fields Check
+                if (!dateVal || !detailsVal.trim()) {
+                    missingFields = true;
+                    // Visual feedback could be added here (e.g., border red)
+                    row.querySelector('[name="date"]').classList.toggle('is-invalid', !dateVal);
+                    row.querySelector('[name="details"]').classList.toggle('is-invalid', !detailsVal.trim());
+                } else {
+                    row.querySelector('[name="date"]').classList.remove('is-invalid');
+                    row.querySelector('[name="details"]').classList.remove('is-invalid');
+                }
+
+                sumPctHon += pctHon;
+                sumPctDeb += pctDeb;
+
+                // Amount calculation logic is duplicated here for payload, 
+                // but relying on calculateRowAmounts() visually is safer.
+                // We'll recompute to be 100% sure the payload is consistent with the percentage.
+                const mntHon = (globalHon * pctHon) / 100;
+                const mntDeb = (globalDeb * pctDeb) / 100;
+
+                return {
+                    pourcentage_honoraires: pctHon,
+                    montant_honoraires: mntHon,
+                    pourcentage_debours: pctDeb,
+                    montant_debours: mntDeb,
+                    date: dateVal,
+                    details: detailsVal
+                };
+            });
+
+            if (missingFields) {
+                alert("Veuillez remplir la DATE et les DÉTAILS pour toutes les lignes.");
+                return false;
+            }
+
+            // Validate Percentages
+            // 1. Honoraires: Must be 100% IF there is a global amount > 0.
+            // If globalHon is 0, sumPctHon can be anything (or 0), but let's enforce 100% or 0%? 
+            // Usually if money involved -> 100%. If money=0, who cares.
+
+            if (globalHon > 0) {
+                if (Math.abs(sumPctHon - 100) > 0.1) {
+                    alert(`Le total des pourcentages d'honoraires est de ${sumPctHon.toFixed(1)}%. Il doit être de 100%.`);
+                    return false;
+                }
+            }
+
+            if (globalDeb > 0) {
+                if (Math.abs(sumPctDeb - 100) > 0.1) {
+                    alert(`Le total des pourcentages de débours est de ${sumPctDeb.toFixed(1)}%. Il doit être de 100%.`);
+                    return false;
+                }
+            }
+
+            try {
+                const response = await authenticatedFetch(`/api/missions/${missionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        budget_estime: budget,
+                        montant_honoraires: globalHon,
+                        montant_debours: globalDeb,
+                        conditions_paiement: JSON.stringify(conditionsArray)
+                    })
+                });
+
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    const err = await response.json();
+                    alert('Erreur lors de la sauvegarde: ' + (err.error || 'Erreur inconnue'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Erreur de connexion');
+            }
         }
     </script>
 </body>
