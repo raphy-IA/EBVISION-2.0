@@ -346,6 +346,8 @@ router.get('/:id', authenticateToken, async (req, res) => {
                 mt.libelle as mission_type_nom,
                 u.nom as responsable_nom,
                 u.prenom as responsable_prenom,
+                manager.nom as manager_nom,
+                manager.prenom as manager_prenom,
                 associe.nom as associe_nom,
                 associe.prenom as associe_prenom,
                 bu.nom as business_unit_nom,
@@ -357,6 +359,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
             LEFT JOIN clients c ON m.client_id = c.id
             LEFT JOIN mission_types mt ON m.mission_type_id = mt.id
             LEFT JOIN collaborateurs u ON m.collaborateur_id = u.id
+            LEFT JOIN collaborateurs manager ON m.manager_id = manager.id
             LEFT JOIN collaborateurs associe ON m.associe_id = associe.id
             LEFT JOIN business_units bu ON m.business_unit_id = bu.id
             LEFT JOIN divisions d ON m.division_id = d.id
@@ -563,7 +566,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
             division_id: columns.includes('division_id') ? 'division_id' : null,
             conditions_paiement: columns.includes('conditions_paiement') ? 'conditions_paiement' : null,
             montant_honoraires: columns.includes('montant_honoraires') ? 'montant_honoraires' : null,
-            montant_debours: columns.includes('montant_debours') ? 'montant_debours' : null
+            montant_debours: columns.includes('montant_debours') ? 'montant_debours' : null,
+            manager_id: columns.includes('manager_id') ? 'manager_id' : null,
+            collaborateur_id: columns.includes('collaborateur_id') ? 'collaborateur_id' : null, // Responsable
+            associe_id: columns.includes('associe_id') ? 'associe_id' : null
         };
 
         const setClauses = [];

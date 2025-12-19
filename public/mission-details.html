@@ -228,15 +228,15 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="evolution-tab" data-bs-toggle="tab" data-bs-target="#evolution"
-                                type="button" role="tab">
-                                <i class="fas fa-chart-line me-2"></i>Évolution
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
                             <button class="nav-link" id="execution-tab" data-bs-toggle="tab" data-bs-target="#execution"
                                 type="button" role="tab" onclick="initExecutionTab(missionId)">
                                 <i class="fas fa-folder-tree me-2"></i>Travaux
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="evolution-tab" data-bs-toggle="tab" data-bs-target="#evolution"
+                                type="button" role="tab">
+                                <i class="fas fa-chart-line me-2"></i>Évolution
                             </button>
                         </li>
                     </ul>
@@ -464,16 +464,6 @@
                             </div>
                         </div>
 
-                        <!-- Onglet Évolution -->
-                        <div class="tab-pane fade" id="evolution" role="tabpanel">
-                            <div class="row">
-                                <div class="col-12">
-                                    <h5>Progression des tâches</h5>
-                                    <div id="tasksProgress">...</div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Onglet Exécution -->
                         <div class="tab-pane fade" id="execution" role="tabpanel">
                             <div class="row">
@@ -502,6 +492,16 @@
                                             dossiers pour les télécharger.
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Onglet Évolution -->
+                        <div class="tab-pane fade" id="evolution" role="tabpanel">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5>Progression des tâches</h5>
+                                    <div id="tasksProgress">...</div>
                                 </div>
                             </div>
                         </div>

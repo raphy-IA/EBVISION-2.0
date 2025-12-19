@@ -159,6 +159,14 @@ npm run migrate || {
 }
 log_success "Migrations exécutées avec succès"
 
+# 4.5. Mise à jour des structures de mission (Script temporaire)
+section "🔄 Mise à jour des structures de mission"
+log_info "Exécution du script de mise à jour des structures..."
+node scripts/reset_all_mission_structures.js || {
+    log_warning "Le script de mise à jour des structures a rencontré une erreur (non bloquant)"
+}
+log_success "Structures de mission mises à jour"
+
 # 5. Validation du schéma
 section "🔍 Validation du schéma de la base de données"
 npm run validate-schema || {

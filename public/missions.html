@@ -531,6 +531,50 @@
                             <label class="form-label">Nom</label>
                             <input type="text" class="form-control" id="editMissionName" required>
                         </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Date Début</label>
+                                <input type="date" class="form-control" id="editMissionStartDate">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Date Fin (Prévisionnelle)</label>
+                                <input type="date" class="form-control" id="editMissionEndDate">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Responsable</label>
+                                <select class="form-select" id="editMissionResponsable">
+                                    <option value="">Sélectionner...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Manager</label>
+                                <select class="form-select" id="editMissionManager">
+                                    <option value="">Sélectionner...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Associé</label>
+                                <select class="form-select" id="editMissionAssocie">
+                                    <option value="">Sélectionner...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Business Unit</label>
+                                <select class="form-select" id="editMissionBU">
+                                    <option value="">Sélectionner...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Division</label>
+                                <select class="form-select" id="editMissionDivision">
+                                    <option value="">Sélectionner...</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">Description</label>
                             <textarea class="form-control" id="editMissionDescription" rows="3"></textarea>
@@ -555,6 +599,7 @@
         // Variables globales
         let missions = [];
         let clients = [];
+        let collaborators = [];
         let currentMissionId = null;
 
         // Determine default view based on role
@@ -590,6 +635,7 @@
             loadStats();
             loadMissions();
             loadClients();
+            loadCollaborators();
             loadBusinessUnits();
             loadDivisions();
             setupEventListeners();
@@ -821,6 +867,9 @@
             }
         }
 
+        // Globals for dependency management
+        let allDivisions = [];
+
         async function loadBusinessUnits() {
             try {
                 const response = await authenticatedFetch('/api/business-units');
@@ -836,11 +885,24 @@
                     const buFilter = document.getElementById('buFilter');
                     const currentValue = buFilter.value;
 
-                    buFilter.innerHTML = '<option value="">Toutes les unités</option>' +
+                    const options = '<option value="">Toutes les unités</option>' +
                         bus.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''))
                             .map(bu => `<option value="${bu.id}">${bu.nom}</option>`).join('');
 
+                    buFilter.innerHTML = options;
                     if (currentValue) buFilter.value = currentValue;
+
+                    // Fill Modal Select
+                    const buEditSelect = document.getElementById('editMissionBU');
+                    if (buEditSelect) {
+                        buEditSelect.innerHTML = '<option value="">Sélectionner...</option>' +
+                            bus.map(bu => `<option value="${bu.id}">${bu.nom}</option>`).join('');
+
+                        // Add listener for dependency
+                        buEditSelect.onchange = function () {
+                            filterDivisionsByBU(this.value);
+                        };
+                    }
                 }
             } catch (error) {
                 console.error('Erreur chargement BUs:', error);
@@ -861,18 +923,43 @@
                         divisions = result;
                     }
 
+                    // Store globally
+                    allDivisions = divisions;
+
                     const divisionFilter = document.getElementById('divisionFilter');
                     const currentValue = divisionFilter.value;
 
-                    divisionFilter.innerHTML = '<option value="">Toutes les divisions</option>' +
+                    const options = '<option value="">Toutes les divisions</option>' +
                         divisions.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''))
                             .map(d => `<option value="${d.id}">${d.nom}</option>`).join('');
 
+                    divisionFilter.innerHTML = options;
                     if (currentValue) divisionFilter.value = currentValue;
+
+                    // Initial fill of modal select
+                    filterDivisionsByBU('');
                 }
             } catch (error) {
                 console.error('Erreur chargement Divisions:', error);
             }
+        }
+
+        function filterDivisionsByBU(buId) {
+            const divEditSelect = document.getElementById('editMissionDivision');
+            if (!divEditSelect) return;
+
+            // Filter divisions
+            let filtered = allDivisions;
+            if (buId) {
+                // Ensure type safety comparison (string vs number)
+                filtered = allDivisions.filter(d => d.business_unit_id == buId);
+            }
+
+            // Always sort
+            filtered.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
+
+            divEditSelect.innerHTML = '<option value="">Sélectionner...</option>' +
+                filtered.map(d => `<option value="${d.id}">${d.nom}</option>`).join('');
         }
 
         // Affichage des missions
@@ -1063,6 +1150,39 @@
             if ([...divMap.keys()].includes(selectedDivision)) divisionFilter.value = selectedDivision; else divisionFilter.value = '';
         }
 
+        // Chargement des collaborateurs
+        async function loadCollaborators() {
+            try {
+                const response = await authenticatedFetch('/api/collaborateurs?limit=1000');
+                if (response.ok) {
+                    const result = await response.json();
+
+                    if (result.success && Array.isArray(result.data)) {
+                        collaborators = result.data;
+                    } else if (Array.isArray(result)) {
+                        collaborators = result;
+                    }
+
+                    // Trier par nom
+                    collaborators.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
+
+                    // Remplir les selects du modal d'édition
+                    const options = '<option value="">Sélectionner...</option>' +
+                        collaborators.map(c => `<option value="${c.id}">${c.nom} ${c.prenom}</option>`).join('');
+
+                    const respSelect = document.getElementById('editMissionResponsable');
+                    const mgrSelect = document.getElementById('editMissionManager');
+                    const associeSelect = document.getElementById('editMissionAssocie');
+
+                    if (respSelect) respSelect.innerHTML = options;
+                    if (mgrSelect) mgrSelect.innerHTML = options;
+                    if (associeSelect) associeSelect.innerHTML = options;
+                }
+            } catch (error) {
+                console.error('Erreur chargement collaborateurs:', error);
+            }
+        }
+
         // Sauvegarde d'une mission
         async function saveMission() {
             const formData = {
@@ -1100,41 +1220,106 @@
             }
         }
 
-        // Édition basique (Nom + Description seulement)
+        // Édition basique (Nom, Desc, Dates, Rôles)
         let editBasicMissionId = null;
-        function openEditMissionBasic(missionId) {
-            const mission = missions.find(m => m.id === missionId);
-            if (!mission) return;
+        async function openEditMissionBasic(missionId) {
             editBasicMissionId = missionId;
-            document.getElementById('editMissionName').value = mission.nom || '';
-            document.getElementById('editMissionDescription').value = mission.description || '';
-            new bootstrap.Modal(document.getElementById('editMissionBasicModal')).show();
+            try {
+                const response = await authenticatedFetch(`/api/missions/${missionId}`);
+                if (response.ok) {
+                    const result = await response.json();
+
+                    if (result.success && result.data) {
+                        const mission = result.data;
+
+                        document.getElementById('editMissionName').value = mission.nom || mission.titre || '';
+                        document.getElementById('editMissionDescription').value = mission.description || '';
+
+                        // Dates
+                        document.getElementById('editMissionStartDate').value = mission.date_debut ? mission.date_debut.split('T')[0] : '';
+                        document.getElementById('editMissionEndDate').value = (mission.date_fin_prevue || mission.date_fin) ? (mission.date_fin_prevue || mission.date_fin).split('T')[0] : '';
+
+                        // Rôles
+                        document.getElementById('editMissionResponsable').value = mission.collaborateur_id || '';
+                        document.getElementById('editMissionManager').value = mission.manager_id || '';
+                        document.getElementById('editMissionAssocie').value = mission.associe_id || '';
+
+                        // BU et Division
+                        // Note: Assurez-vous que les options sont chargées avant de définir la valeur
+                        const buSelect = document.getElementById('editMissionBU');
+                        const divSelect = document.getElementById('editMissionDivision');
+
+                        if (buSelect) {
+                            buSelect.value = mission.business_unit_id || '';
+                            // Filter divisions based on current BU
+                            if (typeof filterDivisionsByBU === 'function') {
+                                filterDivisionsByBU(buSelect.value);
+                            }
+                        }
+
+                        if (divSelect) {
+                            divSelect.value = mission.division_id || '';
+                        }
+
+                        new bootstrap.Modal(document.getElementById('editMissionBasicModal')).show();
+                    } else {
+                        showAlert('Erreur: Données mission invalides', 'danger');
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur chargement mission:', error);
+                showAlert('Impossible de charger les détails de la mission', 'danger');
+            }
         }
 
         async function updateMissionBasic() {
             if (!editBasicMissionId) return;
-            const payload = {
-                nom: document.getElementById('editMissionName').value,
-                description: document.getElementById('editMissionDescription').value
+
+            const nom = document.getElementById('editMissionName').value;
+            const description = document.getElementById('editMissionDescription').value;
+            const dateDebut = document.getElementById('editMissionStartDate').value;
+            const dateFin = document.getElementById('editMissionEndDate').value;
+            const responsable = document.getElementById('editMissionResponsable').value;
+            const manager = document.getElementById('editMissionManager').value;
+            const associe = document.getElementById('editMissionAssocie').value;
+            const bu = document.getElementById('editMissionBU').value;
+            const division = document.getElementById('editMissionDivision').value;
+
+            // Validation : Tous les champs sauf Division sont obligatoires
+            if (!nom.trim() || !description.trim() || !dateDebut || !dateFin || !responsable || !manager || !associe || !bu) {
+                showAlert('Tous les champs sont obligatoires (sauf Division).', 'warning');
+                return;
+            }
+
+            const updateData = {
+                nom: nom,
+                description: description,
+                date_debut: dateDebut,
+                date_fin_prevue: dateFin,
+                collaborateur_id: responsable,
+                manager_id: manager,
+                associe_id: associe,
+                business_unit_id: bu,
+                division_id: division || null // Envoi null si vide
             };
+
             try {
                 const response = await authenticatedFetch(`/api/missions/${editBasicMissionId}`, {
                     method: 'PUT',
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(updateData)
                 });
-                if (!response.ok) {
-                    try {
-                        const text = await response.text();
-                        console.error('Erreur MAJ mission:', text);
-                    } catch (_) { }
-                    showAlert('Erreur lors de la mise à jour', 'danger');
-                    return;
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('editMissionBasicModal')).hide();
+                    loadMissions(currentPage); // Recharger la page courante
+                    showAlert('Mission mise à jour avec succès', 'success');
+                } else {
+                    const error = await response.json();
+                    showAlert('Erreur: ' + (error.error || error.message), 'danger');
                 }
-                bootstrap.Modal.getInstance(document.getElementById('editMissionBasicModal')).hide();
-                showAlert('Mission mise à jour avec succès', 'success');
-                loadMissions();
-            } catch (e) {
-                showAlert('Erreur de connexion', 'danger');
+            } catch (error) {
+                console.error('Erreur mise à jour:', error);
+                showAlert('Erreur lors de la mise à jour de la mission', 'danger');
             }
         }
 

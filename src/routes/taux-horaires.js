@@ -2,10 +2,23 @@ const express = require('express');
 const router = express.Router();
 const TauxHoraire = require('../models/TauxHoraire');
 
+const { authenticateToken } = require('../middleware/auth');
+
 // GET /api/taux-horaires - Liste des taux horaires
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
     try {
         const { page = 1, limit = 10, grade_id, division_id, business_unit_id, statut, date_reference } = req.query;
+        const userRoles = req.user.roles || [];
+
+        // Logique de prévalence RH : Les rôles RH (et Super Admin) voient TOUT, sans restriction.
+        // "etant donné qu'une personne peut avoir un role restrictif, le role RH doit prevaloir"
+        const isRH = userRoles.some(role => ['SUPER_ADMIN', 'ADMIN_RH', 'ASSISTANT_RH'].includes(role));
+
+        // Note: Actuellement, on ne restreint pas les autres utilisateurs (pour l'instant), 
+        // mais si des restrictions étaient ajoutées (ex: filtrer par BU du collaborateur), 
+        // elles devraient être appliquées dans un bloc `else` ici.
+        // Le bloc `isRH` garantit que les RH passent outre ces restrictions potentielles.
+
         const result = await TauxHoraire.findAll({
             page: parseInt(page),
             limit: parseInt(limit),
