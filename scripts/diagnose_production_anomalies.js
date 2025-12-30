@@ -175,6 +175,31 @@ async function diagnose() {
             }
         }
 
+        // 5. RUN FULL QUERY (To check against "limit" or exclusion issues)
+        console.log('\n5️⃣  RUNNING FULL PLANNED MISSIONS QUERY (No ID filter)...');
+        const fullQuery = `
+            SELECT DISTINCT 
+                m.id, m.nom, m.code
+            FROM missions m
+            JOIN mission_tasks mt ON m.id = mt.mission_id
+            JOIN task_assignments ta ON mt.id = ta.mission_task_id
+            JOIN collaborateurs col ON ta.collaborateur_id = col.id
+            WHERE col.user_id = $1
+            AND m.statut IN ('EN_COURS', 'PLANIFIEE')
+            ORDER BY m.nom
+        `;
+        const fullRes = await client.query(fullQuery, [userId]);
+        console.log(`   - Total missions returned: ${fullRes.rows.length}`);
+
+        const isPresent = fullRes.rows.find(r => r.id === missionId);
+        if (isPresent) {
+            console.log(`✅ The mission IS present in the full list.`);
+        } else {
+            console.log(`❌ The mission is NOT present in the full list.`);
+            console.log(`   Detailed dump of returned IDs:`);
+            console.table(fullRes.rows.map(r => ({ id: r.id, nom: r.nom })));
+        }
+
     } catch (err) {
         console.error('❌ ERROR RUNNING SCRIPT:', err);
     } finally {
