@@ -220,10 +220,21 @@ async function loadInitialData() {
 // Charger les missions
 async function loadMissions() {
     try {
-        const response = await authenticatedFetch('/api/missions/planned');
+        // Ajout d'un timestamp pour éviter le cache du navigateur
+        const response = await authenticatedFetch(`/api/missions/planned?_t=${new Date().getTime()}`);
         if (response.ok) {
             const data = await response.json();
             missions = data.data || data;
+            console.log(`[TimeSheet] ${missions.length} missions chargées depuis le backend.`);
+            if (missions.length > 0) {
+                console.table(missions.map(m => ({
+                    id: m.id,
+                    nom: m.nom,
+                    client: m.client_sigle || m.client_nom
+                })));
+            } else {
+                console.warn('[TimeSheet] Aucune mission planifiée trouvée.');
+            }
             populateMissionSelect();
         }
     } catch (error) {
