@@ -297,24 +297,62 @@ router.get('/planned', authenticateToken, async (req, res) => {
         const userId = req.user.id;
         console.log(`[API] Fetching planned missions for user: ${userId}`);
 
-        const query = `
-            SELECT DISTINCT 
-                m.id, 
-                m.nom, 
-                m.code, 
-                c.nom as client_nom,
-                c.sigle as client_sigle
-            FROM missions m
-            JOIN mission_tasks mt ON m.id = mt.mission_id
-            JOIN task_assignments ta ON mt.id = ta.mission_task_id
-            JOIN collaborateurs col ON ta.collaborateur_id = col.id
-            LEFT JOIN clients c ON m.client_id = c.id
-            WHERE col.user_id = $1
-            AND m.statut IN ('EN_COURS', 'PLANIFIEE')
-            ORDER BY m.nom
-        `;
+        // Récupérer le user et son collaborateur_id
+        const userRes = await pool.query('SELECT collaborateur_id FROM users WHERE id = $1', [userId]);
+        const collaborateurId = userRes.rows.length > 0 ? userRes.rows[0].collaborateur_id : null;
 
-        const result = await pool.query(query, [userId]);
+        console.log(`[API] Fetching planned missions for user: ${userId} (Collab ID: ${collaborateurId})`);
+
+        let query;
+        let params;
+
+        if (collaborateurId) {
+            // Si collaborateur : Missions assignées OU Missions dont il est Manager/Resp/Associe
+            query = `
+                SELECT DISTINCT 
+                    m.id, 
+                    m.nom, 
+                    m.code, 
+                    c.nom as client_nom,
+                    c.sigle as client_sigle
+                FROM missions m
+                LEFT JOIN mission_tasks mt ON m.id = mt.mission_id
+                LEFT JOIN task_assignments ta ON mt.id = ta.mission_task_id
+                LEFT JOIN clients c ON m.client_id = c.id
+                WHERE 
+                    m.statut IN ('EN_COURS', 'PLANIFIEE')
+                    AND (
+                        -- Cas 1: Assigné à une tâche
+                        (ta.collaborateur_id = $1)
+                        OR
+                        -- Cas 2: Est un responsable de la mission (Manager, Resp, Associe)
+                        (m.manager_id = $1 OR m.collaborateur_id = $1 OR m.associe_id = $1)
+                    )
+                ORDER BY m.nom
+            `;
+            params = [collaborateurId];
+        } else {
+            // Si pas de collaborateur, fallback ancien comportement (juste user_id via join - peu probable si structure propre)
+            query = `
+                SELECT DISTINCT 
+                    m.id, 
+                    m.nom, 
+                    m.code, 
+                    c.nom as client_nom,
+                    c.sigle as client_sigle
+                FROM missions m
+                JOIN mission_tasks mt ON m.id = mt.mission_id
+                JOIN task_assignments ta ON mt.id = ta.mission_task_id
+                JOIN collaborateurs col ON ta.collaborateur_id = col.id
+                LEFT JOIN clients c ON m.client_id = c.id
+                WHERE col.user_id = $1
+                AND m.statut IN ('EN_COURS', 'PLANIFIEE')
+                ORDER BY m.nom
+            `;
+            params = [userId];
+        }
+
+        const result = await pool.query(query, params);
         console.log(`[API] Found ${result.rows.length} planned missions`);
 
         res.json({
@@ -781,133 +819,196 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
         const collaborateurId = userResult.rows[0].collaborateur_id;
         console.log(`[API] User ${userId} is collaborateur ${collaborateurId}`);
 
-        const query = `
-            SELECT 
-                mt.id as mission_task_id,
-                mt.task_id,
-                mt.statut,
-                mt.date_debut,
-                mt.date_fin,
-                mt.date_fin,
-                -- Calculer duree_planifiee comme la somme des heures planifiées des collaborateurs
-                COALESCE(
-                    (SELECT SUM(ta.heures_planifiees)
-                     FROM task_assignments ta
-                     WHERE ta.mission_task_id = mt.id),
-                    0
-                ) as duree_planifiee,
-                -- Heures saisies (submitted + saved - en attente de validation ou brouillon)
-                COALESCE(
-                    (SELECT SUM(te.heures)
-                     FROM time_entries te
-                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
-                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
-                     AND te.mission_id = mt.mission_id
-                     AND (ts.statut IN ('soumis', 'submitted') OR ts.statut IN ('sauvegardé', 'saved'))),
-                    0
-                ) as heures_saisies,
-                -- Heures validées (approved - réellement validées)
-                COALESCE(
-                    (SELECT SUM(te.heures)
-                     FROM time_entries te
-                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
-                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
-                     AND te.mission_id = mt.mission_id
-                     AND ts.statut IN ('validé', 'approved')),
-                    0
-                ) as heures_validees,
-                -- Duree reelle = priorité aux validées, sinon saisies/brouillons
-                COALESCE(
-                    (SELECT SUM(te.heures)
-                     FROM time_entries te
-                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
-                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
-                     AND te.mission_id = mt.mission_id
-                     AND ts.statut IN ('validé', 'approved')),
-                    (SELECT SUM(te.heures)
-                     FROM time_entries te
-                     JOIN time_sheets ts ON te.time_sheet_id = ts.id
-                     WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
-                     AND te.mission_id = mt.mission_id
-                     AND (ts.statut IN ('soumis', 'submitted') OR ts.statut IN ('sauvegardé', 'saved'))),
-                    0
-                ) as duree_reelle,
-                mt.notes,
-                t.id,
-                t.code,
-                t.libelle as task_libelle,
-                t.description as task_description,
-                t.duree_estimee,
-                t.priorite,
-                -- Informations sur les collaborateurs affectés
-                COALESCE(
-                    (SELECT json_agg(
-                        json_build_object(
-                            'id', c.id,
-                            'nom', c.nom,
-                            'prenom', c.prenom,
-                            'email', c.email,
-                            'grade_nom', g.nom,
-                            'heures_planifiees', ta.heures_planifiees,
-                            'heures_saisies', COALESCE(
-                                (SELECT SUM(te.heures)
-                                 FROM time_entries te
-                                 JOIN time_sheets ts ON te.time_sheet_id = ts.id
-                                 WHERE te.task_id = mt.task_id
-                                 AND te.mission_id = mt.mission_id
-                                 AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
-                                 AND ts.statut IN ('soumis', 'submitted')),
-                                0
-                            ),
-                            'heures_validees', COALESCE(
-                                (SELECT SUM(te.heures)
-                                 FROM time_entries te
-                                 JOIN time_sheets ts ON te.time_sheet_id = ts.id
-                                 WHERE te.task_id = mt.task_id
-                                 AND te.mission_id = mt.mission_id
-                                 AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
-                                 AND ts.statut IN ('validé', 'approved')),
-                                0
-                            ),
-                            'heures_effectuees', COALESCE(
-                                (SELECT SUM(te.heures)
-                                 FROM time_entries te
-                                 JOIN time_sheets ts ON te.time_sheet_id = ts.id
-                                 WHERE te.task_id = mt.task_id
-                                 AND te.mission_id = mt.mission_id
-                                 AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
-                                 AND ts.statut IN ('validé', 'approved')),
-                                (SELECT SUM(te.heures)
-                                 FROM time_entries te
-                                 JOIN time_sheets ts ON te.time_sheet_id = ts.id
-                                 WHERE te.task_id = mt.task_id
-                                 AND te.mission_id = mt.mission_id
-                                 AND ts.user_id = (SELECT user_id FROM collaborateurs WHERE id = ta.collaborateur_id)
-                                 AND ts.statut IN ('soumis', 'submitted')),
-                                0
-                            ),
-                            'taux_horaire', ta.taux_horaire,
-                            'statut', ta.statut
-                        )
-                    )
-                    FROM task_assignments ta
-                    JOIN collaborateurs c ON ta.collaborateur_id = c.id
-                    LEFT JOIN grades g ON c.grade_actuel_id = g.id
-                    WHERE ta.mission_task_id = mt.id), 
-                    '[]'::json
-                ) as collaborateurs_affectes
-            FROM mission_tasks mt
-            LEFT JOIN tasks t ON mt.task_id = t.id
-            WHERE mt.mission_id = $1
-            -- Filtrer pour ne retourner que les tâches où le collaborateur connecté est assigné
-            AND EXISTS (
-                SELECT 1 
-                FROM task_assignments ta 
-                WHERE ta.mission_task_id = mt.id 
-                AND ta.collaborateur_id = $2
-            )
-            ORDER BY mt.date_debut, t.libelle
+        // Vérifier si l'utilisateur est un responsable de la mission (Manager, Resp, Associe)
+        const roleQuery = `
+            SELECT 1 
+            FROM missions 
+            WHERE id = $1 
+            AND (manager_id = $2 OR collaborateur_id = $2 OR associe_id = $2)
         `;
+        const roleResult = await pool.query(roleQuery, [req.params.id, collaborateurId]);
+        const isMissionResponsable = roleResult.rows.length > 0;
+
+        console.log(`[API] User ${userId} is responsible for mission ${req.params.id}? ${isMissionResponsable}`);
+
+        let query;
+        if (isMissionResponsable) {
+            // Si responsable, voir TOUTES les tâches
+            query = `
+                SELECT 
+                    mt.id as mission_task_id,
+                    mt.task_id,
+                    mt.statut,
+                    mt.date_debut,
+                    mt.date_fin,
+                    -- Calculer duree_planifiee comme la somme des heures planifiées des collaborateurs
+                    COALESCE(
+                        (SELECT SUM(ta_sub.heures_planifiees)
+                         FROM task_assignments ta_sub
+                         WHERE ta_sub.mission_task_id = mt.id),
+                        0
+                    ) as duree_planifiee,
+                    -- Heures saisies (submitted + saved)
+                    COALESCE(
+                        (SELECT SUM(te.heures)
+                         FROM time_entries te
+                         JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                         WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                         AND te.mission_id = mt.mission_id
+                         AND (ts.statut IN ('soumis', 'submitted') OR ts.statut IN ('sauvegardé', 'saved'))),
+                        0
+                    ) as heures_saisies,
+                    -- Heures validées (approved)
+                    COALESCE(
+                        (SELECT SUM(te.heures)
+                         FROM time_entries te
+                         JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                         WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                         AND te.mission_id = mt.mission_id
+                         AND ts.statut IN ('validé', 'approved')),
+                        0
+                    ) as heures_validees,
+                    -- Duree reelle
+                    COALESCE(
+                        (SELECT SUM(te.heures)
+                         FROM time_entries te
+                         JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                         WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                         AND te.mission_id = mt.mission_id
+                         AND ts.statut IN ('validé', 'approved')),
+                        (SELECT SUM(te.heures)
+                         FROM time_entries te
+                         JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                         WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                         AND te.mission_id = mt.mission_id
+                         AND (ts.statut IN ('soumis', 'submitted') OR ts.statut IN ('sauvegardé', 'saved'))),
+                        0
+                    ) as duree_reelle,
+                    mt.notes,
+                    t.id,
+                    t.code,
+                    t.libelle as task_libelle,
+                    t.description as task_description,
+                    t.duree_estimee,
+                    t.priorite,
+                    -- Collaborateurs affectés
+                    COALESCE(
+                        (SELECT json_agg(
+                            json_build_object(
+                                'id', c.id,
+                                'nom', c.nom,
+                                'prenom', c.prenom,
+                                'email', c.email,
+                                'grade_nom', g.nom,
+                                'heures_planifiees', ta.heures_planifiees,
+                                'heures_saisies', 0, 
+                                'heures_validees', 0,
+                                'heures_effectuees', 0,
+                                'taux_horaire', ta.taux_horaire,
+                                'statut', ta.statut
+                            )
+                        )
+                        FROM task_assignments ta
+                        JOIN collaborateurs c ON ta.collaborateur_id = c.id
+                        LEFT JOIN grades g ON c.grade_actuel_id = g.id
+                        WHERE ta.mission_task_id = mt.id), 
+                        '[]'::json
+                    ) as collaborateurs_affectes
+                FROM mission_tasks mt
+                LEFT JOIN tasks t ON mt.task_id = t.id
+                WHERE mt.mission_id = $1
+                ORDER BY mt.date_debut, t.libelle
+            `;
+        } else {
+            // Si pas responsable, comportement existant (filtrer affectations)
+            query = `
+                SELECT 
+                    mt.id as mission_task_id,
+                    mt.task_id,
+                    mt.statut,
+                    mt.date_debut,
+                    mt.date_fin,
+                    mt.date_fin,
+                    COALESCE(
+                        (SELECT SUM(ta.heures_planifiees)
+                         FROM task_assignments ta
+                         WHERE ta.mission_task_id = mt.id),
+                        0
+                    ) as duree_planifiee,
+                    COALESCE(
+                        (SELECT SUM(te.heures)
+                         FROM time_entries te
+                         JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                         WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                         AND te.mission_id = mt.mission_id
+                         AND (ts.statut IN ('soumis', 'submitted') OR ts.statut IN ('sauvegardé', 'saved'))),
+                        0
+                    ) as heures_saisies,
+                    COALESCE(
+                        (SELECT SUM(te.heures)
+                         FROM time_entries te
+                         JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                         WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                         AND te.mission_id = mt.mission_id
+                         AND ts.statut IN ('validé', 'approved')),
+                        0
+                    ) as heures_validees,
+                    COALESCE(
+                        (SELECT SUM(te.heures)
+                         FROM time_entries te
+                         JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                         WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                         AND te.mission_id = mt.mission_id
+                         AND ts.statut IN ('validé', 'approved')),
+                        (SELECT SUM(te.heures)
+                         FROM time_entries te
+                         JOIN time_sheets ts ON te.time_sheet_id = ts.id
+                         WHERE (te.task_id = mt.task_id OR te.task_id = mt.id)
+                         AND te.mission_id = mt.mission_id
+                         AND (ts.statut IN ('soumis', 'submitted') OR ts.statut IN ('sauvegardé', 'saved'))),
+                        0
+                    ) as duree_reelle,
+                    mt.notes,
+                    t.id,
+                    t.code,
+                    t.libelle as task_libelle,
+                    t.description as task_description,
+                    t.duree_estimee,
+                    t.priorite,
+                    COALESCE(
+                        (SELECT json_agg(
+                            json_build_object(
+                                'id', c.id,
+                                'nom', c.nom,
+                                'prenom', c.prenom,
+                                'email', c.email,
+                                'grade_nom', g.nom,
+                                'heures_planifiees', ta.heures_planifiees,
+                                'heures_saisies', 0,
+                                'heures_validees', 0,
+                                'heures_effectuees', 0, 
+                                'taux_horaire', ta.taux_horaire,
+                                'statut', ta.statut
+                            )
+                        )
+                        FROM task_assignments ta
+                        JOIN collaborateurs c ON ta.collaborateur_id = c.id
+                        LEFT JOIN grades g ON c.grade_actuel_id = g.id
+                        WHERE ta.mission_task_id = mt.id), 
+                        '[]'::json
+                    ) as collaborateurs_affectes
+                FROM mission_tasks mt
+                LEFT JOIN tasks t ON mt.task_id = t.id
+                WHERE mt.mission_id = $1
+                AND EXISTS (
+                    SELECT 1 
+                    FROM task_assignments ta 
+                    WHERE ta.mission_task_id = mt.id 
+                    AND ta.collaborateur_id = $2
+                )
+                ORDER BY mt.date_debut, t.libelle
+            `;
+        }
 
         const result = await pool.query(query, [req.params.id, collaborateurId]);
 
