@@ -117,6 +117,7 @@ fs.mkdirSync(uploadRoot, { recursive: true });
  *           enum: [EMAIL, PHYSIQUE]
  *         type_courrier:
  *           type: string
+ *           enum: [PRESENTATION_GENERALE, SERVICE_SPECIFIQUE]
  *         subject:
  *           type: string
  *         body_template:

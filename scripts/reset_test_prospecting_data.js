@@ -91,7 +91,7 @@ async function resetProspectingData() {
         await client.query(`
             INSERT INTO prospecting_templates (name, subject, body_template, type_courrier, channel, created_at)
             VALUES 
-                ('Template Intro Test', 'Bonjour {{companyName}}', 'Voici une offre de test.', 'SERVICE_SPECIFIQUE', 'EMAIL', NOW()),
+                ('Template Intro Test', 'Bonjour {{companyName}}', 'Voici une offre de test.', 'PRESENTATION_GENERALE', 'EMAIL', NOW()),
                 ('Template Relance Test', 'Re: Bonjour', 'Avez-vous vu notre offre ?', 'SERVICE_SPECIFIQUE', 'EMAIL', NOW())
         `);
 
