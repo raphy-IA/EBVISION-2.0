@@ -6,7 +6,7 @@ PROD_DIR="/home/raphyai82/apps/ebvision"
 TEST_DIR="/home/raphyai82/apps/ebvision-test"
 PROD_DB="ebvision_2_0"
 TEST_DB="ebvision_test"
-TEST_PORT="3001"
+TEST_PORT="3005"
 
 echo "🚀 Début du déploiement de l'environnement de TEST..."
 
@@ -23,10 +23,16 @@ fi
 # 2. Configurer l'environnement
 echo "⚙️ Configuration. env..."
 cd $TEST_DIR
-# Copier .env et modifier le PORT et la DB
-sed -e "s/PORT=.*/PORT=$TEST_PORT/" \
-    -e "s/DB_NAME=.*/DB_NAME=$TEST_DB/" \
-    $PROD_DIR/.env > .env
+# Copier .env de prod
+cp $PROD_DIR/.env .env
+
+# Forcer le PORT et la DB (Supprimer les lignes existantes puis ajouter les bonnes)
+# On utilise un fichier temporaire car sed -i peut varier selon les versions
+grep -v "^PORT=" .env > .env.tmp && mv .env.tmp .env
+grep -v "^DB_NAME=" .env > .env.tmp && mv .env.tmp .env
+
+echo "PORT=$TEST_PORT" >> .env
+echo "DB_NAME=$TEST_DB" >> .env
 
 # 3. Base de données
 echo "🗄️ Duplication de la base de données..."
