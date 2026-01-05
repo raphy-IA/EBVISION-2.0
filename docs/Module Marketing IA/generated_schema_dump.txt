@@ -1,0 +1,147 @@
+-- EB VISION 2.0 - MARKETING MODULE SCHEMA DUMP
+-- This script provides the database structure required for the Marketing Module integration.
+-- NO DATA is included for security reasons.
+-- Target Database: PostgreSQL 14+
+
+-- Module: CLIENTS
+-- Table: clients
+CREATE TABLE IF NOT EXISTS clients (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    sigle VARCHAR(50),
+    email VARCHAR(255),
+    telephone VARCHAR(50),
+    adresse TEXT,
+    ville VARCHAR(100),
+    code_postal VARCHAR(20),
+    pays VARCHAR(100),
+    pays_id INTEGER, -- FK to pays
+    secteur_activite VARCHAR(100),
+    secteur_activite_id INTEGER, -- FK to secteurs_activite
+    sous_secteur_activite_id INTEGER,
+    taille_entreprise VARCHAR(50),
+    statut VARCHAR(50) CHECK (statut IN ('ACTIF', 'INACTIF', 'ABANDONNE')),
+    type VARCHAR(50) CHECK (type IN ('PROSPECT', 'CLIENT', 'CLIENT_FIDELE')),
+    source_prospection VARCHAR(100),
+    notes TEXT,
+    collaborateur_id INTEGER, -- Account Manager
+    created_by INTEGER,
+    updated_by INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_derniere_activite TIMESTAMP,
+    
+    -- Legal & Financial
+    numero_contribuable VARCHAR(100),
+    forme_juridique VARCHAR(50),
+    effectif INTEGER,
+    chiffre_affaires NUMERIC(15,2),
+    
+    -- Web & Social
+    site_web VARCHAR(255),
+    linkedin_url VARCHAR(255),
+    
+    -- Key Contacts (Flattened for simplicity in this view)
+    administrateur_nom VARCHAR(255),
+    administrateur_email VARCHAR(255),
+    administrateur_telephone VARCHAR(50),
+    contact_interne_nom VARCHAR(255),
+    contact_interne_email VARCHAR(255),
+    contact_interne_telephone VARCHAR(50)
+);
+
+-- Module: PROSPECTION (Cold Leads)
+-- Table: company_sources (Origins of imports)
+CREATE TABLE IF NOT EXISTS company_sources (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) UNIQUE NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: companies (Target Companies / Cold Prospects)
+CREATE TABLE IF NOT EXISTS companies (
+    id SERIAL PRIMARY KEY,
+    source_id INTEGER REFERENCES company_sources(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    sigle VARCHAR(50),
+    industry VARCHAR(100),
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    website VARCHAR(255),
+    country VARCHAR(100),
+    city VARCHAR(100),
+    address TEXT,
+    siret VARCHAR(50),
+    size_label VARCHAR(50),
+    
+    -- Contacts
+    contact_nom VARCHAR(255),
+    contact_email VARCHAR(255),
+    contact_tel VARCHAR(50),
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    UNIQUE(source_id, name)
+);
+
+-- Module: CAMPAIGNS (Marketing Logic)
+-- Table: prospecting_templates
+CREATE TABLE IF NOT EXISTS prospecting_templates (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    channel VARCHAR(50) NOT NULL, -- e.g., 'EMAIL', 'PHYSIQUE', 'WHATSAPP'
+    subject VARCHAR(255),
+    body_template TEXT, -- HTML content with variables {{name}}
+    type_courrier VARCHAR(50),
+    business_unit_id INTEGER,
+    division_id INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: prospecting_campaigns
+CREATE TABLE IF NOT EXISTS prospecting_campaigns (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    channel VARCHAR(50) NOT NULL,
+    status VARCHAR(50) DEFAULT 'DRAFT', -- DRAFT, PENDING_VALIDATION, VALIDATED, ONGOING, COMPLETED
+    validation_statut VARCHAR(50),
+    template_id INTEGER REFERENCES prospecting_templates(id),
+    business_unit_id INTEGER,
+    division_id INTEGER,
+    scheduled_date TIMESTAMP,
+    responsible_id INTEGER, -- Project Manager
+    created_by INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_soumission TIMESTAMP
+);
+
+-- Table: prospecting_campaign_companies (Join Table: Targets of a campaign)
+CREATE TABLE IF NOT EXISTS prospecting_campaign_companies (
+    id SERIAL PRIMARY KEY,
+    campaign_id INTEGER REFERENCES prospecting_campaigns(id) ON DELETE CASCADE,
+    company_id INTEGER REFERENCES companies(id) ON DELETE CASCADE,
+    
+    -- Execution Status per target
+    status VARCHAR(50) DEFAULT 'PENDING',
+    sent_at TIMESTAMP,
+    response_at TIMESTAMP,
+    converted_to_opportunity BOOLEAN DEFAULT FALSE,
+    opportunity_id INTEGER,
+    execution_status VARCHAR(50),
+    execution_file VARCHAR(255),
+    execution_notes TEXT,
+    
+    UNIQUE(campaign_id, company_id)
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_clients_email ON clients(email);
+CREATE INDEX IF NOT EXISTS idx_clients_statut ON clients(statut);
+CREATE INDEX IF NOT EXISTS idx_companies_email ON companies(email);
+CREATE INDEX IF NOT EXISTS idx_companies_name ON companies(name);
+CREATE INDEX IF NOT EXISTS idx_campaigns_status ON prospecting_campaigns(status);

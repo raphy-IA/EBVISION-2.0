@@ -9,6 +9,9 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const fs = require('fs');
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./src/config/swagger');
+
 // Import des routes
 const authRoutes = require('./src/routes/auth');
 const twoFactorAuthRoutes = require('./src/routes/two-factor-auth');
@@ -316,8 +319,11 @@ async function startServer() {
             console.log('🚀 Serveur démarré sur le port', PORT);
             console.log('📊 Environnement:', process.env.NODE_ENV || 'development');
             console.log('🔗 URL: http://localhost:' + PORT);
-            console.log('📚 API Documentation: http://localhost:' + PORT + '/api/health');
+            console.log('📚 API Documentation: http://localhost:' + PORT + '/api-docs');
         });
+
+        // Documentation Swagger
+        app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
     } catch (error) {
         console.error('❌ Erreur lors du démarrage du serveur:', error);
         process.exit(1);

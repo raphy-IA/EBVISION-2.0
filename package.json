@@ -74,6 +74,8 @@
     "qrcode": "^1.5.4",
     "sharp": "^0.34.3",
     "speakeasy": "^2.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "xlsx": "^0.18.5"
   },
   "keywords": [

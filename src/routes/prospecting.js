@@ -10,6 +10,56 @@ const { pool } = require('../utils/database');
 // Storage for uploads per-source
 const uploadRoot = path.join(process.cwd(), 'public', 'uploads', 'company-sources');
 fs.mkdirSync(uploadRoot, { recursive: true });
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Campaign:
+ *       type: object
+ *       required:
+ *         - name
+ *         - channel
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           description: The auto-generated id of the campaign
+ *         name:
+ *           type: string
+ *           description: The name of the campaign
+ *         channel:
+ *           type: string
+ *           enum: [EMAIL, PHYSIQUE]
+ *           description: The channel of the campaign
+ *         status:
+ *           type: string
+ *           enum: [DRAFT, PLANNED, IN_PROGRESS, COMPLETED, ARCHIVED]
+ *         start_date:
+ *           type: string
+ *           format: date
+ *         end_date:
+ *           type: string
+ *           format: date
+ *         description:
+ *           type: string
+ *         budget:
+ *           type: number
+ *         business_unit_id:
+ *           type: string
+ *           format: uuid
+ *     CompanySource:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *         description:
+ *           type: string
+ */
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const sourceId = req.params.sourceId || 'general';
@@ -661,6 +711,55 @@ router.delete('/templates/:id', authenticateToken, async (req, res) => {
 });
 
 // Campagnes
+
+/**
+ * @swagger
+ * /prospecting/campaigns:
+ *   post:
+ *     summary: Create a new prospecting campaign
+ *     tags: [Campaigns]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - channel
+ *             properties:
+ *               name:
+ *                 type: string
+ *               channel:
+ *                 type: string
+ *                 enum: [EMAIL, PHYSIQUE]
+ *               description:
+ *                 type: string
+ *               start_date:
+ *                 type: string
+ *                 format: date
+ *               end_date:
+ *                 type: string
+ *                 format: date
+ *               budget:
+ *                 type: number
+ *               business_unit_id:
+ *                 type: string
+ *                 format: uuid
+ *     responses:
+ *       201:
+ *         description: The campaign was successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Campaign'
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Server error
+ */
 router.post('/campaigns', authenticateToken, async (req, res) => {
     try {
         const name = (req.body?.name || '').trim();
@@ -679,6 +778,42 @@ router.post('/campaigns', authenticateToken, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /prospecting/campaigns/{id}/companies:
+ *   post:
+ *     summary: Add companies to a campaign target list
+ *     tags: [Campaigns]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The campaign id
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - company_ids
+ *             properties:
+ *               company_ids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: List of Company IDs to add
+ *     responses:
+ *       200:
+ *         description: Companies successfully added
+ *       400:
+ *         description: Validation error
+ */
 router.post('/campaigns/:id/companies', authenticateToken, async (req, res) => {
     const { company_ids } = req.body;
     if (!Array.isArray(company_ids) || company_ids.length === 0) {
@@ -759,6 +894,24 @@ router.delete('/campaigns/:id/companies/:companyId', authenticateToken, async (r
     }
 });
 
+/**
+ * @swagger
+ * /prospecting/campaigns:
+ *   get:
+ *     summary: Returns the list of all campaigns accessible to the user
+ *     tags: [Campaigns]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: The list of the campaigns
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Campaign'
+ */
 router.get('/campaigns', authenticateToken, async (req, res) => {
     try {
         // Récupérer les Business Units auxquelles l'utilisateur a accès
@@ -776,6 +929,31 @@ router.get('/campaigns', authenticateToken, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /prospecting/campaigns/{id}:
+ *   get:
+ *     summary: Get the campaign by id
+ *     tags: [Campaigns]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The campaign id
+ *     responses:
+ *       200:
+ *         description: The campaign description by id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Campaign'
+ *       404:
+ *         description: The campaign was not found
+ */
 router.get('/campaigns/:id', authenticateToken, async (req, res) => {
     try {
         // Récupérer les détails complets de la campagne

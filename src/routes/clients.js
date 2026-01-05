@@ -156,7 +156,65 @@ router.get('/form-data', authenticateToken, async (req, res) => {
     }
 });
 
-// GET /api/clients - Récupérer tous les clients avec pagination et filtres
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Client:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         nom:
+ *           type: string
+ *           description: The name of the client
+ *         sigle:
+ *           type: string
+ *           description: The short name of the client
+ *         pays:
+ *           type: string
+ *         secteur_activite:
+ *           type: string
+ */
+
+/**
+ * @swagger
+ * /clients:
+ *   get:
+ *     summary: Returns the list of all clients
+ *     tags: [Clients]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: The page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: The number of items per page
+ *     responses:
+ *       200:
+ *         description: The list of the clients
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     clients:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Client'
+ */
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const {
