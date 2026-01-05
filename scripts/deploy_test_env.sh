@@ -30,14 +30,22 @@ sed -e "s/PORT=.*/PORT=$TEST_PORT/" \
 
 # 3. Base de données
 echo "🗄️ Duplication de la base de données..."
+cd $PROD_DIR
+# Extraire les infos de BDD du .env
+DB_USER=$(grep DB_USER .env | cut -d '=' -f2)
+DB_PASS=$(grep DB_PASSWORD .env | cut -d '=' -f2)
+DB_HOST=$(grep DB_HOST .env | cut -d '=' -f2)
+
+export PGPASSWORD=$DB_PASS
+
 # Vérifier si la base de test existe
-if psql -lqt | cut -d \| -f 1 | grep -qw $TEST_DB; then
+if psql -h $DB_HOST -U $DB_USER -lqt | cut -d \| -f 1 | grep -qw $TEST_DB; then
     echo "   La base $TEST_DB existe déjà. Reconstruction..."
-    dropdb $TEST_DB
+    dropdb -h $DB_HOST -U $DB_USER $TEST_DB
 fi
-createdb $TEST_DB
+createdb -h $DB_HOST -U $DB_USER $TEST_DB
 # Dump et Restore (structure + data)
-pg_dump $PROD_DB | psql $TEST_DB
+pg_dump -h $DB_HOST -U $DB_USER $PROD_DB | psql -h $DB_HOST -U $DB_USER $TEST_DB
 
 echo "✅ Base de données dupliquée."
 
