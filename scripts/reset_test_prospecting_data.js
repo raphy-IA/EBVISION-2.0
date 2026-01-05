@@ -32,56 +32,78 @@ async function resetProspectingData() {
     try {
         await client.query('BEGIN');
 
-        console.log('🧹 Nettoyage des tables de prospection...');
+        console.log('🧹 Nettoyage des tables de prospection et clients...');
 
-        // 1. Supprimer les campagnes (dépendances potentielles)
-        // Vérifier si la table existe d'abord
+        // Ordre important pour respecter les contraintes de clés étrangères (CASCADE aide mais on reste logique)
+
+        // 1. Tables de liaison et validations
+        console.log('   - Suppression validations et liaisons...');
+        await client.query('TRUNCATE TABLE prospecting_campaign_validation_companies CASCADE');
+        await client.query('TRUNCATE TABLE prospecting_campaign_validations CASCADE');
+        await client.query('TRUNCATE TABLE prospecting_campaign_companies CASCADE');
+
+        // 2. Campagnes
         console.log('   - Suppression campagnes...');
         await client.query('TRUNCATE TABLE prospecting_campaigns CASCADE');
 
-        // 2. Supprimer les entreprises
-        console.log('   - Suppression entreprises...');
-        await client.query('TRUNCATE TABLE prospecting_companies CASCADE');
+        // 3. Entreprises (Prospects) et Sources
+        // ATTENTION : Les noms réels des tables sont 'companies' et 'company_sources'
+        console.log('   - Suppression prospects (companies)...');
+        await client.query('TRUNCATE TABLE companies CASCADE');
 
-        // 3. Supprimer les sources
-        console.log('   - Suppression sources...');
-        await client.query('TRUNCATE TABLE prospecting_sources CASCADE');
+        console.log('   - Suppression sources (company_sources)...');
+        await client.query('TRUNCATE TABLE company_sources CASCADE');
 
-        // 4. Supprimer les templates
+        // 4. Templates
         console.log('   - Suppression templates...');
         await client.query('TRUNCATE TABLE prospecting_templates CASCADE');
+
+        // 5. CLIENTS (Données sensibles accessibles aux Admin/Manager)
+        // On nettoie aussi pour qu'il n'y ait PAS de vraie donnée client dans l'environnement de test
+        console.log('   - Suppression clients (DATA SENSIBLE)...');
+        await client.query('TRUNCATE TABLE clients CASCADE');
+        // Si table contacts existe et n'est pas cascade par clients, on l'ajoute par sécurité
+        // await client.query('TRUNCATE TABLE contacts CASCADE'); // (A décommenter si table contacts séparée)
+
 
         console.log('🌱 Insertion données de test (Fake Data)...');
 
         // Création Sources
         const sourceRes = await client.query(`
-            INSERT INTO prospecting_sources (name, description, created_at)
+            INSERT INTO company_sources (name, description)
             VALUES 
-                ('Test Source A', 'Source générée pour tests', NOW()),
-                ('Test Source B', 'Autre source de test', NOW())
+                ('Test Source A', 'Source générée pour tests auto'),
+                ('Test Source B', 'Autre source de test')
             RETURNING id
         `);
         const sourceId = sourceRes.rows[0].id;
 
-        // Création Entreprises
+        // Création Entreprises (Prospects)
         await client.query(`
-            INSERT INTO prospecting_companies (name, email, phone, website, status, source_id, created_at)
+            INSERT INTO companies (name, email, phone, website, source_id, created_at, updated_at)
             VALUES 
-                ('Entreprise Test 1', 'contact@test1.com', '0102030405', 'https://test1.com', 'NEW', $1, NOW()),
-                ('Entreprise Test 2', 'info@test2.com', '0607080910', 'https://test2.com', 'CONTACTED', $1, NOW()),
-                ('Entreprise Test 3', 'hello@test3.com', NULL, NULL, 'NEW', $1, NOW())
+                ('Entreprise Test 1', 'contact@test1.com', '0102030405', 'https://test1.com', $1, NOW(), NOW()),
+                ('Entreprise Test 2', 'info@test2.com', '0607080910', 'https://test2.com', $1, NOW(), NOW()),
+                ('Entreprise Test 3', 'hello@test3.com', NULL, NULL, $1, NOW(), NOW())
         `, [sourceId]);
 
         // Création Templates
         await client.query(`
-            INSERT INTO prospecting_templates (name, subject, content, type, created_at)
+            INSERT INTO prospecting_templates (name, subject, body_template, type_courrier, channel, created_at)
             VALUES 
-                ('Template Intro Test', 'Bonjour {{companyName}}', 'Voici une offre de test.', 'EMAIL', NOW()),
-                ('Template Relance Test', 'Re: Bonjour', 'Avez-vous vu notre offre ?', 'EMAIL', NOW())
+                ('Template Intro Test', 'Bonjour {{companyName}}', 'Voici une offre de test.', 'COURRIER', 'EMAIL', NOW()),
+                ('Template Relance Test', 'Re: Bonjour', 'Avez-vous vu notre offre ?', 'COURRIER', 'EMAIL', NOW())
+        `);
+
+        // Création d'un CLIENT FACTICE pour que le tableau des clients ne soit pas vide
+        await client.query(`
+            INSERT INTO clients (nom, email, ville, statut, created_at, updated_at)
+            VALUES 
+                ('CLIENT FICTIF SARL', 'client@fictif.com', 'Paris', 'ACTIF', NOW(), NOW())
         `);
 
         await client.query('COMMIT');
-        console.log('✅ Base de données de prospection réinitialisée avec succès !');
+        console.log('✅ Base de données TEST réinitialisée et sécurisée (Données réelles supprimées).');
 
     } catch (e) {
         await client.query('ROLLBACK');
