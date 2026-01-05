@@ -34,18 +34,24 @@ fs.mkdirSync(uploadRoot, { recursive: true });
  *           description: The channel of the campaign
  *         status:
  *           type: string
- *           enum: [DRAFT, PLANNED, IN_PROGRESS, COMPLETED, ARCHIVED]
- *         start_date:
+ *           enum: [DRAFT, PLANNED, PENDING_VALIDATION, IN_PROGRESS, COMPLETED, ARCHIVED]
+ *         scheduled_date:
  *           type: string
- *           format: date
- *         end_date:
+ *           format: date-time
+ *           description: When the campaign is scheduled to start
+ *         template_id:
  *           type: string
- *           format: date
- *         description:
- *           type: string
- *         budget:
- *           type: number
+ *           format: uuid
  *         business_unit_id:
+ *           type: string
+ *           format: uuid
+ *         division_id:
+ *           type: string
+ *           format: uuid
+ *         responsible_id:
+ *           type: string
+ *           format: uuid
+ *         created_by:
  *           type: string
  *           format: uuid
  *     CompanySource:
@@ -735,17 +741,19 @@ router.delete('/templates/:id', authenticateToken, async (req, res) => {
  *               channel:
  *                 type: string
  *                 enum: [EMAIL, PHYSIQUE]
- *               description:
+ *               template_id:
+ *                  type: string
+ *                  format: uuid
+ *               scheduled_date:
  *                 type: string
- *               start_date:
- *                 type: string
- *                 format: date
- *               end_date:
- *                 type: string
- *                 format: date
- *               budget:
- *                 type: number
+ *                 format: date-time
  *               business_unit_id:
+ *                 type: string
+ *                 format: uuid
+ *               division_id:
+ *                 type: string
+ *                 format: uuid
+ *               responsible_id:
  *                 type: string
  *                 format: uuid
  *     responses:

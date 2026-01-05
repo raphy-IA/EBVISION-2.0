@@ -172,10 +172,55 @@ router.get('/form-data', authenticateToken, async (req, res) => {
  *         sigle:
  *           type: string
  *           description: The short name of the client
+ *         email:
+ *           type: string
+ *         telephone:
+ *           type: string
+ *         adresse:
+ *           type: string
+ *         ville:
+ *           type: string
+ *         code_postal:
+ *           type: string
  *         pays:
  *           type: string
  *         secteur_activite:
  *           type: string
+ *         taille_entreprise:
+ *           type: string
+ *           enum: [TPE, PME, ETI, GE]
+ *         statut:
+ *           type: string
+ *           enum: [ACTIF, INACTIF, ABANDONNE]
+ *         type:
+ *           type: string
+ *           enum: [PROSPECT, CLIENT, CLIENT_FIDELE]
+ *         source_prospection:
+ *           type: string
+ *         notes:
+ *           type: string
+ *         collaborateur_id:
+ *           type: string
+ *           description: ID of the account manager
+ *         groupe_id:
+ *           type: string
+ *           description: ID of the parent group
+ *         est_filiale:
+ *           type: boolean
+ *         site_web:
+ *           type: string
+ *         linkedin_url:
+ *           type: string
+ *         chiffre_affaires:
+ *           type: number
+ *         effectif:
+ *           type: integer
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *         updated_at:
+ *           type: string
+ *           format: date-time
  */
 
 /**
