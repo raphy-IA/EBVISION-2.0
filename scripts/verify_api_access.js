@@ -39,16 +39,13 @@ rl.question('🔑 Mot de passe (admin@ewmanagement.com) : ', async (password) =>
             if (!data || data.length === 0) {
                 console.log('      (Aucune donnée)');
             } else {
-                // Créer une version simplifiée pour l'affichage tableau
                 const tableData = data.slice(0, 3).map(item => {
-                    // Garder seulement les champs pertinents pour la lisibilité
                     const cleanItem = {};
                     if (item.nom) cleanItem.nom = item.nom.substring(0, 30);
                     if (item.name) cleanItem.name = item.name.substring(0, 30);
                     if (item.email) cleanItem.email = item.email;
                     if (item.ville) cleanItem.ville = item.ville;
                     if (item.status) cleanItem.status = item.status;
-                    if (item.channel) cleanItem.channel = item.channel;
                     return cleanItem;
                 });
                 console.table(tableData);
@@ -57,19 +54,63 @@ rl.question('🔑 Mot de passe (admin@ewmanagement.com) : ', async (password) =>
         };
 
         // --- 2. CLIENTS ACTIFS (Données Internes) ---
-        console.log('\n🏢 2. CLIENTS ACTIFS (Scope: Données Internes)');
-        console.log('   Test d\'accès à la liste des clients actifs...');
+        console.log('\n🏢 2. CLIENTS ACTIFS (Scope: Données Interne)');
         try {
             const getClients = await axios.get(`${API_URL}/clients`, { headers });
-            console.log('✅ ACCÈS AUTORISÉ (Le prestataire *pourra* voir ceci)');
+            console.log('✅ ACCÈS AUTORISÉ (Lecture seule possible)');
             printData('Clients Actifs', getClients.data.data.clients || []);
         } catch (e) {
-            console.log('❌ ACCÈS REFUSÉ (Le prestataire ne pourra pas voir ceci)');
-            if (e.response) console.log('   Raison:', e.response.status, e.response.statusText);
+            console.log('❌ ACCÈS REFUSÉ');
         }
 
-        // --- 3. PROSPECTION (Scope Prestataire) ---
-        console.log('\n🎯 3. PROSPECTION (Scope: Prestataire)');
+        // --- 3. OPPORTUNITÉS (Scope: Conversion) ---
+        console.log('\n💼 3. OPPORTUNITÉS (Scope: IA -> Opportunité)');
+        // LIST
+        try {
+            process.stdout.write('   GET /opportunities ... ');
+            const getOpps = await axios.get(`${API_URL}/opportunities`, { headers });
+            console.log('✅ OK');
+            printData('Opportunités existantes', getOpps.data.data.opportunities);
+        } catch (e) { console.log('❌ Echec Lecture:', e.message); }
+
+        // CREATE OPPORTUNITY
+        // On a besoin d'un Business Unit ID valide. On va essayer d'en récupérer un.
+        let buId = null;
+        try {
+            const buRes = await axios.get(`${API_URL}/business-units`, { headers });
+            if (buRes.data.data && buRes.data.data.length > 0) {
+                buId = buRes.data.data[0].id;
+            }
+        } catch (e) { }
+
+        if (buId) {
+            process.stdout.write('   POST /opportunities (Création test)... ');
+            try {
+                const newOpp = await axios.post(`${API_URL}/opportunities`, {
+                    nom: `OPPORTUNITÉ IA TEST ${Date.now()}`,
+                    description: 'Détectée par IA Audit',
+                    business_unit_id: buId, // Requis
+                    statut: 'NOUVELLE',
+                    probabilite: 50
+                }, { headers });
+                const oppId = newOpp.data.data.opportunity.id;
+                console.log(`✅ CRÉÉ (ID: ${oppId})`);
+
+                // Cleanup
+                process.stdout.write('   DELETE /opportunities (Nettoyage)... ');
+                await axios.delete(`${API_URL}/opportunities/${oppId}`, { headers });
+                console.log('✅ OK');
+
+            } catch (e) {
+                console.log('❌ Echec Création:', e.response ? e.response.data : e.message);
+            }
+        } else {
+            console.log('⚠️ Impossible de tester la création (Pas de Business Unit accessible)');
+        }
+
+
+        // --- 4. PROSPECTION (Scope Prestataire) ---
+        console.log('\n🎯 4. PROSPECTION (Scope: Prestataire)');
 
         // SOURCES
         console.log('   [SOURCES]');
@@ -110,8 +151,8 @@ rl.question('🔑 Mot de passe (admin@ewmanagement.com) : ', async (password) =>
         const getCampaigns = await axios.get(`${API_URL}/prospecting/campaigns`, { headers });
         printData('Campagnes', getCampaigns.data.data);
 
-        // --- 4. NETTOYAGE ---
-        console.log('\n🧹 4. NETTOYAGE AUTOMATIQUE');
+        // --- 5. NETTOYAGE ---
+        console.log('\n🧹 5. NETTOYAGE AUTOMATIQUE');
         if (companyId) {
             process.stdout.write('   Suppression Prospect... ');
             await axios.delete(`${API_URL}/prospecting/companies/${companyId}`, { headers });
@@ -125,7 +166,6 @@ rl.question('🔑 Mot de passe (admin@ewmanagement.com) : ', async (password) =>
         }
 
         console.log('\n✨ AUDIT TERMINÉ. Vérifiez les tableaux ci-dessus.');
-        console.log('   Ce que vous voyez dans les tableaux correspond aux droits actuels de ce compte.');
 
     } catch (error) {
         console.log('\n❌ ERREUR PENDANT LE TEST');
