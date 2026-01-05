@@ -58,8 +58,13 @@ async function resetProspectingData() {
         console.log('   - Suppression templates...');
         await client.query('TRUNCATE TABLE prospecting_templates CASCADE');
 
-        // 5. CLIENTS (Données sensibles accessibles aux Admin/Manager)
-        // On nettoie aussi pour qu'il n'y ait PAS de vraie donnée client dans l'environnement de test
+        // 5. CLIENTS & OPPORTUNITÉS (Données sensibles accessibles aux Admin/Manager)
+        console.log('   - Suppression opportunités et dépendances...');
+        await client.query('TRUNCATE TABLE opportunity_actions CASCADE');
+        await client.query('TRUNCATE TABLE opportunity_documents CASCADE');
+        await client.query('TRUNCATE TABLE opportunity_stages CASCADE');
+        await client.query('TRUNCATE TABLE opportunities CASCADE');
+
         console.log('   - Suppression clients (DATA SENSIBLE)...');
         await client.query('TRUNCATE TABLE clients CASCADE');
         // Si table contacts existe et n'est pas cascade par clients, on l'ajoute par sécurité
@@ -96,11 +101,27 @@ async function resetProspectingData() {
         `);
 
         // Création d'un CLIENT FACTICE pour que le tableau des clients ne soit pas vide
-        await client.query(`
+        const clientRes = await client.query(`
             INSERT INTO clients (nom, email, ville, statut, created_at, updated_at)
             VALUES 
                 ('CLIENT FICTIF SARL', 'client@fictif.com', 'Paris', 'ACTIF', NOW(), NOW())
+            RETURNING id
         `);
+        const clientId = clientRes.rows[0].id;
+
+        // Création d'OPPORTUNITÉS TEST
+        // On récupère une Business Unit et un Type au hasard pour ne pas planter
+        const bu = await client.query('SELECT id FROM business_units LIMIT 1');
+        const typeOpp = await client.query('SELECT id FROM opportunity_types LIMIT 1');
+
+        if (bu.rows.length > 0) {
+            await client.query(`
+                INSERT INTO opportunities (nom, business_unit_id, client_id, statut, probabilite, created_at, opportunity_type_id)
+                VALUES 
+                    ('Opportunité Test IA', $1, $2, 'NOUVELLE', 20, NOW(), $3),
+                    ('Opportunité Test Conseil', $1, $2, 'GAGNEE', 100, NOW(), $3)
+           `, [bu.rows[0].id, clientId, typeOpp.rows.length > 0 ? typeOpp.rows[0].id : null]);
+        }
 
         await client.query('COMMIT');
         console.log('✅ Base de données TEST réinitialisée et sécurisée (Données réelles supprimées).');
