@@ -64,6 +64,72 @@ fs.mkdirSync(uploadRoot, { recursive: true });
  *           type: string
  *         description:
  *           type: string
+ *     Company:
+ *       type: object
+ *       required:
+ *         - name
+ *         - source_id
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         source_id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *         sigle:
+ *           type: string
+ *         industry:
+ *           type: string
+ *         size_label:
+ *           type: string
+ *         email:
+ *           type: string
+ *         phone:
+ *           type: string
+ *         website:
+ *           type: string
+ *         siret:
+ *           type: string
+ *         country:
+ *           type: string
+ *         city:
+ *           type: string
+ *         address:
+ *           type: string
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *     ProspectingTemplate:
+ *       type: object
+ *       required:
+ *         - name
+ *         - body_template
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *         channel:
+ *           type: string
+ *           enum: [EMAIL, PHYSIQUE]
+ *         type_courrier:
+ *           type: string
+ *         subject:
+ *           type: string
+ *         body_template:
+ *           type: string
+ *         business_unit_id:
+ *           type: string
+ *           format: uuid
+ *         division_id:
+ *           type: string
+ *           format: uuid
+ *         created_at:
+ *           type: string
+ *           format: date-time
  */
 
 const storage = multer.diskStorage({
@@ -156,6 +222,29 @@ async function checkCampaignAuthorization(campaignId, userId) {
 }
 
 // Sources
+/**
+ * @swagger
+ * /prospecting/sources:
+ *   get:
+ *     summary: Retrieve a list of company sources
+ *     tags: [Sources]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of company sources
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/CompanySource'
+ */
 router.get('/sources', authenticateToken, async (req, res) => {
     const list = await CompanySource.findAll();
     res.json({ success: true, data: list });
@@ -370,6 +459,29 @@ router.get('/sources/:sourceId/companies', authenticateToken, async (req, res) =
 });
 
 // Obtenir toutes les entreprises avec leurs sources (DOIT ÊTRE AVANT /companies/search)
+/**
+ * @swagger
+ * /prospecting/companies:
+ *   get:
+ *     summary: Retrieve all companies with source details
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of companies
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Company'
+ */
 router.get('/companies', authenticateToken, async (req, res) => {
     try {
         const companies = await Company.findAllWithSources();
@@ -647,6 +759,29 @@ router.delete('/campaigns/:id/validations/:validationId', authenticateToken, asy
 });
 
 // Templates de campagne
+/**
+ * @swagger
+ * /prospecting/templates:
+ *   get:
+ *     summary: Retrieve a list of prospecting templates
+ *     tags: [Templates]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of templates
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/ProspectingTemplate'
+ */
 router.get('/templates', authenticateToken, async (req, res) => {
     const list = await ProspectingTemplate.findAll();
     res.json({ success: true, data: list });
