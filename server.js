@@ -286,7 +286,16 @@ app.use(syncPermissionsRoutes);
 const managersRoutes = require('./src/routes/managers');
 app.use('/api/managers', managersRoutes);
 
-// Route par défaut
+// Route de base de l'API (pour éviter le Cannot GET /api)
+app.get('/api', (req, res) => {
+    res.json({
+        message: 'Bienvenue sur l\'API EB-Vision 2.0',
+        documentation: '/api-docs',
+        status: 'online'
+    });
+});
+
+// Route par défaut à la racine
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
