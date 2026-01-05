@@ -91,8 +91,8 @@ async function resetProspectingData() {
         await client.query(`
             INSERT INTO prospecting_templates (name, subject, body_template, type_courrier, channel, created_at)
             VALUES 
-                ('Template Intro Test', 'Bonjour {{companyName}}', 'Voici une offre de test.', 'SIMPLE', 'EMAIL', NOW()),
-                ('Template Relance Test', 'Re: Bonjour', 'Avez-vous vu notre offre ?', 'SIMPLE', 'EMAIL', NOW())
+                ('Template Intro Test', 'Bonjour {{companyName}}', 'Voici une offre de test.', 'PRESENTATION_GENERAL', 'EMAIL', NOW()),
+                ('Template Relance Test', 'Re: Bonjour', 'Avez-vous vu notre offre ?', 'SERVICE_SPECIFIQUE', 'EMAIL', NOW())
         `);
 
         // Création d'un CLIENT FACTICE pour que le tableau des clients ne soit pas vide
