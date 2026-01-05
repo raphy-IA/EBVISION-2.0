@@ -2,9 +2,9 @@
 # Script de déploiement d'un environnement de test EB-Vision 2.0 pour l'IA
 # Usage: ./deploy_test_env.sh
 
-PROD_DIR="/apps/ebvision-2.0"
-TEST_DIR="/apps/ebvision-test"
-PROD_DB="ebvision"
+PROD_DIR="/home/raphyai82/apps/ebvision"
+TEST_DIR="/home/raphyai82/apps/ebvision-test"
+PROD_DB="ebvision_2_0"
 TEST_DB="ebvision_test"
 TEST_PORT="3001"
 
