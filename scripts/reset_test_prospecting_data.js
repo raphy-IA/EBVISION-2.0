@@ -87,13 +87,15 @@ async function resetProspectingData() {
                 ('Entreprise Test 3', 'hello@test3.com', NULL, NULL, $1, NOW(), NOW())
         `, [sourceId]);
 
-        // Création Templates
+        // Création Templates (Temporairement désactivé cause contrainte DB divergente sur serveur)
+        /*
         await client.query(`
             INSERT INTO prospecting_templates (name, subject, body_template, type_courrier, channel, created_at)
             VALUES 
                 ('Template Intro Test', 'Bonjour {{companyName}}', 'Voici une offre de test.', 'PRESENTATION_GENERAL', 'EMAIL', NOW()),
                 ('Template Relance Test', 'Re: Bonjour', 'Avez-vous vu notre offre ?', 'SERVICE_SPECIFIQUE', 'EMAIL', NOW())
         `);
+        */
 
         // Création d'un CLIENT FACTICE pour que le tableau des clients ne soit pas vide
         await client.query(`
