@@ -410,6 +410,7 @@ router.post('/:id/documents/upload', authenticateToken, upload.single('file'), a
  * /api/opportunities:
  *   post:
  *     summary: Créer une nouvelle opportunité
+ *     description: Permet de créer une opportunité. Pour un PROSPECT (pas encore client), laissez `client_id` vide. `fiscal_year_id` est calculé automatiquement.
  *     tags: [Opportunités]
  *     security:
  *       - bearerAuth: []
@@ -425,23 +426,29 @@ router.post('/:id/documents/upload', authenticateToken, upload.single('file'), a
  *             properties:
  *               nom:
  *                 type: string
- *                 description: Nom de l'opportunité
+ *                 description: Nom de l'opportunité (Requis)
  *               description:
  *                 type: string
  *               business_unit_id:
  *                 type: string
  *                 format: uuid
- *                 description: ID de la Business Unit (Obligatoire)
+ *                 description: ID de la Business Unit (Requis)
  *               opportunity_type_id:
  *                 type: string
  *                 format: uuid
- *                 description: ID du Type d'opportunité (Requis pour initialiser les étapes)
+ *                 description: ID du Type (Requis pour générer automatiquement les étapes du workflow)
  *               client_id:
  *                 type: string
  *                 format: uuid
+ *                 description: ID du Client (Optionnel. Laisser vide pour un Prospect)
  *               collaborateur_id:
  *                 type: string
  *                 format: uuid
+ *                 description: ID du Responsable (Optionnel)
+ *               fiscal_year_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID Année Fiscale (Optionnel, auto-calculé basé sur la date du jour)
  *               statut:
  *                 type: string
  *                 enum: [NOUVELLE, EN_COURS, GAGNEE, PERDUE]
