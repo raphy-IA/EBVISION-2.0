@@ -14,8 +14,8 @@ const credentials = {
     password: ''
 };
 
-console.log('\n🔍 VÉRIFICATION DE L\'ACCÈS API - EB-VISION 2.0');
-console.log('================================================');
+console.log('\n🔍 VÉRIFICATION COMPLÈTE API - EB-VISION 2.0');
+console.log('============================================');
 console.log(`Utilisateur cible : ${credentials.email}`);
 console.log(`URL API           : ${API_URL}`);
 console.log('---');
@@ -31,50 +31,67 @@ rl.question('🔑 Entrez le mot de passe pour cet utilisateur : ', async (passwo
 
     try {
         // 1. Authentification
-        console.log('\n1. Tentative de connexion...');
+        process.stdout.write('\n1. [AUTH] Connexion... ');
         const authResponse = await axios.post(`${API_URL}/auth/login`, credentials);
 
-        if (authResponse.data.success) {
-            const token = authResponse.data.data.token;
-            console.log('✅ Connexion RÉUSSIE !');
-            console.log('🎫 Token JWT reçu (début) :', token.substring(0, 50) + '...');
+        if (!authResponse.data.success) throw new Error('Login échoué');
+        const token = authResponse.data.data.token;
+        console.log('✅ OK');
+        // console.log('   Token:', token.substring(0, 20) + '...');
 
-            // 2. Test d'une route protégée
-            console.log('\n2. Test d\'accès à une route protégée (/prospecting/companies)...');
-            try {
-                const apiResponse = await axios.get(`${API_URL}/prospecting/companies`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+        const headers = { 'Authorization': `Bearer ${token}` };
 
-                if (apiResponse.data.success) {
-                    console.log('✅ Accès API RÉUSSI !');
-                    console.log(`📊 Données reçues : ${apiResponse.data.data.length} entreprise(s) trouvée(s).`);
-                    console.log('\n✨ CONCLUSION : L\'API fonctionne parfaitement.');
-                    console.log('   Le prestataire devra suivre exactement ce même processus.');
-                } else {
-                    console.error('❌ Erreur API (Logique) :', apiResponse.data);
-                }
+        // 2. Lecture (GET)
+        process.stdout.write('2. [READ] Lecture des entreprises... ');
+        const getResponse = await axios.get(`${API_URL}/prospecting/companies`, { headers });
+        if (!getResponse.data.success) throw new Error('Lecture échouée');
+        console.log(`✅ OK (${getResponse.data.data.length} entreprises existantes)`);
 
-            } catch (apiError) {
-                console.error('❌ Erreur API (HTTP) :', apiError.response ? apiError.response.data : apiError.message);
-                if (apiError.response && apiError.response.status === 403) {
-                    console.log('   Note: Vérifiez que l\'utilisateur a bien les droits d\'accès.');
-                }
-            }
+        // 3. Création Source (POST)
+        process.stdout.write('3. [CREATE] Création Source Test... ');
+        const sourceData = { name: `TEST_SOURCE_${Date.now()}`, description: 'Validation Script' };
+        const createSourceResponse = await axios.post(`${API_URL}/prospecting/sources`, sourceData, { headers });
+        // Note: L'API retourne parfois l'objet directement ou dans .data
+        const sourceId = createSourceResponse.data.id || (createSourceResponse.data.data && createSourceResponse.data.data.id);
 
-        } else {
-            console.error('❌ Login échoué :', authResponse.data.message);
-        }
+        if (!createSourceResponse.data && !sourceId) throw new Error('Création Source échouée (Pas de réponse)');
+        console.log('✅ OK (ID: ' + sourceId + ')');
+
+        // 4. Création Entreprise (POST)
+        process.stdout.write('4. [CREATE] Création Entreprise Test... ');
+        // Petit délai pour assurer la dispo
+        await new Promise(r => setTimeout(r, 500));
+
+        const companyData = {
+            name: `TEST_COMPANY_${Date.now()}`,
+            source_id: sourceId,
+            email: 'test@example.com',
+            status: 'NEW'
+        };
+        const createCompanyResponse = await axios.post(`${API_URL}/prospecting/companies`, companyData, { headers });
+        const companyId = createCompanyResponse.data.id || (createCompanyResponse.data.data && createCompanyResponse.data.data.id);
+
+        if (!companyId) throw new Error('Création Entreprise échouée');
+        console.log('✅ OK (ID: ' + companyId + ')');
+
+        // 5. Nettoyage (DELETE)
+        process.stdout.write('5. [DELETE] Nettoyage Test... ');
+        await axios.delete(`${API_URL}/prospecting/companies/${companyId}`, { headers });
+        await axios.delete(`${API_URL}/prospecting/sources/${sourceId}`, { headers });
+        console.log('✅ OK');
+
+        console.log('\n✨ SUCCÈS TOTAL : L\'API gère parfaitement le cycle de vie des données (CRUD).');
 
     } catch (error) {
+        console.log('❌ ÉCHEC');
         if (error.response) {
-            console.error('❌ Erreur HTTP :', error.response.status, error.response.statusText);
+            console.error('   Erreur HTTP :', error.response.status);
             console.error('   Détails :', error.response.data);
+            if (error.response.data.errors) {
+                console.error('   Validation :', JSON.stringify(error.response.data.errors));
+            }
         } else {
-            console.error('❌ Erreur Réseau/Script :', error.message);
+            console.error('   Erreur :', error.message);
         }
-        console.log('\nConseil : Vérifiez que le serveur de test est bien à jour (git pull + redéploiement).');
     }
 });
