@@ -5,7 +5,58 @@ const { authenticateToken, requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Récupérer tous les contacts
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Contact:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: The auto-generated id of the contact
+ *         nom:
+ *           type: string
+ *         prenom:
+ *           type: string
+ *         email:
+ *           type: string
+ *         telephone:
+ *           type: string
+ *         entreprise_id:
+ *           type: string
+ *           description: ID of the associated company
+ *       example:
+ *         id: "cnt_123"
+ *         nom: "Doe"
+ *         prenom: "John"
+ *         email: "john@example.com"
+ *         entreprise_id: "comp_456"
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Contacts
+ *   description: Managing contacts (Read-Only for AI)
+ */
+
+/**
+ * @swagger
+ * /contacts:
+ *   get:
+ *     summary: Returns the list of all contacts
+ *     tags: [Contacts]
+ *     responses:
+ *       200:
+ *         description: The list of the contacts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Contact'
+ */
 router.get('/', authenticateToken, requirePermission('contacts:read'), async (req, res) => {
     try {
         const contacts = await Contact.findAll();
@@ -25,7 +76,29 @@ router.get('/', authenticateToken, requirePermission('contacts:read'), async (re
     }
 });
 
-// Récupérer un contact par ID
+/**
+ * @swagger
+ * /contacts/{id}:
+ *   get:
+ *     summary: Get a contact by ID
+ *     tags: [Contacts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The contact ID
+ *     responses:
+ *       200:
+ *         description: The contact description
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Contact'
+ *       404:
+ *         description: Contact not found
+ */
 router.get('/:id', authenticateToken, requirePermission('contacts:read'), async (req, res) => {
     try {
         const { id } = req.params;
