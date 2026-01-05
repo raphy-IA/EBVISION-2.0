@@ -51,6 +51,7 @@ echo "✅ Base de données dupliquée."
 
 # 4. Installation & Lancement
 echo "📦 Installation et Redémarrage..."
+cd $TEST_DIR
 npm install
 pm2 stop "ebvision-test" 2>/dev/null || true
 pm2 delete "ebvision-test" 2>/dev/null || true
