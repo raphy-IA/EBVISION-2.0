@@ -64,4 +64,4 @@ pm2 delete "ebvision-test" 2>/dev/null || true
 pm2 start server.js --name "ebvision-test"
 
 echo "✅ Environnement de test déployé sur le port $TEST_PORT"
-echo "📚 Swagger accessible sur: http://votre-ip:$TEST_PORT/api-docs"
+echo "📚 Swagger accessible sur: https://ebvision-test-api.bosssystemsai.com/api-docs"
