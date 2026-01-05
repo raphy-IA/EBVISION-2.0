@@ -13,7 +13,37 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// GET /api/opportunities - Récupérer toutes les opportunités
+/**
+ * @swagger
+ * /api/opportunities:
+ *   get:
+ *     summary: Récupérer toutes les opportunités (avec filtres)
+ *     tags: [Opportunités]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: statut
+ *         schema:
+ *           type: string
+ *           enum: [NOUVELLE, GAGNEE, PERDUE, ANNULEE, EN_COURS]
+ *     responses:
+ *       200:
+ *         description: Liste des opportunités paginée
+ */
+// GET /api/api/opportunities - Récupérer toutes les opportunités
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const {
@@ -375,6 +405,60 @@ router.post('/:id/documents/upload', authenticateToken, upload.single('file'), a
     }
 });
 
+/**
+ * @swagger
+ * /api/opportunities:
+ *   post:
+ *     summary: Créer une nouvelle opportunité
+ *     tags: [Opportunités]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nom
+ *               - business_unit_id
+ *             properties:
+ *               nom:
+ *                 type: string
+ *                 description: Nom de l'opportunité
+ *               description:
+ *                 type: string
+ *               business_unit_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID de la Business Unit (Obligatoire)
+ *               opportunity_type_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID du Type d'opportunité (Requis pour initialiser les étapes)
+ *               client_id:
+ *                 type: string
+ *                 format: uuid
+ *               collaborateur_id:
+ *                 type: string
+ *                 format: uuid
+ *               statut:
+ *                 type: string
+ *                 enum: [NOUVELLE, EN_COURS, GAGNEE, PERDUE]
+ *                 default: NOUVELLE
+ *               probabilite:
+ *                 type: integer
+ *                 minimum: 0
+ *                 maximum: 100
+ *               montant_estime:
+ *                 type: number
+ *               devise:
+ *                 type: string
+ *                 default: EUR
+ *     responses:
+ *       201:
+ *         description: Opportunité créée avec succès
+ */
 // POST /api/opportunities - Créer une nouvelle opportunité
 router.post('/', authenticateToken, async (req, res) => {
     try {

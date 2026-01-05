@@ -3,11 +3,47 @@ const router = express.Router();
 const OpportunityType = require('../models/OpportunityType');
 const { authenticateToken } = require('../middleware/auth');
 
+/**
+ * @swagger
+ * /api/opportunity-types:
+ *   get:
+ *     summary: Récupérer tous les types d'opportunités
+ *     tags: [Opportunités]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Liste des types d'opportunités
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     opportunityTypes:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             format: uuid
+ *                           nom:
+ *                             type: string
+ *                           code:
+ *                             type: string
+ *                           description:
+ *                             type: string
+ */
 // GET /api/opportunity-types - Récupérer tous les types d'opportunités
 router.get('/', async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         const query = `
             SELECT 
                 ot.id,
@@ -27,9 +63,9 @@ router.get('/', async (req, res) => {
             GROUP BY ot.id, ot.name, ot.nom, ot.code, ot.description, ot.couleur, ot.default_probability, ot.default_duration_days, ot.created_at, ot.updated_at
             ORDER BY COALESCE(ot.nom, ot.name) ASC
         `;
-        
+
         const { rows } = await pool.query(query);
-        
+
         res.json({
             success: true,
             data: {
@@ -49,7 +85,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         const query = `
             SELECT 
                 ot.id,
@@ -65,18 +101,18 @@ router.get('/:id', authenticateToken, async (req, res) => {
             FROM opportunity_types ot
             WHERE ot.id = $1 AND ot.is_active = true
         `;
-        
+
         const result = await pool.query(query, [req.params.id]);
-        
+
         if (result.rows.length === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'Type d\'opportunité non trouvé'
             });
         }
-        
+
         const type = result.rows[0];
-        
+
         res.json({
             success: true,
             data: {
@@ -96,9 +132,9 @@ router.get('/:id', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
     try {
         console.log('📋 Données reçues dans la route POST opportunity-types:', JSON.stringify(req.body, null, 2));
-        
+
         const { pool } = require('../utils/database');
-        
+
         const {
             nom,
             code,
@@ -124,7 +160,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
         console.log('📋 Requête SQL:', insertQuery);
         console.log('📋 Valeurs à insérer:', [nom, nom, code, description, couleur, default_probability || 50, default_duration_days || 30]);
-        
+
         const result = await pool.query(insertQuery, [
             nom, // Utiliser nom pour name (colonne NOT NULL)
             nom, // Garder aussi nom pour la compatibilité
@@ -159,7 +195,7 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         const {
             nom,
             code,
@@ -279,7 +315,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         // Vérifier s'il y a des opportunités utilisant ce type
         const opportunitiesCount = await pool.query(
             'SELECT COUNT(*) FROM opportunities WHERE opportunity_type_id = $1',
@@ -329,7 +365,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 router.get('/:id/templates', authenticateToken, async (req, res) => {
     try {
         const { pool } = require('../utils/database');
-        
+
         const query = `
             SELECT 
                 id,
@@ -343,9 +379,9 @@ router.get('/:id/templates', authenticateToken, async (req, res) => {
             WHERE opportunity_type_id = $1
             ORDER BY stage_order ASC
         `;
-        
+
         const { rows } = await pool.query(query, [req.params.id]);
-        
+
         res.json({
             success: true,
             data: {
@@ -366,7 +402,7 @@ router.post('/:id/create-default-stages', authenticateToken, async (req, res) =>
     try {
         const { id } = req.params;
         const { pool } = require('../utils/database');
-        
+
         // Vérifier que le type existe
         const typeCheck = await pool.query('SELECT * FROM opportunity_types WHERE id = $1', [id]);
         if (typeCheck.rows.length === 0) {
@@ -450,7 +486,7 @@ router.post('/:id/save-configuration', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { pool } = require('../utils/database');
-        
+
         // Vérifier que le type existe
         const typeCheck = await pool.query('SELECT * FROM opportunity_types WHERE id = $1', [id]);
         if (typeCheck.rows.length === 0) {
@@ -462,7 +498,7 @@ router.post('/:id/save-configuration', authenticateToken, async (req, res) => {
 
         // Cette route peut être utilisée pour des opérations de validation ou de post-traitement
         // après la sauvegarde de la configuration via les routes workflow
-        
+
         res.json({
             success: true,
             message: 'Configuration sauvegardée avec succès'
@@ -500,7 +536,7 @@ function getDefaultActionsForStage(stageName) {
             { type: 'contrat_signe', mandatory: true, order: 2 }
         ]
     };
-    
+
     return actionsMap[stageName] || [];
 }
 
@@ -524,7 +560,7 @@ function getDefaultDocumentsForStage(stageName) {
             { type: 'contrat_signe', mandatory: true }
         ]
     };
-    
+
     return documentsMap[stageName] || [];
 }
 
