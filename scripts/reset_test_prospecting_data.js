@@ -12,13 +12,11 @@ console.log('-------------------------------------------------------------------
 console.log('S\'assurer que vous êtes bien sur l\'environnement de TEST !');
 console.log('-------------------------------------------------------------------');
 
-if (!DB_NAME || !DB_NAME.includes('test') && process.env.NODE_ENV !== 'test') {
-    // Sécurité basique : on essaye d'éviter de lancer ça sur la prod "ebvision"
-    console.warn('⚠️  Nom de base de données suspect ou NODE_ENV non défini à test.');
-    console.warn('    DB_NAME:', DB_NAME);
-    console.warn('    NODE_ENV:', process.env.NODE_ENV);
-    console.warn('    Pour forcer, modifiez le script ou assurez-vous des variables.');
-    // On continue mais avec prudence, l'utilisateur du script doit savoir ce qu'il fait
+if (!DB_NAME || !DB_NAME.toLowerCase().includes('test')) {
+    console.error('⛔ SÉCURITÉ : Ce script refuse de s\'exécuter sur une base qui ne contient pas "test" dans son nom.');
+    console.error(`   Base actuelle détectée : "${DB_NAME}"`);
+    console.error('   Action annulée pour protéger la production.');
+    process.exit(1);
 }
 
 const pool = new Pool({
