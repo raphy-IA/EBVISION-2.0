@@ -4,7 +4,7 @@ let notificationHistory = [];
 let emailReadOnly = false;
 
 // Initialisation
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     checkAuthentication();
     loadUserInfo();
     loadSettings();
@@ -154,40 +154,40 @@ function setupEventListeners() {
     if (historySearch) {
         historySearch.addEventListener('input', filterHistory);
     }
-    
+
     // Filtre de l'historique
     const historyFilter = document.getElementById('historyFilter');
     if (historyFilter) {
         historyFilter.addEventListener('change', filterHistory);
     }
-    
+
     // Filtre par utilisateur (admin)
     const userFilter = document.getElementById('userFilter');
     if (userFilter) {
         userFilter.addEventListener('change', filterHistory);
     }
-    
+
     // Gestion des types de notifications
     document.querySelectorAll('.notification-type').forEach(type => {
         const checkbox = type.querySelector('.form-check-input');
-        checkbox.addEventListener('change', function() {
+        checkbox.addEventListener('change', function () {
             updateNotificationTypeStatus(type, this.checked);
         });
     });
-    
+
     // Gestion du champ mot de passe SMTP
     const passwordField = document.getElementById('smtpPassword');
     if (passwordField) {
         // Réinitialiser le style quand l'utilisateur commence à taper
-        passwordField.addEventListener('input', function() {
+        passwordField.addEventListener('input', function () {
             if (this.getAttribute('data-saved') === 'true') {
                 this.removeAttribute('data-saved');
                 this.style.color = '';
             }
         });
-        
+
         // Ajouter un indicateur visuel pour le mot de passe sauvegardé
-        passwordField.addEventListener('focus', function() {
+        passwordField.addEventListener('focus', function () {
             if (this.value === '••••••••' && this.getAttribute('data-saved') === 'true') {
                 this.value = '';
                 this.removeAttribute('data-saved');
@@ -219,7 +219,7 @@ function applySettings() {
         document.getElementById('enableEmailNotifications').checked = currentSettings.general.enableEmailNotifications;
         document.getElementById('enableCronJobs').checked = currentSettings.general.enableCronJobs;
     }
-    
+
     // Paramètres email
     if (currentSettings.email) {
         document.getElementById('smtpHost').value = currentSettings.email.smtpHost || 'smtp.gmail.com';
@@ -228,7 +228,7 @@ function applySettings() {
         document.getElementById('smtpFrom').value = currentSettings.email.smtpFrom || '';
         document.getElementById('enableSSL').checked = currentSettings.email.enableSSL !== false;
         document.getElementById('enableDebug').checked = currentSettings.email.enableDebug || false;
-        
+
         // Gérer l'affichage du mot de passe sauvegardé
         const passwordField = document.getElementById('smtpPassword');
         if (passwordField && currentSettings.email.smtpPassword) {
@@ -242,7 +242,7 @@ function applySettings() {
     if (currentSettings.email) {
         setEmailFormReadOnly(true);
     }
-    
+
     // Paramètres des alertes
     if (currentSettings.alerts) {
         document.getElementById('overdueThreshold').value = currentSettings.alerts.overdueThreshold || 1;
@@ -256,30 +256,30 @@ function applySettings() {
 
     const aaDefaults = {
         // Opportunités
-        opportunity_stage_overdue:      { userDelayDays: 3, managementDelayDays: 7 },
-        opportunity_inactive:           { userDelayDays: 14, managementDelayDays: 30 },
+        opportunity_stage_overdue: { userDelayDays: 3, managementDelayDays: 7 },
+        opportunity_inactive: { userDelayDays: 14, managementDelayDays: 30 },
 
         // Missions (global)
-        mission_inactive:               { userDelayDays: 7,  managementDelayDays: 14 },
+        mission_inactive: { userDelayDays: 7, managementDelayDays: 14 },
 
         // Missions - tâches
-        mission_task_end_approaching:    { userDelayDays: 3,  managementDelayDays: 7  },
-        mission_task_overdue_not_closed: { userDelayDays: 2,  managementDelayDays: 5  },
+        mission_task_end_approaching: { userDelayDays: 3, managementDelayDays: 7 },
+        mission_task_overdue_not_closed: { userDelayDays: 2, managementDelayDays: 5 },
 
         // Feuilles de temps
-        timesheet_not_submitted:        { userDelayDays: 2, managementDelayDays: 5 },
+        timesheet_not_submitted: { userDelayDays: 2, managementDelayDays: 5 },
         timesheet_not_validated_superv: { userDelayDays: 2, managementDelayDays: 5 },
 
         // Facturation missions
-        mission_fee_billing_overdue:     { userDelayDays: 3, managementDelayDays: 7 },
+        mission_fee_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },
         mission_expense_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },
 
         // Campagnes de prospection (global)
-        campaign_validation_pending:     { userDelayDays: 3,  managementDelayDays: 7  },
-        campaign_not_launched:           { userDelayDays: 5,  managementDelayDays: 10 },
+        campaign_validation_pending: { userDelayDays: 3, managementDelayDays: 7 },
+        campaign_not_launched: { userDelayDays: 5, managementDelayDays: 10 },
 
         // Campagnes de prospection - relance entreprises
-        campaign_company_followup_due:   { userDelayDays: 7,  managementDelayDays: 14 }
+        campaign_company_followup_due: { userDelayDays: 7, managementDelayDays: 14 }
     };
 
     function setAaField(key, userId, mgmtId) {
@@ -311,7 +311,7 @@ function applySettings() {
     // Facturation missions
     setAaField('mission_fee_billing_overdue', 'aa_mission_fee_billing_overdue_user', 'aa_mission_fee_billing_overdue_management');
     setAaField('mission_expense_billing_overdue', 'aa_mission_expense_billing_overdue_user', 'aa_mission_expense_billing_overdue_management');
-    
+
     // Types de notifications
     if (currentSettings.notificationTypes) {
         Object.keys(currentSettings.notificationTypes).forEach(type => {
@@ -333,12 +333,12 @@ async function saveGeneralSettings() {
             enableEmailNotifications: document.getElementById('enableEmailNotifications').checked,
             enableCronJobs: document.getElementById('enableCronJobs').checked
         };
-        
+
         const response = await fetchNotificationApi('/api/notification-settings/general', {
             method: 'PUT',
             body: JSON.stringify(settings)
         });
-        
+
         if (response.success) {
             showAlert('Paramètres généraux sauvegardés avec succès', 'success');
             currentSettings.general = settings;
@@ -356,12 +356,12 @@ async function saveEmailSettings() {
     try {
         const passwordField = document.getElementById('smtpPassword');
         const passwordValue = passwordField.value;
-        
+
         // Ne pas envoyer le mot de passe s'il n'a pas été modifié (affiche encore les astérisques)
-        const smtpPassword = (passwordValue === '••••••••' && passwordField.getAttribute('data-saved') === 'true') 
-            ? undefined 
+        const smtpPassword = (passwordValue === '••••••••' && passwordField.getAttribute('data-saved') === 'true')
+            ? undefined
             : passwordValue;
-        
+
         const settings = {
             smtpHost: document.getElementById('smtpHost').value,
             smtpPort: parseInt(document.getElementById('smtpPort').value),
@@ -370,17 +370,17 @@ async function saveEmailSettings() {
             enableSSL: document.getElementById('enableSSL').checked,
             enableDebug: document.getElementById('enableDebug').checked
         };
-        
+
         // Ajouter le mot de passe seulement s'il a été modifié
         if (smtpPassword !== undefined) {
             settings.smtpPassword = smtpPassword;
         }
-        
+
         const response = await fetchNotificationApi('/api/notification-settings/email', {
             method: 'PUT',
             body: JSON.stringify(settings)
         });
-        
+
         if (response.success) {
             showAlert('Configuration email sauvegardée avec succès', 'success');
             currentSettings.email = settings;
@@ -408,12 +408,12 @@ async function saveNotificationSettings() {
                 notification: true // Par défaut
             };
         });
-        
+
         const response = await fetchNotificationApi('/api/notification-settings/notification-types', {
             method: 'PUT',
             body: JSON.stringify(settings)
         });
-        
+
         if (response.success) {
             showAlert('Types de notifications sauvegardés avec succès', 'success');
             currentSettings.notificationTypes = settings;
@@ -435,12 +435,12 @@ async function saveAlertSettings() {
             notificationRetention: parseInt(document.getElementById('notificationRetention').value),
             timezone: document.getElementById('timezone').value
         };
-        
+
         const response = await fetchNotificationApi('/api/notification-settings/alerts', {
             method: 'PUT',
             body: JSON.stringify(settings)
         });
-        
+
         if (response.success) {
             showAlert('Paramètres d\'alertes sauvegardés avec succès', 'success');
             currentSettings.alerts = settings;
@@ -460,7 +460,7 @@ async function testEmailConfiguration() {
         showAlert('Veuillez saisir un email de test', 'warning');
         return;
     }
-    
+
     try {
         const passwordField = document.getElementById('smtpPassword');
         const passwordValue = passwordField.value;
@@ -480,7 +480,7 @@ async function testEmailConfiguration() {
             enableSSL: document.getElementById('enableSSL').checked,
             enableDebug: document.getElementById('enableDebug').checked
         };
-        
+
         const response = await fetchNotificationApi('/api/notification-settings/test-email', {
             method: 'POST',
             body: JSON.stringify({
@@ -488,7 +488,7 @@ async function testEmailConfiguration() {
                 testEmail: testEmail
             })
         });
-        
+
         const resultDiv = document.getElementById('emailTestResult');
         if (response.success) {
             resultDiv.innerHTML = `
@@ -523,7 +523,7 @@ async function testCronJobs() {
         const response = await fetchNotificationApi('/api/notification-settings/test-cron', {
             method: 'POST'
         });
-        
+
         if (response.success) {
             showAlert('Test des tâches cron lancé avec succès', 'success');
         } else {
@@ -542,16 +542,18 @@ async function loadNotificationHistory() {
         if (response.success) {
             notificationHistory = response.data;
             const isAdmin = response.isAdmin;
-            
+
             // Mettre à jour l'interface selon le rôle
+            // Maintenant, tout le monde voit l'historique global (filtré par le backend)
+            // L'interface admin garde juste les contrôles de suppression globale
             updateAdminInterface(isAdmin);
-            
+
             displayNotificationHistory();
-            
-            // Si admin, charger la liste des utilisateurs pour le filtre
-            if (isAdmin) {
-                await loadUsersForFilter();
-            }
+
+            // On charge les utilisateurs pour le filtre pour tout le monde si on veut permettre le filtrage ?
+            // Le prompt demande de "regrouper toutes les notifications". 
+            // Laisser le filtre utilisateur accessible à tous permet de naviguer plus facilement.
+            await loadUsersForFilter();
         }
     } catch (error) {
         console.error('Erreur lors du chargement de l\'historique:', error);
@@ -562,25 +564,34 @@ async function loadNotificationHistory() {
 function updateAdminInterface(isAdmin) {
     const userFilterContainer = document.getElementById('userFilterContainer');
     const adminControls = document.getElementById('adminControls');
-    
+    const btnClearHistory = document.getElementById('btnClearHistory');
+
+    // Le filtre utilisateur est maintenant accessible à tous pour naviguer dans l'historique global
+    if (userFilterContainer) userFilterContainer.style.display = 'block';
+
     if (isAdmin) {
-        if (userFilterContainer) userFilterContainer.style.display = 'block';
         if (adminControls) adminControls.style.display = 'block';
-        
+        if (btnClearHistory) btnClearHistory.style.display = 'inline-block';
+
         // Ajouter un badge admin
         const historyHeader = document.querySelector('#history .config-header h3');
-        if (historyHeader) {
+        if (historyHeader && !historyHeader.querySelector('.badge')) {
             historyHeader.innerHTML += ' <span class="badge bg-danger ms-2">Administration</span>';
         }
     } else {
-        if (userFilterContainer) userFilterContainer.style.display = 'none';
         if (adminControls) adminControls.style.display = 'none';
+
+        // Masquer le bouton de suppression pour les non-admins (demande spécifique)
+        if (btnClearHistory) btnClearHistory.style.display = 'none';
     }
 }
 
-// Charger la liste des utilisateurs pour le filtre (admin seulement)
+// Charger la liste des utilisateurs pour le filtre
 async function loadUsersForFilter() {
     try {
+        // On suppose que l'API /api/users est accessible. 
+        // Si elle est restreinte aux admins, cela échouera pour les autres.
+        // On va vérifier. Si ça échoue, on cache le filtre.
         const response = await fetchNotificationApi('/api/users');
         if (response.success) {
             const userSelect = document.getElementById('userFilter');
@@ -593,9 +604,15 @@ async function loadUsersForFilter() {
                     userSelect.appendChild(option);
                 });
             }
+        } else {
+            // Si pas d'accès à la liste des users, on cache le filtre
+            const userFilterContainer = document.getElementById('userFilterContainer');
+            if (userFilterContainer) userFilterContainer.style.display = 'none';
         }
     } catch (error) {
         console.error('Erreur lors du chargement des utilisateurs:', error);
+        const userFilterContainer = document.getElementById('userFilterContainer');
+        if (userFilterContainer) userFilterContainer.style.display = 'none';
     }
 }
 
@@ -603,7 +620,7 @@ async function loadUsersForFilter() {
 function displayNotificationHistory(filteredHistory = null) {
     const historyContainer = document.getElementById('alertHistory');
     const history = filteredHistory || notificationHistory;
-    
+
     if (history.length === 0) {
         historyContainer.innerHTML = `
             <div class="text-center text-muted py-4">
@@ -613,51 +630,51 @@ function displayNotificationHistory(filteredHistory = null) {
         `;
         return;
     }
-    
+
     const historyHTML = history.map(item => {
         // Déterminer si on affiche les infos utilisateur (admin)
         const showUserInfo = item.user_nom && item.user_prenom;
-        
+
         return `
             <div class="alert-item ${getPriorityClass(item.priority)}">
                 <div class="d-flex justify-content-between align-items-start">
                     <div class="flex-grow-1">
                         <div class="d-flex align-items-center mb-1">
                             <h6 class="mb-0 me-2">${item.title}</h6>
-                            ${showUserInfo ? 
-                                `<span class="badge bg-info">${item.user_nom} ${item.user_prenom}</span>` : 
-                                ''
-                            }
+                            ${showUserInfo ?
+                `<span class="badge bg-info">${item.user_nom} ${item.user_prenom}</span>` :
+                ''
+            }
                         </div>
                         <p class="mb-1">${item.message}</p>
                         <small class="text-muted">
                             <i class="bi bi-clock me-1"></i>${formatDateTime(item.created_at)}
                             <i class="bi bi-tag ms-2 me-1"></i>${item.type}
-                            ${item.opportunity_name ? 
-                                `<i class="bi bi-briefcase ms-2 me-1"></i>${item.opportunity_name}` : 
-                                ''
-                            }
-                            ${item.campaign_name ? 
-                                `<i class="bi bi-megaphone ms-2 me-1"></i>${item.campaign_name}` : 
-                                ''
-                            }
+                            ${item.opportunity_name ?
+                `<i class="bi bi-briefcase ms-2 me-1"></i>${item.opportunity_name}` :
+                ''
+            }
+                            ${item.campaign_name ?
+                `<i class="bi bi-megaphone ms-2 me-1"></i>${item.campaign_name}` :
+                ''
+            }
                         </small>
                     </div>
                     <div class="ms-2 d-flex flex-column align-items-end">
-                        ${item.read_at ? 
-                            '<span class="badge bg-secondary mb-1">Lu</span>' : 
-                            '<span class="badge bg-primary mb-1">Non lu</span>'
-                        }
-                        ${showUserInfo ? 
-                            `<small class="text-muted">${item.user_login}</small>` : 
-                            ''
-                        }
+                        ${item.read_at ?
+                '<span class="badge bg-secondary mb-1">Lu</span>' :
+                '<span class="badge bg-primary mb-1">Non lu</span>'
+            }
+                        ${showUserInfo ?
+                `<small class="text-muted">${item.user_login}</small>` :
+                ''
+            }
                     </div>
                 </div>
             </div>
         `;
     }).join('');
-    
+
     historyContainer.innerHTML = historyHTML;
 }
 
@@ -666,22 +683,22 @@ function filterHistory() {
     const searchTerm = document.getElementById('historySearch').value.toLowerCase();
     const filterType = document.getElementById('historyFilter').value;
     const userFilter = document.getElementById('userFilter')?.value;
-    
+
     let filtered = notificationHistory;
-    
+
     // Filtre par type
     if (filterType) {
         filtered = filtered.filter(item => item.type === filterType);
     }
-    
-    // Filtre par utilisateur (admin seulement)
+
+    // Filtre par utilisateur (accessible à tous si la liste est chargée)
     if (userFilter) {
         filtered = filtered.filter(item => item.user_id === userFilter);
     }
-    
+
     // Filtre par recherche
     if (searchTerm) {
-        filtered = filtered.filter(item => 
+        filtered = filtered.filter(item =>
             item.title.toLowerCase().includes(searchTerm) ||
             item.message.toLowerCase().includes(searchTerm) ||
             item.type.toLowerCase().includes(searchTerm) ||
@@ -690,7 +707,7 @@ function filterHistory() {
             (item.user_login && item.user_login.toLowerCase().includes(searchTerm))
         );
     }
-    
+
     displayNotificationHistory(filtered);
 }
 
@@ -704,12 +721,12 @@ async function clearHistory() {
     if (!confirm('Êtes-vous sûr de vouloir vider l\'historique des notifications ?')) {
         return;
     }
-    
+
     try {
         const response = await fetchNotificationApi('/api/notification-settings/clear-history', {
             method: 'DELETE'
         });
-        
+
         if (response.success) {
             showAlert('Historique vidé avec succès', 'success');
             loadNotificationHistory();
@@ -726,23 +743,23 @@ async function clearHistory() {
 async function clearUserHistory() {
     const userFilter = document.getElementById('userFilter');
     const selectedUserId = userFilter?.value;
-    
+
     if (!selectedUserId) {
         showAlert('Veuillez sélectionner un utilisateur', 'warning');
         return;
     }
-    
+
     const selectedUserText = userFilter.options[userFilter.selectedIndex].text;
-    
+
     if (!confirm(`Êtes-vous sûr de vouloir vider l'historique de ${selectedUserText} ?`)) {
         return;
     }
-    
+
     try {
         const response = await fetchNotificationApi(`/api/notification-settings/clear-history?user_id=${selectedUserId}`, {
             method: 'DELETE'
         });
-        
+
         if (response.success) {
             showAlert(`Historique de ${selectedUserText} vidé avec succès`, 'success');
             loadNotificationHistory();
@@ -760,16 +777,16 @@ async function clearAllHistory() {
     if (!confirm('⚠️ ATTENTION : Êtes-vous ABSOLUMENT sûr de vouloir vider TOUT l\'historique de TOUS les utilisateurs ?\n\nCette action est irréversible !')) {
         return;
     }
-    
+
     if (!confirm('⚠️ DERNIÈRE CONFIRMATION : Vider tout l\'historique de notifications ?')) {
         return;
     }
-    
+
     try {
         const response = await fetchNotificationApi('/api/notification-settings/clear-history?confirm_all=true', {
             method: 'DELETE'
         });
-        
+
         if (response.success) {
             showAlert('Tout l\'historique a été vidé avec succès', 'success');
             loadNotificationHistory();
@@ -807,8 +824,8 @@ function generateCSV(data) {
         item.priority,
         item.read_at ? 'Lu' : 'Non lu'
     ]);
-    
-    return [headers, ...rows].map(row => 
+
+    return [headers, ...rows].map(row =>
         row.map(cell => `"${cell}"`).join(',')
     ).join('\n');
 }
@@ -903,9 +920,9 @@ function showAlert(message, type) {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    
+
     document.body.appendChild(alertDiv);
-    
+
     setTimeout(() => {
         if (alertDiv.parentNode) {
             alertDiv.remove();
@@ -919,20 +936,20 @@ async function fetchNotificationApi(url, options = {}) {
     if (!token) {
         throw new Error('Token d\'authentification manquant');
     }
-    
+
     const defaultOptions = {
         headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
         }
     };
-    
+
     const response = await fetch(url, { ...defaultOptions, ...options });
-    
+
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     return await response.json();
 }
 

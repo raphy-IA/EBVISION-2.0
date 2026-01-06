@@ -14,13 +14,13 @@ router.get('/', authenticateToken, async (req, res) => {
     try {
         // Vérifier si la table existe, sinon la créer
         await createSettingsTableIfNotExists();
-        
+
         const result = await pool.query(`
             SELECT * FROM ${NOTIFICATION_SETTINGS_TABLE} 
             WHERE user_id = $1 OR user_id IS NULL 
             ORDER BY user_id NULLS LAST
         `, [req.user.id]);
-        
+
         // Fusionner les paramètres globaux et utilisateur
         const globalSettings = result.rows.find(row => row.user_id === null) || {};
         const userSettings = result.rows.find(row => row.user_id === req.user.id) || {};
@@ -28,30 +28,30 @@ router.get('/', authenticateToken, async (req, res) => {
         // Valeurs par défaut pour la configuration des alertes automatiques (globales)
         const defaultAutomaticAlerts = {
             // Opportunités
-            opportunity_stage_overdue:      { userDelayDays: 3,  managementDelayDays: 7  },
-            opportunity_inactive:           { userDelayDays: 14, managementDelayDays: 30 },
+            opportunity_stage_overdue: { userDelayDays: 3, managementDelayDays: 7 },
+            opportunity_inactive: { userDelayDays: 14, managementDelayDays: 30 },
 
             // Missions (niveau mission global)
-            mission_inactive:               { userDelayDays: 7,  managementDelayDays: 14 },
+            mission_inactive: { userDelayDays: 7, managementDelayDays: 14 },
 
             // Missions - niveau tâches
-            mission_task_end_approaching:   { userDelayDays: 3,  managementDelayDays: 7  },
-            mission_task_overdue_not_closed:{ userDelayDays: 2,  managementDelayDays: 5  },
+            mission_task_end_approaching: { userDelayDays: 3, managementDelayDays: 7 },
+            mission_task_overdue_not_closed: { userDelayDays: 2, managementDelayDays: 5 },
 
             // Feuilles de temps
-            timesheet_not_submitted:        { userDelayDays: 2,  managementDelayDays: 5  },   // user = collaborateur
-            timesheet_not_validated_superv: { userDelayDays: 2,  managementDelayDays: 5  },   // user = superviseur
+            timesheet_not_submitted: { userDelayDays: 2, managementDelayDays: 5 },   // user = collaborateur
+            timesheet_not_validated_superv: { userDelayDays: 2, managementDelayDays: 5 },   // user = superviseur
 
             // Facturation missions
-            mission_fee_billing_overdue:     { userDelayDays: 3,  managementDelayDays: 7  },  // user = manager mission
-            mission_expense_billing_overdue: { userDelayDays: 3,  managementDelayDays: 7  },  // user = manager mission
+            mission_fee_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },  // user = manager mission
+            mission_expense_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },  // user = manager mission
 
             // Campagnes de prospection (global campagne)
-            campaign_validation_pending:    { userDelayDays: 3,  managementDelayDays: 7  },
-            campaign_not_launched:          { userDelayDays: 5,  managementDelayDays: 10 },
+            campaign_validation_pending: { userDelayDays: 3, managementDelayDays: 7 },
+            campaign_not_launched: { userDelayDays: 5, managementDelayDays: 10 },
 
             // Campagnes de prospection - relance par entreprise
-            campaign_company_followup_due:  { userDelayDays: 7,  managementDelayDays: 14 }
+            campaign_company_followup_due: { userDelayDays: 7, managementDelayDays: 14 }
         };
 
         // Les paramètres sont stockés en snake_case dans la base (automatic_alerts)
@@ -163,7 +163,7 @@ router.get('/', authenticateToken, async (req, res) => {
             // Nouvelle configuration centrale des délais d'alertes automatiques
             automaticAlerts: mergedAutomaticAlerts
         };
-        
+
         res.json({
             success: true,
             data: settings
@@ -251,9 +251,9 @@ router.post('/test-email', authenticateToken, async (req, res) => {
 router.put('/general', authenticateToken, async (req, res) => {
     try {
         await createSettingsTableIfNotExists();
-        
+
         const { enableNotifications, enableEmailNotifications, enableCronJobs } = req.body;
-        
+
         await pool.query(`
             INSERT INTO ${NOTIFICATION_SETTINGS_TABLE} (user_id, general, updated_at)
             VALUES ($1, $2, CURRENT_TIMESTAMP)
@@ -281,7 +281,7 @@ router.put('/general', authenticateToken, async (req, res) => {
             enableEmailNotifications,
             enableCronJobs
         })]);
-        
+
         res.json({
             success: true,
             message: 'Paramètres généraux sauvegardés'
@@ -299,9 +299,9 @@ router.put('/general', authenticateToken, async (req, res) => {
 router.put('/email', authenticateToken, async (req, res) => {
     try {
         await createSettingsTableIfNotExists();
-        
+
         const emailSettings = req.body;
-        
+
         // Mettre à jour les variables d'environnement pour l'ensemble de l'application
         process.env.EMAIL_USER = emailSettings.smtpUser;
         if (emailSettings.smtpPassword) {
@@ -312,10 +312,10 @@ router.put('/email', authenticateToken, async (req, res) => {
         process.env.SMTP_PORT = String(emailSettings.smtpPort || '587');
         process.env.SMTP_SECURE = emailSettings.enableSSL ? 'true' : 'false';
         process.env.SMTP_DEBUG = emailSettings.enableDebug ? 'true' : 'false';
-        
+
         // Réinitialiser le service email avec les nouveaux paramètres
         await EmailService.initTransporter();
-        
+
         // Sauvegarder la configuration pour l'utilisateur courant
         await pool.query(`
             INSERT INTO ${NOTIFICATION_SETTINGS_TABLE} (user_id, email, updated_at)
@@ -336,7 +336,7 @@ router.put('/email', authenticateToken, async (req, res) => {
                 email = $1,
                 updated_at = CURRENT_TIMESTAMP
         `, [JSON.stringify(emailSettings)]);
-        
+
         res.json({
             success: true,
             message: 'Configuration email sauvegardée'
@@ -354,9 +354,9 @@ router.put('/email', authenticateToken, async (req, res) => {
 router.put('/notification-types', authenticateToken, async (req, res) => {
     try {
         await createSettingsTableIfNotExists();
-        
+
         const notificationTypes = req.body;
-        
+
         await pool.query(`
             INSERT INTO ${NOTIFICATION_SETTINGS_TABLE} (user_id, notification_types, updated_at)
             VALUES ($1, $2, CURRENT_TIMESTAMP)
@@ -365,7 +365,7 @@ router.put('/notification-types', authenticateToken, async (req, res) => {
                 notification_types = $2,
                 updated_at = CURRENT_TIMESTAMP
         `, [req.user.id, JSON.stringify(notificationTypes)]);
-        
+
         res.json({
             success: true,
             message: 'Types de notifications sauvegardés'
@@ -383,9 +383,9 @@ router.put('/notification-types', authenticateToken, async (req, res) => {
 router.put('/alerts', authenticateToken, async (req, res) => {
     try {
         await createSettingsTableIfNotExists();
-        
+
         const alertSettings = req.body;
-        
+
         await pool.query(`
             INSERT INTO ${NOTIFICATION_SETTINGS_TABLE} (user_id, alerts, updated_at)
             VALUES ($1, $2, CURRENT_TIMESTAMP)
@@ -394,7 +394,7 @@ router.put('/alerts', authenticateToken, async (req, res) => {
                 alerts = $2,
                 updated_at = CURRENT_TIMESTAMP
         `, [req.user.id, JSON.stringify(alertSettings)]);
-        
+
         res.json({
             success: true,
             message: 'Paramètres d\'alertes sauvegardés'
@@ -442,7 +442,7 @@ router.put('/automatic-alerts', authenticateToken, async (req, res) => {
 // Historique des notifications (utilisé par notification-settings.js)
 // =========================
 
-// Récupérer l'historique des notifications de l'utilisateur courant (ou globale en mode admin)
+// Récupérer l'historique des notifications (Global mais filtré par sécurité)
 router.get('/history', authenticateToken, async (req, res) => {
     try {
         const isAdmin = (req.user && (
@@ -470,21 +470,35 @@ router.get('/history', authenticateToken, async (req, res) => {
             LEFT JOIN opportunities o ON n.opportunity_id = o.id
         `;
 
-        let whereClause = 'WHERE n.user_id = $1';
-        const params = [req.user.id];
+        let whereClauses = [];
+        let params = [];
+        let paramIndex = 1;
 
-        // En mode admin, on peut filtrer sur un utilisateur précis via ?user_id=...
-        if (isAdmin && req.query.user_id) {
-            whereClause = 'WHERE n.user_id = $1';
-            params[0] = req.query.user_id;
+        // Si non-admin, on ne doit PAS voir les notifications des Super Admins
+        if (!isAdmin) {
+            whereClauses.push(`
+                NOT EXISTS (
+                    SELECT 1 FROM user_roles ur
+                    JOIN roles r ON ur.role_id = r.id
+                    WHERE ur.user_id = n.user_id AND r.name = 'SUPER_ADMIN'
+                )
+            `);
         }
 
-        const query = `
-            ${baseQuery}
-            ${whereClause}
-            ORDER BY n.created_at DESC
-            LIMIT 200
-        `;
+        // Filtre optionnel par utilisateur (si demandé via UI)
+        if (req.query.user_id) {
+            whereClauses.push(`n.user_id = $${paramIndex}`);
+            params.push(req.query.user_id);
+            paramIndex++;
+        }
+
+        // Construction de la requête finale
+        let query = baseQuery;
+        if (whereClauses.length > 0) {
+            query += ' WHERE ' + whereClauses.join(' AND ');
+        }
+
+        query += ' ORDER BY n.created_at DESC LIMIT 200';
 
         const result = await pool.query(query, params);
 
@@ -509,6 +523,14 @@ router.delete('/clear-history', authenticateToken, async (req, res) => {
             req.user.role === 'SUPER_ADMIN' ||
             (Array.isArray(req.user.roles) && req.user.roles.includes('SUPER_ADMIN'))
         )) || false;
+
+        // Restriction stricte : Seul le SUper Admin peut supprimer l'historique
+        if (!isAdmin) {
+            return res.status(403).json({
+                success: false,
+                error: 'Action non autorisée. Seul le Super Admin peut vider l\'historique.'
+            });
+        }
 
         const { user_id: targetUserId, confirm_all } = req.query;
 
@@ -581,12 +603,12 @@ async function createSettingsTableIfNotExists() {
                 UNIQUE(user_id)
             )
         `);
-        
+
         // Insérer les paramètres par défaut si aucun n'existe
         const existingSettings = await pool.query(`
             SELECT COUNT(*) as count FROM ${NOTIFICATION_SETTINGS_TABLE}
         `);
-        
+
         if (parseInt(existingSettings.rows[0].count) === 0) {
             await pool.query(`
                 INSERT INTO ${NOTIFICATION_SETTINGS_TABLE} (user_id, general, email, notification_types, alerts, automatic_alerts)
@@ -631,30 +653,30 @@ async function createSettingsTableIfNotExists() {
                 }),
                 JSON.stringify({
                     // Opportunités
-                    opportunity_stage_overdue:       { userDelayDays: 3,  managementDelayDays: 7  },
-                    opportunity_inactive:            { userDelayDays: 14, managementDelayDays: 30 },
+                    opportunity_stage_overdue: { userDelayDays: 3, managementDelayDays: 7 },
+                    opportunity_inactive: { userDelayDays: 14, managementDelayDays: 30 },
 
                     // Missions (niveau mission global)
-                    mission_inactive:                { userDelayDays: 7,  managementDelayDays: 14 },
+                    mission_inactive: { userDelayDays: 7, managementDelayDays: 14 },
 
                     // Missions - niveau tâches
-                    mission_task_end_approaching:    { userDelayDays: 3,  managementDelayDays: 7  },
-                    mission_task_overdue_not_closed: { userDelayDays: 2,  managementDelayDays: 5  },
+                    mission_task_end_approaching: { userDelayDays: 3, managementDelayDays: 7 },
+                    mission_task_overdue_not_closed: { userDelayDays: 2, managementDelayDays: 5 },
 
                     // Feuilles de temps
-                    timesheet_not_submitted:         { userDelayDays: 2,  managementDelayDays: 5  },
-                    timesheet_not_validated_superv:  { userDelayDays: 2,  managementDelayDays: 5  },
+                    timesheet_not_submitted: { userDelayDays: 2, managementDelayDays: 5 },
+                    timesheet_not_validated_superv: { userDelayDays: 2, managementDelayDays: 5 },
 
                     // Facturation missions
-                    mission_fee_billing_overdue:     { userDelayDays: 3,  managementDelayDays: 7  },
-                    mission_expense_billing_overdue: { userDelayDays: 3,  managementDelayDays: 7  },
+                    mission_fee_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },
+                    mission_expense_billing_overdue: { userDelayDays: 3, managementDelayDays: 7 },
 
                     // Campagnes de prospection (global campagne)
-                    campaign_validation_pending:     { userDelayDays: 3,  managementDelayDays: 7  },
-                    campaign_not_launched:           { userDelayDays: 5,  managementDelayDays: 10 },
+                    campaign_validation_pending: { userDelayDays: 3, managementDelayDays: 7 },
+                    campaign_not_launched: { userDelayDays: 5, managementDelayDays: 10 },
 
                     // Campagnes de prospection - relance par entreprise
-                    campaign_company_followup_due:   { userDelayDays: 7,  managementDelayDays: 14 }
+                    campaign_company_followup_due: { userDelayDays: 7, managementDelayDays: 14 }
                 })
             ]);
         }
