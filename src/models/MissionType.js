@@ -17,6 +17,27 @@ class MissionType {
         return result.rows;
     }
 
+    static async findByBusinessUnitIds(buIds) {
+        if (!buIds || buIds.length === 0) return [];
+
+        const placeholders = buIds.map((_, i) => `$${i + 1}`).join(',');
+        const query = `
+            SELECT 
+                mt.*,
+                d.nom as division_nom,
+                COALESCE(bu_direct.nom, bu_div.nom) as business_unit_nom
+            FROM mission_types mt
+            LEFT JOIN divisions d ON mt.division_id = d.id
+            LEFT JOIN business_units bu_div ON d.business_unit_id = bu_div.id
+            LEFT JOIN business_units bu_direct ON mt.business_unit_id = bu_direct.id
+            WHERE mt.business_unit_id IN (${placeholders}) OR mt.business_unit_id IS NULL
+            ORDER BY mt.codification
+        `;
+        // Note: OR mt.business_unit_id IS NULL allows viewing global types if any
+        const result = await pool.query(query, buIds);
+        return result.rows;
+    }
+
     static async findById(id) {
         const query = `
             SELECT 

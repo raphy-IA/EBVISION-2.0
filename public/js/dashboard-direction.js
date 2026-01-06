@@ -328,7 +328,7 @@ function initializeCharts() {
                         position: 'left',
                         title: {
                             display: true,
-                            text: `Chiffre d'Affaires (${typeof CURRENCY_CONFIG !== 'undefined' ? CURRENCY_CONFIG.getSymbol() : '€'})`
+                            text: `Chiffre d'Affaires (${typeof CURRENCY_CONFIG !== 'undefined' ? CURRENCY_CONFIG.getSymbol(financialDefaultCurrency) : (financialDefaultCurrency || '€')})`
                         },
                         beginAtZero: true
                     },
@@ -479,8 +479,16 @@ function displayFinancialIndicators(indicators) {
     const indicatorsHTML = indicators.map(indicator => {
         const changeClass = indicator.positif ? 'positive' : 'negative';
         const changeIcon = indicator.positif ? 'arrow-up' : 'arrow-down';
-        const currencySymbol = typeof CURRENCY_CONFIG !== 'undefined' ? CURRENCY_CONFIG.getSymbol() : '€';
-        const value = indicator.unite === currencySymbol ? formatCurrency(indicator.valeur) : `${indicator.valeur}${indicator.unite}`;
+
+        // Use the globally loaded financialDefaultCurrency 
+        const currencyCode = financialDefaultCurrency;
+        const currencySymbol = typeof CURRENCY_CONFIG !== 'undefined' ? CURRENCY_CONFIG.getSymbol(currencyCode) : '€';
+
+        // Check if the indicator unit matches the expected currency symbol (or is just empty, implying currency)
+        // Adjust logic: if unite is currency symbol or 'XAF'/'EUR'/'USD', format as currency
+        const isCurrency = indicator.unite === '€' || indicator.unite === currencySymbol || indicator.type === 'monetaire';
+
+        const value = isCurrency ? formatCurrency(indicator.valeur, currencyCode) : `${indicator.valeur}${indicator.unite}`;
 
         return `
             <div class="financial-indicator">

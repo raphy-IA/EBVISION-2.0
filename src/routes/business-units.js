@@ -18,41 +18,53 @@ router.get('/', authenticateToken, async (req, res) => {
             statut: status
         };
 
-        const result = await BusinessUnit.findAll(options);
-
-        // Security: Filter results for non-admins
+        // Security: Filter results for non-admins BEFORE querying
         const userRoles = user.roles || [];
-        const isSuperAdmin = userRoles.some(r => ['SUPER_ADMIN', 'ADMIN', 'SENIOR_PARTNER', 'DIRECTOR'].includes(r));
+        const isSuperAdmin = userRoles.some(r => [
+            'SUPER_ADMIN',
+            'ADMIN',
+            'RESPONSABLE_RH',
+            'ASSISTANT_RH',
+            'ADMIN_RH',
+            'RESPONSABLE_IT',
+            'ASSISTANT_IT',
+            'ADMIN_IT',
+            'RESPONSABLE_FINANCE'
+        ].includes(r));
 
         if (!isSuperAdmin) {
-            // Find all BUs user has access to (Explicit + Implicit)
-            // Implicit: Via collaborateurs.business_unit_id
-            // Explicit: Via user_business_unit_access table
+            // Find all BUs user has access to (Explicit + Implicit via Collaborator/Mission)
             const userBuQuery = `
                 SELECT DISTINCT bu.id
                 FROM business_units bu
                 LEFT JOIN user_business_unit_access uba ON bu.id = uba.business_unit_id AND uba.user_id = $1
                 LEFT JOIN users u ON u.id = $1
                 LEFT JOIN collaborateurs c ON c.id = u.collaborateur_id 
+                LEFT JOIN missions m ON (
+                    m.business_unit_id = bu.id AND (
+                        m.collaborateur_id = c.id OR 
+                        m.manager_id = c.id OR 
+                        m.associe_id = c.id
+                    )
+                )
                 WHERE 
                     (uba.user_id IS NOT NULL AND uba.granted = true)
                     OR 
                     (c.business_unit_id = bu.id)
+                    OR
+                    (m.id IS NOT NULL)
             `;
 
             const buRes = await pool.query(userBuQuery, [user.id]);
             const allowedBuIds = buRes.rows.map(r => r.id);
 
-            if (allowedBuIds.length > 0) {
-                result.businessUnits = result.businessUnits.filter(bu => allowedBuIds.includes(bu.id));
-                // Adjust pagination total (approximate)
-                result.pagination.total = result.businessUnits.length;
-                result.pagination.pages = 1;
-            } else {
-                result.businessUnits = [];
-                result.pagination.total = 0;
-            }
+            console.log('DEBUG [GET /api/business-units] User:', user.id);
+            console.log('DEBUG [GET /api/business-units] Allowed BUs found:', allowedBuIds);
+
+            options.ids = allowedBuIds;
         }
+
+        const result = await BusinessUnit.findAll(options);
 
         res.json({
             success: true,

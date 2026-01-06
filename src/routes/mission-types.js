@@ -7,7 +7,44 @@ const Division = require('../models/Division');
 // GET /api/mission-types - Récupérer tous les types de mission
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const missionTypes = await MissionType.findAll();
+        const { pool } = require('../utils/database');
+        const user = req.user;
+        const userRoles = user.roles || [];
+
+        // Roles sans restriction
+        // Roles sans restriction
+        const EXEMPT_ROLES = [
+            'SUPER_ADMIN', 'ADMIN',
+            'RESPONSABLE_RH', 'ASSISTANT_RH', 'ADMIN_RH',
+            'RESPONSABLE_IT', 'ASSISTANT_IT', 'ADMIN_IT'
+        ];
+
+        const isExempt = userRoles.some(r => EXEMPT_ROLES.includes(r));
+
+        let missionTypes;
+
+        if (isExempt) {
+            missionTypes = await MissionType.findAll();
+        } else {
+            // Utilisateur restreint : Récupérer uniquement les BU accessibles
+            // (Logique identique à GET /api/business-units pour non-admin)
+            const userBuQuery = `
+                SELECT DISTINCT bu.id
+                FROM business_units bu
+                LEFT JOIN user_business_unit_access uba ON bu.id = uba.business_unit_id AND uba.user_id = $1
+                LEFT JOIN users u ON u.id = $1
+                LEFT JOIN collaborateurs c ON c.id = u.collaborateur_id 
+                WHERE 
+                    (uba.user_id IS NOT NULL AND uba.granted = true)
+                    OR 
+                    (c.business_unit_id = bu.id)
+            `;
+            const buResult = await pool.query(userBuQuery, [user.id]);
+            const accessibleBuIds = buResult.rows.map(row => row.id);
+
+            missionTypes = await MissionType.findByBusinessUnitIds(accessibleBuIds);
+        }
+
         res.json({
             success: true,
             message: 'Types de mission récupérés avec succès',

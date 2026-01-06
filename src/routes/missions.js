@@ -25,49 +25,61 @@ router.get('/', authenticateToken, async (req, res) => {
         };
 
         const user = req.user; // Authenticated user
+        const userRoles = user.roles || [];
+        const isSuperAdmin = userRoles.some(r => ['SUPER_ADMIN', 'RESPONSABLE_FINANCE'].includes(r));
 
+        // Joins de base nécessaires pour la sécurité/filtrage
         let whereConditions = [];
         let queryParams = [];
         let paramIndex = 1;
-        let extraJoins = ""; // Pour les jointures conditionnelles
+        let extraJoins = "";
 
-        const userRoles = user.roles || [];
-        // SEUL le SUPER_ADMIN voit tout par défaut. Les autres (Admin, Director, etc.) sont restreints à leur périmètre.
-        const isSuperAdmin = userRoles.includes('SUPER_ADMIN');
+        // Logique de filtrage par Vue
+        // 'my_scope', 'active', 'finished' => Filtrage strict par Rôle (Responsable, Manager, Associé)
+        // 'all' => Filtrage par Périmètre BU (sauf SuperAdmin qui voit tout)
 
-        // 0. Sécurisation globale : 
-        // - Non-SuperAdmins voient uniquement leur périmètre (BU + Affectations + BUs secondaires)
-        // - SuperAdmins voient tout, SAUF si le filtre 'my_scope' est activé explicite
-        if (!isSuperAdmin || options.view === 'my_scope') {
+        const isPersonalView = ['my_scope', 'active', 'finished'].includes(options.view);
+        // On applique les restrictions de sécurité (et donc les jointures nécessaires) si :
+        // 1. C'est une vue personnelle (pour tout le monde)
+        // 2. OU si l'utilisateur N'EST PAS SuperAdmin (pour la vue 'all')
+        const shouldApplyRestrictions = isPersonalView || !isSuperAdmin;
+
+        if (shouldApplyRestrictions) {
             extraJoins += ` LEFT JOIN users u_req ON u_req.id = $${paramIndex} `;
             queryParams.push(user.id);
             paramIndex++;
-
-            // Join collaborateurs to get Primary BU info
             extraJoins += ` LEFT JOIN collaborateurs col_req ON u_req.collaborateur_id = col_req.id `;
-
-            // Join user_business_unit_access for Secondary BUs
             extraJoins += ` LEFT JOIN user_business_unit_access ubua ON ubua.user_id = u_req.id AND ubua.business_unit_id = m.business_unit_id `;
 
-            whereConditions.push(`(
-                m.collaborateur_id = u_req.collaborateur_id OR
-                m.associe_id = u_req.collaborateur_id OR
-                m.manager_id = u_req.collaborateur_id OR
-                bu.responsable_principal_id = u_req.collaborateur_id OR
-                bu.responsable_adjoint_id = u_req.collaborateur_id OR
-                m.business_unit_id = col_req.business_unit_id OR
-                ubua.business_unit_id IS NOT NULL
-            )`);
-        }
+            if (isPersonalView) {
+                // Vue Personnelle : Je dois être impliqué directement
+                whereConditions.push(`(
+                    m.collaborateur_id = u_req.collaborateur_id OR
+                    m.manager_id = u_req.collaborateur_id OR
+                    m.associe_id = u_req.collaborateur_id
+                )`);
 
-        // Filtres de Vues Spécifiques
-        if (options.view === 'active') {
-            whereConditions.push(`m.statut = 'EN_COURS'`);
+                // Filtres de statut spécifiques aux vues personnelles
+                if (options.view === 'active') {
+                    whereConditions.push(`m.statut = 'EN_COURS'`);
+                } else if (options.view === 'finished') {
+                    whereConditions.push(`m.statut IN ('TERMINEE', 'ARCHIVEE')`);
+                }
+            } else {
+                // Vue "Toutes les missions" (Non-SuperAdmin)
+                // Restriction au périmètre BU (Principale + Secondaires) + Mes implications directes
+                whereConditions.push(`(
+                    m.business_unit_id = col_req.business_unit_id OR 
+                    ubua.business_unit_id IS NOT NULL OR
+                    m.collaborateur_id = u_req.collaborateur_id OR
+                    m.manager_id = u_req.collaborateur_id OR
+                    m.associe_id = u_req.collaborateur_id
+                )`);
+            }
         }
-        else if (options.view === 'finished') {
-            whereConditions.push(`m.statut IN ('TERMINEE', 'ARCHIVEE')`);
-        }
+        // Si SuperAdmin ET view='all', on ne rentre pas dans le if, donc pas de restrictions ni de jointures inutiles.
 
+        // Filtres additionnels standards (s'appliquent par-dessus la vue)
         if (options.client_id) {
             whereConditions.push(`m.client_id = $${paramIndex++}`);
             queryParams.push(options.client_id);
@@ -184,27 +196,35 @@ router.get('/stats', authenticateToken, async (req, res) => {
         // SEUL le SUPER_ADMIN voit tout par défaut
         const isSuperAdmin = userRoles.includes('SUPER_ADMIN');
 
-        if (!isSuperAdmin || req.query.view === 'my_scope') {
-            // Join users to get current user data explicitly like in GET /
+        // Distinction logique Vue Personnelle vs Vue "Toutes les missions"
+        const isPersonalView = ['my_scope', 'active', 'finished'].includes(req.query.view);
+        const shouldApplyRestrictions = isPersonalView || !isSuperAdmin;
+
+        if (shouldApplyRestrictions) {
+            // Joins de base nécessaires pour la sécurité/filtrage (identique à GET /)
             joins += ` LEFT JOIN users u_req ON u_req.id = $${valueIndex} `;
             values.push(user.id);
             valueIndex++;
-
-            // Join collaborateurs to get Primary BU info
             joins += ` LEFT JOIN collaborateurs col_req ON u_req.collaborateur_id = col_req.id `;
-
-            // Join user_business_unit_access for Secondary BUs
             joins += ` LEFT JOIN user_business_unit_access ubua ON ubua.user_id = u_req.id AND ubua.business_unit_id = m.business_unit_id `;
 
-            conditions.push(`(
-                m.collaborateur_id = u_req.collaborateur_id OR
-                m.associe_id = u_req.collaborateur_id OR
-                m.manager_id = u_req.collaborateur_id OR
-                bu.responsable_principal_id = u_req.collaborateur_id OR
-                bu.responsable_adjoint_id = u_req.collaborateur_id OR
-                m.business_unit_id = col_req.business_unit_id OR
-                ubua.business_unit_id IS NOT NULL
-            )`);
+            if (isPersonalView) {
+                // Vue Personnelle : Je dois être impliqué directement
+                conditions.push(`(
+                    m.collaborateur_id = u_req.collaborateur_id OR
+                    m.manager_id = u_req.collaborateur_id OR
+                    m.associe_id = u_req.collaborateur_id
+                )`);
+            } else {
+                // Vue "Toutes les missions" (Non-SuperAdmin)
+                conditions.push(`(
+                    m.business_unit_id = col_req.business_unit_id OR 
+                    ubua.business_unit_id IS NOT NULL OR
+                    m.collaborateur_id = u_req.collaborateur_id OR
+                    m.manager_id = u_req.collaborateur_id OR
+                    m.associe_id = u_req.collaborateur_id
+                )`);
+            }
         }
 
         // Apply standard filters

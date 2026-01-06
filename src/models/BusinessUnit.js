@@ -12,7 +12,7 @@ class BusinessUnit {
 
         // Commencer une transaction
         const client = await pool.connect();
-        
+
         try {
             await client.query('BEGIN');
 
@@ -39,7 +39,7 @@ class BusinessUnit {
             await client.query(divisionSql, [divisionId, nom, divisionCode, businessUnit.id, divisionDescription]);
 
             await client.query('COMMIT');
-            
+
             console.log(`✅ Business unit "${nom}" créée avec division par défaut`);
             return businessUnit;
 
@@ -82,7 +82,8 @@ class BusinessUnit {
             page = 1,
             limit = 10,
             search = '',
-            statut = ''
+            statut = '',
+            ids = null // New option
         } = options;
 
         const offset = (page - 1) * limit;
@@ -98,6 +99,17 @@ class BusinessUnit {
         if (statut) {
             conditions.push(`bu.statut = $${params.length + 1}`);
             params.push(statut);
+        }
+
+        if (ids && Array.isArray(ids) && ids.length > 0) {
+            conditions.push(`bu.id = ANY($${params.length + 1})`);
+            params.push(ids);
+        } else if (ids && Array.isArray(ids) && ids.length === 0) {
+            // If ids is provided but empty, return nothing (for restrictive filters)
+            return {
+                businessUnits: [],
+                pagination: { page, limit, total: 0, pages: 0 }
+            };
         }
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -304,11 +316,11 @@ class BusinessUnit {
 
         const result = await pool.query(sql, [businessUnitId]);
         const deps = result.rows[0];
-        
+
         return {
-            canDelete: deps.active_divisions == 0 && deps.active_collaborateurs == 0 && 
-                      deps.opportunities == 0 && deps.prospecting_campaigns == 0 && 
-                      deps.time_entries == 0,
+            canDelete: deps.active_divisions == 0 && deps.active_collaborateurs == 0 &&
+                deps.opportunities == 0 && deps.prospecting_campaigns == 0 &&
+                deps.time_entries == 0,
             dependencies: {
                 active_divisions: parseInt(deps.active_divisions),
                 active_collaborateurs: parseInt(deps.active_collaborateurs),
@@ -322,7 +334,7 @@ class BusinessUnit {
     // Désactiver une business unit (soft delete)
     static async deactivate(businessUnitId) {
         const client = await pool.connect();
-        
+
         try {
             await client.query('BEGIN');
 
@@ -342,7 +354,7 @@ class BusinessUnit {
                 RETURNING id, nom, code, statut
             `;
             const result = await client.query(deactivateBusinessUnitSql, [businessUnitId]);
-            
+
             if (result.rows.length === 0) {
                 throw new Error('Business unit non trouvée');
             }
@@ -363,7 +375,7 @@ class BusinessUnit {
     // Supprimer définitivement une business unit (hard delete)
     static async delete(businessUnitId) {
         const client = await pool.connect();
-        
+
         try {
             await client.query('BEGIN');
 
@@ -381,7 +393,7 @@ class BusinessUnit {
                 RETURNING id, nom, code
             `;
             const result = await client.query(deleteBusinessUnitSql, [businessUnitId]);
-            
+
             if (result.rows.length === 0) {
                 throw new Error('Business unit non trouvée');
             }

@@ -603,11 +603,12 @@
         let currentMissionId = null;
 
         // Determine default view based on role
+        // Determine default view based on role
         const userGlobal = JSON.parse(localStorage.getItem('user')) || {};
         const rolesGlobal = userGlobal.roles || [];
-        const hasBroadAccess = rolesGlobal.some(r => ['SUPER_ADMIN', 'ADMIN', 'SENIOR_PARTNER', 'DIRECTOR'].includes(r));
 
-        let currentView = hasBroadAccess ? 'all' : 'my_scope';
+        // Default view is always 'my_scope' per user request
+        let currentView = 'my_scope';
         let currentPage = 1;
         const itemsPerPage = 20;
 

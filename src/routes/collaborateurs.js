@@ -22,16 +22,29 @@ const path = require('path');
  */
 router.get('/', authenticateToken, async (req, res) => {
     try {
+        const userRoles = req.user.roles || [];
+        const isUnrestricted = userRoles.some(r => [
+            'SUPER_ADMIN',
+            'ADMIN',
+            'SENIOR_PARTNER',
+            'DIRECTOR',
+            'RESPONSABLE_RH',
+            'ASSISTANT_RH',
+            'ADMIN_RH',
+            'RESPONSABLE_IT',
+            'ASSISTANT_IT',
+            'ADMIN_IT'
+        ].includes(r));
+
         const options = {
             page: parseInt(req.query.page) || 1,
             limit: (req.query.limit !== undefined && req.query.limit !== '') ? parseInt(req.query.limit) : 20,
-            grade: req.query.grade,
             grade: req.query.grade,
             statut: req.query.statut,
             division_id: req.query.division_id,
             business_unit_id: req.query.business_unit_id,
             search: req.query.search,
-            filterByUserAccess: req.query.filterByUserAccess === 'true',
+            filterByUserAccess: isUnrestricted ? false : req.query.filterByUserAccess === 'true',
             userId: req.user.id
         };
 

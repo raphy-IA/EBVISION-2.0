@@ -226,40 +226,47 @@ class Invoice {
         let extraJoins = "";
 
         // 1. Gestion des Vues (Scoping & Presets)
-        if (view === 'my_scope' && user) {
-            // Logique JS pour déterminer le scope en fonction des rôles de l'utilisateur
-            // (Evite de dépendre de colonnes SQL qui n'existent peut-être pas ou sont en cours de migration)
+        // Access Control Logic
+        if (user) {
             const userRoles = user.roles || [];
-            const isSuperAdmin = userRoles.includes('SUPER_ADMIN') || userRoles.includes('ADMIN') || userRoles.includes('SENIOR_PARTNER') || userRoles.includes('DIRECTOR');
+            const isUnrestricted = userRoles.some(r => ['SUPER_ADMIN', 'ADMIN', 'RESPONSABLE_FINANCE'].includes(r));
+            const isFinancesBu = userRoles.includes('FINANCES_BU');
 
-            if (!isSuperAdmin) {
-                // Manager / Associé / Resp BU : Restriction aux missions liées
-                // On utilise les IDs passés par l'objet user (qui doivent être peuplés par le middleware auth)
-                // Si l'objet user n'a pas les IDs, on peut avoir besoin de les récupérer via une jointure simple sur users si nécessaire,
-                // mais ici on va assumer que si on est pas admin, on filtre sur l'ID collaborateur courant.
+            if (!isUnrestricted) {
+                // Common Joins for Security
+                extraJoins += ` LEFT JOIN users u_req ON u_req.id = $${valueIndex} `;
+                values.push(user.id);
+                valueIndex++;
 
-                // Pour sécuriser, on fait une jointure sur users pour récupérer collaborateur_id frais si besoin, 
-                // mais le problème précédent était sur la colonne roles.
-                // On va filtrer simplement sur les champs de mission.
+                extraJoins += ` LEFT JOIN collaborateurs c_req ON u_req.collaborateur_id = c_req.id `;
+                extraJoins += ` LEFT JOIN user_business_unit_access ubua ON ubua.user_id = u_req.id AND ubua.business_unit_id = m.business_unit_id AND ubua.granted = true `;
 
-                // Note: user.collaborateur_id doit être disponible. Si non, on restreint tout.
-                if (user.collaborateur_id) {
+                if (isFinancesBu) {
+                    // FINANCES_BU: Can see invoices for their BUs (explicit access or implicitly via their own BU)
                     conditions.push(`(
-                        m.collaborateur_id = $${valueIndex} OR
-                        m.associe_id = $${valueIndex} OR
-                        bu.responsable_principal_id = $${valueIndex} OR
-                        bu.responsable_adjoint_id = $${valueIndex}
+                        ubua.business_unit_id IS NOT NULL OR
+                        m.business_unit_id = c_req.business_unit_id
                     )`);
-                    values.push(user.collaborateur_id);
-                    valueIndex++;
                 } else {
-                    // Fallback securité : si pas de collaborateur_id et pas admin, on ne montre rien (ou juste ses propres créations ?)
-                    conditions.push(`i.created_by = $${valueIndex}`);
-                    values.push(user.id);
-                    valueIndex++;
+                    // Standard User / Partner / Director: Can see invoices for missions they are involved in
+                    conditions.push(`(
+                        m.collaborateur_id = c_req.id OR
+                        m.manager_id = c_req.id OR
+                        m.associe_id = c_req.id
+                    )`);
                 }
             }
-            // Si SuperAdmin/Admin, aucune condition additionnelle de scope n'est ajoutée => VOIT TOUT
+        }
+
+        if (view === 'my_scope' && user) {
+            // Even for unrestricted users, 'my_scope' should show "My" stuff.
+            // But for Invoices, "My Scope" usually means "My Missions" for managers, or "All" for Finance.
+            // For consistency with existing logic:
+            // If restricted, the filter above already handles it.
+            // If unrestricted, 'my_scope' implies we WANT to filter by personal involvement? 
+            // Or typically Finance people don't use 'my_scope' to see only their own invoices, they use it to see "My Work" vs "All".
+            // Let's leave 'my_scope' as adding NO EXTRA filters for unrestricted users (viewing all is their "scope"),
+            // and reliance on the security filter above for restricted users.
         }
         else if (view === 'action_needed') {
             // Factures en attente d'une action Workflow (hors Brouillon, hors Emise/Payée)
@@ -753,28 +760,32 @@ class Invoice {
 
         if (user) {
             const userRoles = user.roles || [];
-            const isSuperAdmin = userRoles.includes('SUPER_ADMIN') || userRoles.includes('ADMIN') || userRoles.includes('SENIOR_PARTNER') || userRoles.includes('DIRECTOR');
+            const isUnrestricted = userRoles.some(r => ['SUPER_ADMIN', 'ADMIN', 'RESPONSABLE_FINANCE'].includes(r));
+            const isFinancesBu = userRoles.includes('FINANCES_BU');
 
-            if (!isSuperAdmin) {
-                // Nécessaire de joindre missions et BU pour filtrer
+            if (!isUnrestricted) {
                 joins = `
                     LEFT JOIN missions m ON i.mission_id = m.id
                     LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+                    LEFT JOIN users u_req ON u_req.id = $${valueIndex}
                 `;
+                values.push(user.id);
+                valueIndex++;
 
-                if (user.collaborateur_id) {
+                joins += ` LEFT JOIN collaborateurs c_req ON u_req.collaborateur_id = c_req.id `;
+                joins += ` LEFT JOIN user_business_unit_access ubua ON ubua.user_id = u_req.id AND ubua.business_unit_id = m.business_unit_id AND ubua.granted = true `;
+
+                if (isFinancesBu) {
                     conditions.push(`(
-                        m.collaborateur_id = $${valueIndex} OR
-                        m.associe_id = $${valueIndex} OR
-                        bu.responsable_principal_id = $${valueIndex} OR
-                        bu.responsable_adjoint_id = $${valueIndex}
+                        ubua.business_unit_id IS NOT NULL OR
+                        m.business_unit_id = c_req.business_unit_id
                     )`);
-                    values.push(user.collaborateur_id);
-                    valueIndex++;
                 } else {
-                    conditions.push(`i.created_by = $${valueIndex}`);
-                    values.push(user.id);
-                    valueIndex++;
+                    conditions.push(`(
+                        m.collaborateur_id = c_req.id OR
+                        m.manager_id = c_req.id OR
+                        m.associe_id = c_req.id
+                    )`);
                 }
             }
         }
