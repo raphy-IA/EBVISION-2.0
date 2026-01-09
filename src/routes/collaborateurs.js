@@ -159,7 +159,7 @@ router.get('/statistics', authenticateToken, async (req, res) => {
  * POST /api/collaborateurs
  * Créer un nouveau collaborateur
  */
-router.post('/', authenticateToken, requirePermission('page.collaborateurs'), async (req, res) => {
+router.post('/', authenticateToken, requirePermission('menu.gestion_rh.collaborateurs'), async (req, res) => {
     try {
         console.log('📥 Données reçues pour création:', req.body);
         console.log('🔍 createUserAccess dans req.body:', req.body.createUserAccess);
@@ -443,7 +443,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
  * PUT /api/collaborateurs/:id
  * Mettre à jour un collaborateur
  */
-router.put('/:id', authenticateToken, requirePermission('page.collaborateurs'), async (req, res) => {
+router.put('/:id', authenticateToken, requirePermission('menu.gestion_rh.collaborateurs'), async (req, res) => {
     try {
         const collaborateur = await Collaborateur.findById(req.params.id);
 
