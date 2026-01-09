@@ -49,12 +49,11 @@ async function seedGranularObjectives() {
         console.error('❌ Error during seeding:', e);
     } finally {
         client.release();
-        pool.end();
     }
 }
 
 if (require.main === module) {
-    seedGranularObjectives();
+    seedGranularObjectives().then(() => pool.end());
 }
 
 module.exports = seedGranularObjectives;

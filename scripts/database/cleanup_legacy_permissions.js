@@ -37,12 +37,11 @@ async function cleanupLegacyPermissions() {
         console.error('❌ Error during cleanup:', e);
     } finally {
         client.release();
-        pool.end();
     }
 }
 
 if (require.main === module) {
-    cleanupLegacyPermissions();
+    cleanupLegacyPermissions().then(() => pool.end());
 }
 
 module.exports = cleanupLegacyPermissions;

@@ -38,12 +38,11 @@ async function cleanupObjectives() {
         console.error('❌ Error during cleanup:', e);
     } finally {
         client.release();
-        pool.end();
     }
 }
 
 if (require.main === module) {
-    cleanupObjectives();
+    cleanupObjectives().then(() => pool.end());
 }
 
 module.exports = cleanupObjectives;

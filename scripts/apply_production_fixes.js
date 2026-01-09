@@ -1,6 +1,7 @@
 const cleanupLegacy = require('./database/cleanup_legacy_permissions');
 const cleanupObjectives = require('./database/cleanup_objectives');
 const seedGranularObjectives = require('./database/seed_granular_objectives');
+const { pool } = require('../src/utils/database');
 
 async function runFixes() {
     console.log('🚀 STARTING PRODUCTION PERMISSION FIXES...\n');
@@ -24,6 +25,10 @@ async function runFixes() {
     } catch (e) {
         console.error('❌ FATAL ERROR DURING FIXES:', e);
         process.exit(1);
+    } finally {
+        // Close the shared pool at the very end
+        console.log('🔌 Closing database connection...');
+        await pool.end();
     }
 }
 
