@@ -66,7 +66,130 @@ router.post('/check-page-permission', authenticateToken, async (req, res) => {
             }
         }
 
-        // Vérifier les permissions dans la base de données
+        // MAPPING DES PAGES VERS LES NOUVELLES PERMISSIONS MENUS
+        const PAGE_PERMISSION_MAPPING = {
+            // Dashboard
+            'dashboard': 'menu.dashboard.dashboard_personnel',
+            'dashboard-equipe': 'menu.dashboard.dashboard_equipe',
+            'dashboard-direction': 'menu.dashboard.dashboard_direction',
+            'dashboard-recouvrement': 'menu.dashboard.dashboard_recouvrement',
+            'dashboard-rentabilite': 'menu.dashboard.dashboard_rentabilite',
+            'dashboard-chargeabilite': 'menu.dashboard.dashboard_chargeabilite',
+            'dashboard-optimise': 'menu.dashboard.dashboard_optimise',
+
+            // Objectifs
+            'mes-objectifs': 'menu.objectifs.mes_objectifs',
+            'gestion-objectifs': 'menu.objectifs.gestion_des_objectifs',
+
+            // Rapports
+            'rapports': 'menu.rapports.rapports_generaux',
+            'rapports-missions': 'menu.rapports.rapports_missions',
+            'rapports-opportunites': 'menu.rapports.rapports_opportunites',
+            'rapports-rh': 'menu.rapports.rapports_rh',
+            'rapports-prospection': 'menu.rapports.rapports_de_prospection',
+
+            // Gestion des Temps
+            'feuilles-temps': 'menu.gestion_des_temps.saisie_des_temps',
+            'validation-temps': 'menu.gestion_des_temps.validation_des_temps',
+
+            // Gestion Mission
+            'missions': 'menu.gestion_mission.missions',
+            'details-mission': 'menu.gestion_mission.missions', // Accès si accès missions
+            'types-mission': 'menu.gestion_mission.types_de_mission',
+            'tasks': 'menu.gestion_mission.taches',
+
+            // Market Pipeline
+            'client-list': 'menu.market_pipeline.clients_et_prospects', // Anciennement clients.html ?
+            'clients': 'menu.market_pipeline.clients_et_prospects',
+            'contacts': 'menu.market_pipeline.clients_et_prospects', // Souvent lié aux clients
+            'opportunities': 'menu.market_pipeline.opportunites',
+            'opportunity-board': 'menu.market_pipeline.opportunites',
+            'opportunity-types': 'menu.market_pipeline.types_d_opportunite',
+            'prospecting-campaigns': 'menu.market_pipeline.campagnes_de_prospection',
+            'campaign-validation': 'menu.market_pipeline.validation_des_campagnes',
+
+            // Gestion RH
+            'collaborateurs': 'menu.gestion_rh.collaborateurs',
+            'types-collaborateurs': 'menu.gestion_rh.types_collaborateurs',
+            'grades': 'menu.gestion_rh.grades',
+            'postes': 'menu.gestion_rh.postes',
+            'taux-horaires': 'menu.gestion_rh.taux_horaires',
+            'managers': 'menu.gestion_rh.collaborateurs', // Pas de menu spécifique, lié aux collabs
+            'supervisors': 'menu.gestion_rh.collaborateurs',
+
+            // Configurations
+            'fiscal-years': 'menu.configurations.annees_fiscales',
+            'pays': 'menu.configurations.pays',
+            'configuration-types-opportunites': 'menu.configurations.configuration_types_d_opportunite',
+            'sources-entreprises': 'menu.configurations.sources_entreprises',
+            'modeles-prospection': 'menu.configurations.modeles_de_prospection',
+            'financial-settings': 'menu.configurations.parametres_financiers',
+
+            // Business Unit
+            'business-units': 'menu.business_unit.unites_d_affaires',
+            'divisions': 'menu.business_unit.divisions',
+            'activites-internes': 'menu.business_unit.activites_internes',
+            'secteurs-activite': 'menu.business_unit.secteurs_d_activite',
+
+            // Paramètres Administration
+            'notification-settings': 'menu.parametres_administration.configuration_notifications',
+            'users': 'menu.parametres_administration.utilisateurs',
+            'user-list': 'menu.parametres_administration.utilisateurs',
+            'permissions-admin': 'menu.parametres_administration.administration_des_permissions'
+        };
+
+        const normalizedPageName = pageName.toLowerCase().replace('.html', '');
+        const targetPermission = PAGE_PERMISSION_MAPPING[normalizedPageName];
+
+        console.log('   🔍 Page:', normalizedPageName);
+        console.log('   🎯 Permission cible (Mapping):', targetPermission);
+
+        if (targetPermission) {
+            const permissionQuery = `
+                SELECT 1
+                FROM permissions p
+                WHERE p.code = $1
+                AND (
+                    -- Via rôles
+                    EXISTS (
+                        SELECT 1
+                        FROM role_permissions rp
+                        JOIN user_roles ur ON rp.role_id = ur.role_id
+                        WHERE ur.user_id = $2 AND p.id = rp.permission_id
+                    )
+                    OR
+                    -- Permissions directes utilisateur
+                    EXISTS (
+                        SELECT 1
+                        FROM user_permissions up
+                        WHERE up.user_id = $2 AND up.permission_id = p.id
+                    )
+                )
+            `;
+            const result = await pool.query(permissionQuery, [targetPermission, req.user.id]);
+
+            if (result.rows.length > 0) {
+                console.log('   ✅ Accès autorisé (Permission mappée)');
+                return res.json({
+                    success: true,
+                    message: 'Accès autorisé',
+                    pageName,
+                    mappedPermission: targetPermission
+                });
+            } else {
+                console.log('   ❌ Accès refusé (Permission mappée manquante)');
+                return res.status(403).json({
+                    success: false,
+                    message: `Accès refusé. Permission requise : ${targetPermission}`,
+                    pageName,
+                    requiredPermission: targetPermission
+                });
+            }
+        }
+
+        console.warn('   ⚠️  Aucun mapping trouvé pour cette page, tentative fallback sur legacy...');
+
+        // Fallback: Vérifier les permissions 'page.*' (Legacy pour compatibilité temporaire)
         // Format du code de permission: 'page.{pageName}'
         // NORMALISATION: Gérer à la fois les tirets et les underscores
         const normalizePermissionCode = (code) => {
@@ -75,6 +198,7 @@ router.post('/check-page-permission', authenticateToken, async (req, res) => {
 
         const permissionCode = `page.${pageName}`;
         const normalizedCode = normalizePermissionCode(permissionCode);
+
 
         console.log('   🔍 Recherche de la permission:', permissionCode);
         console.log('   🔍 Code normalisé:', normalizedCode);

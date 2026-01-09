@@ -279,8 +279,8 @@ app.use('/api/documents', documentsRoutes);
 
 // Route de synchronisation des permissions et menus
 // Route de synchronisation des permissions et menus
-const syncPermissionsRoutes = require('./src/routes/sync-permissions');
-app.use(syncPermissionsRoutes);
+// const syncPermissionsRoutes = require('./src/routes/sync-permissions');
+// app.use(syncPermissionsRoutes);
 
 // Import et utilisation des routes managers
 const managersRoutes = require('./src/routes/managers');
