@@ -1696,8 +1696,23 @@ class PermissionsAdmin {
 
             actions.forEach(action => {
                 // Chercher la permission correspondante
-                // Code pattern: OBJECTIVES_{LEVEL}_{ACTION}
-                const expectedCode = `OBJECTIVES_${level}_${action}`;
+                // Code pattern: objectives.{level}.{action} (dot-notation)
+                const levelLower = level.toLowerCase();
+                const actionLower = action.toLowerCase();
+
+                let expectedCode = '';
+                if (action === 'CREATE' || action === 'DISTRIBUTE') {
+                    if (level === 'INDIVIDUAL') expectedCode = 'objectives:create';
+                    else expectedCode = `objectives.${levelLower}.distribute`;
+                } else if (action === 'EDIT' || action === 'UPDATE') {
+                    if (level === 'INDIVIDUAL') expectedCode = 'objectives.individual.edit';
+                    else expectedCode = `objectives.${levelLower}.edit`;
+                } else if (action === 'VIEW') {
+                    expectedCode = `objectives.${levelLower}.view`;
+                } else if (action === 'DELETE') {
+                    expectedCode = 'objectives:delete';
+                }
+
                 const perm = objPermissions.find(p => p.code === expectedCode);
 
                 html += '<td class="text-center">';

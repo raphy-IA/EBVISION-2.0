@@ -47,11 +47,11 @@ function openAutonomousObjectiveWizard() {
 
 function filterAutonomousOptions() {
     const permissions = {
-        'GLOBAL': 'OBJECTIVES_GLOBAL_CREATE',
-        'BU': 'OBJECTIVES_BU_CREATE',
-        'DIVISION': 'OBJECTIVES_DIVISION_CREATE',
-        'GRADE': 'OBJECTIVES_GRADE_CREATE',
-        'INDIVIDUAL': 'OBJECTIVES_INDIVIDUAL_CREATE'
+        'GLOBAL': 'objectives.global.distribute',
+        'BU': 'objectives.bu.distribute',
+        'DIVISION': 'objectives.division.distribute',
+        'GRADE': 'objectives.grade.distribute',
+        'INDIVIDUAL': 'objectives:create'
     };
 
     // Masquer/Afficher les boutons selon les permissions
@@ -650,10 +650,10 @@ function filterDistributeOptions() {
     // Mapping: Niveau cible -> Permission requise sur le parent
     // Ex: Pour distribuer vers BU, il faut pouvoir distribuer depuis GLOBAL
     const permissions = {
-        'BUSINESS_UNIT': 'OBJECTIVES_GLOBAL_DISTRIBUTE',
-        'DIVISION': 'OBJECTIVES_BU_DISTRIBUTE',
-        'GRADE': 'OBJECTIVES_DIVISION_DISTRIBUTE',
-        'INDIVIDUAL': 'OBJECTIVES_GRADE_DISTRIBUTE'
+        'BUSINESS_UNIT': 'objectives.global.distribute',
+        'DIVISION': 'objectives.bu.distribute',
+        'GRADE': 'objectives.division.distribute',
+        'INDIVIDUAL': 'objectives.grade.distribute'
     };
 
     const buttons = document.querySelectorAll('#distributeStep1 button[onclick^="selectChildLevel"]');

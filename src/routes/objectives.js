@@ -43,7 +43,7 @@ router.put('/types/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/objectives/types/:id - Supprimer (désactiver) un type d'objectif
-router.delete('/types/:id', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+router.delete('/types/:id', authenticateToken, requirePermission('objectives:update'), async (req, res) => {
     try {
         await ObjectiveType.delete(req.params.id);
         res.json({ message: 'Type supprimé avec succès' });
@@ -67,7 +67,7 @@ router.get('/units', authenticateToken, async (req, res) => {
 });
 
 // POST /api/objectives/units - Créer une unité
-router.post('/units', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+router.post('/units', authenticateToken, requirePermission('objectives:update'), async (req, res) => {
     try {
         const unit = await ObjectiveUnit.create(req.body);
         res.status(201).json(unit);
@@ -78,7 +78,7 @@ router.post('/units', authenticateToken, requirePermission('OBJECTIVES_CONFIG_ED
 });
 
 // PUT /api/objectives/units/:id - Modifier une unité
-router.put('/units/:id', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+router.put('/units/:id', authenticateToken, requirePermission('objectives:update'), async (req, res) => {
     try {
         const unit = await ObjectiveUnit.update(req.params.id, req.body);
         res.json(unit);
@@ -89,7 +89,7 @@ router.put('/units/:id', authenticateToken, requirePermission('OBJECTIVES_CONFIG
 });
 
 // DELETE /api/objectives/units/:id - Supprimer (désactiver) une unité
-router.delete('/units/:id', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+router.delete('/units/:id', authenticateToken, requirePermission('objectives:update'), async (req, res) => {
     try {
         await ObjectiveUnit.deactivate(req.params.id);
         res.json({ message: 'Unité supprimée avec succès' });
@@ -138,7 +138,7 @@ router.get('/metrics/:id/sources', authenticateToken, async (req, res) => {
 });
 
 // POST /api/objectives/metrics - Créer une métrique
-router.post('/metrics', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+router.post('/metrics', authenticateToken, requirePermission('objectives:update'), async (req, res) => {
     try {
         const { code, label, description, unit_code, sources } = req.body;
 
@@ -196,7 +196,7 @@ router.post('/metrics', authenticateToken, requirePermission('OBJECTIVES_CONFIG_
 });
 
 // PUT /api/objectives/metrics/:id - Modifier une métrique
-router.put('/metrics/:id', authenticateToken, requirePermission('OBJECTIVES_CONFIG_EDIT'), async (req, res) => {
+router.put('/metrics/:id', authenticateToken, requirePermission('objectives:update'), async (req, res) => {
     try {
         const { label, description, unit_code, sources } = req.body;
         const id = req.params.id;
@@ -296,7 +296,7 @@ router.get('/global/:fiscalYearId', authenticateToken, async (req, res) => {
 });
 
 // POST /api/objectives/global - Créer un objectif global
-router.post('/global', authenticateToken, requirePermission('OBJECTIVES_GLOBAL_CREATE'), async (req, res) => {
+router.post('/global', authenticateToken, requirePermission('objectives.global.distribute'), async (req, res) => {
     try {
         const objective = await Objective.createGlobalObjective({
             ...req.body,
@@ -313,7 +313,7 @@ router.post('/global', authenticateToken, requirePermission('OBJECTIVES_GLOBAL_C
 });
 
 // PUT /api/objectives/global/:id - Modifier un objectif global
-router.put('/global/:id', authenticateToken, requirePermission('OBJECTIVES_GLOBAL_EDIT'), async (req, res) => {
+router.put('/global/:id', authenticateToken, requirePermission('objectives.global.edit'), async (req, res) => {
     try {
         const objective = await Objective.updateGlobalObjective(req.params.id, req.body);
         res.json(objective);
@@ -324,7 +324,7 @@ router.put('/global/:id', authenticateToken, requirePermission('OBJECTIVES_GLOBA
 });
 
 // DELETE /api/objectives/global/:id - Supprimer un objectif global
-router.delete('/global/:id', authenticateToken, requirePermission('OBJECTIVES_GLOBAL_DELETE'), async (req, res) => {
+router.delete('/global/:id', authenticateToken, requirePermission('objectives:delete'), async (req, res) => {
     try {
         await Objective.deleteGlobalObjective(req.params.id);
         res.json({ message: 'Objectif supprimé avec succès' });
@@ -348,7 +348,7 @@ router.get('/business-unit/:businessUnitId/:fiscalYearId', authenticateToken, as
 });
 
 // POST /api/objectives/business-unit - Créer/Distribuer un objectif à une BU
-router.post('/business-unit', authenticateToken, requirePermission('OBJECTIVES_BU_CREATE'), async (req, res) => {
+router.post('/business-unit', authenticateToken, requirePermission('objectives.bu.distribute'), async (req, res) => {
     try {
         const objective = await Objective.distributeToBusinessUnit({
             ...req.body,
@@ -362,7 +362,7 @@ router.post('/business-unit', authenticateToken, requirePermission('OBJECTIVES_B
 });
 
 // DELETE /api/objectives/business-unit/:id - Supprimer un objectif BU
-router.delete('/business-unit/:id', authenticateToken, requirePermission('OBJECTIVES_BU_DELETE'), async (req, res) => {
+router.delete('/business-unit/:id', authenticateToken, requirePermission('objectives:delete'), async (req, res) => {
     try {
         await Objective.deleteBusinessUnitObjective(req.params.id);
         res.json({ message: 'Objectif supprimé avec succès' });
@@ -386,7 +386,7 @@ router.get('/division/:divisionId/:fiscalYearId', authenticateToken, async (req,
 });
 
 // POST /api/objectives/division - Créer/Distribuer un objectif à une Division
-router.post('/division', authenticateToken, requirePermission('OBJECTIVES_DIVISION_CREATE'), async (req, res) => {
+router.post('/division', authenticateToken, requirePermission('objectives.division.distribute'), async (req, res) => {
     try {
         const objective = await Objective.distributeToDivision({
             ...req.body,
@@ -400,7 +400,7 @@ router.post('/division', authenticateToken, requirePermission('OBJECTIVES_DIVISI
 });
 
 // DELETE /api/objectives/division/:id - Supprimer un objectif Division
-router.delete('/division/:id', authenticateToken, requirePermission('OBJECTIVES_DIVISION_DELETE'), async (req, res) => {
+router.delete('/division/:id', authenticateToken, requirePermission('objectives:delete'), async (req, res) => {
     try {
         await Objective.deleteDivisionObjective(req.params.id);
         res.json({ message: 'Objectif supprimé avec succès' });
@@ -424,7 +424,7 @@ router.get('/individual/:collaboratorId/:fiscalYearId', authenticateToken, async
 });
 
 // POST /api/objectives/individual - Assigner un objectif à un collaborateur
-router.post('/individual', authenticateToken, requirePermission('OBJECTIVES_INDIVIDUAL_CREATE'), async (req, res) => {
+router.post('/individual', authenticateToken, requirePermission('objectives:create'), async (req, res) => {
     try {
         const objective = await Objective.assignToIndividual({
             ...req.body,
@@ -438,7 +438,7 @@ router.post('/individual', authenticateToken, requirePermission('OBJECTIVES_INDI
 });
 
 // DELETE /api/objectives/individual/:id - Supprimer un objectif individuel
-router.delete('/individual/:id', authenticateToken, requirePermission('OBJECTIVES_INDIVIDUAL_DELETE'), async (req, res) => {
+router.delete('/individual/:id', authenticateToken, requirePermission('objectives:delete'), async (req, res) => {
     try {
         await Objective.deleteIndividualObjective(req.params.id);
         res.json({ message: 'Objectif supprimé avec succès' });
@@ -449,7 +449,7 @@ router.delete('/individual/:id', authenticateToken, requirePermission('OBJECTIVE
 });
 
 // POST /api/objectives/grade - Assigner un objectif à un grade (groupe de collaborateurs)
-router.post('/grade', authenticateToken, requirePermission('OBJECTIVES_GRADE_CREATE'), async (req, res) => {
+router.post('/grade', authenticateToken, requirePermission('objectives.grade.distribute'), async (req, res) => {
     try {
         const objectives = await Objective.assignToGrade({
             ...req.body,
@@ -466,7 +466,7 @@ router.post('/grade', authenticateToken, requirePermission('OBJECTIVES_GRADE_CRE
 });
 
 // DELETE /api/objectives/grade/:id - Supprimer un objectif de grade
-router.delete('/grade/:id', authenticateToken, requirePermission('OBJECTIVES_GRADE_DELETE'), async (req, res) => {
+router.delete('/grade/:id', authenticateToken, requirePermission('objectives:delete'), async (req, res) => {
     try {
         await Objective.deleteGradeObjective(req.params.id);
         res.json({ message: 'Objectif supprimé avec succès' });
@@ -596,16 +596,16 @@ router.post('/distribute', authenticateToken, async (req, res) => {
         let requiredPermission = '';
         switch (parentType) {
             case 'GLOBAL':
-                requiredPermission = 'OBJECTIVES_GLOBAL_DISTRIBUTE';
+                requiredPermission = 'objectives.global.distribute';
                 break;
             case 'BUSINESS_UNIT':
-                requiredPermission = 'OBJECTIVES_BU_DISTRIBUTE';
+                requiredPermission = 'objectives.bu.distribute';
                 break;
             case 'DIVISION':
-                requiredPermission = 'OBJECTIVES_DIVISION_DISTRIBUTE';
+                requiredPermission = 'objectives.division.distribute';
                 break;
             case 'GRADE':
-                requiredPermission = 'OBJECTIVES_GRADE_DISTRIBUTE';
+                requiredPermission = 'objectives.grade.distribute';
                 break;
             default:
                 return res.status(400).json({ message: 'Type d\'objectif parent non supporté pour la distribution' });
