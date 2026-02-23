@@ -166,18 +166,23 @@ const allowedOrigins = [
     'http://127.0.0.1:3000'
 ];
 
-app.use(cors({
-    origin: (origin, callback) => {
-        // Autoriser si pas d'origine (mobile/curl) ou si dans la liste
-        if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
-            callback(null, true);
-        } else {
-            console.warn(`🔒 Accès CORS refusé pour l'origine: ${origin}`);
-            callback(new Error('Non autorisé par CORS'));
-        }
-    },
-    credentials: true
-}));
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const normalizedOrigin = origin ? origin.replace(/\/$/, '') : null;
+
+    if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin)) {
+        cors({
+            origin: normalizedOrigin || true,
+            credentials: true
+        })(req, res, next);
+    } else {
+        console.warn(`🔒 Accès CORS refusé pour l'origine: ${origin}`);
+        res.status(403).json({
+            success: false,
+            message: 'Accès refusé : origine non autorisée'
+        });
+    }
+});
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
