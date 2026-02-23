@@ -323,34 +323,49 @@ router.post('/', authenticateToken, async (req, res) => {
         const userId = req.user.id;
         const { week_start, week_end, statut = 'sauvegardé' } = req.body;
 
-        // Validation des données
-        if (!week_start || !week_end) {
-            return res.status(400).json({ error: 'Les dates de début et fin de semaine sont requises' });
+        // S'assurer que les dates sont au format YYYY-MM-DD sans timezone
+        let weekStartStr, weekEndStr;
+        try {
+            weekStartStr = week_start && typeof week_start === 'string' ? week_start.split('T')[0] : null;
+            weekEndStr = week_end && typeof week_end === 'string' ? week_end.split('T')[0] : null;
+
+            if (!weekStartStr || isNaN(new Date(weekStartStr).getTime())) {
+                console.error('❌ Date de début invalide reçue dans /current:', { week_start });
+                return res.status(400).json({ success: false, error: 'Date de début invalide' });
+            }
+        } catch (e) {
+            console.error('❌ Erreur lors du parsing des dates dans /current:', e.message);
+            return res.status(400).json({ success: false, error: 'Erreur format de date' });
         }
 
-        // Vérifier que la semaine n'existe pas déjà pour cet utilisateur
-        const existingTimeSheet = await TimeSheet.findByWeekStart(userId, week_start);
-        if (existingTimeSheet) {
+        console.log(`📋 Récupération feuille de temps pour user ${req.user.id}, weekStart: ${weekStartStr}`);
+
+        // Récupérer ou créer la feuille de temps pour cette semaine
+        const timeSheet = await TimeSheet.findOrCreate(req.user.id, weekStartStr, weekEndStr);
+        if (timeSheet.created) { // Assuming findOrCreate returns { timeSheet, created: boolean }
+            res.status(201).json({
+                message: 'Feuille de temps créée avec succès',
+                timeSheet: timeSheet.timeSheet
+            });
+        } else {
             return res.status(409).json({ error: 'Une feuille de temps existe déjà pour cette semaine' });
         }
 
-        // Créer la nouvelle feuille de temps
-        const newTimeSheet = await TimeSheet.create({
-            user_id: userId,
+        user_id: userId,
             week_start,
             week_end,
             statut
-        });
+    });
 
-        res.status(201).json({
-            message: 'Feuille de temps créée avec succès',
-            timeSheet: newTimeSheet
-        });
+res.status(201).json({
+    message: 'Feuille de temps créée avec succès',
+    timeSheet: newTimeSheet
+});
 
     } catch (error) {
-        console.error('Erreur lors de la création de la feuille de temps:', error);
-        res.status(500).json({ error: error.message });
-    }
+    console.error('Erreur lors de la création de la feuille de temps:', error);
+    res.status(500).json({ error: error.message });
+}
 });
 
 // Mettre à jour une feuille de temps

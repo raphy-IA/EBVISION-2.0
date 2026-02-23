@@ -276,6 +276,14 @@ router.get('/export', authenticateToken, async (req, res) => {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(period));
 
+        if (!dateDebut || !dateFin || isNaN(new Date(dateDebut).getTime()) || isNaN(new Date(dateFin).getTime())) {
+            console.error('❌ Paramètres de date invalides pour export:', { dateDebut, dateFin });
+            return res.status(400).json({
+                success: false,
+                error: 'Format de date invalide pour dateDebut ou dateFin'
+            });
+        }
+
         // Récupérer toutes les opportunités pour la période
         const query = `
             SELECT 
@@ -293,7 +301,8 @@ router.get('/export', authenticateToken, async (req, res) => {
             ORDER BY o.created_at DESC
         `;
 
-        const result = await pool.query(query, [startDate.toISOString()]);
+        const finalStartDate = new Date(dateDebut);
+        const result = await pool.query(query, [finalStartDate.toISOString()]);
 
         if (format === 'csv') {
             // TODO: Implémenter l'export CSV
@@ -325,10 +334,16 @@ router.get('/collections', authenticateToken, async (req, res) => {
         const { period = 90, business_unit_id, division_id } = req.query;
 
         // Calculer la date de début basée sur la période
+        const periodInt = parseInt(period) || 90;
         const startDate = new Date();
-        startDate.setDate(startDate.getDate() - parseInt(period));
+        startDate.setDate(startDate.getDate() - periodInt);
 
-        console.log(`📊 Analytics recouvrement - Période: ${period} jours`);
+        if (isNaN(startDate.getTime())) {
+            console.error('❌ Période invalide pour collections:', { period });
+            return res.status(400).json({ success: false, error: 'Période invalide' });
+        }
+
+        console.log(`📊 Analytics recouvrement - Période: ${periodInt} jours`);
 
         // Construire les conditions WHERE pour les filtres
         let invoiceWhereConditions = [];

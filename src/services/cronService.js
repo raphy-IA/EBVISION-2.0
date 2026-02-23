@@ -108,15 +108,16 @@ class CronService {
                 const result = await pool.query(`
                     SELECT 
                         ts.id,
-                        ts.collaborateur_id,
+                        u.collaborateur_id,
                         c.nom as collaborateur_nom,
                         c.email as collaborateur_email,
                         ts.semaine,
                         ts.annee,
                         ts.statut
                     FROM time_sheets ts
-                    JOIN collaborateurs c ON ts.collaborateur_id = c.id
-                    WHERE ts.statut IN ('BROUILLON', 'EN_COURS')
+                    JOIN users u ON ts.user_id = u.id
+                    JOIN collaborateurs c ON u.collaborateur_id = c.id
+                    WHERE ts.statut IN ('BROUILLON', 'EN_COURS', 'sauvegardé')
                     AND ts.semaine < EXTRACT(WEEK FROM CURRENT_DATE)
                     AND ts.annee <= EXTRACT(YEAR FROM CURRENT_DATE)
                 `);
