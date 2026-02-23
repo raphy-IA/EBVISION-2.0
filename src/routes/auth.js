@@ -72,7 +72,7 @@ router.post('/login', async (req, res) => {
             FROM permissions p
             JOIN role_permissions rp ON p.id = rp.permission_id
             JOIN user_roles ur ON rp.role_id = ur.role_id
-            WHERE ur.user_id = $1
+            WHERE ur.user_id = $1::uuid
         `, [user.id]);
         const userPermissions = permissionsResult.rows.map(p => p.code);
 
@@ -184,7 +184,7 @@ router.get('/me', authenticateToken, async (req, res) => {
             SELECT r.name
             FROM user_roles ur
             JOIN roles r ON ur.role_id = r.id
-            WHERE ur.user_id = $1
+            WHERE ur.user_id = $1::uuid
             ORDER BY r.name
         `, [user.id]);
 
