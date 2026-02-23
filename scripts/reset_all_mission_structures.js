@@ -50,6 +50,7 @@ async function resetAllMissionStructures() {
 
 // Helper to recursively create nodes
 async function createNodes(client, nodes, missionId, parentId) {
+    if (!nodes || !Array.isArray(nodes)) return;
     for (const node of nodes) {
         // Use locking from JSON if specified, otherwise default to true for template items
         const isLocked = node.is_locked !== undefined ? node.is_locked : true;
