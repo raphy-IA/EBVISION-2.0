@@ -4,7 +4,7 @@ const TimeSheet = require('../models/TimeSheet');
 const TimeEntry = require('../models/TimeEntry');
 const { authenticateToken } = require('../middleware/auth');
 
-// Créer une nouvelle feuille de temps
+// Créer une nouvelle feuille de temps (POST /api/time-sheets)
 router.post('/', authenticateToken, async (req, res) => {
     try {
         const { user_id, week_start, week_end, status = 'sauvegardé' } = req.body;
@@ -13,6 +13,14 @@ router.post('/', authenticateToken, async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Les paramètres user_id, week_start et week_end sont requis'
+            });
+        }
+
+        // Vérifier que l'utilisateur crée sa propre feuille de temps (ou est admin)
+        if (user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'SUPER_ADMIN') {
+            return res.status(403).json({
+                success: false,
+                message: 'Vous ne pouvez créer que votre propre feuille de temps'
             });
         }
 
@@ -52,7 +60,7 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 });
 
-// Obtenir la feuille de temps actuelle pour un utilisateur
+// Obtenir la feuille de temps actuelle pour un utilisateur (GET /api/time-sheets/current)
 router.get('/current', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -63,14 +71,19 @@ router.get('/current', authenticateToken, async (req, res) => {
         }
 
         console.log('User ID:', userId);
-        console.log('Week start:', week_start);
+        console.log('Week start handle:', week_start);
 
-        // Calculer la fin de semaine (7 jours après le début)
-        // S'assurer que les dates sont traitées sans timezone
-        const weekStartDate = new Date(week_start + 'T00:00:00');
+        // Validation et parsing sécurisé de la date
+        let weekStartDate;
+        try {
+            // S'assurer que les dates sont traitées sans timezone
+            const cleanWeekStart = week_start.split('T')[0];
+            weekStartDate = new Date(cleanWeekStart + 'T00:00:00');
 
-        // Vérifier si la date est valide
-        if (isNaN(weekStartDate.getTime())) {
+            if (isNaN(weekStartDate.getTime())) {
+                throw new Error('Invalid date');
+            }
+        } catch (e) {
             console.error('📅 Date invalide reçue for week_start:', week_start);
             return res.status(400).json({
                 success: false,
@@ -83,12 +96,11 @@ router.get('/current', authenticateToken, async (req, res) => {
 
         const weekEnd = weekEndDate.toISOString().split('T')[0];
 
-        console.log('📅 Calcul des dates de semaine:');
-        console.log('  - Début (lundi):', week_start);
-        console.log('  - Fin (dimanche):', weekEnd);
-        console.log('  - Vérification: Lundi au Dimanche (7 jours)');
-
-        console.log('Full user object:', req.user);
+        console.log('📅 Calcul des dates de semaine:', {
+            userId,
+            start: week_start,
+            end: weekEnd
+        });
 
         // Chercher la feuille de temps (SANS créer automatiquement)
         let timeSheet = await TimeSheet.findByWeekStart(userId, week_start);
@@ -135,6 +147,25 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
         res.json(timeSheets);
     } catch (error) {
         console.error('Erreur lors de la récupération des feuilles de temps:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Obtenir les feuilles de temps en attente de validation (doit être avant /:id)
+router.get('/pending/validation', authenticateToken, async (req, res) => {
+    try {
+        // Vérifier que l'utilisateur a les permissions de validation
+        const permissions = req.user.permissions || [];
+        if (!permissions.includes('timesheets:validate') && req.user.role !== 'admin' && req.user.role !== 'SUPER_ADMIN') {
+            return res.status(403).json({ error: 'Permissions insuffisantes' });
+        }
+
+        const { limit = 50 } = req.query;
+        const pendingTimeSheets = await TimeSheet.findPendingValidation(parseInt(limit));
+
+        res.json(pendingTimeSheets);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des feuilles en attente:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -205,7 +236,8 @@ router.post('/:id/validate', authenticateToken, async (req, res) => {
         const validateurId = req.user.id;
 
         // Vérifier que l'utilisateur a les permissions de validation
-        if (!req.user.permissions || !req.user.permissions.includes('timesheets:validate')) {
+        const permissions = req.user.permissions || [];
+        if (!permissions.includes('timesheets:validate') && req.user.role !== 'admin' && req.user.role !== 'SUPER_ADMIN') {
             return res.status(403).json({ error: 'Permissions insuffisantes' });
         }
 
@@ -231,7 +263,8 @@ router.post('/:id/reject', authenticateToken, async (req, res) => {
         const validateurId = req.user.id;
 
         // Vérifier que l'utilisateur a les permissions de validation
-        if (!req.user.permissions || !req.user.permissions.includes('timesheets:validate')) {
+        const permissions = req.user.permissions || [];
+        if (!permissions.includes('timesheets:validate') && req.user.role !== 'admin' && req.user.role !== 'SUPER_ADMIN') {
             return res.status(403).json({ error: 'Permissions insuffisantes' });
         }
 
@@ -253,121 +286,6 @@ router.post('/:id/reject', authenticateToken, async (req, res) => {
     }
 });
 
-// Créer une nouvelle feuille de temps
-router.post('/', authenticateToken, async (req, res) => {
-    try {
-        const { user_id, week_start, week_end, statut = 'sauvegardé' } = req.body;
-
-        // Validation des données
-        if (!user_id || !week_start || !week_end) {
-            return res.status(400).json({
-                success: false,
-                message: 'Les champs user_id, week_start et week_end sont requis'
-            });
-        }
-
-        // Vérifier que l'utilisateur crée sa propre feuille de temps
-        if (user_id !== req.user.id && req.user.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Vous ne pouvez créer que votre propre feuille de temps'
-            });
-        }
-
-        // Créer la feuille de temps
-        const timeSheet = await TimeSheet.create({
-            user_id,
-            week_start,
-            week_end,
-            statut
-        });
-
-        res.status(201).json({
-            success: true,
-            message: 'Feuille de temps créée avec succès',
-            timeSheet
-        });
-
-    } catch (error) {
-        console.error('Erreur lors de la création de la feuille de temps:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la création de la feuille de temps',
-            error: error.message
-        });
-    }
-});
-
-// Obtenir les feuilles de temps en attente de validation
-router.get('/pending/validation', authenticateToken, async (req, res) => {
-    try {
-        // Vérifier que l'utilisateur a les permissions de validation
-        if (!req.user.permissions || !req.user.permissions.includes('timesheets:validate')) {
-            return res.status(403).json({ error: 'Permissions insuffisantes' });
-        }
-
-        const { limit = 50 } = req.query;
-        const pendingTimeSheets = await TimeSheet.findPendingValidation(parseInt(limit));
-
-        res.json(pendingTimeSheets);
-
-    } catch (error) {
-        console.error('Erreur lors de la récupération des feuilles en attente:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Créer une nouvelle feuille de temps
-router.post('/', authenticateToken, async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const { week_start, week_end, statut = 'sauvegardé' } = req.body;
-
-        // S'assurer que les dates sont au format YYYY-MM-DD sans timezone
-        let weekStartStr, weekEndStr;
-        try {
-            weekStartStr = week_start && typeof week_start === 'string' ? week_start.split('T')[0] : null;
-            weekEndStr = week_end && typeof week_end === 'string' ? week_end.split('T')[0] : null;
-
-            if (!weekStartStr || isNaN(new Date(weekStartStr).getTime())) {
-                console.error('❌ Date de début invalide reçue dans /current:', { week_start });
-                return res.status(400).json({ success: false, error: 'Date de début invalide' });
-            }
-        } catch (e) {
-            console.error('❌ Erreur lors du parsing des dates dans /current:', e.message);
-            return res.status(400).json({ success: false, error: 'Erreur format de date' });
-        }
-
-        console.log(`📋 Récupération feuille de temps pour user ${req.user.id}, weekStart: ${weekStartStr}`);
-
-        // Récupérer ou créer la feuille de temps pour cette semaine
-        const timeSheet = await TimeSheet.findOrCreate(req.user.id, weekStartStr, weekEndStr);
-        if (timeSheet.created) { // Assuming findOrCreate returns { timeSheet, created: boolean }
-            res.status(201).json({
-                message: 'Feuille de temps créée avec succès',
-                timeSheet: timeSheet.timeSheet
-            });
-        } else {
-            return res.status(409).json({ error: 'Une feuille de temps existe déjà pour cette semaine' });
-        }
-
-        user_id: userId,
-            week_start,
-            week_end,
-            statut
-    });
-
-res.status(201).json({
-    message: 'Feuille de temps créée avec succès',
-    timeSheet: newTimeSheet
-});
-
-    } catch (error) {
-    console.error('Erreur lors de la création de la feuille de temps:', error);
-    res.status(500).json({ error: error.message });
-}
-});
-
 // Mettre à jour une feuille de temps
 router.put('/:id', authenticateToken, async (req, res) => {
     try {
@@ -387,12 +305,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
             return res.status(403).json({ error: 'Accès non autorisé' });
         }
 
-
         // Vérifier que la feuille de temps n'est pas en statut final ou soumise
-        if (['validé', 'soumis'].includes(timeSheet.statut)) {
+        if (['validé', 'soumis', 'validé'].includes(timeSheet.statut)) {
             return res.status(400).json({ error: 'Impossible de modifier une feuille de temps validée ou soumise' });
         }
-
 
         // Mettre à jour la feuille de temps
         const updatedTimeSheet = await TimeSheet.update(id, updateData);
@@ -425,7 +341,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         }
 
         // Vérifier que la feuille de temps n'est pas en statut final
-        if (['submitted', 'approved', 'rejected'].includes(timeSheet.status)) {
+        if (['soumis', 'validé', 'rejeté'].includes(timeSheet.statut)) {
             return res.status(400).json({ error: 'Impossible de supprimer une feuille de temps soumise, validée ou rejetée' });
         }
 
@@ -442,4 +358,4 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 });
 
-module.exports = router; 
+module.exports = router;
