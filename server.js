@@ -348,14 +348,10 @@ async function startServer() {
             CronService.init();
         });
         console.log('📚 API Documentation: http://localhost:' + PORT + '/api-docs');
-    });
-
-    // Documentation Swagger
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
-} catch (error) {
-    console.error('❌ Erreur lors du démarrage du serveur:', error);
-    process.exit(1);
-}
+    } catch (error) {
+        console.error('❌ Erreur lors du démarrage du serveur:', error);
+        process.exit(1);
+    }
 }
 
 // Gestion des erreurs non capturées
