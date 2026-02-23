@@ -403,7 +403,7 @@ class User {
         const sql = `
             UPDATE users 
             SET last_login = CURRENT_TIMESTAMP
-            WHERE id = $1
+            WHERE id = $1::uuid
             RETURNING id, last_login
         `;
 
@@ -416,7 +416,7 @@ class User {
         const sql = `
             UPDATE users 
             SET last_logout = CURRENT_TIMESTAMP
-            WHERE id = $1
+            WHERE id = $1::uuid
             RETURNING id, last_logout
         `;
 

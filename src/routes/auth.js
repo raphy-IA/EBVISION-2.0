@@ -584,7 +584,12 @@ router.post('/login-2fa', async (req, res) => {
 
             // Générer le token JWT final avec les permissions réelles
             const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
-            const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+            let JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+
+            // Sécurité : s'assurer que JWT_EXPIRES_IN est une chaîne valide pour jsonwebtoken
+            if (!JWT_EXPIRES_IN || typeof JWT_EXPIRES_IN !== 'string') {
+                JWT_EXPIRES_IN = '24h';
+            }
 
             const finalToken = jwt.sign(
                 {
