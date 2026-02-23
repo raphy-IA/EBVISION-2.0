@@ -154,15 +154,26 @@ if (process.env.RATE_LIMIT_BYPASS === 'true' || process.env.NODE_ENV === 'develo
 
 // Middlewares
 app.use(compression());
+app.set('trust proxy', true); // Faire confiance au proxy Nginx pour le HTTPS et les IPs
 app.use(morgan('combined'));
 app.use(cookieParser()); // Support des cookies
+
+// Configuration CORS dynamique via .env
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim().replace(/\/$/, '')) // Retirer slash final
+    : ['https://ebvision.bosssystemsai.com', 'https://www.ebvision.bosssystemsai.com'];
+
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-        ? [
-            'https://ebvision.bosssystemsai.com',
-            'https://www.ebvision.bosssystemsai.com'
-        ]
-        : ['http://localhost:3000', 'http://localhost:8080'],
+    origin: (origin, callback) => {
+        // Autoriser les requêtes sans origine (comme les apps mobiles ou curl) 
+        // ou si l'origine est dans la liste autorisée
+        if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
+            callback(null, true);
+        } else {
+            console.warn(`🔒 Accès CORS refusé pour l'origine: ${origin}`);
+            callback(new Error('Non autorisé par CORS'));
+        }
+    },
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
