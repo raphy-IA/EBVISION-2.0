@@ -7,7 +7,7 @@ const { pool } = require('../utils/database');
  * Utilise TOTP (Time-based One-Time Password) avec Google Authenticator
  */
 class TwoFactorAuthService {
-    
+
     /**
      * Générer un secret 2FA pour un utilisateur
      */
@@ -18,7 +18,7 @@ class TwoFactorAuthService {
                 issuer: 'EB-Vision 2.0',
                 length: 32
             });
-            
+
             // Vérifier si les colonnes 2FA existent
             const columnCheck = await pool.query(`
                 SELECT EXISTS (
@@ -28,13 +28,12 @@ class TwoFactorAuthService {
                     AND column_name IN ('two_factor_secret', 'two_factor_enabled')
                 )
             `);
-            
+
             const has2FAColumns = columnCheck.rows.some(row => row.exists);
-            
+
             if (has2FAColumns) {
                 // Sauvegarder le secret en base (temporairement, en attendant la validation)
-                await pool.query(
-                    'UPDATE users SET two_factor_secret = $1, two_factor_enabled = false WHERE id = $2',
+                'UPDATE users SET two_factor_secret = $1, two_factor_enabled = false WHERE id = $2::uuid',
                     [secret.base32, userId]
                 );
             } else {
@@ -42,7 +41,7 @@ class TwoFactorAuthService {
                 console.warn('⚠️ Colonnes 2FA non disponibles, impossible de sauvegarder le secret');
                 throw new Error('Fonctionnalité 2FA non disponible (colonnes manquantes)');
             }
-            
+
             return {
                 secret: secret.base32,
                 qrCodeUrl: secret.otpauth_url,
@@ -53,7 +52,7 @@ class TwoFactorAuthService {
             throw new Error('Impossible de générer le secret 2FA');
         }
     }
-    
+
     /**
      * Générer un QR Code pour l'application d'authentification
      */
@@ -66,28 +65,27 @@ class TwoFactorAuthService {
             throw new Error('Impossible de générer le QR Code');
         }
     }
-    
+
     /**
      * Vérifier un code 2FA
      */
     static async verifyToken(userId, token) {
         try {
             // Récupérer le secret de l'utilisateur
-            const result = await pool.query(
-                'SELECT two_factor_secret, two_factor_enabled FROM users WHERE id = $1',
+            'SELECT two_factor_secret, two_factor_enabled FROM users WHERE id = $1::uuid',
                 [userId]
             );
-            
+
             if (result.rows.length === 0) {
                 throw new Error('Utilisateur non trouvé');
             }
-            
+
             const user = result.rows[0];
-            
+
             if (!user.two_factor_secret) {
                 throw new Error('2FA non configuré pour cet utilisateur');
             }
-            
+
             // Vérifier le token
             const verified = speakeasy.totp.verify({
                 secret: user.two_factor_secret,
@@ -95,14 +93,13 @@ class TwoFactorAuthService {
                 token: token,
                 window: 2 // Tolérance de 2 périodes (60 secondes)
             });
-            
+
             if (verified) {
                 // Mettre à jour la dernière utilisation du 2FA
-                await pool.query(
-                    'UPDATE users SET last_2fa_used = CURRENT_TIMESTAMP WHERE id = $1',
+                'UPDATE users SET last_2fa_used = CURRENT_TIMESTAMP WHERE id = $1::uuid',
                     [userId]
                 );
-                
+
                 return {
                     success: true,
                     message: 'Code 2FA valide'
@@ -118,7 +115,7 @@ class TwoFactorAuthService {
             throw new Error('Erreur lors de la vérification du code 2FA');
         }
     }
-    
+
     /**
      * Activer le 2FA pour un utilisateur (après validation du premier code)
      */
@@ -126,14 +123,14 @@ class TwoFactorAuthService {
         try {
             // Vérifier le token
             const verification = await this.verifyToken(userId, token);
-            
+
             if (verification.success) {
                 // Activer le 2FA
                 await pool.query(
                     'UPDATE users SET two_factor_enabled = true WHERE id = $1',
                     [userId]
                 );
-                
+
                 return {
                     success: true,
                     message: '2FA activé avec succès'
@@ -149,7 +146,7 @@ class TwoFactorAuthService {
             throw new Error('Impossible d\'activer le 2FA');
         }
     }
-    
+
     /**
      * Désactiver le 2FA pour un utilisateur
      */
@@ -157,14 +154,14 @@ class TwoFactorAuthService {
         try {
             // Vérifier le token avant de désactiver
             const verification = await this.verifyToken(userId, token);
-            
+
             if (verification.success) {
                 // Désactiver le 2FA
                 await pool.query(
                     'UPDATE users SET two_factor_enabled = false, two_factor_secret = NULL WHERE id = $1',
                     [userId]
                 );
-                
+
                 return {
                     success: true,
                     message: '2FA désactivé avec succès'
@@ -180,7 +177,7 @@ class TwoFactorAuthService {
             throw new Error('Impossible de désactiver le 2FA');
         }
     }
-    
+
     /**
      * Vérifier si un utilisateur a le 2FA activé
      */
@@ -195,28 +192,27 @@ class TwoFactorAuthService {
                     AND column_name = 'two_factor_enabled'
                 )
             `);
-            
+
             if (!columnCheck.rows[0].exists) {
                 // La colonne n'existe pas, retourner false par défaut
                 return false;
             }
-            
-            const result = await pool.query(
-                'SELECT two_factor_enabled FROM users WHERE id = $1',
+
+            'SELECT two_factor_enabled FROM users WHERE id = $1::uuid',
                 [userId]
             );
-            
+
             if (result.rows.length === 0) {
                 return false;
             }
-            
+
             return result.rows[0].two_factor_enabled === true;
         } catch (error) {
             console.error('Erreur lors de la vérification du statut 2FA:', error);
             return false;
         }
     }
-    
+
     /**
      * Générer des codes de récupération (backup codes)
      */
@@ -226,21 +222,21 @@ class TwoFactorAuthService {
             for (let i = 0; i < 10; i++) {
                 codes.push(this.generateRandomCode());
             }
-            
+
             // Sauvegarder les codes (hashés) en base
             const hashedCodes = codes.map(code => this.hashBackupCode(code));
             await pool.query(
                 'UPDATE users SET backup_codes = $1 WHERE id = $2',
                 [JSON.stringify(hashedCodes), userId]
             );
-            
+
             return codes;
         } catch (error) {
             console.error('Erreur lors de la génération des codes de récupération:', error);
             throw new Error('Impossible de générer les codes de récupération');
         }
     }
-    
+
     /**
      * Vérifier un code de récupération
      */
@@ -250,14 +246,14 @@ class TwoFactorAuthService {
                 'SELECT backup_codes FROM users WHERE id = $1',
                 [userId]
             );
-            
+
             if (result.rows.length === 0 || !result.rows[0].backup_codes) {
                 return false;
             }
-            
+
             const hashedCodes = JSON.parse(result.rows[0].backup_codes);
             const hashedInputCode = this.hashBackupCode(code);
-            
+
             const codeIndex = hashedCodes.indexOf(hashedInputCode);
             if (codeIndex !== -1) {
                 // Supprimer le code utilisé
@@ -266,17 +262,17 @@ class TwoFactorAuthService {
                     'UPDATE users SET backup_codes = $1 WHERE id = $2',
                     [JSON.stringify(hashedCodes), userId]
                 );
-                
+
                 return true;
             }
-            
+
             return false;
         } catch (error) {
             console.error('Erreur lors de la vérification du code de récupération:', error);
             return false;
         }
     }
-    
+
     /**
      * Générer un code aléatoire pour les codes de récupération
      */
@@ -288,7 +284,7 @@ class TwoFactorAuthService {
         }
         return result;
     }
-    
+
     /**
      * Hasher un code de récupération
      */

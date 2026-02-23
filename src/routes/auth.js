@@ -197,7 +197,7 @@ router.get('/me', authenticateToken, async (req, res) => {
             FROM permissions p
             JOIN role_permissions rp ON p.id = rp.permission_id
             JOIN user_roles ur ON rp.role_id = ur.role_id
-            WHERE ur.user_id = $1
+            WHERE ur.user_id = $1::uuid
         `, [user.id]);
 
         const userPermissions = permissionsResult.rows.map(p => p.code);
@@ -205,9 +205,9 @@ router.get('/me', authenticateToken, async (req, res) => {
 
         // Récupérer toutes les BUs auxquelles l'utilisateur a accès
         const buAccessResult = await pool.query(`
-            SELECT business_unit_id FROM user_business_unit_access WHERE user_id = $1 AND granted = true
+            SELECT business_unit_id FROM user_business_unit_access WHERE user_id = $1::uuid AND granted = true
             UNION
-            SELECT business_unit_id FROM collaborateurs WHERE user_id = $1 AND business_unit_id IS NOT NULL
+            SELECT business_unit_id FROM collaborateurs WHERE user_id = $1::uuid AND business_unit_id IS NOT NULL
         `, [user.id]);
 
         const authorizedBuIds = buAccessResult.rows.map(r => r.business_unit_id);
@@ -578,7 +578,7 @@ router.post('/login-2fa', async (req, res) => {
                 FROM permissions p
                 JOIN role_permissions rp ON p.id = rp.permission_id
                 JOIN user_roles ur ON rp.role_id = ur.role_id
-                WHERE ur.user_id = $1
+                WHERE ur.user_id = $1::uuid
             `, [user.id]);
             const userPermissions = permissionsResult.rows.map(p => p.code);
 

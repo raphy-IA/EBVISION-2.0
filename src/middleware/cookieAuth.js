@@ -82,63 +82,52 @@ const authenticateCookie = (req, res, next) => {
 
 /**
  * Middleware hybride : supporte à la fois les cookies et les headers Authorization
+ * Amélioré pour être plus robuste face aux tokens expirés/zombies.
  */
 const authenticateHybrid = (req, res, next) => {
-    // Priorité 1: Cookie httpOnly (plus sécurisé)
-    let token = req.cookies.authToken;
-    let source = 'cookie';
+    const authHeader = req.headers['authorization'];
+    const headerToken = authHeader && authHeader.split(' ')[1];
+    const cookieToken = req.cookies.authToken;
 
-    // Priorité 2: Header Authorization (pour compatibilité)
-    if (!token) {
-        const authHeader = req.headers['authorization'];
-        token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-        source = 'header';
-    }
+    let tokenToVerify = null;
+    let fallbackAvailable = false;
 
-    if (!token) {
-        console.warn('⚠️ Tentative d\'accès sans token');
-        return res.status(401).json({
-            success: false,
-            message: 'Token d\'authentification manquant'
-        });
-    }
+    // Stratégie : Essayer d'abord le token qui semble le plus frais/valide
+    // Si l'un échoue, on tente l'autre au lieu de rejeter immédiatement.
 
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
-        // Log discret en production, plus verbeux en dev
-        if (process.env.NODE_ENV !== 'production') {
-            console.log(`🔑 Auth réussie via ${source} pour ${decoded.email}`);
-        }
-        next();
-    } catch (error) {
-        console.error(`❌ Erreur token (${source}):`, error.message);
-
-        if (error.name === 'TokenExpiredError') {
-            try {
-                const decodedPayload = jwt.decode(token);
-                console.error(`📊 [DIAGNOSTIC JWT COOKIE] Détails extraction via ${source}:`, {
-                    maintenant_serveur: new Date().toISOString(),
-                    token_expire_a: error.expiredAt ? new Date(error.expiredAt).toISOString() : 'inconnu',
-                    token_emis_a: decodedPayload && decodedPayload.iat ? new Date(decodedPayload.iat * 1000).toISOString() : 'inconnu',
-                    token_expiration_prevue: decodedPayload && decodedPayload.exp ? new Date(decodedPayload.exp * 1000).toISOString() : 'inconnu',
-                    delta_secondes: decodedPayload && decodedPayload.exp ? Math.floor(Date.now() / 1000 - decodedPayload.exp) : 'inconnu'
-                });
-            } catch (decodeError) {
-                console.error('❌ Impossible de décoder le token expiré pour diagnostic');
+    const tryVerify = (token, source) => {
+        try {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            req.user = decoded;
+            if (process.env.NODE_ENV !== 'production') {
+                console.log(`🔑 Auth réussie via ${source} pour ${decoded.email}`);
             }
+            return true;
+        } catch (error) {
+            console.error(`❌ Erreur token (${source}):`, error.message);
+            if (source === 'cookie') clearAuthCookies(res);
+            return false;
         }
+    };
 
-        // Supprimer les cookies invalides uniquement si on a essayé de les utiliser
-        if (source === 'cookie') {
-            clearAuthCookies(res);
-        }
-
-        return res.status(401).json({
-            success: false,
-            message: 'Token invalide ou expiré'
-        });
+    // 1. Tenter le cookie d'abord (plus sécurisé)
+    if (cookieToken) {
+        if (tryVerify(cookieToken, 'cookie')) return next();
+        fallbackAvailable = true;
     }
+
+    // 2. Tenter le header si le cookie a échoué ou est absent
+    if (headerToken) {
+        if (tryVerify(headerToken, 'header')) return next();
+    }
+
+    // Si on arrive ici, aucun token n'est valide
+    console.warn('⚠️ Accès refusé : aucun token valide trouvé');
+    return res.status(401).json({
+        success: false,
+        message: 'Token d\'authentification invalide ou expiré. Veuillez vous reconnecter.',
+        expired: true
+    });
 };
 
 module.exports = {

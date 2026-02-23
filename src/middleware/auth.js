@@ -92,7 +92,7 @@ const requirePermission = (permission) => {
                 SELECT r.name
                 FROM user_roles ur
                 JOIN roles r ON ur.role_id = r.id
-                WHERE ur.user_id = $1
+                WHERE ur.user_id = $1::uuid
             `;
             const rolesResult = await pool.query(userRolesQuery, [req.user.id]);
             const userRoles = rolesResult.rows.map(r => r.name);
@@ -112,14 +112,14 @@ const requirePermission = (permission) => {
                         SELECT 1
                         FROM role_permissions rp
                         JOIN user_roles ur ON rp.role_id = ur.role_id
-                        WHERE ur.user_id = $2 AND p.id = rp.permission_id
+                        WHERE ur.user_id = $2::uuid AND p.id = rp.permission_id
                     )
                     OR
                     -- Permissions directes utilisateur
                     EXISTS (
                         SELECT 1
                         FROM user_permissions up
-                        WHERE up.user_id = $2 AND up.permission_id = p.id
+                        WHERE up.user_id = $2::uuid AND up.permission_id = p.id
                     )
                 )
             `;
@@ -211,7 +211,7 @@ const requireRole = (roles) => {
                 SELECT r.name
                 FROM user_roles ur
                 JOIN roles r ON ur.role_id = r.id
-                WHERE ur.user_id = $1
+                WHERE ur.user_id = $1::uuid
             `;
 
             const userRolesResult = await pool.query(userRolesQuery, [req.user.id]);

@@ -113,7 +113,7 @@ class User {
             LEFT JOIN divisions d ON c.division_id = d.id
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
             LEFT JOIN postes p ON c.poste_actuel_id = p.id
-            WHERE u.id = $1
+            WHERE u.id = $1::uuid
         `;
 
         const result = await query(sql, [id]);
@@ -197,7 +197,7 @@ class User {
                 const userRoles = userRolesResult.rows.map(r => r.name);
 
                 // Vérifier également le rôle principal (legacy)
-                const userQuery = `SELECT role FROM users WHERE id = $1`;
+                const userQuery = `SELECT role FROM users WHERE id = $1::uuid`;
                 const userResult = await query(userQuery, [currentUserId]);
                 const principalRole = userResult.rows[0]?.role;
 
@@ -433,7 +433,7 @@ class User {
             SELECT r.id, r.name, r.description
             FROM user_roles ur
             JOIN roles r ON ur.role_id = r.id
-            WHERE ur.user_id = $1
+            WHERE ur.user_id = $1::uuid
         `;
 
         console.log('🔄 Exécution de la requête SQL...');
