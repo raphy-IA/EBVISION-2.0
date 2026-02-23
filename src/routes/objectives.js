@@ -550,6 +550,20 @@ router.post('/individual', authenticateToken, requirePermission('objectives.divi
     }
 });
 
+// POST /api/objectives/grade - Assigner un objectif à tout un grade
+router.post('/grade', authenticateToken, requirePermission('objectives.division.distribute'), async (req, res) => {
+    try {
+        const result = await Objective.assignToGrade({
+            ...req.body,
+            assigned_by: req.user.id
+        });
+        res.status(201).json(result);
+    } catch (error) {
+        console.error('Erreur lors de l\'assignation par grade:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
 // DELETE /api/objectives/individual/:id - Supprimer un objectif individuel
 router.delete('/individual/:id', authenticateToken, requirePermission('objectives:delete'), async (req, res) => {
     const objId = parseInt(req.params.id, 10);

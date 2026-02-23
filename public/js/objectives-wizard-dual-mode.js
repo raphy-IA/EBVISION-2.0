@@ -102,19 +102,28 @@ function showModeSelectionStep() {
 
     htmlContent += `<div class="list-group">`;
 
-    // Option MÉTRIQUE (uniquement si pas INDIVIDUAL)
+    // Option MÉTRIQUE (uniquement si pas INDIVIDUAL et si rôle autorisé)
     if (!isIndividual) {
-        htmlContent += `
-            <button type="button" class="list-group-item list-group-item-action" onclick="selectObjectiveMode('METRIC')">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <i class="fas fa-chart-line me-2 text-primary"></i>
-                        <strong>Objectif sur Métrique</strong>
-                        <p class="mb-0 text-muted small">Fixer un objectif basé sur une métrique calculée (CA, Clients, etc.)</p>
+        const user = window.sessionManager?.getUser();
+        const isAdmin = window.sessionManager?.isAdmin();
+        const isSeniorPartner = user?.roles?.includes('SENIOR_PARTNER');
+        const isResponsableRH = user?.roles?.includes('RESPONSABLE_RH') || user?.roles?.includes('RESPONSABLE RH');
+
+        const canUseMetric = isAdmin || isSeniorPartner || isResponsableRH;
+
+        if (canUseMetric) {
+            htmlContent += `
+                <button type="button" class="list-group-item list-group-item-action" onclick="selectObjectiveMode('METRIC')">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <i class="fas fa-chart-line me-2 text-primary"></i>
+                            <strong>Objectif sur Métrique</strong>
+                            <p class="mb-0 text-muted small">Fixer un objectif basé sur une métrique calculée (CA, Clients, etc.)</p>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
                     </div>
-                    <i class="fas fa-chevron-right"></i>
-                </div>
-            </button>`;
+                </button>`;
+        }
     }
 
     // Option OPÉRATIONNEL (toujours disponible, renommé de TYPE)
@@ -446,11 +455,17 @@ async function updateImpactedMetrics() {
     }
 }
 
-// Intercepter la soumission pour ajouter les champs du mode dual
 const originalSubmit = window.submitAutonomousObjective;
 window.submitAutonomousObjective = async function () {
-    const { level, entityId } = wizardState.autonomous;
+    const { level, entityId, mode: wizardMode } = wizardState.autonomous;
     const mode = dualModeState.objectiveMode;
+
+    // Si on est dans le nouveau mode de gestion individuelle/affectation,
+    // on bypass la logique du mode dual (Métriques/Types) et on utilise la fonction originale
+    if (wizardMode === 'MANAGEMENT_INDIVIDUAL') {
+        console.log('🚀 Bypass dual-mode check for MANAGEMENT_INDIVIDUAL');
+        return originalSubmit();
+    }
 
     if (!mode) {
         showAlert('Erreur: Mode d\'objectif non sélectionné', 'danger');

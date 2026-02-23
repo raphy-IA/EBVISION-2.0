@@ -124,8 +124,13 @@
                                     title="Configurer métriques et types">
                                     <i class="fas fa-cog"></i>
                                 </a>
-                                <button class="btn btn-outline-primary me-2" onclick="openTemplateLibraryModal()">
+                                <button class="btn btn-outline-primary" id="btnLibrary"
+                                    onclick="openTemplateLibraryModal()">
                                     <i class="fas fa-book-open me-2"></i>Depuis Bibliothèque
+                                </button>
+                                <button class="btn btn-info text-white" id="btnCreateIndividual"
+                                    onclick="openIndividualWizard()">
+                                    <i class="fas fa-user-check me-2"></i>Affecter Objectifs
                                 </button>
                                 <button class="btn btn-primary" onclick="openCreateObjectiveModal()">
                                     <i class="fas fa-plus me-2"></i>Nouvel Objectif
@@ -222,6 +227,12 @@
                                             <i class="fas fa-sitemap me-2"></i>Par Division
                                         </button>
                                     </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="individual-tab" data-bs-toggle="tab"
+                                            data-bs-target="#individual" type="button" role="tab">
+                                            <i class="fas fa-user-check me-2"></i>Individuels
+                                        </button>
+                                    </li>
                                 </ul>
                             </div>
                             <div class="card-body">
@@ -276,6 +287,42 @@
                                         <div id="divisionObjectivesList">
                                             <div class="text-center text-muted py-5">
                                                 <p>Sélectionnez une Division pour voir ses objectifs</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Onglet Objectifs Individuels -->
+                                    <div class="tab-pane fade" id="individual" role="tabpanel">
+                                        <div class="row g-3 mb-4 align-items-end">
+                                            <div class="col-md-3">
+                                                <label class="form-label small fw-bold">Business Unit</label>
+                                                <select class="form-select" id="individualBuSelect">
+                                                    <option value="">Toutes les BUs</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label small fw-bold">Division</label>
+                                                <select class="form-select" id="individualDivisionSelect">
+                                                    <option value="">Toutes les Divisions</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label small fw-bold">Collaborateur</label>
+                                                <select class="form-select" id="individualCollaboratorSelect">
+                                                    <option value="">Tous les collaborateurs</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2 text-end">
+                                                <button class="btn btn-outline-secondary"
+                                                    onclick="refreshIndividualObjectives()">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div id="individualObjectivesList">
+                                            <div class="text-center text-muted py-5">
+                                                <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                                                <p>Chargement des objectifs individuels...</p>
                                             </div>
                                         </div>
                                     </div>

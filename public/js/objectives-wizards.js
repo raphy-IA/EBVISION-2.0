@@ -28,9 +28,12 @@ function openAutonomousObjectiveWizard() {
     // Réinitialiser l'état
     wizardState.autonomous = {
         currentStep: 1,
+        mode: 'GENERIC',
         level: null,
         entityId: null,
-        entityName: null
+        entityName: null,
+        selectedBUs: [],
+        selectedCollaborators: []
     };
 
     // Afficher le modal
@@ -38,11 +41,59 @@ function openAutonomousObjectiveWizard() {
     modal.show();
 
     // Afficher l'étape 1
-    // Afficher l'étape 1
     showAutonomousStep(1);
 
     // Filtrer les options selon les permissions
     filterAutonomousOptions();
+}
+
+/**
+ * Nouveau Wizard dédié à la gestion individuelle (Flux: Form -> BU -> Collabs -> Ajustements)
+ */
+function openIndividualManagementWizard() {
+    // Réinitialiser l'état
+    wizardState.autonomous = {
+        currentStep: 1, // Étape 1 = FORMULAIRE
+        mode: 'MANAGEMENT_INDIVIDUAL',
+        level: 'INDIVIDUAL',
+        entityId: null,
+        entityName: 'Affectation en masse',
+        selectedBUs: [],
+        selectedCollaborators: []
+    };
+
+    // Nettoyer les étapes précédentes si existantes
+    const buStep = document.getElementById('autonomousBUStep');
+    if (buStep) buStep.remove();
+    const collabStep = document.getElementById('autonomousCollabSelectionStep');
+    if (collabStep) collabStep.remove();
+
+    // Afficher le modal
+    const modalEl = document.getElementById('autonomousWizardModal');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    // Mettre à jour le titre du modal
+    const modalTitle = modalEl.querySelector('.modal-title');
+    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-user-check me-2"></i>Affecter des Objectifs Individuels';
+
+    // En mode MANAGEMENT_INDIVIDUAL, l'étape 1 affiche le formulaire
+    showAutonomousStep(1);
+    renderCollabAdjustmentTable(); // Initialize the table renderer
+
+    // Valeurs par défaut
+    setTimeout(() => {
+        const weightInput = document.getElementById('autonomousWeight');
+        if (weightInput) weightInput.value = 100;
+
+        // Cacher le titre car on utilise celui du type
+        const titleContainer = document.getElementById('autonomousTitleContainer');
+        if (titleContainer) titleContainer.style.display = 'none';
+
+        // Libellé de cible
+        const targetLabel = document.getElementById('autonomousTargetLabel');
+        if (targetLabel) targetLabel.textContent = 'Cible par défaut *';
+    }, 100);
 }
 
 function filterAutonomousOptions() {
@@ -90,14 +141,45 @@ function filterAutonomousOptions() {
 
 function showAutonomousStep(step) {
     wizardState.autonomous.currentStep = step;
+    const mode = wizardState.autonomous.mode || 'GENERIC';
 
-    // Masquer toutes les étapes
-    document.querySelectorAll('[id^="autonomousStep"]').forEach(el => {
-        el.style.display = 'none';
-    });
+    // Masquer toutes les étapes physiques
+    document.querySelectorAll('[id^="autonomousStep"]').forEach(el => el.style.display = 'none');
 
-    // Afficher l'étape courante
-    document.getElementById(`autonomousStep${step}`).style.display = 'block';
+    // Masquer les étapes custom
+    const buStep = document.getElementById('autonomousBUStep');
+    if (buStep) buStep.style.display = 'none';
+    const collabStep = document.getElementById('autonomousCollabSelectionStep');
+    if (collabStep) collabStep.style.display = 'none';
+    const adjustmentStep = document.getElementById('autonomousAdjustmentStep');
+    if (adjustmentStep) adjustmentStep.style.display = 'none';
+
+    if (mode === 'MANAGEMENT_INDIVIDUAL') {
+        const stepTitle = document.getElementById('autonomousStepTitle');
+        if (stepTitle) stepTitle.textContent = `Étape ${step}/4`;
+
+        // Redirection des étapes pour le mode MANAGEMENT_INDIVIDUAL
+        if (step === 1) {
+            // Étape 1 = Formulaire
+            document.getElementById('autonomousStep3').style.display = 'block';
+            loadAutonomousForm();
+        } else if (step === 2) {
+            // Étape 2 = Sélection BU
+            checkBUAccessAndShowMultipleBUSelection();
+        } else if (step === 3) {
+            // Étape 3 = Sélection Collaborateurs
+            showCollaboratorSelectionInterface();
+        } else if (step === 4) {
+            // Étape 4 = Ajustement des cibles
+            document.getElementById('autonomousAdjustmentStep').style.display = 'block';
+            renderCollabAdjustmentTable();
+        }
+    } else {
+        // Mode générique standard
+        const stepTitle = document.getElementById('autonomousStepTitle');
+        if (stepTitle) stepTitle.textContent = `Étape ${step}/3`;
+        document.getElementById(`autonomousStep${step}`).style.display = 'block';
+    }
 
     // Mettre à jour les boutons
     updateAutonomousButtons();
@@ -122,7 +204,7 @@ function selectAutonomousLevel(level) {
     }
 }
 
-async function checkBUAccessAndShowCollaboratorSelection() {
+async function checkBUAccessAndShowMultipleBUSelection() {
     try {
         const response = await fetch('/api/users/me/bu-access', {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
@@ -132,31 +214,25 @@ async function checkBUAccessAndShowCollaboratorSelection() {
             const result = await response.json();
             wizardState.autonomous.buAccess = result.data;
 
-            if (result.data.hasAllAccess || result.data.businessUnits.length === 1) {
-                // Une seule BU ou accès total → passer direct à sélection collaborateurs
-                // Si une seule BU, on la pré-sélectionne
-                if (result.data.businessUnits.length === 1) {
-                    wizardState.autonomous.selectedBU = result.data.businessUnits[0].id;
-                }
-                showCollaboratorSelectionInterface();
+            if (result.data.hasAllAccess || result.data.businessUnits.length > 1) {
+                showBUSelectionStep(result.data.businessUnits, true); // true = multi-sélection
+            } else if (result.data.businessUnits.length === 1) {
+                wizardState.autonomous.selectedBUs = [result.data.businessUnits[0].id];
+                showAutonomousStep(3); // Passer direct aux collaborateurs
             } else {
-                // Plusieurs BU → afficher dropdown BU
-                showBUSelectionStep(result.data.businessUnits);
+                showCollaboratorSelectionInterface();
             }
         } else {
-            // Fallback si l'API échoue (ex: ancienne version)
             showCollaboratorSelectionInterface();
         }
     } catch (error) {
         console.error('Erreur BU access:', error);
-        // Fallback
         showCollaboratorSelectionInterface();
     }
 }
 
-function showBUSelectionStep(businessUnits) {
+function showBUSelectionStep(businessUnits, multi = false) {
     const modalBody = document.querySelector('#autonomousWizardModal .modal-body');
-    // Masquer les autres étapes
     document.querySelectorAll('[id^="autonomousStep"]').forEach(el => el.style.display = 'none');
 
     let step = document.getElementById('autonomousBUStep');
@@ -166,23 +242,57 @@ function showBUSelectionStep(businessUnits) {
         modalBody.appendChild(step);
     }
 
-    step.innerHTML = `
-        <h6 class="mb-3">Sélectionner la Business Unit</h6>
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            Veuillez sélectionner la Business Unit pour laquelle vous souhaitez créer des objectifs.
-        </div>
-        <select class="form-select" id="selectedBUDropdown">
-            <option value="">-- Sélectionnez une BU --</option>
-            ${businessUnits.map(bu => `<option value="${bu.id}">${bu.nom}</option>`).join('')}
-        </select>
-        <div class="mt-3 text-end">
-            <button class="btn btn-secondary me-2" onclick="showAutonomousStep(1)">Retour</button>
-            <button class="btn btn-primary" onclick="selectBU()">Continuer</button>
-        </div>
-    `;
+    const title = multi ? 'Sélectionner les Business Units' : 'Sélectionner la Business Unit';
+    const info = multi ? 'Choisissez les BUs auxquelles appliquer cet objectif.' : 'Veuillez sélectionner la Business Unit.';
+
+    if (multi) {
+        step.innerHTML = `
+            <h6 class="mb-3">${title}</h6>
+            <div class="alert alert-info small">
+                <i class="fas fa-info-circle me-2"></i> ${info}
+            </div>
+            <div class="border p-3 rounded bg-light" style="max-height: 250px; overflow-y: auto;">
+                ${businessUnits.map(bu => `
+                    <div class="form-check mb-2">
+                        <input class="form-check-input bu-checkbox" type="checkbox" id="bu_check_${bu.id}" value="${bu.id}">
+                        <label class="form-check-label" for="bu_check_${bu.id}">${bu.nom}</label>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="mt-4 text-end">
+                <button class="btn btn-secondary me-2" onclick="showAutonomousStep(1)">Retour</button>
+                <button class="btn btn-primary" onclick="confirmBUsSelection()">Continuer</button>
+            </div>
+        `;
+    } else {
+        step.innerHTML = `
+            <h6 class="mb-3">${title}</h6>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> ${info}
+            </div>
+            <select class="form-select" id="selectedBUDropdown">
+                <option value="">-- Sélectionnez une BU --</option>
+                ${businessUnits.map(bu => `<option value="${bu.id}">${bu.nom}</option>`).join('')}
+            </select>
+            <div class="mt-3 text-end">
+                <button class="btn btn-secondary me-2" onclick="showAutonomousStep(1)">Retour</button>
+                <button class="btn btn-primary" onclick="selectBU()">Continuer</button>
+            </div>
+        `;
+    }
 
     step.style.display = 'block';
+    updateAutonomousButtons();
+}
+
+function confirmBUsSelection() {
+    const selectedBUs = Array.from(document.querySelectorAll('.bu-checkbox:checked')).map(cb => cb.value);
+    if (selectedBUs.length === 0) {
+        showAlert('Veuillez sélectionner au moins une Business Unit', 'warning');
+        return;
+    }
+    wizardState.autonomous.selectedBUs = selectedBUs;
+    showAutonomousStep(3);
 }
 
 function selectBU() {
@@ -226,16 +336,24 @@ async function showCollaboratorSelectionInterface() {
             <div class="row">
                 <!-- Filtres par Grades -->
                 <div class="col-md-4">
-                    <label class="fw-bold mb-2">Filtrer par Grades</label>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="fw-bold mb-0">Par Grade</label>
+                        <small class="text-muted">(Tout cocher)</small>
+                    </div>
                     <div id="gradesCheckboxes" class="border p-2 rounded bg-light" style="max-height: 300px; overflow-y: auto;">
                         ${grades.length > 0 ? grades.map(grade => `
-                            <div class="form-check">
-                                <input class="form-check-input grade-filter" type="checkbox" 
-                                       id="grade_${grade.id}" value="${grade.id}" 
-                                       onchange="filterCollaboratorsByGrade()">
-                                <label class="form-check-label small" for="grade_${grade.id}">
-                                    ${grade.nom}
-                                </label>
+                            <div class="form-check d-flex align-items-center justify-content-between pe-2">
+                                <div>
+                                    <input class="form-check-input grade-filter" type="checkbox" 
+                                           id="grade_${grade.id}" value="${grade.id}" 
+                                           onchange="filterCollaboratorsByGrade()">
+                                    <label class="form-check-label small" for="grade_${grade.id}">
+                                        ${grade.nom}
+                                    </label>
+                                </div>
+                                <input class="form-check-input ms-2" type="checkbox" 
+                                       title="Tout cocher pour ce grade"
+                                       onchange="toggleAllInGrade('${grade.id}', this.checked)">
                             </div>
                         `).join('') : '<div class="text-muted small">Aucun grade disponible</div>'}
                     </div>
@@ -262,7 +380,7 @@ async function showCollaboratorSelectionInterface() {
             </div>
             
             <div class="mt-4 text-end">
-                <button class="btn btn-secondary me-2" onclick="showAutonomousStep(1)">Retour</button>
+                <button class="btn btn-secondary me-2" onclick="showAutonomousStep(wizardState.autonomous.mode === 'MANAGEMENT_INDIVIDUAL' ? 2 : 1)">Retour</button>
                 <button class="btn btn-primary" onclick="proceedWithSelectedCollaborators()">
                     Continuer
                 </button>
@@ -298,7 +416,13 @@ async function fetchGrades() {
 
 async function fetchCollaborators() {
     try {
-        const buParam = wizardState.autonomous.selectedBU ? `&business_unit_id=${wizardState.autonomous.selectedBU}` : '';
+        let buParam = '';
+        if (wizardState.autonomous.selectedBUs && wizardState.autonomous.selectedBUs.length > 0) {
+            buParam = `&business_units=${wizardState.autonomous.selectedBUs.join(',')}`;
+        } else if (wizardState.autonomous.selectedBU) {
+            buParam = `&business_unit_id=${wizardState.autonomous.selectedBU}`;
+        }
+
         const response = await fetch(`/api/collaborateurs?filterByUserAccess=true${buParam}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
@@ -311,6 +435,16 @@ async function fetchCollaborators() {
         console.error('Erreur fetch collaborators:', error);
         return [];
     }
+}
+
+function toggleAllInGrade(gradeId, checked) {
+    const items = document.querySelectorAll(`.collab-item[data-grade="${gradeId}"]`);
+    items.forEach(item => {
+        if (item.style.display !== 'none') {
+            const cb = item.querySelector('.collab-select');
+            if (cb) cb.checked = checked;
+        }
+    });
 }
 
 function filterCollaboratorsByGrade() {
@@ -353,9 +487,8 @@ function proceedWithSelectedCollaborators() {
         ? `${selectedCollabs.length} collaborateurs`
         : document.querySelector(`label[for="collab_${selectedCollabs[0]}"]`).textContent.trim();
 
-    // Passer à l'étape 3 (Formulaire)
-    showAutonomousStep(3);
-    loadAutonomousForm();
+    // Passer à l'étape 4 (Ajustement) au lieu de Step 3
+    showAutonomousStep(4);
 }
 
 async function loadEntitiesForLevel(level) {
@@ -461,6 +594,9 @@ async function loadObjectiveTypesForAutonomous() {
 
         if (response.ok) {
             const types = await response.json();
+            // Stocker pour accès rapide
+            wizardState.autonomous.objectiveTypes = types;
+
             const select = document.getElementById('autonomousObjectiveType');
             if (!select) return;
 
@@ -468,10 +604,76 @@ async function loadObjectiveTypesForAutonomous() {
             types.forEach(type => {
                 select.innerHTML += `<option value="${type.id}">${type.label}</option>`;
             });
+
+            // Ajouter listener si pas déjà présent
+            if (!select.onchange) {
+                select.onchange = onAutonomousTypeChange;
+            }
         }
     } catch (error) {
         console.error('Erreur chargement types:', error);
     }
+}
+
+function onAutonomousTypeChange() {
+    const select = document.getElementById('autonomousObjectiveType');
+    const typeId = select.value;
+    if (!typeId || !wizardState.autonomous.objectiveTypes) return;
+
+    const typeData = wizardState.autonomous.objectiveTypes.find(t => t.id == typeId);
+    if (!typeData) return;
+
+    // 1. Titre automatique
+    const titleInput = document.getElementById('autonomousTitle');
+    if (titleInput) {
+        titleInput.value = typeData.label;
+    }
+
+    // 2. Unité dynamique
+    const unitLabel = document.getElementById('autonomousUnitLabel');
+    if (unitLabel) {
+        unitLabel.textContent = typeData.unit || (typeData.is_financial ? '€' : '');
+    }
+
+    // 3. Poids par défaut
+    const weightInput = document.getElementById('autonomousWeight');
+    if (weightInput && !weightInput.value) {
+        weightInput.value = 100;
+    }
+}
+
+function renderCollabAdjustmentTable() {
+    const container = document.getElementById('collabAdjustmentTableBody');
+    if (!container) return;
+
+    const defaultTarget = parseFloat(document.getElementById('autonomousTarget').value) || 0;
+    const selectedCollabs = wizardState.autonomous.selectedCollaborators || [];
+
+    // Mettre à jour l'unité dans l'en-tête de la table
+    const unit = document.getElementById('autonomousUnitLabel')?.textContent || '€';
+    document.querySelectorAll('.unit-context').forEach(el => el.textContent = unit);
+
+    container.innerHTML = selectedCollabs.map(collabId => {
+        // Chercher le nom du collab (il devrait être dans le DOM de l'étape 3)
+        const labelEl = document.querySelector(`label[for="collab_${collabId}"]`);
+        const name = labelEl ? labelEl.textContent.trim() : `ID: ${collabId}`;
+
+        return `
+            <tr>
+                <td>
+                    <div class="fw-bold">${name}</div>
+                </td>
+                <td>
+                    <div class="input-group input-group-sm">
+                        <input type="number" class="form-control collab-target-input" 
+                               data-collab-id="${collabId}" 
+                               value="${defaultTarget}" step="0.01">
+                        <span class="input-group-text">${unit}</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 async function submitAutonomousObjective() {
@@ -525,15 +727,24 @@ async function submitAutonomousObjective() {
             data.division_id = entityId;
         } else if (level === 'GRADE') {
             url = '/api/objectives/grade';
-            data.grade_id = entityId;
+            data.target_grade_id = entityId;
         } else if (level === 'INDIVIDUAL') {
-            // Gestion de la création multiple pour INDIVIDUAL
+            // Gestion de la création multiple pour INDIVIDUAL avec cibles ajustées
             if (selectedCollaborators && selectedCollaborators.length > 0) {
                 let successCount = 0;
                 let errorCount = 0;
 
+                // Récupérer les cibles ajustées depuis la table
+                const adjustmentInputs = document.querySelectorAll('.collab-target-input');
+                const targetsMap = {};
+                adjustmentInputs.forEach(input => {
+                    targetsMap[input.dataset.collabId] = parseFloat(input.value);
+                });
+
                 for (const collabId of selectedCollaborators) {
-                    const collabData = { ...data, collaborator_id: collabId };
+                    const specificTarget = targetsMap[collabId] !== undefined ? targetsMap[collabId] : data.target_value;
+                    const collabData = { ...data, target_value: specificTarget, collaborator_id: collabId };
+
                     try {
                         const res = await fetch('/api/objectives/individual', {
                             method: 'POST',
@@ -596,15 +807,73 @@ async function submitAutonomousObjective() {
 
 function updateAutonomousButtons() {
     const step = wizardState.autonomous.currentStep;
+    const mode = wizardState.autonomous.mode || 'GENERIC';
     const prevBtn = document.getElementById('autonomousPrevBtn');
     const submitBtn = document.getElementById('autonomousSubmitBtn');
 
     if (prevBtn) {
         prevBtn.style.display = step > 1 ? 'inline-block' : 'none';
+        // En mode Management, on est en step 1 sur le form, donc step > 1 suffit
     }
 
     if (submitBtn) {
-        submitBtn.style.display = step === 3 ? 'inline-block' : 'none';
+        if (mode === 'MANAGEMENT_INDIVIDUAL') {
+            // Dans ce mode, le bouton submit apparaît à la fin (step 3: collabs)
+            submitBtn.style.display = step === 3 ? 'inline-block' : 'none';
+            // Modifier le texte si besoin ou laisser "Créer"
+            submitBtn.innerHTML = '<i class="fas fa-check me-1"></i> Finaliser la création';
+        } else {
+            submitBtn.style.display = step === 3 ? 'inline-block' : 'none';
+            submitBtn.innerHTML = '<i class="fas fa-check me-1"></i> Créer';
+        }
+    }
+
+    // Ajouter un bouton "Suivant" s'il n'existe pas pour la navigation form -> BU -> Collabs
+    let nextBtn = document.getElementById('autonomousNextBtn');
+    if (!nextBtn) {
+        nextBtn = document.createElement('button');
+        nextBtn.id = 'autonomousNextBtn';
+        nextBtn.className = 'btn btn-primary';
+        nextBtn.innerHTML = 'Suivant <i class="fas fa-arrow-right ms-1"></i>';
+        document.querySelector('#autonomousWizardModal .modal-footer').insertBefore(nextBtn, submitBtn);
+    }
+
+    // Logique du bouton Suivant
+    if (mode === 'MANAGEMENT_INDIVIDUAL') {
+        const totalSteps = 4;
+        nextBtn.style.display = step < totalSteps ? 'inline-block' : 'none';
+
+        // Modifier le bouton Suivant à l'étape 3
+        if (step === 3) {
+            nextBtn.innerHTML = 'Réviser les cibles <i class="fas fa-arrow-right ms-1"></i>';
+        } else {
+            nextBtn.innerHTML = 'Suivant <i class="fas fa-arrow-right ms-1"></i>';
+        }
+
+        if (submitBtn) {
+            submitBtn.style.display = step === totalSteps ? 'inline-block' : 'none';
+            submitBtn.innerHTML = '<i class="fas fa-check-double me-1"></i> Confirmer l\'affectation';
+        }
+
+        nextBtn.onclick = () => {
+            if (step === 1) {
+                // Validation form
+                const typeId = document.getElementById('autonomousObjectiveType').value;
+                const target = document.getElementById('autonomousTarget').value;
+                if (!typeId || !target) {
+                    showAlert('Veuillez sélectionner un type d\'objectif et une cible par défaut', 'warning');
+                    return;
+                }
+                showAutonomousStep(2);
+            } else if (step === 2) {
+                confirmBUsSelection();
+            } else if (step === 3) {
+                proceedWithSelectedCollaborators();
+            }
+        };
+    } else {
+        // En mode générique, le bouton suivant n'est pas utilisé tel quel (navigation par clic liste)
+        nextBtn.style.display = 'none';
     }
 }
 

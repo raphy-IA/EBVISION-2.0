@@ -35,37 +35,56 @@ async function injectWizardModals() {
     }
 }
 
-function replaceObjectiveButton() {
+async function replaceObjectiveButton() {
+    // Attendre que le sessionManager soit chargé s'il ne l'est pas
+    if (window.sessionManager && !window.sessionManager.isLoaded) {
+        try {
+            await window.sessionManager.initialize();
+        } catch (e) {
+            console.error('Erreur initialisation session dans injection:', e);
+        }
+    }
+
     // Trouver le bouton "Nouvel Objectif"
     const buttons = Array.from(document.querySelectorAll('button'));
     const targetButton = buttons.find(btn => btn.textContent.includes('Nouvel Objectif'));
 
     if (targetButton) {
-        // Créer le groupe de boutons
-        const buttonGroup = document.createElement('div');
-        buttonGroup.className = 'btn-group';
-        buttonGroup.setAttribute('role', 'group');
+        // CONDITION : Uniquement pour SUPER_ADMIN
+        const user = window.sessionManager?.getUser();
+        const isSuperAdmin = user && (user.role === 'SUPER_ADMIN' || (user.roles && user.roles.includes('SUPER_ADMIN')));
 
-        // Bouton 1 : Objectif Autonome
-        const autonomousBtn = document.createElement('button');
-        autonomousBtn.className = 'btn btn-primary';
-        autonomousBtn.onclick = openAutonomousObjectiveWizard;
-        autonomousBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Créer Objectif Autonome';
+        if (isSuperAdmin) {
+            // Créer le groupe de boutons
+            const buttonGroup = document.createElement('div');
+            buttonGroup.className = 'btn-group';
+            buttonGroup.setAttribute('role', 'group');
 
-        // Bouton 2 : Distribuer
-        const distributeBtn = document.createElement('button');
-        distributeBtn.className = 'btn btn-success';
-        distributeBtn.onclick = openDistributeObjectiveWizard;
-        distributeBtn.innerHTML = '<i class="fas fa-share-nodes me-2"></i>Distribuer Objectif';
+            // Bouton 1 : Objectif Autonome
+            const autonomousBtn = document.createElement('button');
+            autonomousBtn.className = 'btn btn-primary';
+            autonomousBtn.onclick = openAutonomousObjectiveWizard;
+            autonomousBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Créer Objectif Autonome';
 
-        // Ajouter les boutons au groupe
-        buttonGroup.appendChild(autonomousBtn);
-        buttonGroup.appendChild(distributeBtn);
+            // Bouton 2 : Distribuer
+            const distributeBtn = document.createElement('button');
+            distributeBtn.className = 'btn btn-success';
+            distributeBtn.onclick = openDistributeObjectiveWizard;
+            distributeBtn.innerHTML = '<i class="fas fa-share-nodes me-2"></i>Distribuer Objectif';
 
-        // Remplacer l'ancien bouton
-        targetButton.parentNode.replaceChild(buttonGroup, targetButton);
+            // Ajouter les boutons au groupe
+            buttonGroup.appendChild(autonomousBtn);
+            buttonGroup.appendChild(distributeBtn);
 
-        console.log('✅ Objective buttons replaced successfully');
+            // Remplacer l'ancien bouton
+            targetButton.parentNode.replaceChild(buttonGroup, targetButton);
+            console.log('✅ Objective buttons replaced for SUPER_ADMIN');
+        } else {
+            // Pour les autres, on supprime simplement le bouton "Nouvel Objectif"
+            // car ils doivent utiliser "Affecter Objectifs" qui est déjà présent dans le HTML
+            targetButton.remove();
+            console.log('✅ Original objective button removed for non-SuperAdmin');
+        }
     } else {
         console.warn('⚠️ Original "Nouvel Objectif" button not found');
     }

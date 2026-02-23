@@ -42,7 +42,7 @@ router.get('/', authenticateToken, async (req, res) => {
             grade: req.query.grade,
             statut: req.query.statut,
             division_id: req.query.division_id,
-            business_unit_id: req.query.business_unit_id,
+            business_unit_id: req.query.business_units ? req.query.business_units.split(',') : req.query.business_unit_id,
             search: req.query.search,
             filterByUserAccess: isUnrestricted ? false : req.query.filterByUserAccess === 'true',
             userId: req.user.id

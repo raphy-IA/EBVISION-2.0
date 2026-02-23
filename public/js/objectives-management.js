@@ -25,28 +25,45 @@ document.addEventListener('DOMContentLoaded', async function () {
         loadBusinessUnits(),
         loadDivisions(),
         loadGrades(),
-        loadObjectiveTypes() // Load objective types
+        loadObjectiveTypes(),
+        loadCollaborators() // Load collaborators for individual tab
     ]);
 
     setupEventListeners();
 });
 
 function applyRbacUI() {
-    const isAdministrative = sessionManager.isAdmin() ||
-        (sessionManager.getUser().roles && sessionManager.getUser().roles.includes('SENIOR_PARTNER'));
+    const isSuperAdmin = sessionManager.isAdmin();
+    const isSeniorPartner = sessionManager.getUser().roles && sessionManager.getUser().roles.includes('SENIOR_PARTNER');
+    const isResponsableRH = sessionManager.getUser().roles && (sessionManager.getUser().roles.includes('RESPONSABLE_RH') || sessionManager.getUser().roles.includes('RESPONSABLE RH'));
+    const isPartner = sessionManager.getUser().roles && sessionManager.getUser().roles.includes('PARTNER');
 
-    // Visibilité des onglets basée sur les permissions
+    // Administrative logic: Senior Partners and Admins see everything
+    const isAdministrative = isSuperAdmin || isSeniorPartner;
+
+    // Visibility for Library button: SuperAdmin, Senior Partner, Responsable RH
+    const canUseLibrary = isAdministrative || isResponsableRH;
+    const btnLibrary = document.getElementById('btnLibrary');
+    if (btnLibrary) btnLibrary.style.display = canUseLibrary ? 'inline-block' : 'none';
+
+    // Visibilité des onglets basée sur les rôles et permissions
+    // Seuls Senior Partners et Admins voient les objectifs globaux par défaut
     const canViewGlobal = sessionManager.hasPermission('objectives.global.view') || isAdministrative;
-    const canViewBu = sessionManager.hasPermission('objectives.bu.view') || isAdministrative;
-    const canViewDivision = sessionManager.hasPermission('objectives.division.view') || isAdministrative;
+
+    // Partners, Senior Partners et Admins voient les autres niveaux
+    const canViewBu = sessionManager.hasPermission('objectives.bu.view') || isAdministrative || isPartner;
+    const canViewDivision = sessionManager.hasPermission('objectives.division.view') || isAdministrative || isPartner;
+    const canViewIndividual = sessionManager.hasPermission('objectives.individual.view') || isAdministrative || isPartner;
 
     const globalTab = document.getElementById('global-tab');
     const buTab = document.getElementById('bu-tab');
     const divisionTab = document.getElementById('division-tab');
+    const individualTab = document.getElementById('individual-tab');
 
     if (globalTab) globalTab.parentElement.style.display = canViewGlobal ? 'block' : 'none';
     if (buTab) buTab.parentElement.style.display = canViewBu ? 'block' : 'none';
     if (divisionTab) divisionTab.parentElement.style.display = canViewDivision ? 'block' : 'none';
+    if (individualTab) individualTab.parentElement.style.display = canViewIndividual ? 'block' : 'none';
 
     // Redirection si l'onglet actif est interdit
     if (globalTab && globalTab.classList.contains('active') && !canViewGlobal) {
@@ -88,6 +105,39 @@ function setupEventListeners() {
             loadDivisionObjectives();
         });
     }
+
+    // Filtres Onglet Individuel
+    const indBuSelect = document.getElementById('individualBuSelect');
+    if (indBuSelect) {
+        indBuSelect.addEventListener('change', () => {
+            // Filtrer les divisions selon la BU
+            const buId = indBuSelect.value;
+            const indDivSelect = document.getElementById('individualDivisionSelect');
+            if (indDivSelect) {
+                Array.from(indDivSelect.options).forEach(opt => {
+                    if (!opt.value) return; // Toujours garder option vide
+                    const div = divisions.find(d => d.id == opt.value);
+                    opt.style.display = (!buId || (div && div.business_unit_id == buId)) ? 'block' : 'none';
+                });
+                if (buId) indDivSelect.value = ""; // Reset if filtered
+            }
+            loadIndividualObjectives();
+        });
+    }
+
+    const indDivSelect = document.getElementById('individualDivisionSelect');
+    if (indDivSelect) {
+        indDivSelect.addEventListener('change', () => {
+            loadIndividualObjectives();
+        });
+    }
+
+    const indCollabSelect = document.getElementById('individualCollaboratorSelect');
+    if (indCollabSelect) {
+        indCollabSelect.addEventListener('change', () => {
+            loadIndividualObjectives();
+        });
+    }
 }
 
 
@@ -115,6 +165,7 @@ async function loadBusinessUnits() {
 
             // Remplir le select de filtre BU
             const filterSelect = document.getElementById('buSelect');
+            const individualFilterSelect = document.getElementById('individualBuSelect');
             const modalSelect = document.getElementById('objectiveBu');
 
             // Vider les options existantes sauf la première
@@ -129,10 +180,17 @@ async function loadBusinessUnits() {
                 }
             }
 
+            if (individualFilterSelect) {
+                while (individualFilterSelect.options.length > 1) {
+                    individualFilterSelect.remove(1);
+                }
+            }
+
             businessUnits.forEach(bu => {
                 // Support pour 'name' et 'nom'
                 const buName = bu.name || bu.nom;
                 if (filterSelect) filterSelect.add(new Option(buName, bu.id));
+                if (individualFilterSelect) individualFilterSelect.add(new Option(buName, bu.id));
                 if (modalSelect) modalSelect.add(new Option(buName, bu.id));
             });
 
@@ -162,6 +220,7 @@ async function loadDivisions() {
 
             // Remplir le select de filtre Division
             const filterSelect = document.getElementById('divisionSelect');
+            const individualFilterSelect = document.getElementById('individualDivisionSelect');
             const modalSelect = document.getElementById('objectiveDivision');
 
             if (filterSelect) {
@@ -175,9 +234,16 @@ async function loadDivisions() {
                 }
             }
 
+            if (individualFilterSelect) {
+                while (individualFilterSelect.options.length > 1) {
+                    individualFilterSelect.remove(1);
+                }
+            }
+
             divisions.forEach(div => {
                 const divName = div.name || div.nom;
                 if (filterSelect) filterSelect.add(new Option(divName, div.id));
+                if (individualFilterSelect) individualFilterSelect.add(new Option(divName, div.id));
                 if (modalSelect) modalSelect.add(new Option(divName, div.id));
             });
         }
@@ -204,6 +270,32 @@ async function loadGrades() {
         }
     } catch (error) {
         console.error('Erreur chargement Grades:', error);
+    }
+}
+
+async function loadCollaborators() {
+    try {
+        const response = await fetch('/api/collaborateurs?filterByUserAccess=true', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        if (response.ok) {
+            const result = await response.json();
+            const collaborators = result.data || result;
+
+            const filterSelect = document.getElementById('individualCollaboratorSelect');
+            if (filterSelect) {
+                // Keep the first option
+                while (filterSelect.options.length > 1) {
+                    filterSelect.remove(1);
+                }
+                collaborators.forEach(c => {
+                    const name = `${c.nom} ${c.prenom}`;
+                    filterSelect.add(new Option(name, c.id));
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Erreur chargement collaborateurs:', error);
     }
 }
 
@@ -306,6 +398,7 @@ function renderObjectives() {
     renderGlobalObjectives();
     loadBuObjectives(); // Filtre et affiche
     loadDivisionObjectives(); // Filtre et affiche
+    loadIndividualObjectives(); // Nouveau: Filtre et affiche les individuels
 }
 
 function renderGlobalObjectives() {
@@ -339,6 +432,7 @@ function loadBuObjectives() {
 
 function loadDivisionObjectives() {
     const container = document.getElementById('divisionObjectivesList');
+    if (!container) return; // Prevent errors if tab not present
     const selectedDivId = document.getElementById('divisionSelect').value;
 
     let divObjs = objectives.filter(o => o.scope === 'DIVISION');
@@ -354,21 +448,67 @@ function loadDivisionObjectives() {
     container.innerHTML = divObjs.map(obj => createObjectiveCard(obj)).join('');
 }
 
+function loadIndividualObjectives() {
+    const container = document.getElementById('individualObjectivesList');
+    if (!container) return;
+
+    const buId = document.getElementById('individualBuSelect').value;
+    const divId = document.getElementById('individualDivisionSelect').value;
+    const collabId = document.getElementById('individualCollaboratorSelect').value;
+
+    let filtered = objectives.filter(o => o.scope === 'INDIVIDUAL');
+
+    if (buId) filtered = filtered.filter(o => o.business_unit_id == buId);
+    if (divId) filtered = filtered.filter(o => o.division_id == divId);
+    if (collabId) filtered = filtered.filter(o => o.collaborator_id == collabId);
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="alert alert-info">Aucun objectif individuel trouvé avec ces filtres.</div>';
+        return;
+    }
+
+    container.innerHTML = filtered.map(obj => createObjectiveCard(obj)).join('');
+}
+
+function refreshIndividualObjectives() {
+    loadObjectives(); // This will fetch all and then call loadIndividualObjectives via renderObjectives
+}
+
+function openIndividualWizard() {
+    // Ouvrir le nouveau wizard de gestion individuelle (Form -> BU -> Collabs)
+    if (typeof openIndividualManagementWizard === 'function') {
+        openIndividualManagementWizard();
+    } else {
+        // Fallback vers le wizard autonome classique si non encore chargé
+        if (typeof openAutonomousObjectiveWizard === 'function') {
+            openAutonomousObjectiveWizard();
+        } else {
+            const modal = new bootstrap.Modal(document.getElementById('autonomousWizardModal'));
+            modal.show();
+        }
+    }
+}
+
 function createObjectiveCard(obj) {
     const progress = Math.min(Math.round(obj.progress || 0), 100);
     const isDelayed = new Date(obj.deadline) < new Date() && progress < 100;
     const statusColor = isDelayed ? 'danger' : (progress >= 100 ? 'success' : (progress >= 50 ? 'warning' : 'primary'));
 
-    // Badge scope
     let scopeBadge = '';
-    if (obj.scope === 'BU') {
-        const bu = businessUnits.find(b => b.id == obj.business_unit_id);
-        const buName = obj.business_unit_name || (bu ? (bu.name || bu.nom) : 'BU');
-        scopeBadge = `<span class="badge bg-info me-1"><i class="fas fa-building me-1"></i>${buName}</span>`;
+    let entityInfo = '';
+
+    if (obj.scope === 'GLOBAL') {
+        scopeBadge = '<span class="badge bg-primary-soft text-primary">Global</span>';
+    } else if (obj.scope === 'BU') {
+        scopeBadge = '<span class="badge bg-info-soft text-info">BU</span>';
+        entityInfo = `<div class="small text-muted mt-1"><i class="fas fa-building me-1"></i>${obj.business_unit_name || 'N/A'}</div>`;
     } else if (obj.scope === 'DIVISION') {
-        const div = divisions.find(d => d.id == obj.division_id);
-        const divName = obj.division_name || (div ? (div.name || div.nom) : 'Division');
-        scopeBadge = `<span class="badge bg-warning text-dark me-1"><i class="fas fa-sitemap me-1"></i>${divName}</span>`;
+        scopeBadge = '<span class="badge bg-success-soft text-success">Division</span>';
+        entityInfo = `<div class="small text-muted mt-1"><i class="fas fa-sitemap me-1"></i>${obj.division_name || 'N/A'}</div>`;
+    } else if (obj.scope === 'INDIVIDUAL') {
+        scopeBadge = '<span class="badge bg-purple-soft text-purple">Individuel</span>';
+        const name = obj.collaborateur_nom ? `${obj.collaborateur_prenom} ${obj.collaborateur_nom}` : 'N/A';
+        entityInfo = `<div class="small text-muted mt-1"><i class="fas fa-user me-1"></i>${name}</div>`;
     }
 
     // Badge catégorie

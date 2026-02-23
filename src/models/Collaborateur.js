@@ -182,8 +182,13 @@ class Collaborateur {
         }
 
         if (business_unit_id) {
-            whereConditions.push(`c.business_unit_id = $${paramIndex++}`);
-            queryParams.push(business_unit_id);
+            if (Array.isArray(business_unit_id)) {
+                whereConditions.push(`c.business_unit_id = ANY($${paramIndex++})`);
+                queryParams.push(business_unit_id);
+            } else {
+                whereConditions.push(`c.business_unit_id = $${paramIndex++}`);
+                queryParams.push(business_unit_id);
+            }
         }
 
         if (search) {

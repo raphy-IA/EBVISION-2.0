@@ -40,9 +40,10 @@
                     <div id="autonomousEntityList"></div>
                 </div>
 
-                <!-- Étape 3 : Formulaire de création -->
+                <!-- Étape 3 : Formulaire de création (Renommée Étape 1 en mode Affectation) -->
                 <div id="autonomousStep3" style="display: none;">
-                    <h6 class="mb-3">Étape 3/3 : <span id="autonomousFormTitle"></span></h6>
+                    <h6 class="mb-3"><span id="autonomousStepTitle">Étape 3/3</span> : <span
+                            id="autonomousFormTitle"></span></h6>
                     <form id="autonomousObjectiveForm">
                         <div class="row">
                             <div class="col-md-12 mb-3">
@@ -52,7 +53,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row" id="autonomousTitleContainer">
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">Titre *</label>
                                 <input type="text" class="form-control" id="autonomousTitle" required>
@@ -66,13 +67,14 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Montant Cible * (<span
-                                        class="currency-symbol">€</span>)</label>
+                                <label class="form-label"><span id="autonomousTargetLabel">Montant Cible *</span> (<span
+                                        id="autonomousUnitLabel" class="currency-symbol">€</span>)</label>
                                 <input type="number" class="form-control" id="autonomousTarget" step="0.01" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Poids (%)</label>
-                                <input type="number" class="form-control" id="autonomousWeight" min="0" max="100">
+                                <input type="number" class="form-control" id="autonomousWeight" min="0" max="100"
+                                    value="100">
                             </div>
                         </div>
                         <div class="row">
@@ -96,6 +98,28 @@
                             </div>
                         </div>
                     </form>
+                </div>
+
+                <!-- Étape 4 (Affectation) : Ajustement des cibles individuelles -->
+                <div id="autonomousAdjustmentStep" style="display: none;">
+                    <h6 class="mb-3">Étape 4/4 : Ajuster les cibles individuelles</h6>
+                    <div class="alert alert-info small py-2">
+                        <i class="fas fa-info-circle me-1"></i> Vous pouvez personnaliser la cible pour chaque
+                        collaborateur sélectionné.
+                    </div>
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-sm table-hover align-middle">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Collaborateur</th>
+                                    <th style="width: 200px;">Cible (<span class="unit-context">€</span>)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="collabAdjustmentTableBody">
+                                <!-- Généré dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">

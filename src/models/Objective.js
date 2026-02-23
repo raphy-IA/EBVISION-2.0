@@ -172,10 +172,44 @@ class Objective {
         }
         const divResult = await query(divSql, divParams);
 
+        // Fetch Individual
+        let indSql = `
+            SELECT 
+                io.*, 
+                'INDIVIDUAL' as scope,
+                COALESCE(ot.code, om.code) as type_code,
+                COALESCE(ot.label, om.label) as type_label,
+                ot.category as type_category,
+                ot.is_financial as is_financial,
+                c.nom as collaborateur_nom,
+                c.prenom as collaborateur_prenom,
+                bu.id as business_unit_id,
+                bu.nom as business_unit_name,
+                d.id as division_id,
+                d.nom as division_name
+            FROM individual_objectives io
+            LEFT JOIN division_objectives div_obj ON io.parent_division_objective_id = div_obj.id OR io.division_objective_id = div_obj.id
+            LEFT JOIN business_unit_objectives buo ON div_obj.parent_bu_objective_id = buo.id
+            LEFT JOIN global_objectives go ON (buo.global_objective_id = go.id OR io.fiscal_year_id = go.fiscal_year_id)
+            LEFT JOIN collaborateurs c ON io.collaborator_id = c.id
+            LEFT JOIN business_units bu ON c.business_unit_id = bu.id
+            LEFT JOIN divisions d ON c.division_id = d.id
+            LEFT JOIN objective_types ot ON io.objective_type_id = ot.id
+            LEFT JOIN objective_metrics om ON io.metric_id = om.id
+            WHERE (go.fiscal_year_id = $1 OR io.fiscal_year_id = $1)
+        `;
+        const indParams = [fiscalYearId];
+        if (authorizedBuIds && authorizedBuIds.length > 0) {
+            indSql += ` AND c.business_unit_id = ANY($2)`;
+            indParams.push(authorizedBuIds);
+        }
+        const indResult = await query(indSql, indParams);
+
         return [
             ...globalResult.rows,
             ...buResult.rows,
-            ...divResult.rows
+            ...divResult.rows,
+            ...indResult.rows
         ];
     }
 
@@ -1020,8 +1054,36 @@ class Objective {
             success: true,
             parent_id: parentObjectiveId,
             created_count: processedObjectives.length,
-            objectives: processedObjectives,
-            summary: await this.getDistributionSummary(parentObjectiveId, parentType)
+            objectives: processedObjectives
+        };
+    }
+
+    static async assignToGrade(data) {
+        const { target_grade_id } = data;
+        const Collaborateur = require('./Collaborateur');
+
+        // Trouver tous les collaborateurs du grade
+        const collaborators = await Collaborateur.findByGrade(target_grade_id);
+
+        if (!collaborators || collaborators.length === 0) {
+            throw new Error('Aucun collaborateur trouvé pour ce grade');
+        }
+
+        const createdObjectives = [];
+        for (const collab of collaborators) {
+            if (collab.statut !== 'ACTIF') continue;
+
+            const collabObjective = await this.assignToIndividual({
+                ...data,
+                collaborator_id: collab.id
+            });
+            createdObjectives.push(collabObjective);
+        }
+
+        return {
+            success: true,
+            grade_id: target_grade_id,
+            created_count: createdObjectives.length
         };
     }
 }
