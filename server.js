@@ -321,15 +321,13 @@ app.use(errorHandler);
 async function startServer() {
     try {
         // Connexion à la base de données
-        // Connexion à la base de données
         await connectDatabase();
-        console.log('✅ Connexion à PostgreSQL réussie');
 
         // Exécuter les migrations automatiquement
         console.log('🔄 Vérification des migrations...');
-        const match = require('./scripts/migrate');
-        if (match && match.runMigrations) {
-            await match.runMigrations(false);
+        const migrateModule = require('./scripts/migrate');
+        if (migrateModule && migrateModule.runMigrations) {
+            await migrateModule.runMigrations(false);
         } else {
             console.log('⚠️ Impossible de charger le module de migrations');
         }
@@ -338,27 +336,29 @@ async function startServer() {
         CronService.initCronJobs();
 
         // Démarrage du serveur
-        const server = app.listen(PORT, () => {
+        app.listen(PORT, () => {
             console.log(`🚀 Serveur démarré sur le port ${PORT}`);
             console.log(`🌍 URL Swagger : http://localhost:${PORT}/api-docs`);
-            console.log(`📅 Heure actuelle du serveur : ${new Date().toLocaleString('fr-FR')} (${new Date().toISOString()})`);
+            console.log(`📅 Heure serveur (Locale): ${new Date().toLocaleString('fr-FR')}`);
+            console.log(`📅 Heure serveur (ISO): ${new Date().toISOString()}`);
+            console.log('✅ Système prêt et opérationnel');
         });
-        console.log('📚 API Documentation: http://localhost:' + PORT + '/api-docs');
+
     } catch (error) {
-        console.error('❌ Erreur lors du démarrage du serveur:', error);
+        console.error('❌ Erreur critique lors du démarrage du serveur:', error);
         process.exit(1);
     }
 }
 
-// Gestion des erreurs non capturées
+// Gestion des erreurs globales
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+    console.error('❌ Rejet non géré à:', promise, 'raison:', reason);
 });
 
 process.on('uncaughtException', (error) => {
-    console.error('❌ Uncaught Exception:', error);
+    console.error('❌ Exception non capturée:', error);
     process.exit(1);
 });
 
-// Démarrage du serveur
-startServer(); 
+// Lancement
+startServer();
