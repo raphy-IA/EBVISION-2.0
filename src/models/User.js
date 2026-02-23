@@ -251,7 +251,7 @@ class User {
                     SELECT r.name, r.badge_bg_class, r.badge_text_class, r.badge_hex_color, r.badge_priority
                     FROM user_roles ur
                     JOIN roles r ON ur.role_id = r.id
-                    WHERE ur.user_id = $1
+                    WHERE ur.user_id = $1::uuid
                     ORDER BY r.badge_priority DESC NULLS LAST, r.name
                 `;
                 const rolesResult = await query(rolesQuery, [user.id]);
