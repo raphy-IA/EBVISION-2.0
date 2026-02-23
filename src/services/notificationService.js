@@ -520,7 +520,7 @@ class NotificationService {
                 LEFT JOIN opportunities o ON n.opportunity_id = o.id
                 LEFT JOIN opportunity_stages os ON n.stage_id = os.id
                 WHERE n.user_id = $1
-                ORDER BY n.created_at DESC
+                ORDER BY n.created_at DESC, n.id DESC
                 LIMIT $2 OFFSET $3
             `;
 
@@ -1512,6 +1512,156 @@ class NotificationService {
             return true;
         } catch (error) {
             console.error('Erreur notification rejet facture:', error);
+            return false;
+        }
+    }
+    /**
+     * Notification de création de mission
+     * Destinataires : Responsable, Manager, Associé, et Directeur de BU
+     */
+    static async sendMissionCreatedNotification(missionId) {
+        try {
+            const query = `
+                SELECT 
+                    m.id as mission_id,
+                    m.nom as mission_title,
+                    m.collaborateur_id as responsable_id,
+                    m.manager_id,
+                    m.associe_id,
+                    m.business_unit_id,
+                    bu.nom as business_unit_name
+                FROM missions m
+                LEFT JOIN business_units bu ON m.business_unit_id = bu.id
+                WHERE m.id = $1
+            `;
+
+            const result = await pool.query(query, [missionId]);
+            const mission = result.rows[0];
+
+            if (!mission) {
+                console.error(`Mission ${missionId} non trouvée pour notification`);
+                return false;
+            }
+
+            // Récupérer les utilisateurs (user_id) correspondants aux collaborateurs
+            const collabIds = [mission.responsable_id, mission.manager_id, mission.associe_id].filter(id => id != null);
+
+            let recipients = new Set();
+            if (collabIds.length > 0) {
+                const userRes = await pool.query(
+                    `SELECT id FROM users WHERE collaborateur_id = ANY($1) AND statut = 'ACTIF'`,
+                    [collabIds]
+                );
+                userRes.rows.forEach(row => recipients.add(row.id));
+            }
+
+            // Ajouter le Directeur de la BU
+            if (mission.business_unit_id) {
+                const buDirRes = await pool.query(
+                    `SELECT DISTINCT u.id
+                     FROM users u
+                     JOIN user_roles ur ON ur.user_id = u.id
+                     JOIN roles r ON r.id = ur.role_id
+                     JOIN collaborateurs c ON u.collaborateur_id = c.id
+                     WHERE c.business_unit_id = $1
+                       AND r.name = 'DIRECTOR'
+                       AND u.statut = 'ACTIF'`,
+                    [mission.business_unit_id]
+                );
+                buDirRes.rows.forEach(row => recipients.add(row.id));
+            }
+
+            const title = 'Nouvelle mission créée';
+            const message = `La mission "${mission.mission_title}" a été créée pour votre Business Unit (${mission.business_unit_name}).`;
+
+            for (const userId of recipients) {
+                await this.createNotification({
+                    type: 'MISSION_CREATED',
+                    title,
+                    message,
+                    user_id: userId,
+                    priority: 'NORMAL',
+                    metadata: {
+                        mission_id: mission.mission_id,
+                        mission_title: mission.mission_title
+                    }
+                });
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Erreur lors de l\'envoi de la notification de création de mission:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Notification de changement de statut de mission
+     * Destinataires : Tous les intervenants de la mission + Managers
+     */
+    static async sendMissionStatusChangedNotification(missionId, oldStatus, newStatus) {
+        try {
+            const query = `
+                SELECT 
+                    m.id as mission_id,
+                    m.nom as mission_title,
+                    m.collaborateur_id as responsable_id,
+                    m.manager_id,
+                    m.associe_id
+                FROM missions m
+                WHERE m.id = $1
+            `;
+
+            const result = await pool.query(query, [missionId]);
+            const mission = result.rows[0];
+
+            if (!mission) return false;
+
+            // 1. Managers de la mission
+            let recipientCollabIds = new Set();
+            if (mission.responsable_id) recipientCollabIds.add(mission.responsable_id);
+            if (mission.manager_id) recipientCollabIds.add(mission.manager_id);
+            if (mission.associe_id) recipientCollabIds.add(mission.associe_id);
+
+            // 2. Intervenants (collaborateurs affectés à des tâches)
+            const teamRes = await pool.query(
+                `SELECT DISTINCT ta.collaborateur_id
+                 FROM task_assignments ta
+                 JOIN mission_tasks mt ON ta.mission_task_id = mt.id
+                 WHERE mt.mission_id = $1`,
+                [missionId]
+            );
+            teamRes.rows.forEach(row => recipientCollabIds.add(row.collaborateur_id));
+
+            if (recipientCollabIds.size === 0) return true;
+
+            // Traduire en user_ids
+            const userRes = await pool.query(
+                `SELECT id FROM users WHERE collaborateur_id = ANY($1) AND statut = 'ACTIF'`,
+                [Array.from(recipientCollabIds)]
+            );
+
+            const title = 'Statut de mission mis à jour';
+            const message = `Le statut de la mission "${mission.mission_title}" est passé de "${oldStatus}" à "${newStatus}".`;
+
+            for (const row of userRes.rows) {
+                await this.createNotification({
+                    type: 'MISSION_STATUS_CHANGED',
+                    title,
+                    message,
+                    user_id: row.id,
+                    priority: 'NORMAL',
+                    metadata: {
+                        mission_id: mission.mission_id,
+                        old_status: oldStatus,
+                        new_status: newStatus
+                    }
+                });
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Erreur lors de l\'envoi de la notification de changement de statut de mission:', error);
             return false;
         }
     }

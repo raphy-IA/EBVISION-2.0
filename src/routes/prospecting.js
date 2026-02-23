@@ -1354,15 +1354,29 @@ router.get('/validations', authenticateToken, async (req, res) => {
  */
 router.get('/reports', authenticateToken, async (req, res) => {
     try {
-        const {
+        let {
             business_unit_id,
             division_id,
             status,
             start_date,
-            end_date
+            end_date,
+            fiscal_year_id
         } = req.query;
 
-        console.log('🔍 Paramètres reçus:', { business_unit_id, division_id, status, start_date, end_date });
+        console.log('🔍 Paramètres reçus:', { business_unit_id, division_id, status, start_date, end_date, fiscal_year_id });
+
+        // Si une année fiscale est spécifiée et que les dates ne le sont pas, on récupère les dates de l'exercice
+        if (fiscal_year_id && (!start_date || !end_date)) {
+            const fiscalYearResult = await pool.query(
+                'SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1',
+                [fiscal_year_id]
+            );
+            if (fiscalYearResult.rows.length > 0) {
+                start_date = fiscalYearResult.rows[0].date_debut;
+                end_date = fiscalYearResult.rows[0].date_fin;
+                console.log('📅 Dates récupérées de l\'exercice:', { start_date, end_date });
+            }
+        }
 
         // Construire les conditions de filtrage pour les campagnes
         let campaignWhereConditions = ['1=1'];

@@ -85,25 +85,36 @@ class Objective {
         return result.rows;
     }
 
-    static async getAllObjectives(fiscalYearId) {
-        // Fetch Global
+    static async getAllObjectives(fiscalYearId, authorizedBuIds = null) {
+        // Fetch Global - Only for non-restricted users
         const globalSql = `
             SELECT 
                 go.*, 
                 'GLOBAL' as scope,
                 COALESCE(ot.code, om.code) as type_code,
-                COALESCE(ot.label, om.label) as type_label,
-                ot.category as type_category,
-                ot.is_financial as is_financial
+                COALESCE(ot.label, om.label, tpl.label) as type_label,
+                COALESCE(ot.category, tpl.category, 'STRATEGIC') as type_category,
+                ot.is_financial as is_financial,
+                ou.symbol as unit_symbol,
+                ou.code as unit_code_ref,
+                (
+                    SELECT COALESCE(SUM(target_value), 0)
+                    FROM business_unit_objectives
+                    WHERE global_objective_id = go.id
+                ) as distributed_value
             FROM global_objectives go
             LEFT JOIN objective_types ot ON go.objective_type_id = ot.id
             LEFT JOIN objective_metrics om ON go.metric_id = om.id
+            LEFT JOIN objective_templates tpl ON tpl.metric_code = om.code
+            LEFT JOIN objective_units ou ON go.unit_id = ou.id
             WHERE go.fiscal_year_id = $1
         `;
-        const globalResult = await query(globalSql, [fiscalYearId]);
+
+        // Si authorizedBuIds est fourni, on ne renvoie pas les objectifs globaux dans cette liste
+        const globalResult = authorizedBuIds ? { rows: [] } : await query(globalSql, [fiscalYearId]);
 
         // Fetch BU
-        const buSql = `
+        let buSql = `
             SELECT 
                 buo.*, 
                 'BU' as scope,
@@ -111,7 +122,12 @@ class Objective {
                 COALESCE(ot.label, om.label) as type_label,
                 ot.category as type_category,
                 ot.is_financial as is_financial,
-                bu.nom as business_unit_name
+                bu.nom as business_unit_name,
+                (
+                    SELECT COALESCE(SUM(target_value), 0)
+                    FROM division_objectives
+                    WHERE parent_bu_objective_id = buo.id OR business_unit_objective_id = buo.id
+                ) as distributed_value
             FROM business_unit_objectives buo
             JOIN global_objectives go ON buo.global_objective_id = go.id
             LEFT JOIN business_units bu ON buo.business_unit_id = bu.id
@@ -119,10 +135,15 @@ class Objective {
             LEFT JOIN objective_metrics om ON buo.metric_id = om.id
             WHERE go.fiscal_year_id = $1
         `;
-        const buResult = await query(buSql, [fiscalYearId]);
+        const buParams = [fiscalYearId];
+        if (authorizedBuIds && authorizedBuIds.length > 0) {
+            buSql += ` AND buo.business_unit_id = ANY($2)`;
+            buParams.push(authorizedBuIds);
+        }
+        const buResult = await query(buSql, buParams);
 
         // Fetch Division
-        const divSql = `
+        let divSql = `
             SELECT 
                 div_obj.*, 
                 'DIVISION' as scope,
@@ -130,7 +151,12 @@ class Objective {
                 COALESCE(ot.label, om.label) as type_label,
                 ot.category as type_category,
                 ot.is_financial as is_financial,
-                d.nom as division_name
+                d.nom as division_name,
+                (
+                    SELECT COALESCE(SUM(target_value), 0)
+                    FROM individual_objectives
+                    WHERE parent_division_objective_id = div_obj.id OR division_objective_id = div_obj.id
+                ) as distributed_value
             FROM division_objectives div_obj
             JOIN business_unit_objectives buo ON div_obj.parent_bu_objective_id = buo.id
             JOIN global_objectives go ON buo.global_objective_id = go.id
@@ -139,7 +165,12 @@ class Objective {
             LEFT JOIN objective_metrics om ON div_obj.metric_id = om.id
             WHERE go.fiscal_year_id = $1
         `;
-        const divResult = await query(divSql, [fiscalYearId]);
+        const divParams = [fiscalYearId];
+        if (authorizedBuIds && authorizedBuIds.length > 0) {
+            divSql += ` AND d.business_unit_id = ANY($2)`;
+            divParams.push(authorizedBuIds);
+        }
+        const divResult = await query(divSql, divParams);
 
         return [
             ...globalResult.rows,
@@ -605,9 +636,9 @@ class Objective {
     /**
      * Récupérer le résumé de distribution d'un objectif parent
      */
-    static async getDistributionSummary(parentId) {
+    static async getDistributionSummary(parentId, parentTypeHint = null) {
         // Déterminer le type de l'objectif parent
-        const parentInfo = await this.getObjectiveInfo(parentId);
+        const parentInfo = await this.getObjectiveInfo(parentId, parentTypeHint);
         if (!parentInfo) {
             throw new Error('Objectif parent introuvable');
         }
@@ -618,8 +649,7 @@ class Objective {
         const childTableMap = {
             'GLOBAL': 'business_unit_objectives',
             'BUSINESS_UNIT': 'division_objectives',
-            'DIVISION': 'grade_objectives',
-            'GRADE': 'individual_objectives'
+            'DIVISION': 'individual_objectives'
         };
 
         const childTable = childTableMap[parentType];
@@ -634,20 +664,20 @@ class Objective {
         }
 
         const parentColumnMap = {
-            'GLOBAL': 'global_objective_id',
-            'BUSINESS_UNIT': 'parent_bu_objective_id',
-            'DIVISION': 'parent_division_objective_id',
-            'GRADE': 'parent_grade_objective_id'
+            'GLOBAL': ['global_objective_id', 'parent_global_objective_id'],
+            'BUSINESS_UNIT': ['parent_bu_objective_id', 'business_unit_objective_id'],
+            'DIVISION': ['parent_division_objective_id', 'division_objective_id']
         };
 
-        const parentColumn = parentColumnMap[parentType];
+        const parentColumns = parentColumnMap[parentType] || [];
+        const whereClause = parentColumns.map(col => `${col} = $1`).join(' OR ');
 
         const sql = `
-        SELECT
-        COUNT(*) as children_count,
-            COALESCE(SUM(target_value), 0) as distributed
+            SELECT
+                COUNT(*) as children_count,
+                COALESCE(SUM(target_value), 0) as distributed
             FROM ${childTable}
-            WHERE ${parentColumn} = $1
+            WHERE ${whereClause}
         `;
 
         const result = await query(sql, [parentId]);
@@ -677,7 +707,12 @@ class Objective {
     /**
      * Récupérer les informations d'un objectif (type, table, données)
      */
-    static async getObjectiveInfo(objectiveId) {
+    /**
+     * Récupérer les informations d'un objectif (quelle que soit sa table)
+     * @param {number|string} objectiveId 
+     * @param {string} filterType - Optionnel: Filtrer par type (GLOBAL, BUSINESS_UNIT, etc.)
+     */
+    static async getObjectiveInfo(objectiveId, filterType = null) {
         const tables = [
             { type: 'GLOBAL', table: 'global_objectives' },
             { type: 'BUSINESS_UNIT', table: 'business_unit_objectives' },
@@ -686,7 +721,12 @@ class Objective {
             { type: 'INDIVIDUAL', table: 'individual_objectives' }
         ];
 
-        for (const { type, table } of tables) {
+        // Si filterType est fourni, on ne vérifie que cette table
+        const tablesToCheck = filterType
+            ? tables.filter(t => t.type === filterType)
+            : tables;
+
+        for (const { type, table } of tablesToCheck) {
             try {
                 const sql = `SELECT * FROM ${table} WHERE id = $1`;
                 const result = await query(sql, [objectiveId]);
@@ -694,8 +734,6 @@ class Objective {
                     return { ...result.rows[0], type, table };
                 }
             } catch (error) {
-                // Ignore errors related to invalid ID format (e.g. uuid vs int)
-                // console.warn(`Skipping table ${table} for id ${objectiveId}: ${error.message}`);
                 continue;
             }
         }
@@ -707,20 +745,18 @@ class Objective {
      * Récupérer les entités disponibles pour distribution
      * @param {string} parentId - ID de l'objectif parent
      * @param {string} childType - Type d'enfant (BUSINESS_UNIT, DIVISION, INDIVIDUAL)
+     * @param {string} parentType - Niveau du parent pour éviter les conflits d'ID
      * @param {string} gradeId - Optionnel : ID du grade pour filtrer les collaborateurs
+     * @param {boolean} includeExisting - Optionnel : Inclure les entités déjà distribuées
      */
-    static async getAvailableChildren(parentId, childType, gradeId = null) {
-        const parentInfo = await this.getObjectiveInfo(parentId);
-        if (!parentInfo) {
-            throw new Error('Objectif parent introuvable');
-        }
+    static async getAvailableChildren(parentId, childType, parentType, gradeId = null, includeExisting = false) {
+        const parentInfo = await this.getObjectiveInfo(parentId, parentType);
+        if (!parentInfo) return [];
 
-        // Déterminer la table des entités et la table des objectifs enfants
         const entityTableMap = {
             'BUSINESS_UNIT': { entityTable: 'business_units', entityIdColumn: 'id', entityNameColumn: 'nom' },
             'DIVISION': { entityTable: 'divisions', entityIdColumn: 'id', entityNameColumn: 'nom' },
-            'GRADE': { entityTable: 'grades', entityIdColumn: 'id', entityNameColumn: 'name' },
-            'INDIVIDUAL': { entityTable: 'collaborateurs', entityIdColumn: 'id', entityNameColumn: 'nom' }
+            'INDIVIDUAL': { entityTable: 'collaborateurs', entityIdColumn: 'id', entityNameColumn: 'CONCAT(prenom, \' \', nom)' }
         };
 
         const config = entityTableMap[childType];
@@ -731,19 +767,13 @@ class Objective {
         const childTableMap = {
             'BUSINESS_UNIT': 'business_unit_objectives',
             'DIVISION': 'division_objectives',
-            'GRADE': 'grade_objectives',
             'INDIVIDUAL': 'individual_objectives'
         };
 
         const childTable = childTableMap[childType];
-        const parentColumnMap = {
-            'BUSINESS_UNIT': 'global_objective_id',
-            'DIVISION': 'parent_bu_objective_id',
-            'GRADE': 'parent_division_objective_id',
-            'INDIVIDUAL': 'parent_grade_objective_id'
-        };
 
-        const parentColumn = parentColumnMap[childType];
+        // Debug log
+        console.log(`[getAvailableChildren] parentId=${parentId}, childType=${childType}, parentType=${parentType}, includeExisting=${includeExisting}`);
 
         // Récupérer toutes les entités (avec filtrage selon le parent)
         let entitiesSql = `SELECT ${config.entityIdColumn} as id, ${config.entityNameColumn} as name FROM ${config.entityTable}`;
@@ -751,25 +781,18 @@ class Objective {
 
         // Filtrer les entités selon la hiérarchie
         if (childType === 'DIVISION' && parentInfo.business_unit_id) {
-            // Filtrer les divisions par BU
             entitiesSql += ` WHERE business_unit_id = $1`;
             queryParams.push(parentInfo.business_unit_id);
         } else if (childType === 'INDIVIDUAL') {
-            // Pour les collaborateurs, filtrer par division_id (requis) 
-            // ET optionnellement par grade_id si fourni
             const conditions = [];
-
             if (parentInfo.division_id) {
                 conditions.push(`division_id = $${queryParams.length + 1}`);
                 queryParams.push(parentInfo.division_id);
             }
-
-            // Si un gradeId est fourni, filtrer également par grade
             if (gradeId) {
                 conditions.push(`grade_id = $${queryParams.length + 1}`);
                 queryParams.push(gradeId);
             }
-
             if (conditions.length > 0) {
                 entitiesSql += ` WHERE ${conditions.join(' AND ')}`;
             }
@@ -777,36 +800,118 @@ class Objective {
 
         const entitiesResult = await query(entitiesSql, queryParams);
 
-        // Récupérer les entités qui ont déjà un objectif lié à ce parent
+        // Récupérer les distributions existantes
+        const entityIdCol = childType === 'BUSINESS_UNIT' ? 'business_unit_id' :
+            childType === 'DIVISION' ? 'division_id' : 'collaborator_id';
+
+        const parentColsMap = {
+            'GLOBAL': ['global_objective_id', 'parent_global_objective_id'],
+            'BUSINESS_UNIT': ['parent_bu_objective_id', 'business_unit_objective_id'],
+            'DIVISION': ['parent_division_objective_id', 'division_objective_id']
+        };
+        const parentCols = parentColsMap[parentType] || [];
+        const existingWhere = parentCols.map(col => `${col} = $1`).join(' OR ');
+
         const existingSql = `
-            SELECT DISTINCT ${childType === 'BUSINESS_UNIT' ? 'business_unit_id' : childType === 'DIVISION' ? 'division_id' : childType === 'GRADE' ? 'grade_id' : 'collaborator_id'} as entity_id
+            SELECT ${entityIdCol} as entity_id, target_value, id as objective_id
             FROM ${childTable}
-            WHERE ${parentColumn} = $1
+            WHERE ${existingWhere}
         `;
         const existingResult = await query(existingSql, [parentId]);
-        const existingIds = new Set(existingResult.rows.map(r => r.entity_id));
+        const existingMap = new Map();
+        existingResult.rows.forEach(r => existingMap.set(r.entity_id, r));
 
-        // Filtrer les entités disponibles
-        const availableChildren = entitiesResult.rows
-            .filter(entity => !existingIds.has(entity.id))
-            .map(entity => ({
-                id: entity.id,
-                name: entity.name,
+        // Marquer les entités
+        const available = entitiesResult.rows.map(e => {
+            const existing = existingMap.get(e.id);
+            return {
+                ...e,
                 suggested_title: this.generateChildTitle(
                     parentInfo.description || 'Objectif',
                     childType,
-                    entity.name
-                )
-            }));
+                    e.name
+                ),
+                is_distributed: !!existing,
+                existing_target: existing ? parseFloat(existing.target_value) : null,
+                objective_id: existing ? existing.objective_id : null
+            };
+        });
 
-        return availableChildren;
+        if (includeExisting) {
+            return available;
+        }
+
+        return available.filter(e => !e.is_distributed);
     }
 
     /**
-     * Distribuer un objectif à plusieurs enfants
+     * Rééquilibrer les poids de tous les objectifs d'une même entité (BU/Division/Individu).
+     * Règle : chaque entité doit avoir la somme de ses poids = 100% → poids = 100/N
+     * 
+     * @param {string} parentObjectiveId - ID de l'objectif parent (pour déduire le type et l'entité)
      */
-    static async distributeToMultipleChildren(parentObjectiveId, children, userId) {
-        const parentInfo = await this.getObjectiveInfo(parentObjectiveId);
+    static async rebalanceWeights(parentObjectiveId, parentTypeHint = null) {
+        const parentInfo = await this.getObjectiveInfo(parentObjectiveId, parentTypeHint);
+        if (!parentInfo) return;
+
+        // Mappage : type du parent → table enfant + colonne d'entité à regrouper
+        const childTableMap = {
+            'GLOBAL': {
+                table: 'business_unit_objectives',
+                entityColumn: 'business_unit_id'   // regrouper par BU
+            },
+            'BUSINESS_UNIT': {
+                table: 'division_objectives',
+                entityColumn: 'division_id'         // regrouper par Division
+            },
+            'DIVISION': {
+                table: 'individual_objectives',
+                entityColumn: 'collaborator_id'     // regrouper par Individu
+            }
+        };
+
+        const config = childTableMap[parentInfo.type];
+        if (!config) return;
+
+        // Récupérer l'entité concernée par ce parent
+        const parentColumnMap = {
+            'GLOBAL': ['global_objective_id', 'parent_global_objective_id'],
+            'BUSINESS_UNIT': ['parent_bu_objective_id', 'business_unit_objective_id'],
+            'DIVISION': ['parent_division_objective_id', 'division_objective_id']
+        };
+
+        const parentColumns = parentColumnMap[parentInfo.type] || [];
+        if (parentColumns.length === 0) return;
+
+        const whereClause = parentColumns.map((col, i) => `${col} = $1`).join(' OR ');
+        const entityIdsSql = `
+            SELECT DISTINCT ${config.entityColumn} as entity_id 
+            FROM ${config.table} 
+            WHERE ${whereClause}
+        `;
+        const entityResult = await query(entityIdsSql, [parentObjectiveId]);
+
+        for (const { entity_id } of entityResult.rows) {
+            // Compter TOUS les objectifs de cette entité
+            const countSql = `SELECT COUNT(*) as count FROM ${config.table} WHERE ${config.entityColumn} = $1`;
+            const countResult = await query(countSql, [entity_id]);
+            const count = parseInt(countResult.rows[0].count);
+
+            if (count === 0) continue;
+
+            // Poids équitable = 100 / N (arrondi à 2 décimales)
+            const equalWeight = Math.round((100 / count) * 100) / 100;
+
+            // Mettre à jour TOUS les objectifs de cette entité
+            await query(
+                `UPDATE ${config.table} SET weight = $1 WHERE ${config.entityColumn} = $2`,
+                [equalWeight, entity_id]
+            );
+        }
+    }
+
+    static async distributeToMultipleChildren(parentObjectiveId, children, userId, parentType = null) {
+        const parentInfo = await this.getObjectiveInfo(parentObjectiveId, parentType);
         if (!parentInfo) {
             throw new Error('Objectif parent introuvable');
         }
@@ -819,92 +924,104 @@ class Objective {
         // Calculer le montant total demandé
         const totalRequested = children.reduce((sum, child) => sum + parseFloat(child.target_value || 0), 0);
 
-        // Récupérer le résumé de distribution
-        const summary = await this.getDistributionSummary(parentObjectiveId);
-
-        // Valider que le montant total ne dépasse pas le montant restant
-        if (totalRequested > summary.remaining) {
-            throw new Error(`Le montant total demandé(${totalRequested}) dépasse le montant restant(${summary.remaining})`);
-        }
-
         // Déterminer le type d'enfant et la table cible (GRADE supprimé de la hiérarchie)
         const childTypeMap = {
-            'GLOBAL': { type: 'BUSINESS_UNIT', table: 'business_unit_objectives', entityColumn: 'business_unit_id', parentColumn: 'global_objective_id' },
-            'BUSINESS_UNIT': { type: 'DIVISION', table: 'division_objectives', entityColumn: 'division_id', parentColumn: 'parent_bu_objective_id' },
-            'DIVISION': { type: 'INDIVIDUAL', table: 'individual_objectives', entityColumn: 'collaborator_id', parentColumn: 'parent_division_objective_id' }
-            // GRADE supprimé - affectation directe de DIVISION vers INDIVIDUAL
+            'GLOBAL': {
+                type: 'BUSINESS_UNIT',
+                table: 'business_unit_objectives',
+                entityColumn: 'business_unit_id',
+                parentColumn: 'global_objective_id',
+                legacyParentColumn: 'parent_global_objective_id'
+            },
+            'BUSINESS_UNIT': {
+                type: 'DIVISION',
+                table: 'division_objectives',
+                entityColumn: 'division_id',
+                parentColumn: 'parent_bu_objective_id',
+                legacyParentColumn: 'business_unit_objective_id'
+            },
+            'DIVISION': {
+                type: 'INDIVIDUAL',
+                table: 'individual_objectives',
+                entityColumn: 'collaborator_id',
+                parentColumn: 'parent_division_objective_id',
+                legacyParentColumn: 'division_objective_id'
+            }
         };
 
-        const childConfig = childTypeMap[parentInfo.type];
-        if (!childConfig) {
+        const config = childTypeMap[parentInfo.type];
+        if (!config) {
             throw new Error('Type de parent invalide pour distribution');
         }
 
-        // Créer les objectifs enfants
-        const createdObjectives = [];
+        // Créer ou mettre à jour les objectifs enfants
+        const processedObjectives = [];
 
         for (const child of children) {
             const title = this.generateChildTitle(
                 parentInfo.description || 'Objectif',
-                childConfig.type,
+                config.type,
                 child.entity_name || child.name || 'Entité'
             );
 
-            const sql = `
-                INSERT INTO ${childConfig.table} (
-            ${childConfig.entityColumn},
-                    ${childConfig.parentColumn},
-        objective_type_id,
-            target_value,
-            description,
-            weight,
-            tracking_type,
-            metric_code,
-            assigned_by,
-            is_cascaded,
-            title,
-            objective_mode,
-            metric_id,
-            unit_id
-                )
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-        RETURNING *
+            // Vérifier si un objectif existe déjà pour cet entité et ce parent
+            const checkSql = `
+                SELECT id FROM ${config.table} 
+                WHERE ${config.entityColumn} = $1 AND (${config.parentColumn} = $2 ${config.legacyParentColumn ? `OR ${config.legacyParentColumn} = $2` : ''})
             `;
+            const checkRes = await query(checkSql, [child.entity_id, parentObjectiveId]);
 
-            const result = await query(sql, [
-                child.entity_id,
-                parentObjectiveId,
-                parentInfo.objective_type_id,
-                child.target_value,
-                child.description || parentInfo.description,
-                child.weight || 0,
-                parentInfo.tracking_type,
-                parentInfo.metric_code,
-                userId,
-                true,
-                title,
-                parentInfo.objective_mode || 'METRIC',
-                parentInfo.metric_id,
-                parentInfo.unit_id
-            ]);
+            let result;
+            if (checkRes.rows.length > 0) {
+                // UPDATE
+                const objId = checkRes.rows[0].id;
+                result = await query(
+                    `UPDATE ${config.table} SET target_value = $1, description = $2, updated_at = NOW() WHERE id = $3 RETURNING *`,
+                    [child.target_value, child.description || parentInfo.description, objId]
+                );
+                console.log(`[distribute] Updated existing child ${config.type} (${objId}) for entity ${child.entity_id}`);
+            } else {
+                // INSERT
+                const columns = [
+                    config.entityColumn, config.parentColumn, 'objective_type_id', 'target_value',
+                    'description', 'weight', 'tracking_type', 'metric_code', 'assigned_by',
+                    'is_cascaded', 'title', 'objective_mode', 'metric_id', 'unit_id'
+                ];
+                const values = [
+                    child.entity_id, parentObjectiveId, parentInfo.objective_type_id, child.target_value,
+                    child.description || parentInfo.description, child.weight || 0, parentInfo.tracking_type,
+                    parentInfo.metric_code, userId, true, title, parentInfo.objective_mode || 'METRIC',
+                    parentInfo.metric_id, parentInfo.unit_id
+                ];
 
-            const createdObjective = result.rows[0];
+                if (config.legacyParentColumn) {
+                    columns.push(config.legacyParentColumn);
+                    values.push(parentObjectiveId);
+                }
+                if (config.type === 'INDIVIDUAL' && parentInfo.fiscal_year_id) {
+                    columns.push('fiscal_year_id');
+                    values.push(parentInfo.fiscal_year_id);
+                }
 
-            // Initialiser la progression
-            await this.initProgress(childConfig.type, createdObjective.id, child.target_value, userId);
+                const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+                result = await query(`INSERT INTO ${config.table} (${columns.join(', ')}) VALUES (${placeholders}) RETURNING *`, values);
+                console.log(`[distribute] Created new child ${config.type} for entity ${child.entity_id}`);
+            }
 
-            createdObjectives.push({
-                ...createdObjective,
-                title: title
-            });
+            const processedObjective = result.rows[0];
+            await this.initProgress(config.type, processedObjective.id, child.target_value, userId);
+            processedObjectives.push({ ...processedObjective, title });
         }
+
+        // Rééquilibrer les poids après l'insertion (règle: 100/N)
+        await this.rebalanceWeights(parentObjectiveId, parentType);
 
         return {
             success: true,
             parent_id: parentObjectiveId,
-            created_count: createdObjectives.length,
-            objectives: createdObjectives,
-            summary: await this.getDistributionSummary(parentObjectiveId)
+            created_count: processedObjectives.length,
+            objectives: processedObjectives,
+            summary: await this.getDistributionSummary(parentObjectiveId, parentType)
         };
     }
 }

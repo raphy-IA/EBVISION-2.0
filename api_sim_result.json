@@ -1,0 +1,47 @@
+{
+  "total": 268,
+  "gestion_rh": [
+    {
+      "id": "db1fabde-8a19-480d-a12b-92e6c2d10581",
+      "code": "menu.gestion_rh.configuration_objectifs",
+      "name": "Configuration des Objectifs",
+      "description": null,
+      "category": "menu"
+    },
+    {
+      "id": "1852fbb6-4a85-49f6-8400-9c91d5ead5de",
+      "code": "menu.gestion_rh.collaborateurs",
+      "name": "Menu: Collaborateurs",
+      "description": "Permission d'accès au menu menu.gestion_rh.collaborateurs",
+      "category": "menu"
+    },
+    {
+      "id": "10395572-7664-47d1-ad60-bbcf2b649b2b",
+      "code": "menu.gestion_rh.grades",
+      "name": "Menu: Grades",
+      "description": "Permission d'accès au menu menu.gestion_rh.grades",
+      "category": "menu"
+    },
+    {
+      "id": "e89d75f6-1411-4616-a987-5365b2e40c0f",
+      "code": "menu.gestion_rh.postes",
+      "name": "Menu: Postes",
+      "description": "Permission d'accès au menu menu.gestion_rh.postes",
+      "category": "menu"
+    },
+    {
+      "id": "055735cc-0b71-44a8-8258-75f4115e90f5",
+      "code": "menu.gestion_rh.taux_horaires",
+      "name": "Menu: Taux Horaires",
+      "description": "Permission d'accès au menu menu.gestion_rh.taux_horaires",
+      "category": "menu"
+    },
+    {
+      "id": "87a1014d-7fc3-46c9-ad96-ab62fa9048e5",
+      "code": "menu.gestion_rh.types_collaborateurs",
+      "name": "Menu: Types de Collaborateurs",
+      "description": "Permission d'accès au menu menu.gestion_rh.types_collaborateurs",
+      "category": "menu"
+    }
+  ]
+}

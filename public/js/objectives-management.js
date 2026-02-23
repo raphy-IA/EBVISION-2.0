@@ -7,8 +7,21 @@ let currentObjectiveId = null;
 let objectiveTypes = []; // Store objective types
 
 document.addEventListener('DOMContentLoaded', async function () {
+    // Initialiser la session avant tout
+    try {
+        await sessionManager.initialize();
+        applyRbacUI();
+    } catch (error) {
+        console.error('Erreur initialisation session:', error);
+    }
+
+    // Initialiser le sélecteur d'année fiscale
+    await FiscalYearSelector.init('fiscalYearSelect', (selectedYearId) => {
+        currentFiscalYearId = selectedYearId;
+        loadObjectives();
+    });
+
     await Promise.all([
-        loadFiscalYears(),
         loadBusinessUnits(),
         loadDivisions(),
         loadGrades(),
@@ -18,64 +31,67 @@ document.addEventListener('DOMContentLoaded', async function () {
     setupEventListeners();
 });
 
-function setupEventListeners() {
-    // Changement d'année fiscale
-    document.getElementById('fiscalYearSelect').addEventListener('change', function (e) {
-        currentFiscalYearId = e.target.value;
-        if (currentFiscalYearId) {
-            loadObjectives();
-        } else {
-            clearObjectivesDisplay();
+function applyRbacUI() {
+    const isAdministrative = sessionManager.isAdmin() ||
+        (sessionManager.getUser().roles && sessionManager.getUser().roles.includes('SENIOR_PARTNER'));
+
+    // Visibilité des onglets basée sur les permissions
+    const canViewGlobal = sessionManager.hasPermission('objectives.global.view') || isAdministrative;
+    const canViewBu = sessionManager.hasPermission('objectives.bu.view') || isAdministrative;
+    const canViewDivision = sessionManager.hasPermission('objectives.division.view') || isAdministrative;
+
+    const globalTab = document.getElementById('global-tab');
+    const buTab = document.getElementById('bu-tab');
+    const divisionTab = document.getElementById('division-tab');
+
+    if (globalTab) globalTab.parentElement.style.display = canViewGlobal ? 'block' : 'none';
+    if (buTab) buTab.parentElement.style.display = canViewBu ? 'block' : 'none';
+    if (divisionTab) divisionTab.parentElement.style.display = canViewDivision ? 'block' : 'none';
+
+    // Redirection si l'onglet actif est interdit
+    if (globalTab && globalTab.classList.contains('active') && !canViewGlobal) {
+        if (canViewBu && buTab) {
+            new bootstrap.Tab(buTab).show();
+        } else if (canViewDivision && divisionTab) {
+            new bootstrap.Tab(divisionTab).show();
         }
-    });
+    }
+}
+
+
+function setupEventListeners() {
+    // Changement d'année fiscale géré par FiscalYearSelector.init
+
 
     // Gestion des onglets pour recharger les données si nécessaire
     const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
     tabEls.forEach(tabEl => {
         tabEl.addEventListener('shown.bs.tab', function (event) {
-            // On pourrait filtrer ici si on avait toutes les données, 
-            // mais loadObjectives charge tout pour l'année courante
             renderObjectives();
         });
     });
-}
 
-async function loadFiscalYears() {
-    try {
-        const response = await fetch('/api/fiscal-years', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+    // Filtres BU et Division
+    const buSelect = document.getElementById('buSelect');
+    if (buSelect) {
+        buSelect.addEventListener('change', () => {
+            console.log('DEBUG [buSelect] Change detected, new value:', buSelect.value);
+            loadBuObjectives();
+            loadDivisionObjectives(); // Les divisions dépendent de la BU
         });
+    }
 
-        if (response.ok) {
-            const result = await response.json();
-            const fiscalYears = result.data || result;
-
-            const select = document.getElementById('fiscalYearSelect');
-            select.innerHTML = '<option value="">Sélectionner un exercice...</option>';
-
-            // Trier par année décroissante
-            fiscalYears.sort((a, b) => b.annee - a.annee);
-
-            fiscalYears.forEach(fy => {
-                const option = document.createElement('option');
-                option.value = fy.id;
-                option.textContent = `${fy.libelle || 'FY' + fy.annee} (${fy.annee})`;
-                if (fy.statut === 'EN_COURS') {
-                    option.selected = true;
-                    currentFiscalYearId = fy.id;
-                }
-                select.appendChild(option);
-            });
-
-            if (currentFiscalYearId) {
-                loadObjectives();
-            }
-        }
-    } catch (error) {
-        console.error('Erreur chargement exercices:', error);
-        showAlert('Erreur lors du chargement des exercices fiscaux', 'danger');
+    const divisionSelect = document.getElementById('divisionSelect');
+    if (divisionSelect) {
+        divisionSelect.addEventListener('change', () => {
+            console.log('DEBUG [divisionSelect] Change detected, new value:', divisionSelect.value);
+            loadDivisionObjectives();
+        });
     }
 }
+
+
+
 
 async function loadBusinessUnits() {
     try {
@@ -84,13 +100,29 @@ async function loadBusinessUnits() {
         });
         if (response.ok) {
             const result = await response.json();
-            businessUnits = result.data || result;
+            const allBUs = result.data || result;
+
+            // Filtrage RBAC pour les BUs
+            const user = sessionManager.getUser();
+            const isAdmin = sessionManager.isAdmin() || (user.roles && user.roles.includes('SENIOR_PARTNER'));
+            const authorizedBuIds = user.authorized_bu_ids || [];
+
+            if (!isAdmin && authorizedBuIds.length > 0) {
+                businessUnits = allBUs.filter(bu => authorizedBuIds.includes(bu.id));
+            } else {
+                businessUnits = allBUs;
+            }
 
             // Remplir le select de filtre BU
             const filterSelect = document.getElementById('buSelect');
             const modalSelect = document.getElementById('objectiveBu');
 
             // Vider les options existantes sauf la première
+            if (filterSelect) {
+                while (filterSelect.options.length > 1) {
+                    filterSelect.remove(1);
+                }
+            }
             if (modalSelect) {
                 while (modalSelect.options.length > 1) {
                     modalSelect.remove(1);
@@ -103,6 +135,12 @@ async function loadBusinessUnits() {
                 if (filterSelect) filterSelect.add(new Option(buName, bu.id));
                 if (modalSelect) modalSelect.add(new Option(buName, bu.id));
             });
+
+            // Si une seule BU disponible, la sélectionner par défaut
+            if (businessUnits.length === 1 && filterSelect) {
+                filterSelect.value = businessUnits[0].id;
+                loadDivisionObjectives(); // Recharger les divisions filtrées si besoin
+            }
         }
     } catch (error) {
         console.error('Erreur chargement BUs:', error);
@@ -116,15 +154,31 @@ async function loadDivisions() {
         });
         if (response.ok) {
             const result = await response.json();
-            divisions = result.data || result;
+            const allDivisions = result.data || result;
+
+            // Filtrage RBAC pour les Divisions (limitées aux BUs autorisées)
+            const authorizedBuIds = businessUnits.map(bu => bu.id);
+            divisions = allDivisions.filter(div => authorizedBuIds.includes(div.business_unit_id));
 
             // Remplir le select de filtre Division
             const filterSelect = document.getElementById('divisionSelect');
             const modalSelect = document.getElementById('objectiveDivision');
 
+            if (filterSelect) {
+                while (filterSelect.options.length > 1) {
+                    filterSelect.remove(1);
+                }
+            }
+            if (modalSelect) {
+                while (modalSelect.options.length > 1) {
+                    modalSelect.remove(1);
+                }
+            }
+
             divisions.forEach(div => {
-                filterSelect.add(new Option(div.name, div.id));
-                modalSelect.add(new Option(div.name, div.id));
+                const divName = div.name || div.nom;
+                if (filterSelect) filterSelect.add(new Option(divName, div.id));
+                if (modalSelect) modalSelect.add(new Option(divName, div.id));
             });
         }
     } catch (error) {
@@ -166,6 +220,8 @@ async function loadObjectiveTypes() {
             if (typeSelect) {
                 typeSelect.innerHTML = '<option value="">Sélectionner un type...</option>';
                 objectiveTypes.forEach(type => {
+                    if (type.is_active === false) return; // Filter inactive types
+
                     const option = document.createElement('option');
                     option.value = type.id;
                     option.textContent = type.label;
@@ -186,25 +242,33 @@ async function loadObjectives() {
     if (!currentFiscalYearId) return;
 
     try {
+        console.log('DEBUG [loadObjectives] Fetching for FY:', currentFiscalYearId);
         // Charger TOUS les objectifs (Global, BU, Division)
         const response = await fetch(`/api/objectives/all/${currentFiscalYearId}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
 
+        console.log('DEBUG [loadObjectives] Response OK:', response.ok, 'Status:', response.status);
+
         if (response.ok) {
             const allObjs = await response.json();
+            console.log('DEBUG [loadObjectives] Data received:', allObjs.length, 'objectives');
             currentGlobalObjectives = allObjs.filter(o => o.scope === 'GLOBAL'); // Store global for compatibility
 
             // Transformer les données pour correspondre au format attendu
             objectives = (allObjs || []).map(obj => ({
                 id: obj.id,
-                title: obj.title || obj.label || obj.code, // Use title if available
+                title: obj.title || obj.type_label || obj.label || obj.code || 'Objectif sans titre',
+                label: obj.type_label || obj.label || obj.title || obj.code,
                 description: obj.description,
                 type: obj.type_code || obj.code,
                 scope: obj.scope,
                 target_amount: obj.target_value,
                 weight: obj.weight,
-                objective_mode: obj.objective_mode, // METRIC ou TYPE
+                objective_mode: obj.objective_mode,
+                metric_code: obj.metric_code,
+                tracking_type: obj.tracking_type,
+                unit_symbol: obj.unit_symbol || obj.unit_code_ref || null,
                 progress: obj.current_value && obj.target_value ? (obj.current_value / obj.target_value) * 100 : 0,
                 deadline: null,
                 business_unit_id: obj.business_unit_id,
@@ -212,18 +276,30 @@ async function loadObjectives() {
                 business_unit_name: obj.business_unit_name,
                 division_name: obj.division_name,
                 is_financial: obj.is_financial,
-                category: obj.type_category
+                category: obj.type_category || obj.category,
+                distributed_value: obj.distributed_value
             }));
+
 
             renderObjectives();
             updateStats();
         } else {
             const errorData = await response.json().catch(() => ({ message: response.statusText }));
             console.error('Erreur chargement objectifs:', errorData);
+            displayLoadError('Erreur lors du chargement des objectifs (' + response.status + ')');
         }
     } catch (error) {
         console.error('Erreur lors du chargement des objectifs:', error);
+        displayLoadError('Erreur réseau ou serveur lors du chargement des objectifs.');
     }
+}
+
+function displayLoadError(message) {
+    const containers = ['globalObjectivesList', 'buObjectivesList', 'divisionObjectivesList'];
+    containers.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+    });
 }
 
 function renderObjectives() {
@@ -279,73 +355,132 @@ function loadDivisionObjectives() {
 }
 
 function createObjectiveCard(obj) {
-    const progress = obj.progress || 0;
+    const progress = Math.min(Math.round(obj.progress || 0), 100);
     const isDelayed = new Date(obj.deadline) < new Date() && progress < 100;
-    const statusColor = isDelayed ? 'danger' : (progress >= 100 ? 'success' : 'primary');
+    const statusColor = isDelayed ? 'danger' : (progress >= 100 ? 'success' : (progress >= 50 ? 'warning' : 'primary'));
 
+    // Badge scope
     let scopeBadge = '';
     if (obj.scope === 'BU') {
         const bu = businessUnits.find(b => b.id == obj.business_unit_id);
-        const buName = bu ? (bu.name || bu.nom) : 'BU Inconnue';
-        scopeBadge = `<span class="badge bg-info me-2"><i class="fas fa-building me-1"></i>${buName}</span>`;
+        const buName = obj.business_unit_name || (bu ? (bu.name || bu.nom) : 'BU');
+        scopeBadge = `<span class="badge bg-info me-1"><i class="fas fa-building me-1"></i>${buName}</span>`;
     } else if (obj.scope === 'DIVISION') {
         const div = divisions.find(d => d.id == obj.division_id);
-        const divName = div ? (div.name || div.nom) : 'Division Inconnue';
-        scopeBadge = `<span class="badge bg-warning text-dark me-2"><i class="fas fa-sitemap me-1"></i>${divName}</span>`;
+        const divName = obj.division_name || (div ? (div.name || div.nom) : 'Division');
+        scopeBadge = `<span class="badge bg-warning text-dark me-1"><i class="fas fa-sitemap me-1"></i>${divName}</span>`;
     }
 
-    // Badge pour le mode d'objectif
-    let modeBadge = '';
-    if (obj.objective_mode === 'METRIC') {
-        modeBadge = `<span class="badge bg-primary me-1"><i class="fas fa-chart-line me-1"></i>MÉTRIQUE</span>`;
-    } else if (obj.objective_mode === 'TYPE') {
-        modeBadge = `<span class="badge bg-success me-1"><i class="fas fa-tasks me-1"></i>TYPE</span>`;
+    // Badge catégorie
+    const categoryColors = {
+        COMMERCIAL: { color: 'primary', icon: 'fa-handshake', label: 'Commercial' },
+        OPERATIONNEL: { color: 'success', icon: 'fa-cogs', label: 'Opérationnel' },
+        RH: { color: 'warning text-dark', icon: 'fa-users', label: 'RH' },
+        FINANCIAL: { color: 'info', icon: 'fa-chart-line', label: 'Financier' },
+        FINANCIER: { color: 'info', icon: 'fa-chart-line', label: 'Financier' },
+        STRATEGIC: { color: 'dark', icon: 'fa-bullseye', label: 'Stratégique' }
+    };
+    const catKey = (obj.category || '').toUpperCase();
+    const catMeta = categoryColors[catKey] || { color: 'secondary', icon: 'fa-bullseye', label: obj.category || '' };
+    const categoryBadge = obj.category
+        ? `<span class="badge bg-${catMeta.color} me-1"><i class="fas ${catMeta.icon} me-1"></i>${catMeta.label}</span>`
+        : '';
+
+    // Badge mode (METRIC / TYPE)
+    const modeBadge = obj.objective_mode === 'METRIC'
+        ? `<span class="badge bg-primary text-white small"><i class="fas fa-robot me-1"></i>Auto-mesure</span>`
+        : `<span class="badge bg-secondary text-white small"><i class="fas fa-tasks me-1"></i>Objectif Type</span>`;
+
+
+    // Badge tracking
+    const trackingBadge = obj.tracking_type === 'AUTOMATIC'
+        ? `<span class="badge bg-success bg-opacity-10 text-success small ms-1"><i class="fas fa-sync-alt me-1"></i>Automatique</span>`
+        : '';
+
+    // Valeur cible formatée selon l'unité réelle
+    const sym = (obj.unit_symbol || '').toUpperCase();
+    let targetDisplay;
+    if (['XOF', 'FCFA', 'EUR', 'USD', '€', '$'].includes(sym) || obj.is_financial) {
+        targetDisplay = formatCurrency(obj.target_amount);
+    } else if (['%', 'TAUX', 'POURCENTAGE'].includes(sym)) {
+        targetDisplay = `${(parseFloat(obj.target_amount) || 0).toLocaleString('fr-FR')} %`;
+    } else {
+        // Compteur (nb contrats, nb missions, etc.)
+        const unit = sym && sym !== '' ? ` ${sym}` : '';
+        targetDisplay = `${(parseFloat(obj.target_amount) || 0).toLocaleString('fr-FR')}${unit}`;
     }
+
+
+    // Bouton distribuer — selon le scope
+    const distributeBtnConfig = {
+        'GLOBAL': { icon: 'fa-sitemap', color: 'primary', label: 'Distribuer aux BU' },
+        'BU': { icon: 'fa-sitemap', color: 'info', label: 'Distribuer aux Divisions' },
+        'DIVISION': { icon: 'fa-user-plus', color: 'success', label: 'Distribuer aux Individus' }
+    };
+    const distConfig = distributeBtnConfig[obj.scope];
+    const distributeBtn = distConfig
+        ? `<button class="btn btn-sm btn-outline-${distConfig.color} ms-2"
+                   onclick="event.stopPropagation(); openDistributeWizard('${obj.id}', '${obj.scope}')"
+                   title="${distConfig.label}">
+               <i class="fas ${distConfig.icon} me-1"></i>${distConfig.label}
+           </button>`
+        : '';
 
     return `
-    <div class="card objective-card ${obj.scope.toLowerCase()} mb-3">
-        <div class="card-body">
+    <div class="card objective-card ${obj.scope.toLowerCase()} mb-3 border-start border-3 border-${catMeta.color.split(' ')[0]}">
+        <div class="card-body py-3">
             <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <h5 class="card-title mb-1">
-                        ${scopeBadge}
-                        ${obj.title}
-                    </h5>
-                    <p class="text-muted small mb-2">
-                        ${modeBadge}
-                        <span class="badge bg-secondary me-1">${obj.type}</span>
-                        ${obj.deadline ? `<i class="far fa-calendar-alt me-1"></i>${new Date(obj.deadline).toLocaleDateString()}` : ''}
-                    </p>
+                <div class="flex-grow-1 me-3">
+                    <div class="mb-1">
+                        ${categoryBadge}${scopeBadge}${modeBadge}${trackingBadge}
+                    </div>
+                    <h6 class="card-title mb-1 mt-2 fw-bold">${obj.title}</h6>
+                    ${obj.description && obj.description !== obj.title ? `<p class="text-muted small mb-0">${obj.description}</p>` : ''}
                 </div>
-                <div class="dropdown">
-                    <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#" onclick="editObjective('${obj.id}')"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteObjective('${obj.id}')"><i class="fas fa-trash me-2"></i>Supprimer</a></li>
-                    </ul>
+                <div class="d-flex align-items-start">
+                    ${distributeBtn}
+                    <div class="dropdown ms-1">
+                        <button class="btn btn-link text-muted p-1" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="editObjective('${obj.id}')"><i class="fas fa-edit me-2"></i>Modifier</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteObjective('${obj.id}')"><i class="fas fa-trash me-2"></i>Supprimer</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-            
-            <p class="card-text mb-3">${obj.description || ''}</p>
-            
-            <div class="row align-items-center">
-                <div class="col-md-4">
-                    <div class="small text-muted mb-1">Cible</div>
-                    <div class="fw-bold">${formatCurrency(obj.target_amount)}</div>
+
+            <div class="row align-items-center mt-3 g-2">
+                <div class="col-auto">
+                    <div class="text-muted small">Cible</div>
+                    <div class="fw-bold text-${catMeta.color.split(' ')[0]}">${targetDisplay}</div>
                 </div>
-                <div class="col-md-4">
-                    <div class="small text-muted mb-1">Poids</div>
-                    <div class="fw-bold">${obj.weight || 0}%</div>
-                </div>
-                <div class="col-md-4">
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span>Progression</span>
-                        <span class="text-${statusColor}">${progress}%</span>
+                ${parseFloat(obj.distributed_value) > 0 ? `
+                <div class="col-auto ms-3">
+                    <div class="text-muted small">Distribué</div>
+                    <div class="fw-bold text-info">
+                        ${['XOF', 'FCFA', 'EUR', 'USD', '€', '$'].includes(sym) || obj.is_financial
+                ? formatCurrency(obj.distributed_value)
+                : (['%', 'TAUX', 'POURCENTAGE'].includes(sym)
+                    ? `${(parseFloat(obj.distributed_value) || 0).toLocaleString('fr-FR')} %`
+                    : `${(parseFloat(obj.distributed_value) || 0).toLocaleString('fr-FR')}${sym ? ` ${sym}` : ''}`
+                )
+            }
                     </div>
-                    <div class="progress" style="height: 6px;">
+                </div>
+                ` : ''}
+                ${obj.weight ? `<div class="col-auto ms-3">
+                    <div class="text-muted small">Poids</div>
+                    <div class="fw-bold text-secondary">${obj.weight}%</div>
+                </div>` : ''}
+                <div class="col ms-2">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted">Progression</span>
+                        <span class="fw-semibold text-${statusColor}">${progress}%</span>
+                    </div>
+                    <div class="progress" style="height: 6px; border-radius:3px;">
                         <div class="progress-bar bg-${statusColor}" role="progressbar" style="width: ${progress}%"></div>
                     </div>
                 </div>

@@ -781,7 +781,10 @@ class CronService {
                     c.nom AS collaborateur_nom,
                     c.prenom AS collaborateur_prenom,
                     u_collab.id AS user_id,
-                    (mt.date_fin::date - CURRENT_DATE) AS days_until_end
+                    (mt.date_fin::date - CURRENT_DATE) AS days_until_end,
+                    (SELECT id FROM users WHERE collaborateur_id = m.associe_id AND statut = 'ACTIF' LIMIT 1) as associe_user_id,
+                    (SELECT id FROM users WHERE collaborateur_id = m.manager_id AND statut = 'ACTIF' LIMIT 1) as manager_user_id,
+                    (SELECT id FROM users WHERE collaborateur_id = m.collaborateur_id AND statut = 'ACTIF' LIMIT 1) as responsable_user_id
                 FROM mission_tasks mt
                 JOIN missions m ON m.id = mt.mission_id
                 LEFT JOIN tasks t ON t.id = mt.task_id
@@ -830,7 +833,14 @@ class CronService {
                 console.log(`📢 Notification de tâche proche de l'échéance envoyée à ${row.collaborateur_nom} ${row.collaborateur_prenom} (mission ${row.mission_nom})`);
 
                 if (managementDelayDays > 0 && row.business_unit_id && row.days_until_end >= 0 && row.days_until_end <= managementDelayDays) {
-                    const managers = await this.getBusinessUnitManagementUsers(row.business_unit_id);
+                    const allManagers = await this.getBusinessUnitManagementUsers(row.business_unit_id);
+                    // Filtrer pour ne garder que les managers impliqués dans la mission
+                    const managers = allManagers.filter(m =>
+                        m.id === row.associe_user_id ||
+                        m.id === row.manager_user_id ||
+                        m.id === row.responsable_user_id
+                    );
+
                     for (const manager of managers) {
                         const existsRes = await pool.query(`
                             SELECT 1 FROM notifications n
@@ -899,7 +909,10 @@ class CronService {
                     u_collab.id AS user_id,
                     ta.heures_planifiees,
                     ta.heures_effectuees,
-                    (CURRENT_DATE - mt.date_fin::date) AS days_overdue
+                    (CURRENT_DATE - mt.date_fin::date) AS days_overdue,
+                    (SELECT id FROM users WHERE collaborateur_id = m.associe_id AND statut = 'ACTIF' LIMIT 1) as associe_user_id,
+                    (SELECT id FROM users WHERE collaborateur_id = m.manager_id AND statut = 'ACTIF' LIMIT 1) as manager_user_id,
+                    (SELECT id FROM users WHERE collaborateur_id = m.collaborateur_id AND statut = 'ACTIF' LIMIT 1) as responsable_user_id
                 FROM mission_tasks mt
                 JOIN missions m ON m.id = mt.mission_id
                 LEFT JOIN tasks t ON t.id = mt.task_id
@@ -950,7 +963,13 @@ class CronService {
                 console.log(`📢 Notification de tâche en retard envoyée à ${row.collaborateur_nom} ${row.collaborateur_prenom} (mission ${row.mission_nom})`);
 
                 if (managementDelayDays > 0 && row.business_unit_id && row.days_overdue >= managementDelayDays) {
-                    const managers = await this.getBusinessUnitManagementUsers(row.business_unit_id);
+                    const allManagers = await this.getBusinessUnitManagementUsers(row.business_unit_id);
+                    const managers = allManagers.filter(m =>
+                        m.id === row.associe_user_id ||
+                        m.id === row.manager_user_id ||
+                        m.id === row.responsable_user_id
+                    );
+
                     for (const manager of managers) {
                         const existsRes = await pool.query(`
                             SELECT 1 FROM notifications n
@@ -1018,7 +1037,10 @@ class CronService {
                     bu.nom AS business_unit_nom,
                     COALESCE(m.montant_honoraires, 0) AS montant_honoraires,
                     COALESCE(SUM(i.montant_ht), 0) AS total_facture_ht,
-                    GREATEST((CURRENT_DATE - m.date_fin::date), 0) AS days_overdue
+                    GREATEST((CURRENT_DATE - m.date_fin::date), 0) AS days_overdue,
+                    (SELECT id FROM users WHERE collaborateur_id = m.associe_id AND statut = 'ACTIF' LIMIT 1) as associe_user_id,
+                    (SELECT id FROM users WHERE collaborateur_id = m.manager_id AND statut = 'ACTIF' LIMIT 1) as manager_user_id,
+                    (SELECT id FROM users WHERE collaborateur_id = m.collaborateur_id AND statut = 'ACTIF' LIMIT 1) as responsable_user_id
                 FROM missions m
                 LEFT JOIN business_units bu ON m.business_unit_id = bu.id
                 LEFT JOIN invoices i ON i.mission_id = m.id AND i.statut NOT IN ('ANNULEE')
@@ -1085,7 +1107,12 @@ class CronService {
 
                 // Notifications management
                 if (managementDelayDays > 0 && row.business_unit_id && row.days_overdue >= managementDelayDays) {
-                    const managers = await this.getBusinessUnitManagementUsers(row.business_unit_id);
+                    const allManagers = await this.getBusinessUnitManagementUsers(row.business_unit_id);
+                    const managers = allManagers.filter(m =>
+                        m.id === row.associe_user_id ||
+                        m.id === row.manager_user_id ||
+                        m.id === row.responsable_user_id
+                    );
                     for (const manager of managers) {
                         const existsMgmt = await pool.query(`
                             SELECT 1 FROM notifications n
@@ -1269,7 +1296,10 @@ class CronService {
                     bu.nom AS business_unit_nom,
                     COALESCE(m.montant_debours, 0) AS montant_debours,
                     COALESCE(COUNT(i.id), 0) AS nb_factures,
-                    GREATEST((CURRENT_DATE - m.date_fin::date), 0) AS days_overdue
+                    GREATEST((CURRENT_DATE - m.date_fin::date), 0) AS days_overdue,
+                    (SELECT id FROM users WHERE collaborateur_id = m.associe_id AND statut = 'ACTIF' LIMIT 1) as associe_user_id,
+                    (SELECT id FROM users WHERE collaborateur_id = m.manager_id AND statut = 'ACTIF' LIMIT 1) as manager_user_id,
+                    (SELECT id FROM users WHERE collaborateur_id = m.collaborateur_id AND statut = 'ACTIF' LIMIT 1) as responsable_user_id
                 FROM missions m
                 LEFT JOIN business_units bu ON m.business_unit_id = bu.id
                 LEFT JOIN invoices i ON i.mission_id = m.id AND i.statut NOT IN ('ANNULEE')
@@ -1332,7 +1362,12 @@ class CronService {
                 }
 
                 if (managementDelayDays > 0 && row.business_unit_id && row.days_overdue >= managementDelayDays) {
-                    const managers = await this.getBusinessUnitManagementUsers(row.business_unit_id);
+                    const allManagers = await this.getBusinessUnitManagementUsers(row.business_unit_id);
+                    const managers = allManagers.filter(m =>
+                        m.id === row.associe_user_id ||
+                        m.id === row.manager_user_id ||
+                        m.id === row.responsable_user_id
+                    );
                     for (const manager of managers) {
                         const existsMgmt = await pool.query(`
                             SELECT 1 FROM notifications n

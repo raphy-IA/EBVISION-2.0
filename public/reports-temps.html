@@ -113,6 +113,24 @@
                 grid-template-columns: 1fr 1fr;
             }
         }
+
+        .filter-group-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid #dee2e6;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
     </style>
 
     <!-- CSS des variables de branding dynamiques -->
@@ -174,81 +192,114 @@
 
             <!-- Filters -->
             <div class="filters-card">
-                <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filtres</h5>
-                <!-- Filtres en cascade: BU → Division → Collaborateur → Grade → Type → Période -->
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label for="businessUnitFilter" class="form-label">1. Business Unit</label>
-                        <select class="form-select" id="businessUnitFilter">
-                            <option value="">Toutes</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="divisionFilter" class="form-label">2. Division</label>
-                        <select class="form-select" id="divisionFilter">
-                            <option value="">Toutes</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="collaboratorFilter" class="form-label">3. Collaborateur</label>
-                        <select class="form-select" id="collaboratorFilter">
-                            <option value="">Tous</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="gradeFilter" class="form-label">4. Grade</label>
-                        <select class="form-select" id="gradeFilter">
-                            <option value="">Tous</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="row g-3 mt-2">
-                    <div class="col-md-3">
-                        <label for="typeFilter" class="form-label">5. Type d'heures</label>
-                        <select class="form-select" id="typeFilter">
-                            <option value="">Tous</option>
-                            <option value="BILLABLE">Facturable</option>
-                            <option value="NON_BILLABLE">Non facturable</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="periodFilter" class="form-label">6. Période</label>
-                        <select class="form-select" id="periodFilter">
-                            <option value="all">Toutes les périodes</option>
-                            <option value="today">Aujourd'hui</option>
-                            <option value="yesterday">Hier</option>
-                            <option value="week">Cette semaine</option>
-                            <option value="last_week">Semaine précédente</option>
-                            <option value="month">Ce mois</option>
-                            <option value="last_month">Mois précédent</option>
-                            <option value="quarter">Ce trimestre</option>
-                            <option value="year">Cette année</option>
-                            <option value="custom">Période personnalisée</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Période personnalisée (cachée par défaut) -->
-                <div class="row g-3 mt-2" id="customPeriodRow" style="display: none;">
-                    <div class="col-md-3">
-                        <label for="startDate" class="form-label">Date de début</label>
-                        <input type="date" class="form-control" id="startDate">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="endDate" class="form-label">Date de fin</label>
-                        <input type="date" class="form-control" id="endDate">
-                    </div>
-                </div>
-
-                <div class="row g-3 mt-2">
-                    <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtres de recherche</h5>
+                    <div class="d-flex gap-2">
                         <button class="btn btn-primary" onclick="loadData()">
-                            <i class="fas fa-search me-1"></i> Appliquer les filtres
+                            <i class="fas fa-search me-1"></i> Appliquer
                         </button>
-                        <button class="btn btn-secondary ms-2" onclick="resetFilters()">
+                        <button class="btn btn-outline-secondary" onclick="resetFilters()">
                             <i class="fas fa-undo me-1"></i> Réinitialiser
                         </button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Groupe 1: Organisation -->
+                    <div class="col-lg-12">
+                        <div class="filter-group-title"><i class="fas fa-sitemap me-2"></i>Organisation</div>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="fiscalYearFilter" class="form-label">Année Fiscale</label>
+                                <select class="form-select" id="fiscalYearFilter"></select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="businessUnitFilter" class="form-label">Business Unit</label>
+                                <select class="form-select" id="businessUnitFilter">
+                                    <option value="">Toutes</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="divisionFilter" class="form-label">Division</label>
+                                <select class="form-select" id="divisionFilter">
+                                    <option value="">Toutes</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="gradeFilter" class="form-label">Grade</label>
+                                <select class="form-select" id="gradeFilter">
+                                    <option value="">Tous</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Groupe 2: Acteurs & Activité -->
+                    <div class="col-lg-12 mt-4">
+                        <div class="filter-group-title"><i class="fas fa-users-cog me-2"></i>Intervenants & Activité
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="collaboratorFilter" class="form-label">Collaborateur</label>
+                                <select class="form-select" id="collaboratorFilter">
+                                    <option value="">Tous</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="clientFilter" class="form-label">Client</label>
+                                <select class="form-select" id="clientFilter">
+                                    <option value="">Tous</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="typeFilter" class="form-label">Type d'heures</label>
+                                <select class="form-select" id="typeFilter">
+                                    <option value="">Tous</option>
+                                    <option value="BILLABLE">Facturable</option>
+                                    <option value="NON_BILLABLE">Non facturable</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="statusFilter" class="form-label">Statut</label>
+                                <select class="form-select" id="statusFilter">
+                                    <option value="">Tous</option>
+                                    <option value="sauvegardé">Brouillon</option>
+                                    <option value="soumis">En attente</option>
+                                    <option value="validé">Validé</option>
+                                    <option value="rejeté">Rejeté</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Groupe 3: Période -->
+                    <div class="col-lg-12 mt-4">
+                        <div class="filter-group-title"><i class="fas fa-calendar-alt me-2"></i>Période temporelle</div>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label for="periodFilter" class="form-label">Sélection rapide</label>
+                                <select class="form-select" id="periodFilter">
+                                    <option value="all">Toutes les périodes</option>
+                                    <option value="today">Aujourd'hui</option>
+                                    <option value="yesterday">Hier</option>
+                                    <option value="week">Cette semaine</option>
+                                    <option value="last_week">Semaine précédente</option>
+                                    <option value="month">Ce mois</option>
+                                    <option value="last_month">Mois précédent</option>
+                                    <option value="quarter">Ce trimestre</option>
+                                    <option value="year">Cette année</option>
+                                    <option value="custom">Période personnalisée</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 custom-date" style="display: none;">
+                                <label for="startDate" class="form-label">Date de début</label>
+                                <input type="date" class="form-control" id="startDate">
+                            </div>
+                            <div class="col-md-3 custom-date" style="display: none;">
+                                <label for="endDate" class="form-label">Date de fin</label>
+                                <input type="date" class="form-control" id="endDate">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -338,6 +389,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/fiscal-year-selector.js"></script>
     <script src="js/global-auth.js"></script>
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>
@@ -362,32 +414,37 @@
         let allDivisions = [];
         let allCollaborators = [];
         let allGrades = [];
+        let allClients = [];
 
         document.addEventListener('DOMContentLoaded', function () {
+            FiscalYearSelector.init('fiscalYearFilter', (selectedYearId) => {
+                loadData();
+            });
             initializeCascadingFilters();
-            loadData();
-
-            // Event listener for period filter
-            const periodFilter = document.getElementById('periodFilter');
-            if (periodFilter) {
-                periodFilter.addEventListener('change', function () {
-                    const customRow = document.getElementById('customPeriodRow');
-                    if (this.value === 'custom') {
-                        customRow.style.display = 'flex';
-                        setDefaultDates();
-                    } else {
-                        customRow.style.display = 'none';
-                    }
-                });
-            }
         });
+
+        // Event listener for period filter
+        const periodFilterSelect = document.getElementById('periodFilter');
+        if (periodFilterSelect) {
+            periodFilterSelect.addEventListener('change', function () {
+                const customDates = document.querySelectorAll('.custom-date');
+                if (this.value === 'custom') {
+                    customDates.forEach(el => el.style.display = 'block');
+                    setDefaultDates();
+                } else {
+                    customDates.forEach(el => el.style.display = 'none');
+                }
+            });
+        }
+
 
         async function initializeCascadingFilters() {
             await Promise.all([
                 loadBusinessUnits(),
                 loadDivisions(),
                 loadCollaborators(),
-                loadGrades()
+                loadGrades(),
+                loadClients()
             ]);
 
             // Peupler TOUS les filtres au démarrage avec toutes les données
@@ -439,7 +496,19 @@
                 gradeSelect.appendChild(option);
             });
 
-            console.log(`✅ Filtres initialisés: ${allBusinessUnits.length} BUs, ${allDivisions.length} divisions, ${allCollaborators.length} collaborateurs, ${allGrades.length} grades`);
+            // Peupler Clients
+            const clientSelect = document.getElementById('clientFilter');
+            clientSelect.innerHTML = '<option value="">Tous</option>';
+            // Trier les clients par nom
+            const sortedClients = [...allClients].sort((a, b) => a.nom.localeCompare(b.nom));
+            sortedClients.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client.id;
+                option.textContent = client.sigle ? `${client.sigle} - ${client.nom}` : client.nom;
+                clientSelect.appendChild(option);
+            });
+
+            console.log(`✅ Filtres initialisés: ${allBusinessUnits.length} BUs, ${allDivisions.length} divisions, ${allCollaborators.length} collaborateurs, ${allGrades.length} grades, ${allClients.length} clients`);
         }
 
         function setupCascadingListeners() {
@@ -460,6 +529,14 @@
                 updateDependentFilters('grade');
             });
 
+            document.getElementById('clientFilter').addEventListener('change', function () {
+                updateDependentFilters('client');
+            });
+
+            document.getElementById('statusFilter').addEventListener('change', function () {
+                updateDependentFilters('status');
+            });
+
             console.log('✅ Filtres croisés configurés');
         }
 
@@ -469,6 +546,8 @@
             const divisionId = document.getElementById('divisionFilter').value;
             const collaboratorId = document.getElementById('collaboratorFilter').value;
             const gradeId = document.getElementById('gradeFilter').value;
+            const clientId = document.getElementById('clientFilter').value;
+            const status = document.getElementById('statusFilter').value;
 
             console.log(`🔄 Filtre "${changedFilter}" changé, mise à jour des autres`);
 
@@ -579,6 +658,23 @@
             console.log(`  📍 Grades: ${availableGrades.length} disponibles`);
         }
 
+        async function loadGrades() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_BASE_URL}/grades`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    allGrades = data.data.grades || data.data || [];
+                    console.log('✅ Grades chargés:', allGrades.length);
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement grades:', error);
+            }
+        }
+
         function setDefaultDates() {
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -645,20 +741,20 @@
             }
         }
 
-        async function loadGrades() {
+        async function loadClients() {
             try {
                 const token = localStorage.getItem('authToken');
-                const response = await fetch(`${API_BASE_URL}/grades`, {
+                const response = await fetch(`${API_BASE_URL}/clients`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    allGrades = data.data.grades || data.data || [];
-                    console.log('✅ Grades chargés:', allGrades.length);
+                    allClients = data.data.clients || data.data || [];
+                    console.log('✅ Clients chargés:', allClients.length);
                 }
             } catch (error) {
-                console.error('❌ Erreur chargement grades:', error);
+                console.error('❌ Erreur chargement clients:', error);
             }
         }
 
@@ -729,11 +825,17 @@
 
             try {
                 const token = localStorage.getItem('authToken');
+                const fiscalYearId = document.getElementById('fiscalYearFilter').value;
+
                 let url = `${API_BASE_URL}/reports/timeEntries?`;
 
-                // Ne passer que la période à l'API, pas le collaborateur
-                // Le filtre collaborateur sera appliqué côté client dans applyFilters()
-                if (dateRange) {
+                // Ne passer que la période et l'exercice à l'API
+                if (fiscalYearId) {
+                    url += `fiscalYearId=${fiscalYearId}&`;
+                }
+
+                if (dateRange && (!fiscalYearId || dateRange.startDate.getFullYear() !== new Date().getFullYear())) {
+                    // Si on a une plage personnalisée, elle prime
                     url += `startDate=${dateRange.startDate.toISOString()}&`;
                     url += `endDate=${dateRange.endDate.toISOString()}&`;
                 }
@@ -782,47 +884,48 @@
             // Par défaut, afficher toutes les données
             let filtered = allTimeEntries;
 
-            // Si une Business Unit est sélectionnée, appliquer les filtres en cascade
+            // 1. Filtre Business Unit
             if (businessUnitFilter) {
-                // 1. Filtre Business Unit
                 filtered = filtered.filter(entry =>
                     String(entry.business_unit_id) === String(businessUnitFilter)
                 );
                 console.log(`📊 Après filtre BU: ${filtered.length} saisies`);
-
-                // 2. Filtre Division (si sélectionné)
-                if (divisionFilter) {
-                    // Filtrer par les collaborateurs de cette division
-                    const collaboratorsInDivision = allCollaborators
-                        .filter(c => String(c.division_id) === String(divisionFilter))
-                        .map(c => c.id);
-
-                    filtered = filtered.filter(entry =>
-                        collaboratorsInDivision.some(id => String(entry.collaborateur_id) === String(id))
-                    );
-                    console.log(`📊 Après filtre Division: ${filtered.length} saisies`);
-                }
-
-                // 3. Filtre Collaborateur (si sélectionné)
-                if (collaboratorFilter) {
-                    filtered = filtered.filter(entry =>
-                        String(entry.collaborateur_id) === String(collaboratorFilter)
-                    );
-                    console.log(`📊 Après filtre Collaborateur: ${filtered.length} saisies`);
-                }
-
-                // 4. Filtre Grade (si sélectionné)
-                if (gradeFilter) {
-                    filtered = filtered.filter(entry =>
-                        String(entry.grade_id) === String(gradeFilter)
-                    );
-                    console.log(`📊 Après filtre Grade: ${filtered.length} saisies`);
-                }
-            } else {
-                console.log('ℹ️ Aucune Business Unit sélectionnée - affichage de toutes les données');
             }
 
-            // 5. Filtre Type d'heures (indépendant, s'applique toujours)
+            // 2. Filtre Division (indépendant)
+            if (divisionFilter) {
+                filtered = filtered.filter(entry =>
+                    String(entry.division_id) === String(divisionFilter)
+                );
+                console.log(`📊 Après filtre Division: ${filtered.length} saisies`);
+            }
+
+            // 3. Filtre Collaborateur (indépendant)
+            if (collaboratorFilter) {
+                filtered = filtered.filter(entry =>
+                    String(entry.collaborateur_id) === String(collaboratorFilter)
+                );
+                console.log(`📊 Après filtre Collaborateur: ${filtered.length} saisies`);
+            }
+
+            // 4. Filtre Grade (indépendant)
+            if (gradeFilter) {
+                filtered = filtered.filter(entry =>
+                    String(entry.grade_id) === String(gradeFilter)
+                );
+                console.log(`📊 Après filtre Grade: ${filtered.length} saisies`);
+            }
+
+            // 5. Filtre Client (indépendant)
+            const clientFilter = document.getElementById('clientFilter').value;
+            if (clientFilter) {
+                filtered = filtered.filter(entry =>
+                    String(entry.client_id) === String(clientFilter)
+                );
+                console.log(`📊 Après filtre Client: ${filtered.length} saisies`);
+            }
+
+            // 6. Filtre Type d'heures (indépendant)
             if (typeFilter) {
                 filtered = filtered.filter(entry => {
                     if (typeFilter === 'BILLABLE') return entry.type_heures === 'BILLABLE' || entry.type_heures === 'HC';
@@ -832,7 +935,16 @@
                 console.log(`📊 Après filtre Type: ${filtered.length} saisies`);
             }
 
-            // 6. Filtre Période (indépendant, s'applique toujours)
+            // 7. Filtre Statut (indépendant)
+            const statusFilter = document.getElementById('statusFilter').value;
+            if (statusFilter) {
+                filtered = filtered.filter(entry =>
+                    String(entry.statut).toLowerCase() === String(statusFilter).toLowerCase()
+                );
+                console.log(`📊 Après filtre Statut: ${filtered.length} saisies`);
+            }
+
+            // 8. Filtre Période (indépendant)
             const dateRange = getDateRange();
             if (dateRange) {
                 const { startDate, endDate } = dateRange;
@@ -854,7 +966,8 @@
             const nonBillableHours = entries.filter(e => e.type_heures === 'NON_BILLABLE' || e.type_heures === 'HNC').reduce((sum, e) => sum + e.heures, 0);
             const billableRate = totalHours > 0 ? ((billableHours / totalHours) * 100).toFixed(1) : 0;
             const collaborators = new Set(entries.map(e => e.collaborateur)).size;
-            const missions = new Set(entries.filter(e => e.mission !== '-').map(e => e.mission)).size;
+            // Compter uniquement les vraies missions pour le badge statistique "Missions actives"
+            const missions = new Set(entries.filter(e => e.mission !== '-' && (e.type_heures === 'BILLABLE' || e.type_heures === 'HC')).map(e => e.mission)).size;
 
             // Update stats
             document.getElementById('totalHours').textContent = totalHours.toFixed(1) + 'h';
@@ -935,7 +1048,7 @@
                 data: {
                     labels: topMissions.map(m => m[0]),
                     datasets: [{
-                        label: 'Heures',
+                        label: 'Heures (Missions & Activités)',
                         data: topMissions.map(m => m[1]),
                         backgroundColor: 'rgba(17,153,142,0.7)'
                     }]
@@ -1134,11 +1247,15 @@
             document.getElementById('divisionFilter').value = '';
             document.getElementById('collaboratorFilter').value = '';
             document.getElementById('gradeFilter').value = '';
+            document.getElementById('clientFilter').value = '';
             document.getElementById('typeFilter').value = '';
+            document.getElementById('statusFilter').value = '';
             document.getElementById('periodFilter').value = 'all';
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
-            document.getElementById('customPeriodRow').style.display = 'none';
+
+            // Masquer les champs de date personnalisés
+            document.querySelectorAll('.custom-date').forEach(el => el.style.display = 'none');
 
             // Repeupler TOUS les filtres avec toutes les données
             populateAllFilters();

@@ -43,6 +43,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Initialiser les graphiques
     initializeCharts();
 
+    // Initialiser le sélecteur d'année fiscale
+    if (typeof FiscalYearSelector !== 'undefined' && document.getElementById('fiscalYearFilter')) {
+        FiscalYearSelector.init('fiscalYearFilter', () => loadTeamData());
+    }
+
     // Charger les équipes disponibles
     await loadAvailableTeams();
 });
@@ -179,10 +184,16 @@ async function onTeamInstanceChange() {
 async function loadTeamData() {
     try {
         const period = document.getElementById('period-select')?.value || 30;
+        const fiscalYearId = document.getElementById('fiscalYearFilter')?.value || '';
 
-        console.log(`📊 Chargement données équipe - Type: ${currentTeamType}, ID: ${currentTeamId}, Période: ${period}j`);
+        console.log(`📊 Chargement données équipe - Type: ${currentTeamType}, ID: ${currentTeamId}, ${fiscalYearId ? 'Année fiscale: ' + fiscalYearId : 'Période: ' + period + 'j'}`);
 
-        let url = `${API_BASE_URL}?team_type=${currentTeamType}&period=${period}`;
+        let url = `${API_BASE_URL}?team_type=${currentTeamType}`;
+        if (fiscalYearId) {
+            url += `&fiscal_year_id=${fiscalYearId}`;
+        } else {
+            url += `&period=${period}`;
+        }
         if (currentTeamId) {
             url += `&team_id=${currentTeamId}`;
         }

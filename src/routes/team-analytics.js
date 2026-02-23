@@ -156,9 +156,9 @@ router.get('/available', authenticateToken, async (req, res) => {
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
-        const { team_type, team_id, period = 30 } = req.query;
+        const { team_type, team_id, period = 30, fiscal_year_id } = req.query;
 
-        console.log(`📊 Analytics équipe - Type: ${team_type}, ID: ${team_id}, Période: ${period}j`);
+        console.log(`📊 Analytics équipe - Type: ${team_type}, ID: ${team_id}, ${fiscal_year_id ? 'Année fiscale: ' + fiscal_year_id : 'Période: ' + period + 'j'}`);
 
         if (!team_type) {
             return res.status(400).json({
@@ -186,8 +186,19 @@ router.get('/', authenticateToken, async (req, res) => {
         const collaborateurId = collaborateur.id;
 
         // Calculer la date de début
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - parseInt(period));
+        let startDate, endDate;
+        if (fiscal_year_id) {
+            const fyResult = await pool.query('SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1', [fiscal_year_id]);
+            if (fyResult.rows.length > 0) {
+                startDate = new Date(fyResult.rows[0].date_debut);
+                endDate = new Date(fyResult.rows[0].date_fin);
+            }
+        }
+        if (!startDate) {
+            endDate = new Date();
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() - parseInt(period));
+        }
 
         let teamData;
 

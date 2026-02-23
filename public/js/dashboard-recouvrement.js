@@ -58,12 +58,18 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initialiser les graphiques
     initializeCharts();
 
-    // Charger d'abord la configuration financière puis les données
+    // Initialiser le sélecteur d'année fiscale puis charger les données
+    const afterLoad = () => {
+        if (typeof FiscalYearSelector !== 'undefined' && document.getElementById('fiscalYearFilter')) {
+            FiscalYearSelector.init('fiscalYearFilter', () => loadData());
+        } else {
+            loadData();
+        }
+    };
+
     loadFinancialSettingsForDashboardRecouvrement()
         .catch(err => console.warn('Erreur chargement paramètres financiers (recouvrement):', err))
-        .finally(() => {
-            loadData();
-        });
+        .finally(afterLoad);
 });
 
 // Initialiser les graphiques
@@ -156,10 +162,18 @@ function initializeCharts() {
 async function loadData() {
     try {
         const period = document.getElementById('period-select')?.value || 90;
+        const fiscalYearId = document.getElementById('fiscalYearFilter')?.value || '';
 
-        console.log(`📊 Chargement données recouvrement (période: ${period} jours)`);
+        let url;
+        if (fiscalYearId) {
+            url = `${API_BASE_URL}/collections?fiscal_year_id=${fiscalYearId}`;
+        } else {
+            url = `${API_BASE_URL}/collections?period=${period}`;
+        }
 
-        const response = await authenticatedFetch(`${API_BASE_URL}/collections?period=${period}`);
+        console.log(`📊 Chargement données recouvrement (${fiscalYearId ? 'année fiscale: ' + fiscalYearId : 'période: ' + period + ' jours'})`);
+
+        const response = await authenticatedFetch(url);
 
         if (response.ok) {
             const result = await response.json();

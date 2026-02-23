@@ -1,0 +1,68 @@
+[
+  {
+    "id": "1852fbb6-4a85-49f6-8400-9c91d5ead5de",
+    "code": "menu.gestion_rh.collaborateurs",
+    "name": "Menu: Collaborateurs",
+    "description": "Permission d'accès au menu menu.gestion_rh.collaborateurs",
+    "category": "menu",
+    "created_at": "2025-12-07T23:12:11.132Z",
+    "updated_at": "2025-12-07T23:12:11.132Z",
+    "nom": null,
+    "module": null
+  },
+  {
+    "id": "db1fabde-8a19-480d-a12b-92e6c2d10581",
+    "code": "menu.gestion_rh.configuration_objectifs",
+    "name": "Configuration des Objectifs",
+    "description": null,
+    "category": "menu",
+    "created_at": "2026-02-20T20:43:46.271Z",
+    "updated_at": "2026-02-20T20:43:46.271Z",
+    "nom": null,
+    "module": null
+  },
+  {
+    "id": "10395572-7664-47d1-ad60-bbcf2b649b2b",
+    "code": "menu.gestion_rh.grades",
+    "name": "Menu: Grades",
+    "description": "Permission d'accès au menu menu.gestion_rh.grades",
+    "category": "menu",
+    "created_at": "2025-12-07T23:12:11.133Z",
+    "updated_at": "2025-12-07T23:12:11.133Z",
+    "nom": null,
+    "module": null
+  },
+  {
+    "id": "e89d75f6-1411-4616-a987-5365b2e40c0f",
+    "code": "menu.gestion_rh.postes",
+    "name": "Menu: Postes",
+    "description": "Permission d'accès au menu menu.gestion_rh.postes",
+    "category": "menu",
+    "created_at": "2025-12-07T23:12:11.134Z",
+    "updated_at": "2025-12-07T23:12:11.134Z",
+    "nom": null,
+    "module": null
+  },
+  {
+    "id": "055735cc-0b71-44a8-8258-75f4115e90f5",
+    "code": "menu.gestion_rh.taux_horaires",
+    "name": "Menu: Taux Horaires",
+    "description": "Permission d'accès au menu menu.gestion_rh.taux_horaires",
+    "category": "menu",
+    "created_at": "2025-12-07T23:12:11.135Z",
+    "updated_at": "2025-12-07T23:12:11.135Z",
+    "nom": null,
+    "module": null
+  },
+  {
+    "id": "87a1014d-7fc3-46c9-ad96-ab62fa9048e5",
+    "code": "menu.gestion_rh.types_collaborateurs",
+    "name": "Menu: Types de Collaborateurs",
+    "description": "Permission d'accès au menu menu.gestion_rh.types_collaborateurs",
+    "category": "menu",
+    "created_at": "2025-12-07T23:12:11.133Z",
+    "updated_at": "2025-12-07T23:12:11.133Z",
+    "nom": null,
+    "module": null
+  }
+]

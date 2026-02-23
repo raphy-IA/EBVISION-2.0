@@ -593,9 +593,21 @@ router.get('/collections-by-client', authenticateToken, async (req, res) => {
 // GET /api/analytics/profitability-missions - Rentabilité par mission
 router.get('/profitability-missions', authenticateToken, async (req, res) => {
     try {
-        const { period = 90 } = req.query;
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - parseInt(period));
+        const { period = 90, fiscal_year_id } = req.query;
+        let startDate, endDate;
+
+        if (fiscal_year_id) {
+            const fyResult = await pool.query('SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1', [fiscal_year_id]);
+            if (fyResult.rows.length > 0) {
+                startDate = new Date(fyResult.rows[0].date_debut);
+                endDate = new Date(fyResult.rows[0].date_fin);
+            }
+        }
+        if (!startDate) {
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() - parseInt(period));
+            endDate = new Date();
+        }
 
         const query = `
             WITH couts AS (
@@ -605,13 +617,13 @@ router.get('/profitability-missions', authenticateToken, async (req, res) => {
                 JOIN users u ON te.user_id = u.id
                 JOIN collaborateurs c ON u.collaborateur_id = c.id
                 LEFT JOIN grades g ON c.grade_actuel_id = g.id
-                WHERE te.created_at >= $1::timestamptz
+                WHERE te.created_at >= $1::timestamptz AND te.created_at <= $2::timestamptz
                 GROUP BY te.mission_id
             ), facturation AS (
                 SELECT i.mission_id,
                        COALESCE(SUM(COALESCE(i.montant_ttc, i.montant_ht + COALESCE(i.montant_tva,0))),0) AS facture
                 FROM invoices i
-                WHERE i.date_emission >= $1::timestamptz
+                WHERE i.date_emission >= $1::timestamptz AND i.date_emission <= $2::timestamptz
                 GROUP BY i.mission_id
             )
             SELECT m.id, m.nom AS mission_nom, c2.nom AS client_nom,
@@ -626,7 +638,7 @@ router.get('/profitability-missions', authenticateToken, async (req, res) => {
             LIMIT 50;
         `;
 
-        const result = await pool.query(query, [startDate.toISOString()]);
+        const result = await pool.query(query, [startDate.toISOString(), endDate.toISOString()]);
         return res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Erreur profitability-missions:', error);
@@ -637,9 +649,21 @@ router.get('/profitability-missions', authenticateToken, async (req, res) => {
 // GET /api/analytics/profitability-clients - Rentabilité par client
 router.get('/profitability-clients', authenticateToken, async (req, res) => {
     try {
-        const { period = 180 } = req.query;
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - parseInt(period));
+        const { period = 180, fiscal_year_id } = req.query;
+        let startDate, endDate;
+
+        if (fiscal_year_id) {
+            const fyResult = await pool.query('SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1', [fiscal_year_id]);
+            if (fyResult.rows.length > 0) {
+                startDate = new Date(fyResult.rows[0].date_debut);
+                endDate = new Date(fyResult.rows[0].date_fin);
+            }
+        }
+        if (!startDate) {
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() - parseInt(period));
+            endDate = new Date();
+        }
 
         const query = `
             WITH te_couts AS (
@@ -650,13 +674,13 @@ router.get('/profitability-clients', authenticateToken, async (req, res) => {
                 JOIN collaborateurs c ON u.collaborateur_id = c.id
                 LEFT JOIN grades g ON c.grade_actuel_id = g.id
                 LEFT JOIN missions m ON m.id = te.mission_id
-                WHERE te.created_at >= $1::timestamptz
+                WHERE te.created_at >= $1::timestamptz AND te.created_at <= $2::timestamptz
                 GROUP BY m.client_id
             ), factures AS (
                 SELECT i.client_id,
                        COALESCE(SUM(COALESCE(i.montant_ttc, i.montant_ht + COALESCE(i.montant_tva,0))),0) AS facture
                 FROM invoices i
-                WHERE i.date_emission >= $1::timestamptz
+                WHERE i.date_emission >= $1::timestamptz AND i.date_emission <= $2::timestamptz
                 GROUP BY i.client_id
             )
             SELECT c.id AS client_id, c.nom AS client_nom,
@@ -670,7 +694,7 @@ router.get('/profitability-clients', authenticateToken, async (req, res) => {
             LIMIT 50;
         `;
 
-        const result = await pool.query(query, [startDate.toISOString()]);
+        const result = await pool.query(query, [startDate.toISOString(), endDate.toISOString()]);
         return res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Erreur profitability-clients:', error);
@@ -681,9 +705,23 @@ router.get('/profitability-clients', authenticateToken, async (req, res) => {
 // GET /api/analytics/utilization - Chargeabilité (HC/HNC) vs capacité
 router.get('/utilization', authenticateToken, async (req, res) => {
     try {
-        const { period = 30, scope = 'BU' } = req.query; // scope: BU|DIVISION|COLLAB
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - parseInt(period));
+        const { period = 30, scope = 'BU', fiscal_year_id } = req.query;
+        let startDate, endDate, numDays;
+
+        if (fiscal_year_id) {
+            const fyResult = await pool.query('SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1', [fiscal_year_id]);
+            if (fyResult.rows.length > 0) {
+                startDate = new Date(fyResult.rows[0].date_debut);
+                endDate = new Date(fyResult.rows[0].date_fin);
+                numDays = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
+            }
+        }
+        if (!startDate) {
+            numDays = parseInt(period);
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() - numDays);
+            endDate = new Date();
+        }
 
         const base = `
             SELECT 
@@ -692,19 +730,19 @@ router.get('/utilization', authenticateToken, async (req, res) => {
                 SUM(CASE WHEN te.type_heures = 'HC' THEN te.heures ELSE 0 END) AS heures_hc,
                 SUM(CASE WHEN te.type_heures <> 'HC' THEN te.heures ELSE 0 END) AS heures_hnc,
                 COUNT(DISTINCT te.user_id) AS collaborateurs_actifs,
-                COUNT(DISTINCT te.user_id) * 8 * LEAST($2::int, 22) AS capacite_approx
+                COUNT(DISTINCT te.user_id) * 8 * LEAST($3::int, 250) AS capacite_approx
             FROM time_entries te
             JOIN users u ON te.user_id = u.id
             JOIN collaborateurs c ON u.collaborateur_id = c.id
             LEFT JOIN divisions d ON c.division_id = d.id
             LEFT JOIN business_units bu ON d.business_unit_id = bu.id
-            WHERE te.created_at >= $1::timestamptz
+            WHERE te.created_at >= $1::timestamptz AND te.created_at <= $2::timestamptz
             GROUP BY 1,2
             ORDER BY heures_hc DESC
             LIMIT 100
         `;
 
-        const result = await pool.query(base, [startDate.toISOString(), parseInt(period)]);
+        const result = await pool.query(base, [startDate.toISOString(), endDate.toISOString(), numDays]);
         return res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Erreur utilization:', error);
@@ -1938,12 +1976,21 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
 // GET /api/analytics/collections - Données de recouvrement
 router.get('/collections', authenticateToken, async (req, res) => {
     try {
-        const { period = 90 } = req.query;
+        const { period = 90, fiscal_year_id } = req.query;
+        let startDate, endDate;
 
-        // Calculer les dates
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - parseInt(period));
+        if (fiscal_year_id) {
+            const fyResult = await pool.query('SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1', [fiscal_year_id]);
+            if (fyResult.rows.length > 0) {
+                startDate = new Date(fyResult.rows[0].date_debut);
+                endDate = new Date(fyResult.rows[0].date_fin);
+            }
+        }
+        if (!startDate) {
+            endDate = new Date();
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() - parseInt(period));
+        }
 
         // KPIs de recouvrement
         const kpisQuery = `
@@ -1963,9 +2010,10 @@ router.get('/collections', authenticateToken, async (req, res) => {
                 END) as nombre_retard
             FROM invoices f
             WHERE f.date_emission >= $1
+            AND f.date_emission <= $2
         `;
 
-        const kpisResult = await pool.query(kpisQuery, [startDate.toISOString()]);
+        const kpisResult = await pool.query(kpisQuery, [startDate.toISOString(), endDate.toISOString()]);
         const kpisData = kpisResult.rows[0];
 
         // Calcul DSO (Days Sales Outstanding)
@@ -1975,9 +2023,10 @@ router.get('/collections', authenticateToken, async (req, res) => {
             FROM invoices f
             WHERE f.statut = 'PAYEE'
             AND f.date_dernier_paiement >= $1::TIMESTAMP
+            AND f.date_dernier_paiement <= $2::TIMESTAMP
         `;
 
-        const dsoResult = await pool.query(dsoQuery, [startDate.toISOString()]);
+        const dsoResult = await pool.query(dsoQuery, [startDate.toISOString(), endDate.toISOString()]);
         const dsoData = dsoResult.rows[0];
 
         // Aging analysis (répartition par tranches d'âge)
@@ -2034,11 +2083,34 @@ router.get('/collections', authenticateToken, async (req, res) => {
                 SUM(CASE WHEN f.statut = 'PAYEE' THEN f.montant_total ELSE 0 END) as encaisse
             FROM invoices f
             WHERE f.date_emission >= $1
+            AND f.date_emission <= $2
             GROUP BY mois
             ORDER BY mois ASC
         `;
 
-        const monthlyResult = await pool.query(monthlyQuery, [startDate.toISOString()]);
+        const monthlyResult = await pool.query(monthlyQuery, [startDate.toISOString(), endDate.toISOString()]);
+
+        // Top clients en retard
+        const topClientsQuery = `
+            WITH paiements AS (
+                SELECT ip.invoice_id, COALESCE(SUM(ip.montant), 0) AS montant_paye
+                FROM invoice_payments ip
+                GROUP BY ip.invoice_id
+            )
+            SELECT c.id AS client_id, c.nom AS client_nom, c.sigle AS client_sigle,
+                   SUM(GREATEST(COALESCE(f.montant_total, 0) - COALESCE(p.montant_paye, 0), 0)) AS montant_retard,
+                   MAX(GREATEST(CURRENT_DATE - f.date_echeance, 0)) AS retard_moyen
+            FROM invoices f
+            JOIN clients c ON c.id = f.client_id
+            LEFT JOIN paiements p ON p.invoice_id = f.id
+            WHERE f.statut IN ('EMISE', 'ENVOYEE')
+            AND f.date_echeance < CURRENT_DATE
+            GROUP BY c.id, c.nom, c.sigle
+            HAVING SUM(GREATEST(COALESCE(f.montant_total, 0) - COALESCE(p.montant_paye, 0), 0)) > 0
+            ORDER BY montant_retard DESC
+            LIMIT 20
+        `;
+        const topClientsResult = await pool.query(topClientsQuery);
 
         const responseData = {
             kpis: {
@@ -2050,7 +2122,8 @@ router.get('/collections', authenticateToken, async (req, res) => {
             },
             aging_analysis: agingResult.rows,
             factures_retard: invoicesResult.rows,
-            evolution_mensuelle: monthlyResult.rows
+            evolution_mensuelle: monthlyResult.rows,
+            top_clients_retard: topClientsResult.rows
         };
 
         res.json({

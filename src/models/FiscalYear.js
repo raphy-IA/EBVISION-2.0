@@ -5,17 +5,19 @@ class FiscalYear {
     static async create(fiscalYearData) {
         const {
             annee,
+            libelle,
             date_debut,
-            date_fin
+            date_fin,
+            statut
         } = fiscalYearData;
 
         const sql = `
-            INSERT INTO fiscal_years (annee, date_debut, date_fin, budget_global)
-            VALUES ($1, $2, $3, NULL)
-            RETURNING id, annee, date_debut, date_fin, budget_global, statut, created_at
+            INSERT INTO fiscal_years (annee, libelle, date_debut, date_fin, budget_global, statut)
+            VALUES ($1, $2, $3, $4, NULL, $5)
+            RETURNING id, annee, libelle, date_debut, date_fin, budget_global, statut, created_at
         `;
 
-        const result = await query(sql, [annee, date_debut, date_fin]);
+        const result = await query(sql, [annee, libelle || `FY${annee}`, date_debut, date_fin, statut || 'OUVERTE']);
         return result.rows[0];
     }
 
@@ -122,7 +124,7 @@ class FiscalYear {
 
     // Mettre à jour une année fiscale
     static async update(id, updateData) {
-        const allowedFields = ['libelle', 'date_debut', 'date_fin', 'budget_global'];
+        const allowedFields = ['libelle', 'date_debut', 'date_fin', 'budget_global', 'statut'];
         const updates = [];
         const values = [];
 

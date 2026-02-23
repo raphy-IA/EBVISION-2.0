@@ -124,6 +124,9 @@
                                     title="Configurer métriques et types">
                                     <i class="fas fa-cog"></i>
                                 </a>
+                                <button class="btn btn-outline-primary me-2" onclick="openTemplateLibraryModal()">
+                                    <i class="fas fa-book-open me-2"></i>Depuis Bibliothèque
+                                </button>
                                 <button class="btn btn-primary" onclick="openCreateObjectiveModal()">
                                     <i class="fas fa-plus me-2"></i>Nouvel Objectif
                                 </button>
@@ -411,10 +414,47 @@
         </div>
     </div>
 
+    <!-- Modal Bibliothèque de Templates -->
+    <div class="modal fade" id="templateLibraryModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-book-open me-2"></i>Bibliothèque d'Objectifs Standards
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted mb-4">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Sélectionnez les objectifs à créer pour l'exercice <strong id="tplFiscalYearLabel"></strong> et
+                        définissez la valeur cible pour chacun.
+                    </p>
+
+                    <div id="templateLibraryContent">
+                        <div class="text-center py-5">
+                            <i class="fas fa-spinner fa-spin fa-2x text-primary mb-3"></i>
+                            <p class="text-muted">Chargement des templates...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <span class="text-muted me-auto small" id="tplSelectionCount">0 objectif(s) sélectionné(s)</span>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="createFromSelectedTemplates()"
+                        id="tplCreateBtn" disabled>
+                        <i class="fas fa-plus me-2"></i>Créer les objectifs sélectionnés
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/sidebar.js"></script>
+    <script src="js/fiscal-year-selector.js"></script>
     <script src="js/session-manager.js"></script>
 
     <!-- Gestion des devises -->
@@ -427,6 +467,8 @@
     <script src="js/objectives-wizards-inject.js"></script>
     <!-- Enhancement: Support mode dual (MÉTRIQUE vs TYPE) -->
     <script src="js/objectives-wizard-dual-mode.js"></script>
+    <!-- Bibliothèque de templates d'objectifs -->
+    <script src="js/objectives-templates.js"></script>
 </body>
 
 </html>

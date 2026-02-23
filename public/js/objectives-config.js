@@ -85,17 +85,19 @@ function renderMetricsTable() {
             <td><span class="badge bg-primary">${m.code}</span></td>
             <td class="fw-bold">${m.label}</td>
             <td>${m.description || '-'}</td>
+            <td>${m.sources ? m.sources.map(s => `<span class="badge bg-light text-dark border me-1">${s.objective_type_label || s.opportunity_type}</span>`).join('') : '-'}</td>
             <td>
-                ${(m.sources || []).map(s => {
-        const label = s.objective_type_label || s.opportunity_type || 'Source';
-        const title = s.objective_type_label ? `Type: ${label}` : `${s.opportunity_type || ''}: ${s.value_field || ''}`;
-        return `<span class="badge bg-light text-dark border me-1" title="${title}">
-                        ${label}
-                    </span>`;
-    }).join('') || '<span class="text-muted small">Aucune source</span>'}
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" 
+                           ${m.is_active !== false ? 'checked' : ''} 
+                           onclick="toggleStatus('metrics', '${m.id}', ${m.is_active !== false})">
+                    <span class="badge ${m.is_active !== false ? 'bg-success' : 'bg-secondary'}">
+                        ${m.is_active !== false ? 'Actif' : 'Inactif'}
+                    </span>
+                </div>
             </td>
             <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="editMetric('${m.id}')">
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="editMetric('${m.id}')" title="Modifier">
                     <i class="fas fa-edit"></i>
                 </button>
             </td>
@@ -117,7 +119,17 @@ function renderTypesTable() {
             <td><span class="badge bg-secondary">${t.category}</span></td>
             <td>${t.unit || '-'}</td>
             <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="editType('${t.id}')">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" 
+                           ${t.is_active !== false ? 'checked' : ''} 
+                           onclick="toggleStatus('types', '${t.id}', ${t.is_active !== false})">
+                    <span class="badge ${t.is_active !== false ? 'bg-success' : 'bg-secondary'}">
+                        ${t.is_active !== false ? 'Actif' : 'Inactif'}
+                    </span>
+                </div>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="editType('${t.id}')" title="Modifier">
                     <i class="fas fa-edit"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger" onclick="deleteType('${t.id}')">
@@ -140,9 +152,19 @@ function renderUnitsTable() {
             <td>${u.code}</td>
             <td class="fw-bold">${u.label}</td>
             <td>${u.symbol || '-'}</td>
-            <td>${u.type}</td>
+            <td><span class="badge bg-info">${u.type}</span></td>
             <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="editUnit('${u.id}')">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" 
+                           ${u.is_active !== false ? 'checked' : ''} 
+                           onclick="toggleStatus('units', '${u.id}', ${u.is_active !== false})">
+                    <span class="badge ${u.is_active !== false ? 'bg-success' : 'bg-secondary'}">
+                        ${u.is_active !== false ? 'Actif' : 'Inactif'}
+                    </span>
+                </div>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="editUnit('${u.id}')" title="Modifier">
                     <i class="fas fa-edit"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger" onclick="deleteUnit('${u.id}')">
@@ -158,6 +180,7 @@ function renderUnitsTable() {
 function openMetricModal() {
     document.getElementById('metricForm').reset();
     document.getElementById('metricId').value = '';
+    document.getElementById('metricIsActive').checked = true;
     document.getElementById('metricModalTitle').textContent = 'Nouvelle Métrique';
     document.getElementById('metricSourcesContainer').innerHTML = '';
 
@@ -185,6 +208,7 @@ function editMetric(id) {
     document.getElementById('metricCode').value = metric.code;
     document.getElementById('metricLabel').value = metric.label;
     document.getElementById('metricDescription').value = metric.description || '';
+    document.getElementById('metricIsActive').checked = metric.is_active !== false;
     document.getElementById('metricModalTitle').textContent = 'Modifier la Métrique';
 
     // Initialiser le sélecteur d'unité
@@ -312,6 +336,7 @@ async function saveMetric() {
         code: document.getElementById('metricCode').value,
         label: document.getElementById('metricLabel').value,
         description: document.getElementById('metricDescription').value,
+        is_active: document.getElementById('metricIsActive').checked,
         unit_code: unitCode,
         sources: sources
     };
@@ -348,6 +373,7 @@ async function saveMetric() {
 function openTypeModal() {
     document.getElementById('typeForm').reset();
     document.getElementById('typeId').value = '';
+    document.getElementById('typeIsActive').checked = true;
     document.getElementById('typeModalTitle').textContent = 'Nouveau Type d\'Objectif';
 
     // Reset tracking fields
@@ -408,6 +434,7 @@ function editType(id) {
     }
 
     document.getElementById('typeModalTitle').textContent = 'Modifier le Type';
+    document.getElementById('typeIsActive').checked = type.is_active !== false;
 
     new bootstrap.Modal(document.getElementById('typeModal')).show();
 }
@@ -446,6 +473,7 @@ async function saveType() {
         unit: unitSymbol, // Envoi du symbole
         is_financial: isFinancial,
         description: document.getElementById('typeDescription').value,
+        is_active: document.getElementById('typeIsActive').checked,
         entity_type: entityType,
         operation: operation,
         value_field: valueField
@@ -502,6 +530,7 @@ async function deleteType(id) {
 function openUnitModal() {
     document.getElementById('unitForm').reset();
     document.getElementById('unitId').value = '';
+    document.getElementById('unitIsActive').checked = true;
     document.getElementById('unitModalTitle').textContent = 'Nouvelle Unité';
     new bootstrap.Modal(document.getElementById('unitModal')).show();
 }
@@ -515,6 +544,7 @@ function editUnit(id) {
     document.getElementById('unitLabel').value = unit.label;
     document.getElementById('unitSymbol').value = unit.symbol || '';
     document.getElementById('unitType').value = unit.type;
+    document.getElementById('unitIsActive').checked = unit.is_active !== false;
     document.getElementById('unitModalTitle').textContent = 'Modifier l\'Unité';
 
     new bootstrap.Modal(document.getElementById('unitModal')).show();
@@ -532,7 +562,8 @@ async function saveUnit() {
         code: document.getElementById('unitCode').value,
         label: document.getElementById('unitLabel').value,
         symbol: document.getElementById('unitSymbol').value,
-        type: document.getElementById('unitType').value
+        type: document.getElementById('unitType').value,
+        is_active: document.getElementById('unitIsActive').checked
     };
 
     try {
@@ -578,6 +609,38 @@ async function deleteUnit(id) {
         }
     } catch (error) {
         console.error('Erreur:', error);
+    }
+}
+
+// Fonction de basculement rapide du statut
+async function toggleStatus(entityType, id, currentStatus) {
+    try {
+        const newStatus = !currentStatus;
+        const url = `/api/objectives/${entityType}/${id}`;
+
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({ is_active: newStatus })
+        });
+
+        if (response.ok) {
+            if (entityType === 'metrics') loadMetrics();
+            else if (entityType === 'types') loadTypes();
+            else if (entityType === 'units') loadUnits();
+        } else {
+            alert('Erreur lors du changement de statut');
+            // Recharger pour remettre l'état visuel correct si échec
+            if (entityType === 'metrics') renderMetricsTable();
+            else if (entityType === 'types') renderTypesTable();
+            else if (entityType === 'units') renderUnitsTable();
+        }
+    } catch (error) {
+        console.error('Erreur toggleStatus:', error);
+        alert('Erreur de connexion');
     }
 }
 

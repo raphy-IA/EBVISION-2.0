@@ -55,6 +55,7 @@ router.get('/', authenticateToken, async (req, res) => {
             collaborateur_id,
             business_unit_id,
             opportunity_type_id,
+            fiscal_year_id,
             sortBy = 'created_at',
             sortOrder = 'DESC'
         } = req.query;
@@ -77,6 +78,7 @@ router.get('/', authenticateToken, async (req, res) => {
             collaborateur_id,
             business_unit_id,
             opportunity_type_id,
+            fiscal_year_id,
             sortBy,
             sortOrder,
             userBusinessUnitIds // Ajouter les BU de l'utilisateur

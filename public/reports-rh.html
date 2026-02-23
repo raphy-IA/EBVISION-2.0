@@ -284,7 +284,7 @@
                         <h1><i class="fas fa-users me-2"></i>Rapport Ressources Humaines</h1>
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb">
-                                <li class=\"breadcrumb-item\"><a href=\"/dashboard-personnel.html\">Accueil</a></li>
+                                <li class="breadcrumb-item"><a href="/dashboard-personnel.html">Accueil</a></li>
                                 <li class="breadcrumb-item active">Rapport RH</li>
                             </ol>
                         </nav>
@@ -301,73 +301,107 @@
             </div>
 
             <!-- Filters Card -->
-            <div class="filters-card">
-                <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filtres</h5>
-                <div class="row">
-                    <div class="col-md-3">
-                        <label class="form-label">Business Unit</label>
-                        <select class="form-select" id="businessUnitFilter">
-                            <option value="">Toutes les Business Units</option>
-                        </select>
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title mb-0 fw-bold">
+                            <i class="fas fa-filter text-primary me-2"></i>Filtres de Recherche
+                        </h5>
+                        <div class="filter-actions">
+                            <button class="btn btn-outline-secondary btn-sm me-2" onclick="resetFilters()">
+                                <i class="fas fa-undo me-1"></i>Réinitialiser
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="applyFilters()">
+                                <i class="fas fa-search me-1"></i>Appliquer
+                            </button>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Division</label>
-                        <select class="form-select" id="divisionFilter">
-                            <option value="">Toutes les Divisions</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Statut</label>
-                        <select class="form-select" id="statutFilter">
-                            <option value="">Tous les statuts</option>
-                            <option value="ACTIF">Actif</option>
-                            <option value="INACTIF">Inactif</option>
-                            <option value="CONGE">En congé</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Période</label>
-                        <select class="form-select" id="periodFilter">
-                            <option value="all">Toutes les périodes</option>
-                            <option value="today">Aujourd'hui</option>
-                            <option value="yesterday">Hier</option>
-                            <option value="week">Cette semaine</option>
-                            <option value="last_week">Semaine précédente</option>
-                            <option value="month">Ce mois</option>
-                            <option value="last_month">Mois précédent</option>
-                            <option value="quarter">Ce trimestre</option>
-                            <option value="year">Cette année</option>
-                            <option value="custom">Période personnalisée</option>
-                        </select>
-                    </div>
-                </div>
 
-                <!-- Période personnalisée (cachée par défaut) -->
-                <div class="row mt-3" id="customPeriodRow" style="display: none;">
-                    <div class="col-md-3">
-                        <label class="form-label">Date de début</label>
-                        <input type="date" class="form-control" id="startDate">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Date de fin</label>
-                        <input type="date" class="form-control" id="endDate">
-                    </div>
-                </div>
+                    <div class="row g-4">
+                        <!-- Groupe 1: Organisation -->
+                        <div class="col-md-4 border-end">
+                            <h6 class="text-uppercase text-muted fw-bold mb-3 small">
+                                <i class="fas fa-sitemap me-2"></i>Organisation
+                            </h6>
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <label class="form-label small fw-semibold">Année Fiscale</label>
+                                    <select class="form-select form-select-sm" id="fiscalYearFilter"></select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-semibold">Business Unit</label>
+                                    <select class="form-select form-select-sm" id="businessUnitFilter">
+                                        <option value="">Toutes les Business Units</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-semibold">Division</label>
+                                    <select class="form-select form-select-sm" id="divisionFilter">
+                                        <option value="">Toutes les Divisions</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="row mt-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Grade</label>
-                        <select class="form-select" id="gradeFilter">
-                            <option value="">Tous les grades</option>
-                        </select>
-                    </div>
-                    <div class="col-md-8">
-                        <button class="btn btn-primary mt-4" onclick="applyFilters()">
-                            <i class="fas fa-search me-1"></i>Appliquer les filtres
-                        </button>
-                        <button class="btn btn-secondary ms-2 mt-4" onclick="resetFilters()">
-                            <i class="fas fa-undo me-1"></i>Réinitialiser
-                        </button>
+                        <!-- Groupe 2: Collaborateurs -->
+                        <div class="col-md-4 border-end">
+                            <h6 class="text-uppercase text-muted fw-bold mb-3 small">
+                                <i class="fas fa-users-cog me-2"></i>Collaborateurs
+                            </h6>
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <label class="form-label small fw-semibold">Statut</label>
+                                    <select class="form-select form-select-sm" id="statutFilter">
+                                        <option value="">Tous les statuts</option>
+                                        <option value="ACTIF">Actif</option>
+                                        <option value="INACTIF">Inactif</option>
+                                        <option value="CONGE">En congé</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-semibold">Grade</label>
+                                    <select class="form-select form-select-sm" id="gradeFilter">
+                                        <option value="">Tous les grades</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Groupe 3: Période -->
+                        <div class="col-md-4">
+                            <h6 class="text-uppercase text-muted fw-bold mb-3 small">
+                                <i class="fas fa-calendar-alt me-2"></i>Période & Dates
+                            </h6>
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <label class="form-label small fw-semibold">Période</label>
+                                    <select class="form-select form-select-sm" id="periodFilter">
+                                        <option value="all">Toutes les périodes</option>
+                                        <option value="today">Aujourd'hui</option>
+                                        <option value="yesterday">Hier</option>
+                                        <option value="week">Cette semaine</option>
+                                        <option value="last_week">Semaine précédente</option>
+                                        <option value="month">Ce mois</option>
+                                        <option value="last_month">Mois précédent</option>
+                                        <option value="quarter">Ce trimestre</option>
+                                        <option value="year">Cette année</option>
+                                        <option value="custom">Période personnalisée</option>
+                                    </select>
+                                </div>
+                                <div class="col-12" id="customPeriodRow" style="display: none;">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label class="form-label small fw-semibold">Du</label>
+                                            <input type="date" class="form-control form-control-sm" id="startDate">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small fw-semibold">Au</label>
+                                            <input type="date" class="form-control form-control-sm" id="endDate">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -785,12 +819,14 @@
                     const businessUnitId = document.getElementById('businessUnitFilter').value;
                     const divisionId = document.getElementById('divisionFilter').value;
                     const gradeId = document.getElementById('gradeFilter').value;
+                    const fiscalYearId = document.getElementById('fiscalYearFilter').value;
                     const dateRange = getDateRange();
 
                     let url = `${API_BASE_URL}/reports/hr?`;
                     if (businessUnitId) url += `businessUnitId=${businessUnitId}&`;
                     if (divisionId) url += `divisionId=${divisionId}&`;
                     if (gradeId) url += `gradeId=${gradeId}&`;
+                    if (fiscalYearId) url += `fiscalYearId=${fiscalYearId}&`;
                     if (dateRange) {
                         url += `startDate=${dateRange.startDate.toISOString()}&`;
                         url += `endDate=${dateRange.endDate.toISOString()}&`;
@@ -957,11 +993,13 @@
                     const businessUnitId = document.getElementById('businessUnitFilter').value;
                     const divisionId = document.getElementById('divisionFilter').value;
                     const statut = document.getElementById('statutFilter').value;
+                    const fiscalYearId = document.getElementById('fiscalYearFilter').value;
 
                     let url = `${API_BASE_URL}/reports/hr/collaborateurs?`;
                     if (businessUnitId) url += `businessUnitId=${businessUnitId}&`;
                     if (divisionId) url += `divisionId=${divisionId}&`;
                     if (statut) url += `statut=${statut}&`;
+                    if (fiscalYearId) url += `fiscalYearId=${fiscalYearId}&`;
 
                     const response = await fetch(url, { headers: getAuthHeader() });
                     const result = await response.json();
@@ -1000,16 +1038,19 @@
             }
 
             // Reset filters
-            function resetFilters() {
+            async function resetFilters() {
                 document.getElementById('businessUnitFilter').value = '';
                 document.getElementById('divisionFilter').value = '';
                 document.getElementById('statutFilter').value = '';
                 document.getElementById('gradeFilter').value = '';
+                document.getElementById('fiscalYearFilter').value = '';
                 document.getElementById('periodFilter').value = 'all';
                 document.getElementById('startDate').value = '';
                 document.getElementById('endDate').value = '';
                 document.getElementById('customPeriodRow').style.display = 'none';
-                loadHRReport();
+
+                // Recharger les données depuis le serveur pour garantir qu'on voit tout
+                await loadHRReport();
             }
 
             // Refresh data
@@ -1025,7 +1066,18 @@
 
             // Initialize on page load
             document.addEventListener('DOMContentLoaded', function () {
+                // Initialisation du sélecteur d'année fiscale
+                if (typeof FiscalYearSelector !== 'undefined') {
+                    FiscalYearSelector.init('fiscalYearFilter', (selectedYearId) => {
+                        loadHRReport();
+                    });
+                } else {
+                    console.error('FiscalYearSelector not loaded');
+                    loadHRReport();
+                }
+
                 if (!checkAuth()) return;
+
 
                 initUserInfo();
                 loadFilters();
@@ -1038,6 +1090,15 @@
                         const customRow = document.getElementById('customPeriodRow');
                         if (this.value === 'custom') {
                             customRow.style.display = 'block';
+                            // Définir des dates par défaut (début du mois à aujourd'hui) si vides
+                            const startInput = document.getElementById('startDate');
+                            const endInput = document.getElementById('endDate');
+                            if (!startInput.value || !endInput.value) {
+                                const now = new Date();
+                                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                                startInput.value = firstDay.toISOString().split('T')[0];
+                                endInput.value = now.toISOString().split('T')[0];
+                            }
                         } else {
                             customRow.style.display = 'none';
                         }
@@ -1054,6 +1115,7 @@
     <script src="js/menu-permissions.js"></script>
     <script src="/js/page-permissions.js"></script>
     <script src="js/sidebar.js"></script>
+    <script src="js/fiscal-year-selector.js"></script>
     <script src="js/session-manager.js"></script>
     <script src="js/user-header.js"></script>
     <script src="js/profile-menu.js"></script>

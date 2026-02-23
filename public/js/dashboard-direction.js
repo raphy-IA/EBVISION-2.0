@@ -15,7 +15,7 @@ let financialDefaultCurrency = (typeof CURRENCY_CONFIG !== 'undefined' && CURREN
 let currentFilters = {
     period: 90,
     businessUnit: '',
-    year: 2024
+    year: null // Will be set by FiscalYearSelector
 };
 
 // Initialisation du dashboard
@@ -90,8 +90,8 @@ function initializeFilters() {
         refreshDashboard();
     });
 
-    document.getElementById('year-filter').addEventListener('change', function () {
-        currentFilters.year = parseInt(this.value);
+    FiscalYearSelector.init('year-filter', (selectedId) => {
+        currentFilters.year = selectedId;
         refreshDashboard();
     });
 }

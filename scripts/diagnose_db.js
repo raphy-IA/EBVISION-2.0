@@ -1,55 +1,34 @@
-const { Pool } = require('pg');
+
+const { Client } = require('pg');
 require('dotenv').config();
 
-const DB_NAME = process.env.DB_NAME;
-
-console.log('🔍 DIAGNOSTIC BASE DE DONNÉES');
-console.log('Target DB:', DB_NAME);
-
-if (!DB_NAME) {
-    console.error('❌ DB_NAME manquant dans .env');
-    process.exit(1);
-}
-
-const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: DB_NAME,
+const client = new Client({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT || 5432,
 });
 
-async function diagnose() {
-    const client = await pool.connect();
-    try {
-        console.log('--- RECHERCHE DE LA CONTRAINTE ---');
-        const res = await client.query(`
-            SELECT conname, pg_get_constraintdef(oid) as definition
-            FROM pg_constraint
-            WHERE conname = 'prospecting_templates_type_courrier_check'
-        `);
+async function run() {
+    await client.connect();
 
-        if (res.rows.length === 0) {
-            console.log('❌ Contrainte non trouvée (bizarre car l\'erreur la mentionne).');
-            // Listons toutes les contraintes de la table
-            const allConstraints = await client.query(`
-                SELECT conname, pg_get_constraintdef(oid) as definition
-                FROM pg_constraint
-                WHERE conrelid = 'prospecting_templates'::regclass
-            `);
-            console.log('📋 Autres contraintes sur la table prospecting_templates :');
-            console.table(allConstraints.rows);
-        } else {
-            console.log('✅ DÉFINITION TROUVÉE :');
-            console.log(res.rows[0].definition);
-        }
+    console.log('--- Permission Check ---');
+    const permRes = await client.query("SELECT * FROM permissions WHERE code = 'menu.gestion_rh.configuration_objectifs'");
+    console.log('Permission:', JSON.stringify(permRes.rows, null, 2));
 
-    } catch (e) {
-        console.error('❌ Erreur:', e);
-    } finally {
-        client.release();
-        pool.end();
+    if (permRes.rows.length > 0) {
+        console.log('--- Role Assignments ---');
+        const rolePermRes = await client.query(`
+      SELECT r.name, rp.* 
+      FROM role_permissions rp 
+      JOIN roles r ON rp.role_id = r.id 
+      WHERE rp.permission_id = $1
+    `, [permRes.rows[0].id]);
+        console.log('Assignments:', JSON.stringify(rolePermRes.rows, null, 2));
     }
+
+    await client.end();
 }
 
-diagnose();
+run().catch(console.error);

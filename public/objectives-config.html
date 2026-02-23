@@ -142,6 +142,7 @@
                                                         <th>Libellé</th>
                                                         <th>Description</th>
                                                         <th>Sources</th>
+                                                        <th>Statut</th>
                                                         <th>Actions</th>
                                                     </tr>
                                                 </thead>
@@ -170,6 +171,7 @@
                                                         <th>Code</th>
                                                         <th>Catégorie</th>
                                                         <th>Configuration</th>
+                                                        <th>Statut</th>
                                                         <th>Actions</th>
                                                     </tr>
                                                 </thead>
@@ -198,6 +200,7 @@
                                                         <th>Libellé</th>
                                                         <th>Symbole</th>
                                                         <th>Type</th>
+                                                        <th>Statut</th>
                                                         <th>Actions</th>
                                                     </tr>
                                                 </thead>
@@ -243,6 +246,10 @@
                         <div class="mb-3">
                             <label for="metricDescription" class="form-label">Description</label>
                             <textarea class="form-control" id="metricDescription" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="metricIsActive" checked>
+                            <label class="form-check-label" for="metricIsActive">Métrique active</label>
                         </div>
                         <div class="mb-3">
                             <label for="metricUnit" class="form-label">Unité de la Métrique *</label>
@@ -311,6 +318,12 @@
                             <label for="typeDescription" class="form-label">Description</label>
                             <textarea class="form-control" id="typeDescription" rows="2"
                                 placeholder="Description du type d'objectif..."></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="typeIsActive" checked>
+                            <label class="form-check-label" for="typeIsActive">Type d'objectif actif</label>
+                        </div>
+                        <div class="mb-3">
                             <small class="text-muted">
                                 <i class="fas fa-info-circle"></i> <strong>Note:</strong> Les types avec une unité de
                                 type "Devise" seront automatiquement marqués comme financiers.
@@ -414,6 +427,10 @@
                                     <option value="OTHER">Autre</option>
                                 </select>
                             </div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="unitIsActive" checked>
+                            <label class="form-check-label" for="unitIsActive">Unité active</label>
                         </div>
                     </form>
                 </div>

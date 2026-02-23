@@ -114,6 +114,7 @@ router.post('/check-page-permission', authenticateToken, async (req, res) => {
             'grades': 'menu.gestion_rh.grades',
             'postes': 'menu.gestion_rh.postes',
             'taux-horaires': 'menu.gestion_rh.taux_horaires',
+            'objectives-config': 'menu.gestion_rh.configuration_objectifs',
             'managers': 'menu.gestion_rh.collaborateurs', // Pas de menu spécifique, lié aux collabs
             'supervisors': 'menu.gestion_rh.collaborateurs',
 

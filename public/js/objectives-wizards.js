@@ -623,6 +623,78 @@ function previousAutonomousStep() {
 // WIZARD 2 : DISTRIBUTION AUX ENFANTS
 // ============================================
 
+/**
+ * Raccourci : ouvre directement le wizard sur un objectif global spécifique.
+ * Appelé depuis le bouton "Distribuer" sur chaque carte d'objectif global.
+ */
+async function openDistributeWizard(parentObjectiveId, parentScope) {
+    // Mapping scope parent → niveau enfant à créer
+    const scopeToChildLevel = {
+        'GLOBAL': 'BUSINESS_UNIT',
+        'BU': 'DIVISION',
+        'DIVISION': 'INDIVIDUAL'
+    };
+
+    const scopeToTitle = {
+        'GLOBAL': '<i class="fas fa-sitemap me-2"></i>Distribuer aux Business Units',
+        'BU': '<i class="fas fa-sitemap me-2"></i>Distribuer aux Divisions',
+        'DIVISION': '<i class="fas fa-user-plus me-2"></i>Distribuer aux Individus'
+    };
+
+    const childLevel = scopeToChildLevel[parentScope] || 'BUSINESS_UNIT';
+    const wizardTitle = scopeToTitle[parentScope] || '<i class="fas fa-sitemap me-2"></i>Distribuer';
+
+    // Réinitialiser l'état
+    wizardState.distribute = {
+        currentStep: 1,
+        childLevel,
+        parentScope: parentScope, // Stocker le scope parent
+        parentId: parentObjectiveId,
+        parentData: null,
+        selectedChildren: [],
+        childrenConfig: {},
+        _allChildren: []
+    };
+
+    // Afficher le modal
+    const modal = new bootstrap.Modal(document.getElementById('distributeWizardModal'));
+    modal.show();
+
+    // Mettre à jour le titre du modal
+    const titleEl = document.querySelector('#distributeWizardModal .modal-title');
+    if (titleEl) titleEl.innerHTML = wizardTitle;
+
+    // Charger le résumé du parent et aller directement à l'étape 3 (distribution en masse)
+    // Convertir le scope frontend ('BU') en type backend ('BUSINESS_UNIT')
+    const scopeToBackendType = {
+        'GLOBAL': 'GLOBAL',
+        'BU': 'BUSINESS_UNIT',
+        'DIVISION': 'DIVISION'
+    };
+    const backendParentType = scopeToBackendType[parentScope] || parentScope;
+
+    try {
+        const response = await fetch(`/api/objectives/${parentObjectiveId}/distribution-summary?parentType=${backendParentType}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+
+        if (response.ok) {
+            wizardState.distribute.parentData = await response.json();
+            showDistributeStep(3);
+            loadAvailableChildren();
+        } else {
+            // Fallback sur l'étape 1 normale si la route n'est pas disponible
+            showDistributeStep(1);
+            filterDistributeOptions();
+        }
+    } catch (error) {
+        console.error('Erreur chargement parent:', error);
+        showDistributeStep(1);
+        filterDistributeOptions();
+    }
+}
+
+
 function openDistributeObjectiveWizard() {
     // Réinitialiser l'état
     wizardState.distribute = {
@@ -652,8 +724,7 @@ function filterDistributeOptions() {
     const permissions = {
         'BUSINESS_UNIT': 'objectives.global.distribute',
         'DIVISION': 'objectives.bu.distribute',
-        'GRADE': 'objectives.division.distribute',
-        'INDIVIDUAL': 'objectives.grade.distribute'
+        'INDIVIDUAL': 'objectives.division.distribute'
     };
 
     const buttons = document.querySelectorAll('#distributeStep1 button[onclick^="selectChildLevel"]');
@@ -771,9 +842,10 @@ function renderParentObjectivesList(objectives) {
 async function selectParentObjective(parentId) {
     wizardState.distribute.parentId = parentId;
 
-    // Charger le résumé de distribution
+    // Charger le résumé de distribution (passer explicitement le scope pour éviter les conflits d'id)
+    const parentScope = wizardState.distribute.parentScope;
     try {
-        const response = await fetch(`/api/objectives/${parentId}/distribution-summary`, {
+        const response = await fetch(`/api/objectives/${parentId}/distribution-summary?parentType=${parentScope}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
 
@@ -793,18 +865,25 @@ async function selectParentObjective(parentId) {
 async function loadAvailableChildren() {
     const { parentId, childLevel } = wizardState.distribute;
     const container = document.getElementById('availableChildrenList');
-    container.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+    container.innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2 text-muted">Chargement des BUs disponibles...</p></div>';
 
     try {
-        const response = await fetch(`/api/objectives/${parentId}/available-children?childType=${childLevel}`, {
+        const parentScope = wizardState.distribute.parentScope;
+        // Convertir le scope frontend ('BU') en type backend ('BUSINESS_UNIT')
+        const scopeToBackendType = { 'GLOBAL': 'GLOBAL', 'BU': 'BUSINESS_UNIT', 'DIVISION': 'DIVISION' };
+        const backendParentType = scopeToBackendType[parentScope] || parentScope;
+
+        const response = await fetch(`/api/objectives/${parentId}/available-children?childType=${childLevel}&parentType=${backendParentType}&includeExisting=true`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
 
         if (response.ok) {
             const children = await response.json();
-            renderAvailableChildren(children);
+            renderMassDistributionTable(children);
         } else {
-            container.innerHTML = '<div class="alert alert-danger">Erreur de chargement</div>';
+            const errText = await response.text();
+            console.error('Erreur available-children:', errText);
+            container.innerHTML = '<div class="alert alert-danger">Erreur de chargement des entités disponibles</div>';
         }
     } catch (error) {
         console.error('Erreur:', error);
@@ -812,58 +891,167 @@ async function loadAvailableChildren() {
     }
 }
 
-function renderAvailableChildren(children) {
+function renderMassDistributionTable(children) {
     const container = document.getElementById('availableChildrenList');
+    const { parentData } = wizardState.distribute;
+
+    // Réinitialiser la config
+    wizardState.distribute.selectedChildren = [];
+    wizardState.distribute.childrenConfig = {};
+    // Stocker toutes les BUs disponibles
+    wizardState.distribute._allChildren = children;
+
+    const getLevelLabel = (level, plural = false) => {
+        const labels = {
+            'BUSINESS_UNIT': plural ? 'Business Units' : 'Business Unit',
+            'DIVISION': plural ? 'Divisions' : 'Division',
+            'INDIVIDUAL': plural ? 'Collaborateurs' : 'Collaborateur'
+        };
+        return labels[level] || (plural ? 'Entités' : 'Entité');
+    };
+
+    const childLabel = getLevelLabel(wizardState.distribute.childLevel);
+    const childLabelPlural = getLevelLabel(wizardState.distribute.childLevel, true);
 
     if (children.length === 0) {
-        container.innerHTML = '<div class="alert alert-info">Tous les enfants ont déjà un objectif lié</div>';
+        container.innerHTML = `<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Toutes les ${childLabelPlural} ont déjà un objectif assigné pour ce parent.</div>`;
+        document.getElementById('distributeSubmitBtn').disabled = true;
         return;
     }
 
-    let html = '<div class="mb-3">';
-    html += '<button class="btn btn-sm btn-outline-primary me-2" onclick="selectAllChildren(true)">Tout sélectionner</button>';
-    html += '<button class="btn btn-sm btn-outline-secondary" onclick="selectAllChildren(false)">Tout désélectionner</button>';
-    html += '</div>';
+    // Infos parent en haut
+    const remaining = parentData.remaining;
+    const getParentLabel = (type) => {
+        if (type === 'GLOBAL') return 'Cible Globale';
+        if (type === 'BUSINESS_UNIT') return 'Cible BU';
+        if (type === 'DIVISION') return 'Cible Division';
+        return 'Cible Parent';
+    };
 
-    html += '<div class="list-group">';
+    const summaryHtml = `
+        <div class="alert alert-info mb-3 py-2">
+            <div class="row text-center">
+                <div class="col-4">
+                    <small class="text-muted d-block">${getParentLabel(parentData.parent_type)}</small>
+                    <strong>${formatCurrency(parentData.total_target)}</strong>
+                </div>
+                <div class="col-4">
+                    <small class="text-muted d-block">Déjà distribué</small>
+                    <strong>${formatCurrency(parentData.distributed)}</strong>
+                </div>
+                <div class="col-4">
+                    <small class="text-muted d-block">Restant</small>
+                    <strong class="text-success">${formatCurrency(remaining)}</strong>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Boutons sélection
+    const selBtns = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="massSelectAll()">
+                    <i class="fas fa-check-double me-1"></i>Tout sélectionner
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="massClearAll()">
+                    <i class="fas fa-times me-1"></i>Tout désélectionner
+                </button>
+            </div>
+            <span id="massSelectionCount" class="badge bg-primary">0 ${childLabel} sélectionnée(s)</span>
+        </div>
+    `;
+
+    // Tableau inline
+    let tableHtml = `
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:40px">
+                            <input type="checkbox" class="form-check-input" id="massCheckAll" onchange="massToggleAll(this.checked)">
+                        </th>
+                        <th>${childLabel}</th>
+                        <th style="width:220px">Valeur Cible *</th>
+                        <th>Description (optionnel)</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    const safeJsString = (str) => (str || '').replace(/'/g, "\\'");
+
     children.forEach(child => {
-        html += `
-            <label class="list-group-item">
-                <input type="checkbox" class="form-check-input me-2" 
-                       id="child_${child.id}" 
-                       onchange="toggleChildSelection('${child.id}', '${child.name}', '${child.suggested_title}')">
-                ${child.name}
-            </label>
+        const safeName = safeJsString(child.name);
+        const safeTitle = safeJsString(child.suggested_title);
+        const isDistributed = !!child.is_distributed;
+        const existingTarget = child.existing_target !== null ? child.existing_target : '';
+
+        tableHtml += `
+            <tr id="massRow_${child.id}" class="mass-bu-row ${isDistributed ? 'table-info' : ''}">
+                <td class="text-center">
+                    <input type="checkbox" class="form-check-input mass-check" id="massChk_${child.id}"
+                           ${isDistributed ? 'checked' : ''}
+                           onchange="massToggleRow('${child.id}', '${safeName}', '${safeTitle}', this.checked)">
+                </td>
+                <td>
+                    <div class="fw-semibold"><i class="fas fa-${wizardState.distribute.childLevel === 'INDIVIDUAL' ? 'user' : (wizardState.distribute.childLevel === 'DIVISION' ? 'users' : 'building')} me-2 text-primary"></i>${child.name}</div>
+                    ${isDistributed ? '<span class="badge bg-info text-dark x-small">Déjà assigné</span>' : ''}
+                </td>
+                <td>
+                    <input type="number" class="form-control form-control-sm" id="massVal_${child.id}"
+                           placeholder="ex: 50000000" min="0" step="any" 
+                           ${isDistributed ? '' : 'disabled'}
+                           value="${existingTarget}"
+                           oninput="massUpdateValue('${child.id}', this.value)">
+                </td>
+                <td>
+                    <input type="text" class="form-control form-control-sm" id="massDesc_${child.id}"
+                           placeholder="Description..." 
+                           ${isDistributed ? '' : 'disabled'}
+                           oninput="massUpdateDesc('${child.id}', this.value)">
+                </td>
+            </tr>
         `;
-    });
-    html += '</div>';
 
-    container.innerHTML = html;
-}
-
-function selectAllChildren(select) {
-    document.querySelectorAll('[id^="child_"]').forEach(checkbox => {
-        checkbox.checked = select;
-        if (select) {
-            const childId = checkbox.id.replace('child_', '');
-            const label = checkbox.parentElement.textContent.trim();
-            toggleChildSelection(childId, label, label, true);
-        } else {
-            wizardState.distribute.selectedChildren = [];
-            wizardState.distribute.childrenConfig = {};
+        // Si déjà distribué, on l'ajoute à la config initiale pour permettre l'édition immédiate
+        if (isDistributed) {
+            if (!wizardState.distribute.selectedChildren.includes(child.id)) {
+                wizardState.distribute.selectedChildren.push(child.id);
+            }
+            wizardState.distribute.childrenConfig[child.id] = {
+                entity_id: child.id,
+                entity_name: child.name,
+                target_value: existingTarget,
+                description: '',
+                is_update: true,
+                objective_id: child.objective_id
+            };
         }
     });
 
-    if (select) {
-        showDistributeStep(4);
-        renderChildrenConfiguration();
-    }
+    tableHtml += `
+                </tbody>
+            </table>
+        </div>
+        <div id="massDistSummary" class="mt-3"></div>
+    `;
+
+    container.innerHTML = summaryHtml + selBtns + tableHtml;
+    updateMassDistSummary();
 }
 
-function toggleChildSelection(childId, childName, suggestedTitle, skipRender = false) {
-    const checkbox = document.getElementById(`child_${childId}`);
+function massToggleRow(childId, childName, suggestedTitle, checked) {
+    const row = document.getElementById(`massRow_${childId}`);
+    const valInput = document.getElementById(`massVal_${childId}`);
+    const descInput = document.getElementById(`massDesc_${childId}`);
 
-    if (checkbox.checked) {
+    if (checked) {
+        row.classList.add('table-primary');
+        valInput.disabled = false;
+        descInput.disabled = false;
+        valInput.focus();
+
         if (!wizardState.distribute.selectedChildren.includes(childId)) {
             wizardState.distribute.selectedChildren.push(childId);
             wizardState.distribute.childrenConfig[childId] = {
@@ -876,23 +1064,124 @@ function toggleChildSelection(childId, childName, suggestedTitle, skipRender = f
             };
         }
     } else {
+        row.classList.remove('table-primary');
+        valInput.disabled = true;
+        descInput.disabled = true;
+        valInput.value = '';
+        descInput.value = '';
+
         wizardState.distribute.selectedChildren = wizardState.distribute.selectedChildren.filter(id => id !== childId);
         delete wizardState.distribute.childrenConfig[childId];
     }
 
-    // Mettre à jour le compteur
-    const count = wizardState.distribute.selectedChildren.length;
-    document.getElementById('selectedChildrenCount').textContent = `${count} enfant(s) sélectionné(s)`;
+    updateMassSelectionCount();
+    updateMassDistSummary();
+}
 
-    if (!skipRender && count > 0) {
-        showDistributeStep(4);
-        renderChildrenConfiguration();
+function massToggleAll(checked) {
+    const children = wizardState.distribute._allChildren || [];
+    children.forEach(child => {
+        const chk = document.getElementById(`massChk_${child.id}`);
+        if (chk && chk.checked !== checked) {
+            chk.checked = checked;
+            massToggleRow(child.id, child.name, child.suggested_title, checked);
+        }
+    });
+}
+
+function massSelectAll() {
+    document.getElementById('massCheckAll').checked = true;
+    massToggleAll(true);
+}
+
+function massClearAll() {
+    document.getElementById('massCheckAll').checked = false;
+    massToggleAll(false);
+}
+
+function massUpdateValue(childId, value) {
+    if (wizardState.distribute.childrenConfig[childId]) {
+        wizardState.distribute.childrenConfig[childId].target_value = parseFloat(value) || 0;
+        updateMassDistSummary();
     }
 }
+
+function massUpdateDesc(childId, value) {
+    if (wizardState.distribute.childrenConfig[childId]) {
+        wizardState.distribute.childrenConfig[childId].description = value;
+    }
+}
+
+function updateMassSelectionCount() {
+    const count = wizardState.distribute.selectedChildren.length;
+    const el = document.getElementById('massSelectionCount');
+    if (el) {
+        const labels = {
+            'BUSINESS_UNIT': 'BU',
+            'DIVISION': 'Division',
+            'INDIVIDUAL': 'Collaborateur'
+        };
+        const label = labels[wizardState.distribute.childLevel] || 'Élément';
+        el.textContent = `${count} ${label}${count > 1 ? (wizardState.distribute.childLevel === 'BUSINESS_UNIT' ? 's' : 's') : ''} sélectionnée(s)`;
+    }
+}
+
+function updateMassDistSummary() {
+    const { parentData, childrenConfig } = wizardState.distribute;
+    const el = document.getElementById('massDistSummary');
+    if (!el || !parentData) return;
+
+    let total = 0;
+    Object.values(childrenConfig).forEach(c => { total += parseFloat(c.target_value) || 0; });
+
+    const remaining = parentData.total_target - total;
+    const isValid = total <= parentData.total_target && total > 0;
+    const isOver = total > parentData.total_target;
+
+    const statusClass = isOver ? 'danger' : (remaining === 0 ? 'success' : 'warning');
+    const statusText = isOver
+        ? `⛔ Dépassement de ${formatCurrency(Math.abs(remaining))}`
+        : (remaining === 0 ? '✅ Parfait — 100% distribué'
+            : (total === 0 ? 'Renseignez les valeurs ci-dessus'
+                : `⚠️ Reste ${formatCurrency(remaining)} à distribuer`));
+
+    const labels = {
+        'BUSINESS_UNIT': 'BUs',
+        'DIVISION': 'Divisions',
+        'INDIVIDUAL': 'Collabs'
+    };
+    const label = labels[wizardState.distribute.childLevel] || 'Éléments';
+
+    el.innerHTML = `
+        <div class="alert alert-${statusClass} py-2 mb-0">
+            <div class="row text-center">
+                <div class="col-4">
+                    <small class="text-muted d-block">${label} sélectionnés</small>
+                    <strong>${Object.keys(childrenConfig).length}</strong>
+                </div>
+                <div class="col-4">
+                    <small class="text-muted d-block">Total distribué</small>
+                    <strong>${formatCurrency(total)}</strong>
+                </div>
+                <div class="col-4">
+                    <small class="text-muted d-block">Restant</small>
+                    <strong>${formatCurrency(remaining)}</strong>
+                </div>
+            </div>
+            <div class="text-center mt-2 small">${statusText}</div>
+        </div>
+    `;
+
+    // Activer/désactiver le bouton submit
+    const submitBtn = document.getElementById('distributeSubmitBtn');
+    if (submitBtn) submitBtn.disabled = !isValid || isOver;
+}
+
 
 function renderChildrenConfiguration() {
     const { parentData, childrenConfig } = wizardState.distribute;
     const container = document.getElementById('childrenConfigContainer');
+
 
     // Afficher les infos du parent
     document.getElementById('parentInfoDisplay').innerHTML = `
@@ -925,33 +1214,33 @@ function renderChildrenConfiguration() {
         const config = childrenConfig[childId];
         html += `
             <div class="card mb-3">
+                <div class="card-header py-2 bg-light">
+                    <h6 class="mb-0"><i class="fas fa-building me-2 text-primary"></i>${config.entity_name}</h6>
+                </div>
                 <div class="card-body">
-                    <h6>${config.entity_name}</h6>
                     <div class="row">
                         <div class="col-md-12 mb-2">
-                            <label class="form-label">Titre (auto-généré)</label>
-                            <input type="text" class="form-control" value="${config.title}" readonly>
+                            <label class="form-label fw-semibold">Titre</label>
+                            <input type="text" class="form-control" value="${config.title}"
+                                   onchange="updateChildConfig('${childId}', 'title', this.value)">
                         </div>
                         <div class="col-md-12 mb-2">
-                            <label class="form-label">Description</label>
+                            <label class="form-label fw-semibold">Description</label>
                             <textarea class="form-control" rows="2" 
                                       onchange="updateChildConfig('${childId}', 'description', this.value)">${config.description}</textarea>
                         </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">Montant Cible *</label>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Valeur Cible *</label>
                             <input type="number" class="form-control" value="${config.target_value}" 
+                                   placeholder="Saisir le montant ou la quantité cible..."
                                    onchange="updateChildConfig('${childId}', 'target_value', this.value)">
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">Poids (%)</label>
-                            <input type="number" class="form-control" value="${config.weight}" 
-                                   onchange="updateChildConfig('${childId}', 'weight', this.value)">
                         </div>
                     </div>
                 </div>
             </div>
         `;
     });
+
 
     container.innerHTML = html;
 
@@ -968,60 +1257,52 @@ function updateDistributionSummary() {
     const { parentData, childrenConfig } = wizardState.distribute;
 
     let totalTarget = 0;
-    let totalWeight = 0;
+    const nbBUs = Object.keys(childrenConfig).length;
 
     Object.values(childrenConfig).forEach(config => {
         totalTarget += parseFloat(config.target_value) || 0;
-        totalWeight += parseFloat(config.weight) || 0;
     });
 
-    const remaining = parentData.remaining - totalTarget;
-    const isValid = totalTarget <= parentData.remaining;
+    const remaining = parentData.total_target - totalTarget;
+    const isValid = totalTarget <= parentData.total_target;
 
-    let statusClass = 'success';
-    let statusIcon = 'check-circle';
-    let statusText = 'OK';
-
-    if (!isValid) {
-        statusClass = 'danger';
-        statusIcon = 'exclamation-circle';
-        statusText = 'Dépassement !';
-    } else if (remaining > 0) {
-        statusClass = 'warning';
-        statusIcon = 'exclamation-triangle';
-        statusText = 'Reste à distribuer';
-    }
+    let statusClass = remaining === 0 ? 'success' : (isValid ? 'warning' : 'danger');
+    let statusIcon = remaining === 0 ? 'check-circle' : (isValid ? 'exclamation-triangle' : 'exclamation-circle');
+    let statusText = remaining === 0
+        ? 'Parfait — 100% distribué'
+        : (isValid ? `Il reste ${formatCurrency(remaining)} non distribué` : 'Dépassement de la cible globale !');
 
     document.getElementById('distributionSummary').innerHTML = `
         <div class="alert alert-${statusClass}">
-            <h6><i class="fas fa-${statusIcon} me-2"></i>Récapitulatif</h6>
+            <h6><i class="fas fa-${statusIcon} me-2"></i>Récapitulatif de distribution</h6>
             <div class="row">
                 <div class="col-md-3">
-                    <small>Total à distribuer</small><br>
-                    <strong>${formatCurrency(parentData.remaining)}</strong>
+                    <small class="text-muted">Cible globale</small><br>
+                    <strong>${formatCurrency(parentData.total_target)}</strong>
                 </div>
                 <div class="col-md-3">
-                    <small>Total saisi</small><br>
+                    <small class="text-muted">Total distribué</small><br>
                     <strong>${formatCurrency(totalTarget)}</strong>
                 </div>
                 <div class="col-md-3">
-                    <small>Poids total</small><br>
-                    <strong>${totalWeight.toFixed(1)}%</strong>
+                    <small class="text-muted">Nb BUs</small><br>
+                    <strong>${nbBUs} BU${nbBUs > 1 ? 's' : ''}</strong>
                 </div>
                 <div class="col-md-3">
-                    <small>Restant après</small><br>
-                    <strong>${formatCurrency(remaining)}</strong>
+                    <small class="text-muted">Restant</small><br>
+                    <strong class="text-${remaining > 0 ? 'warning' : (remaining < 0 ? 'danger' : 'success')}">${formatCurrency(remaining)}</strong>
                 </div>
             </div>
-            <div class="mt-2">
+            <div class="mt-2 small">
                 <i class="fas fa-info-circle me-1"></i> ${statusText}
             </div>
         </div>
     `;
 
-    // Activer/désactiver le bouton de soumission
+    // Activer/désactiver le bouton de soumission — autoriser même si partiel (restant > 0)
     document.getElementById('distributeSubmitBtn').disabled = !isValid || totalTarget === 0;
 }
+
 
 async function submitDistribution() {
     const { parentId, childrenConfig } = wizardState.distribute;
@@ -1034,6 +1315,13 @@ async function submitDistribution() {
     }
 
     try {
+        const scopeToBackendType = {
+            'GLOBAL': 'GLOBAL',
+            'BU': 'BUSINESS_UNIT',
+            'DIVISION': 'DIVISION'
+        };
+        const parentType = scopeToBackendType[wizardState.distribute.parentScope] || wizardState.distribute.parentScope;
+
         const response = await fetch('/api/objectives/distribute', {
             method: 'POST',
             headers: {
@@ -1042,6 +1330,7 @@ async function submitDistribution() {
             },
             body: JSON.stringify({
                 parent_objective_id: parentId,
+                parent_type: parentType,
                 children: children
             })
         });
@@ -1068,10 +1357,22 @@ function updateDistributeButtons() {
     const nextBtn = document.getElementById('distributeNextBtn');
     const submitBtn = document.getElementById('distributeSubmitBtn');
 
-    prevBtn.style.display = step > 1 ? 'inline-block' : 'none';
-    nextBtn.style.display = step === 3 && wizardState.distribute.selectedChildren.length > 0 ? 'inline-block' : 'none';
-    submitBtn.style.display = step === 4 ? 'inline-block' : 'none';
+    // Précédent : visible si step > 1 (sauf si on vient d'un objectif global direct = commencé à step 3)
+    prevBtn.style.display = (step > 1 && step !== 3) ? 'inline-block' : 'none';
+
+    // Suivant : plus nécessaire — la table de distribution est directement sur step 3
+    nextBtn.style.display = 'none';
+
+    // Confirmer : visible sur step 3 (distribution en masse) et step 4
+    submitBtn.style.display = (step === 3 || step === 4) ? 'inline-block' : 'none';
+    if (step === 3) {
+        // Désactivé jusqu'à ce que des BUs soient sélectionnées avec des valeurs
+        const hasSelection = wizardState.distribute.selectedChildren.length > 0;
+        const hasValues = Object.values(wizardState.distribute.childrenConfig).some(c => parseFloat(c.target_value) > 0);
+        submitBtn.disabled = !(hasSelection && hasValues);
+    }
 }
+
 
 function previousDistributeStep() {
     const currentStep = wizardState.distribute.currentStep;

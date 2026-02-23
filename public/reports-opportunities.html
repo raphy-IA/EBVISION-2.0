@@ -113,6 +113,17 @@
                 grid-template-columns: 1fr 1fr;
             }
         }
+
+        .filter-group-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid #dee2e6;
+            letter-spacing: 0.5px;
+        }
     </style>
 
     <!-- CSS des variables de branding dynamiques -->
@@ -177,72 +188,93 @@
 
             <!-- Filters -->
             <div class="filters-card">
-                <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filtres</h5>
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label for="periodFilter" class="form-label">Période</label>
-                        <select class="form-select" id="periodFilter">
-                            <option value="all">Toutes les périodes</option>
-                            <option value="today">Aujourd'hui</option>
-                            <option value="yesterday">Hier</option>
-                            <option value="week">Cette semaine</option>
-                            <option value="last_week">Semaine précédente</option>
-                            <option value="month">Ce mois</option>
-                            <option value="last_month">Mois précédent</option>
-                            <option value="quarter">Ce trimestre</option>
-                            <option value="year">Cette année</option>
-                            <option value="custom">Période personnalisée</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="businessUnitFilter" class="form-label">Business Unit</label>
-                        <select class="form-select" id="businessUnitFilter">
-                            <option value="">Toutes</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="typeFilter" class="form-label">Type d'opportunité</label>
-                        <select class="form-select" id="typeFilter">
-                            <option value="">Tous</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="statusFilter" class="form-label">Statut</label>
-                        <select class="form-select" id="statusFilter">
-                            <option value="">Tous</option>
-                            <option value="EN_COURS">En cours</option>
-                            <option value="GAGNEE">Gagnée</option>
-                            <option value="PERDUE">Perdue</option>
-                            <option value="ANNULEE">Annulée</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Période personnalisée (cachée par défaut) -->
-                <div class="row g-3 mt-2" id="customPeriodRow" style="display: none;">
-                    <div class="col-md-3">
-                        <label for="startDate" class="form-label">Date de début</label>
-                        <input type="date" class="form-control" id="startDate">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="endDate" class="form-label">Date de fin</label>
-                        <input type="date" class="form-control" id="endDate">
-                    </div>
-                </div>
-
-                <div class="row g-3 mt-2">
-                    <div class="col-md-3">
-                        <label for="minAmount" class="form-label">Montant min (<span
-                                class="currency-symbol">€</span>)</label>
-                        <input type="number" class="form-control" id="minAmount" placeholder="0">
-                    </div>
-                    <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtres de recherche</h5>
+                    <div class="d-flex gap-2">
                         <button class="btn btn-primary" onclick="applyFilters()">
-                            <i class="fas fa-search me-1"></i> Appliquer les filtres
+                            <i class="fas fa-search me-1"></i> Appliquer
                         </button>
-                        <button class="btn btn-secondary ms-2" onclick="resetFilters()">
+                        <button class="btn btn-outline-secondary" onclick="resetFilters()">
                             <i class="fas fa-undo me-1"></i> Réinitialiser
                         </button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Groupe 1: Organisation -->
+                    <div class="col-lg-12">
+                        <div class="filter-group-title"><i class="fas fa-sitemap me-2"></i>Organisation</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="fiscalYearFilter" class="form-label">Année Fiscale</label>
+                                <select class="form-select" id="fiscalYearFilter"></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="businessUnitFilter" class="form-label">Business Unit</label>
+                                <select class="form-select" id="businessUnitFilter">
+                                    <option value="">Toutes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Groupe 2: Opportunités & Clients -->
+                    <div class="col-lg-12 mt-4">
+                        <div class="filter-group-title"><i class="fas fa-bullseye me-2"></i>Opportunités & Clients</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="typeFilter" class="form-label">Type d'opportunité</label>
+                                <select class="form-select" id="typeFilter">
+                                    <option value="">Tous</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="statusFilter" class="form-label">Statut</label>
+                                <select class="form-select" id="statusFilter">
+                                    <option value="">Tous</option>
+                                    <option value="EN_COURS">En cours</option>
+                                    <option value="GAGNEE">Gagnée</option>
+                                    <option value="PERDUE">Perdue</option>
+                                    <option value="ANNULEE">Annulée</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Groupe 3: Période & Valeur -->
+                    <div class="col-lg-12 mt-4">
+                        <div class="filter-group-title"><i class="fas fa-calendar-alt me-2"></i>Période & Valeur</div>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label for="periodFilter" class="form-label">Sélection rapide</label>
+                                <select class="form-select" id="periodFilter">
+                                    <option value="all">Toutes les périodes</option>
+                                    <option value="today">Aujourd'hui</option>
+                                    <option value="yesterday">Hier</option>
+                                    <option value="week">Cette semaine</option>
+                                    <option value="last_week">Semaine précédente</option>
+                                    <option value="month">Ce mois</option>
+                                    <option value="last_month">Mois précédent</option>
+                                    <option value="quarter">Ce trimestre</option>
+                                    <option value="year">Cette année</option>
+                                    <option value="custom">Période personnalisée</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="minAmount" class="form-label">Montant estimé min (<span
+                                        class="currency-symbol">€</span>)</label>
+                                <input type="number" class="form-control" id="minAmount" placeholder="0">
+                            </div>
+                            <!-- Dates personnalisées alignées -->
+                            <div class="col-md-4 custom-date" style="display: none;">
+                                <label for="startDate" class="form-label">Date de début</label>
+                                <input type="date" class="form-control" id="startDate">
+                            </div>
+                            <div class="col-md-4 custom-date" style="display: none;">
+                                <label for="endDate" class="form-label">Date de fin</label>
+                                <input type="date" class="form-control" id="endDate">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -321,6 +353,7 @@
     <script src="js/menu-permissions.js"></script>
     <script src="/js/page-permissions.js"></script>
     <script src="js/sidebar.js"></script>
+    <script src="js/fiscal-year-selector.js"></script>
     <script src="js/session-manager.js"></script>
 
     <script>
@@ -330,23 +363,33 @@
         let financialDefaultCurrency = (typeof CURRENCY_CONFIG !== 'undefined' && CURRENCY_CONFIG.defaultCurrency) ? CURRENCY_CONFIG.defaultCurrency : 'XAF';
 
         document.addEventListener('DOMContentLoaded', function () {
-            loadFilters();
-            // Charger d'abord les paramètres financiers puis les données
-            loadFinancialSettingsForReports()
-                .catch(err => console.warn('Erreur chargement paramètres financiers:', err))
-                .finally(() => {
+            // Initialisation du sélecteur d'année fiscale
+            if (typeof FiscalYearSelector !== 'undefined') {
+                FiscalYearSelector.init('fiscalYearFilter', (selectedYearId) => {
                     loadData();
                 });
+            } else {
+                console.error('FiscalYearSelector not loaded');
+                loadData();
+            }
+
+            loadFilters();
+
+            // Charger d'abord les paramètres financiers
+            loadFinancialSettingsForReports()
+                .catch(err => console.warn('Erreur chargement paramètres financiers:', err));
+
 
             // Event listener for period filter
-            const periodFilter = document.getElementById('periodFilter');
-            if (periodFilter) {
-                periodFilter.addEventListener('change', function () {
-                    const customRow = document.getElementById('customPeriodRow');
+            const periodFilterSelect = document.getElementById('periodFilter');
+            if (periodFilterSelect) {
+                periodFilterSelect.addEventListener('change', function () {
+                    const customDates = document.querySelectorAll('.custom-date');
                     if (this.value === 'custom') {
-                        customRow.style.display = 'flex';
+                        customDates.forEach(el => el.style.display = 'block');
+                        setDefaultDates();
                     } else {
-                        customRow.style.display = 'none';
+                        customDates.forEach(el => el.style.display = 'none');
                     }
                 });
             }
@@ -459,6 +502,20 @@
             return { startDate, endDate };
         }
 
+        // Set Default Dates for custom period
+        function setDefaultDates() {
+            const now = new Date();
+            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const today = new Date();
+
+            if (!document.getElementById('startDate').value) {
+                document.getElementById('startDate').value = lastMonth.toISOString().split('T')[0];
+            }
+            if (!document.getElementById('endDate').value) {
+                document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            }
+        }
+
         async function loadFinancialSettingsForReports() {
             try {
                 const token = localStorage.getItem('authToken');
@@ -490,8 +547,14 @@
             try {
                 const token = localStorage.getItem('authToken');
 
-                // Get all opportunities with high limit
-                const response = await fetch(`${API_BASE_URL}/opportunities?limit=10000`, {
+                const fiscalYearId = document.getElementById('fiscalYearFilter').value;
+                let url = `${API_BASE_URL}/opportunities?limit=10000`;
+                if (fiscalYearId) {
+                    url += `&fiscal_year_id=${fiscalYearId}`;
+                }
+
+                // Get opportunities with limit and fiscal year
+                const response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
@@ -561,8 +624,12 @@
                 }
 
                 // Filtre Statut
-                if (statusFilter && opp.statut !== statusFilter) {
-                    return false;
+                if (statusFilter) {
+                    const oppStatut = String(opp.statut).toUpperCase();
+                    const filterValue = String(statusFilter).toUpperCase();
+                    if (oppStatut !== filterValue) {
+                        return false;
+                    }
                 }
 
                 // Filtre Montant minimum
@@ -603,7 +670,9 @@
         function displayData(opportunities) {
             // Calculate statistics
             const total = opportunities.length;
-            const won = opportunities.filter(o => o.statut === 'GAGNEE').length;
+            const won = opportunities.filter(o =>
+                String(o.statut).toUpperCase() === 'GAGNEE'
+            ).length;
             const totalValue = opportunities.reduce((sum, o) => sum + (parseFloat(o.montant_estime) || 0), 0);
             const avgValue = total > 0 ? totalValue / total : 0;
             const rate = total > 0 ? ((won / total) * 100).toFixed(1) : 0;
@@ -694,7 +763,7 @@
             // Status chart
             const statusCounts = {};
             opportunities.forEach(o => {
-                const status = o.statut || 'Non défini';
+                const status = String(o.statut || 'Non défini').toUpperCase();
                 statusCounts[status] = (statusCounts[status] || 0) + 1;
             });
 
@@ -735,9 +804,10 @@
                 const closeDate = o.date_fermeture_prevue ?
                     new Date(o.date_fermeture_prevue).toLocaleDateString('fr-FR') : '-';
 
-                const statusClass = o.statut === 'GAGNEE' ? 'success' :
-                    o.statut === 'PERDUE' ? 'danger' :
-                        o.statut === 'EN_COURS' ? 'primary' : 'secondary';
+                const statusUpper = String(o.statut || '').toUpperCase();
+                const statusClass = statusUpper === 'GAGNEE' ? 'success' :
+                    statusUpper === 'PERDUE' ? 'danger' :
+                        statusUpper === 'EN_COURS' ? 'primary' : 'secondary';
 
                 row.innerHTML = `
                     <td><strong>${o.nom || '-'}</strong></td>
@@ -759,16 +829,21 @@
             }
         }
 
-        function resetFilters() {
-            document.getElementById('periodFilter').value = 'all';
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
-            document.getElementById('customPeriodRow').style.display = 'none';
+        async function resetFilters() {
+            document.getElementById('fiscalYearFilter').value = '';
             document.getElementById('businessUnitFilter').value = '';
             document.getElementById('typeFilter').value = '';
             document.getElementById('statusFilter').value = '';
             document.getElementById('minAmount').value = '';
-            applyFilters();
+            document.getElementById('periodFilter').value = 'all';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+
+            // Masquer les champs de date personnalisés
+            document.querySelectorAll('.custom-date').forEach(el => el.style.display = 'none');
+
+            // Recharger les données depuis le serveur pour garantir qu'on voit tout (car l'année fiscale a été effacée)
+            await loadData();
         }
 
         function refreshData() {

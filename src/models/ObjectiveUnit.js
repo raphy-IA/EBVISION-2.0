@@ -8,8 +8,6 @@ class ObjectiveUnit {
         const sql = `
             SELECT id, code, label, symbol, type, is_active
             FROM objective_units
-            WHERE is_active = TRUE
-            ORDER BY label
         `;
         const result = await query(sql);
         return result.rows;
@@ -45,13 +43,14 @@ class ObjectiveUnit {
      * Créer une nouvelle unité
      */
     static async create(data) {
-        const { code, label, symbol, type } = data;
+        const { code, label, symbol, type, is_active } = data;
+        const finalIsActive = is_active !== undefined ? is_active : true;
         const sql = `
-            INSERT INTO objective_units (code, label, symbol, type)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO objective_units (code, label, symbol, type, is_active)
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING *
         `;
-        const result = await query(sql, [code, label, symbol, type]);
+        const result = await query(sql, [code, label, symbol, type, finalIsActive]);
         return result.rows[0];
     }
 
@@ -59,14 +58,24 @@ class ObjectiveUnit {
      * Mettre à jour une unité
      */
     static async update(id, data) {
-        const { label, symbol, is_active } = data;
+        const { label, symbol, type, is_active } = data;
+
+        // On récupère l'unité actuelle pour préserver les valeurs non fournies
+        const current = await this.getById(id);
+        if (!current) return null;
+
+        const finalLabel = label !== undefined ? label : current.label;
+        const finalSymbol = symbol !== undefined ? symbol : current.symbol;
+        const finalType = type !== undefined ? type : current.type;
+        const finalIsActive = is_active !== undefined ? is_active : current.is_active;
+
         const sql = `
             UPDATE objective_units
-            SET label = $1, symbol = $2, is_active = $3, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $4
+            SET label = $1, symbol = $2, type = $3, is_active = $4, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $5
             RETURNING *
         `;
-        const result = await query(sql, [label, symbol, is_active, id]);
+        const result = await query(sql, [finalLabel, finalSymbol, finalType, finalIsActive, id]);
         return result.rows[0];
     }
 

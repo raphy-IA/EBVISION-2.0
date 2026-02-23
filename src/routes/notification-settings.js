@@ -498,7 +498,7 @@ router.get('/history', authenticateToken, async (req, res) => {
             query += ' WHERE ' + whereClauses.join(' AND ');
         }
 
-        query += ' ORDER BY n.created_at DESC LIMIT 200';
+        query += ' ORDER BY n.created_at DESC, n.id DESC LIMIT 200';
 
         const result = await pool.query(query, params);
 

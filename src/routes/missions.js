@@ -21,6 +21,7 @@ router.get('/', authenticateToken, async (req, res) => {
             division_id: req.query.division_id,
             code: req.query.code,
             search: req.query.search,
+            fiscal_year_id: req.query.fiscal_year_id,
             view: req.query.view // 'my_scope', 'active', 'finished'
         };
 
@@ -108,6 +109,11 @@ router.get('/', authenticateToken, async (req, res) => {
         if (options.code) {
             whereConditions.push(`m.code ILIKE $${paramIndex++}`);
             queryParams.push(`%${options.code}%`);
+        }
+
+        if (options.fiscal_year_id) {
+            whereConditions.push(`m.fiscal_year_id = $${paramIndex++}`);
+            queryParams.push(options.fiscal_year_id);
         }
 
         if (options.search) {
@@ -248,6 +254,11 @@ router.get('/stats', authenticateToken, async (req, res) => {
         if (req.query.business_unit_id) {
             conditions.push(`m.business_unit_id = $${valueIndex++}`);
             values.push(req.query.business_unit_id);
+        }
+
+        if (req.query.fiscal_year_id) {
+            conditions.push(`m.fiscal_year_id = $${valueIndex++}`);
+            values.push(req.query.fiscal_year_id);
         }
 
         if (req.query.division_id) {

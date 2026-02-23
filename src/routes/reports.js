@@ -6,7 +6,19 @@ const { authenticateToken } = require('../middleware/auth');
 // GET /api/reports/timeEntries - Rapport des entrées de temps
 router.get('/timeEntries', authenticateToken, async (req, res) => {
     try {
-        const { startDate, endDate, collaboratorId, clientId } = req.query;
+        let { startDate, endDate, collaboratorId, clientId, fiscalYearId } = req.query;
+
+        // Si une année fiscale est spécifiée et que les dates ne le sont pas, on récupère les dates de l'exercice
+        if (fiscalYearId && (!startDate || !endDate)) {
+            const fiscalYearResult = await pool.query(
+                'SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1',
+                [fiscalYearId]
+            );
+            if (fiscalYearResult.rows.length > 0) {
+                startDate = fiscalYearResult.rows[0].date_debut;
+                endDate = fiscalYearResult.rows[0].date_fin;
+            }
+        }
 
         let whereConditions = [];
         let params = [];
@@ -43,6 +55,7 @@ router.get('/timeEntries', authenticateToken, async (req, res) => {
                 c.nom as collaborateur_nom,
                 c.prenom as collaborateur_prenom,
                 m.nom as mission_titre,
+                cl.id as client_id,
                 COALESCE(cl.sigle, cl.nom) as client_nom,
                 ts.statut as time_sheet_status,
                 bu.id as business_unit_id,
@@ -82,7 +95,8 @@ router.get('/timeEntries', authenticateToken, async (req, res) => {
             collaborateur: row.collaborateur_prenom && row.collaborateur_nom
                 ? `${row.collaborateur_prenom} ${row.collaborateur_nom}`
                 : 'Non assigné',
-            mission: row.mission_titre || '-',
+            mission: row.mission_titre || row.internal_activity_nom || '-',
+            client_id: row.client_id || null,
             client: row.client_nom || '-',
             statut: row.time_sheet_status || 'N/A',
             business_unit_id: row.business_unit_id || null,
@@ -113,15 +127,29 @@ router.get('/timeEntries', authenticateToken, async (req, res) => {
 // GET /api/reports/summary - Résumé des rapports
 router.get('/summary', authenticateToken, async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
-
+        let { startDate, endDate, fiscalYearId } = req.query;
         let dateFilter = '';
         let params = [];
+        let paramIndex = 1;
+
+        // Si une année fiscale est spécifiée et que les dates ne le sont pas
+        if (fiscalYearId && (!startDate || !endDate)) {
+            const fiscalYearResult = await pool.query(
+                'SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1',
+                [fiscalYearId]
+            );
+            if (fiscalYearResult.rows.length > 0) {
+                startDate = fiscalYearResult.rows[0].date_debut;
+                endDate = fiscalYearResult.rows[0].date_fin;
+            }
+        }
 
         if (startDate && endDate) {
-            dateFilter = 'WHERE date_saisie BETWEEN $1 AND $2';
+            dateFilter = `WHERE date_saisie BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
             params = [startDate, endDate];
+            paramIndex += 2;
         }
+
 
         // Statistiques générales
         const statsQuery = `
@@ -234,17 +262,30 @@ router.get('/summary', authenticateToken, async (req, res) => {
 // GET /api/reports/statistics - Statistiques détaillées
 router.get('/statistics', async (req, res) => {
     try {
-        const { startDate, endDate, collaborateur_id, mission_id } = req.query;
+        let { startDate, endDate, collaborateur_id, mission_id, fiscalYearId } = req.query;
 
         let whereConditions = [];
         let params = [];
         let paramIndex = 1;
+
+        // Si une année fiscale est spécifiée
+        if (fiscalYearId && (!startDate || !endDate)) {
+            const fiscalYearResult = await pool.query(
+                'SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1',
+                [fiscalYearId]
+            );
+            if (fiscalYearResult.rows.length > 0) {
+                startDate = fiscalYearResult.rows[0].date_debut;
+                endDate = fiscalYearResult.rows[0].date_fin;
+            }
+        }
 
         if (startDate && endDate) {
             whereConditions.push(`te.date_saisie BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
             params.push(startDate, endDate);
             paramIndex += 2;
         }
+
 
         if (collaborateur_id) {
             whereConditions.push(`te.user_id = $${paramIndex}`);
@@ -577,7 +618,21 @@ router.get('/hr', authenticateToken, async (req, res) => {
 // GET /api/reports/hr/collaborateurs - Liste détaillée des collaborateurs pour le rapport RH
 router.get('/hr/collaborateurs', authenticateToken, async (req, res) => {
     try {
-        const { businessUnitId, divisionId, gradeId, statut } = req.query;
+        let { businessUnitId, divisionId, gradeId, statut, fiscalYearId } = req.query;
+        let startDate, endDate;
+
+        // Si une année fiscale est spécifiée
+        if (fiscalYearId) {
+            const fiscalYearResult = await pool.query(
+                'SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1',
+                [fiscalYearId]
+            );
+            if (fiscalYearResult.rows.length > 0) {
+                startDate = fiscalYearResult.rows[0].date_debut;
+                endDate = fiscalYearResult.rows[0].date_fin;
+            }
+        }
+
 
         let whereConditions = [];
         let params = [];

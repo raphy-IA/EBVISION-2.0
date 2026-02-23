@@ -22,14 +22,7 @@ router.get('/', authenticateToken, async (req, res) => {
         const userRoles = user.roles || [];
         const isSuperAdmin = userRoles.some(r => [
             'SUPER_ADMIN',
-            'ADMIN',
-            'RESPONSABLE_RH',
-            'ASSISTANT_RH',
-            'ADMIN_RH',
-            'RESPONSABLE_IT',
-            'ASSISTANT_IT',
-            'ADMIN_IT',
-            'RESPONSABLE_FINANCE'
+            'ADMIN'
         ].includes(r));
 
         if (!isSuperAdmin) {

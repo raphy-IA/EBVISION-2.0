@@ -1,0 +1,38 @@
+{
+  "orphans": 0,
+  "distribution": [
+    {
+      "libelle": "FY25",
+      "annee": 2025,
+      "count": "6"
+    },
+    {
+      "libelle": "FY26",
+      "annee": 2026,
+      "count": "5"
+    }
+  ],
+  "calendar": [
+    {
+      "id": "a10d4f90-aef8-41bf-af70-5ebc019edf2e",
+      "libelle": "FY24",
+      "annee": 2024,
+      "date_debut": "2024-01-01T05:00:00.000Z",
+      "date_fin": "2024-12-31T05:00:00.000Z"
+    },
+    {
+      "id": "f8363b33-e3a7-4c87-840c-68fdef5514f5",
+      "libelle": "FY25",
+      "annee": 2025,
+      "date_debut": "2025-01-01T05:00:00.000Z",
+      "date_fin": "2025-12-31T05:00:00.000Z"
+    },
+    {
+      "id": "9bb09c52-a16c-4c1a-ab68-0573a4bc9bf2",
+      "libelle": "FY26",
+      "annee": 2026,
+      "date_debut": "2025-12-31T05:00:00.000Z",
+      "date_fin": "2026-12-30T05:00:00.000Z"
+    }
+  ]
+}

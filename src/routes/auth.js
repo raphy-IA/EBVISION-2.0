@@ -66,7 +66,17 @@ router.post('/login', async (req, res) => {
 
 
 
-        // Générer le token JWT avec les rôles multiples
+        // Récupérer toutes les permissions de l'utilisateur via ses rôles pour le JWT
+        const permissionsResult = await pool.query(`
+            SELECT DISTINCT p.code
+            FROM permissions p
+            JOIN role_permissions rp ON p.id = rp.permission_id
+            JOIN user_roles ur ON rp.role_id = ur.role_id
+            WHERE ur.user_id = $1
+        `, [user.id]);
+        const userPermissions = permissionsResult.rows.map(p => p.code);
+
+        // Générer le token JWT avec les rôles multiples et les permissions réelles
         const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
         const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
@@ -77,7 +87,7 @@ router.post('/login', async (req, res) => {
                 nom: user.nom,
                 prenom: user.prenom,
                 roles: userRoles, // Rôles multiples au lieu d'un seul rôle
-                permissions: ['users:read', 'users:create', 'users:update', 'users:delete']
+                permissions: userPermissions // Permissions réelles de la base
             },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
@@ -274,6 +284,15 @@ router.get('/me', authenticateToken, async (req, res) => {
         const userPermissions = permissionsResult.rows.map(p => p.code);
 
 
+        // Récupérer toutes les BUs auxquelles l'utilisateur a accès
+        const buAccessResult = await pool.query(`
+            SELECT business_unit_id FROM user_business_unit_access WHERE user_id = $1 AND granted = true
+            UNION
+            SELECT business_unit_id FROM collaborateurs WHERE user_id = $1 AND business_unit_id IS NOT NULL
+        `, [user.id]);
+
+        const authorizedBuIds = buAccessResult.rows.map(r => r.business_unit_id);
+
         res.json({
             success: true,
             message: 'Profil récupéré avec succès',
@@ -287,6 +306,7 @@ router.get('/me', authenticateToken, async (req, res) => {
                     role: user.role, // Rôle legacy (pour compatibilité)
                     roles: userRoles, // Rôles multiples (nouveau système)
                     permissions: userPermissions, // Permissions calculées
+                    authorized_bu_ids: authorizedBuIds, // Toutes les BUs autorisées
                     statut: user.statut,
                     collaborateur_id: user.collaborateur_id,
                     business_unit_id: user.business_unit_id || null,
@@ -657,7 +677,17 @@ router.post('/login-2fa', async (req, res) => {
 
 
 
-            // Générer le token JWT final
+            // Récupérer toutes les permissions de l'utilisateur via ses rôles pour le JWT final
+            const permissionsResult = await pool.query(`
+                SELECT DISTINCT p.code
+                FROM permissions p
+                JOIN role_permissions rp ON p.id = rp.permission_id
+                JOIN user_roles ur ON rp.role_id = ur.role_id
+                WHERE ur.user_id = $1
+            `, [user.id]);
+            const userPermissions = permissionsResult.rows.map(p => p.code);
+
+            // Générer le token JWT final avec les permissions réelles
             const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
             const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
@@ -668,7 +698,7 @@ router.post('/login-2fa', async (req, res) => {
                     nom: user.nom,
                     prenom: user.prenom,
                     roles: userRoles, // Rôles multiples au lieu d'un seul rôle
-                    permissions: ['users:read', 'users:create', 'users:update', 'users:delete']
+                    permissions: userPermissions // Permissions réelles de la base
                 },
                 JWT_SECRET,
                 { expiresIn: JWT_EXPIRES_IN }

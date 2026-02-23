@@ -23,7 +23,7 @@ class Opportunity {
         this.created_at = data.created_at;
         this.updated_by = data.updated_by;
         this.updated_at = data.updated_at;
-        
+
         // Données jointes
         this.client_nom = data.client_nom;
         this.client_email = data.client_email;
@@ -57,7 +57,7 @@ class Opportunity {
                 LEFT JOIN opportunity_types ot ON o.opportunity_type_id = ot.id
                 WHERE 1=1
             `;
-            
+
             const params = [];
             let paramIndex = 1;
 
@@ -93,6 +93,11 @@ class Opportunity {
                 params.push(options.opportunity_type_id);
             }
 
+            if (options.fiscal_year_id) {
+                query += ` AND o.fiscal_year_id = $${paramIndex++}`;
+                params.push(options.fiscal_year_id);
+            }
+
             if (options.search) {
                 query += ` AND (o.nom ILIKE $${paramIndex} OR o.description ILIKE $${paramIndex})`;
                 params.push(`%${options.search}%`);
@@ -116,7 +121,7 @@ class Opportunity {
             }
 
             const result = await pool.query(query, params);
-            
+
             // Requête pour le total avec les mêmes filtres
             let countQuery = `SELECT COUNT(*) as total FROM opportunities o WHERE 1=1`;
             const countParams = [];
@@ -151,6 +156,11 @@ class Opportunity {
             if (options.opportunity_type_id) {
                 countQuery += ` AND o.opportunity_type_id = $${countParamIndex++}`;
                 countParams.push(options.opportunity_type_id);
+            }
+
+            if (options.fiscal_year_id) {
+                countQuery += ` AND o.fiscal_year_id = $${countParamIndex++}`;
+                countParams.push(options.fiscal_year_id);
             }
 
             if (options.search) {
@@ -194,7 +204,7 @@ class Opportunity {
                 LEFT JOIN opportunity_types ot ON o.opportunity_type_id = ot.id
                 WHERE o.id = $1
             `;
-            
+
             const result = await pool.query(query, [id]);
             if (result.rows.length === 0) return null;
             return new Opportunity(result.rows[0]);
@@ -204,7 +214,7 @@ class Opportunity {
         }
     }
 
-        static async create(data) {
+    static async create(data) {
         try {
             const query = `
                 INSERT INTO opportunities (
@@ -214,7 +224,7 @@ class Opportunity {
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
                 RETURNING *
             `;
-            
+
             const values = [
                 data.nom,
                 data.description,
@@ -233,10 +243,10 @@ class Opportunity {
                 data.created_by || null,
                 data.fiscal_year_id || null
             ];
-            
+
             const result = await pool.query(query, values);
             const opportunity = new Opportunity(result.rows[0]);
-            
+
             return opportunity;
         } catch (error) {
             console.error('Erreur lors de la création de l\'opportunité:', error);
@@ -269,7 +279,7 @@ class Opportunity {
                 WHERE id = $18
                 RETURNING *
             `;
-            
+
             const values = [
                 data.nom,
                 data.description,
@@ -290,7 +300,7 @@ class Opportunity {
                 data.updated_by,
                 this.id
             ];
-            
+
             const result = await pool.query(query, values);
             if (result.rows.length > 0) {
                 Object.assign(this, result.rows[0]);
@@ -325,7 +335,7 @@ class Opportunity {
                     AVG(CASE WHEN statut = 'EN_COURS' THEN probabilite ELSE NULL END) as avg_probability
                 FROM opportunities
             `;
-            
+
             const result = await pool.query(query);
             return result.rows[0];
         } catch (error) {

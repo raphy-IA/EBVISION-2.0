@@ -28,7 +28,6 @@ class ObjectiveMetric {
                 ) as sources
             FROM objective_metrics m
             LEFT JOIN objective_units u ON m.target_unit_id = u.id
-            WHERE m.is_active = TRUE
             ORDER BY m.label
         `;
         const result = await query(sql);
@@ -90,13 +89,15 @@ class ObjectiveMetric {
      * Créer une nouvelle métrique
      */
     static async create(data) {
-        const { code, label, description, calculation_type, target_unit_id } = data;
+        const { code, label, description, calculation_type, target_unit_id, is_active } = data;
+        const finalIsActive = is_active !== undefined ? is_active : true;
+
         const sql = `
-            INSERT INTO objective_metrics (code, label, description, calculation_type, target_unit_id)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO objective_metrics (code, label, description, calculation_type, target_unit_id, is_active)
+            VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *
         `;
-        const result = await query(sql, [code, label, description, calculation_type, target_unit_id]);
+        const result = await query(sql, [code, label, description, calculation_type, target_unit_id, finalIsActive]);
         return result.rows[0];
     }
 
@@ -105,6 +106,16 @@ class ObjectiveMetric {
      */
     static async update(id, data) {
         const { label, description, calculation_type, target_unit_id, is_active } = data;
+
+        const current = await this.getById(id);
+        if (!current) return null;
+
+        const finalLabel = label !== undefined ? label : current.label;
+        const finalDescription = description !== undefined ? description : current.description;
+        const finalCalcType = calculation_type !== undefined ? calculation_type : current.calculation_type;
+        const finalUnitId = target_unit_id !== undefined ? target_unit_id : current.target_unit_id;
+        const finalIsActive = is_active !== undefined ? is_active : current.is_active;
+
         const sql = `
             UPDATE objective_metrics
             SET label = $1, 
@@ -116,7 +127,7 @@ class ObjectiveMetric {
             WHERE id = $6
             RETURNING *
         `;
-        const result = await query(sql, [label, description, calculation_type, target_unit_id, is_active, id]);
+        const result = await query(sql, [finalLabel, finalDescription, finalCalcType, finalUnitId, finalIsActive, id]);
         return result.rows[0];
     }
 
