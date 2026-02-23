@@ -130,7 +130,7 @@ class TwoFactorAuthService {
             if (verification.success) {
                 // Activer le 2FA
                 await pool.query(
-                    'UPDATE users SET two_factor_enabled = true WHERE id = $1',
+                    'UPDATE users SET two_factor_enabled = true WHERE id = $1::uuid',
                     [userId]
                 );
 
@@ -161,7 +161,7 @@ class TwoFactorAuthService {
             if (verification.success) {
                 // Désactiver le 2FA
                 await pool.query(
-                    'UPDATE users SET two_factor_enabled = false, two_factor_secret = NULL WHERE id = $1',
+                    'UPDATE users SET two_factor_enabled = false, two_factor_secret = NULL WHERE id = $1::uuid',
                     [userId]
                 );
 
@@ -230,7 +230,7 @@ class TwoFactorAuthService {
             // Sauvegarder les codes (hashés) en base
             const hashedCodes = codes.map(code => this.hashBackupCode(code));
             await pool.query(
-                'UPDATE users SET backup_codes = $1 WHERE id = $2',
+                'UPDATE users SET backup_codes = $1 WHERE id = $2::uuid',
                 [JSON.stringify(hashedCodes), userId]
             );
 
@@ -247,7 +247,7 @@ class TwoFactorAuthService {
     static async verifyBackupCode(userId, code) {
         try {
             const result = await pool.query(
-                'SELECT backup_codes FROM users WHERE id = $1',
+                'SELECT backup_codes FROM users WHERE id = $1::uuid',
                 [userId]
             );
 
@@ -263,7 +263,7 @@ class TwoFactorAuthService {
                 // Supprimer le code utilisé
                 hashedCodes.splice(codeIndex, 1);
                 await pool.query(
-                    'UPDATE users SET backup_codes = $1 WHERE id = $2',
+                    'UPDATE users SET backup_codes = $1 WHERE id = $2::uuid',
                     [JSON.stringify(hashedCodes), userId]
                 );
 
@@ -299,15 +299,3 @@ class TwoFactorAuthService {
 }
 
 module.exports = TwoFactorAuthService;
-
-
-
-
-
-
-
-
-
-
-
-
