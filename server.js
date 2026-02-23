@@ -110,8 +110,8 @@ const limiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     // Indiquer à express-rate-limit que l'app est derrière un proxy (nginx)
-    // Cela fonctionne avec trust proxy: 1 dans Express
-    trustProxy: true,
+    // Silencer validation trust proxy dans v7+
+    validate: { trustProxy: false },
 });
 
 // Rate limiter spécifique pour l'authentification (protection contre force brute)
@@ -127,8 +127,8 @@ const authLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     // Indiquer à express-rate-limit que l'app est derrière un proxy (nginx)
-    // Cela fonctionne avec trust proxy: 1 dans Express
-    trustProxy: true,
+    // Silencer validation trust proxy dans v7+
+    validate: { trustProxy: false },
     // Note: onLimitReached deprecated dans express-rate-limit v7
 });
 
@@ -338,19 +338,24 @@ async function startServer() {
         CronService.initCronJobs();
 
         // Démarrage du serveur
-        app.listen(PORT, () => {
-            console.log('🚀 Serveur démarré sur le port', PORT);
-            console.log('📊 Environnement:', process.env.NODE_ENV || 'development');
-            console.log('🔗 URL: http://localhost:' + PORT);
-            console.log('📚 API Documentation: http://localhost:' + PORT + '/api-docs');
-        });
+        const server = app.listen(PORT, () => {
+            console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+            console.log(`🌍 URL Swagger : http://localhost:${PORT}/api-docs`);
+            console.log(`📅 Heure actuelle du serveur : ${new Date().toLocaleString('fr-FR')} (${new Date().toISOString()})`);
 
-        // Documentation Swagger
-        app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
-    } catch (error) {
-        console.error('❌ Erreur lors du démarrage du serveur:', error);
-        process.exit(1);
-    }
+            // Initialisation des tâches cron
+            console.log('⏰ Initialisation des tâches cron...');
+            CronService.init();
+        });
+        console.log('📚 API Documentation: http://localhost:' + PORT + '/api-docs');
+    });
+
+    // Documentation Swagger
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+} catch (error) {
+    console.error('❌ Erreur lors du démarrage du serveur:', error);
+    process.exit(1);
+}
 }
 
 // Gestion des erreurs non capturées

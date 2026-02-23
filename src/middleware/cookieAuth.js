@@ -114,6 +114,21 @@ const authenticateHybrid = (req, res, next) => {
     } catch (error) {
         console.error(`❌ Erreur token (${source}):`, error.message);
 
+        if (error.name === 'TokenExpiredError') {
+            try {
+                const decodedPayload = jwt.decode(token);
+                console.error(`📊 [DIAGNOSTIC JWT COOKIE] Détails extraction via ${source}:`, {
+                    maintenant_serveur: new Date().toISOString(),
+                    token_expire_a: error.expiredAt ? new Date(error.expiredAt).toISOString() : 'inconnu',
+                    token_emis_a: decodedPayload && decodedPayload.iat ? new Date(decodedPayload.iat * 1000).toISOString() : 'inconnu',
+                    token_expiration_prevue: decodedPayload && decodedPayload.exp ? new Date(decodedPayload.exp * 1000).toISOString() : 'inconnu',
+                    delta_secondes: decodedPayload && decodedPayload.exp ? Math.floor(Date.now() / 1000 - decodedPayload.exp) : 'inconnu'
+                });
+            } catch (decodeError) {
+                console.error('❌ Impossible de décoder le token expiré pour diagnostic');
+            }
+        }
+
         // Supprimer les cookies invalides uniquement si on a essayé de les utiliser
         if (source === 'cookie') {
             clearAuthCookies(res);
