@@ -33,7 +33,8 @@ class TwoFactorAuthService {
 
             if (has2FAColumns) {
                 // Sauvegarder le secret en base (temporairement, en attendant la validation)
-                'UPDATE users SET two_factor_secret = $1, two_factor_enabled = false WHERE id = $2::uuid',
+                await pool.query(
+                    'UPDATE users SET two_factor_secret = $1, two_factor_enabled = false WHERE id = $2::uuid',
                     [secret.base32, userId]
                 );
             } else {
@@ -72,7 +73,8 @@ class TwoFactorAuthService {
     static async verifyToken(userId, token) {
         try {
             // Récupérer le secret de l'utilisateur
-            'SELECT two_factor_secret, two_factor_enabled FROM users WHERE id = $1::uuid',
+            const result = await pool.query(
+                'SELECT two_factor_secret, two_factor_enabled FROM users WHERE id = $1::uuid',
                 [userId]
             );
 
@@ -96,7 +98,8 @@ class TwoFactorAuthService {
 
             if (verified) {
                 // Mettre à jour la dernière utilisation du 2FA
-                'UPDATE users SET last_2fa_used = CURRENT_TIMESTAMP WHERE id = $1::uuid',
+                await pool.query(
+                    'UPDATE users SET last_2fa_used = CURRENT_TIMESTAMP WHERE id = $1::uuid',
                     [userId]
                 );
 
@@ -198,7 +201,8 @@ class TwoFactorAuthService {
                 return false;
             }
 
-            'SELECT two_factor_enabled FROM users WHERE id = $1::uuid',
+            const result = await pool.query(
+                'SELECT two_factor_enabled FROM users WHERE id = $1::uuid',
                 [userId]
             );
 
