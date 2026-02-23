@@ -81,8 +81,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Configuration du proxy (nécessaire pour nginx/reverse proxy)
-// Permet à Express de faire confiance aux headers X-Forwarded-For
-// Utiliser 1 au lieu de true pour limiter à un seul proxy (nginx) et éviter les contournements de rate limiting
 app.set('trust proxy', 1);
 
 // Configuration de sécurité
@@ -154,7 +152,6 @@ if (process.env.RATE_LIMIT_BYPASS === 'true' || process.env.NODE_ENV === 'develo
 
 // Middlewares
 app.use(compression());
-app.set('trust proxy', true); // Faire confiance au proxy Nginx pour le HTTPS et les IPs
 app.use(morgan('combined'));
 app.use(cookieParser()); // Support des cookies
 
@@ -336,12 +333,22 @@ async function startServer() {
         CronService.initCronJobs();
 
         // Démarrage du serveur
-        app.listen(PORT, () => {
+        console.log(`📡 Tentative de démarrage sur le port ${PORT}...`);
+        const server = app.listen(PORT, () => {
             console.log(`🚀 Serveur démarré sur le port ${PORT}`);
             console.log(`🌍 URL Swagger : http://localhost:${PORT}/api-docs`);
             console.log(`📅 Heure serveur (Locale): ${new Date().toLocaleString('fr-FR')}`);
             console.log(`📅 Heure serveur (ISO): ${new Date().toISOString()}`);
             console.log('✅ Système prêt et opérationnel');
+        });
+
+        server.on('error', (err) => {
+            if (err.code === 'EADDRINUSE') {
+                console.error(`❌ Le port ${PORT} est déjà utilisé. Arrêt du démarrage.`);
+            } else {
+                console.error('❌ Erreur du serveur HTTP:', err);
+            }
+            process.exit(1);
         });
 
     } catch (error) {
