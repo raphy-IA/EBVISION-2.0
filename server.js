@@ -342,10 +342,6 @@ async function startServer() {
             console.log(`🚀 Serveur démarré sur le port ${PORT}`);
             console.log(`🌍 URL Swagger : http://localhost:${PORT}/api-docs`);
             console.log(`📅 Heure actuelle du serveur : ${new Date().toLocaleString('fr-FR')} (${new Date().toISOString()})`);
-
-            // Initialisation des tâches cron
-            console.log('⏰ Initialisation des tâches cron...');
-            CronService.init();
         });
         console.log('📚 API Documentation: http://localhost:' + PORT + '/api-docs');
     } catch (error) {
