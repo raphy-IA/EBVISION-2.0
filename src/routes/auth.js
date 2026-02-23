@@ -86,8 +86,7 @@ router.post('/login', async (req, res) => {
                 email: user.email,
                 nom: user.nom,
                 prenom: user.prenom,
-                roles: userRoles, // Rôles multiples au lieu d'un seul rôle
-                permissions: userPermissions // Permissions réelles de la base
+                roles: userRoles // Rôles multiples (permissions chargées par le middleware)
             },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
@@ -597,8 +596,7 @@ router.post('/login-2fa', async (req, res) => {
                     email: user.email,
                     nom: user.nom,
                     prenom: user.prenom,
-                    roles: userRoles, // Rôles multiples au lieu d'un seul rôle
-                    permissions: userPermissions // Permissions réelles de la base
+                    roles: userRoles // Rôles multiples (permissions chargées par le middleware)
                 },
                 JWT_SECRET,
                 { expiresIn: JWT_EXPIRES_IN }
