@@ -158,7 +158,10 @@ app.use(morgan('combined'));
 app.use(cookieParser()); // Support des cookies
 app.use(cors({
     origin: process.env.NODE_ENV === 'production'
-        ? ['https://yourdomain.com']
+        ? [
+            'https://ebvision.bosssystemsai.com',
+            'https://www.ebvision.bosssystemsai.com'
+        ]
         : ['http://localhost:3000', 'http://localhost:8080'],
     credentials: true
 }));

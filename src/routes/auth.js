@@ -146,90 +146,9 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Route de changement de mot de passe
-router.post('/change-password', authenticateToken, async (req, res) => {
-    try {
-        // Validation des données
-        const { error, value } = authValidation.changePassword.validate(req.body);
-        if (error) {
-            return res.status(400).json({
-                success: false,
-                message: 'Données invalides',
-                errors: error.details.map(detail => detail.message)
-            });
-        }
+// La route /change-password est définie plus bas avec une validation complète
 
-        const { currentPassword, newPassword } = value;
-        const userId = req.user.id;
-
-        // Validation supplémentaire
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({
-                success: false,
-                message: 'Mot de passe actuel et nouveau mot de passe requis'
-            });
-        }
-
-        // Récupérer l'utilisateur
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'Utilisateur non trouvé'
-            });
-        }
-
-        // Debug: afficher les informations de l'utilisateur (sans le mot de passe)
-
-
-        // Vérifier si l'utilisateur a un mot de passe hashé
-        if (!user.password_hash) {
-            return res.status(400).json({
-                success: false,
-                message: 'Aucun mot de passe défini pour cet utilisateur. Veuillez contacter l\'administrateur.'
-            });
-        }
-
-        // Vérifier l'ancien mot de passe
-        const isValidPassword = await bcrypt.compare(currentPassword, user.password_hash);
-        if (!isValidPassword) {
-            return res.status(401).json({
-                success: false,
-                message: 'Mot de passe actuel incorrect'
-            });
-        }
-
-        // Hasher le nouveau mot de passe
-        const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
-        const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
-
-        // Mettre à jour le mot de passe
-        await User.updatePassword(userId, newPasswordHash);
-
-        res.json({
-            success: true,
-            message: 'Mot de passe modifié avec succès'
-        });
-
-    } catch (error) {
-        console.error('Erreur lors du changement de mot de passe:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur interne du serveur'
-        });
-    }
-});
-
-// Route de vérification du token
-router.get('/verify', authenticateToken, (req, res) => {
-    res.json({
-        success: true,
-        message: 'Token valide',
-        data: {
-            user: req.user
-        }
-    });
-});
+// La route /verify est maintenant définie plus bas avec authenticateHybrid
 
 // Route pour récupérer le profil de l'utilisateur connecté
 router.get('/me', authenticateToken, async (req, res) => {
@@ -419,48 +338,24 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
-// Route de déconnexion améliorée
-router.post('/logout', authenticateToken, async (req, res) => {
+// Route de déconnexion unifiée
+router.post('/logout', authenticateHybrid, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user?.id;
 
-        // Log de déconnexion
-
-
-        // En production, on pourrait ajouter le token à une blacklist
-        // Pour le développement, on se contente de logger
-
-        // Mettre à jour la dernière déconnexion
-        await User.updateLastLogout(userId);
-
-        res.json({
-            success: true,
-            message: 'Déconnexion réussie',
-            data: {
-                timestamp: new Date().toISOString(),
-                userId: userId
-            }
-        });
-
-    } catch (error) {
-        console.error('Erreur lors de la déconnexion:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la déconnexion'
-        });
-    }
-});
-
-// Route de déconnexion
-router.post('/logout', (req, res) => {
-    try {
         // Supprimer les cookies d'authentification
         clearAuthCookies(res);
+
+        if (userId) {
+            // Mettre à jour la dernière déconnexion
+            await User.updateLastLogout(userId);
+        }
 
         res.json({
             success: true,
             message: 'Déconnexion réussie'
         });
+
     } catch (error) {
         console.error('Erreur lors de la déconnexion:', error);
         res.status(500).json({

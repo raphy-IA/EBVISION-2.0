@@ -7,11 +7,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-2024';
  */
 
 // Configuration des cookies sécurisés
+// Configuration des cookies sécurisés
 const cookieOptions = {
     httpOnly: true,        // Empêche l'accès JavaScript (protection XSS)
-    // HTTPS uniquement en production par défaut, mais configurable
+    // HTTPS uniquement si configuré ou en production, mais désactivable via COOKIE_SECURE=false
     secure: process.env.COOKIE_SECURE === 'true' || (process.env.NODE_ENV === 'production' && process.env.COOKIE_SECURE !== 'false'),
-    sameSite: 'strict',    // Protection CSRF
+    sameSite: 'lax',       // Changé de 'strict' à 'lax' pour assurer la persistance lors des redirections
     maxAge: 24 * 60 * 60 * 1000, // 24 heures
     path: '/'              // Disponible sur tout le site
 };
@@ -37,7 +38,7 @@ const setAuthCookie = (res, token, user) => {
         httpOnly: false // Permet l'accès côté client pour l'affichage
     });
 
-    console.log('✅ Cookies d\'authentification définis');
+    console.log(`✅ Cookies d'authentification définis pour ${user.email} (Secure: ${cookieOptions.secure}, SameSite: ${cookieOptions.sameSite})`);
 };
 
 /**
@@ -85,14 +86,17 @@ const authenticateCookie = (req, res, next) => {
 const authenticateHybrid = (req, res, next) => {
     // Priorité 1: Cookie httpOnly (plus sécurisé)
     let token = req.cookies.authToken;
+    let source = 'cookie';
 
     // Priorité 2: Header Authorization (pour compatibilité)
     if (!token) {
         const authHeader = req.headers['authorization'];
         token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+        source = 'header';
     }
 
     if (!token) {
+        console.warn('⚠️ Tentative d\'accès sans token');
         return res.status(401).json({
             success: false,
             message: 'Token d\'authentification manquant'
@@ -102,12 +106,18 @@ const authenticateHybrid = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = decoded;
+        // Log discret en production, plus verbeux en dev
+        if (process.env.NODE_ENV !== 'production') {
+            console.log(`🔑 Auth réussie via ${source} pour ${decoded.email}`);
+        }
         next();
     } catch (error) {
-        console.error('❌ Erreur token:', error.message);
+        console.error(`❌ Erreur token (${source}):`, error.message);
 
-        // Supprimer les cookies invalides
-        clearAuthCookies(res);
+        // Supprimer les cookies invalides uniquement si on a essayé de les utiliser
+        if (source === 'cookie') {
+            clearAuthCookies(res);
+        }
 
         return res.status(401).json({
             success: false,
