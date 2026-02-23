@@ -59,7 +59,10 @@ router.get('/', authenticateToken, async (req, res) => {
             } else if (date) {
                 // Récupérer les entrées pour une date spécifique
                 const weekStart = new Date(date);
-                weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+                if (isNaN(weekStart.getTime())) {
+                    return res.status(400).json({ success: false, message: 'Date invalide' });
+                }
+                weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1));
                 const weekEnd = new Date(weekStart);
                 weekEnd.setDate(weekStart.getDate() + 6);
 
@@ -140,7 +143,10 @@ router.post('/', authenticateToken, async (req, res) => {
 
         // Créer ou récupérer la feuille de temps pour cette semaine
         const weekStart = new Date(date_saisie);
-        weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1); // Lundi de la semaine
+        if (isNaN(weekStart.getTime())) {
+            return res.status(400).json({ success: false, message: 'Date de saisie invalide' });
+        }
+        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() === 0 ? 6 : weekStart.getDay() - 1)); // Lundi de la semaine
 
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6); // Dimanche de la semaine

@@ -20,10 +20,14 @@ router.get('/dashboard-kpis', authenticateToken, async (req, res) => {
         if (dateDebut && dateFin) {
             startDate = new Date(dateDebut);
             endDate = new Date(dateFin);
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                return res.status(400).json({ success: false, error: 'Dates invalides (format YYYY-MM-DD attendu)' });
+            }
         } else {
+            const periodInt = parseInt(period) || 30;
             endDate = new Date();
             startDate = new Date();
-            startDate.setDate(startDate.getDate() - parseInt(period));
+            startDate.setDate(startDate.getDate() - periodInt);
         }
 
         // Construire les conditions WHERE
@@ -170,7 +174,8 @@ router.get('/top-collaborateurs', authenticateToken, async (req, res) => {
         const { period = 30, limit = 10 } = req.query;
 
         const startDate = new Date();
-        startDate.setDate(startDate.getDate() - parseInt(period));
+        const periodInt = parseInt(period) || 30;
+        startDate.setDate(startDate.getDate() - periodInt);
 
         const query = `
             SELECT 
@@ -297,7 +302,8 @@ router.get('/evolution-heures', authenticateToken, async (req, res) => {
         const { period = 30, collaborateur_id } = req.query;
 
         const startDate = new Date();
-        startDate.setDate(startDate.getDate() - parseInt(period));
+        const periodInt = parseInt(period) || 30;
+        startDate.setDate(startDate.getDate() - periodInt);
 
         let whereConditions = ['te.created_at >= $1'];
         let params = [startDate.toISOString()];

@@ -68,6 +68,16 @@ router.get('/current', authenticateToken, async (req, res) => {
         // Calculer la fin de semaine (7 jours après le début)
         // S'assurer que les dates sont traitées sans timezone
         const weekStartDate = new Date(week_start + 'T00:00:00');
+
+        // Vérifier si la date est valide
+        if (isNaN(weekStartDate.getTime())) {
+            console.error('📅 Date invalide reçue for week_start:', week_start);
+            return res.status(400).json({
+                success: false,
+                message: 'Le paramètre week_start est invalide. Format attendu: YYYY-MM-DD'
+            });
+        }
+
         const weekEndDate = new Date(weekStartDate);
         weekEndDate.setDate(weekStartDate.getDate() + 6); // +6 pour aller du lundi au dimanche
 
