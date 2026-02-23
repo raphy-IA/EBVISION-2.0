@@ -350,6 +350,10 @@ async function startServer() {
             console.log(`📅 Heure serveur (Locale): ${new Date().toLocaleString('fr-FR')}`);
             console.log(`📅 Heure serveur (ISO): ${new Date().toISOString()}`);
             console.log('✅ Système prêt et opérationnel');
+            // Signal PM2 que l'app est prête (évite les 502 pendant démarrage)
+            if (process.send) {
+                process.send('ready');
+            }
         });
 
         server.on('error', (err) => {
