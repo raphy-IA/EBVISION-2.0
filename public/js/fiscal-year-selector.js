@@ -27,7 +27,9 @@ const FiscalYearSelector = {
             this._currentId = current ? current.id : (this._data.length > 0 ? this._data[0].id : null);
 
             // Recall selection or default to current
-            this._selectedId = sessionStorage.getItem(this._storageKey) || this._currentId;
+            const stored = sessionStorage.getItem(this._storageKey);
+            // Use stored value only if it's a real ID (non-null, non-empty)
+            this._selectedId = (stored && stored.length > 0) ? stored : this._currentId;
 
             this.populateSelect(selectId);
             this.enforceStatusRules();
@@ -54,11 +56,15 @@ const FiscalYearSelector = {
         const select = document.getElementById(selectId);
         if (!select) return;
 
+        // Always show all fiscal years — no empty option (year is always required)
         select.innerHTML = this._data.map(fy => `
             <option value="${fy.id}" ${fy.id == this._selectedId ? 'selected' : ''}>
                 ${fy.libelle || fy.annee} ${fy.statut === 'EN_COURS' ? '(En cours)' : (fy.statut === 'FERMEE' ? '(Clos)' : '')}
             </option>
         `).join('');
+
+        // Apply the selected value on the DOM element
+        if (this._selectedId) select.value = this._selectedId;
     },
 
     /**

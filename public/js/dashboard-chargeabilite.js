@@ -22,13 +22,12 @@ async function loadAll() {
   const scope = document.getElementById('scope-select').value;
   const fiscalYearId = document.getElementById('fiscalYearFilter')?.value || '';
 
-  let url = `${API_BASE_URL}/utilization?scope=${encodeURIComponent(scope)}`;
-  if (fiscalYearId) {
-    url += `&fiscal_year_id=${fiscalYearId}`;
-  } else {
-    url += `&period=${period}`;
-  }
+  // Toujours envoyer les deux : fiscal_year_id (cadre) + period (sous-filtre dans l'année)
+  const params = new URLSearchParams({ scope });
+  if (fiscalYearId) params.set('fiscal_year_id', fiscalYearId);
+  params.set('period', period);
 
+  const url = `${API_BASE_URL}/utilization?${params}`;
   const res = await authenticatedFetch(url);
   const json = await res.json();
   if (!json.success) return;

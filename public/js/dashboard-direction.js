@@ -15,7 +15,7 @@ let financialDefaultCurrency = (typeof CURRENCY_CONFIG !== 'undefined' && CURREN
 let currentFilters = {
     period: 90,
     businessUnit: '',
-    year: null // Will be set by FiscalYearSelector
+    fiscal_year_id: null // Set by FiscalYearSelector
 };
 
 // Initialisation du dashboard
@@ -91,7 +91,7 @@ function initializeFilters() {
     });
 
     FiscalYearSelector.init('year-filter', (selectedId) => {
-        currentFilters.year = selectedId;
+        currentFilters.fiscal_year_id = selectedId || null;
         refreshDashboard();
     });
 }
@@ -121,12 +121,12 @@ async function loadDashboardData() {
     try {
         console.log('📊 Chargement des données du dashboard direction...');
 
-        // Construire les paramètres de requête
+        // Toujours envoyer les deux : fiscal_year_id (cadre) + period (sous-filtre dans l'année)
         const params = new URLSearchParams({
             period: currentFilters.period,
-            business_unit: currentFilters.businessUnit,
-            year: currentFilters.year
+            business_unit: currentFilters.businessUnit
         });
+        if (currentFilters.fiscal_year_id) params.set('fiscal_year_id', currentFilters.fiscal_year_id);
 
         // Charger les statistiques stratégiques
         const statsResponse = await authenticatedFetch(`${API_BASE_URL}/analytics/strategic-stats?${params}`);
@@ -451,9 +451,9 @@ async function loadFinancialIndicators() {
     try {
         const params = new URLSearchParams({
             period: currentFilters.period,
-            business_unit: currentFilters.businessUnit,
-            year: currentFilters.year
+            business_unit: currentFilters.businessUnit
         });
+        if (currentFilters.fiscal_year_id) params.set('fiscal_year_id', currentFilters.fiscal_year_id);
 
         const response = await authenticatedFetch(`${API_BASE_URL}/analytics/financial-indicators?${params}`);
 

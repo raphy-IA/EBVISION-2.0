@@ -140,6 +140,7 @@ router.get('/won-for-mission', authenticateToken, async (req, res) => {
     try {
         const query = `
             SELECT 
+                o.id as id,
                 o.*,
                 c.nom as client_nom,
                 c.email as client_email,
@@ -282,8 +283,48 @@ router.get('/:id/requirements', authenticateToken, async (req, res) => {
         const stages = await OpportunityStage.findByOpportunityId(id);
         const current = stages.find(s => s.status === 'IN_PROGRESS') || stages.find(s => s.status === 'PENDING');
         if (!current) return res.json({ success: true, data: { stage: null, requiredActions: [], requiredDocuments: [], actionCounts: {}, documentCounts: {} } });
-        const ra = await pool.query('SELECT action_type, is_mandatory, validation_order FROM stage_required_actions WHERE stage_template_id = $1', [current.stage_template_id]);
-        const rd = await pool.query('SELECT document_type, is_mandatory FROM stage_required_documents WHERE stage_template_id = $1', [current.stage_template_id]);
+
+        const [ra, rd, template] = await Promise.all([
+            pool.query('SELECT action_type, is_mandatory, validation_order FROM stage_required_actions WHERE stage_template_id = $1', [current.stage_template_id]),
+            pool.query('SELECT document_type, is_mandatory FROM stage_required_documents WHERE stage_template_id = $1', [current.stage_template_id]),
+            pool.query('SELECT required_actions, required_documents FROM opportunity_stage_templates WHERE id = $1', [current.stage_template_id])
+        ]);
+
+        const requiredActions = ra.rows;
+        const requiredDocuments = rd.rows;
+
+        // Ajouter les exigences JSON legacy si présentes
+        if (template.rows.length > 0) {
+            const legacyActions = template.rows[0].required_actions;
+            const legacyDocs = template.rows[0].required_documents;
+
+            if (legacyActions) {
+                try {
+                    const parsedActions = typeof legacyActions === 'string' ? JSON.parse(legacyActions) : legacyActions;
+                    if (Array.isArray(parsedActions)) {
+                        parsedActions.forEach(action => {
+                            if (!requiredActions.some(a => a.action_type === action)) {
+                                requiredActions.push({ action_type: action, is_mandatory: true });
+                            }
+                        });
+                    }
+                } catch (e) { console.error('Erreur parsing legacyActions endpoint', e); }
+            }
+
+            if (legacyDocs) {
+                try {
+                    const parsedDocs = typeof legacyDocs === 'string' ? JSON.parse(legacyDocs) : legacyDocs;
+                    if (Array.isArray(parsedDocs)) {
+                        parsedDocs.forEach(doc => {
+                            if (!requiredDocuments.some(d => d.document_type === doc)) {
+                                requiredDocuments.push({ document_type: doc, is_mandatory: true });
+                            }
+                        });
+                    }
+                } catch (e) { console.error('Erreur parsing legacyDocs endpoint', e); }
+            }
+        }
+
         // Comptages réalisés pour l'étape courante (ou non rattachées si stage_id null)
         const actionsCountResp = await pool.query(
             `SELECT action_type, COUNT(*)::int AS count, MAX(performed_at) AS last_performed_at
@@ -304,7 +345,7 @@ router.get('/:id/requirements', authenticateToken, async (req, res) => {
         );
         const actionCounts = Object.fromEntries(actionsCountResp.rows.map(r => [r.action_type, r]));
         const documentCounts = Object.fromEntries(documentsCountResp.rows.map(r => [r.document_type, r]));
-        res.json({ success: true, data: { stage: current, requiredActions: ra.rows, requiredDocuments: rd.rows, actionCounts, documentCounts } });
+        res.json({ success: true, data: { stage: current, requiredActions, requiredDocuments, actionCounts, documentCounts } });
     } catch (e) {
         console.error('Erreur requirements opportunité:', e);
         res.status(500).json({ success: false, error: 'Erreur récupération requirements' });
@@ -523,13 +564,12 @@ router.post('/', authenticateToken, async (req, res) => {
             created_by: req.user?.id || null
         };
 
-        // Affecter automatiquement l'année fiscale en cours si non fournie
+        // Affecter automatiquement l'année fiscale en cours si non fournie (basé sur le statut uniquement)
         try {
             if (!opportunityData.fiscal_year_id) {
                 const fy = await pool.query(`
                     SELECT id FROM fiscal_years 
-                    WHERE date_debut <= CURRENT_DATE AND date_fin >= CURRENT_DATE 
-                    AND statut = 'EN_COURS' 
+                    WHERE statut = 'EN_COURS' 
                     LIMIT 1
                 `);
                 opportunityData.fiscal_year_id = fy.rows.length > 0 ? fy.rows[0].id : null;

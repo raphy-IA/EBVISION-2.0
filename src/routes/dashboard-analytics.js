@@ -3,6 +3,49 @@ const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 const { pool } = require('../utils/database');
 
+/**
+ * Helper commun pour résoudre les dates de filtrage dans tous les dashboards.
+ * - Si fiscal_year_id : le cadre est l'année fiscale, period est un sous-filtre (derniers N jours dans l'année).
+ * - Sans fiscal_year_id : fenêtre glissante de N jours depuis aujourd'hui.
+ * @returns {{ startDate: Date, endDate: Date }}
+ */
+async function resolveDashboardDates(pool, fiscal_year_id, period) {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    if (fiscal_year_id) {
+        const fyResult = await pool.query(
+            'SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1',
+            [fiscal_year_id]
+        );
+        if (fyResult.rows.length > 0) {
+            const fyStart = new Date(fyResult.rows[0].date_debut);
+            fyStart.setHours(0, 0, 0, 0);
+            const fyEnd = new Date(fyResult.rows[0].date_fin);
+            fyEnd.setHours(23, 59, 59, 999);
+
+            // Fin effective = MIN(fin de l'année fiscale, aujourd'hui)
+            const effectiveEnd = fyEnd < today ? fyEnd : new Date(today);
+
+            // Début selon période (sous-filtre) : MAX(début de l'année, fin - N jours)
+            const periodDays = parseInt(period || 365);
+            const periodStart = new Date(effectiveEnd);
+            periodStart.setDate(periodStart.getDate() - periodDays);
+            periodStart.setHours(0, 0, 0, 0);
+
+            const effectiveStart = periodStart > fyStart ? periodStart : fyStart;
+            return { startDate: effectiveStart, endDate: effectiveEnd };
+        }
+    }
+
+    // Fallback sans année fiscale : fenêtre glissante
+    const endDate = new Date(today);
+    const startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - parseInt(period || 90));
+    startDate.setHours(0, 0, 0, 0);
+    return { startDate, endDate };
+}
+
 // GET /api/analytics/dashboard-kpis - KPIs principaux du dashboard
 router.get('/dashboard-kpis', authenticateToken, async (req, res) => {
     try {
@@ -596,154 +639,30 @@ router.get('/collections-by-client', authenticateToken, async (req, res) => {
     }
 });
 
-// GET /api/analytics/profitability-missions - Rentabilité par mission
-router.get('/profitability-missions', authenticateToken, async (req, res) => {
-    try {
-        const { period = 90, fiscal_year_id } = req.query;
-        let startDate, endDate;
-
-        if (fiscal_year_id) {
-            const fyResult = await pool.query('SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1', [fiscal_year_id]);
-            if (fyResult.rows.length > 0) {
-                startDate = new Date(fyResult.rows[0].date_debut);
-                endDate = new Date(fyResult.rows[0].date_fin);
-            }
-        }
-        if (!startDate) {
-            startDate = new Date();
-            startDate.setDate(startDate.getDate() - parseInt(period));
-            endDate = new Date();
-        }
-
-        const query = `
-            WITH couts AS (
-                SELECT te.mission_id,
-                       SUM(te.heures * COALESCE(g.taux_horaire_default, 0)) AS cout_charge
-                FROM time_entries te
-                JOIN users u ON te.user_id = u.id
-                JOIN collaborateurs c ON u.collaborateur_id = c.id
-                LEFT JOIN grades g ON c.grade_actuel_id = g.id
-                WHERE te.created_at >= $1::timestamptz AND te.created_at <= $2::timestamptz
-                GROUP BY te.mission_id
-            ), facturation AS (
-                SELECT i.mission_id,
-                       COALESCE(SUM(COALESCE(i.montant_ttc, i.montant_ht + COALESCE(i.montant_tva,0))),0) AS facture
-                FROM invoices i
-                WHERE i.date_emission >= $1::timestamptz AND i.date_emission <= $2::timestamptz
-                GROUP BY i.mission_id
-            )
-            SELECT m.id, m.nom AS mission_nom, c2.nom AS client_nom,
-                   COALESCE(f.facture,0) AS facture,
-                   COALESCE(ct.cout_charge,0) AS cout_charge,
-                   COALESCE(f.facture,0) - COALESCE(ct.cout_charge,0) AS marge
-            FROM missions m
-            LEFT JOIN clients c2 ON c2.id = m.client_id
-            LEFT JOIN couts ct ON ct.mission_id = m.id
-            LEFT JOIN facturation f ON f.mission_id = m.id
-            ORDER BY marge DESC
-            LIMIT 50;
-        `;
-
-        const result = await pool.query(query, [startDate.toISOString(), endDate.toISOString()]);
-        return res.json({ success: true, data: result.rows });
-    } catch (error) {
-        console.error('Erreur profitability-missions:', error);
-        return res.status(500).json({ success: false, error: 'Erreur rentabilité missions' });
-    }
-});
-
-// GET /api/analytics/profitability-clients - Rentabilité par client
-router.get('/profitability-clients', authenticateToken, async (req, res) => {
-    try {
-        const { period = 180, fiscal_year_id } = req.query;
-        let startDate, endDate;
-
-        if (fiscal_year_id) {
-            const fyResult = await pool.query('SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1', [fiscal_year_id]);
-            if (fyResult.rows.length > 0) {
-                startDate = new Date(fyResult.rows[0].date_debut);
-                endDate = new Date(fyResult.rows[0].date_fin);
-            }
-        }
-        if (!startDate) {
-            startDate = new Date();
-            startDate.setDate(startDate.getDate() - parseInt(period));
-            endDate = new Date();
-        }
-
-        const query = `
-            WITH te_couts AS (
-                SELECT m.client_id,
-                       SUM(te.heures * COALESCE(g.taux_horaire_default, 0)) AS cout_charge
-                FROM time_entries te
-                JOIN users u ON te.user_id = u.id
-                JOIN collaborateurs c ON u.collaborateur_id = c.id
-                LEFT JOIN grades g ON c.grade_actuel_id = g.id
-                LEFT JOIN missions m ON m.id = te.mission_id
-                WHERE te.created_at >= $1::timestamptz AND te.created_at <= $2::timestamptz
-                GROUP BY m.client_id
-            ), factures AS (
-                SELECT i.client_id,
-                       COALESCE(SUM(COALESCE(i.montant_ttc, i.montant_ht + COALESCE(i.montant_tva,0))),0) AS facture
-                FROM invoices i
-                WHERE i.date_emission >= $1::timestamptz AND i.date_emission <= $2::timestamptz
-                GROUP BY i.client_id
-            )
-            SELECT c.id AS client_id, c.nom AS client_nom,
-                   COALESCE(f.facture,0) AS facture,
-                   COALESCE(tc.cout_charge,0) AS cout_charge,
-                   COALESCE(f.facture,0) - COALESCE(tc.cout_charge,0) AS marge
-            FROM clients c
-            LEFT JOIN te_couts tc ON tc.client_id = c.id
-            LEFT JOIN factures f ON f.client_id = c.id
-            ORDER BY marge DESC
-            LIMIT 50;
-        `;
-
-        const result = await pool.query(query, [startDate.toISOString(), endDate.toISOString()]);
-        return res.json({ success: true, data: result.rows });
-    } catch (error) {
-        console.error('Erreur profitability-clients:', error);
-        return res.status(500).json({ success: false, error: 'Erreur rentabilité clients' });
-    }
-});
-
 // GET /api/analytics/utilization - Chargeabilité (HC/HNC) vs capacité
 router.get('/utilization', authenticateToken, async (req, res) => {
     try {
-        const { period = 30, scope = 'BU', fiscal_year_id } = req.query;
-        let startDate, endDate, numDays;
+        const { period = 90, scope = 'BU', fiscal_year_id } = req.query;
 
-        if (fiscal_year_id) {
-            const fyResult = await pool.query('SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1', [fiscal_year_id]);
-            if (fyResult.rows.length > 0) {
-                startDate = new Date(fyResult.rows[0].date_debut);
-                endDate = new Date(fyResult.rows[0].date_fin);
-                numDays = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
-            }
-        }
-        if (!startDate) {
-            numDays = parseInt(period);
-            startDate = new Date();
-            startDate.setDate(startDate.getDate() - numDays);
-            endDate = new Date();
-        }
+        // Résoudre les dates : fiscal_year_id = cadre, period = sous-filtre dans l'année
+        const { startDate, endDate } = await resolveDashboardDates(pool, fiscal_year_id, period);
+        const numDays = Math.max(1, Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)));
 
         const base = `
-            SELECT 
+SELECT 
                 ${scope === 'COLLAB' ? 'c.id' : scope === 'DIVISION' ? 'd.id' : 'bu.id'} AS id,
-                ${scope === 'COLLAB' ? "(c.prenom || ' ' || c.nom)" : scope === 'DIVISION' ? 'd.nom' : 'bu.nom'} AS label,
-                SUM(CASE WHEN te.type_heures = 'HC' THEN te.heures ELSE 0 END) AS heures_hc,
-                SUM(CASE WHEN te.type_heures <> 'HC' THEN te.heures ELSE 0 END) AS heures_hnc,
+    ${scope === 'COLLAB' ? "(c.prenom || ' ' || c.nom)" : scope === 'DIVISION' ? 'd.nom' : 'bu.nom'} AS label,
+        SUM(CASE WHEN te.type_heures = 'HC' THEN te.heures ELSE 0 END) AS heures_hc,
+            SUM(CASE WHEN te.type_heures <> 'HC' THEN te.heures ELSE 0 END) AS heures_hnc,
                 COUNT(DISTINCT te.user_id) AS collaborateurs_actifs,
-                COUNT(DISTINCT te.user_id) * 8 * LEAST($3::int, 250) AS capacite_approx
+                    COUNT(DISTINCT te.user_id) * 8 * LEAST($3:: int, 250) AS capacite_approx
             FROM time_entries te
             JOIN users u ON te.user_id = u.id
             JOIN collaborateurs c ON u.collaborateur_id = c.id
             LEFT JOIN divisions d ON c.division_id = d.id
             LEFT JOIN business_units bu ON d.business_unit_id = bu.id
-            WHERE te.created_at >= $1::timestamptz AND te.created_at <= $2::timestamptz
-            GROUP BY 1,2
+            WHERE te.date_saisie >= $1::date AND te.date_saisie <= $2:: date
+            GROUP BY 1, 2
             ORDER BY heures_hc DESC
             LIMIT 100
         `;
@@ -771,24 +690,24 @@ router.get('/strategic-stats', authenticateToken, async (req, res) => {
         let paramIndex = 2;
 
         if (business_unit) {
-            whereConditions.push(`bu.id = $${paramIndex++}`);
+            whereConditions.push(`bu.id = $${paramIndex++} `);
             params.push(business_unit);
         }
 
         const whereClause = whereConditions.join(' AND ');
 
         const query = `
-            SELECT 
-                COALESCE(SUM(m.montant_honoraires), 0) as chiffre_affaires,
-                COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0) as cout_total,
-                CASE 
-                    WHEN COALESCE(SUM(m.montant_honoraires), 0) > 0 
-                    THEN ((COALESCE(SUM(m.montant_honoraires), 0) - COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0)) / COALESCE(SUM(m.montant_honoraires), 0)) * 100
-                    ELSE 0 
-                END as marge_brute,
-                COUNT(DISTINCT m.id) as total_missions,
-                COUNT(DISTINCT c.id) as total_clients,
-                COUNT(DISTINCT te.user_id) as collaborateurs_actifs
+SELECT
+COALESCE(SUM(m.montant_honoraires), 0) as chiffre_affaires,
+    COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0) as cout_total,
+    CASE 
+                    WHEN COALESCE(SUM(m.montant_honoraires), 0) > 0
+THEN((COALESCE(SUM(m.montant_honoraires), 0) - COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0)) / COALESCE(SUM(m.montant_honoraires), 0)) * 100
+                    ELSE 0
+END as marge_brute,
+    COUNT(DISTINCT m.id) as total_missions,
+    COUNT(DISTINCT c.id) as total_clients,
+    COUNT(DISTINCT te.user_id) as collaborateurs_actifs
             FROM time_entries te
             LEFT JOIN users u ON te.user_id = u.id
             LEFT JOIN collaborateurs c ON u.collaborateur_id = c.id
@@ -797,7 +716,7 @@ router.get('/strategic-stats', authenticateToken, async (req, res) => {
             LEFT JOIN business_units bu ON d.business_unit_id = bu.id
             LEFT JOIN missions m ON te.mission_id = m.id
             WHERE ${whereClause}
-        `;
+`;
 
         const result = await pool.query(query, params);
         const data = result.rows[0];
@@ -841,7 +760,7 @@ router.get('/strategic-chart-data', authenticateToken, async (req, res) => {
         let paramIndex = 2;
 
         if (business_unit) {
-            whereConditions.push(`bu.id = $${paramIndex++}`);
+            whereConditions.push(`bu.id = $${paramIndex++} `);
             params.push(business_unit);
         }
 
@@ -849,15 +768,15 @@ router.get('/strategic-chart-data', authenticateToken, async (req, res) => {
 
         // 1. Évolution mensuelle CA et marge
         const evolutionQuery = `
-            SELECT 
-                TO_CHAR(DATE_TRUNC('month', m.created_at), 'Mon') as mois,
-                DATE_TRUNC('month', m.created_at) as mois_date,
-                COALESCE(SUM(m.montant_honoraires), 0) as ca,
-                CASE 
-                    WHEN COALESCE(SUM(m.montant_honoraires), 0) > 0 
-                    THEN ((COALESCE(SUM(m.montant_honoraires), 0) - COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0)) / COALESCE(SUM(m.montant_honoraires), 0)) * 100
-                    ELSE 0 
-                END as marge
+SELECT
+TO_CHAR(DATE_TRUNC('month', m.created_at), 'Mon') as mois,
+    DATE_TRUNC('month', m.created_at) as mois_date,
+    COALESCE(SUM(m.montant_honoraires), 0) as ca,
+    CASE 
+                    WHEN COALESCE(SUM(m.montant_honoraires), 0) > 0
+THEN((COALESCE(SUM(m.montant_honoraires), 0) - COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0)) / COALESCE(SUM(m.montant_honoraires), 0)) * 100
+                    ELSE 0
+END as marge
             FROM missions m
             LEFT JOIN time_entries te ON te.mission_id = m.id
             LEFT JOIN users u ON te.user_id = u.id
@@ -867,16 +786,16 @@ router.get('/strategic-chart-data', authenticateToken, async (req, res) => {
             WHERE ${whereClause}
             GROUP BY DATE_TRUNC('month', m.created_at)
             ORDER BY mois_date ASC
-        `;
+    `;
 
         const evolutionResult = await pool.query(evolutionQuery, params);
 
         // 2. Répartition par Business Unit
         const buQuery = `
-            SELECT 
-                bu.nom as bu,
-                COALESCE(SUM(m.montant_honoraires), 0) as ca,
-                COUNT(DISTINCT m.id) as missions
+SELECT
+bu.nom as bu,
+    COALESCE(SUM(m.montant_honoraires), 0) as ca,
+    COUNT(DISTINCT m.id) as missions
             FROM business_units bu
             LEFT JOIN missions m ON m.business_unit_id = bu.id
                 AND m.created_at >= $1
@@ -885,7 +804,7 @@ router.get('/strategic-chart-data', authenticateToken, async (req, res) => {
             HAVING COALESCE(SUM(m.montant_honoraires), 0) > 0
             ORDER BY ca DESC
             LIMIT 10
-        `;
+    `;
 
         const buResult = await pool.query(buQuery, params);
 
@@ -920,7 +839,7 @@ router.get('/strategic-objectives', authenticateToken, async (req, res) => {
             SELECT type, target_value, unit
             FROM strategic_objectives
             WHERE year = $1
-        `;
+    `;
         const targetsParams = [year];
 
         if (business_unit) {
@@ -959,7 +878,7 @@ router.get('/strategic-objectives', authenticateToken, async (req, res) => {
         let paramIndex = 3;
 
         if (business_unit) {
-            whereConditions.push(`bu.id = $${paramIndex++}`);
+            whereConditions.push(`bu.id = $${paramIndex++} `);
             params.push(business_unit);
         }
 
@@ -967,9 +886,9 @@ router.get('/strategic-objectives', authenticateToken, async (req, res) => {
 
         // A. CA et Marge
         const financialQuery = `
-            SELECT 
-                COALESCE(SUM(m.montant_honoraires), 0) as ca,
-                COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0) as cout
+SELECT
+COALESCE(SUM(m.montant_honoraires), 0) as ca,
+    COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0) as cout
             FROM missions m
             LEFT JOIN time_entries te ON te.mission_id = m.id
             LEFT JOIN users u ON te.user_id = u.id
@@ -977,7 +896,7 @@ router.get('/strategic-objectives', authenticateToken, async (req, res) => {
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
             LEFT JOIN business_units bu ON m.business_unit_id = bu.id
             WHERE ${whereClause}
-        `;
+`;
 
         const financialResult = await pool.query(financialQuery, params);
         const ca = parseFloat(financialResult.rows[0].ca);
@@ -992,17 +911,17 @@ router.get('/strategic-objectives', authenticateToken, async (req, res) => {
         let oppParamIndex = 3;
 
         if (business_unit) {
-            oppWhereConditions.push(`o.business_unit_id = $${oppParamIndex++}`);
+            oppWhereConditions.push(`o.business_unit_id = $${oppParamIndex++} `);
             oppParams.push(business_unit);
         }
 
         const conversionQuery = `
-            SELECT 
-                COUNT(CASE WHEN o.statut = 'GAGNEE' THEN 1 END) as gagnees,
-                COUNT(CASE WHEN o.statut IN ('GAGNEE', 'PERDUE') THEN 1 END) as total_closes
+SELECT
+COUNT(CASE WHEN o.statut = 'GAGNEE' THEN 1 END) as gagnees,
+    COUNT(CASE WHEN o.statut IN('GAGNEE', 'PERDUE') THEN 1 END) as total_closes
             FROM opportunities o
             WHERE ${oppWhereConditions.join(' AND ')}
-        `;
+`;
 
         const conversionResult = await pool.query(conversionQuery, oppParams);
         const gagnees = parseInt(conversionResult.rows[0].gagnees);
@@ -1076,7 +995,7 @@ router.get('/financial-indicators', authenticateToken, async (req, res) => {
         let paramIndex = 1;
 
         if (business_unit) {
-            whereConditions.push(`bu.id = $${paramIndex++}`);
+            whereConditions.push(`bu.id = $${paramIndex++} `);
             params.push(business_unit);
         }
 
@@ -1084,11 +1003,11 @@ router.get('/financial-indicators', authenticateToken, async (req, res) => {
 
         // 1. EBITDA (Marge brute - approximation)
         const ebitdaQuery = `
-            SELECT 
-                COALESCE(SUM(CASE WHEN m.created_at >= $${paramIndex} THEN m.montant_honoraires ELSE 0 END), 0) as ca_actuel,
-                COALESCE(SUM(CASE WHEN m.created_at >= $${paramIndex} THEN te.heures * COALESCE(g.taux_horaire_default, 0) ELSE 0 END), 0) as cout_actuel,
-                COALESCE(SUM(CASE WHEN m.created_at BETWEEN $${paramIndex + 1} AND $${paramIndex} THEN m.montant_honoraires ELSE 0 END), 0) as ca_precedent,
-                COALESCE(SUM(CASE WHEN m.created_at BETWEEN $${paramIndex + 1} AND $${paramIndex} THEN te.heures * COALESCE(g.taux_horaire_default, 0) ELSE 0 END), 0) as cout_precedent
+SELECT
+COALESCE(SUM(CASE WHEN m.created_at >= $${paramIndex} THEN m.montant_honoraires ELSE 0 END), 0) as ca_actuel,
+    COALESCE(SUM(CASE WHEN m.created_at >= $${paramIndex} THEN te.heures * COALESCE(g.taux_horaire_default, 0) ELSE 0 END), 0) as cout_actuel,
+    COALESCE(SUM(CASE WHEN m.created_at BETWEEN $${paramIndex + 1} AND $${paramIndex} THEN m.montant_honoraires ELSE 0 END), 0) as ca_precedent,
+    COALESCE(SUM(CASE WHEN m.created_at BETWEEN $${paramIndex + 1} AND $${paramIndex} THEN te.heures * COALESCE(g.taux_horaire_default, 0) ELSE 0 END), 0) as cout_precedent
             FROM missions m
             LEFT JOIN time_entries te ON te.mission_id = m.id
             LEFT JOIN users u ON te.user_id = u.id
@@ -1096,7 +1015,7 @@ router.get('/financial-indicators', authenticateToken, async (req, res) => {
             LEFT JOIN grades g ON c.grade_actuel_id = g.id
             LEFT JOIN business_units bu ON m.business_unit_id = bu.id
             ${whereClause}
-        `;
+`;
 
         params.push(startDate.toISOString(), prevStartDate.toISOString());
         const ebitdaResult = await pool.query(ebitdaQuery, params);
@@ -1117,13 +1036,13 @@ router.get('/financial-indicators', authenticateToken, async (req, res) => {
 
         // 3. Trésorerie (encaissé - en attente approximation)
         const tresoQuery = `
-            SELECT 
-                COALESCE(SUM(CASE WHEN f.statut = 'PAYEE' AND f.date_dernier_paiement >= $1::TIMESTAMP THEN f.montant_ttc ELSE 0 END), 0) as encaisse_actuel,
-                COALESCE(SUM(CASE WHEN f.statut IN ('EMISE', 'ENVOYEE') THEN f.montant_ttc ELSE 0 END), 0) as en_attente,
-                COALESCE(SUM(CASE WHEN f.statut = 'PAYEE' AND f.date_dernier_paiement BETWEEN $2::TIMESTAMP AND $1::TIMESTAMP THEN f.montant_ttc ELSE 0 END), 0) as encaisse_precedent
+SELECT
+COALESCE(SUM(CASE WHEN f.statut = 'PAYEE' AND f.date_dernier_paiement >= $1:: TIMESTAMP THEN f.montant_ttc ELSE 0 END), 0) as encaisse_actuel,
+    COALESCE(SUM(CASE WHEN f.statut IN('EMISE', 'ENVOYEE') THEN f.montant_ttc ELSE 0 END), 0) as en_attente,
+    COALESCE(SUM(CASE WHEN f.statut = 'PAYEE' AND f.date_dernier_paiement BETWEEN $2:: TIMESTAMP AND $1:: TIMESTAMP THEN f.montant_ttc ELSE 0 END), 0) as encaisse_precedent
             FROM invoices f
             ${business_unit ? 'LEFT JOIN missions m ON f.mission_id = m.id LEFT JOIN business_units bu ON m.business_unit_id = bu.id ' + whereClause : ''}
-        `;
+`;
 
         const tresoResult = await pool.query(tresoQuery, [startDate.toISOString(), prevStartDate.toISOString()].concat(business_unit ? [business_unit] : []));
         const tresoData = tresoResult.rows[0];
@@ -1134,13 +1053,13 @@ router.get('/financial-indicators', authenticateToken, async (req, res) => {
 
         // 4. Délai de paiement moyen (DSO)
         const dsoQuery = `
-            SELECT 
-                COALESCE(AVG(CASE WHEN f.date_dernier_paiement >= $1::TIMESTAMP THEN EXTRACT(EPOCH FROM (f.date_dernier_paiement::TIMESTAMP - f.date_emission::TIMESTAMP))/86400 END), 0) as dso_actuel,
-                COALESCE(AVG(CASE WHEN f.date_dernier_paiement BETWEEN $2::TIMESTAMP AND $1::TIMESTAMP THEN EXTRACT(EPOCH FROM (f.date_dernier_paiement::TIMESTAMP - f.date_emission::TIMESTAMP))/86400 END), 0) as dso_precedent
+SELECT
+COALESCE(AVG(CASE WHEN f.date_dernier_paiement >= $1:: TIMESTAMP THEN EXTRACT(EPOCH FROM(f.date_dernier_paiement:: TIMESTAMP - f.date_emission:: TIMESTAMP)) / 86400 END), 0) as dso_actuel,
+    COALESCE(AVG(CASE WHEN f.date_dernier_paiement BETWEEN $2:: TIMESTAMP AND $1:: TIMESTAMP THEN EXTRACT(EPOCH FROM(f.date_dernier_paiement:: TIMESTAMP - f.date_emission:: TIMESTAMP)) / 86400 END), 0) as dso_precedent
             FROM invoices f
             WHERE f.statut = 'PAYEE'
             ${business_unit ? 'AND EXISTS (SELECT 1 FROM missions m LEFT JOIN business_units bu ON m.business_unit_id = bu.id WHERE f.mission_id = m.id AND bu.id = $3)' : ''}
-        `;
+`;
 
         const dsoResult = await pool.query(dsoQuery, [startDate.toISOString(), prevStartDate.toISOString()].concat(business_unit ? [business_unit] : []));
         const dsoData = dsoResult.rows[0];
@@ -1203,14 +1122,14 @@ router.get('/strategic-alerts', authenticateToken, async (req, res) => {
 
         // 1. Vérifier la marge brute (alerte si < 15%)
         const margeQuery = `
-            SELECT 
-                COALESCE(SUM(m.montant_honoraires), 0) as ca,
-                COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0) as cout,
-                CASE 
-                    WHEN COALESCE(SUM(m.montant_honoraires), 0) > 0 
-                    THEN ((COALESCE(SUM(m.montant_honoraires), 0) - COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0)) / COALESCE(SUM(m.montant_honoraires), 0)) * 100
-                    ELSE 0 
-                END as marge
+SELECT
+COALESCE(SUM(m.montant_honoraires), 0) as ca,
+    COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0) as cout,
+    CASE 
+                    WHEN COALESCE(SUM(m.montant_honoraires), 0) > 0
+THEN((COALESCE(SUM(m.montant_honoraires), 0) - COALESCE(SUM(te.heures * COALESCE(g.taux_horaire_default, 0)), 0)) / COALESCE(SUM(m.montant_honoraires), 0)) * 100
+                    ELSE 0
+END as marge
             FROM missions m
             LEFT JOIN time_entries te ON te.mission_id = m.id
             LEFT JOIN users u ON te.user_id = u.id
@@ -1228,7 +1147,7 @@ router.get('/strategic-alerts', authenticateToken, async (req, res) => {
             alertes.push({
                 type: 'danger',
                 titre: 'Marge critique',
-                message: `La marge brute est de ${marge.toFixed(1)}%, en dessous du seuil de 15%`,
+                message: `La marge brute est de ${marge.toFixed(1)}%, en dessous du seuil de 15 % `,
                 priorite: 'haute'
             });
         } else if (marge >= 15 && marge < 20) {
@@ -1242,7 +1161,7 @@ router.get('/strategic-alerts', authenticateToken, async (req, res) => {
             alertes.push({
                 type: 'success',
                 titre: 'Excellente marge',
-                message: `La marge brute atteint ${marge.toFixed(1)}%, au-dessus de l'objectif`,
+                message: `La marge brute atteint ${marge.toFixed(1)}%, au - dessus de l'objectif`,
                 priorite: 'basse'
             });
         }
@@ -1750,12 +1669,10 @@ router.get('/managed-teams', authenticateToken, async (req, res) => {
 router.get('/personal-performance', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
-        const { period = 30 } = req.query;
+        const { period = 30, fiscal_year_id } = req.query;
 
-        // Calculer les dates
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - parseInt(period));
+        // Résoudre les dates : fiscal_year_id = cadre, period = sous-filtre dans l'année
+        const { startDate, endDate } = await resolveDashboardDates(pool, fiscal_year_id, period);
 
         // KPIs personnels
         // 1. Récupérer les infos du profil (Indépendant des entrées de temps)
@@ -1983,34 +1900,25 @@ router.get('/personal-performance', authenticateToken, async (req, res) => {
 router.get('/collections', authenticateToken, async (req, res) => {
     try {
         const { period = 90, fiscal_year_id } = req.query;
-        let startDate, endDate;
 
-        if (fiscal_year_id) {
-            const fyResult = await pool.query('SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1', [fiscal_year_id]);
-            if (fyResult.rows.length > 0) {
-                startDate = new Date(fyResult.rows[0].date_debut);
-                endDate = new Date(fyResult.rows[0].date_fin);
-            }
-        }
-        if (!startDate) {
-            endDate = new Date();
-            startDate = new Date();
-            startDate.setDate(startDate.getDate() - parseInt(period));
-        }
+        // Résoudre les dates : fiscal_year_id = cadre, period = sous-filtre dans l'année
+        const { startDate, endDate } = await resolveDashboardDates(pool, fiscal_year_id, period);
 
         // KPIs de recouvrement
         const kpisQuery = `
             SELECT 
-                SUM(CASE WHEN f.statut IN ('EMISE', 'ENVOYEE', 'PAYEE') THEN f.montant_total ELSE 0 END) as facture_periode,
-                SUM(CASE WHEN f.statut = 'PAYEE' THEN f.montant_total ELSE 0 END) as encaisse_periode,
+                SUM(CASE WHEN f.statut IN ('EMISE', 'ENVOYEE', 'PAYEE', 'PAYEE_PARTIELLEMENT') THEN f.montant_ttc ELSE 0 END) as facture_periode,
+                SUM(CASE WHEN f.statut = 'PAYEE' THEN f.montant_ttc
+                         WHEN f.statut = 'PAYEE_PARTIELLEMENT' THEN f.montant_paye
+                         ELSE 0 END) as encaisse_periode,
                 SUM(CASE 
-                    WHEN f.statut IN ('EMISE', 'ENVOYEE') 
+                    WHEN f.statut IN ('EMISE', 'ENVOYEE', 'PAYEE_PARTIELLEMENT') 
                     AND f.date_echeance < CURRENT_DATE 
-                    THEN f.montant_total 
+                    THEN f.montant_restant
                     ELSE 0 
                 END) as montant_retard,
                 COUNT(CASE 
-                    WHEN f.statut IN ('EMISE', 'ENVOYEE') 
+                    WHEN f.statut IN ('EMISE', 'ENVOYEE', 'PAYEE_PARTIELLEMENT') 
                     AND f.date_echeance < CURRENT_DATE 
                     THEN 1 
                 END) as nombre_retard
@@ -2044,19 +1952,19 @@ router.get('/collections', authenticateToken, async (req, res) => {
                     WHEN CURRENT_DATE - f.date_echeance <= 90 THEN '61-90 jours'
                     ELSE '> 90 jours'
                 END as tranche,
-                COUNT(*) as nombre_factures,
-                SUM(f.montant_total) as montant_total
-            FROM invoices f
-            WHERE f.statut IN ('EMISE', 'ENVOYEE')
-            AND f.date_echeance < CURRENT_DATE
-            GROUP BY tranche
-            ORDER BY 
-                CASE tranche
-                    WHEN '0-30 jours' THEN 1
-                    WHEN '31-60 jours' THEN 2
-                    WHEN '61-90 jours' THEN 3
+                CASE 
+                    WHEN CURRENT_DATE - f.date_echeance <= 30 THEN 1
+                    WHEN CURRENT_DATE - f.date_echeance <= 60 THEN 2
+                    WHEN CURRENT_DATE - f.date_echeance <= 90 THEN 3
                     ELSE 4
-                END
+                END as sort_order,
+                COUNT(*) as nombre_factures,
+                SUM(f.montant_restant) as montant_total
+            FROM invoices f
+            WHERE f.statut IN ('EMISE', 'ENVOYEE', 'PAYEE_PARTIELLEMENT')
+            AND f.date_echeance < CURRENT_DATE
+            GROUP BY tranche, sort_order
+            ORDER BY sort_order
         `;
 
         const agingResult = await pool.query(agingQuery);
@@ -2065,15 +1973,16 @@ router.get('/collections', authenticateToken, async (req, res) => {
         const invoicesQuery = `
             SELECT 
                 f.id,
-                f.numero as numero_facture,
-                c.raison_sociale as client_nom,
-                f.montant_total,
+                f.numero_facture,
+                COALESCE(c.raison_sociale, c.nom) as client_nom,
+                f.montant_ttc,
+                f.montant_restant,
                 f.date_emission,
                 f.date_echeance,
                 CURRENT_DATE - f.date_echeance as jours_retard
             FROM invoices f
             LEFT JOIN clients c ON f.client_id = c.id
-            WHERE f.statut IN ('EMISE', 'ENVOYEE')
+            WHERE f.statut IN ('EMISE', 'ENVOYEE', 'PAYEE_PARTIELLEMENT')
             AND f.date_echeance < CURRENT_DATE
             ORDER BY jours_retard DESC
             LIMIT 50
@@ -2085,8 +1994,10 @@ router.get('/collections', authenticateToken, async (req, res) => {
         const monthlyQuery = `
             SELECT 
                 DATE_TRUNC('month', f.date_emission) as mois,
-                SUM(CASE WHEN f.statut IN ('EMISE', 'ENVOYEE', 'PAYEE') THEN f.montant_total ELSE 0 END) as facture,
-                SUM(CASE WHEN f.statut = 'PAYEE' THEN f.montant_total ELSE 0 END) as encaisse
+                SUM(CASE WHEN f.statut IN ('EMISE', 'ENVOYEE', 'PAYEE', 'PAYEE_PARTIELLEMENT') THEN f.montant_ttc ELSE 0 END) as facture,
+                SUM(CASE WHEN f.statut = 'PAYEE' THEN f.montant_ttc
+                         WHEN f.statut = 'PAYEE_PARTIELLEMENT' THEN f.montant_paye
+                         ELSE 0 END) as encaisse
             FROM invoices f
             WHERE f.date_emission >= $1
             AND f.date_emission <= $2
@@ -2098,21 +2009,18 @@ router.get('/collections', authenticateToken, async (req, res) => {
 
         // Top clients en retard
         const topClientsQuery = `
-            WITH paiements AS (
-                SELECT ip.invoice_id, COALESCE(SUM(ip.montant), 0) AS montant_paye
-                FROM invoice_payments ip
-                GROUP BY ip.invoice_id
-            )
-            SELECT c.id AS client_id, c.nom AS client_nom, c.sigle AS client_sigle,
-                   SUM(GREATEST(COALESCE(f.montant_total, 0) - COALESCE(p.montant_paye, 0), 0)) AS montant_retard,
+            SELECT c.id AS client_id,
+                   COALESCE(c.raison_sociale, c.nom) AS client_nom,
+                   c.sigle AS client_sigle,
+                   SUM(COALESCE(f.montant_restant, 0)) AS montant_retard,
+                   COUNT(f.id) as nb_factures,
                    MAX(GREATEST(CURRENT_DATE - f.date_echeance, 0)) AS retard_moyen
             FROM invoices f
             JOIN clients c ON c.id = f.client_id
-            LEFT JOIN paiements p ON p.invoice_id = f.id
-            WHERE f.statut IN ('EMISE', 'ENVOYEE')
+            WHERE f.statut IN ('EMISE', 'ENVOYEE', 'PAYEE_PARTIELLEMENT')
             AND f.date_echeance < CURRENT_DATE
-            GROUP BY c.id, c.nom, c.sigle
-            HAVING SUM(GREATEST(COALESCE(f.montant_total, 0) - COALESCE(p.montant_paye, 0), 0)) > 0
+            AND COALESCE(f.montant_restant, 0) > 0
+            GROUP BY c.id, c.nom, c.sigle, c.raison_sociale
             ORDER BY montant_retard DESC
             LIMIT 20
         `;
@@ -2139,6 +2047,7 @@ router.get('/collections', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erreur collections:', error);
+        require('fs').writeFileSync('collection_error.txt', error.stack || error.toString());
         res.status(500).json({
             success: false,
             error: 'Erreur lors de la récupération des données de recouvrement'
@@ -2300,6 +2209,234 @@ router.get('/missions-progress', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Erreur missions-progress:', error);
         res.status(500).json({ success: false, error: 'Erreur lors de la récupération de la progression des missions' });
+    }
+});
+
+// ===== ENDPOINTS POUR DASHBOARD RENTABILITÉ =====
+
+// Helper pour résoudre les dates : fiscal_year_id définit le cadre, period est un sous-filtre dedans
+async function resolveProfitabilityDates(pool, fiscal_year_id, period) {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // fin de journée
+
+    if (fiscal_year_id) {
+        const fyResult = await pool.query(
+            'SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1',
+            [fiscal_year_id]
+        );
+        if (fyResult.rows.length > 0) {
+            const fyStart = new Date(fyResult.rows[0].date_debut);
+            const fyEnd = new Date(fyResult.rows[0].date_fin);
+
+            // Fin effective = MIN(fin année fiscale, aujourd'hui)
+            const effectiveEnd = fyEnd < today ? fyEnd : today;
+
+            // Début effectif selon la période choisie (sous-filtre dans l'année)
+            const periodDays = parseInt(period || 365);
+            const periodStart = new Date(effectiveEnd);
+            periodStart.setDate(periodStart.getDate() - periodDays);
+            periodStart.setHours(0, 0, 0, 0);
+
+            // Début effectif = MAX(début année fiscale, début période)
+            const effectiveStart = periodStart > fyStart ? periodStart : fyStart;
+
+            return { startDate: effectiveStart, endDate: effectiveEnd, fyStart, fyEnd };
+        }
+    }
+
+    // Fallback sans année fiscale : fenêtre glissante
+    const endDate = today;
+    const startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - parseInt(period || 180));
+    startDate.setHours(0, 0, 0, 0);
+    return { startDate, endDate };
+}
+
+// GET /api/analytics/profitability-missions - Rentabilité par mission
+router.get('/profitability-missions', authenticateToken, async (req, res) => {
+    try {
+        const { period = 365, fiscal_year_id } = req.query;
+        const { startDate, endDate } = await resolveProfitabilityDates(pool, fiscal_year_id, period);
+
+        // Paramètres : $1 = début période effective, $2 = fin période effective
+        // Si fiscal_year_id : missions filtrées par l'année uniquement (pas par date)
+        // Si pas de fiscal_year_id : missions filtrées par date_debut dans la fenêtre
+        const params = [startDate.toISOString(), endDate.toISOString()];
+        let missionFilter;
+        if (fiscal_year_id) {
+            params.push(fiscal_year_id);
+            missionFilter = `m.fiscal_year_id = $${params.length}`;
+        } else {
+            missionFilter = `m.date_debut <= $2 AND (m.date_fin IS NULL OR m.date_fin >= $1)`;
+        }
+
+        const query = `
+            WITH mission_revenue AS (
+                -- Toutes les factures de la sous-période pour les missions de l'année
+                SELECT
+                    i.mission_id,
+                    COALESCE(SUM(i.montant_ttc), 0) AS total_facture
+                FROM invoices i
+                WHERE i.statut NOT IN ('BROUILLON', 'ANNULEE')
+                  AND i.date_emission >= $1
+                  AND i.date_emission <= $2
+                GROUP BY i.mission_id
+            ),
+            mission_cost AS (
+                -- Coût des heures saisies dans la sous-période
+                SELECT
+                    te.mission_id,
+                    COALESCE(SUM(
+                        te.heures * COALESCE(
+                            (SELECT th.taux_horaire
+                             FROM taux_horaires th
+                             WHERE th.grade_id = col.grade_actuel_id
+                               AND th.statut = 'ACTIF'
+                               AND (th.date_fin_effet IS NULL OR th.date_fin_effet >= te.date_saisie)
+                             ORDER BY th.date_effet DESC
+                             LIMIT 1),
+                            0
+                        )
+                    ), 0) AS total_cout
+                FROM time_entries te
+                LEFT JOIN users u ON te.user_id = u.id
+                LEFT JOIN collaborateurs col ON u.collaborateur_id = col.id OR col.user_id = u.id
+                WHERE te.date_saisie >= $1
+                  AND te.date_saisie <= $2
+                GROUP BY te.mission_id
+            )
+            SELECT
+                m.id,
+                m.nom AS mission_nom,
+                COALESCE(cl.raison_sociale, cl.nom) AS client_nom,
+                -- Facturé : invoices de la période, sinon honoraires prévus de la mission
+                COALESCE(NULLIF(mr.total_facture, 0), m.montant_honoraires, 0) AS facture,
+                COALESCE(mc.total_cout, 0) AS cout_charge,
+                COALESCE(NULLIF(mr.total_facture, 0), m.montant_honoraires, 0) - COALESCE(mc.total_cout, 0) AS marge,
+                m.statut,
+                m.date_debut,
+                m.date_fin
+            FROM missions m
+            LEFT JOIN clients cl ON m.client_id = cl.id
+            LEFT JOIN mission_revenue mr ON mr.mission_id = m.id
+            LEFT JOIN mission_cost mc ON mc.mission_id = m.id
+            WHERE ${missionFilter}
+            ORDER BY marge DESC
+            LIMIT 50
+        `;
+
+        const result = await pool.query(query, params);
+
+        res.json({
+            success: true,
+            data: result.rows,
+            meta: {
+                startDate: startDate.toISOString().split('T')[0],
+                endDate: endDate.toISOString().split('T')[0],
+                total: result.rowCount
+            }
+        });
+    } catch (error) {
+        console.error('Erreur profitability-missions:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors du calcul de la rentabilité par mission',
+            details: error.message
+        });
+    }
+});
+
+// GET /api/analytics/profitability-clients - Rentabilité par client
+router.get('/profitability-clients', authenticateToken, async (req, res) => {
+    try {
+        const { period = 365, fiscal_year_id } = req.query;
+        const { startDate, endDate } = await resolveProfitabilityDates(pool, fiscal_year_id, period);
+
+        const params = [startDate.toISOString(), endDate.toISOString()];
+        let missionFilter;
+        if (fiscal_year_id) {
+            params.push(fiscal_year_id);
+            missionFilter = `m.fiscal_year_id = $${params.length}`;
+        } else {
+            missionFilter = `m.date_debut <= $2 AND (m.date_fin IS NULL OR m.date_fin >= $1)`;
+        }
+
+        const query = `
+            WITH client_facture AS (
+                SELECT
+                    m.client_id,
+                    COALESCE(SUM(i.montant_ttc), 0) AS total_facture_real,
+                    COALESCE(SUM(m.montant_honoraires), 0) AS total_honoraires
+                FROM missions m
+                LEFT JOIN invoices i ON i.mission_id = m.id
+                    AND i.statut NOT IN ('BROUILLON', 'ANNULEE')
+                    AND i.date_emission >= $1
+                    AND i.date_emission <= $2
+                WHERE ${missionFilter}
+                GROUP BY m.client_id
+            ),
+            client_cost AS (
+                SELECT
+                    m.client_id,
+                    COALESCE(SUM(
+                        te.heures * COALESCE(
+                            (SELECT th.taux_horaire
+                             FROM taux_horaires th
+                             WHERE th.grade_id = col.grade_actuel_id
+                               AND th.statut = 'ACTIF'
+                               AND (th.date_fin_effet IS NULL OR th.date_fin_effet >= te.date_saisie)
+                             ORDER BY th.date_effet DESC
+                             LIMIT 1),
+                            0
+                        )
+                    ), 0) AS total_cout
+                FROM time_entries te
+                LEFT JOIN missions m ON te.mission_id = m.id
+                LEFT JOIN users u ON te.user_id = u.id
+                LEFT JOIN collaborateurs col ON u.collaborateur_id = col.id OR col.user_id = u.id
+                WHERE te.date_saisie >= $1
+                  AND te.date_saisie <= $2
+                  AND m.client_id IS NOT NULL
+                GROUP BY m.client_id
+            )
+            SELECT
+                cl.id AS client_id,
+                COALESCE(cl.raison_sociale, cl.nom) AS client_nom,
+                GREATEST(
+                    COALESCE(cf.total_facture_real, 0),
+                    COALESCE(cf.total_honoraires, 0)
+                ) AS facture,
+                COALESCE(cc.total_cout, 0) AS cout_charge,
+                GREATEST(
+                    COALESCE(cf.total_facture_real, 0),
+                    COALESCE(cf.total_honoraires, 0)
+                ) - COALESCE(cc.total_cout, 0) AS marge
+            FROM clients cl
+            INNER JOIN client_facture cf ON cf.client_id = cl.id
+            LEFT JOIN client_cost cc ON cc.client_id = cl.id
+            WHERE cf.total_facture_real > 0 OR cf.total_honoraires > 0
+            ORDER BY marge DESC
+            LIMIT 30
+        `;
+
+        const result = await pool.query(query, params);
+
+        res.json({
+            success: true,
+            data: result.rows,
+            meta: {
+                startDate: startDate.toISOString().split('T')[0],
+                endDate: endDate.toISOString().split('T')[0],
+                total: result.rowCount
+            }
+        });
+    } catch (error) {
+        console.error('Erreur profitability-clients:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors du calcul de la rentabilité par client',
+            details: error.message
+        });
     }
 });
 

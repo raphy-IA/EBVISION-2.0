@@ -18,12 +18,20 @@ class Evaluation {
 
     static async createCampaign(data) {
         const { fiscal_year_id, template_id, name, description, start_date, end_date, target_type, target_id, created_by } = data;
+
+        let finalFiscalYearId = fiscal_year_id;
+        if (!finalFiscalYearId) {
+            const FiscalYear = require('./FiscalYear');
+            const activeFy = await FiscalYear.getCurrent();
+            finalFiscalYearId = activeFy ? activeFy.id : null;
+        }
+
         const sql = `
             INSERT INTO evaluation_campaigns (fiscal_year_id, template_id, name, description, start_date, end_date, target_type, target_id, created_by)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
         `;
-        const result = await query(sql, [fiscal_year_id, template_id, name, description, start_date, end_date, target_type, target_id, created_by]);
+        const result = await query(sql, [finalFiscalYearId, template_id, name, description, start_date, end_date, target_type, target_id, created_by]);
         return result.rows[0];
     }
 

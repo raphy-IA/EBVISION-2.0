@@ -8,14 +8,15 @@ let missionsRows = [], clientsRows = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!isAuthenticated || !isAuthenticated()) { window.location.href = 'login.html'; return; }
+
   document.getElementById('refresh-btn').addEventListener('click', loadAll);
-  if (document.getElementById('period-select')) {
-    document.getElementById('period-select').addEventListener('change', loadAll);
-  }
+  document.getElementById('period-select')?.addEventListener('change', loadAll);
+
   initCharts();
 
   const afterLoad = () => {
     if (typeof FiscalYearSelector !== 'undefined' && document.getElementById('fiscalYearFilter')) {
+      // FiscalYearSelector auto-selects EN_COURS year — both fiscal_year_id and period are always sent
       FiscalYearSelector.init('fiscalYearFilter', () => loadAll());
     } else {
       loadAll();
@@ -28,13 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadAll() {
-  const periodEl = document.getElementById('period-select');
-  const period = periodEl ? parseInt(periodEl.value) : 180;
+  const period = parseInt(document.getElementById('period-select')?.value || 180);
   const fiscalYearId = document.getElementById('fiscalYearFilter')?.value || '';
 
-  const params = fiscalYearId
-    ? `fiscal_year_id=${fiscalYearId}`
-    : `period=${period}`;
+  // Toujours envoyer fiscal_year_id + period (la période est un sous-filtre dans l'année fiscale)
+  const params = new URLSearchParams();
+  if (fiscalYearId) params.set('fiscal_year_id', fiscalYearId);
+  params.set('period', period);
 
   const [missions, clients] = await Promise.all([
     fetchJson(`${API_BASE_URL}/profitability-missions?${params}`),
@@ -60,25 +61,33 @@ function updateCharts() {
 
 function renderTables() {
   const mBody = document.getElementById('missions-table');
-  mBody.innerHTML = missionsRows.map(x => `
+  if (missionsRows.length === 0) {
+    mBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3"><i class="fas fa-inbox me-2"></i>Aucune mission sur la période sélectionnée</td></tr>';
+  } else {
+    mBody.innerHTML = missionsRows.map(x => `
     <tr>
       <td>${escapeHtml(x.mission_nom)}</td>
       <td>${escapeHtml(x.client_nom || '-')}</td>
       <td class="text-end">${formatCurrency(x.facture || 0)}</td>
       <td class="text-end">${formatCurrency(x.cout_charge || 0)}</td>
-      <td class="text-end">${formatCurrency(x.marge || 0)}</td>
+      <td class="text-end ${Number(x.marge) >= 0 ? 'text-success' : 'text-danger'}">${formatCurrency(x.marge || 0)}</td>
     </tr>
   `).join('');
+  }
 
   const cBody = document.getElementById('clients-table');
-  cBody.innerHTML = clientsRows.map(x => `
+  if (clientsRows.length === 0) {
+    cBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3"><i class="fas fa-inbox me-2"></i>Aucun client avec des missions sur la période sélectionnée</td></tr>';
+  } else {
+    cBody.innerHTML = clientsRows.map(x => `
     <tr>
       <td>${escapeHtml(x.client_nom)}</td>
       <td class="text-end">${formatCurrency(x.facture || 0)}</td>
       <td class="text-end">${formatCurrency(x.cout_charge || 0)}</td>
-      <td class="text-end">${formatCurrency(x.marge || 0)}</td>
+      <td class="text-end ${Number(x.marge) >= 0 ? 'text-success' : 'text-danger'}">${formatCurrency(x.marge || 0)}</td>
     </tr>
   `).join('');
+  }
 }
 
 function initCharts() {
@@ -95,7 +104,19 @@ function initCharts() {
 }
 
 function updateBar(chart, labels, values, label) { chart.data.labels = labels; chart.data.datasets[0].data = values; chart.data.datasets[0].label = label; chart.update(); }
-async function fetchJson(url) { const r = await authenticatedFetch(url); return r.ok ? r.json() : null; }
+async function fetchJson(url) {
+  try {
+    const r = await authenticatedFetch(url);
+    if (!r.ok) {
+      console.error('Erreur API rentabilite:', url, r.status, await r.text());
+      return null;
+    }
+    return r.json();
+  } catch (e) {
+    console.error('fetchJson erreur:', url, e);
+    return null;
+  }
+}
 async function loadFinancialSettingsForDashboardRentabilite() {
   try {
     const response = await authenticatedFetch('/api/financial-settings');

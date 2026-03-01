@@ -186,17 +186,15 @@ async function loadTeamData() {
         const period = document.getElementById('period-select')?.value || 30;
         const fiscalYearId = document.getElementById('fiscalYearFilter')?.value || '';
 
-        console.log(`📊 Chargement données équipe - Type: ${currentTeamType}, ID: ${currentTeamId}, ${fiscalYearId ? 'Année fiscale: ' + fiscalYearId : 'Période: ' + period + 'j'}`);
+        console.log(`📊 Chargement données équipe - Type: ${currentTeamType}, ID: ${currentTeamId}, ${fiscalYearId ? 'FY: ' + fiscalYearId : ''} période: ${period}j`);
 
-        let url = `${API_BASE_URL}?team_type=${currentTeamType}`;
-        if (fiscalYearId) {
-            url += `&fiscal_year_id=${fiscalYearId}`;
-        } else {
-            url += `&period=${period}`;
-        }
-        if (currentTeamId) {
-            url += `&team_id=${currentTeamId}`;
-        }
+        // Toujours envoyer les deux : fiscal_year_id (cadre) + period (sous-filtre dans l'année)
+        const params = new URLSearchParams({ team_type: currentTeamType });
+        if (fiscalYearId) params.set('fiscal_year_id', fiscalYearId);
+        params.set('period', period);
+        if (currentTeamId) params.set('team_id', currentTeamId);
+
+        let url = `${API_BASE_URL}?${params}`;
 
         const response = await authenticatedFetch(url);
 

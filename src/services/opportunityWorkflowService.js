@@ -1,7 +1,7 @@
 const { pool } = require('../utils/database');
 
 class OpportunityWorkflowService {
-    
+
     /**
      * Démarrer une étape d'opportunité
      */
@@ -132,7 +132,7 @@ class OpportunityWorkflowService {
                     actionDescription += ` - Détails: ${details}`;
                 }
             }
-            
+
             await this.addStageAction(stageId, {
                 action_type: 'STAGE_COMPLETE',
                 action_title: 'Étape terminée',
@@ -164,7 +164,7 @@ class OpportunityWorkflowService {
                         WHERE id = $1
                     `, [stage.opportunity_id]);
                 }
-                
+
                 return updatedStage;
             }
 
@@ -197,13 +197,39 @@ class OpportunityWorkflowService {
                 FROM stage_required_documents
                 WHERE stage_template_id = $1 AND is_mandatory = true
             `;
-            const [ra, rd] = await Promise.all([
+            const templateQuery = `
+                SELECT required_actions, required_documents
+                FROM opportunity_stage_templates
+                WHERE id = $1
+            `;
+            const [ra, rd, template] = await Promise.all([
                 pool.query(reqActionsQuery, [stage.stage_template_id]),
-                pool.query(reqDocsQuery, [stage.stage_template_id])
+                pool.query(reqDocsQuery, [stage.stage_template_id]),
+                pool.query(templateQuery, [stage.stage_template_id])
             ]);
 
             const requiredActions = ra.rows.map(r => r.action_type);
             const requiredDocs = rd.rows.map(r => r.document_type);
+
+            // Ajouter les exigences JSON legacy si présentes
+            if (template.rows.length > 0) {
+                const legacyActions = template.rows[0].required_actions;
+                const legacyDocs = template.rows[0].required_documents;
+
+                if (legacyActions) {
+                    try {
+                        const parsedActions = typeof legacyActions === 'string' ? JSON.parse(legacyActions) : legacyActions;
+                        if (Array.isArray(parsedActions)) requiredActions.push(...parsedActions);
+                    } catch (e) { console.error('Erreur parsing legacyActions', e); }
+                }
+
+                if (legacyDocs) {
+                    try {
+                        const parsedDocs = typeof legacyDocs === 'string' ? JSON.parse(legacyDocs) : legacyDocs;
+                        if (Array.isArray(parsedDocs)) requiredDocs.push(...parsedDocs);
+                    } catch (e) { console.error('Erreur parsing legacyDocs', e); }
+                }
+            }
 
             // Si aucune exigence configurée, considérer OK pour compatibilité
             if (requiredActions.length === 0 && requiredDocs.length === 0) return true;
@@ -377,7 +403,7 @@ class OpportunityWorkflowService {
             `;
 
             const result = await pool.query(nextStageQuery, [opportunityId, currentStageOrder + 1]);
-            
+
             if (result.rows.length > 0) {
                 const nextStage = result.rows[0];
                 // Démarrer automatiquement l'étape suivante
@@ -524,7 +550,7 @@ class OpportunityWorkflowService {
             for (const stage of overdueStages) {
                 // Mettre à jour le niveau de risque
                 await this.updateStageRiskAndPriority(stage.id);
-                
+
                 // Ajouter une action d'alerte
                 await this.addStageAction(stage.id, {
                     action_type: 'OVERDUE_ALERT',
@@ -566,7 +592,7 @@ class OpportunityWorkflowService {
                 AND os.due_date < CURRENT_DATE
                 AND o.statut = 'EN_COURS'
             `;
-            
+
             const result = await pool.query(query);
             return result.rows;
         } catch (error) {

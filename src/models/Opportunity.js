@@ -216,6 +216,13 @@ class Opportunity {
 
     static async create(data) {
         try {
+            let finalFiscalYearId = data.fiscal_year_id;
+            if (!finalFiscalYearId) {
+                const FiscalYear = require('./FiscalYear');
+                const activeFy = await FiscalYear.getCurrent();
+                finalFiscalYearId = activeFy ? activeFy.id : null;
+            }
+
             const query = `
                 INSERT INTO opportunities (
                     nom, description, client_id, collaborateur_id, business_unit_id, 
@@ -241,7 +248,7 @@ class Opportunity {
                 data.date_fermeture_prevue,
                 data.notes,
                 data.created_by || null,
-                data.fiscal_year_id || null
+                finalFiscalYearId
             ];
 
             const result = await pool.query(query, values);

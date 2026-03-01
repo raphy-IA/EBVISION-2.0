@@ -178,7 +178,9 @@ class Invoice {
                 bu.code as business_unit_code,
                 m.division_id,
                 d.nom as division_nom,
-                d.code as division_code
+                d.code as division_code,
+                m.associe_id,
+                m.manager_id
             FROM invoices i
             LEFT JOIN missions m ON i.mission_id = m.id
             LEFT JOIN clients c ON i.client_id = c.id

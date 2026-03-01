@@ -185,19 +185,31 @@ router.get('/', authenticateToken, async (req, res) => {
         const collaborateur = collaborateurResult.rows[0];
         const collaborateurId = collaborateur.id;
 
-        // Calculer la date de début
+        // Résoudre les dates : fiscal_year_id = cadre, period = sous-filtre dans l'année
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
         let startDate, endDate;
+
         if (fiscal_year_id) {
             const fyResult = await pool.query('SELECT date_debut, date_fin FROM fiscal_years WHERE id = $1', [fiscal_year_id]);
             if (fyResult.rows.length > 0) {
-                startDate = new Date(fyResult.rows[0].date_debut);
-                endDate = new Date(fyResult.rows[0].date_fin);
+                const fyStart = new Date(fyResult.rows[0].date_debut);
+                fyStart.setHours(0, 0, 0, 0);
+                const fyEnd = new Date(fyResult.rows[0].date_fin);
+                // Fin effective = MIN(fin année, aujourd'hui)
+                endDate = fyEnd < today ? fyEnd : new Date(today);
+                // Début = MAX(début année, fin - N jours)
+                const periodStart = new Date(endDate);
+                periodStart.setDate(periodStart.getDate() - parseInt(period));
+                periodStart.setHours(0, 0, 0, 0);
+                startDate = periodStart > fyStart ? periodStart : fyStart;
             }
         }
         if (!startDate) {
-            endDate = new Date();
-            startDate = new Date();
+            endDate = new Date(today);
+            startDate = new Date(today);
             startDate.setDate(startDate.getDate() - parseInt(period));
+            startDate.setHours(0, 0, 0, 0);
         }
 
         let teamData;

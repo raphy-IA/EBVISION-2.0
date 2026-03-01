@@ -77,23 +77,25 @@ if [ -f .env ]; then
 fi
 
 # Backup PostgreSQL
-log_info "Création d'une sauvegarde de sécurité..."
-PGPASSWORD=$DB_PASSWORD pg_dump \
+log_info "Création d'une sauvegarde de sécurité obligatoire..."
+if ! PGPASSWORD=$DB_PASSWORD pg_dump \
     -h ${DB_HOST:-localhost} \
     -p ${DB_PORT:-5432} \
     -U ${DB_USER:-postgres} \
     -d ${DB_NAME:-eb_vision_2_0} \
     -F c \
-    -f "$DB_BACKUP_FILE" 2>/dev/null || {
-        log_warning "Impossible de créer la sauvegarde (pg_dump non disponible ou erreur de connexion)"
-        log_warning "Continuer sans sauvegarde ? (Ctrl+C pour annuler, Entrée pour continuer)"
-        read
-    }
+    -f "$DB_BACKUP_FILE"; then
+        log_error "Échec critique de la sauvegarde de la base de données !"
+        log_error "Le déploiement est interrompu par sécurité."
+        exit 1
+fi
 
-if [ -f "$DB_BACKUP_FILE" ]; then
-    log_success "Sauvegarde créée: $DB_BACKUP_FILE"
+# Vérifier que le fichier existe et n'est pas vide
+if [ -s "$DB_BACKUP_FILE" ]; then
+    log_success "Sauvegarde créée et vérifiée: $DB_BACKUP_FILE ($(du -h "$DB_BACKUP_FILE" | cut -f1))"
 else
-    log_warning "Aucune sauvegarde créée, continuer quand même..."
+    log_error "Le fichier de sauvegarde est vide ou inexistant !"
+    exit 1
 fi
 
 # 2. Git pull (sauf si --skip-pull)

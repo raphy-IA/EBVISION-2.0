@@ -164,16 +164,21 @@ if (typeof AuthManager === 'undefined') {
                     }
                 });
 
-                if (!response.ok) {
-                    console.log('🔒 Token invalide, redirection vers la page de connexion');
+                if (response.status === 401) {
+                    console.log('🔒 Token expiré ou invalide (401), redirection vers la page de connexion');
                     this.forceLogout();
+                } else if (!response.ok) {
+                    // Erreur serveur (500, 503, etc.) ou timeout
+                    // On ne déconnecte pas l'utilisateur pour une erreur technique temporaire
+                    console.warn(`⚠️ Erreur serveur lors de la vérification (${response.status}). Session maintenue.`);
                 } else {
                     console.log('✅ Token valide, utilisateur authentifié');
                     this.updateUserDisplay();
                 }
             } catch (error) {
-                console.log('❌ Erreur lors de la vérification du token:', error);
-                this.forceLogout();
+                // Erreur réseau (DNS, offline, etc.)
+                // On ne déconnecte pas l'utilisateur si internet est coupé ou serveur injoignable
+                console.error('❌ Erreur réseau lors de la vérification du token. Session maintenue.', error);
             }
         }
 
@@ -183,7 +188,7 @@ if (typeof AuthManager === 'undefined') {
                 if (!this.isLoggingOut) {
                     this.checkAuthStatus();
                 }
-            }, 5 * 60 * 1000); // Vérifier toutes les 5 minutes
+            }, 2 * 60 * 1000); // Vérifier toutes les 2 minutes pour plus de réactivité
         }
 
         // === Gestion de l'inactivité utilisateur ===
@@ -199,6 +204,10 @@ if (typeof AuthManager === 'undefined') {
             window.addEventListener('touchstart', reset);
             window.addEventListener('scroll', reset, { passive: true });
 
+            // Stocker le dernier moment d'activité dans le localStorage
+            // pour synchroniser l'inactivité entre les onglets
+            localStorage.setItem('lastActivityTime', Date.now().toString());
+
             // Démarrer le timer une première fois
             this.resetInactivityTimer();
         }
@@ -209,13 +218,36 @@ if (typeof AuthManager === 'undefined') {
                 return;
             }
 
+            // Mettre à jour le timestamp d'activité
+            localStorage.setItem('lastActivityTime', Date.now().toString());
+
             if (this.inactivityTimeoutId) {
                 clearTimeout(this.inactivityTimeoutId);
             }
 
             this.inactivityTimeoutId = setTimeout(() => {
-                this.logoutAfterInactivity();
+                this.checkInactivityAcrossTabs();
             }, this.inactivityDelay);
+        }
+
+        // Vérifier l'inactivité en tenant compte de tous les onglets
+        checkInactivityAcrossTabs() {
+            if (this.isLoggingOut) return;
+
+            const lastActivity = parseInt(localStorage.getItem('lastActivityTime') || '0');
+            const now = Date.now();
+            const timePassed = now - lastActivity;
+
+            if (timePassed >= this.inactivityDelay) {
+                console.log('🔒 Inactivité détectée (15 min), déconnexion...');
+                this.logoutAfterInactivity();
+            } else {
+                // L'activité a eu lieu dans un autre onglet, on relance le timer
+                const remaining = this.inactivityDelay - timePassed;
+                this.inactivityTimeoutId = setTimeout(() => {
+                    this.checkInactivityAcrossTabs();
+                }, remaining);
+            }
         }
 
         // Déconnexion déclenchée par inactivité

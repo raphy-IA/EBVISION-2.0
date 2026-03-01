@@ -436,7 +436,7 @@ router.post('/', authenticateToken, async (req, res) => {
             // Données de base de la mission
             code, nom, description, client_id, opportunity_id, mission_type_id,
             date_debut, date_fin_prevue, budget_prevue, taux_horaire_moyen,
-            division_id, responsable_id, associe_id, priorite, statut, notes,
+            division_id, responsable_id, manager_id, associe_id, priorite, statut, notes,
 
             // Configuration financière
             montant_honoraires, devise, description_honoraires,
@@ -455,6 +455,8 @@ router.post('/', authenticateToken, async (req, res) => {
         } = req.body;
 
         // 1. Créer la mission
+        console.log(`🚀 Création de mission : Nom="${nom}", ClientID=${client_id}, OppID=${opportunity_id}`);
+
         const missionQuery = `
             INSERT INTO missions (
                 code, nom, description, client_id, collaborateur_id, statut, type_mission,
@@ -462,21 +464,22 @@ router.post('/', authenticateToken, async (req, res) => {
                 fiscal_year_id, opportunity_id, mission_type_id, montant_honoraires,
                 description_honoraires, montant_debours, description_debours,
                 conditions_paiement, pourcentage_avance, business_unit_id, associe_id,
-                division_id, kyc_path, contract_path
+                manager_id, division_id, kyc_path, contract_path
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29
             ) RETURNING *
         `;
 
-        // Récupérer l'année fiscale en cours
+        // Récupérer l'année fiscale en cours (basé sur le statut uniquement)
         const fiscalYearQuery = `
             SELECT id FROM fiscal_years 
-            WHERE date_debut <= CURRENT_DATE AND date_fin >= CURRENT_DATE 
-            AND statut = 'EN_COURS' 
+            WHERE statut = 'EN_COURS' 
             LIMIT 1
         `;
         const fiscalYearResult = await client.query(fiscalYearQuery);
         const fiscal_year_id = fiscalYearResult.rows.length > 0 ? fiscalYearResult.rows[0].id : null;
+
+        console.log(`📅 Année fiscale détectée : ${fiscal_year_id}`);
 
         const missionResult = await client.query(missionQuery, [
             code, nom, description, client_id, responsable_id, statut || 'PLANIFIEE', 'MISSION',
@@ -484,7 +487,7 @@ router.post('/', authenticateToken, async (req, res) => {
             fiscal_year_id, opportunity_id, mission_type_id, montant_honoraires,
             description_honoraires, montant_debours, description_debours,
             conditions_paiement ? JSON.stringify(conditions_paiement) : null, pourcentage_avance, business_unit_id, associe_id,
-            division_id, kyc_path, contract_path
+            manager_id, division_id, kyc_path, contract_path
         ]);
 
         const mission = missionResult.rows[0];

@@ -1474,7 +1474,7 @@
         async function loadExistingClients() {
             try {
                 console.log('🔄 Chargement des clients existants...');
-                const response = await fetch(`/api/clients`, {
+                const response = await fetch(`/api/clients?limit=10000&sortBy=nom&sortOrder=ASC`, {
                     headers: getAuthHeader()
                 });
 

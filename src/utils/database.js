@@ -8,9 +8,9 @@ const pool = new Pool({
     database: process.env.DB_NAME || 'eb_vision_2_0',
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'password',
-    max: 20, // Nombre maximum de connexions dans le pool
-    idleTimeoutMillis: 30000, // Fermer les connexions inactives après 30 secondes
-    connectionTimeoutMillis: 2000, // Timeout de connexion de 2 secondes
+    max: 50, // Augmenté de 20 à 50 pour mieux supporter la charge en production
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000, // Augmenté à 5s pour éviter les timeouts sous forte charge
 });
 
 // Test de connexion
@@ -18,11 +18,11 @@ async function connectDatabase() {
     try {
         const client = await pool.connect();
         console.log('✅ Connexion à PostgreSQL réussie');
-        
+
         // Test de requête simple
         const result = await client.query('SELECT NOW()');
         console.log('📅 Heure du serveur:', result.rows[0].now);
-        
+
         client.release();
         return true;
     } catch (error) {

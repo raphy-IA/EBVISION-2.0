@@ -397,9 +397,16 @@ class ProspectingTemplate {
 
 class ProspectingCampaign {
     static async create(data) {
+        let finalFiscalYearId = data.fiscal_year_id;
+        if (!finalFiscalYearId) {
+            const FiscalYear = require('./FiscalYear');
+            const activeFy = await FiscalYear.getCurrent();
+            finalFiscalYearId = activeFy ? activeFy.id : null;
+        }
+
         const res = await pool.query(
-            `INSERT INTO prospecting_campaigns(name, channel, template_id, business_unit_id, division_id, status, scheduled_date, created_by, responsible_id)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+            `INSERT INTO prospecting_campaigns(name, channel, template_id, business_unit_id, division_id, status, scheduled_date, created_by, responsible_id, fiscal_year_id)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
             [
                 data.name,
                 data.channel,
@@ -409,7 +416,8 @@ class ProspectingCampaign {
                 data.status || 'DRAFT',
                 data.scheduled_date || null,
                 data.created_by || null,
-                data.responsible_id || null
+                data.responsible_id || null,
+                finalFiscalYearId
             ]
         );
 
@@ -1172,7 +1180,6 @@ class ProspectingCampaign {
                 if (existingClient.rows.length > 0) {
                     clientId = existingClient.rows[0].id;
                 } else {
-                    // Créer un nouveau client à partir de l'entreprise
                     const newClient = await pool.query(`
                         INSERT INTO clients (nom, email, statut, source_prospection, created_at)
                         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
@@ -1183,6 +1190,11 @@ class ProspectingCampaign {
                 }
             }
 
+            // Activer le client sélectionné ou créé
+            await pool.query(`
+                UPDATE clients SET statut = 'ACTIF' WHERE id = $1 AND statut != 'ACTIF'
+                        `, [clientId]);
+
             // Utiliser le type d'opportunité fourni ou récupérer un type par défaut
             let opportunityTypeId = null;
 
@@ -1190,7 +1202,7 @@ class ProspectingCampaign {
                 // Vérifier que le type fourni existe
                 const typeCheck = await pool.query(`
                     SELECT id FROM opportunity_types WHERE id = $1 AND is_active = true
-                `, [opportunityData.opportunityTypeId]);
+                        `, [opportunityData.opportunityTypeId]);
 
                 if (typeCheck.rows.length > 0) {
                     opportunityTypeId = opportunityData.opportunityTypeId;
@@ -1201,30 +1213,36 @@ class ProspectingCampaign {
                 // Fallback: Récupérer un type d'opportunité par défaut
                 const defaultType = await pool.query(`
                     SELECT id FROM opportunity_types WHERE name = 'PROSPECTION' OR name = 'GENERAL' OR name = 'Audit' LIMIT 1
-                `);
+                        `);
 
                 if (defaultType.rows.length > 0) {
                     opportunityTypeId = defaultType.rows[0].id;
                 } else {
                     // Créer un type d'opportunité par défaut si aucun n'existe
                     const newType = await pool.query(`
-                        INSERT INTO opportunity_types (name, description, is_active)
-                        VALUES ('PROSPECTION', 'Opportunités créées à partir de campagnes de prospection', true)
+                        INSERT INTO opportunity_types(name, description, is_active)
+                        VALUES('PROSPECTION', 'Opportunités créées à partir de campagnes de prospection', true)
                         RETURNING id
-                    `);
+                        `);
                     opportunityTypeId = newType.rows[0].id;
                 }
             }
 
+            // Récupérer l'année fiscale en cours
+            const activeFiscalYearResult = await pool.query(
+                `SELECT id FROM fiscal_years WHERE statut = 'EN_COURS' LIMIT 1`
+            );
+            const fiscalYearId = activeFiscalYearResult.rows.length > 0 ? activeFiscalYearResult.rows[0].id : null;
+
             // Créer l'opportunité
             const opportunity = await pool.query(`
-                INSERT INTO opportunities (
-                    nom, description, client_id, collaborateur_id, business_unit_id,
-                    opportunity_type_id, statut, source, probabilite, montant_estime, devise,
-                    date_fermeture_prevue, notes, created_by
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                INSERT INTO opportunities(
+                            nom, description, client_id, collaborateur_id, business_unit_id,
+                            opportunity_type_id, statut, source, probabilite, montant_estime, devise,
+                            date_fermeture_prevue, notes, fiscal_year_id, created_by
+                        ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
                 RETURNING id
-            `, [
+                        `, [
                 opportunityData.name,
                 opportunityData.description,
                 clientId,
@@ -1238,6 +1256,7 @@ class ProspectingCampaign {
                 'FCFA',
                 opportunityData.closeDate,
                 `Opportunité créée à partir de la campagne de prospection. Entreprise: ${company.company_name}`,
+                fiscalYearId,
                 null // created_by sera défini par le trigger si nécessaire
             ]);
 

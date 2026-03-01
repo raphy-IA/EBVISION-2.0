@@ -164,14 +164,14 @@ async function loadData() {
         const period = document.getElementById('period-select')?.value || 90;
         const fiscalYearId = document.getElementById('fiscalYearFilter')?.value || '';
 
-        let url;
-        if (fiscalYearId) {
-            url = `${API_BASE_URL}/collections?fiscal_year_id=${fiscalYearId}`;
-        } else {
-            url = `${API_BASE_URL}/collections?period=${period}`;
-        }
+        // Toujours envoyer les deux : fiscal_year_id (cadre) + period (sous-filtre dans l'année)
+        const params = new URLSearchParams();
+        if (fiscalYearId) params.set('fiscal_year_id', fiscalYearId);
+        params.set('period', period);
 
-        console.log(`📊 Chargement données recouvrement (${fiscalYearId ? 'année fiscale: ' + fiscalYearId : 'période: ' + period + ' jours'})`);
+        const url = `${API_BASE_URL}/collections?${params}`;
+
+        console.log(`📊 Chargement données recouvrement - ${fiscalYearId ? 'FY: ' + fiscalYearId + ' /' : ''} période: ${period}j`);
 
         const response = await authenticatedFetch(url);
 

@@ -364,11 +364,12 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="itemUnit" class="form-label">Unité</label>
-                                        <select class="form-control" id="itemUnit">
+                                        <select class="form-control" id="itemUnit" onchange="updateItemModalLabels()">
                                             <option value="heure">Heure</option>
                                             <option value="jour">Jour</option>
                                             <option value="forfait">Forfait</option>
                                             <option value="piece">Pièce</option>
+                                            <option value="pourcentage">Pourcentage (%)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -383,6 +384,13 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" id="itemHasTax" checked
+                                                onchange="toggleTaxField()">
+                                            <label class="form-check-label" for="itemHasTax">
+                                                Calculer la TVA
+                                            </label>
+                                        </div>
                                         <label for="itemTaxRate" class="form-label">Taux TVA (%)</label>
                                         <input type="number" class="form-control" id="itemTaxRate" value="19.25" min="0"
                                             step="0.01" required>
@@ -564,61 +572,89 @@
                 const status = currentInvoice.statut;
                 let buttons = '';
 
-                // TODO: Ajouter vérification des rôles ici si nécessaire via user.roles
+                // Récupération des infos utilisateur
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const userRoles = user.roles || [];
+                const userPermissions = user.permissions || [];
+                const userCollabId = user.collaborateur_id;
+                const isAdmin = userRoles.includes('ADMIN') || userRoles.includes('SUPER_ADMIN');
+                const isSeniorPartner = userRoles.includes('SENIOR_PARTNER');
+                const isFinance = userRoles.includes('RESPONSABLE_FINANCE') || userRoles.includes('ADMIN_IT');
 
+                // Helpers de permission
+                const hasPermission = (p) => userPermissions.includes(p) || isAdmin;
+
+                // Vérification si l'utilisateur est lié à la mission
+                const isMissionManager = userCollabId && currentInvoice.manager_id === userCollabId;
+                const isMissionAssocie = userCollabId && currentInvoice.associe_id === userCollabId;
+                const isInvoiceCreator = user.id === currentInvoice.created_by;
+
+                // 1. SOUMISSION (BROUILLON)
+                // Autorisé pour : Créateur, Manager ou Associé
                 if (status === 'BROUILLON') {
-                    buttons += `
-                    <button class="btn btn-success me-2" onclick="updateWorkflow('submit')">
-                        <i class="fas fa-paper-plane me-2"></i>Soumettre
-                    </button>
-                    <button class="btn btn-outline-secondary me-2" onclick="openEcheanceModal('EDIT')">
-                        <i class="fas fa-calendar-alt me-2"></i>Modifier Échéance
-                    </button>
-                `;
-                } else if (status === 'EN_ATTENTE_VALIDATION') {
-                    buttons += `
-                    <button class="btn btn-success me-2" onclick="updateWorkflow('validate')">
-                        <i class="fas fa-check me-2"></i>Valider
-                    </button>
-                    <button class="btn btn-danger me-2" onclick="openRejectModal()">
-                        <i class="fas fa-times me-2"></i>Rejeter
-                    </button>
-                `;
-                } else if (status === 'EN_ATTENTE_APPROBATION') {
-                    buttons += `
-                    <button class="btn btn-success me-2" onclick="updateWorkflow('approve')">
-                        <i class="fas fa-check-double me-2"></i>Approuver
-                    </button>
-                    <button class="btn btn-danger me-2" onclick="openRejectModal()">
-                        <i class="fas fa-times me-2"></i>Rejeter
-                    </button>
-                `;
-                } else if (status === 'EN_ATTENTE_EMISSION') {
-                    buttons += `
-                        <button class="btn btn-primary me-2" onclick="openEcheanceModal('EMIT')">
-                            <i class="fas fa-file-invoice me-2"></i>Émettre
-                        </button>
-                    `;
+                    if (isInvoiceCreator || isMissionManager || isMissionAssocie || isAdmin) {
+                        buttons += `
+                            <button class="btn btn-success me-2" onclick="updateWorkflow('submit')">
+                                <i class="fas fa-paper-plane me-2"></i>Soumettre
+                            </button>
+                            <button class="btn btn-outline-secondary me-2" onclick="openEcheanceModal('EDIT')">
+                                <i class="fas fa-calendar-alt me-2"></i>Modifier Échéance
+                            </button>
+                        `;
+                    }
+                }
+                // 2. VALIDATION (EN_ATTENTE_VALIDATION)
+                // Autorisé pour : Associé ou Responsable de BU (Manager)
+                else if (status === 'EN_ATTENTE_VALIDATION') {
+                    // Note: Pour simplifier en frontend, on vérifie si l'utilisateur est l'associé 
+                    // ou s'il a le grade suffisant (associé/manager) ou si c'est l'un des IDs autorisés
+                    if (isMissionAssocie || isMissionManager || isAdmin) {
+                        buttons += `
+                            <button class="btn btn-success me-2" onclick="updateWorkflow('validate')">
+                                <i class="fas fa-check me-2"></i>Valider
+                            </button>
+                            <button class="btn btn-danger me-2" onclick="openRejectModal()">
+                                <i class="fas fa-times me-2"></i>Rejeter
+                            </button>
+                        `;
+                    }
+                }
+                // 3. APPROBATION (EN_ATTENTE_APPROBATION)
+                // Autorisé pour : Senior Partner
+                else if (status === 'EN_ATTENTE_APPROBATION') {
+                    if (isSeniorPartner || isAdmin) {
+                        buttons += `
+                            <button class="btn btn-success me-2" onclick="updateWorkflow('approve')">
+                                <i class="fas fa-check-double me-2"></i>Approuver
+                            </button>
+                            <button class="btn btn-danger me-2" onclick="openRejectModal()">
+                                <i class="fas fa-times me-2"></i>Rejeter
+                            </button>
+                        `;
+                    }
+                }
+                // 4. EMISSION (EN_ATTENTE_EMISSION)
+                // Autorisé pour : Finance ou Admin
+                else if (status === 'EN_ATTENTE_EMISSION') {
+                    if (isFinance || isAdmin) {
+                        buttons += `
+                            <button class="btn btn-primary me-2" onclick="openEcheanceModal('EMIT')">
+                                <i class="fas fa-file-invoice me-2"></i>Émettre
+                            </button>
+                        `;
+                    }
                 }
 
                 actionsDiv.innerHTML = buttons;
 
                 // Verrouillage UI si pas brouillon
-                const isEditable = status === 'BROUILLON';
+                const isEditable = status === 'BROUILLON' && (isInvoiceCreator || isMissionManager || isMissionAssocie || isAdmin);
 
-                // Masquer boutons d'édition/ajout
-                if (!isEditable) {
-                    const addBtns = document.querySelectorAll('button[onclick^="add"], button[onclick^="edit"], button[onclick^="delete"], button[onclick^="regenerate"]');
-                    addBtns.forEach(btn => btn.style.display = 'none');
-
-                    // Exception: le bouton edit n'existe pas en tant que tel au niveau global, 
-                    // mais on désactive les actions sur les lignes.
-                    // Note: La suppression de paiement (désallocation) reste possible même après émission
-                    // car cela concerne la gestion des paiements, pas le contenu de la facture elle-même.
-                    // MAIS si on veut strict :
-                    // const unallocBtns = document.querySelectorAll('button[onclick^="deletePayment"]');
-                    // unallocBtns.forEach(btn => btn.style.display = 'none'); 
-                }
+                // Masquer boutons d'édition/ajout si pas éditable
+                const editButtons = document.querySelectorAll('button[onclick^="add"], button[onclick^="edit"], button[onclick^="delete"], button[onclick^="regenerate"]');
+                editButtons.forEach(btn => {
+                    btn.style.display = isEditable ? '' : 'none';
+                });
             }
 
             async function updateWorkflow(action, body = {}) {
@@ -737,8 +773,8 @@
                                 <tr>
                                     <td>${item.description}</td>
                                     <td>${item.quantite && !isNaN(item.quantite)
-                        ? (item.quantite < 1
-                            // FEES template: afficher en pourcentage
+                        ? (item.unite === 'pourcentage' || item.quantite < 1
+                            // FEES template ou unité explicite: afficher en pourcentage
                             ? (Number.isInteger(parseFloat(item.quantite * 100))
                                 ? parseInt(item.quantite * 100)
                                 : parseFloat(item.quantite * 100).toFixed(2)) + '%'
@@ -837,6 +873,10 @@
                 document.getElementById('itemUnit').value = 'forfait';
                 document.getElementById('itemUnitPrice').value = '';
                 document.getElementById('itemTaxRate').value = '19.25';
+                document.getElementById('itemHasTax').checked = true;
+                document.getElementById('itemTaxRate').disabled = false;
+
+                updateItemModalLabels();
 
                 const modal = new bootstrap.Modal(document.getElementById('itemModal'));
                 modal.show();
@@ -850,24 +890,76 @@
                 document.getElementById('itemModalTitle').textContent = 'Modifier une ligne';
                 document.getElementById('itemId').value = item.id;
                 document.getElementById('itemDescription').value = item.description;
-                document.getElementById('itemQuantity').value = item.quantite;
-                document.getElementById('itemUnit').value = item.unite;
+
+                // Si c'est un pourcentage, on affiche la valeur en base 100 (ex: 20 au lieu de 0.2)
+                if (item.unite === 'pourcentage' || item.quantite < 1) {
+                    document.getElementById('itemQuantity').value = item.quantite * 100;
+                    document.getElementById('itemUnit').value = 'pourcentage';
+                } else {
+                    document.getElementById('itemQuantity').value = item.quantite;
+                    document.getElementById('itemUnit').value = item.unite || 'forfait';
+                }
+
                 document.getElementById('itemUnitPrice').value = item.prix_unitaire;
                 document.getElementById('itemTaxRate').value = item.taux_tva;
+
+                // Gérer l'état de la TVA
+                const hasTax = parseFloat(item.taux_tva) > 0;
+                document.getElementById('itemHasTax').checked = hasTax;
+                document.getElementById('itemTaxRate').disabled = !hasTax;
+
+                updateItemModalLabels();
 
                 const modal = new bootstrap.Modal(document.getElementById('itemModal'));
                 modal.show();
             }
 
+            // Mettre à jour les labels et l'état des champs du modal selon l'unité et la TVA
+            function updateItemModalLabels() {
+                const unit = document.getElementById('itemUnit').value;
+                const qtyLabel = document.querySelector('label[for="itemQuantity"]');
+                const priceLabel = document.querySelector('label[for="itemUnitPrice"]');
+
+                if (unit === 'pourcentage') {
+                    qtyLabel.textContent = 'Pourcentage (%)';
+                    priceLabel.textContent = 'Base de calcul';
+                } else {
+                    qtyLabel.textContent = 'Quantité';
+                    priceLabel.textContent = 'Prix unitaire';
+                }
+            }
+
+            function toggleTaxField() {
+                const hasTax = document.getElementById('itemHasTax').checked;
+                const taxInput = document.getElementById('itemTaxRate');
+                taxInput.disabled = !hasTax;
+                if (!hasTax) {
+                    taxInput.value = '0';
+                } else if (taxInput.value === '0') {
+                    taxInput.value = '19.25';
+                }
+            }
+
             // Fonction pour sauvegarder une ligne de facture
             async function saveInvoiceItem() {
                 const itemId = document.getElementById('itemId').value;
+                const unit = document.getElementById('itemUnit').value;
+                let quantity = parseFloat(document.getElementById('itemQuantity').value);
+
+                // Si c'est un pourcentage, on divise par 100 pour le stockage DB (ex: 20 -> 0.2)
+                if (unit === 'pourcentage') {
+                    quantity = quantity / 100;
+                }
+
+                const hasTax = document.getElementById('itemHasTax').checked;
+                const taxRate = hasTax ? parseFloat(document.getElementById('itemTaxRate').value) : 0;
+
                 const itemData = {
                     description: document.getElementById('itemDescription').value,
-                    quantite: parseFloat(document.getElementById('itemQuantity').value),
-                    unite: document.getElementById('itemUnit').value,
+                    quantite: quantity,
+                    unite: unit,
                     prix_unitaire: parseFloat(document.getElementById('itemUnitPrice').value),
-                    taux_tva: parseFloat(document.getElementById('itemTaxRate').value)
+                    taux_tva: taxRate
                 };
 
                 try {

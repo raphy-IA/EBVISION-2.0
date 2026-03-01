@@ -8,6 +8,7 @@ let hoursChart, typeChart;
 
 // Variables pour les filtres
 let currentPeriod = 30;
+let currentFiscalYearId = '';
 
 // Fonction d'authentification
 function getAuthHeader() {
@@ -37,6 +38,18 @@ document.addEventListener('DOMContentLoaded', function () {
             refreshDashboard();
         });
     }
+
+    // Initialiser le sélecteur d'année fiscale si disponible
+    if (typeof FiscalYearSelector !== 'undefined' && document.getElementById('fiscalYearFilter')) {
+        FiscalYearSelector.init('fiscalYearFilter', (selectedId) => {
+            currentFiscalYearId = selectedId || '';
+            refreshDashboard();
+        });
+    } else {
+        // Pas de FiscalYearSelector : charge les données directement
+        loadDashboardData();
+        initializeCharts();
+    }
 });
 
 // Charger les données principales du dashboard
@@ -48,8 +61,10 @@ async function loadDashboardData() {
         const existingAlerts = document.querySelectorAll('.alert-danger');
         existingAlerts.forEach(alert => alert.remove());
 
-        // Construire les paramètres de requête
-        const queryParams = `period=${currentPeriod}`;
+        // Toujours envoyer les deux : fiscal_year_id (cadre) + period (sous-filtre dans l'année)
+        const params = new URLSearchParams({ period: currentPeriod });
+        if (currentFiscalYearId) params.set('fiscal_year_id', currentFiscalYearId);
+        const queryParams = params.toString();
 
         // Charger les statistiques personnelles
         const response = await authenticatedFetch(`${API_BASE_URL}/personal-performance?${queryParams}`);
