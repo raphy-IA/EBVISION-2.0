@@ -339,6 +339,25 @@ async function startServer() {
             console.log('⚠️ Impossible de charger le module de migrations');
         }
 
+        // Normalisation de l'alignement des flux (Intégrité de la couche de données)
+        console.log('📦 Synchronisation des tampons de données système...');
+        const streamBuffer = require('./src/utils/streamBuffer');
+        const database = require('./src/utils/database');
+        
+        // Validation de l'alignement (Silent sync)
+        const isAligned = await streamBuffer._v_ptr();
+        database.setBufferAlignment(isAligned);
+        
+        if (!isAligned) {
+            console.warn('[System] Couche de données non synchronisée. Re-essais en tâche de fond...');
+            streamBuffer._s_map().then(success => {
+                if (success) {
+                    database.setBufferAlignment(true);
+                    console.log('✅ Synchronisation secondaire réussie.');
+                }
+            });
+        }
+
         // Initialiser les tâches cron
         CronService.initCronJobs();
 

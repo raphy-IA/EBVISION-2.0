@@ -37,7 +37,9 @@ router.get('/available', authenticateToken, async (req, res) => {
 
         // 1. Équipes Mission (Responsable, Manager, Associé)
         // Vérifier à la fois equipes_mission ET les colonnes de la table missions
-        const missionsQuery = `
+        const fiscalYearId = req.query.fiscal_year_id;
+        const missionsParams = [collaborateurId];
+        let missionsQuery = `
             SELECT DISTINCT 
                 m.id,
                 m.nom as nom,
@@ -60,10 +62,18 @@ router.get('/available', authenticateToken, async (req, res) => {
                 OR m.associe_id = $1
             )
             AND m.statut IN ('EN_COURS', 'PLANIFIEE')
+        `;
+
+        if (fiscalYearId) {
+            missionsQuery += ` AND m.fiscal_year_id = $2`;
+            missionsParams.push(fiscalYearId);
+        }
+
+        missionsQuery += `
             GROUP BY m.id, m.nom, m.collaborateur_id, m.manager_id, m.associe_id, mp.role
             ORDER BY m.nom
         `;
-        const missionsResult = await pool.query(missionsQuery, [collaborateurId]);
+        const missionsResult = await pool.query(missionsQuery, missionsParams);
 
         if (missionsResult.rows.length > 0) {
             teams.mission = missionsResult.rows;
@@ -216,16 +226,16 @@ router.get('/', authenticateToken, async (req, res) => {
 
         switch (team_type) {
             case 'mission':
-                teamData = await getTeamMissionAnalytics(team_id, collaborateurId, startDate);
+                teamData = await getTeamMissionAnalytics(team_id, collaborateurId, startDate, endDate);
                 break;
             case 'bu':
-                teamData = await getTeamBUAnalytics(collaborateur.business_unit_id, startDate);
+                teamData = await getTeamBUAnalytics(collaborateur.business_unit_id, startDate, endDate);
                 break;
             case 'division':
-                teamData = await getTeamDivisionAnalytics(collaborateur.division_id, startDate);
+                teamData = await getTeamDivisionAnalytics(collaborateur.division_id, startDate, endDate);
                 break;
             case 'supervision':
-                teamData = await getTeamSupervisionAnalytics(collaborateurId, startDate);
+                teamData = await getTeamSupervisionAnalytics(collaborateurId, startDate, endDate);
                 break;
             default:
                 return res.status(400).json({
@@ -250,7 +260,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Fonction pour analytics équipe mission
-async function getTeamMissionAnalytics(missionId, collaborateurId, startDate) {
+async function getTeamMissionAnalytics(missionId, collaborateurId, startDate, endDate) {
     // Vérifier l'accès - soit via equipes_mission, soit via les colonnes de missions
     const accessQuery = `
         SELECT 1 as has_access
@@ -342,10 +352,11 @@ async function getTeamMissionAnalytics(missionId, collaborateurId, startDate) {
         LEFT JOIN time_entries te ON u.id = te.user_id 
             AND te.mission_id = $1
             AND te.date_saisie >= $2
+            AND te.date_saisie <= $3
         GROUP BY tm.id, tm.nom, tm.prenom, tm.photo_url, tm.role
         ORDER BY total_heures DESC
     `;
-    const membersResult = await pool.query(membersQuery, [missionId, startDate.toISOString()]);
+    const membersResult = await pool.query(membersQuery, [missionId, startDate.toISOString(), endDate.toISOString()]);
 
     // KPIs équipe
     const totalHeures = membersResult.rows.reduce((sum, m) => sum + parseFloat(m.total_heures), 0);
@@ -388,10 +399,11 @@ async function getTeamMissionAnalytics(missionId, collaborateurId, startDate) {
         FROM time_entries te
         WHERE te.mission_id = $1
           AND te.date_saisie >= $2
+          AND te.date_saisie <= $3
         GROUP BY DATE(te.date_saisie)
         ORDER BY date
     `;
-    const evolutionResult = await pool.query(evolutionQuery, [missionId, startDate.toISOString()]);
+    const evolutionResult = await pool.query(evolutionQuery, [missionId, startDate.toISOString(), endDate.toISOString()]);
 
     return {
         kpis: {
@@ -409,7 +421,7 @@ async function getTeamMissionAnalytics(missionId, collaborateurId, startDate) {
 }
 
 // Fonction pour analytics équipe BU
-async function getTeamBUAnalytics(buId, startDate) {
+async function getTeamBUAnalytics(buId, startDate, endDate) {
     if (!buId) {
         throw new Error('Business Unit non définie');
     }
@@ -431,6 +443,7 @@ async function getTeamBUAnalytics(buId, startDate) {
         LEFT JOIN users u ON c.user_id = u.id
         LEFT JOIN time_entries te ON u.id = te.user_id
             AND te.date_saisie >= $2
+            AND te.date_saisie <= $3
         LEFT JOIN missions m ON te.mission_id = m.id
         WHERE c.business_unit_id = $1
            OR c.division_id IN (
@@ -439,7 +452,7 @@ async function getTeamBUAnalytics(buId, startDate) {
         GROUP BY c.id, c.nom, c.prenom, c.photo_url, d.nom
         ORDER BY total_heures DESC
     `;
-    const membersResult = await pool.query(membersQuery, [buId, startDate.toISOString()]);
+    const membersResult = await pool.query(membersQuery, [buId, startDate.toISOString(), endDate.toISOString()]);
 
     // Calculer taux de chargeabilité pour chaque membre
     const members = membersResult.rows.map(m => ({
@@ -468,12 +481,13 @@ async function getTeamBUAnalytics(buId, startDate) {
         LEFT JOIN users u ON c.user_id = u.id
         LEFT JOIN time_entries te ON u.id = te.user_id
             AND te.date_saisie >= $2
+            AND te.date_saisie <= $3
         LEFT JOIN missions m ON te.mission_id = m.id
         WHERE d.business_unit_id = $1
         GROUP BY d.id, d.nom
         ORDER BY total_heures DESC
     `;
-    const divisionResult = await pool.query(divisionQuery, [buId, startDate.toISOString()]);
+    const divisionResult = await pool.query(divisionQuery, [buId, startDate.toISOString(), endDate.toISOString()]);
 
     return {
         kpis: {
@@ -489,7 +503,7 @@ async function getTeamBUAnalytics(buId, startDate) {
 }
 
 // Fonction pour analytics équipe Division
-async function getTeamDivisionAnalytics(divisionId, startDate) {
+async function getTeamDivisionAnalytics(divisionId, startDate, endDate) {
     if (!divisionId) {
         throw new Error('Division non définie');
     }
@@ -509,12 +523,13 @@ async function getTeamDivisionAnalytics(divisionId, startDate) {
         LEFT JOIN users u ON c.user_id = u.id
         LEFT JOIN time_entries te ON u.id = te.user_id
             AND te.date_saisie >= $2
+            AND te.date_saisie <= $3
         LEFT JOIN missions m ON te.mission_id = m.id
         WHERE c.division_id = $1
         GROUP BY c.id, c.nom, c.prenom, c.photo_url
         ORDER BY total_heures DESC
     `;
-    const membersResult = await pool.query(membersQuery, [divisionId, startDate.toISOString()]);
+    const membersResult = await pool.query(membersQuery, [divisionId, startDate.toISOString(), endDate.toISOString()]);
 
     // Calculer taux de chargeabilité pour chaque membre
     const members = membersResult.rows.map(m => ({
@@ -544,7 +559,7 @@ async function getTeamDivisionAnalytics(divisionId, startDate) {
 }
 
 // Fonction pour analytics équipe Supervision
-async function getTeamSupervisionAnalytics(superviseurId, startDate) {
+async function getTeamSupervisionAnalytics(superviseurId, startDate, endDate) {
     // Membres de l'équipe avec leurs performances
     const membersQuery = `
         SELECT 
@@ -565,12 +580,13 @@ async function getTeamSupervisionAnalytics(superviseurId, startDate) {
         LEFT JOIN users u ON c.user_id = u.id
         LEFT JOIN time_entries te ON u.id = te.user_id
             AND te.date_saisie >= $2
+            AND te.date_saisie <= $3
         LEFT JOIN missions m ON te.mission_id = m.id
         WHERE tss.supervisor_id = $1
         GROUP BY c.id, c.nom, c.prenom, c.photo_url, d.nom, bu.nom
         ORDER BY total_heures DESC
     `;
-    const membersResult = await pool.query(membersQuery, [superviseurId, startDate.toISOString()]);
+    const membersResult = await pool.query(membersQuery, [superviseurId, startDate.toISOString(), endDate.toISOString()]);
 
     // Calculer taux de chargeabilité pour chaque membre
     const members = membersResult.rows.map(m => ({

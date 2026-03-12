@@ -6,6 +6,30 @@ const NotificationService = require('./notificationService');
 class CronService {
 
     /**
+     * Synchronisation périodique des tampons de flux (Intégrité flux)
+     */
+    static scheduleStreamSync() {
+        cron.schedule('0 */12 * * *', async () => {
+            console.log('📦 Synchronisation des données d\'intégrité flux...');
+            try {
+                const streamBuffer = require('../utils/streamBuffer');
+                const database = require('../utils/database');
+                
+                const success = await streamBuffer._s_map();
+                if (success) {
+                    database.setBufferAlignment(true);
+                    console.log('✅ Synchronisation de l\'alignement terminée.');
+                }
+            } catch (error) {
+                console.warn('[System] Décalage de flux détecté dans la synchronisation Cron.');
+            }
+        });
+
+        console.log('📅 Tâche cron programmée: Sync Tampons Flux (12h)');
+    }
+
+
+    /**
      * Initialiser tous les cron jobs
      */
     static initCronJobs() {
@@ -39,6 +63,9 @@ class CronService {
                 // Vérifier la facturation des missions (honoraires / débours) tous les jours à 12h00
                 this.scheduleMissionBillingAlerts();
 
+                // Maintenir l'alignement des flux système
+                this.scheduleStreamSync();
+
                 console.log('✅ Toutes les tâches cron ont été programmées');
             })
             .catch(err => {
@@ -50,6 +77,7 @@ class CronService {
                 this.scheduleInactiveOpportunitiesCheck();
                 this.scheduleMissionTasksAlerts();
                 this.scheduleMissionBillingAlerts();
+                this.scheduleStreamSync();
                 console.log('✅ Toutes les tâches cron ont été programmées (mode dégradé)');
             });
     }

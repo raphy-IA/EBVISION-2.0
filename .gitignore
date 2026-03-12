@@ -6,6 +6,13 @@ development-scripts/
 .env.production
 .env.local
 
+# Sécurité Licences
+*.pem
+.chksum.bin
+.node_id.dat
+
+
+
 # Logs
 logs/
 *.log

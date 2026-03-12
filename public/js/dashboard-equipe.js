@@ -45,19 +45,30 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Initialiser le sélecteur d'année fiscale
     if (typeof FiscalYearSelector !== 'undefined' && document.getElementById('fiscalYearFilter')) {
-        FiscalYearSelector.init('fiscalYearFilter', () => loadTeamData());
+        FiscalYearSelector.init('fiscalYearFilter', async (fyId) => {
+            console.log('📅 Changement d\'année fiscale:', fyId);
+            // Rafraîchir d'abord la liste des équipes disponibles (les missions changent selon l'année)
+            await loadAvailableTeams(fyId);
+        });
+    } else {
+        // Charger les équipes disponibles par défaut si pas de sélecteur
+        await loadAvailableTeams();
     }
-
-    // Charger les équipes disponibles
-    await loadAvailableTeams();
 });
 
 // Charger les équipes disponibles
-async function loadAvailableTeams() {
+async function loadAvailableTeams(fiscalYearId = null) {
     try {
-        console.log('📊 Chargement équipes disponibles...');
+        if (!fiscalYearId) {
+            fiscalYearId = document.getElementById('fiscalYearFilter')?.value || '';
+        }
 
-        const response = await authenticatedFetch(`${API_BASE_URL}/available`);
+        console.log(`📊 Chargement équipes disponibles (FY: ${fiscalYearId})...`);
+
+        const params = new URLSearchParams();
+        if (fiscalYearId) params.set('fiscal_year_id', fiscalYearId);
+
+        const response = await authenticatedFetch(`${API_BASE_URL}/available?${params}`);
 
         if (!response.ok) {
             throw new Error('Erreur lors du chargement des équipes');
@@ -140,10 +151,10 @@ async function onTeamTypeChange() {
     const instanceContainer = document.getElementById('team-instance-container');
 
     if (teamType === 'mission') {
-        const missions = availableTeams.teams.mission;
+        const missions = availableTeams.teams.mission || [];
 
-        if (missions && missions.length > 1) {
-            // Plusieurs missions : afficher le sélecteur
+        if (missions.length >= 1) {
+            // Toujours afficher le sélecteur pour voir le nom de la mission
             instanceContainer.style.display = 'block';
             instanceSelect.innerHTML = '';
 
@@ -155,10 +166,9 @@ async function onTeamTypeChange() {
             });
 
             currentTeamId = missions[0].id;
-        } else if (missions && missions.length === 1) {
-            // Une seule mission : masquer le sélecteur
+        } else {
             instanceContainer.style.display = 'none';
-            currentTeamId = missions[0].id;
+            currentTeamId = null;
         }
     } else {
         // BU, Division, Supervision : pas de sélecteur d'instance
@@ -213,18 +223,38 @@ async function loadTeamData() {
         // Mettre à jour l'interface
         updateKPIs(result.data.kpis);
         updateMembersTable(result.data.members);
-        updateMembersChart(result.data.members);
 
-        if (currentTeamType === 'mission' && result.data.evolution) {
-            updateEvolutionChart(result.data.evolution);
-        }
+        // Gestion des graphiques et des titres
+        const leftChartTitle = document.querySelector('.chart-container:first-child .chart-title');
+        const rightChartTitle = document.querySelectorAll('.chart-container')[1]?.querySelector('.chart-title');
+        const evolutionCanvas = document.getElementById('evolutionChart');
+        const chargeabiliteCanvas = document.getElementById('chargeabiliteChart');
 
-        if (currentTeamType === 'bu' && result.data.divisions) {
-            updateDivisionsChart(result.data.divisions);
-        }
+        if (currentTeamType === 'mission') {
+            // Mode Mission : Membres à gauche, Évolution à droite
+            if (leftChartTitle) leftChartTitle.innerHTML = '<i class="fas fa-chart-bar me-2"></i>Heures par membre';
+            if (rightChartTitle) rightChartTitle.innerHTML = '<i class="fas fa-chart-line me-2"></i>Évolution temporelle';
 
-        if ((currentTeamType === 'bu' || currentTeamType === 'division' || currentTeamType === 'supervision') && result.data.members) {
-            updateChargeabiliteChart(result.data.members);
+            if (evolutionCanvas) evolutionCanvas.style.display = 'block';
+            if (chargeabiliteCanvas) chargeabiliteCanvas.style.display = 'none';
+
+            updateMembersChart(result.data.members);
+            updateEvolutionChart(result.data.evolution || []);
+        } else {
+            // Mode BU/Division/Supervision : Chargeabilité ou Divisions
+            if (evolutionCanvas) evolutionCanvas.style.display = 'none';
+            if (chargeabiliteCanvas) chargeabiliteCanvas.style.display = 'block';
+
+            if (currentTeamType === 'bu' && result.data.divisions) {
+                if (leftChartTitle) leftChartTitle.innerHTML = '<i class="fas fa-chart-bar me-2"></i>Heures par division';
+                updateDivisionsChart(result.data.divisions);
+            } else {
+                if (leftChartTitle) leftChartTitle.innerHTML = '<i class="fas fa-chart-bar me-2"></i>Heures par membre';
+                updateMembersChart(result.data.members);
+            }
+
+            if (rightChartTitle) rightChartTitle.innerHTML = '<i class="fas fa-percentage me-2"></i>Taux de chargeabilité';
+            updateChargeabiliteChart(result.data.members || []);
         }
 
     } catch (error) {
@@ -415,25 +445,28 @@ function updateMembersTable(members) {
 
 // Mettre à jour le graphique des membres
 function updateMembersChart(members) {
-    if (!membersChart || !members || members.length === 0) return;
+    if (!membersChart) return;
 
-    const labels = members.map(m => `${m.nom} ${m.prenom}`);
-    const data = members.map(m => Math.round(parseFloat(m.total_heures) || 0));
+    const safeMembers = (members && members.length > 0) ? members : [];
+    const labels = safeMembers.map(m => `${m.nom} ${m.prenom}`);
+    const data = safeMembers.map(m => Math.round(parseFloat(m.total_heures) || 0));
 
     membersChart.data.labels = labels;
     membersChart.data.datasets[0].data = data;
+    membersChart.data.datasets[0].label = 'Heures totales';
     membersChart.update();
 }
 
 // Mettre à jour le graphique d'évolution
 function updateEvolutionChart(evolution) {
-    if (!evolutionChart || !evolution || evolution.length === 0) return;
+    if (!evolutionChart) return;
 
-    const labels = evolution.map(e => {
+    const safeEvolution = (evolution && evolution.length > 0) ? evolution : [];
+    const labels = safeEvolution.map(e => {
         const date = new Date(e.date);
         return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
     });
-    const data = evolution.map(e => parseFloat(e.heures) || 0);
+    const data = safeEvolution.map(e => parseFloat(e.heures) || 0);
 
     evolutionChart.data.labels = labels;
     evolutionChart.data.datasets[0].data = data;
@@ -442,10 +475,11 @@ function updateEvolutionChart(evolution) {
 
 // Mettre à jour le graphique de chargeabilité
 function updateChargeabiliteChart(members) {
-    if (!chargeabiliteChart || !members || members.length === 0) return;
+    if (!chargeabiliteChart) return;
 
-    const labels = members.map(m => `${m.nom} ${m.prenom}`);
-    const data = members.map(m => m.taux_chargeabilite || 0);
+    const safeMembers = (members && members.length > 0) ? members : [];
+    const labels = safeMembers.map(m => `${m.nom} ${m.prenom}`);
+    const data = safeMembers.map(m => m.taux_chargeabilite || 0);
 
     chargeabiliteChart.data.labels = labels;
     chargeabiliteChart.data.datasets[0].data = data;
@@ -454,10 +488,11 @@ function updateChargeabiliteChart(members) {
 
 // Mettre à jour le graphique des divisions
 function updateDivisionsChart(divisions) {
-    if (!membersChart || !divisions || divisions.length === 0) return;
+    if (!membersChart) return;
 
-    const labels = divisions.map(d => d.division_nom);
-    const data = divisions.map(d => Math.round(parseFloat(d.total_heures) || 0));
+    const safeDivisions = (divisions && divisions.length > 0) ? divisions : [];
+    const labels = safeDivisions.map(d => d.division_nom);
+    const data = safeDivisions.map(d => Math.round(parseFloat(d.total_heures) || 0));
 
     membersChart.data.labels = labels;
     membersChart.data.datasets[0].data = data;
